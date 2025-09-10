@@ -15,7 +15,7 @@ class Teradata_VectorStores implements INode {
     badge: string
     baseClasses: string[]
     credential: INodeParams
-    inputs: INodeParams[]    
+    inputs: INodeParams[]
     outputs: INodeOutputsValue[]
 
     constructor() {
@@ -38,12 +38,12 @@ class Teradata_VectorStores implements INode {
                 label: 'Document',
                 name: 'document',
                 type: 'Document',
-                list: true,
+                list: true
             },
             {
                 label: 'Embeddings',
                 name: 'embeddings',
-                type: 'Embeddings',
+                type: 'Embeddings'
             },
             {
                 label: 'Vector_Store_Name',
@@ -141,7 +141,8 @@ class Teradata_VectorStores implements INode {
             {
                 label: 'Num_Init',
                 name: 'numInit',
-                description: 'number of times the k-means algorithm should run with different initial centroid seeds for Search Algorithm KMEANS',
+                description:
+                    'number of times the k-means algorithm should run with different initial centroid seeds for Search Algorithm KMEANS',
                 placeholder: 'Num_Init',
                 type: 'string',
                 additionalParams: true,
@@ -222,7 +223,8 @@ class Teradata_VectorStores implements INode {
             {
                 label: 'Apply_Heuristics',
                 name: 'applyHeuristics',
-                description: 'Specifies whether to apply heuristics optimizations during construction of the HNSW graph for Search Algorithm HNSW',
+                description:
+                    'Specifies whether to apply heuristics optimizations during construction of the HNSW graph for Search Algorithm HNSW',
                 placeholder: 'Apply_Heuristics',
                 type: 'string',
                 additionalParams: true,
@@ -254,7 +256,7 @@ class Teradata_VectorStores implements INode {
                 type: 'string',
                 additionalParams: true,
                 optional: true
-            }          
+            }
         ]
         this.outputs = [
             {
@@ -279,10 +281,10 @@ class Teradata_VectorStores implements INode {
             const vectorStoreName = nodeData.inputs?.vectorStoreName as string
             const database = nodeData.inputs?.database as string
 
-            const vectorStoreDescription = nodeData.inputs?.vectorStoreDescription as string || null
-            const searchAlgorithm = nodeData.inputs?.searchAlgorithm as string || null
-            const distanceMetric = nodeData.inputs?.distanceMetric as string || null
-            const initialCentroidsMethod = nodeData.inputs?.initialCentroidsMethod as string || null  
+            const vectorStoreDescription = (nodeData.inputs?.vectorStoreDescription as string) || null
+            const searchAlgorithm = (nodeData.inputs?.searchAlgorithm as string) || null
+            const distanceMetric = (nodeData.inputs?.distanceMetric as string) || null
+            const initialCentroidsMethod = (nodeData.inputs?.initialCentroidsMethod as string) || null
             const trainNumCluster = parseInt(nodeData.inputs?.trainNumCluster as string) || null
             const maxIterNum = parseInt(nodeData.inputs?.maxIterNum as string) || null
             const stopThreshold = parseFloat(nodeData.inputs?.stopThreshold as string) || null
@@ -312,32 +314,32 @@ class Teradata_VectorStores implements INode {
             const providedJwtToken = getCredentialParam('jwtToken', credentialData, nodeData) || null
 
             if (!docs || docs.length === 0) {
-                throw new Error('No documents provided for upsert operation');
+                throw new Error('No documents provided for upsert operation')
             }
 
             if (!embeddings) {
-                throw new Error('Embeddings are required for upsert operation');
+                throw new Error('Embeddings are required for upsert operation')
             }
 
-            let jwtToken = null;            
+            let jwtToken = null
             if (providedJwtToken) {
-                jwtToken = providedJwtToken;
-            }
-            
-            // Generate embeddings
-            const embedded_vectors = await embeddings.embedDocuments(docs.map(doc => doc.pageContent));
-            if (embedded_vectors.length !== docs.length) {
-                throw new Error('The number of embedded vectors does not match the number of documents.');
+                jwtToken = providedJwtToken
             }
 
-            const embeddings_dims = embedded_vectors[0].length;
-            
+            // Generate embeddings
+            const embedded_vectors = await embeddings.embedDocuments(docs.map((doc) => doc.pageContent))
+            if (embedded_vectors.length !== docs.length) {
+                throw new Error('The number of embedded vectors does not match the number of documents.')
+            }
+
+            const embeddings_dims = embedded_vectors[0].length
+
             // Create Teradata connection
-            const connection = new teradatasql.TeradataConnection();
-            let cur = null;
-            let tempTableName = '';
-            let embeddingsTableCreated = false;
-            
+            const connection = new teradatasql.TeradataConnection()
+            let cur = null
+            let tempTableName = ''
+            let embeddingsTableCreated = false
+
             try {
                 // Connect to Teradata
                 connection.connect({
@@ -345,15 +347,15 @@ class Teradata_VectorStores implements INode {
                     user: user,
                     password: password,
                     database: database
-                });
+                })
 
-                cur = connection.cursor();
-                
+                cur = connection.cursor()
+
                 // Start transaction
-                connection.autocommit = false;
+                connection.autocommit = false
 
                 // Create temporary embeddings table with VARBYTE first
-                tempTableName = `${embeddingsTableName}_temp_${Date.now()}`;
+                tempTableName = `${embeddingsTableName}_temp_${Date.now()}`
                 const createTempTableSql = `
                     CREATE MULTISET TABLE ${tempTableName}
                         (
@@ -361,46 +363,42 @@ class Teradata_VectorStores implements INode {
                             chunks VARCHAR(32000) CHARACTER SET UNICODE,
                             embedding VARBYTE(64000)
                         );
-                `;
+                `
 
                 try {
-                    cur.execute(createTempTableSql);
+                    cur.execute(createTempTableSql)
                     // Commit the DDL statement
-                    connection.commit();
+                    connection.commit()
                 } catch (error: any) {
-                    throw new Error(`Failed to create temporary table ${tempTableName}: ${error.message}`);
+                    throw new Error(`Failed to create temporary table ${tempTableName}: ${error.message}`)
                 }
 
                 // Insert documents and embeddings into the temporary table using FastLoad
                 const insertSql = `
-                    {fn teradata_require_fastload}INSERT INTO ${tempTableName} (?, ?, ?)`;
-                
-                const insertDataArr: any[][] = [];
+                    {fn teradata_require_fastload}INSERT INTO ${tempTableName} (?, ?, ?)`
+
+                const insertDataArr: any[][] = []
                 for (let i = 0; i < docs.length; i++) {
-                    const doc = docs[i];
-                    const embedding = embedded_vectors[i];
-                    const elementId = i;
-                    
+                    const doc = docs[i]
+                    const embedding = embedded_vectors[i]
+                    const elementId = i
+
                     // Convert embedding array of doubles to byte array for VARBYTE column
-                    const embeddingBuffer = Buffer.alloc(embedding.length * 8); // 8 bytes per double
+                    const embeddingBuffer = Buffer.alloc(embedding.length * 8) // 8 bytes per double
                     for (let j = 0; j < embedding.length; j++) {
-                        embeddingBuffer.writeDoubleLE(embedding[j], j * 8);
+                        embeddingBuffer.writeDoubleLE(embedding[j], j * 8)
                     }
-                    
-                    insertDataArr.push([
-                        elementId,
-                        doc.pageContent,
-                        embeddingBuffer
-                    ]);
+
+                    insertDataArr.push([elementId, doc.pageContent, embeddingBuffer])
                 }
-                    
+
                 try {
-                    cur.execute(insertSql, insertDataArr);
+                    cur.execute(insertSql, insertDataArr)
                     // Commit the insert operation
-                    connection.commit();
+                    connection.commit()
                 } catch (error: any) {
-                    console.error(`Failed to insert documents into temporary table: ${error.message}`);
-                    throw error;
+                    console.error(`Failed to insert documents into temporary table: ${error.message}`)
+                    throw error
                 }
 
                 // Create the final table with VECTOR datatype using the original embeddings table name
@@ -411,15 +409,15 @@ class Teradata_VectorStores implements INode {
                             chunks VARCHAR(32000) CHARACTER SET UNICODE,
                             embedding VECTOR
                         ) no primary index;
-                `;
+                `
 
                 try {
-                    cur.execute(createFinalTableSql);
-                    embeddingsTableCreated = true;
+                    cur.execute(createFinalTableSql)
+                    embeddingsTableCreated = true
                     // Commit the DDL statement
-                    connection.commit();
+                    connection.commit()
                 } catch (error: any) {
-                    throw new Error(`Failed to create final embeddings table ${embeddingsTableName}: ${error.message}`);
+                    throw new Error(`Failed to create final embeddings table ${embeddingsTableName}: ${error.message}`)
                 }
 
                 // Load data from temporary VARBYTE table to final VECTOR table with casting
@@ -430,82 +428,75 @@ class Teradata_VectorStores implements INode {
                         chunks,
                         CAST(embedding AS VECTOR)
                     FROM ${tempTableName};
-                `;
+                `
 
                 try {
-                    cur.execute(loadFinalTableSql);
-                    // Get count of loaded records
-                    const countSql = `SELECT COUNT(*) as record_count FROM ${embeddingsTableName}`;
-                    cur.execute(countSql);
-                    const countResult = cur.fetchone();
-                    const recordCount = countResult ? countResult[0] : 0;                    
+                    cur.execute(loadFinalTableSql)
                 } catch (error: any) {
-                    console.error(`Failed to load data into final table: ${error.message}`);
-                    throw new Error(`Failed to load data into final table: ${error.message}`);
+                    console.error(`Failed to load data into final table: ${error.message}`)
+                    throw new Error(`Failed to load data into final table: ${error.message}`)
                 }
 
                 // Drop the temporary table
                 try {
-                    cur.execute(`DROP TABLE ${tempTableName}`);
-                    tempTableName = ''; // Clear the temp table name since it's been dropped
+                    cur.execute(`DROP TABLE ${tempTableName}`)
+                    tempTableName = '' // Clear the temp table name since it's been dropped
                 } catch (error: any) {
-                    console.error(`Failed to drop temporary table: ${error.message}`);
-                    throw new Error(`Failed to drop temporary table: ${error.message}`);
+                    console.error(`Failed to drop temporary table: ${error.message}`)
+                    throw new Error(`Failed to drop temporary table: ${error.message}`)
                 }
 
                 // Commit the transaction
-                connection.commit();
-                connection.autocommit = true; // Re-enable autocommit
+                connection.commit()
+                connection.autocommit = true // Re-enable autocommit
 
                 // Continue with the original API-based vector store upload for compatibility
                 const data = {
-                    database_name: database,
-                };
-                
-                // Determine authentication method and headers
-                let authHeaders: Record<string, string> = {};
-                if (jwtToken) {
-                    authHeaders = { 
-                        "Authorization": `Bearer ${jwtToken}`,
-                        'Content-Type': 'application/json'
-                    };
-                } else {
-                    // Encode the credentials string using Base64
-                    const credentials: string = `${user}:${password}`;
-                    const encodedCredentials: string = Buffer.from(credentials).toString('base64');
-                    authHeaders = { 
-                        "Authorization": `Basic ${encodedCredentials}`,
-                        'Content-Type': 'application/json'
-                    };
+                    database_name: database
                 }
 
-                const sessionUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/session';
+                // Determine authentication method and headers
+                let authHeaders: Record<string, string> = {}
+                if (jwtToken) {
+                    authHeaders = {
+                        Authorization: `Bearer ${jwtToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                } else {
+                    // Encode the credentials string using Base64
+                    const credentials: string = `${user}:${password}`
+                    const encodedCredentials: string = Buffer.from(credentials).toString('base64')
+                    authHeaders = {
+                        Authorization: `Basic ${encodedCredentials}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+
+                const sessionUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/session'
                 const response = await fetch(sessionUrl, {
                     method: 'POST',
                     headers: authHeaders,
                     body: JSON.stringify(data)
-                });
+                })
 
                 if (!response.ok) {
-                    throw new Error(`Failed to create session: ${response.status}`);
+                    throw new Error(`Failed to create session: ${response.status}`)
                 }
 
                 // Extract session_id from Set-Cookie header
-                const setCookie = response.headers.get('set-cookie');
-                let session_id = '';
+                const setCookie = response.headers.get('set-cookie')
+                let session_id = ''
                 if (setCookie) {
-                    const match = setCookie.match(/session_id=([^;]+)/);
+                    const match = setCookie.match(/session_id=([^;]+)/)
                     if (match) {
-                        session_id = match[1];
+                        session_id = match[1]
                     }
                 }
 
                 // Utility function to filter out null/undefined values
                 const filterNullValues = (obj: Record<string, any>): Record<string, any> => {
-                    return Object.fromEntries(
-                        Object.entries(obj).filter(([_, value]) => value !== null && value !== undefined)
-                    );
-                };
+                    return Object.fromEntries(Object.entries(obj).filter(([_, value]) => value !== null && value !== undefined))
+                }
 
                 const vsParameters = filterNullValues({
                     search_algorithm: searchAlgorithm,
@@ -530,7 +521,7 @@ class Teradata_VectorStores implements INode {
                     relevance_top_k: relevanceTopK,
                     relevance_search_threshold: relevanceSearchThreshold,
                     description: vectorStoreDescription
-                });
+                })
 
                 const vsIndex = filterNullValues({
                     target_database: database,
@@ -541,29 +532,30 @@ class Teradata_VectorStores implements INode {
                     is_embedded: true,
                     is_normalized: false,
                     metadata_columns: ['chunks'],
-                    metadata_descriptions: ['Content or Chunk of the document'],
-                });
+                    metadata_descriptions: ['Content or Chunk of the document']
+                })
 
-                const formData = new FormData();
-                formData.append('vs_parameters', JSON.stringify(vsParameters));
-                formData.append('vs_index', JSON.stringify(vsIndex));
-                
-                const vectorstoresUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/vectorstores/' + vectorStoreName;
-                
+                const formData = new FormData()
+                formData.append('vs_parameters', JSON.stringify(vsParameters))
+                formData.append('vs_index', JSON.stringify(vsIndex))
+
+                const vectorstoresUrl =
+                    baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/vectorstores/' + vectorStoreName
+
                 // Prepare headers for vectorstores API call
-                let vectorstoreHeaders: Record<string, string> = {};
+                let vectorstoreHeaders: Record<string, string> = {}
                 if (jwtToken) {
                     vectorstoreHeaders = {
-                        "Authorization": `Bearer ${jwtToken}`,
-                        "Cookie": `session_id=${session_id}`
-                    };
+                        Authorization: `Bearer ${jwtToken}`,
+                        Cookie: `session_id=${session_id}`
+                    }
                 } else {
-                    const credentials: string = `${user}:${password}`;
-                    const encodedCredentials: string = Buffer.from(credentials).toString('base64');
+                    const credentials: string = `${user}:${password}`
+                    const encodedCredentials: string = Buffer.from(credentials).toString('base64')
                     vectorstoreHeaders = {
-                        "Authorization": `Basic ${encodedCredentials}`,
-                        "Cookie": `session_id=${session_id}`
-                    };
+                        Authorization: `Basic ${encodedCredentials}`,
+                        Cookie: `session_id=${session_id}`
+                    }
                 }
 
                 const upsertResponse = await fetch(vectorstoresUrl, {
@@ -571,121 +563,97 @@ class Teradata_VectorStores implements INode {
                     headers: vectorstoreHeaders,
                     body: formData,
                     credentials: 'include'
-                });
+                })
 
                 if (!upsertResponse.ok) {
-                    throw new Error(`Failed to upsert documents: ${upsertResponse.statusText}`);
+                    throw new Error(`Failed to upsert documents: ${upsertResponse.statusText}`)
                 }
 
                 return { numAdded: docs.length, addedDocs: docs as Document<Record<string, any>>[] }
-
             } catch (e: any) {
                 // Rollback transaction on any error
                 try {
                     if (connection && !connection.autocommit) {
-                        connection.rollback();
-                        connection.autocommit = true;
+                        connection.rollback()
+                        connection.autocommit = true
                     }
-                    
+
                     // Clean up temporary table if it exists
                     if (tempTableName && cur) {
                         try {
-                            cur.execute(`DROP TABLE ${tempTableName}`);
+                            cur.execute(`DROP TABLE ${tempTableName}`)
                         } catch (cleanupError: any) {
-                            console.warn(`Failed to clean up temporary table: ${cleanupError.message}`);
+                            console.warn(`Failed to clean up temporary table: ${cleanupError.message}`)
                         }
                     }
-                    
+
                     // Clean up embeddings table if it was created during this transaction
                     if (embeddingsTableCreated && cur) {
                         try {
-                            cur.execute(`DROP TABLE ${embeddingsTableName}`);
+                            cur.execute(`DROP TABLE ${embeddingsTableName}`)
                         } catch (cleanupError: any) {
-                            console.warn(`Failed to clean up embeddings table: ${cleanupError.message}`);
+                            console.warn(`Failed to clean up embeddings table: ${cleanupError.message}`)
                         }
                     }
                 } catch (rollbackError: any) {
-                    console.error(`Failed to rollback transaction: ${rollbackError.message}`);
+                    console.error(`Failed to rollback transaction: ${rollbackError.message}`)
                 }
-                
+
                 throw new Error(e.message || e)
             } finally {
                 if (cur) {
-                    cur.close();
+                    cur.close()
                 }
                 // Close the connection
                 if (connection) {
-                    connection.close();
+                    connection.close()
                 }
             }
-        }    
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const log_level = 0;
-        const docs = nodeData.inputs?.document as Document[]
+        const log_level = 0
         const embeddings = nodeData.inputs?.embeddings as Embeddings
-        const embeddingsTableName = nodeData.inputs?.embeddingsTableName as string
         const vectorStoreName = nodeData.inputs?.vectorStoreName as string
         const database = nodeData.inputs?.database as string
 
         // Optional parameters for vector store configuration
-        const vectorStoreDescription = nodeData.inputs?.vectorStoreDescription as string || null
-        const searchAlgorithm = nodeData.inputs?.searchAlgorithm as string || null
-        const distanceMetric = nodeData.inputs?.distanceMetric as string || null
-        const initialCentroidsMethod = nodeData.inputs?.initialCentroidsMethod as string || null         
-        const trainNumCluster = parseInt(nodeData.inputs?.trainNumCluster as string) || null
-        const maxIterNum = parseInt(nodeData.inputs?.maxIterNum as string) || null
-        const stopThreshold = parseFloat(nodeData.inputs?.stopThreshold as string) || null
-        const seed = parseInt(nodeData.inputs?.seed as string) || null
-        const numInit = parseInt(nodeData.inputs?.numInit as string) || null
         const topK = parseInt(nodeData.inputs?.topK as string) || 10
-        const searchThreshold = parseFloat(nodeData.inputs?.searchThreshold as string) || null
-        const searchNumCluster = parseInt(nodeData.inputs?.searchNumCluster as string) || null
-        const efSearch = parseInt(nodeData.inputs?.efSearch as string) || null
-        const numLayer = parseInt(nodeData.inputs?.numLayer as string) || null
-        const efConstruction = parseInt(nodeData.inputs?.efConstruction as string) || null
-        const numConnPerNode = parseInt(nodeData.inputs?.numConnPerNode as string) || null
-        const maxNumConnPerNode = parseInt(nodeData.inputs?.maxNumConnPerNode as string) || null
-        const applyHeuristics = (nodeData.inputs?.applyHeuristics as string)?.toLowerCase() === 'true' || null
-        const rerankWeight = parseFloat(nodeData.inputs?.rerankWeight as string) || null
-        const relevanceTopK = parseInt(nodeData.inputs?.relevanceTopK as string) || null
-        const relevanceSearchThreshold = parseFloat(nodeData.inputs?.relevanceSearchThreshold as string) || null
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
         // Get authentication parameters with fallback to direct inputs
         const user = getCredentialParam('tdUsername', credentialData, nodeData) || null
         const password = getCredentialParam('tdPassword', credentialData, nodeData) || null
-        const host = getCredentialParam('tdHostIp', credentialData, nodeData) || null
         const baseURL = getCredentialParam('baseURL', credentialData, nodeData) || null
 
         // JWT authentication parameters - prioritize credential store
         const providedJwtToken = getCredentialParam('jwtToken', credentialData, nodeData) || null
-        
+
         // Check if JWT authentication should be used
-        let jwtToken = null;        
+        let jwtToken = null
         if (providedJwtToken) {
-            jwtToken = providedJwtToken;
+            jwtToken = providedJwtToken
         }
 
         // Determine authentication headers
-        let authHeaders: Record<string, string> = {};
+        let authHeaders: Record<string, string> = {}
         if (jwtToken) {
-            authHeaders = { 
-                "Authorization": `Bearer ${jwtToken}`,
+            authHeaders = {
+                Authorization: `Bearer ${jwtToken}`,
                 'Content-Type': 'application/json'
-            };
+            }
         } else {
             const credentials = `${user}:${password}`
             const encodedCredentials = Buffer.from(credentials).toString('base64')
-            authHeaders = { 
-                "Authorization": `Basic ${encodedCredentials}`,
+            authHeaders = {
+                Authorization: `Basic ${encodedCredentials}`,
                 'Content-Type': 'application/json'
-            };
+            }
         }
-        
+
         const sessionData = {
-            database_name: database,
+            database_name: database
         }
 
         const sessionUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/session'
@@ -710,38 +678,40 @@ class Teradata_VectorStores implements INode {
         }
 
         // Helper function for similarity search
-        const performSimilaritySearch = async (query: string, k: number = topK): Promise<Document[]> => {
+        const performSimilaritySearch = async (query: string): Promise<Document[]> => {
             try {
                 // Generate embeddings for the query
-                const queryEmbedding = await embeddings.embedQuery(query);
+                const queryEmbedding = await embeddings.embedQuery(query)
                 if (!queryEmbedding || queryEmbedding.length === 0) {
-                    throw new Error('Failed to generate query embedding');
-                }   
-                const queryEmbeddingString = queryEmbedding.join(',');
+                    throw new Error('Failed to generate query embedding')
+                }
+                const queryEmbeddingString = queryEmbedding.join(',')
                 // Prepare the search request
                 const searchData = {
                     question_vector: queryEmbeddingString
                 }
 
                 // Prepare headers for search API call
-                let searchHeaders: Record<string, string> = {};
+                let searchHeaders: Record<string, string> = {}
                 if (jwtToken) {
                     searchHeaders = {
                         'Content-Type': 'application/json',
-                        "Authorization": `Bearer ${jwtToken}`,
-                        "Cookie": `session_id=${session_id}`
-                    };
+                        Authorization: `Bearer ${jwtToken}`,
+                        Cookie: `session_id=${session_id}`
+                    }
                 } else {
                     const credentials = `${user}:${password}`
                     const encodedCredentials = Buffer.from(credentials).toString('base64')
                     searchHeaders = {
                         'Content-Type': 'application/json',
-                        "Authorization": `Basic ${encodedCredentials}`,
-                        "Cookie": `session_id=${session_id}`
-                    };
+                        Authorization: `Basic ${encodedCredentials}`,
+                        Cookie: `session_id=${session_id}`
+                    }
                 }
 
-                const searchUrl = `${baseURL}${baseURL.endsWith('/') ? '' : '/'}data-insights/api/v1/vectorstores/${vectorStoreName}/similarity-search?log_level=${log_level}`
+                const searchUrl = `${baseURL}${
+                    baseURL.endsWith('/') ? '' : '/'
+                }data-insights/api/v1/vectorstores/${vectorStoreName}/similarity-search?log_level=${log_level}`
                 const searchResponse = await fetch(searchUrl, {
                     method: 'POST',
                     headers: searchHeaders,
@@ -754,65 +724,64 @@ class Teradata_VectorStores implements INode {
                 }
 
                 const searchResults = await searchResponse.json()
-                
-                return searchResults.similar_objects_list?.map((result: any) => new Document({
-                    pageContent: result.chunks || '',
-                    metadata: {
-                        score: result.score || 0,
-                        source: vectorStoreName,
-                        database: result.DataBaseName,
-                        table: result.TableName,
-                        id: result.element_id
-                    }
-                })) || []
 
+                return (
+                    searchResults.similar_objects_list?.map(
+                        (result: any) =>
+                            new Document({
+                                pageContent: result.chunks || '',
+                                metadata: {
+                                    score: result.score || 0,
+                                    source: vectorStoreName,
+                                    database: result.DataBaseName,
+                                    table: result.TableName,
+                                    id: result.element_id
+                                }
+                            })
+                    ) || []
+                )
             } catch (error) {
                 console.error('Error during similarity search:', error)
                 throw error
             }
         }
 
-        // Store reference to this class instance for upsert method
-        const self = this
-
         // Create vector store object following Flowise pattern
         const vectorStore = {
-            async similaritySearch(query: string, k: number = topK): Promise<Document[]> {
-                return performSimilaritySearch(query, k)
+            async similaritySearch(query: string): Promise<Document[]> {
+                return performSimilaritySearch(query)
             },
 
-            async similaritySearchWithScore(query: string, k: number = topK): Promise<[Document, number][]> {
-                const docs = await performSimilaritySearch(query, k)
-                return docs.map(doc => [doc, doc.metadata.score || 0])
+            async similaritySearchWithScore(query: string): Promise<[Document, number][]> {
+                const docs = await performSimilaritySearch(query)
+                return docs.map((doc) => [doc, doc.metadata.score || 0])
             },
 
             // Add invoke method directly to vectorStore
-            async invoke(query: string, options?: any): Promise<Document[]> {
-                return performSimilaritySearch(query, topK)
+            async invoke(query: string): Promise<Document[]> {
+                return performSimilaritySearch(query)
             },
 
-            async getRelevantDocuments(query: string, options?: any): Promise<Document[]> {
-                return performSimilaritySearch(query, topK)
+            async getRelevantDocuments(query: string): Promise<Document[]> {
+                return performSimilaritySearch(query)
             },
 
-            async _getRelevantDocuments(query: string, options?: any): Promise<Document[]> {
-                return performSimilaritySearch(query, topK)
+            async _getRelevantDocuments(query: string): Promise<Document[]> {
+                return performSimilaritySearch(query)
             },
 
-            asRetriever(options?: { k?: number }) {
-                const k = options?.k || topK
-                
+            asRetriever() {
                 return {
-                    async getRelevantDocuments(query: string, options?: any): Promise<Document[]> {
-                        return performSimilaritySearch(query, k)
+                    async getRelevantDocuments(query: string): Promise<Document[]> {
+                        return performSimilaritySearch(query)
                     },
 
-                    async invoke(query: string, options?: any): Promise<Document[]> {
-                        return performSimilaritySearch(query, k)
+                    async invoke(query: string): Promise<Document[]> {
+                        return performSimilaritySearch(query)
                     },
 
-                    async _getRelevantDocuments(query: string, options?: any): Promise<Document[]> {
-                        return performSimilaritySearch(query, k)
+                    async _getRelevantDocuments(query: string): Promise<Document[]> {
+                        return performSimilaritySearch(query)
                     }
                 }
             }
@@ -820,17 +789,24 @@ class Teradata_VectorStores implements INode {
 
         // Create retriever using the vectorStore methods
         const retriever = {
-            async getRelevantDocuments(query: string, options?: any): Promise<Document[]> {
-                return vectorStore.getRelevantDocuments(query, options)
+            async getRelevantDocuments(query: string): Promise<Document[]> {
+                return vectorStore.getRelevantDocuments(query)
             },
 
-            async invoke(query: string, options?: any): Promise<Document[]> {
-                return vectorStore.invoke(query, options)
+            async invoke(query: string): Promise<Document[]> {
+                return vectorStore.invoke(query)
             },
 
-            async _getRelevantDocuments(query: string, options?: any): Promise<Document[]> {
-                return vectorStore._getRelevantDocuments(query, options)
+            async _getRelevantDocuments(query: string): Promise<Document[]> {
+                return vectorStore._getRelevantDocuments(query)
             }
+        }
+
+        if (nodeData.outputs?.output === 'retriever') {
+            return retriever
+        } else if (nodeData.outputs?.output === 'vectorStore') {
+            ;(vectorStore as any).k = topK
+            return vectorStore
         }
 
         return vectorStore

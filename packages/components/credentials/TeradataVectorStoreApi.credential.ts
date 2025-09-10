@@ -14,7 +14,7 @@ class TeradataVectorStoreApiCredentials implements INodeCredential {
             {
                 label: 'Teradata Host IP',
                 name: 'tdHostIp',
-                type: 'string'            
+                type: 'string'
             },
             {
                 label: 'Username',
