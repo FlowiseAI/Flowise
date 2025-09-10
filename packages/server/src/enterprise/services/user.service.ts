@@ -97,7 +97,18 @@ export class UserService {
             data.updatedBy = data.id
         }
 
-        return queryRunner.manager.create(User, data)
+        const userObj = queryRunner.manager.create(User, data)
+
+        this.telemetry.sendTelemetry(
+            TelemetryEventType.USER_CREATED,
+            {
+                userId: userObj.id,
+                createdBy: userObj.createdBy
+            },
+            userObj.id
+        )
+
+        return userObj
     }
 
     public async saveUser(data: Partial<User>, queryRunner: QueryRunner) {
@@ -119,15 +130,6 @@ export class UserService {
         } finally {
             await queryRunner.release()
         }
-
-        this.telemetry.sendTelemetry(
-            TelemetryEventType.USER_CREATED,
-            {
-                userId: newUser.id,
-                createdBy: newUser.createdBy
-            },
-            newUser.id
-        )
 
         return newUser
     }
