@@ -18,6 +18,13 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
 import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
+import {
+    BedrockAgentCoreClient,
+    StopCodeInterpreterSessionCommand,
+    InvokeCodeInterpreterCommand,
+    InvokeCodeInterpreterCommandInput,
+    BedrockAgentCoreClientConfig
+} from '@aws-sdk/client-bedrock-agentcore'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -1401,63 +1408,69 @@ export const executeJavaScriptCode = async (
     } = {}
 ): Promise<any> => {
     const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
-    const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
 
-    if (shouldUseSandbox) {
-        try {
-            const variableDeclarations = []
+    const sandboxType = process.env.SANDBOX_TYPE
 
-            if (sandbox['$vars']) {
-                variableDeclarations.push(`const $vars = ${JSON.stringify(sandbox['$vars'])};`)
+    if (useSandbox) {
+        const variableDeclarations = []
+
+        if (sandbox['$vars']) {
+            variableDeclarations.push(`const $vars = ${JSON.stringify(sandbox['$vars'])};`)
+        }
+
+        if (sandbox['$flow']) {
+            variableDeclarations.push(`const $flow = ${JSON.stringify(sandbox['$flow'])};`)
+        }
+
+        // Add other sandbox variables
+        for (const [key, value] of Object.entries(sandbox)) {
+            if (
+                key !== '$vars' &&
+                key !== '$flow' &&
+                key !== 'util' &&
+                key !== 'Symbol' &&
+                key !== 'child_process' &&
+                key !== 'fs' &&
+                key !== 'process'
+            ) {
+                variableDeclarations.push(`const ${key} = ${JSON.stringify(value)};`)
+            }
+        }
+
+        // Handle import statements properly - they must be at the top
+        const lines = code.split('\n')
+        const importLines = []
+        const otherLines = []
+
+        for (const line of lines) {
+            const trimmedLine = line.trim()
+
+            // Skip node-fetch imports since Node.js has built-in fetch
+            if (trimmedLine.includes('node-fetch') || trimmedLine.includes("'fetch'") || trimmedLine.includes('"fetch"')) {
+                continue // Skip this line entirely
             }
 
-            if (sandbox['$flow']) {
-                variableDeclarations.push(`const $flow = ${JSON.stringify(sandbox['$flow'])};`)
+            // Check for existing ES6 imports and exports
+            if (trimmedLine.startsWith('import ') || trimmedLine.startsWith('export ')) {
+                importLines.push(line)
             }
-
-            // Add other sandbox variables
-            for (const [key, value] of Object.entries(sandbox)) {
-                if (
-                    key !== '$vars' &&
-                    key !== '$flow' &&
-                    key !== 'util' &&
-                    key !== 'Symbol' &&
-                    key !== 'child_process' &&
-                    key !== 'fs' &&
-                    key !== 'process'
-                ) {
-                    variableDeclarations.push(`const ${key} = ${JSON.stringify(value)};`)
+            // Check for CommonJS require statements and convert them to ESM imports
+            else if (/^(const|let|var)\s+.*=\s*require\s*\(/.test(trimmedLine)) {
+                const convertedImport = convertRequireToImport(trimmedLine)
+                if (convertedImport) {
+                    importLines.push(convertedImport)
                 }
+            } else {
+                otherLines.push(line)
             }
+        }
 
-            // Handle import statements properly - they must be at the top
-            const lines = code.split('\n')
-            const importLines = []
-            const otherLines = []
+        // Separate imports from the rest of the code for proper ES6 module structure
+        const codeWithImports = [...importLines, `module.exports = async function() {`, ...variableDeclarations, ...otherLines, `}()`].join(
+            '\n'
+        )
 
-            for (const line of lines) {
-                const trimmedLine = line.trim()
-
-                // Skip node-fetch imports since Node.js has built-in fetch
-                if (trimmedLine.includes('node-fetch') || trimmedLine.includes("'fetch'") || trimmedLine.includes('"fetch"')) {
-                    continue // Skip this line entirely
-                }
-
-                // Check for existing ES6 imports and exports
-                if (trimmedLine.startsWith('import ') || trimmedLine.startsWith('export ')) {
-                    importLines.push(line)
-                }
-                // Check for CommonJS require statements and convert them to ESM imports
-                else if (/^(const|let|var)\s+.*=\s*require\s*\(/.test(trimmedLine)) {
-                    const convertedImport = convertRequireToImport(trimmedLine)
-                    if (convertedImport) {
-                        importLines.push(convertedImport)
-                    }
-                } else {
-                    otherLines.push(line)
-                }
-            }
-
+        if (sandboxType === 'e2b' && process.env.E2B_APIKEY) {
             const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs: timeout })
 
             // Install libraries
@@ -1465,41 +1478,162 @@ export const executeJavaScriptCode = async (
                 await sbx.commands.run(`npm install ${library}`)
             }
 
-            // Separate imports from the rest of the code for proper ES6 module structure
-            const codeWithImports = [
+            try {
+                const execution = await sbx.runCode(codeWithImports, { language: 'js' })
+
+                let output = ''
+
+                if (execution.text) output = execution.text
+                if (!execution.text && execution.logs.stdout.length) output = execution.logs.stdout.join('\n')
+
+                if (execution.error) {
+                    throw new Error(`${execution.error.name}: ${execution.error.value}`)
+                }
+
+                if (execution.logs.stderr.length) {
+                    throw new Error(execution.logs.stderr.join('\n'))
+                }
+
+                // Stream output if streaming function provided
+                if (streamOutput && output) {
+                    streamOutput(output)
+                }
+
+                // Clean up sandbox
+                sbx.kill()
+
+                return output
+            } catch (e) {
+                throw new Error(`Sandbox Execution Error: ${e}`)
+            }
+        } else if (sandboxType === 'aws') {
+            const accessKeyId = process.env.AWS_AGENTCORE_ACCESS_KEY_ID
+            const secretAccessKey = process.env.AWS_AGENTCORE_SECRET_ACCESS_KEY
+            const region = process.env.AWS_AGENTCORE_REGION
+
+            if (!region || region.trim() === '') {
+                throw new Error('aws agentcore region is missing')
+            }
+
+            if (!accessKeyId || accessKeyId.trim() === '' || !secretAccessKey || secretAccessKey.trim() === '') {
+                throw new Error('aws agentcore access key id or secret access key is missing')
+            }
+
+            const awsAgentcoreConfig: BedrockAgentCoreClientConfig = {
+                region: region
+            }
+
+            if (accessKeyId && accessKeyId.trim() !== '' && secretAccessKey && secretAccessKey.trim() !== '') {
+                awsAgentcoreConfig.credentials = {
+                    accessKeyId: accessKeyId,
+                    secretAccessKey: secretAccessKey
+                }
+            }
+
+            const client = new BedrockAgentCoreClient(awsAgentcoreConfig)
+
+            // For AWS AgentCore (Deno), wrap in async function and log the result
+            const awsCodeWithImports = [
                 ...importLines,
-                `module.exports = async function() {`,
+                `(async () => {`,
                 ...variableDeclarations,
-                ...otherLines,
-                `}()`
+                // Add console.log before return statements for AgentCore output
+                ...otherLines.map((line) => {
+                    const trimmed = line.trim()
+                    if (trimmed.startsWith('return ')) {
+                        const returnValue = trimmed.substring(7) // Remove 'return '
+                        const indent = line.match(/^(\s*)/)?.[1] || ''
+                        return indent + `console.log(${returnValue})` + '\n' + line
+                    }
+                    return line
+                }),
+                `})()`
             ].join('\n')
 
-            const execution = await sbx.runCode(codeWithImports, { language: 'js' })
-
-            let output = ''
-
-            if (execution.text) output = execution.text
-            if (!execution.text && execution.logs.stdout.length) output = execution.logs.stdout.join('\n')
-
-            if (execution.error) {
-                throw new Error(`${execution.error.name}: ${execution.error.value}`)
+            const input: InvokeCodeInterpreterCommandInput = {
+                codeInterpreterIdentifier: 'aws.codeinterpreter.v1',
+                name: 'executeCode',
+                arguments: {
+                    code: awsCodeWithImports,
+                    language: 'javascript',
+                    clearContext: true
+                }
             }
 
-            if (execution.logs.stderr.length) {
-                throw new Error(execution.logs.stderr.join('\n'))
+            try {
+                const command = new InvokeCodeInterpreterCommand(input)
+                const execution = await client.send(command)
+                const sessionId = execution.sessionId
+                const stopSessionCommand = new StopCodeInterpreterSessionCommand({
+                    codeInterpreterIdentifier: 'aws.codeinterpreter.v1',
+                    sessionId
+                })
+
+                let output = ''
+
+                if (!execution.stream) {
+                    if (sessionId) {
+                        await client.send(stopSessionCommand)
+                    }
+                    client.destroy()
+                    return output
+                }
+
+                for await (const chunk of execution.stream) {
+                    // Process each chunk from the stream
+                    if (chunk.result) {
+                        // Process content blocks
+                        if (chunk.result.content) {
+                            for (const contentBlock of chunk.result.content) {
+                                if (contentBlock.type === 'text' && contentBlock.text) {
+                                    output += contentBlock.text
+                                }
+                            }
+                        }
+
+                        // Process structured content (stdout/stderr)
+                        if (!output && chunk.result.structuredContent) {
+                            if (chunk.result.structuredContent.stdout) {
+                                output += chunk.result.structuredContent.stdout
+                            }
+                            if (chunk.result.structuredContent.stderr) {
+                                throw new Error(`Code execution error: ${chunk.result.structuredContent.stderr}`)
+                            }
+                        }
+                    }
+
+                    const err =
+                        chunk.accessDeniedException ||
+                        chunk.internalServerException ||
+                        chunk.throttlingException ||
+                        chunk.validationException ||
+                        chunk.conflictException ||
+                        chunk.resourceNotFoundException ||
+                        chunk.serviceQuotaExceededException
+                    if (err) {
+                        if (sessionId) {
+                            await client.send(stopSessionCommand)
+                        }
+                        client.destroy()
+                        throw new Error(`${err.name}: ${err.message}`)
+                    }
+                }
+
+                // Stream output if streaming function provided
+                if (streamOutput && output) {
+                    streamOutput(output)
+                }
+
+                // Clean up sandbox
+                if (sessionId) {
+                    await client.send(stopSessionCommand)
+                }
+                client.destroy()
+
+                return output
+            } catch (e) {
+                throw new Error(`Sandbox Execution Error: ${e}`)
             }
-
-            // Stream output if streaming function provided
-            if (streamOutput && output) {
-                streamOutput(output)
-            }
-
-            // Clean up sandbox
-            sbx.kill()
-
-            return output
-        } catch (e) {
-            throw new Error(`Sandbox Execution Error: ${e}`)
         }
     } else {
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
