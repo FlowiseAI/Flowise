@@ -94,7 +94,8 @@ class RRFRetriever_Retrievers implements INode {
                 description: 'Prompt template for generating query variations. Use {input} to refer to the original query.',
                 type: 'string',
                 rows: 4,
-                placeholder: 'Generate multiple search queries related to: {input}. Provide these alternative questions separated by newlines, do not add any numbers.',
+                placeholder:
+                    'Generate multiple search queries related to: {input}. Provide these alternative questions separated by newlines, do not add any numbers.',
                 additionalParams: true,
                 optional: true
             }

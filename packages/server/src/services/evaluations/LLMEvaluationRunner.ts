@@ -41,7 +41,10 @@ export class LLMEvaluationRunner {
                     evaluationResults.push(response)
                 } catch (error) {
                     console.error('LLM evaluation failed:', error)
-                    console.error('Evaluator details:', { evaluatorId: llmEvaluatorMap[i].evaluatorId, prompt: llmEvaluatorMap[i].evaluator.prompt })
+                    console.error('Evaluator details:', {
+                        evaluatorId: llmEvaluatorMap[i].evaluatorId,
+                        prompt: llmEvaluatorMap[i].evaluator.prompt
+                    })
                     console.error('Input data:', { question: data.input, actualOutput, expectedOutput: data.expectedOutput })
                     evaluationResults.push({
                         error: getErrorMessage(error) || 'LLM evaluation failed'

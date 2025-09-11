@@ -2,6 +2,7 @@ import client from './client'
 
 // users
 const getUserById = (id) => client.get(`/user?id=${id}`)
+const createUser = (body) => client.post(`/user`, body)
 const updateUser = (body) => client.put(`/user`, body)
 
 // organization users
@@ -37,6 +38,7 @@ const deleteWorkspaceUser = (workspaceId, userId) => client.delete(`/workspaceus
 
 export default {
     getUserById,
+    createUser,
     updateUser,
     getAllUsersByOrganizationId,
     getUserByUserIdOrganizationId,
