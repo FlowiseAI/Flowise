@@ -375,6 +375,9 @@ importers:
             jsdom:
                 specifier: ^22.1.0
                 version: 22.1.0(bufferutil@4.0.8)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.4)
+            json5:
+                specifier: 2.2.3
+                version: 2.2.3
             jsonpointer:
                 specifier: ^5.0.1
                 version: 5.0.1

@@ -18,6 +18,7 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
 import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
+import JSON5 from 'json5'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -1383,6 +1384,39 @@ const convertRequireToImport = (requireLine: string): string | null => {
 }
 
 /**
+ * Parse output if it's a stringified JSON or array
+ * @param {any} output - The output to parse
+ * @returns {any} - The parsed output or original output if not parseable
+ */
+const parseOutput = (output: any): any => {
+    // If output is not a string, return as-is
+    if (typeof output !== 'string') {
+        return output
+    }
+
+    // Trim whitespace
+    const trimmedOutput = output.trim()
+
+    // Check if it's an empty string
+    if (!trimmedOutput) {
+        return output
+    }
+
+    // Check if it looks like JSON (starts with { or [)
+    if ((trimmedOutput.startsWith('{') && trimmedOutput.endsWith('}')) || (trimmedOutput.startsWith('[') && trimmedOutput.endsWith(']'))) {
+        try {
+            const parsedOutput = JSON5.parse(trimmedOutput)
+            return parsedOutput
+        } catch (e) {
+            return output
+        }
+    }
+
+    // Return the original string if it doesn't look like JSON
+    return output
+}
+
+/**
  * Execute JavaScript code using either Sandbox or NodeVM
  * @param {string} code - The JavaScript code to execute
  * @param {ICommonObject} sandbox - The sandbox object with variables
@@ -1497,7 +1531,7 @@ export const executeJavaScriptCode = async (
             // Clean up sandbox
             sbx.kill()
 
-            return output
+            return parseOutput(output)
         } catch (e) {
             throw new Error(`Sandbox Execution Error: ${e}`)
         }
@@ -1529,16 +1563,17 @@ export const executeJavaScriptCode = async (
             const response = await vm.run(`module.exports = async function() {${code}}()`, __dirname)
 
             let finalOutput = response
-            if (typeof response === 'object') {
-                finalOutput = JSON.stringify(response, null, 2)
-            }
 
             // Stream output if streaming function provided
             if (streamOutput && finalOutput) {
-                streamOutput(finalOutput)
+                let streamOutputString = finalOutput
+                if (typeof response === 'object') {
+                    streamOutputString = JSON.stringify(finalOutput, null, 2)
+                }
+                streamOutput(streamOutputString)
             }
 
-            return finalOutput
+            return parseOutput(finalOutput)
         } catch (e) {
             throw new Error(`NodeVM Execution Error: ${e}`)
         }
