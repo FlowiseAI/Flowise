@@ -1,0 +1,38 @@
+Parameters:
+    App:
+        Type: String
+        Description: Your application's name.
+    Env:
+        Type: String
+        Description: The name of the environment being deployed.
+
+Resources:
+    # Create the Flowise encryption key secret
+    FlowiseEncryptionKey:
+        Type: AWS::SecretsManager::Secret
+        Metadata:
+            'aws:copilot:description': 'Flowise encryption key for credential storage'
+        Properties:
+            Name: !Sub '${App}-${Env}-FlowiseEncryptionKey'
+            Description: !Sub 'Flowise encryption key for ${App}-${Env}'
+            GenerateSecretString:
+                PasswordLength: 32
+                IncludeSpace: false
+                # Generate plain string value (not JSON) that Flowise expects
+
+Outputs:
+    FlowiseEncryptionKeyName:
+        Description: 'The name of the Flowise encryption key secret'
+        Value: !Ref FlowiseEncryptionKey
+        Export:
+            Name: !Sub ${App}-${Env}-FlowiseEncryptionKeyName
+    FlowiseEncryptionKeyArn:
+        Description: 'The ARN of the Flowise encryption key secret'
+        Value: !Ref FlowiseEncryptionKey
+        Export:
+            Name: !Sub ${App}-${Env}-FlowiseEncryptionKeyArn
+    FlowiseEncryptionKeyRegion:
+        Description: 'The AWS region where the Flowise encryption key secret is deployed'
+        Value: !Ref AWS::Region
+        Export:
+            Name: !Sub ${App}-${Env}-FlowiseEncryptionKeyRegion

@@ -81,6 +81,12 @@ variables: # Pass environment variables as key value pairs.
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorageBucketRegion
     # Lacework configuration variables - will be loaded from env file (COMMENTED OUT FOR NOW)
     LaceworkVerbose: 'true'
+    # Flowise encryption key from CloudFormation-managed secret
+    SECRETKEY_STORAGE_TYPE: 'aws'
+    SECRETKEY_AWS_REGION:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-FlowiseEncryptionKeyRegion
+    SECRETKEY_AWS_NAME:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-FlowiseEncryptionKeyName
 
 env_file: copilot.${COPILOT_APPLICATION_NAME}.env
 
@@ -111,7 +117,7 @@ environments:
         # Upgrade path: 4096 → 8192 → 16384
         memory: 4096
         # Upgrade path: 8192 → 16384 → 32768
-        # count:
+        count: 2
         #     range: 1-12
         #     # Can handle significant load automatically
         #     cpu_percentage: 85
