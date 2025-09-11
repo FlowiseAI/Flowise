@@ -1529,13 +1529,14 @@ export const executeJavaScriptCode = async (
             const response = await vm.run(`module.exports = async function() {${code}}()`, __dirname)
 
             let finalOutput = response
-            if (typeof response === 'object') {
-                finalOutput = JSON.stringify(response, null, 2)
-            }
 
             // Stream output if streaming function provided
             if (streamOutput && finalOutput) {
-                streamOutput(finalOutput)
+                let streamOutputString = finalOutput
+                if (typeof response === 'object') {
+                    streamOutputString = JSON.stringify(finalOutput, null, 2)
+                }
+                streamOutput(streamOutputString)
             }
 
             return finalOutput
