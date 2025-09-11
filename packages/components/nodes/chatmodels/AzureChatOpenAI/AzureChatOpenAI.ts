@@ -284,6 +284,11 @@ class AzureChatOpenAI_ChatModels implements INode {
                 reasoning.summary = reasoningSummary
             }
             obj.reasoning = reasoning
+
+            if (maxTokens) {
+                delete obj.maxTokens
+                obj.maxCompletionTokens = parseInt(maxTokens, 10)
+            }
         }
 
         const multiModalOption: IMultiModalOption = {
