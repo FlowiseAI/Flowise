@@ -1036,15 +1036,12 @@ export const getGcsClient = () => {
     const projectId = process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID
     const bucketName = process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME
 
-    if (!pathToGcsCredential) {
-        throw new Error('GOOGLE_CLOUD_STORAGE_CREDENTIAL env variable is required')
-    }
     if (!bucketName) {
         throw new Error('GOOGLE_CLOUD_STORAGE_BUCKET_NAME env variable is required')
     }
 
     const storageConfig = {
-        keyFilename: pathToGcsCredential,
+        ...(pathToGcsCredential ? { keyFilename: pathToGcsCredential } : {}),
         ...(projectId ? { projectId } : {})
     }
 

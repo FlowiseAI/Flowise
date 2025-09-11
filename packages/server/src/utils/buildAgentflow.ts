@@ -133,6 +133,7 @@ interface IExecuteNodeParams {
     orgId: string
     workspaceId: string
     subscriptionId: string
+    productId: string
 }
 
 interface IExecuteAgentFlowParams extends Omit<IExecuteFlowParams, 'incomingInput'> {
@@ -838,7 +839,8 @@ const executeNode = async ({
     iterationContext,
     orgId,
     workspaceId,
-    subscriptionId
+    subscriptionId,
+    productId
 }: IExecuteNodeParams): Promise<{
     result: any
     shouldStop?: boolean
@@ -1060,7 +1062,8 @@ const executeNode = async ({
                             },
                             orgId,
                             workspaceId,
-                            subscriptionId
+                            subscriptionId,
+                            productId
                         })
 
                         // Store the result
@@ -1287,7 +1290,8 @@ export const executeAgentFlow = async ({
     isTool = false,
     orgId,
     workspaceId,
-    subscriptionId
+    subscriptionId,
+    productId
 }: IExecuteAgentFlowParams) => {
     logger.debug('\n🚀 Starting flow execution')
 
@@ -1754,7 +1758,8 @@ export const executeAgentFlow = async ({
                 iterationContext,
                 orgId,
                 workspaceId,
-                subscriptionId
+                subscriptionId,
+                productId
             })
 
             if (executionResult.agentFlowExecutedData) {
@@ -2020,7 +2025,9 @@ export const executeAgentFlow = async ({
             chatflowId: chatflowid,
             chatId,
             type: evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-            flowGraph: getTelemetryFlowObj(nodes, edges)
+            flowGraph: getTelemetryFlowObj(nodes, edges),
+            productId,
+            subscriptionId
         },
         orgId
     )

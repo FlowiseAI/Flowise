@@ -249,7 +249,8 @@ export const executeFlow = async ({
     isTool,
     orgId,
     workspaceId,
-    subscriptionId
+    subscriptionId,
+    productId
 }: IExecuteFlowParams) => {
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
@@ -421,7 +422,8 @@ export const executeFlow = async ({
             isTool,
             orgId,
             workspaceId,
-            subscriptionId
+            subscriptionId,
+            productId
         })
     }
 
@@ -812,7 +814,9 @@ export const executeFlow = async ({
                 chatflowId: chatflowid,
                 chatId,
                 type: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges)
+                flowGraph: getTelemetryFlowObj(nodes, edges),
+                productId,
+                subscriptionId
             },
             orgId
         )
@@ -954,6 +958,9 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         organizationId = orgId
         const subscriptionId = org.subscriptionId as string
 
+        const subscriptionDetails = await appServer.usageCacheManager.getSubscriptionDataFromCache(subscriptionId)
+        const productId = subscriptionDetails?.productId || ''
+
         await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
 
         const executeData: IExecuteFlowParams = {
@@ -974,7 +981,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             usageCacheManager: appServer.usageCacheManager,
             orgId,
             workspaceId,
-            subscriptionId
+            subscriptionId,
+            productId
         }
 
         if (process.env.MODE === MODE.QUEUE) {

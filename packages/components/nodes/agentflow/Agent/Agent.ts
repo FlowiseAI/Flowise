@@ -1723,9 +1723,20 @@ class Agent_Agentflow implements INode {
                     }
 
                     console.error('Error invoking tool:', e)
+                    const errMsg = getErrorMessage(e)
+                    let toolInput = toolCall.args
+                    if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                        const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                        try {
+                            toolInput = JSON.parse(args)
+                        } catch (e) {
+                            console.error('Error parsing tool input from tool:', e)
+                        }
+                    }
+
                     usedTools.push({
                         tool: selectedTool.name,
-                        toolInput: toolCall.args,
+                        toolInput,
                         toolOutput: '',
                         error: getErrorMessage(e)
                     })
@@ -1995,9 +2006,20 @@ class Agent_Agentflow implements INode {
                         }
 
                         console.error('Error invoking tool:', e)
+                        const errMsg = getErrorMessage(e)
+                        let toolInput = toolCall.args
+                        if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                            const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                            try {
+                                toolInput = JSON.parse(args)
+                            } catch (e) {
+                                console.error('Error parsing tool input from tool:', e)
+                            }
+                        }
+
                         usedTools.push({
                             tool: selectedTool.name,
-                            toolInput: toolCall.args,
+                            toolInput,
                             toolOutput: '',
                             error: getErrorMessage(e)
                         })
