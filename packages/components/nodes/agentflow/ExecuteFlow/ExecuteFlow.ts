@@ -9,6 +9,7 @@ import {
 } from '../../../src/Interface'
 import axios, { AxiosRequestConfig } from 'axios'
 import { getCredentialData, getCredentialParam, processTemplateVariables } from '../../../src/utils'
+import JSON5 from 'json5'
 import { DataSource } from 'typeorm'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { updateFlowState } from '../utils'
@@ -167,9 +168,7 @@ class ExecuteFlow_Agentflow implements INode {
         let overrideConfig = nodeData.inputs?.executeFlowOverrideConfig
         if (typeof overrideConfig === 'string' && overrideConfig.startsWith('{') && overrideConfig.endsWith('}')) {
             try {
-                // Handle escaped square brackets and other common escape sequences
-                const unescapedConfig = overrideConfig.replace(/\\(\[|\])/g, '$1')
-                overrideConfig = JSON.parse(unescapedConfig)
+                overrideConfig = JSON5.parse(overrideConfig)
             } catch (parseError) {
                 throw new Error(`Invalid JSON in executeFlowOverrideConfig: ${parseError.message}`)
             }
