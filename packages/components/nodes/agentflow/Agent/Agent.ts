@@ -28,7 +28,7 @@ import {
     replaceBase64ImagesWithFileReferences,
     updateFlowState
 } from '../utils'
-import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, processTemplateVariables } from '../../../src/utils'
 import { addSingleFileToStorage } from '../../../src/storageUtils'
 import fetch from 'node-fetch'
 
@@ -1086,13 +1086,7 @@ class Agent_Agentflow implements INode {
             }
 
             // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', finalResponse)
-                    }
-                }
-            }
+            newState = processTemplateVariables(newState, finalResponse)
 
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(

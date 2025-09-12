@@ -8,7 +8,7 @@ import {
     IServerSideEventStreamer
 } from '../../../src/Interface'
 import axios, { AxiosRequestConfig } from 'axios'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, processTemplateVariables } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { updateFlowState } from '../utils'
@@ -222,13 +222,7 @@ class ExecuteFlow_Agentflow implements INode {
             }
 
             // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', resultText)
-                    }
-                }
-            }
+            newState = processTemplateVariables(newState, resultText)
 
             // Only add to runtime chat history if this is the first node
             const inputMessages = []
