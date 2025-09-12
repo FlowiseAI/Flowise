@@ -18,6 +18,7 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
 import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
+import { secureFetch, checkDenyList } from './httpSecurity'
 import JSON5 from 'json5'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
@@ -422,7 +423,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 
     if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
     try {
-        const resp = await fetch(currentURL)
+        const resp = await secureFetch(currentURL)
 
         if (resp.status > 399) {
             if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
@@ -453,6 +454,8 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
  * @returns {Promise<string[]>}
  */
 export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
+    await checkDenyList(stringURL)
+
     const URLObj = new URL(stringURL)
     const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
     return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
@@ -476,7 +479,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
     let urls: string[] = []
     if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
     try {
-        const resp = await fetch(currentURL)
+        const resp = await secureFetch(currentURL)
 
         if (resp.status > 399) {
             if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
