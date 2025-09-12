@@ -78,6 +78,14 @@ export const validateFeedbackForCreation = async (feedback: Partial<IChatMessage
         feedback.chatflowid = message.chatflowid
     }
 
+    // Populate userId and organizationId from the associated message
+    if (message.userId) {
+        feedback.userId = message.userId
+    }
+    if (message.organizationId) {
+        feedback.organizationId = message.organizationId
+    }
+
     return feedback
 }
 

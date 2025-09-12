@@ -7,8 +7,18 @@ import readline from 'node:readline';
 
 // Helper function to log messages
 function log(level, message) {
-  if (level === 'debug' && !process.env.DEBUG) {
+  // Progressive quiet mode: suppress ALL messages during secure-run progress bar display
+  // unless DEBUG is explicitly set
+  const progressBarActive = !process.env.DEBUG && process.env.BWS_SUPPRESS_ALL !== 'true';
+
+  if (progressBarActive) {
+    // In progress bar mode, suppress ALL messages (including warnings) to maintain single-line progress
     return;
+  } else {
+    // Traditional debug mode - only skip debug messages unless DEBUG is enabled
+    if (level === 'debug' && !process.env.DEBUG) {
+      return;
+    }
   }
 
   const colors = {
@@ -458,7 +468,8 @@ function normalizeEnvironment(environmentName) {
   }
 
   // If no match found, warn but return the original to help with debugging
-  console.warn(
+  log(
+    'warn',
     `Unknown environment "${environmentName}" - will try to load .env.secure.${environment}`
   );
   return environment;

@@ -106,8 +106,23 @@ if [ "$NODE_VERSION" -lt "20" ]; then
         }
       }
       
-      // Write back to file
-      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+      // Detect existing indentation or use prettier config
+      const originalContent = fs.readFileSync(packageJsonPath, 'utf8');
+      let indentSize = 2; // Default fallback
+      
+      // Try to detect existing indentation (handles both spaces and tabs)
+      const indentMatch = originalContent.match(/\n([ \t]+)"/);
+      if (indentMatch && indentMatch[1]) {
+        const indent = indentMatch[1];
+        // Count tabs as 4 spaces for consistency, or use actual length for spaces
+        indentSize = indent.includes('\t') ? 4 : indent.length;
+      } else if (packageJson.prettier && packageJson.prettier.tabWidth) {
+        // Use prettier config if available
+        indentSize = packageJson.prettier.tabWidth;
+      }
+      
+      // Write back to file with detected indentation
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, indentSize) + '\\n');
       process.exit(0);
     } catch (error) {
       console.error('Error updating BWS package.json:', error);
@@ -242,8 +257,9 @@ EOF
   fi
 fi
 
-# Clean up git repository
+# Clean up git repository and remove .github folder
 rm -rf scripts/bws-secure/.git
+rm -rf scripts/bws-secure/.github
 
 echo "Checking .gitignore configuration..."
 # Update .gitignore
@@ -309,12 +325,21 @@ try {
   }
 
   // Handle postinstall script intelligently
-  const bwsInstallCommand = 'bash ./scripts/bws-secure/bws-installer.sh';
+  const bwsInstallCommand = 'sh ./scripts/bws-secure/bws-installer.sh';
   if (packageJson.scripts.postinstall) {
-    // Check if bws-installer is already in the postinstall script
-    if (!packageJson.scripts.postinstall.includes(bwsInstallCommand)) {
-      // Append our command to existing postinstall
-      packageJson.scripts.postinstall = \`\${packageJson.scripts.postinstall} && \${bwsInstallCommand}\`;
+    // Remove any existing BWS commands (both sh and bash variants) to prevent duplicates
+    let cleanedPostinstall = packageJson.scripts.postinstall
+      .replace(/\s*(&&\s*)?(sh|bash)\s+\\.\\/scripts\\/bws-secure\\/bws-installer\\.sh/g, '')
+      .replace(/^\s*&&\s*/, '') // Remove leading && if that's all that's left  
+      .replace(/\s*&&\s*$/, '') // Remove trailing && if that's all that's left
+      .trim();
+    
+    // Prepend our command to existing postinstall (BWS should run first for env setup)
+    if (cleanedPostinstall) {
+      packageJson.scripts.postinstall = \`\${bwsInstallCommand} && \${cleanedPostinstall}\`;
+    } else {
+      // Only BWS command remains after cleanup
+      packageJson.scripts.postinstall = bwsInstallCommand;
     }
   } else {
     // No existing postinstall, add ours
@@ -323,7 +348,7 @@ try {
 
   // Add dependencies if they don't exist
   packageJson.devDependencies = packageJson.devDependencies || {};
-  packageJson.devDependencies['dotenv'] = packageJson.devDependencies['dotenv'] || '^17.2.1';
+  packageJson.devDependencies['dotenv'] = packageJson.devDependencies['dotenv'] || '^17.2.2';
   packageJson.devDependencies['dotenv-cli'] = packageJson.devDependencies['dotenv-cli'] || '^10.0.0';
   
   // Check Node.js version and apply appropriate versions
@@ -339,10 +364,25 @@ try {
     packageJson.devDependencies['glob'] = '^10.3.10';
   }
   
-  packageJson.devDependencies['axios'] = packageJson.devDependencies['axios'] || '^1.11.0';
+  packageJson.devDependencies['axios'] = packageJson.devDependencies['axios'] || '^1.12.1';
 
-  // Write back to file
-  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+  // Detect existing indentation or use prettier config
+  const originalContent = fs.readFileSync(packageJsonPath, 'utf8');
+  let indentSize = 2; // Default fallback
+  
+  // Try to detect existing indentation from first property (handles both spaces and tabs)
+  const indentMatch = originalContent.match(/\n([ \t]+)"/);
+  if (indentMatch && indentMatch[1]) {
+    const indent = indentMatch[1];
+    // Count tabs as 4 spaces for consistency, or use actual length for spaces
+    indentSize = indent.includes('\t') ? 4 : indent.length;
+  } else if (packageJson.prettier && packageJson.prettier.tabWidth) {
+    // Use prettier config if available
+    indentSize = packageJson.prettier.tabWidth;
+  }
+  
+  // Write back to file with detected indentation
+  fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, indentSize) + '\\n');
   process.exit(0);
 } catch (error) {
   console.error('Error updating package.json:', error);
@@ -445,6 +485,28 @@ else
   fi
 fi
 
+# Format the copied files to match project style
+echo "Formatting BWS Secure files to match project style..."
+if command -v prettier >/dev/null 2>&1; then
+  # Check if there's a prettier config in the project
+  if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || [ -f ".prettierrc.js" ] || [ -f ".prettierrc.cjs" ] || [ -f "prettier.config.js" ] || [ -f "prettier.config.cjs" ] || grep -q "\"prettier\"" package.json 2>/dev/null; then
+    echo "Found Prettier configuration, formatting BWS Secure files..."
+    prettier --write "scripts/bws-secure/**/*.{js,ts,json,md}" 2>/dev/null || echo "Warning: Prettier formatting failed, files may have different formatting"
+  else
+    echo "No Prettier configuration found, skipping formatting"
+  fi
+elif [ -f "node_modules/.bin/prettier" ]; then
+  # Try using local prettier
+  if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || [ -f ".prettierrc.js" ] || [ -f ".prettierrc.cjs" ] || [ -f "prettier.config.js" ] || [ -f "prettier.config.cjs" ] || grep -q "\"prettier\"" package.json 2>/dev/null; then
+    echo "Found Prettier configuration, formatting BWS Secure files with local Prettier..."
+    ./node_modules/.bin/prettier --write "scripts/bws-secure/**/*.{js,ts,json,md}" 2>/dev/null || echo "Warning: Prettier formatting failed, files may have different formatting"
+  else
+    echo "No Prettier configuration found, skipping formatting"
+  fi
+else
+  echo "Prettier not found, skipping formatting (files may have different formatting than your project)"
+fi
+
 # Success message with box drawing characters
 echo -e "
 ${GREEN}╔════════════════════════════════════════════════════════════╗
@@ -495,7 +557,7 @@ For help or issues:
 echo "Checking Prettier configuration..."
 # Create or update .prettierignore
 PRETTIER_ENTRIES=(
-  " "
+  ""
   "# BWS Secure - Environment Files"
   ".env"
   ".env.*"
@@ -504,6 +566,7 @@ PRETTIER_ENTRIES=(
   "scripts/bws-secure/**/.env*"
   ".env.secure"
   ".env.secure.*"
+  "*.md"
 )
 
 # Create .prettierignore if it doesn't exist
@@ -550,27 +613,50 @@ echo "Looking for README files in: $(pwd)"
 
 # Define the BWS Secure documentation content
 BWS_DOC_CONTENT="<!-- BWS-SECURE-DOCS-START -->
-## BWS Secure Environmental Variable Integration
+## 🔒 BWS Secure Environmental Variable Integration
 
 This project uses [BWS Secure](https://github.com/last-rev-llc/bws-secure) for managing environment variables across different environments.
 
-### Creating an Access Token
+### 🔐 Creating an Access Token
 
-1. Visit your [Bitwarden Machine Accounts](https://vault.bitwarden.com/#/sm/\${BWS_ORG_ID:-YOUR_BWS_ORG_ID_HERE}/machine-accounts) section
-   - **Note:** This link requires you to be a member of the Last Rev Bitwarden organization
+📍 **1.** Visit the [Bitwarden Machine Accounts](https://vault.bitwarden.com/#/sm) section within your Vault.
+   - If you login directly to https://vault.bitwarden.com, you will need to navigate to the Machine Accounts section, within the Secrets Manager. The Secrets Manager is located in the left sidebar, typically at the bottom of the page.
    - If you don't have access, please refer to the [BWS Secure documentation](https://github.com/last-rev-llc/bws-secure) or contact your team administrator
-2. After clicking the link, follow these steps:
+
+🖱️ **2.** Navigate to the Machine Accounts section, and follow these steps:
    - Select the appropriate Client/Set of Machine Accounts from the list
    - Click on the \"Access Tokens\" tab
    - Click \"+ New Access Token\" button
    - Give the token a meaningful name (e.g., \"Your Name - Local Development\")
    - Click \"Save\" to generate the token
-3. Copy the displayed token (you won't be able to see it again after closing)
-4. Add it to your .env file in your project root:
+
+📋 **3.** Copy the displayed token (you won't be able to see it again after closing)
+
+💾 **4.** Add it to your .env file in your project root:
    \`\`\`
    BWS_ACCESS_TOKEN=your_token_here
    \`\`\`
-5. Never commit this token to version control
+
+⚠️ **5.** Never commit this token to version control
+
+### 🎯 Token Usage Options:
+
+- **BWS_ACCESS_TOKEN**: Loads ALL projects associated with that token (recommended for multi-project setups)
+- **BWS_PROJECT_ID**: Loads only a specific project (use for single-project or testing scenarios)
+
+**Example for single project:**
+\`\`\`
+BWS_PROJECT_ID=00000000-0000-0000-0000-000000000001
+\`\`\`
+
+The project ID can be found in the Bitwarden Secrets Manager, within the list of projects.
+
+### 🔧 Common Issues & Troubleshooting:
+
+- **\"No projects found\"**: Verify your token has project access permissions in Bitwarden
+- **\"Access denied\"**: Check that the Machine Account has read permissions for the target projects  
+- **Token not working**: Ensure no extra spaces when copying from Bitwarden
+- **Multiple projects loading**: This is normal with BWS_ACCESS_TOKEN - use BWS_PROJECT_ID for single project
 
 ### Updating BWS Secure
 

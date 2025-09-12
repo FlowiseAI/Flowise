@@ -238,6 +238,94 @@ const isDebug = process.env.DEBUG === 'true';
 // Add this near the top of the file with other imports
 const DEBUG = process.env.DEBUG === 'true';
 
+// Progress bar system for secure-run
+let secureRunProgressLength = 0;
+let isProgressActive = false;
+let suppressConsole = false;
+
+// Store original console methods
+const originalStdout = process.stdout.write;
+const originalStderr = process.stderr.write;
+
+// Override console during progress to prevent interference
+const enableProgressMode = () => {
+  if (!process.env.DEBUG && !SUPPRESS_ALL) {
+    suppressConsole = true;
+    // Override stdout/stderr to suppress everything except our progress bar
+    process.stdout.write = function (chunk, ...args) {
+      if (typeof chunk === 'string' && (chunk.includes('[█') || chunk.includes('\r'))) {
+        // Allow progress bar updates through
+        return originalStdout.call(this, chunk, ...args);
+      }
+      // Suppress everything else
+      return true;
+    };
+
+    process.stderr.write = function (chunk, ...args) {
+      // Only allow critical errors through
+      if (typeof chunk === 'string' && chunk.toLowerCase().includes('critical')) {
+        return originalStderr.call(this, chunk, ...args);
+      }
+      return true;
+    };
+  }
+};
+
+const disableProgressMode = () => {
+  if (suppressConsole) {
+    suppressConsole = false;
+    process.stdout.write = originalStdout;
+    process.stderr.write = originalStderr;
+  }
+};
+
+const showSecureRunProgress = (phase, current, total, message = '') => {
+  if (SUPPRESS_ALL || process.env.DEBUG === 'true') return; // Skip in suppress mode or debug mode
+
+  isProgressActive = true;
+  const percentage = ((current / total) * 100).toFixed(0);
+  const barWidth = 25;
+  const filledWidth = Math.round((current / total) * barWidth);
+  const emptyWidth = barWidth - filledWidth;
+
+  const bar = '█'.repeat(filledWidth) + '░'.repeat(emptyWidth);
+
+  // Keep messages short and concise
+  let shortMessage = '';
+  if (message) {
+    if (message.includes('environments')) {
+      const match = message.match(/(\d{1,3}\/\d{1,3})/);
+      shortMessage = match ? ` ${match[1]}` : '';
+    } else if (message.includes('Connecting')) {
+      shortMessage = ' connecting...';
+    } else if (message.includes('Processing')) {
+      shortMessage = ' processing...';
+    } else if (message.includes('Finalizing')) {
+      shortMessage = ' finalizing...';
+    }
+  }
+
+  let progressText = `[${bar}] ${percentage}% | ${phase}${shortMessage}`;
+
+  // Ensure text doesn't exceed 60 chars to prevent wrapping
+  if (progressText.length > 60) {
+    progressText = progressText.substring(0, 57) + '...';
+  }
+
+  // Clear the previous line and write the new progress
+  process.stdout.write('\r' + ' '.repeat(secureRunProgressLength) + '\r' + progressText);
+  secureRunProgressLength = progressText.length;
+};
+
+const clearSecureRunProgress = () => {
+  disableProgressMode(); // Restore normal console output
+  if (secureRunProgressLength > 0) {
+    process.stdout.write('\r' + ' '.repeat(secureRunProgressLength) + '\r');
+    secureRunProgressLength = 0;
+  }
+  isProgressActive = false;
+};
+
 // Add this function before setupEnvironment
 async function ensureRequiredVariablesFile() {
   log('info', 'Scanning codebase for required environment variables...');
@@ -423,7 +511,12 @@ function printEnvironmentSummary() {
   const reset = '\x1b[0m';
 
   // Simplified ASCII-only approach with cyan coloring
-  console.log('');
+  // Add newline before summary if progress bar was active
+  if (secureRunProgressLength > 0) {
+    console.log('\n');
+  } else {
+    console.log('');
+  }
   console.log(`${cyan}${'='.repeat(85)}${reset}`);
   console.log(`${cyan}  CURRENT ENVIRONMENT SUMMARY${reset}`);
   console.log(`${cyan}${'='.repeat(85)}${reset}`);
@@ -496,7 +589,21 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
 
     // Load secrets directly using the provided project ID
     const projectId = process.env.BWS_PROJECT_ID;
+
+    // Enable progress mode to suppress console interference
+    enableProgressMode();
+
+    // Show incremental progress during loading
+    showSecureRunProgress('Environment Setup', 4.0, 6, `Loading primary environment secrets`);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    showSecureRunProgress('Environment Setup', 4.3, 6, `Connecting to BWS...`);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
     await loadEnvironmentSecrets(projectId, projectId);
+
+    showSecureRunProgress('Environment Setup', 4.7, 6, `Processing environment variables...`);
+    await new Promise((resolve) => setTimeout(resolve, 150));
     loadedProjectIds.add(projectId);
 
     // Load the variables into process.env
@@ -512,9 +619,62 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
         }
       }
 
-      log('info', `Loaded environment from direct BWS_PROJECT_ID: ${projectId}`);
+      log('debug', `Loaded environment from direct BWS_PROJECT_ID: ${projectId}`);
     }
 
+    // Always show incremental progress to 100%, regardless of additional environments
+    showSecureRunProgress('Environment Setup', 5.0, 6, `Configuring environment variables...`);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    showSecureRunProgress('Environment Setup', 5.5, 6, `Finalizing configuration...`);
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    // Load additional project environments if we have config
+    try {
+      const config = await readConfigFileWithFallback();
+      if (config && config.projects) {
+        const project = config.projects.find((p) => p.projectName === process.env.BWS_PROJECT);
+        if (project) {
+          const currentEnv = process.env.BWS_ENV || 'local';
+          const additionalProjectIds = Object.entries(project.bwsProjectIds).filter(
+            ([env, id]) => env !== currentEnv && id && !loadedProjectIds.has(id)
+          );
+
+          if (additionalProjectIds.length > 0) {
+            let processedCount = 0;
+            const totalCount = additionalProjectIds.length;
+
+            for (const [env, additionalProjectId] of additionalProjectIds) {
+              processedCount++;
+              showSecureRunProgress(
+                'Environment Setup',
+                5.5 + (0.4 * processedCount) / totalCount, // 5.5 to 5.9
+                6,
+                `Loading additional secrets ${processedCount}/${totalCount} (${env})`
+              );
+
+              if (!loadedProjectIds.has(additionalProjectId)) {
+                await loadEnvironmentSecrets(additionalProjectId, additionalProjectId);
+                loadedProjectIds.add(additionalProjectId);
+              }
+              await new Promise((resolve) => setTimeout(resolve, 100));
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // If config loading fails, just continue with the single environment
+      log('debug', `Could not load additional environments: ${error.message}`);
+    }
+
+    // Show final completion and keep it visible
+    showSecureRunProgress('Ready', 6, 6, 'Environment configured');
+    // Brief pause to show 100% completion, then keep it visible
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
+    // Disable progress mode before environment summary
+    disableProgressMode();
+    // Add environment summary (keep progress bar visible)
     printEnvironmentSummary();
     return; // Exit early, bypassing all project selection logic
   }
@@ -604,7 +764,12 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
     // 2. If not set, check for project in .env file
     // 3. If still not found, prompt user to select a project (if multiple)
     // 4. Update .env file with selected project
+
+    // Temporarily disable progress mode to allow project selection prompt to display
+    disableProgressMode();
     const selectedProject = await promptForProject(projectsToUse);
+    // Re-enable progress mode after project selection
+    enableProgressMode();
     process.env.BWS_PROJECT = selectedProject.projectName;
 
     // When neither SITE_NAME nor BWS_PROJECT was initially set, we need to filter projects now
@@ -706,7 +871,18 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
       // Re-use filtered projects from above - no need to filter again
       let projectsToProcess = projectsToUse;
 
-      for (const project of projectsToProcess) {
+      // Enable progress mode to suppress console interference
+      enableProgressMode();
+
+      for (const [projectIndex, project] of projectsToProcess.entries()) {
+        showSecureRunProgress(
+          'Environment Setup',
+          4,
+          6,
+          `Processing project ${projectIndex + 1}/${projectsToProcess.length} (${
+            project.projectName
+          })`
+        );
         log('info', `\n=== Processing ${project.projectName} ===`);
 
         // Create the standard environment files for this project
@@ -720,9 +896,21 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
         let secretsLoaded = false;
 
         // Only load and create environment files that don't already exist
-        for (const [environment_, projectId] of Object.entries(environmentMappings)) {
-          // Skip null/undefined project IDs
-          if (!projectId) continue;
+        const environmentsToLoad = Object.entries(environmentMappings).filter(
+          ([_, projectId]) => projectId
+        );
+        let envProcessedCount = 0;
+
+        for (const [environment_, projectId] of environmentsToLoad) {
+          envProcessedCount++;
+          // Calculate incremental progress from 4.0 (67%) towards 6.0 (100%)
+          const progressStep = 4 + (2 * envProcessedCount) / environmentsToLoad.length; // 4.0 to 6.0
+          showSecureRunProgress(
+            'Environment Setup',
+            progressStep,
+            6,
+            `Loading project secrets ${envProcessedCount}/${environmentsToLoad.length} (${environment_})`
+          );
 
           // Only load this project ID if we haven't already
           if (!loadedProjectIds.has(projectId)) {
@@ -839,7 +1027,14 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
         }
       }
 
-      // Print final environment state
+      // Show final completion and keep it visible
+      showSecureRunProgress('Ready', 6, 6, 'Environment configured');
+      // Brief pause to show 100% completion, then keep it visible
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Disable progress mode before environment summary
+      disableProgressMode();
+      // Print final environment state (keep progress bar visible)
       printEnvironmentSummary();
     } else {
       // For local development, handle single project
@@ -868,8 +1063,19 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
       const currentProjectId = getProjectIdWithFallback(project, environment);
 
       if (currentProjectId) {
+        // Enable progress mode to suppress console interference
+        enableProgressMode();
+
+        // Start the incremental progress at 67% (4/6)
+        showSecureRunProgress(
+          'Environment Setup',
+          4,
+          6,
+          `Loading primary environment secrets (${environment})`
+        );
+
         log(
-          'info',
+          'debug',
           `Loading secrets for current environment: ${environment} (project ID: ${currentProjectId})`
         );
         if (!loadedProjectIds.has(currentProjectId)) {
@@ -895,15 +1101,35 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
             }
           }
 
-          log('info', `Loaded environment from ${sourceFile} for local development`);
+          log('debug', `Loaded environment from ${sourceFile} for local development`);
         }
       } else {
         log('warn', `No project ID found for environment ${environment} and no fallback available`);
       }
 
       // Then load any other project IDs that might be needed
-      for (const [env, projectId] of Object.entries(project.bwsProjectIds)) {
-        if (env !== environment && projectId && !loadedProjectIds.has(projectId)) {
+      const additionalProjectIds = Object.entries(project.bwsProjectIds).filter(
+        ([env, projectId]) => env !== environment && projectId && !loadedProjectIds.has(projectId)
+      );
+
+      if (additionalProjectIds.length > 0) {
+        let processedCount = 0;
+        const totalCount = additionalProjectIds.length + 1; // +1 for current environment already loaded
+
+        for (const [env, projectId] of additionalProjectIds) {
+          processedCount++;
+          // Calculate incremental progress from 4.0 (67%) towards 6.0 (100%)
+          const progressStep = 4 + (2 * processedCount) / totalCount; // 4.0 to 6.0
+          showSecureRunProgress(
+            'Environment Setup',
+            progressStep,
+            6,
+            `Loading secrets ${processedCount + 1}/${totalCount} environments (${env})`
+          );
+
+          // Brief delay to show progress update
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
           log(
             'debug',
             `Loading additional secrets for ${projectName} (${env}) project ID: ${projectId}`
@@ -913,7 +1139,19 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
         }
       }
 
-      // Add environment summary
+      // Show validation progress bar before environment summary (visual timing fix)
+      showSecureRunProgress('Validation', 5, 6, 'Validating environment variables');
+      // Brief pause to show validation progress
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      // Show final completion and keep it visible
+      showSecureRunProgress('Ready', 6, 6, 'Environment configured');
+      // Brief pause to show 100% completion, then keep it visible
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // Disable progress mode before environment summary
+      disableProgressMode();
+      // Add environment summary (keep progress bar visible)
       printEnvironmentSummary();
     }
 
@@ -958,9 +1196,9 @@ if (fs.existsSync('.env.secure') && process.env.BWS_ACCESS_TOKEN && process.env.
   try {
     const encryptedText = fs.readFileSync('.env.secure', 'utf8');
     const checkPlain = decryptContent(encryptedText, process.env.BWS_EPHEMERAL_KEY);
-    console.log('Verified .env.secure decryption in memory...');
+    log('debug', 'Verified .env.secure decryption in memory...');
   } catch (error) {
-    console.warn(`[WARN] Decryption from .env.secure failed. Skipping this step: ${error.message}`);
+    log('warn', `[WARN] Decryption from .env.secure failed. Skipping this step: ${error.message}`);
   }
 }
 
@@ -1064,7 +1302,7 @@ async function loadEnvironmentSecrets(environment, projectId) {
 function loadSecureEnvironment(environment) {
   const secureFile = `.env.secure.${environment}`;
   if (fs.existsSync(secureFile)) {
-    console.log(`Loading ${environment} environment secrets...`);
+    log('debug', `Loading ${environment} environment secrets...`);
     const encryptedText = fs.readFileSync(secureFile, 'utf8');
     const decrypted = decryptContent(encryptedText, process.env.BWS_EPHEMERAL_KEY);
 
@@ -1075,27 +1313,29 @@ function loadSecureEnvironment(environment) {
         process.env[key.trim()] = value;
       }
     }
-    console.log(`${environment} environment secrets loaded into process.env`);
+    log('debug', `${environment} environment secrets loaded into process.env`);
   } else {
-    console.warn(
-      `\u001B[33mWarning: No ${environment} environment secrets found (${secureFile})\u001B[0m`
-    );
+    log('warn', `Warning: No ${environment} environment secrets found (${secureFile})`);
   }
 }
 
 // Move cleanup function to top level
-function cleanupSecureFiles() {
+function cleanupSecureFiles(verbose = false) {
   try {
     // Clean up all .env.secure.* files and .env.secure
     const files = fs.readdirSync(process.cwd());
     for (const file of files) {
       if (file === '.env.secure' || file.startsWith('.env.secure.')) {
         fs.unlinkSync(path.join(process.cwd(), file));
-        log('debug', `Cleaned up ${file}`);
+        if (verbose || process.env.DEBUG === 'true') {
+          log('debug', `Cleaned up ${file}`);
+        }
       }
     }
   } catch (error) {
-    log('warn', `Error during cleanup: ${error.message}`);
+    if (verbose || process.env.DEBUG === 'true') {
+      log('warn', `Error during cleanup: ${error.message}`);
+    }
   }
 }
 
@@ -1129,7 +1369,9 @@ async function restoreOriginalEnvironmentFile() {
         log('debug', `Restored original BWS_ENV value: ${process.env.ORIGINAL_BWS_ENV}`);
       }
     } else {
-      log('debug', 'No environment variables need to be restored');
+      if (process.env.DEBUG === 'true') {
+        log('debug', 'No environment variables need to be restored');
+      }
     }
   } catch (error) {
     log('debug', `Error handling environment variables: ${error.message}`);
@@ -1158,9 +1400,6 @@ async function handleUploadCommand() {
 // Main execution
 (async () => {
   try {
-    // Ensure BWS is installed before doing anything else
-    ensureBwsInstalled();
-
     // Parse command line arguments
     const arguments_ = process.argv.slice(2);
 
@@ -1170,12 +1409,24 @@ async function handleUploadCommand() {
       return;
     }
 
+    // Define total progress steps (available to both nested and non-nested)
+    const totalSteps = 6;
+    let currentStep = 0;
+
+    // Ensure BWS is installed before doing anything else
+    ensureBwsInstalled();
+
     // 1. Always load base .env first (but don't override original env vars)
     dotenv.config({ override: false });
     log('debug', 'Loaded base environment from .env');
 
     // Only perform BWS setup if this is not a nested execution
     if (!isNestedExecution) {
+      // Step 1: Setup phase
+      showSecureRunProgress('Setup', ++currentStep, totalSteps, 'Initializing environment');
+      // Step 2: Scanning phase
+      showSecureRunProgress('Scanning', ++currentStep, totalSteps, 'Analyzing codebase variables');
+
       // 2. Check if we need to scan for required vars
       const requiredVariablesPath = path.join(dirname, 'requiredVars.env');
 
@@ -1201,18 +1452,28 @@ async function handleUploadCommand() {
 
       // Only run environment scan for platform builds or debug mode
       if (!fs.existsSync(requiredVariablesPath) || isNetlify || isVercel || isDebug) {
+        if (!isDebug) clearSecureRunProgress();
         log('info', 'Scanning for required variables...');
         const scanResult = spawnSync(
           'node',
           [path.join(dirname, 'check-vars', 'requiredRuntimeVars.js')],
           {
-            stdio: 'inherit'
+            stdio: isDebug ? 'inherit' : 'ignore'
           }
         );
         if (scanResult.status !== 0) {
+          clearSecureRunProgress();
           throw new Error('Failed to scan for required variables');
         }
       }
+
+      // Step 3: Authentication phase
+      showSecureRunProgress(
+        'Authentication',
+        ++currentStep,
+        totalSteps,
+        'Validating BWS credentials'
+      );
 
       // 3. Try BWS enhancement if possible
       try {
@@ -1221,6 +1482,7 @@ async function handleUploadCommand() {
         // CRITICAL CHANGE: For platform builds, immediately exit if SITE_NAME or BWS_PROJECT not found
         if (isValidToken && (isNetlify || isVercel)) {
           if (!process.env.SITE_NAME && !process.env.BWS_PROJECT) {
+            clearSecureRunProgress();
             log(
               'error',
               'Critical Error: Neither SITE_NAME nor BWS_PROJECT environment variable is set. For platform builds, one of these must be specified.'
@@ -1230,6 +1492,15 @@ async function handleUploadCommand() {
         }
 
         if (isValidToken) {
+          // Step 4: Environment Setup phase - enable progress mode to suppress interference
+          enableProgressMode();
+          showSecureRunProgress(
+            'Environment Setup',
+            ++currentStep,
+            totalSteps,
+            'Loading secrets and configuration'
+          );
+
           // Single setupEnvironment call that handles both cases
           try {
             await setupEnvironment({
@@ -1237,6 +1508,7 @@ async function handleUploadCommand() {
             });
           } catch (setupError) {
             // CRITICAL CHANGE: Exit immediately for any setupEnvironment errors
+            clearSecureRunProgress();
             log('error', `Failed to setup environment: ${setupError.message}`);
             process.exit(1);
           }
@@ -1246,7 +1518,7 @@ async function handleUploadCommand() {
             'node',
             [path.join(dirname, 'update-environments', 'map-env-files.js')],
             {
-              stdio: SUPPRESS_ALL ? 'ignore' : 'inherit',
+              stdio: SUPPRESS_ALL || !isDebug ? 'ignore' : 'inherit',
               env: process.env
             }
           );
@@ -1256,32 +1528,48 @@ async function handleUploadCommand() {
             process.env[key] = value;
           }
         } else {
-          log('info', 'No valid BWS_ACCESS_TOKEN found, continuing with .env values only');
+          currentStep++; // Skip environment setup step
+          if (!isDebug)
+            log('info', 'No valid BWS_ACCESS_TOKEN found, continuing with .env values only');
         }
       } catch (error) {
         // CRITICAL CHANGE: Exit for any error in the BWS enhancement process
+        clearSecureRunProgress();
         log('error', `BWS enhancement failed: ${error.message}`);
         process.exit(1);
       }
 
-      // 4. Run environment validation regardless
-      log('info', 'Running environment validation...');
+      // Step 5: Validation phase (progress bar already shown earlier for visual timing)
+      // Run environment validation regardless (silently)
       const validator = spawnSync('node', [path.join(dirname, 'env_validator.js')], {
-        stdio: SUPPRESS_ALL ? 'ignore' : 'inherit',
+        stdio: 'ignore', // Always ignore to prevent interference with progress bar
         env: process.env
       });
+
+      // Add small delay to ensure validation completes
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // 5. IMPORTANT: Restore original environment variables to ensure CLI-provided vars take precedence
       for (const [key, value] of Object.entries(originalEnvironment)) {
         process.env[key] = value;
       }
 
-      // Restore original .env file content
+      // Restore original .env file content (silently)
       await restoreOriginalEnvironmentFile();
     } else {
       // For nested executions, just inherit the parent process environment
       log('debug', 'Skipping BWS setup in nested execution');
+      currentStep = totalSteps - 1; // Skip to final step
     }
+
+    // Step 6: Execution phase
+    // (setupEnvironment already showed Ready progress and environment summary)
+
+    // Disable progress mode before command execution
+    disableProgressMode();
+
+    // Add newline before command execution to ensure clean output
+    console.log('');
 
     // 6. Execute the command
     const command = process.argv.slice(2);
@@ -1299,6 +1587,7 @@ async function handleUploadCommand() {
     process.exit(result.status);
   } catch (error) {
     // Always show critical errors even when suppressed
+    clearSecureRunProgress();
     console.error(error?.message || String(error));
     process.exit(1);
   }
@@ -1308,10 +1597,12 @@ async function handleUploadCommand() {
 process.on('exit', () => {
   // Only clean up if this is the root execution
   if (!isNestedExecution) {
-    cleanupSecureFiles();
+    // Clean up without verbose output (silent cleanup)
+    cleanupSecureFiles(false);
+
     // We don't want to restore the original .env file as it would remove the project selection
     // Instead, the BWS_ENV is handled by restoreOriginalEnvironmentFile() which preserves project options
-    if (originalEnvironmentFileContent) {
+    if (originalEnvironmentFileContent && process.env.DEBUG === 'true') {
       log('debug', 'Skipping complete .env restoration to preserve BWS project selection');
     }
   }
@@ -1320,7 +1611,9 @@ process.on('exit', () => {
 process.on('SIGINT', async () => {
   // Only clean up if this is the root execution
   if (!isNestedExecution) {
-    cleanupSecureFiles();
+    // Clean up without verbose output (silent cleanup)
+    cleanupSecureFiles(false);
+
     // We don't want to restore the entire original .env file
     // The restoreOriginalEnvironmentFile function will only restore the BWS_ENV value if needed
     await restoreOriginalEnvironmentFile();
@@ -1331,7 +1624,9 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
   // Only clean up if this is the root execution
   if (!isNestedExecution) {
-    cleanupSecureFiles();
+    // Clean up without verbose output (silent cleanup)
+    cleanupSecureFiles(false);
+
     // We don't want to restore the entire original .env file
     // The restoreOriginalEnvironmentFile function will only restore the BWS_ENV value if needed
     await restoreOriginalEnvironmentFile();
@@ -1341,10 +1636,15 @@ process.on('SIGTERM', async () => {
 
 // Handle uncaught exceptions
 process.on('uncaughtException', async (error) => {
+  // Disable progress mode to show error
+  disableProgressMode();
   console.error('Uncaught Exception:', error);
+
   // Only clean up if this is the root execution
   if (!isNestedExecution) {
-    cleanupSecureFiles();
+    // Clean up without verbose output (silent cleanup)
+    cleanupSecureFiles(false);
+
     // We don't want to restore the entire original .env file
     // The restoreOriginalEnvironmentFile function will only restore the BWS_ENV value if needed
     await restoreOriginalEnvironmentFile();

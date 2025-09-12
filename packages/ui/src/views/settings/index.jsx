@@ -54,7 +54,12 @@ const Settings = ({ chatflow, isSettingsOpen, isCustomAssistant, anchorEl, isAge
                 setSettingsMenu(menus.children)
             } else {
                 const menus = isAgentCanvas ? agentsettings : settings
-                setSettingsMenu(menus.children)
+                // Filter out delete option if this is the user's default chatflow (Chief Sidekick)
+                let filteredMenus = menus.children
+                if (chatflow.isUserDefault) {
+                    filteredMenus = menus.children.filter((menu) => menu.id !== 'deleteChatflow')
+                }
+                setSettingsMenu(filteredMenus)
             }
         }
     }, [chatflow, isAgentCanvas, isCustomAssistant])

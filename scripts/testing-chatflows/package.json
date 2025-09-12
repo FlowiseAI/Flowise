@@ -7,8 +7,8 @@
         "test": "node testingChatflows.js"
     },
     "dependencies": {
-        "axios": "1.11.0",
-        "dotenv": "^16.4.5",
+        "axios": "^1.12.1",
+        "dotenv": "^17.2.2",
         "inquirer": "^8.2.6",
         "yargs": "^17.7.2"
     }

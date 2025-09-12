@@ -764,20 +764,53 @@ async function main() {
   const varOccurrences = new Map();
   let totalFileCount = 0;
 
+  // Helper function to show progress bar
+  let lastProgressLength = 0;
+  const showProgressBar = (current, total, elapsed) => {
+    const percentage = ((current / total) * 100).toFixed(1);
+    const barWidth = 40;
+    const filledWidth = Math.round((current / total) * barWidth);
+    const emptyWidth = barWidth - filledWidth;
+
+    const bar = '█'.repeat(filledWidth) + '░'.repeat(emptyWidth);
+    const progressText = `[${bar}] ${percentage}% (${current}/${total} files, ${elapsed}s)`;
+
+    // Clear the previous line and write the new progress
+    process.stdout.write('\r' + ' '.repeat(lastProgressLength) + '\r' + progressText);
+    lastProgressLength = progressText.length;
+  };
+
+  const clearProgress = () => {
+    if (lastProgressLength > 0) {
+      process.stdout.write('\r' + ' '.repeat(lastProgressLength) + '\r');
+      lastProgressLength = 0;
+    }
+  };
+
+  // Show initial progress bar
+  showProgressBar(0, pathsToScan.length, '0.0');
+
   for (const file of pathsToScan) {
     processedFiles++;
 
     // Show progress updates based on logging level
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+
     if (VERBOSE) {
-      // Verbose mode: show progress every 50 files
-      if (processedFiles % 50 === 0) {
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        logger.info(`Progress: ${processedFiles}/${pathsToScan.length} files (${elapsed}s)`);
+      // Verbose mode: progress bar updates every 10 files for responsiveness
+      if (processedFiles % 10 === 0 || processedFiles === pathsToScan.length) {
+        showProgressBar(processedFiles, pathsToScan.length, elapsed);
       }
-    } else if (DEBUG || processedFiles % 100 === 0) {
-      // Debug mode or regular intervals: show progress every 100 files
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-      logger.info(`Progress: ${processedFiles}/${pathsToScan.length} files (${elapsed}s)`);
+    } else if (DEBUG) {
+      // Debug mode: progress bar updates every 25 files
+      if (processedFiles % 25 === 0 || processedFiles === pathsToScan.length) {
+        showProgressBar(processedFiles, pathsToScan.length, elapsed);
+      }
+    } else {
+      // Normal mode: progress bar updates every 50 files
+      if (processedFiles % 50 === 0 || processedFiles === pathsToScan.length) {
+        showProgressBar(processedFiles, pathsToScan.length, elapsed);
+      }
     }
 
     if (VERBOSE) {
@@ -799,6 +832,11 @@ async function main() {
       totalFileCount++;
     }
   }
+
+  // Clear any remaining progress display and show completion
+  clearProgress();
+  const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+  logger.info(`✅ Scanning completed: ${processedFiles} files processed in ${totalElapsed}s`);
 
   // Count directory occurrences
   for (const vars of envVarsByDir.values()) {

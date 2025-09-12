@@ -19,6 +19,15 @@ const colors = {
 };
 
 function log(level, message) {
+  // Progressive quiet mode: suppress ALL messages during secure-run progress bar display
+  // unless DEBUG is explicitly set
+  const progressBarActive = !process.env.DEBUG && process.env.BWS_SUPPRESS_ALL !== 'true';
+
+  if (progressBarActive) {
+    // In progress bar mode, suppress ALL messages to maintain single-line progress
+    return;
+  }
+
   const prefix =
     {
       error: colors.red + 'ERROR:',

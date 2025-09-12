@@ -136,6 +136,8 @@ export interface IChatMessageFeedback {
     chatId: string
     messageId: string
     rating: ChatMessageRatingType
+    userId?: string
+    organizationId?: string
     createdDate: Date
 }
 

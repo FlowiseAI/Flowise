@@ -8,9 +8,9 @@
         "export-auth0-users": "node export-auth0-users.js"
     },
     "dependencies": {
-        "axios": "^1.8.2",
+        "axios": "^1.12.1",
         "chalk": "^4.1.2",
-        "dotenv": "^16.6.1",
+        "dotenv": "^17.2.2",
         "js-yaml": "^4.1.0"
     }
 }

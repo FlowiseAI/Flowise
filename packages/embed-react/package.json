@@ -28,6 +28,7 @@
         "eslint": "8.37.0",
         "react": "18.2.0",
         "rollup": "3.29.5",
+        "rollup-plugin-serve": "3.0.0",
         "rollup-plugin-typescript-paths": "1.4.0",
         "tslib": "^2.8.1",
         "tsx": "3.12.6",

@@ -526,28 +526,50 @@ env | grep -i lacework
 For detailed configuration, troubleshooting, and advanced setup, see [Lacework Integration Documentation](./packages/docs/docs/integrations/lacework.md).
 
 <!-- BWS-SECURE-DOCS-START -->
-
-## BWS Secure Environmental Variable Integration
+## 🔒 BWS Secure Environmental Variable Integration
 
 This project uses [BWS Secure](https://github.com/last-rev-llc/bws-secure) for managing environment variables across different environments.
 
-### Creating an Access Token
+### 🔐 Creating an Access Token
 
-1. Visit your [Bitwarden Machine Accounts](https://vault.bitwarden.com/#/sm/${BWS_ORG_ID:-YOUR_BWS_ORG_ID_HERE}/machine-accounts) section
-    - **Note:** This link requires you to be a member of the Last Rev Bitwarden organization
-    - If you don't have access, please refer to the [BWS Secure documentation](https://github.com/last-rev-llc/bws-secure) or contact your team administrator
-2. After clicking the link, follow these steps:
-    - Select the appropriate Client/Set of Machine Accounts from the list
-    - Click on the "Access Tokens" tab
-    - Click "+ New Access Token" button
-    - Give the token a meaningful name (e.g., "Your Name - Local Development")
-    - Click "Save" to generate the token
-3. Copy the displayed token (you won't be able to see it again after closing)
-4. Add it to your .env file in your project root:
-    ```
-    BWS_ACCESS_TOKEN=your_token_here
-    ```
-5. Never commit this token to version control
+📍 **1.** Visit the [Bitwarden Machine Accounts](https://vault.bitwarden.com/#/sm) section within your Vault.
+   - If you login directly to https://vault.bitwarden.com, you will need to navigate to the Machine Accounts section, within the Secrets Manager. The Secrets Manager is located in the left sidebar, typically at the bottom of the page.
+   - If you don't have access, please refer to the [BWS Secure documentation](https://github.com/last-rev-llc/bws-secure) or contact your team administrator
+
+🖱️ **2.** Navigate to the Machine Accounts section, and follow these steps:
+   - Select the appropriate Client/Set of Machine Accounts from the list
+   - Click on the "Access Tokens" tab
+   - Click "+ New Access Token" button
+   - Give the token a meaningful name (e.g., "Your Name - Local Development")
+   - Click "Save" to generate the token
+
+📋 **3.** Copy the displayed token (you won't be able to see it again after closing)
+
+💾 **4.** Add it to your .env file in your project root:
+   ```
+   BWS_ACCESS_TOKEN=your_token_here
+   ```
+
+⚠️ **5.** Never commit this token to version control
+
+### 🎯 Token Usage Options:
+
+- **BWS_ACCESS_TOKEN**: Loads ALL projects associated with that token (recommended for multi-project setups)
+- **BWS_PROJECT_ID**: Loads only a specific project (use for single-project or testing scenarios)
+
+**Example for single project:**
+```
+BWS_PROJECT_ID=00000000-0000-0000-0000-000000000001
+```
+
+The project ID can be found in the Bitwarden Secrets Manager, within the list of projects.
+
+### 🔧 Common Issues & Troubleshooting:
+
+- **"No projects found"**: Verify your token has project access permissions in Bitwarden
+- **"Access denied"**: Check that the Machine Account has read permissions for the target projects  
+- **Token not working**: Ensure no extra spaces when copying from Bitwarden
+- **Multiple projects loading**: This is normal with BWS_ACCESS_TOKEN - use BWS_PROJECT_ID for single project
 
 ### Updating BWS Secure
 
@@ -562,5 +584,4 @@ Alternatively, you can run the following command manually from your project root
 ```bash
 rm -rf scripts/bws-secure && git clone git@github.com:last-rev-llc/bws-secure.git scripts/bws-secure && rm -rf scripts/bws-secure/.git && bash scripts/bws-secure/install.sh
 ```
-
 <!-- BWS-SECURE-DOCS-END -->

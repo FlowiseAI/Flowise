@@ -99,6 +99,23 @@ const CanvasHeader = forwardRef(({ chatflow, isAgentCanvas, isAgentflowV2, handl
         setSettingsOpen(false)
 
         if (setting === 'deleteChatflow') {
+            // Safety check - prevent deletion of user's default chatflow (Chief Sidekick)
+            if (chatflow?.isUserDefault) {
+                enqueueSnackbar({
+                    message: 'Cannot delete your Chief Sidekick',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
             handleDeleteFlow()
         } else if (setting === 'viewMessages') {
             setViewMessagesDialogProps({

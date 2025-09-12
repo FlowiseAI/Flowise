@@ -7,7 +7,7 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "webpack": "^5.101.0"
+        "webpack": "^5.101.3"
     },
     "scripts": {
         "not:test": "echo \"Error: no test specified\" && exit 1"

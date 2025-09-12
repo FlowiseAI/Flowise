@@ -269,6 +269,8 @@ async function main() {
       }
     }
 
+    // Ensure newline before logger output to prevent merging with progress bar
+    console.log('');
     logger.info('Starting platform variable sync...');
     const config = await readConfigFile();
 

@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "@prisma/client": "^5.22.0",
-        "prisma-json-types-generator": "^3.5.1"
+        "prisma-json-types-generator": "^3.6.0"
     },
     "devDependencies": {
         "@types/jest": "^29.5.14",

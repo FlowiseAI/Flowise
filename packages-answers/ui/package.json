@@ -24,7 +24,7 @@
         "eslint-config-custom": "workspace:*",
         "react": "18.2.0",
         "tsconfig": "workspace:*",
-        "tsup": "^8.3.5",
+        "tsup": "^8.5.0",
         "typescript": "~5.5.4"
     },
     "dependencies": {
@@ -45,7 +45,7 @@
         "@next-auth/prisma-adapter": "^1.0.7",
         "@textea/json-viewer": "2.14.1",
         "aai-embed-react": "~1.0.8",
-        "axios": "1.8.2",
+        "axios": "^1.12.1",
         "clsx": "^1.2.1",
         "cors": "^2.8.5",
         "encoding": "^0.1.13",
@@ -64,11 +64,11 @@
         "react-dropzone": "^14.3.8",
         "react-hook-form": "^7.62.0",
         "react-markdown": "^8.0.7",
-        "react-syntax-highlighter": "^15.6.1",
+        "react-syntax-highlighter": "^15.6.6",
         "react-window": "^1.8.11",
         "remark-gfm": "^3.0.1",
         "stripe": "^17.7.0",
-        "swr": "^2.3.4",
+        "swr": "^2.3.6",
         "types": "workspace:*",
         "utils": "workspace:*"
     }
