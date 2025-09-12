@@ -5,6 +5,7 @@ import $RefParser from '@apidevtools/json-schema-ref-parser'
 import { z, ZodSchema, ZodTypeAny } from 'zod'
 import { defaultCode, DynamicStructuredTool, howToUseCode } from './core'
 import { DataSource } from 'typeorm'
+import { getBaseClasses, getVars, stripHTMLFromToolInput } from '../../../src/utils'
 
 class OpenAPIToolkit_Tools implements INode {
     label: string
@@ -80,7 +81,7 @@ class OpenAPIToolkit_Tools implements INode {
         const _headers = nodeData.inputs?.headers as string
         const removeNulls = nodeData.inputs?.removeNulls as boolean
 
-        const headers = typeof _headers === 'object' ? _headers : _headers ? JSON.parse(_headers) : {}
+        const headers = typeof _headers === 'object' ? _headers : _headers ? JSON.parse(stripHTMLFromToolInput(_headers)) : {}
 
         let data
         if (yamlFileBase64.startsWith('FILE-STORAGE::')) {
