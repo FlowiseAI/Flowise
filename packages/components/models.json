@@ -1933,8 +1933,8 @@
             "name": "googleGenerativeAiEmbeddings",
             "models": [
                 {
-                    "label": "embedding-001",
-                    "name": "embedding-001"
+                    "label": "gemini-embedding-001",
+                    "name": "gemini-embedding-001"
                 },
                 {
                     "label": "text-embedding-004",

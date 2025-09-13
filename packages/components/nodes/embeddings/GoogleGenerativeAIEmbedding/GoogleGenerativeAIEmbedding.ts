@@ -58,7 +58,7 @@ class GoogleGenerativeAIEmbedding_Embeddings implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'embedding-001'
+                default: 'gemini-embedding-001'
             },
             {
                 label: 'Task Type',
