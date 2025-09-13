@@ -1011,6 +1011,7 @@ const executeNode = async ({
         const chatHistory = [...pastChatHistory, ...runtimeChatHistory]
         const flowConfig: IFlowConfig = {
             chatflowid: chatflow.id,
+            chatflowId: chatflow.id,
             chatId,
             sessionId,
             apiMessageId,
@@ -1094,6 +1095,7 @@ const executeNode = async ({
             chatId,
             sessionId,
             chatflowid: chatflow.id,
+            chatflowId: chatflow.id,
             apiMessageId: flowConfig.apiMessageId,
             logger,
             appDataSource,

@@ -480,6 +480,7 @@ export const executeFlow = async ({
 
     const flowConfig: IFlowConfig = {
         chatflowid,
+        chatflowId: chatflow.id,
         chatId,
         sessionId,
         chatHistory,
