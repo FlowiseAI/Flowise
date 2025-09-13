@@ -89,6 +89,7 @@ export const buildAgentGraph = async ({
             chatId,
             sessionId,
             chatflowid,
+            chatflowId: chatflowid,
             logger,
             analytic,
             appDataSource,
