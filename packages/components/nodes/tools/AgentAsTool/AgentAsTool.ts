@@ -69,7 +69,8 @@ class AgentAsTool_Tools implements INode {
                 description: 'Override the config passed to the Agentflow.',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Base URL',
