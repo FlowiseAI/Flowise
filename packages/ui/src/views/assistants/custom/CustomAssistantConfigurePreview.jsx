@@ -139,16 +139,16 @@ const CustomAssistantConfigurePreview = () => {
 
     const handleToolDataChange =
         (toolIndex) =>
-        ({ inputParam, newValue }) => {
-            setSelectedTools((prevTools) => {
-                const updatedTools = [...prevTools]
-                const updatedTool = { ...updatedTools[toolIndex] }
-                updatedTool.inputs[inputParam.name] = newValue
-                updatedTool.inputParams = showHideInputParams(updatedTool)
-                updatedTools[toolIndex] = updatedTool
-                return updatedTools
-            })
-        }
+            ({ inputParam, newValue }) => {
+                setSelectedTools((prevTools) => {
+                    const updatedTools = [...prevTools]
+                    const updatedTool = { ...updatedTools[toolIndex] }
+                    updatedTool.inputs[inputParam.name] = newValue
+                    updatedTool.inputParams = showHideInputParams(updatedTool)
+                    updatedTools[toolIndex] = updatedTool
+                    return updatedTools
+                })
+            }
 
     const displayWarning = () => {
         enqueueSnackbar({
@@ -166,41 +166,76 @@ const CustomAssistantConfigurePreview = () => {
     }
 
     const checkInputParamsMandatory = () => {
-        let canSubmit = true
+        let canSubmit = true;
 
-        const inputParams = (selectedChatModel.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
+        const inputParams = (selectedChatModel.inputParams ?? []).filter((inputParam) => {
+            if (inputParam.hidden) return false;
+
+            // Check conditional visibility
+            if (inputParam.show) {
+                for (const [key, value] of Object.entries(inputParam.show)) {
+                    if (selectedChatModel.inputs?.[key] !== value) {
+                        return false; // Condition not met, skip this inputParam
+                    }
+                }
+            }
+
+            return true;
+        });
+
         for (const inputParam of inputParams) {
-            if (!inputParam.optional && (!selectedChatModel.inputs[inputParam.name] || !selectedChatModel.credential)) {
-                if (inputParam.type === 'credential' && !selectedChatModel.credential) {
-                    canSubmit = false
-                    break
-                } else if (inputParam.type !== 'credential' && !selectedChatModel.inputs[inputParam.name]) {
-                    canSubmit = false
-                    break
+            const value = selectedChatModel.inputs[inputParam.name];
+            const credential = selectedChatModel.credential;
+
+            if (!inputParam.optional && (!value || !credential)) {
+                if (inputParam.type === 'credential' && !credential) {
+                    canSubmit = false;
+                    break;
+                } else if (inputParam.type !== 'credential' && !value) {
+                    canSubmit = false;
+                    break;
                 }
             }
         }
 
         if (selectedTools.length > 0) {
             for (let i = 0; i < selectedTools.length; i++) {
-                const tool = selectedTools[i]
-                const inputParams = (tool.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
+                const tool = selectedTools[i];
+                const inputParams = (tool.inputParams ?? []).filter((inputParam) => {
+                    if (inputParam.hidden) return false;
+
+                    if (inputParam.show) {
+                        for (const [key, value] of Object.entries(inputParam.show)) {
+                            if (tool.inputs?.[key] !== value) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return true;
+                });
+
                 for (const inputParam of inputParams) {
-                    if (!inputParam.optional && (!tool.inputs[inputParam.name] || !tool.credential)) {
-                        if (inputParam.type === 'credential' && !tool.credential) {
-                            canSubmit = false
-                            break
-                        } else if (inputParam.type !== 'credential' && !tool.inputs[inputParam.name]) {
-                            canSubmit = false
-                            break
+                    const value = tool.inputs[inputParam.name];
+                    const credential = tool.credential;
+
+                    if (!inputParam.optional && (!value || !credential)) {
+                        if (inputParam.type === 'credential' && !credential) {
+                            canSubmit = false;
+                            break;
+                        } else if (inputParam.type !== 'credential' && !value) {
+                            canSubmit = false;
+                            break;
                         }
                     }
                 }
             }
         }
 
-        return canSubmit
-    }
+        return canSubmit;
+    };
+
+
 
     const checkMandatoryFields = () => {
         let canSubmit = true
@@ -208,7 +243,6 @@ const CustomAssistantConfigurePreview = () => {
         if (!selectedChatModel || !selectedChatModel.name) {
             canSubmit = false
         }
-
         canSubmit = checkInputParamsMandatory()
 
         // check if any of the description is empty
@@ -282,9 +316,8 @@ const CustomAssistantConfigurePreview = () => {
             } catch (error) {
                 setLoading(false)
                 enqueueSnackbar({
-                    message: `Failed to save assistant: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: `Failed to save assistant: ${typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                        }`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -485,9 +518,8 @@ const CustomAssistantConfigurePreview = () => {
         } catch (error) {
             console.error('Error preparing config', error)
             enqueueSnackbar({
-                message: `Failed to save assistant: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: `Failed to save assistant: ${typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
