@@ -97,7 +97,7 @@ class GithubV2_MCP implements INode {
         const serverParams = {
             url: 'https://api.githubcopilot.com/mcp/',
             headers: {
-                'Authorization': `Bearer ${accessToken}`
+                Authorization: `Bearer ${accessToken}`
             }
         }
 

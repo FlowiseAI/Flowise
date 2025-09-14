@@ -185,7 +185,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [chatlogs, setChatLogs] = useState([])
-    const [allChatlogs, setAllChatLogs] = useState([])
+    const [_allChatlogs, setAllChatLogs] = useState([])
     const [chatMessages, setChatMessages] = useState([])
     const [stats, setStats] = useState({})
     const [selectedMessageIndex, setSelectedMessageIndex] = useState(0)
