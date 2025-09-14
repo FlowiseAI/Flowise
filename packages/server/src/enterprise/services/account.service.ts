@@ -25,6 +25,7 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
+import { sanitizeUser } from '../../utils/sanitize.util'
 
 type AccountDTO = {
     user: Partial<User>
@@ -175,7 +176,7 @@ export class AccountService {
                 if (data.user.tempToken) {
                     const user = await this.userService.readUserByToken(data.user.tempToken, queryRunner)
                     if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-                    if (user.email !== data.user.email)
+                    if (user.email.toLowerCase() !== data.user.email?.toLowerCase())
                         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_EMAIL)
                     const name = data.user.name
                     if (data.user.credential) user.credential = this.userService.encryptUserCredential(data.user.credential)
@@ -540,7 +541,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return data
+        return sanitizeUser(data.user)
     }
 
     public async resetPassword(data: AccountDTO) {
@@ -582,7 +583,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return data
+        return sanitizeUser(data.user)
     }
 
     public async logout(user: LoggedInUser) {

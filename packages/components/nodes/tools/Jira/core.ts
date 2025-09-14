@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
-import { TOOL_ARGS_PREFIX } from '../../../src/agents'
+import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Jira API for managing issues, comments, and users`
 
@@ -222,7 +222,7 @@ class ListIssuesTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error listing issues: ${error}`
+            return formatToolError(`Error listing issues: ${error}`, params)
         }
     }
 }
@@ -302,7 +302,7 @@ class CreateIssueTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint: 'issue', method: 'POST', body: issueData, params })
             return response
         } catch (error) {
-            return `Error creating issue: ${error}`
+            return formatToolError(`Error creating issue: ${error}`, params)
         }
     }
 }
@@ -337,7 +337,7 @@ class GetIssueTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error getting issue: ${error}`
+            return formatToolError(`Error getting issue: ${error}`, params)
         }
     }
 }
@@ -405,7 +405,7 @@ class UpdateIssueTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'PUT', body: updateData, params })
             return response || 'Issue updated successfully'
         } catch (error) {
-            return `Error updating issue: ${error}`
+            return formatToolError(`Error updating issue: ${error}`, params)
         }
     }
 }
@@ -440,7 +440,7 @@ class DeleteIssueTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'DELETE', params })
             return response || 'Issue deleted successfully'
         } catch (error) {
-            return `Error deleting issue: ${error}`
+            return formatToolError(`Error deleting issue: ${error}`, params)
         }
     }
 }
@@ -479,7 +479,7 @@ class AssignIssueTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'PUT', body: assignData, params })
             return response || 'Issue assigned successfully'
         } catch (error) {
-            return `Error assigning issue: ${error}`
+            return formatToolError(`Error assigning issue: ${error}`, params)
         }
     }
 }
@@ -520,7 +520,7 @@ class TransitionIssueTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'POST', body: transitionData, params })
             return response || 'Issue transitioned successfully'
         } catch (error) {
-            return `Error transitioning issue: ${error}`
+            return formatToolError(`Error transitioning issue: ${error}`, params)
         }
     }
 }
@@ -561,7 +561,7 @@ class ListCommentsTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error listing comments: ${error}`
+            return formatToolError(`Error listing comments: ${error}`, params)
         }
     }
 }
@@ -618,7 +618,7 @@ class CreateCommentTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'POST', body: commentData, params })
             return response
         } catch (error) {
-            return `Error creating comment: ${error}`
+            return formatToolError(`Error creating comment: ${error}`, params)
         }
     }
 }
@@ -653,7 +653,7 @@ class GetCommentTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error getting comment: ${error}`
+            return formatToolError(`Error getting comment: ${error}`, params)
         }
     }
 }
@@ -706,7 +706,7 @@ class UpdateCommentTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'PUT', body: commentData, params })
             return response || 'Comment updated successfully'
         } catch (error) {
-            return `Error updating comment: ${error}`
+            return formatToolError(`Error updating comment: ${error}`, params)
         }
     }
 }
@@ -741,7 +741,7 @@ class DeleteCommentTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'DELETE', params })
             return response || 'Comment deleted successfully'
         } catch (error) {
-            return `Error deleting comment: ${error}`
+            return formatToolError(`Error deleting comment: ${error}`, params)
         }
     }
 }
@@ -783,7 +783,7 @@ class SearchUsersTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error searching users: ${error}`
+            return formatToolError(`Error searching users: ${error}`, params)
         }
     }
 }
@@ -822,7 +822,7 @@ class GetUserTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error getting user: ${error}`
+            return formatToolError(`Error getting user: ${error}`, params)
         }
     }
 }
@@ -866,7 +866,7 @@ class CreateUserTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'POST', body: userData, params })
             return response
         } catch (error) {
-            return `Error creating user: ${error}`
+            return formatToolError(`Error creating user: ${error}`, params)
         }
     }
 }
@@ -909,7 +909,7 @@ class UpdateUserTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'PUT', body: userData, params })
             return response || 'User updated successfully'
         } catch (error) {
-            return `Error updating user: ${error}`
+            return formatToolError(`Error updating user: ${error}`, params)
         }
     }
 }
@@ -947,7 +947,7 @@ class DeleteUserTool extends BaseJiraTool {
             const response = await this.makeJiraRequest({ endpoint, method: 'DELETE', params })
             return response || 'User deleted successfully'
         } catch (error) {
-            return `Error deleting user: ${error}`
+            return formatToolError(`Error deleting user: ${error}`, params)
         }
     }
 }
@@ -969,7 +969,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.listIssues
+                defaultParams
             })
         )
     }
@@ -981,7 +981,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.createIssue
+                defaultParams
             })
         )
     }
@@ -993,7 +993,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.getIssue
+                defaultParams
             })
         )
     }
@@ -1005,7 +1005,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.updateIssue
+                defaultParams
             })
         )
     }
@@ -1017,7 +1017,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.deleteIssue
+                defaultParams
             })
         )
     }
@@ -1029,7 +1029,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.assignIssue
+                defaultParams
             })
         )
     }
@@ -1041,7 +1041,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.transitionIssue
+                defaultParams
             })
         )
     }
@@ -1054,7 +1054,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.listComments
+                defaultParams
             })
         )
     }
@@ -1066,7 +1066,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.createComment
+                defaultParams
             })
         )
     }
@@ -1078,7 +1078,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.getComment
+                defaultParams
             })
         )
     }
@@ -1090,7 +1090,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.updateComment
+                defaultParams
             })
         )
     }
@@ -1102,7 +1102,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.deleteComment
+                defaultParams
             })
         )
     }
@@ -1115,7 +1115,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.searchUsers
+                defaultParams
             })
         )
     }
@@ -1127,7 +1127,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.getUser
+                defaultParams
             })
         )
     }
@@ -1139,7 +1139,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.createUser
+                defaultParams
             })
         )
     }
@@ -1151,7 +1151,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.updateUser
+                defaultParams
             })
         )
     }
@@ -1163,7 +1163,7 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
                 accessToken,
                 jiraHost,
                 maxOutputLength,
-                defaultParams: defaultParams.deleteUser
+                defaultParams
             })
         )
     }

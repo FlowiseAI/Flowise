@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
-import { TOOL_ARGS_PREFIX } from '../../../src/agents'
+import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Gmail API for managing drafts, messages, labels, and threads`
 
@@ -140,7 +140,7 @@ class ListDraftsTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error listing drafts: ${error}`
+            return formatToolError(`Error listing drafts: ${error}`, params)
         }
     }
 }
@@ -176,7 +176,7 @@ class CreateDraftTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', draftData, params)
             return response
         } catch (error) {
-            return `Error creating draft: ${error}`
+            return formatToolError(`Error creating draft: ${error}`, params)
         }
     }
 }
@@ -199,7 +199,7 @@ class GetDraftTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const draftId = params.id || params.draftId
+        const draftId = params.draftId || params.id
 
         if (!draftId) {
             return 'Error: Draft ID is required'
@@ -210,7 +210,7 @@ class GetDraftTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error getting draft: ${error}`
+            return formatToolError(`Error getting draft: ${error}`, params)
         }
     }
 }
@@ -233,7 +233,7 @@ class UpdateDraftTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const draftId = params.id || params.draftId
+        const draftId = params.draftId || params.id
 
         if (!draftId) {
             return 'Error: Draft ID is required'
@@ -251,7 +251,7 @@ class UpdateDraftTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'PUT', draftData, params)
             return response
         } catch (error) {
-            return `Error updating draft: ${error}`
+            return formatToolError(`Error updating draft: ${error}`, params)
         }
     }
 }
@@ -274,7 +274,7 @@ class SendDraftTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const draftId = params.id || params.draftId
+        const draftId = params.draftId || params.id
 
         if (!draftId) {
             return 'Error: Draft ID is required'
@@ -285,7 +285,7 @@ class SendDraftTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', { id: draftId }, params)
             return response
         } catch (error) {
-            return `Error sending draft: ${error}`
+            return formatToolError(`Error sending draft: ${error}`, params)
         }
     }
 }
@@ -308,7 +308,7 @@ class DeleteDraftTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const draftId = params.id || params.draftId
+        const draftId = params.draftId || params.id
 
         if (!draftId) {
             return 'Error: Draft ID is required'
@@ -319,7 +319,7 @@ class DeleteDraftTool extends BaseGmailTool {
             await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Draft ${draftId} deleted successfully`
         } catch (error) {
-            return `Error deleting draft: ${error}`
+            return formatToolError(`Error deleting draft: ${error}`, params)
         }
     }
 }
@@ -354,7 +354,7 @@ class ListMessagesTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error listing messages: ${error}`
+            return formatToolError(`Error listing messages: ${error}`, params)
         }
     }
 }
@@ -377,7 +377,7 @@ class GetMessageTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const messageId = params.id || params.messageId
+        const messageId = params.messageId || params.id
 
         if (!messageId) {
             return 'Error: Message ID is required'
@@ -388,7 +388,7 @@ class GetMessageTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error getting message: ${error}`
+            return formatToolError(`Error getting message: ${error}`, params)
         }
     }
 }
@@ -422,7 +422,7 @@ class SendMessageTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', messageData, params)
             return response
         } catch (error) {
-            return `Error sending message: ${error}`
+            return formatToolError(`Error sending message: ${error}`, params)
         }
     }
 }
@@ -445,7 +445,7 @@ class ModifyMessageTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const messageId = params.id || params.messageId
+        const messageId = params.messageId || params.id
 
         if (!messageId) {
             return 'Error: Message ID is required'
@@ -464,7 +464,7 @@ class ModifyMessageTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', modifyData, params)
             return response
         } catch (error) {
-            return `Error modifying message: ${error}`
+            return formatToolError(`Error modifying message: ${error}`, params)
         }
     }
 }
@@ -487,7 +487,7 @@ class TrashMessageTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const messageId = params.id || params.messageId
+        const messageId = params.messageId || params.id
 
         if (!messageId) {
             return 'Error: Message ID is required'
@@ -498,7 +498,7 @@ class TrashMessageTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
-            return `Error moving message to trash: ${error}`
+            return formatToolError(`Error moving message to trash: ${error}`, params)
         }
     }
 }
@@ -521,7 +521,7 @@ class UntrashMessageTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const messageId = params.id || params.messageId
+        const messageId = params.messageId || params.id
 
         if (!messageId) {
             return 'Error: Message ID is required'
@@ -532,7 +532,7 @@ class UntrashMessageTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
-            return `Error removing message from trash: ${error}`
+            return formatToolError(`Error removing message from trash: ${error}`, params)
         }
     }
 }
@@ -555,7 +555,7 @@ class DeleteMessageTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const messageId = params.id || params.messageId
+        const messageId = params.messageId || params.id
 
         if (!messageId) {
             return 'Error: Message ID is required'
@@ -566,7 +566,7 @@ class DeleteMessageTool extends BaseGmailTool {
             await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Message ${messageId} deleted successfully`
         } catch (error) {
-            return `Error deleting message: ${error}`
+            return formatToolError(`Error deleting message: ${error}`, params)
         }
     }
 }
@@ -594,7 +594,7 @@ class ListLabelsTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, {})
             return response
         } catch (error) {
-            return `Error listing labels: ${error}`
+            return formatToolError(`Error listing labels: ${error}`, {})
         }
     }
 }
@@ -617,7 +617,7 @@ class GetLabelTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const labelId = params.id || params.labelId
+        const labelId = params.labelId || params.id
 
         if (!labelId) {
             return 'Error: Label ID is required'
@@ -628,7 +628,7 @@ class GetLabelTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error getting label: ${error}`
+            return formatToolError(`Error getting label: ${error}`, params)
         }
     }
 }
@@ -673,7 +673,7 @@ class CreateLabelTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', labelData, params)
             return response
         } catch (error) {
-            return `Error creating label: ${error}`
+            return formatToolError(`Error creating label: ${error}`, params)
         }
     }
 }
@@ -696,7 +696,7 @@ class UpdateLabelTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const labelId = params.labelId
+        const labelId = params.labelId || params.id
 
         if (!labelId) {
             return 'Error: Label ID is required'
@@ -717,7 +717,7 @@ class UpdateLabelTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'PUT', labelData, params)
             return response
         } catch (error) {
-            return `Error updating label: ${error}`
+            return formatToolError(`Error updating label: ${error}`, params)
         }
     }
 }
@@ -740,7 +740,7 @@ class DeleteLabelTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const labelId = params.id || params.labelId
+        const labelId = params.labelId || params.id
 
         if (!labelId) {
             return 'Error: Label ID is required'
@@ -751,7 +751,7 @@ class DeleteLabelTool extends BaseGmailTool {
             await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Label ${labelId} deleted successfully`
         } catch (error) {
-            return `Error deleting label: ${error}`
+            return formatToolError(`Error deleting label: ${error}`, params)
         }
     }
 }
@@ -786,7 +786,7 @@ class ListThreadsTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error listing threads: ${error}`
+            return formatToolError(`Error listing threads: ${error}`, params)
         }
     }
 }
@@ -809,7 +809,7 @@ class GetThreadTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const threadId = params.id || params.threadId
+        const threadId = params.threadId || params.id
 
         if (!threadId) {
             return 'Error: Thread ID is required'
@@ -820,7 +820,7 @@ class GetThreadTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error getting thread: ${error}`
+            return formatToolError(`Error getting thread: ${error}`, params)
         }
     }
 }
@@ -843,7 +843,7 @@ class ModifyThreadTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const threadId = params.id || params.threadId
+        const threadId = params.threadId || params.id
 
         if (!threadId) {
             return 'Error: Thread ID is required'
@@ -862,7 +862,7 @@ class ModifyThreadTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', modifyData, params)
             return response
         } catch (error) {
-            return `Error modifying thread: ${error}`
+            return formatToolError(`Error modifying thread: ${error}`, params)
         }
     }
 }
@@ -885,7 +885,7 @@ class TrashThreadTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const threadId = params.id || params.threadId
+        const threadId = params.threadId || params.id
 
         if (!threadId) {
             return 'Error: Thread ID is required'
@@ -896,7 +896,7 @@ class TrashThreadTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
-            return `Error moving thread to trash: ${error}`
+            return formatToolError(`Error moving thread to trash: ${error}`, params)
         }
     }
 }
@@ -919,7 +919,7 @@ class UntrashThreadTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const threadId = params.id || params.threadId
+        const threadId = params.threadId || params.id
 
         if (!threadId) {
             return 'Error: Thread ID is required'
@@ -930,7 +930,7 @@ class UntrashThreadTool extends BaseGmailTool {
             const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
-            return `Error removing thread from trash: ${error}`
+            return formatToolError(`Error removing thread from trash: ${error}`, params)
         }
     }
 }
@@ -953,7 +953,7 @@ class DeleteThreadTool extends BaseGmailTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const threadId = params.id || params.threadId
+        const threadId = params.threadId || params.id
 
         if (!threadId) {
             return 'Error: Thread ID is required'
@@ -964,7 +964,7 @@ class DeleteThreadTool extends BaseGmailTool {
             await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Thread ${threadId} deleted successfully`
         } catch (error) {
-            return `Error deleting thread: ${error}`
+            return formatToolError(`Error deleting thread: ${error}`, params)
         }
     }
 }
@@ -977,222 +977,102 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
 
     // Draft tools
     if (actions.includes('listDrafts')) {
-        tools.push(
-            new ListDraftsTool({
-                accessToken,
-                defaultParams: defaultParams.listDrafts
-            })
-        )
+        tools.push(new ListDraftsTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('createDraft')) {
-        tools.push(
-            new CreateDraftTool({
-                accessToken,
-                defaultParams: defaultParams.createDraft
-            })
-        )
+        tools.push(new CreateDraftTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('getDraft')) {
-        tools.push(
-            new GetDraftTool({
-                accessToken,
-                defaultParams: defaultParams.getDraft
-            })
-        )
+        tools.push(new GetDraftTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('updateDraft')) {
-        tools.push(
-            new UpdateDraftTool({
-                accessToken,
-                defaultParams: defaultParams.updateDraft
-            })
-        )
+        tools.push(new UpdateDraftTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('sendDraft')) {
-        tools.push(
-            new SendDraftTool({
-                accessToken,
-                defaultParams: defaultParams.sendDraft
-            })
-        )
+        tools.push(new SendDraftTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('deleteDraft')) {
-        tools.push(
-            new DeleteDraftTool({
-                accessToken,
-                defaultParams: defaultParams.deleteDraft
-            })
-        )
+        tools.push(new DeleteDraftTool({ accessToken, defaultParams }))
     }
 
     // Message tools
     if (actions.includes('listMessages')) {
-        tools.push(
-            new ListMessagesTool({
-                accessToken,
-                defaultParams: defaultParams.listMessages
-            })
-        )
+        tools.push(new ListMessagesTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('getMessage')) {
-        tools.push(
-            new GetMessageTool({
-                accessToken,
-                defaultParams: defaultParams.getMessage
-            })
-        )
+        tools.push(new GetMessageTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('sendMessage')) {
-        tools.push(
-            new SendMessageTool({
-                accessToken,
-                defaultParams: defaultParams.sendMessage
-            })
-        )
+        tools.push(new SendMessageTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('modifyMessage')) {
-        tools.push(
-            new ModifyMessageTool({
-                accessToken,
-                defaultParams: defaultParams.modifyMessage
-            })
-        )
+        tools.push(new ModifyMessageTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('trashMessage')) {
-        tools.push(
-            new TrashMessageTool({
-                accessToken,
-                defaultParams: defaultParams.trashMessage
-            })
-        )
+        tools.push(new TrashMessageTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('untrashMessage')) {
-        tools.push(
-            new UntrashMessageTool({
-                accessToken,
-                defaultParams: defaultParams.untrashMessage
-            })
-        )
+        tools.push(new UntrashMessageTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('deleteMessage')) {
-        tools.push(
-            new DeleteMessageTool({
-                accessToken,
-                defaultParams: defaultParams.deleteMessage
-            })
-        )
+        tools.push(new DeleteMessageTool({ accessToken, defaultParams }))
     }
 
     // Label tools
     if (actions.includes('listLabels')) {
-        tools.push(
-            new ListLabelsTool({
-                accessToken,
-                defaultParams: defaultParams.listLabels
-            })
-        )
+        tools.push(new ListLabelsTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('getLabel')) {
-        tools.push(
-            new GetLabelTool({
-                accessToken,
-                defaultParams: defaultParams.getLabel
-            })
-        )
+        tools.push(new GetLabelTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('createLabel')) {
-        tools.push(
-            new CreateLabelTool({
-                accessToken,
-                defaultParams: defaultParams.createLabel
-            })
-        )
+        tools.push(new CreateLabelTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('updateLabel')) {
-        tools.push(
-            new UpdateLabelTool({
-                accessToken,
-                defaultParams: defaultParams.updateLabel
-            })
-        )
+        tools.push(new UpdateLabelTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('deleteLabel')) {
-        tools.push(
-            new DeleteLabelTool({
-                accessToken,
-                defaultParams: defaultParams.deleteLabel
-            })
-        )
+        tools.push(new DeleteLabelTool({ accessToken, defaultParams }))
     }
 
     // Thread tools
     if (actions.includes('listThreads')) {
-        tools.push(
-            new ListThreadsTool({
-                accessToken,
-                defaultParams: defaultParams.listThreads
-            })
-        )
+        tools.push(new ListThreadsTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('getThread')) {
-        tools.push(
-            new GetThreadTool({
-                accessToken,
-                defaultParams: defaultParams.getThread
-            })
-        )
+        tools.push(new GetThreadTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('modifyThread')) {
-        tools.push(
-            new ModifyThreadTool({
-                accessToken,
-                defaultParams: defaultParams.modifyThread
-            })
-        )
+        tools.push(new ModifyThreadTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('trashThread')) {
-        tools.push(
-            new TrashThreadTool({
-                accessToken,
-                defaultParams: defaultParams.trashThread
-            })
-        )
+        tools.push(new TrashThreadTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('untrashThread')) {
-        tools.push(
-            new UntrashThreadTool({
-                accessToken,
-                defaultParams: defaultParams.untrashThread
-            })
-        )
+        tools.push(new UntrashThreadTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('deleteThread')) {
-        tools.push(
-            new DeleteThreadTool({
-                accessToken,
-                defaultParams: defaultParams.deleteThread
-            })
-        )
+        tools.push(new DeleteThreadTool({ accessToken, defaultParams }))
     }
 
     return tools

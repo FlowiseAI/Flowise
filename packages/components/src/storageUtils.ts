@@ -753,8 +753,8 @@ export const streamStorageFile = async (
     }
 
     // Check for path traversal attempts
-    if (isPathTraversal(chatflowId)) {
-        throw new Error('Invalid path characters detected in chatflowId')
+    if (isPathTraversal(chatflowId) || isPathTraversal(chatId)) {
+        throw new Error('Invalid path characters detected in chatflowId or chatId')
     }
 
     const storageType = getStorageType()
@@ -1036,15 +1036,12 @@ export const getGcsClient = () => {
     const projectId = process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID
     const bucketName = process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME
 
-    if (!pathToGcsCredential) {
-        throw new Error('GOOGLE_CLOUD_STORAGE_CREDENTIAL env variable is required')
-    }
     if (!bucketName) {
         throw new Error('GOOGLE_CLOUD_STORAGE_BUCKET_NAME env variable is required')
     }
 
     const storageConfig = {
-        keyFilename: pathToGcsCredential,
+        ...(pathToGcsCredential ? { keyFilename: pathToGcsCredential } : {}),
         ...(projectId ? { projectId } : {})
     }
 
