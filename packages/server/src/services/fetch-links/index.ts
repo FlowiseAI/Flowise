@@ -1,4 +1,4 @@
-import { webCrawl, xmlScrape } from 'flowise-components'
+import { webCrawl, xmlScrape, checkDenyList } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -6,6 +6,8 @@ import { getErrorMessage } from '../../errors/utils'
 const getAllLinks = async (requestUrl: string, relativeLinksMethod: string, queryLimit: string): Promise<any> => {
     try {
         const url = decodeURIComponent(requestUrl)
+        await checkDenyList(url)
+
         if (!relativeLinksMethod) {
             throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR,

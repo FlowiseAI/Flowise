@@ -69,7 +69,8 @@ class ChatflowTool_Tools implements INode {
                 description: 'Override the config passed to the Chatflow.',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Base URL',
@@ -370,10 +371,14 @@ try {
 
         const sandbox = createCodeExecutionSandbox('', [], {}, additionalSandbox)
 
-        const response = await executeJavaScriptCode(code, sandbox, {
+        let response = await executeJavaScriptCode(code, sandbox, {
             useSandbox: false,
             timeout: 10000
         })
+
+        if (typeof response === 'object') {
+            response = JSON.stringify(response)
+        }
 
         return response
     }

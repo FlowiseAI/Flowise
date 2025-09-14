@@ -174,7 +174,8 @@ class Retriever_Tools implements INode {
                 hint: {
                     label: 'What can you filter?',
                     value: howToUse
-                }
+                },
+                acceptVariable: true
             }
         ]
     }

@@ -124,9 +124,13 @@ export class DynamicStructuredTool<
 
         const sandbox = createCodeExecutionSandbox('', this.variables || [], flow, additionalSandbox)
 
-        const response = await executeJavaScriptCode(this.code, sandbox, {
+        let response = await executeJavaScriptCode(this.code, sandbox, {
             timeout: 10000
         })
+
+        if (typeof response === 'object') {
+            response = JSON.stringify(response)
+        }
 
         return response
     }

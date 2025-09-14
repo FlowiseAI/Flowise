@@ -8,7 +8,7 @@ import {
     INodeParams,
     IServerSideEventStreamer
 } from '../../../src/Interface'
-import { getVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
+import { getVars, executeJavaScriptCode, createCodeExecutionSandbox, processTemplateVariables } from '../../../src/utils'
 import { updateFlowState } from '../utils'
 
 interface ICustomFunctionInputVariables {
@@ -145,19 +145,13 @@ class CustomFunction_Agentflow implements INode {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
 
-        // Update flow state if needed
-        let newState = { ...state }
-        if (_customFunctionUpdateState && Array.isArray(_customFunctionUpdateState) && _customFunctionUpdateState.length > 0) {
-            newState = updateFlowState(state, _customFunctionUpdateState)
-        }
-
         const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
         const flow = {
             chatflowId: options.chatflowid,
             sessionId: options.sessionId,
             chatId: options.chatId,
             input,
-            state: newState
+            state
         }
 
         // Create additional sandbox variables for custom function inputs
@@ -190,14 +184,13 @@ class CustomFunction_Agentflow implements INode {
                 finalOutput = JSON.stringify(response, null, 2)
             }
 
-            // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', finalOutput)
-                    }
-                }
+            // Update flow state if needed
+            let newState = { ...state }
+            if (_customFunctionUpdateState && Array.isArray(_customFunctionUpdateState) && _customFunctionUpdateState.length > 0) {
+                newState = updateFlowState(state, _customFunctionUpdateState)
             }
+
+            newState = processTemplateVariables(newState, finalOutput)
 
             const returnOutput = {
                 id: nodeData.id,

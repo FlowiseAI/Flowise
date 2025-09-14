@@ -90,7 +90,8 @@ class MongoDBAtlas_VectorStores implements INode {
                 name: 'mongoMetadataFilter',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Top K',

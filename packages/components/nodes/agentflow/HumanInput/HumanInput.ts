@@ -208,7 +208,7 @@ class HumanInput_Agentflow implements INode {
                 humanInputDescription = (nodeData.inputs?.humanInputDescription as string) || 'Do you want to proceed?'
                 const messages = [...pastChatHistory, ...runtimeChatHistory]
                 // Find the last message in the messages array
-                const lastMessage = (messages[messages.length - 1] as any).content || ''
+                const lastMessage = messages.length > 0 ? (messages[messages.length - 1] as any).content || '' : ''
                 humanInputDescription = `${lastMessage}\n\n${humanInputDescription}`
                 if (isStreamable) {
                     const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
