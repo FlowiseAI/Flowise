@@ -65,7 +65,8 @@ class Vectara_VectorStores implements INode {
                     'Filter to apply to Vectara metadata. Refer to the <a target="_blank" href="https://docs.flowiseai.com/vector-stores/vectara">documentation</a> on how to use Vectara filters with Flowise.',
                 type: 'string',
                 additionalParams: true,
-                optional: true
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Sentences Before',

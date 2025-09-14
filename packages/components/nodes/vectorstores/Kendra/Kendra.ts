@@ -86,7 +86,8 @@ class Kendra_VectorStores implements INode {
                 description: 'Optional filter to apply when retrieving documents',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             }
         ]
         // Note: Kendra doesn't support MMR search, but keeping the structure consistent

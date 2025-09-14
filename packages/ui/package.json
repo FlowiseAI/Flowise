@@ -34,7 +34,7 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
-        "axios": "1.7.9",
+        "axios": "1.12.0",
         "clsx": "^1.1.1",
         "dompurify": "^3.2.6",
         "dotenv": "^16.0.0",

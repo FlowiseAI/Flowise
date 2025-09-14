@@ -28,7 +28,7 @@ import {
     replaceBase64ImagesWithFileReferences,
     updateFlowState
 } from '../utils'
-import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, processTemplateVariables } from '../../../src/utils'
 import { addSingleFileToStorage } from '../../../src/storageUtils'
 import fetch from 'node-fetch'
 
@@ -1086,13 +1086,7 @@ class Agent_Agentflow implements INode {
             }
 
             // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', finalResponse)
-                    }
-                }
-            }
+            newState = processTemplateVariables(newState, finalResponse)
 
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
@@ -1723,9 +1717,20 @@ class Agent_Agentflow implements INode {
                     }
 
                     console.error('Error invoking tool:', e)
+                    const errMsg = getErrorMessage(e)
+                    let toolInput = toolCall.args
+                    if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                        const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                        try {
+                            toolInput = JSON.parse(args)
+                        } catch (e) {
+                            console.error('Error parsing tool input from tool:', e)
+                        }
+                    }
+
                     usedTools.push({
                         tool: selectedTool.name,
-                        toolInput: toolCall.args,
+                        toolInput,
                         toolOutput: '',
                         error: getErrorMessage(e)
                     })
@@ -1995,9 +2000,20 @@ class Agent_Agentflow implements INode {
                         }
 
                         console.error('Error invoking tool:', e)
+                        const errMsg = getErrorMessage(e)
+                        let toolInput = toolCall.args
+                        if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                            const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                            try {
+                                toolInput = JSON.parse(args)
+                            } catch (e) {
+                                console.error('Error parsing tool input from tool:', e)
+                            }
+                        }
+
                         usedTools.push({
                             tool: selectedTool.name,
-                            toolInput: toolCall.args,
+                            toolInput,
                             toolOutput: '',
                             error: getErrorMessage(e)
                         })
