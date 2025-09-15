@@ -193,8 +193,6 @@ services:
             fromDatabase:
                 name: aai-unified3-database
                 property: password
-          - key: DATABASE_SECRET
-            value: '{"engine":"postgres","host":"${DATABASE_HOST}","port":"${DATABASE_PORT}","dbname":"${DATABASE_NAME}","username":"${DATABASE_USER}","password":"${DATABASE_PASSWORD}"}'
 
           # =========================================
           # Flowise Auth0 Configuration (Must Match Frontend)
