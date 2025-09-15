@@ -15,6 +15,13 @@ import { ExpressAdapter } from '@bull-board/express'
 
 const QUEUE_NAME = process.env.QUEUE_NAME || 'flowise-queue'
 
+// Redis resilience configuration with environment variable support
+const REDIS_CONNECT_TIMEOUT = process.env.REDIS_CONNECT_TIMEOUT ? parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10) : 10000
+const REDIS_COMMAND_TIMEOUT = process.env.REDIS_COMMAND_TIMEOUT ? parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10) : 30000
+const REDIS_MAX_RETRIES_PER_REQUEST = process.env.REDIS_MAX_RETRIES_PER_REQUEST ? parseInt(process.env.REDIS_MAX_RETRIES_PER_REQUEST, 10) : 3
+const REDIS_LAZY_CONNECT = process.env.REDIS_LAZY_CONNECT === 'false' ? false : true
+const REDIS_KEEPALIVE_INTERVAL = process.env.REDIS_KEEPALIVE_INTERVAL ? parseInt(process.env.REDIS_KEEPALIVE_INTERVAL, 10) : 30000
+
 type QUEUE_TYPE = 'prediction' | 'upsert'
 
 export class QueueManager {
@@ -45,7 +52,12 @@ export class QueueManager {
                 keepAlive:
                     process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                         ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : undefined
+                        : REDIS_KEEPALIVE_INTERVAL,
+                // Enhanced resilience settings
+                connectTimeout: REDIS_CONNECT_TIMEOUT,
+                commandTimeout: REDIS_COMMAND_TIMEOUT,
+                maxRetriesPerRequest: REDIS_MAX_RETRIES_PER_REQUEST,
+                lazyConnect: REDIS_LAZY_CONNECT
             }
         } else {
             let tlsOpts = undefined
@@ -66,7 +78,12 @@ export class QueueManager {
                 keepAlive:
                     process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                         ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : undefined
+                        : REDIS_KEEPALIVE_INTERVAL,
+                // Enhanced resilience settings
+                connectTimeout: REDIS_CONNECT_TIMEOUT,
+                commandTimeout: REDIS_COMMAND_TIMEOUT,
+                maxRetriesPerRequest: REDIS_MAX_RETRIES_PER_REQUEST,
+                lazyConnect: REDIS_LAZY_CONNECT
             }
         }
     }
