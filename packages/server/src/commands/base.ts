@@ -178,25 +178,25 @@ export abstract class BaseCommand extends Command {
             process.env.DATABASE_TYPE = engine
         }
 
-        // AAI PostgreSQL fallbacks - Individual variable fallbacks using shorthand
+        // AAI PostgreSQL fallbacks - Individual variable fallbacks using nullish coalescing
         // Precedence order: Individual AAI secrets > Individual AAI variables > Shared DATABASE_SECRET
-        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_HOST ||= process.env.DATABASE_HOST
-        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PORT ||= process.env.DATABASE_PORT
-        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_DATABASE ||= process.env.DATABASE_NAME
-        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_USER ||= process.env.DATABASE_USER
-        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PASSWORD ||= process.env.DATABASE_PASSWORD
+        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_HOST ??= process.env.DATABASE_HOST
+        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PORT ??= process.env.DATABASE_PORT
+        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_DATABASE ??= process.env.DATABASE_NAME
+        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_USER ??= process.env.DATABASE_USER
+        process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PASSWORD ??= process.env.DATABASE_PASSWORD
 
-        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_HOST ||= process.env.DATABASE_HOST
-        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PORT ||= process.env.DATABASE_PORT
-        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_DATABASE ||= process.env.DATABASE_NAME
-        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_USER ||= process.env.DATABASE_USER
-        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PASSWORD ||= process.env.DATABASE_PASSWORD
+        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_HOST ??= process.env.DATABASE_HOST
+        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PORT ??= process.env.DATABASE_PORT
+        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_DATABASE ??= process.env.DATABASE_NAME
+        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_USER ??= process.env.DATABASE_USER
+        process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PASSWORD ??= process.env.DATABASE_PASSWORD
 
-        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_HOST ||= process.env.DATABASE_HOST
-        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PORT ||= process.env.DATABASE_PORT
-        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_DATABASE ||= process.env.DATABASE_NAME
-        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_USER ||= process.env.DATABASE_USER
-        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PASSWORD ||= process.env.DATABASE_PASSWORD
+        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_HOST ??= process.env.DATABASE_HOST
+        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PORT ??= process.env.DATABASE_PORT
+        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_DATABASE ??= process.env.DATABASE_NAME
+        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_USER ??= process.env.DATABASE_USER
+        process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PASSWORD ??= process.env.DATABASE_PASSWORD
 
         // Parse individual AAI secrets if they exist (highest precedence)
         // This allows managing each AAI service with its own database/credentials
