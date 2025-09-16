@@ -1705,7 +1705,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     Save Flow to Continue
                 </Typography>
                 <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-                    You need to save this agent flow before you can test it with messages.
+                    You need to save this {isAgentCanvas ? 'agent flow' : 'chatflow'} before you can test it with messages.
                 </Typography>
                 <Button 
                     variant="contained" 
