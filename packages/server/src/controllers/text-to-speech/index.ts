@@ -34,17 +34,17 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             const chatflow = await chatflowsService.getChatflowById(chatflowId)
             const ttsConfig = JSON.parse(chatflow.textToSpeech)
 
-            // Extract the first provider config (assuming single provider per chatflow)
-            const providerKey = Object.keys(ttsConfig)[0]
-            if (!providerKey) {
+            // Find the provider with status: true
+            const activeProviderKey = Object.keys(ttsConfig).find((key) => ttsConfig[key].status === true)
+            if (!activeProviderKey) {
                 throw new InternalFlowiseError(
                     StatusCodes.BAD_REQUEST,
-                    `Error: textToSpeechController.generateTextToSpeech - no TTS provider configured in chatflow!`
+                    `Error: textToSpeechController.generateTextToSpeech - no active TTS provider configured in chatflow!`
                 )
             }
 
-            const providerConfig = ttsConfig[providerKey]
-            provider = providerKey
+            const providerConfig = ttsConfig[activeProviderKey]
+            provider = activeProviderKey
             credentialId = providerConfig.credentialId
             voice = providerConfig.voice
             model = providerConfig.model

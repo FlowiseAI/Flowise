@@ -14,7 +14,9 @@ import {
     ListItemText,
     MenuItem,
     Select,
-    CircularProgress
+    CircularProgress,
+    Autocomplete,
+    TextField
 } from '@mui/material'
 import { IconX, IconVolume } from '@tabler/icons-react'
 import { useTheme } from '@mui/material/styles'
@@ -26,6 +28,7 @@ import { SwitchInput } from '@/ui-component/switch/Switch'
 import { Input } from '@/ui-component/input/Input'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
+import AudioWaveform from '@/ui-component/extended/AudioWaveform'
 import openAISVG from '@/assets/images/openai.svg'
 import elevenLabsSVG from '@/assets/images/elevenlabs.svg'
 
@@ -102,6 +105,21 @@ const TextToSpeech = ({ dialogProps }) => {
     const [selectedProvider, setSelectedProvider] = useState('none')
     const [voices, setVoices] = useState([])
     const [loadingVoices, setLoadingVoices] = useState(false)
+    const [testAudioSrc, setTestAudioSrc] = useState(null)
+    const [isTestPlaying, setIsTestPlaying] = useState(false)
+    const [testAudioRef, setTestAudioRef] = useState(null)
+    const [isGeneratingTest, setIsGeneratingTest] = useState(false)
+    const [resetWaveform, setResetWaveform] = useState(false)
+
+    const resetTestAudio = () => {
+        if (testAudioSrc) {
+            URL.revokeObjectURL(testAudioSrc)
+            setTestAudioSrc(null)
+        }
+        setIsTestPlaying(false)
+        setResetWaveform(true)
+        setTimeout(() => setResetWaveform(false), 100)
+    }
 
     const onSave = async () => {
         const textToSpeechConfig = setValue(true, selectedProvider, 'status')
@@ -164,16 +182,24 @@ const TextToSpeech = ({ dialogProps }) => {
                 newVal['none'].status = false
             }
         }
+
+        // Reset test audio when voice or credential is changed
+        if ((inputParamName === 'voice' || inputParamName === 'credentialId') && providerName === selectedProvider) {
+            resetTestAudio()
+        }
+
         setTextToSpeech(newVal)
         return newVal
     }
 
     const handleProviderChange = (provider, configOverride = null) => {
-        setSelectedProvider(() => provider)
+        setSelectedProvider(provider)
         setVoices([])
+        resetTestAudio()
+
         if (provider !== 'none') {
             const config = configOverride || textToSpeech
-            const credentialId = config[provider]?.credentialId
+            const credentialId = config?.[provider]?.credentialId
             if (credentialId) {
                 loadVoicesForProvider(provider, credentialId)
             }
@@ -213,6 +239,8 @@ const TextToSpeech = ({ dialogProps }) => {
             return
         }
 
+        setIsGeneratingTest(true)
+
         try {
             const providerConfig = textToSpeech?.[selectedProvider] || {}
             const body = {
@@ -223,74 +251,6 @@ const TextToSpeech = ({ dialogProps }) => {
                 model: providerConfig.model
             }
 
-            // Use streaming approach like in ChatMessage.jsx
-            const mediaSource = new MediaSource()
-            const audio = new Audio()
-            audio.src = URL.createObjectURL(mediaSource)
-
-            const streamingState = {
-                mediaSource,
-                sourceBuffer: null,
-                audio,
-                chunkQueue: [],
-                isBuffering: false,
-                abortController: new AbortController(),
-                streamEnded: false
-            }
-
-            mediaSource.addEventListener('sourceopen', () => {
-                try {
-                    const mimeType = 'audio/mpeg'
-                    streamingState.sourceBuffer = mediaSource.addSourceBuffer(mimeType)
-
-                    streamingState.sourceBuffer.addEventListener('updateend', () => {
-                        streamingState.isBuffering = false
-                        if (streamingState.chunkQueue.length > 0 && !streamingState.sourceBuffer.updating) {
-                            const chunk = streamingState.chunkQueue.shift()
-                            try {
-                                streamingState.sourceBuffer.appendBuffer(chunk)
-                                streamingState.isBuffering = true
-                            } catch (error) {
-                                console.error('Error appending chunk:', error)
-                            }
-                        } else if (streamingState.streamEnded && streamingState.chunkQueue.length === 0) {
-                            // All chunks processed and stream ended, now we can safely end the stream
-                            try {
-                                if (streamingState.mediaSource.readyState === 'open') {
-                                    streamingState.mediaSource.endOfStream()
-                                }
-                            } catch (error) {
-                                console.error('Error ending MediaSource stream:', error)
-                            }
-                        }
-                    })
-
-                    audio.play().catch((playError) => {
-                        console.error('Error starting audio playback:', playError)
-                    })
-                } catch (error) {
-                    console.error('Error setting up source buffer:', error)
-                }
-            })
-
-            audio.addEventListener('playing', () => {
-                enqueueSnackbar({
-                    message: 'Test audio playing...',
-                    options: { variant: 'info' }
-                })
-            })
-
-            audio.addEventListener('ended', () => {
-                enqueueSnackbar({
-                    message: 'Test audio completed successfully',
-                    options: { variant: 'success' }
-                })
-                // Cleanup
-                if (streamingState.audio.src) {
-                    URL.revokeObjectURL(streamingState.audio.src)
-                }
-            })
-
             const response = await fetch('/api/v1/text-to-speech/generate', {
                 method: 'POST',
                 headers: {
@@ -298,24 +258,19 @@ const TextToSpeech = ({ dialogProps }) => {
                     'x-request-from': 'internal'
                 },
                 credentials: 'include',
-                body: JSON.stringify(body),
-                signal: streamingState.abortController.signal
+                body: JSON.stringify(body)
             })
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`)
             }
 
+            const audioChunks = []
             const reader = response.body.getReader()
             let buffer = ''
 
             let done = false
             while (!done) {
-                if (streamingState.abortController.signal.aborted) {
-                    reader.cancel()
-                    break
-                }
-
                 const result = await reader.read()
                 done = result.done
                 if (done) break
@@ -328,44 +283,36 @@ const TextToSpeech = ({ dialogProps }) => {
                 for (const eventBlock of lines) {
                     if (eventBlock.trim()) {
                         const event = parseSSEEvent(eventBlock)
-                        if (event) {
-                            switch (event.event) {
-                                case 'tts_data':
-                                    if (event.data?.audioChunk) {
-                                        const audioBuffer = Uint8Array.from(atob(event.data.audioChunk), (c) => c.charCodeAt(0))
-                                        streamingState.chunkQueue.push(audioBuffer)
-
-                                        if (streamingState.sourceBuffer && !streamingState.sourceBuffer.updating) {
-                                            const chunk = streamingState.chunkQueue.shift()
-                                            try {
-                                                streamingState.sourceBuffer.appendBuffer(chunk)
-                                                streamingState.isBuffering = true
-                                            } catch (error) {
-                                                console.error('Error appending initial chunk:', error)
-                                            }
-                                        }
-                                    }
-                                    break
-                                case 'tts_end':
-                                    streamingState.streamEnded = true
-                                    // Check if we can end the stream immediately (no chunks queued and not updating)
-                                    if (
-                                        streamingState.sourceBuffer &&
-                                        streamingState.chunkQueue.length === 0 &&
-                                        !streamingState.sourceBuffer.updating &&
-                                        streamingState.mediaSource.readyState === 'open'
-                                    ) {
-                                        try {
-                                            streamingState.mediaSource.endOfStream()
-                                        } catch (error) {
-                                            console.error('Error ending MediaSource stream:', error)
-                                        }
-                                    }
-                                    break
-                            }
+                        if (event && event.event === 'tts_data' && event.data?.audioChunk) {
+                            const audioBuffer = Uint8Array.from(atob(event.data.audioChunk), (c) => c.charCodeAt(0))
+                            audioChunks.push(audioBuffer)
                         }
                     }
                 }
+            }
+
+            if (audioChunks.length > 0) {
+                // Combine all chunks into a single blob
+                const totalLength = audioChunks.reduce((sum, chunk) => sum + chunk.length, 0)
+                const combinedBuffer = new Uint8Array(totalLength)
+                let offset = 0
+
+                for (const chunk of audioChunks) {
+                    combinedBuffer.set(chunk, offset)
+                    offset += chunk.length
+                }
+
+                const audioBlob = new Blob([combinedBuffer], { type: 'audio/mpeg' })
+                const audioUrl = URL.createObjectURL(audioBlob)
+
+                // Clean up previous audio
+                if (testAudioSrc) {
+                    URL.revokeObjectURL(testAudioSrc)
+                }
+
+                setTestAudioSrc(audioUrl)
+            } else {
+                throw new Error('No audio data received')
             }
         } catch (error) {
             console.error('Error testing TTS:', error)
@@ -373,6 +320,8 @@ const TextToSpeech = ({ dialogProps }) => {
                 message: `TTS test failed: ${error.message}`,
                 options: { variant: 'error' }
             })
+        } finally {
+            setIsGeneratingTest(false)
         }
     }
 
@@ -398,6 +347,46 @@ const TextToSpeech = ({ dialogProps }) => {
         return event.event ? event : null
     }
 
+    // Audio control functions for waveform component
+    const handleTestPlay = async () => {
+        // If audio already exists, just play it
+        if (testAudioRef && testAudioSrc) {
+            testAudioRef.play()
+            setIsTestPlaying(true)
+            return
+        }
+
+        // If no audio exists, generate it first
+        if (!testAudioSrc) {
+            await testTTS()
+            // testTTS will set the audio source, and we'll play it in the next useEffect
+        }
+    }
+
+    const handleTestPause = () => {
+        if (testAudioRef) {
+            testAudioRef.pause()
+            setIsTestPlaying(false)
+        }
+    }
+
+    const handleTestEnded = () => {
+        setIsTestPlaying(false)
+    }
+
+    // Auto-play when audio is generated (if user clicked play)
+    useEffect(() => {
+        if (testAudioSrc && testAudioRef && !isTestPlaying) {
+            // Small delay to ensure audio element is ready
+            setTimeout(() => {
+                testAudioRef.play()
+                setIsTestPlaying(true)
+            }, 100)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [testAudioSrc, testAudioRef])
+
     useEffect(() => {
         if (dialogProps.chatflow && dialogProps.chatflow.textToSpeech) {
             try {
@@ -422,6 +411,7 @@ const TextToSpeech = ({ dialogProps }) => {
             setTextToSpeech(null)
             setSelectedProvider('none')
             setVoices([])
+            resetTestAudio()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
@@ -482,7 +472,15 @@ const TextToSpeech = ({ dialogProps }) => {
                             sx={{ ml: 1 }}
                             primary={textToSpeechProviders[selectedProvider].label}
                             secondary={
-                                <a target='_blank' rel='noreferrer' href={textToSpeechProviders[selectedProvider].url}>
+                                <a
+                                    target='_blank'
+                                    rel='noreferrer'
+                                    href={textToSpeechProviders[selectedProvider].url}
+                                    style={{
+                                        color: theme?.customization?.isDarkMode ? '#90caf9' : '#1976d2',
+                                        textDecoration: 'underline'
+                                    }}
+                                >
                                     {textToSpeechProviders[selectedProvider].url}
                                 </a>
                             }
@@ -551,25 +549,38 @@ const TextToSpeech = ({ dialogProps }) => {
                                 />
                             )}
                             {inputParam.type === 'voice_select' && (
-                                <Box>
-                                    {loadingVoices ? (
-                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <CircularProgress size={16} />
-                                            <Typography variant='body2'>Loading voices...</Typography>
-                                        </Box>
-                                    ) : (
-                                        <Dropdown
-                                            name={inputParam.name}
-                                            options={voices.map((voice) => ({ label: voice.name, name: voice.id }))}
-                                            onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                            value={
-                                                textToSpeech?.[selectedProvider]
-                                                    ? textToSpeech[selectedProvider][inputParam.name]
-                                                    : inputParam.default ?? 'choose a voice'
-                                            }
+                                <Autocomplete
+                                    size='small'
+                                    sx={{ mt: 1 }}
+                                    options={voices}
+                                    loading={loadingVoices}
+                                    getOptionLabel={(option) => option.name || ''}
+                                    value={
+                                        voices.find(
+                                            (voice) =>
+                                                voice.id === (textToSpeech?.[selectedProvider]?.[inputParam.name] || inputParam.default)
+                                        ) || null
+                                    }
+                                    onChange={(event, newValue) => {
+                                        setValue(newValue ? newValue.id : '', selectedProvider, inputParam.name)
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            placeholder={loadingVoices ? 'Loading voices...' : 'Choose a voice'}
+                                            InputProps={{
+                                                ...params.InputProps,
+                                                endAdornment: (
+                                                    <>
+                                                        {loadingVoices ? <CircularProgress color='inherit' size={20} /> : null}
+                                                        {params.InputProps.endAdornment}
+                                                    </>
+                                                )
+                                            }}
                                         />
                                     )}
-                                </Box>
+                                    disabled={loadingVoices || !textToSpeech?.[selectedProvider]?.credentialId}
+                                />
                             )}
                         </Box>
                     ))}
@@ -591,17 +602,42 @@ const TextToSpeech = ({ dialogProps }) => {
                         />
                     </Box>
 
-                    {/* Test TTS Button */}
+                    {/* Test Voice Section */}
                     <Box sx={{ p: 2 }}>
-                        <StyledButton
-                            variant='outlined'
-                            size='small'
-                            startIcon={<IconVolume />}
-                            onClick={testTTS}
-                            disabled={!textToSpeech?.[selectedProvider]?.credentialId}
-                        >
+                        <Typography variant='h6' sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <IconVolume size={20} />
                             Test Voice
-                        </StyledButton>
+                        </Typography>
+
+                        <Typography variant='body2' color='textSecondary' sx={{ mb: 2 }}>
+                            Test text: &quot;Today is a wonderful day to build something with Flowise!&quot;
+                        </Typography>
+
+                        <AudioWaveform
+                            audioSrc={testAudioSrc}
+                            onPlay={handleTestPlay}
+                            onPause={handleTestPause}
+                            onEnded={handleTestEnded}
+                            isPlaying={isTestPlaying}
+                            isGenerating={isGeneratingTest}
+                            disabled={!textToSpeech?.[selectedProvider]?.credentialId}
+                            externalAudioRef={testAudioRef}
+                            resetProgress={resetWaveform}
+                        />
+
+                        {/* Hidden audio element for waveform control */}
+                        {testAudioSrc && (
+                            <audio
+                                ref={(ref) => setTestAudioRef(ref)}
+                                src={testAudioSrc}
+                                onPlay={() => setIsTestPlaying(true)}
+                                onPause={() => setIsTestPlaying(false)}
+                                onEnded={handleTestEnded}
+                                style={{ display: 'none' }}
+                            >
+                                <track kind='captions' />
+                            </audio>
+                        )}
                     </Box>
                 </>
             )}

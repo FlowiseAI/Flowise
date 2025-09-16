@@ -39,8 +39,7 @@ import {
     IconCheck,
     IconPaperclip,
     IconSparkles,
-    IconVolume,
-    IconSquare
+    IconVolume
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -269,6 +268,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         audioFormat: null,
         abortController: null
     })
+
+    // Ref to prevent auto-scroll during TTS actions (using ref to avoid re-renders)
+    const isTTSActionRef = useRef(false)
+    const ttsTimeoutRef = useRef(null)
 
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
@@ -552,6 +555,22 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const scrollToBottom = () => {
         if (ps.current) {
             ps.current.scrollTo({ top: maxScroll })
+        }
+    }
+
+    // Helper function to manage TTS action flag
+    const setTTSAction = (isActive) => {
+        isTTSActionRef.current = isActive
+        if (ttsTimeoutRef.current) {
+            clearTimeout(ttsTimeoutRef.current)
+            ttsTimeoutRef.current = null
+        }
+        if (isActive) {
+            // Reset the flag after a longer delay to ensure all state changes are complete
+            ttsTimeoutRef.current = setTimeout(() => {
+                isTTSActionRef.current = false
+                ttsTimeoutRef.current = null
+            }, 300)
         }
     }
 
@@ -1374,9 +1393,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
     }, [isChatFlowAvailableForRAGFileUploads, fullFileUpload])
 
-    // Auto scroll chat to bottom
+    // Auto scroll chat to bottom (but not during TTS actions)
     useEffect(() => {
-        scrollToBottom()
+        if (!isTTSActionRef.current) {
+            scrollToBottom()
+        }
     }, [messages])
 
     useEffect(() => {
@@ -1563,6 +1584,8 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     }
 
     const handleTTSStop = (messageId) => {
+        setTTSAction(true)
+
         if (ttsAudio[messageId]) {
             ttsAudio[messageId].pause()
             ttsAudio[messageId].currentTime = 0
@@ -1621,6 +1644,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             return
         }
 
+        setTTSAction(true)
         stopAllTTS()
 
         handleTTSStart({ chatMessageId: messageId, format: 'mp3' })
@@ -1868,6 +1892,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     }
 
     const handleTTSStart = (data) => {
+        setTTSAction(true)
         setIsTTSLoading((prevState) => ({
             ...prevState,
             [data.chatMessageId]: true
@@ -1988,6 +2013,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     useEffect(() => {
         return () => {
             cleanupTTSStreaming()
+            // Cleanup TTS timeout on unmount
+            if (ttsTimeoutRef.current) {
+                clearTimeout(ttsTimeoutRef.current)
+                ttsTimeoutRef.current = null
+            }
         }
     }, [])
 
@@ -2672,9 +2702,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                             {isTTSLoading[message.id] ? (
                                                                 <CircularProgress size={16} />
                                                             ) : isTTSPlaying[message.id] ? (
-                                                                <IconSquare size={16} />
+                                                                <IconCircleDot style={{ width: '20px', height: '20px' }} color={'red'} />
                                                             ) : (
-                                                                <IconVolume size={16} />
+                                                                <IconVolume
+                                                                    style={{ width: '20px', height: '20px' }}
+                                                                    color={customization.isDarkMode ? 'white' : '#1e88e5'}
+                                                                />
                                                             )}
                                                         </IconButton>
                                                     )}
