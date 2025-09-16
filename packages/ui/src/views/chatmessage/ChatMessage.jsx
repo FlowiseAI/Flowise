@@ -2535,45 +2535,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            {/* Save Flow Dialog */}
-            {/* <Dialog open={showSaveDialog} onClose={() => setShowSaveDialog(false)} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <IconDeviceFloppy size={24} />
-                    Save Flow to Continue
-                </DialogTitle>
-                <DialogContent>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                        You need to save this agent flow before you can test it with messages.
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                        Would you like to save the flow and continue with your message?
-                    </Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setShowSaveDialog(false)}>
-                        Cancel
-                    </Button>
-                    <Button 
-                        onClick={() => {
-                            setShowSaveDialog(false)
-                            // Trigger save flow functionality
-                            // This would need to be connected to the Canvas save function
-                            enqueueSnackbar({
-                                message: 'Please save the flow using Ctrl+S or the Save button first',
-                                options: {
-                                    key: new Date().getTime() + Math.random(),
-                                    variant: 'info'
-                                }
-                            })
-                        }} 
-                        variant="contained"
-                        startIcon={<IconDeviceFloppy />}
-                    >
-                        Save & Continue
-                    </Button>
-                </DialogActions>
-            </Dialog> */}
         </div>
     )
 }
