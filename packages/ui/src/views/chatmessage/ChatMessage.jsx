@@ -1737,6 +1737,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
     const handleAutoPlayAudio = async (audioData) => {
         try {
+            // Stop all existing TTS audio before playing auto-play audio
+            stopAllTTS()
+
             const audioBuffer = Uint8Array.from(atob(audioData), (c) => c.charCodeAt(0))
             const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' })
             const audioUrl = URL.createObjectURL(audioBlob)
@@ -1893,6 +1896,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
     const handleTTSStart = (data) => {
         setTTSAction(true)
+
+        // Stop all existing TTS audio before starting new stream
+        stopAllTTS()
+
         setIsTTSLoading((prevState) => ({
             ...prevState,
             [data.chatMessageId]: true
