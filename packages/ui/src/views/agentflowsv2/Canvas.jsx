@@ -796,7 +796,12 @@ const AgentflowCanvas = () => {
                                         <IconRefreshAlert />
                                     </Fab>
                                 )}
-                                <ChatPopUp isAgentCanvas={true} chatflowid={chatflowId} onOpenChange={setChatPopupOpen} onOpenSaveDialog={openSaveDialog} />
+                                <ChatPopUp
+                                    isAgentCanvas={true}
+                                    chatflowid={chatflowId}
+                                    onOpenChange={setChatPopupOpen}
+                                    onOpenSaveDialog={openSaveDialog}
+                                />
                                 {!chatPopupOpen && <ValidationPopUp isAgentCanvas={true} chatflowid={chatflowId} />}
                             </ReactFlow>
                         </div>

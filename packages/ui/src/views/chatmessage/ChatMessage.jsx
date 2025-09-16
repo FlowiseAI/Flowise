@@ -251,10 +251,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const [formInputParams, setFormInputParams] = useState([])
 
     const [isConfigLoading, setIsConfigLoading] = useState(true)
-    const [showSaveDialog, setShowSaveDialog] = useState(false)
-    const [pendingMessage, setPendingMessage] = useState('')
-    const [pendingMessageAction, setPendingMessageAction] = useState(null)
-    const [pendingHumanInput, setPendingHumanInput] = useState(null)
 
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
@@ -1685,7 +1681,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 onOpenSaveDialog()
             }
         }
-        
+
         return (
             <Box
                 sx={{
@@ -1701,23 +1697,18 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 }}
             >
                 <IconDeviceFloppy size={48} style={{ marginBottom: 16, color: theme.palette.text.secondary }} />
-                <Typography variant="h6" gutterBottom>
+                <Typography variant='h6' gutterBottom>
                     Save Flow to Continue
                 </Typography>
-                <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
+                <Typography variant='body2' color='text.secondary' align='center' sx={{ mb: 3 }}>
                     You need to save this {isAgentCanvas ? 'agent flow' : 'chatflow'} before you can test it with messages.
                 </Typography>
-                <Button 
-                    variant="contained" 
-                    color="primary" 
-                    onClick={handleSaveFlow}
-                    startIcon={<IconDeviceFloppy size={16} />}
-                >
+                <Button variant='contained' color='primary' onClick={handleSaveFlow} startIcon={<IconDeviceFloppy size={16} />}>
                     Save Flow
                 </Button>
             </Box>
         )
-        }
+    }
 
     if (isConfigLoading) {
         return (
@@ -2593,7 +2584,8 @@ ChatMessage.propTypes = {
     isAgentCanvas: PropTypes.bool,
     isDialog: PropTypes.bool,
     previews: PropTypes.array,
-    setPreviews: PropTypes.func
+    setPreviews: PropTypes.func,
+    onOpenSaveDialog: PropTypes.func
 }
 
 export default memo(ChatMessage)
