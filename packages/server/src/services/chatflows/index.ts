@@ -292,12 +292,18 @@ const saveChatflow = async (
         const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
         dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
     }
+
+    const subscriptionDetails = await usageCacheManager.getSubscriptionDataFromCache(subscriptionId)
+    const productId = subscriptionDetails?.productId || ''
+
     await appServer.telemetry.sendTelemetry(
         'chatflow_created',
         {
             version: await getAppVersion(),
             chatflowId: dbResponse.id,
-            flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges)
+            flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges),
+            productId,
+            subscriptionId
         },
         orgId
     )

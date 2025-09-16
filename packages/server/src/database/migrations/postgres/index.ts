@@ -38,6 +38,7 @@ import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorTo
 import { ModifyExecutionSessionIdFieldType1748450230238 } from './1748450230238-ModifyExecutionSessionIdFieldType'
 import { AddTextToSpeechToChatFlow1754986480347 } from './1754986480347-AddTextToSpeechToChatFlow'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
+import { AddChatFlowNameIndex1755748356008 } from './1755748356008-AddChatFlowNameIndex'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/postgres/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/postgres/1720230151484-AddWorkspace'
@@ -102,5 +103,6 @@ export const postgresMigrations = [
     ExecutionLinkWorkspaceId1746862866554,
     ModifyExecutionSessionIdFieldType1748450230238,
     AddTextToSpeechToChatFlow1754986480347,
-    ModifyChatflowType1755066758601
+    ModifyChatflowType1755066758601,
+    AddChatFlowNameIndex1755748356008
 ]

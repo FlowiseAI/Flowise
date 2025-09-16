@@ -371,6 +371,7 @@ export interface ICustomTemplate {
 
 export interface IFlowConfig {
     chatflowid: string
+    chatflowId: string
     chatId: string
     sessionId: string
     chatHistory: IMessage[]
@@ -396,6 +397,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     orgId: string
     workspaceId: string
     subscriptionId: string
+    productId: string
     baseURL: string
     isInternal: boolean
     isEvaluation?: boolean
