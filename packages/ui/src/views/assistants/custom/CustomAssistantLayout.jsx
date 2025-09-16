@@ -86,7 +86,7 @@ const CustomAssistantLayout = () => {
         return images
     }
 
-    // refresh function for rename/delete
+    // refresh function for rename/delete/tags
     const refreshAssistants = async () => {
         try {
             await getAllAssistantsApi.request('CUSTOM')
@@ -220,7 +220,7 @@ const CustomAssistantLayout = () => {
                                 icons={{}}
                                 isLoading={isLoading}
                                 filterFunction={filterAssistants}
-                                updateAssistantsApi={{ request: refreshAssistants }} // ✅ pass refresh function
+                                updateAssistantsApi={{ request: refreshAssistants }}
                                 setError={setError}
                             />
                         )}

@@ -3,8 +3,6 @@ import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Button, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
-import FileCopyIcon from '@mui/icons-material/FileCopy'
-import FileDownloadIcon from '@mui/icons-material/Downloading'
 import FileDeleteIcon from '@mui/icons-material/Delete'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons-react'
@@ -12,6 +10,7 @@ import { styled } from '@mui/material/styles'
 import Menu from '@mui/material/Menu'
 import { PermissionMenuItem } from '@/ui-component/button/RBACButtons'
 import AddCustomAssistantDialog from './AddCustomAssistantDialog'
+import TagDialog from '@/ui-component/dialog/TagDialog'
 import useNotifier from '@/utils/useNotifier'
 import assistantsApi from '@/api/assistants'
 
@@ -49,7 +48,9 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
     const [renameTags, setRenameTags] = useState('')
     const [renameDescription, setRenameDescription] = useState('')
 
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false) // NEW: delete confirmation
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [tagDialogOpen, setTagDialogOpen] = useState(false)
+    const [tagDialogProps, setTagDialogProps] = useState({})
 
     useEffect(() => {
         if (assistant?.details) {
@@ -116,28 +117,49 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
         }
     }
 
-    const handleDuplicate = () => {
+    const handleTags = () => {
         setAnchorEl(null)
-        enqueueSnackbar({
-            message: 'Duplicate Assistant - Coming soon!',
-            options: { key: new Date().getTime(), variant: 'info' }
-        })
+        if (assistant.details) {
+            try {
+                const parsed = JSON.parse(assistant.details)
+                if (parsed.category) {
+                    setTagDialogProps({ category: parsed.category.split(';') })
+                }
+            } catch {}
+        }
+        setTagDialogOpen(true)
     }
 
-    const handleExport = () => {
-        setAnchorEl(null)
+    const saveTags = async (categories) => {
+        setTagDialogOpen(false)
+        const categoryTags = categories.join(';')
         try {
-            const details = JSON.parse(assistant.details)
-            const dataStr = JSON.stringify(details, null, 2)
-            const blob = new Blob([dataStr], { type: 'application/json' })
-            const link = document.createElement('a')
-            link.href = URL.createObjectURL(blob)
-            link.download = `${details.name || 'assistant'}.json`
-            link.click()
-        } catch {
+            const parsed = JSON.parse(assistant.details || '{}')
+            const details = JSON.stringify({
+                ...parsed,
+                category: categoryTags
+            })
+            await assistantsApi.updateAssistant(assistant.id, { details })
+            if (updateAssistantsApi && typeof updateAssistantsApi.request === 'function') {
+                await updateAssistantsApi.request('CUSTOM')
+            }
+        } catch (error) {
+            if (setError) setError(error)
             enqueueSnackbar({
-                message: 'Export failed',
-                options: { key: new Date().getTime(), variant: 'error' }
+                message:
+                    typeof error.response?.data === 'object'
+                        ? error.response.data.message
+                        : error.response?.data,
+                options: {
+                    key: new Date().getTime(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
             })
         }
     }
@@ -156,6 +178,9 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
             <StyledMenu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 <PermissionMenuItem onClick={handleAssistantRename} icon={<EditIcon />}>
                     Rename
+                </PermissionMenuItem>
+                <PermissionMenuItem onClick={handleTags} icon={<EditIcon />}>
+                    Update Tags
                 </PermissionMenuItem>
                 <Divider />
                 <PermissionMenuItem onClick={handleDelete} icon={<FileDeleteIcon />}>
@@ -191,6 +216,13 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
                     <Button variant="contained" color="error" onClick={confirmDelete}>Delete</Button>
                 </DialogActions>
             </Dialog>
+
+            <TagDialog
+                isOpen={tagDialogOpen}
+                dialogProps={tagDialogProps}
+                onClose={() => setTagDialogOpen(false)}
+                onSubmit={saveTags}
+            />
         </>
     )
 }
