@@ -31,6 +31,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import ChatPopUp from '@/views/chatmessage/ChatPopUp'
 import ValidationPopUp from '@/views/chatmessage/ValidationPopUp'
+import SaveChatflowDialog from '@/ui-component/dialog/SaveChatflowDialog'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
 // API
@@ -100,6 +101,7 @@ const AgentflowCanvas = () => {
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
     const [editNodeDialogOpen, setEditNodeDialogOpen] = useState(false)
     const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
+    const [flowDialogOpen, setFlowDialogOpen] = useState(false)
     const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
 
     const reactFlowWrapper = useRef(null)
@@ -238,6 +240,15 @@ const AgentflowCanvas = () => {
                 updateChatflowApi.request(chatflow.id, updateBody)
             }
         }
+    }
+
+    const onConfirmSaveName = (flowName) => {
+        setFlowDialogOpen(false)
+        handleSaveFlow(flowName)
+    }
+
+    const openSaveDialog = () => {
+        setFlowDialogOpen(true)
     }
 
     // eslint-disable-next-line
@@ -785,13 +796,23 @@ const AgentflowCanvas = () => {
                                         <IconRefreshAlert />
                                     </Fab>
                                 )}
-                                <ChatPopUp isAgentCanvas={true} chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
+                                <ChatPopUp isAgentCanvas={true} chatflowid={chatflowId} onOpenChange={setChatPopupOpen} onOpenSaveDialog={openSaveDialog} />
                                 {!chatPopupOpen && <ValidationPopUp isAgentCanvas={true} chatflowid={chatflowId} />}
                             </ReactFlow>
                         </div>
                     </div>
                 </Box>
                 <ConfirmDialog />
+                <SaveChatflowDialog
+                    show={flowDialogOpen}
+                    dialogProps={{
+                        title: 'Save New Agent Flow',
+                        confirmButtonName: 'Save',
+                        cancelButtonName: 'Cancel'
+                    }}
+                    onCancel={() => setFlowDialogOpen(false)}
+                    onConfirm={onConfirmSaveName}
+                />
             </Box>
         </>
     )
