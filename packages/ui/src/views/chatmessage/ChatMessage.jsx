@@ -1361,7 +1361,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 let isEnabled = false
                 if (ttsConfig) {
                     Object.keys(ttsConfig).forEach((provider) => {
-                        if (ttsConfig?.[provider]?.status) {
+                        if (provider !== 'none' && ttsConfig?.[provider]?.status) {
                             isEnabled = true
                         }
                     })
