@@ -38,7 +38,8 @@ import {
     IconSquareFilled,
     IconCheck,
     IconPaperclip,
-    IconSparkles
+    IconSparkles,
+    IconDeviceFloppy
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -162,7 +163,7 @@ CardWithDeleteOverlay.propTypes = {
     onDelete: PropTypes.func
 }
 
-const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
+const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews, onOpenSaveDialog }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -250,6 +251,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const [formInputParams, setFormInputParams] = useState([])
 
     const [isConfigLoading, setIsConfigLoading] = useState(true)
+    const [showSaveDialog, setShowSaveDialog] = useState(false)
+    const [pendingMessage, setPendingMessage] = useState('')
+    const [pendingMessageAction, setPendingMessageAction] = useState(null)
+    const [pendingHumanInput, setPendingHumanInput] = useState(null)
 
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
@@ -1672,6 +1677,48 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
     }
 
+    // If no chatflowid and this is an agent canvas, show save prompt
+    if (!chatflowid) {
+        const handleSaveFlow = () => {
+            // Use the proper Flowise save dialog
+            if (onOpenSaveDialog) {
+                onOpenSaveDialog()
+            }
+        }
+        
+        return (
+            <Box
+                sx={{
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative',
+                    backgroundColor: theme.palette.background.paper,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    p: 3
+                }}
+            >
+                <IconDeviceFloppy size={48} style={{ marginBottom: 16, color: theme.palette.text.secondary }} />
+                <Typography variant="h6" gutterBottom>
+                    Save Flow to Continue
+                </Typography>
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
+                    You need to save this agent flow before you can test it with messages.
+                </Typography>
+                <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={handleSaveFlow}
+                    startIcon={<IconDeviceFloppy size={16} />}
+                >
+                    Save Flow
+                </Button>
+            </Box>
+        )
+        }
+
     if (isConfigLoading) {
         return (
             <Box
@@ -2497,6 +2544,45 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            {/* Save Flow Dialog */}
+            {/* <Dialog open={showSaveDialog} onClose={() => setShowSaveDialog(false)} maxWidth="sm" fullWidth>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <IconDeviceFloppy size={24} />
+                    Save Flow to Continue
+                </DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                        You need to save this agent flow before you can test it with messages.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Would you like to save the flow and continue with your message?
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowSaveDialog(false)}>
+                        Cancel
+                    </Button>
+                    <Button 
+                        onClick={() => {
+                            setShowSaveDialog(false)
+                            // Trigger save flow functionality
+                            // This would need to be connected to the Canvas save function
+                            enqueueSnackbar({
+                                message: 'Please save the flow using Ctrl+S or the Save button first',
+                                options: {
+                                    key: new Date().getTime() + Math.random(),
+                                    variant: 'info'
+                                }
+                            })
+                        }} 
+                        variant="contained"
+                        startIcon={<IconDeviceFloppy />}
+                    >
+                        Save & Continue
+                    </Button>
+                </DialogActions>
+            </Dialog> */}
         </div>
     )
 }
