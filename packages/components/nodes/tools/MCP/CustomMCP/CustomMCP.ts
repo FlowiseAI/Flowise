@@ -4,6 +4,7 @@ import { MCPToolkit } from '../core'
 import { getVars, prepareSandboxVars } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
 import hash from 'object-hash'
+import JSON5 from 'json5'
 
 const mcpServerConfig = `{
     "command": "npx",
@@ -261,7 +262,7 @@ function substituteVariablesInString(str: string, sandbox: any): string {
 
 function convertToValidJSONString(inputString: string) {
     try {
-        const jsObject = Function('return ' + inputString)()
+        const jsObject = JSON5.parse(inputString)
         return JSON.stringify(jsObject, null, 2)
     } catch (error) {
         console.error('Error converting to JSON:', error)

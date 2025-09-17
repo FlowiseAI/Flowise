@@ -28,7 +28,7 @@ import {
     replaceBase64ImagesWithFileReferences,
     updateFlowState
 } from '../utils'
-import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, processTemplateVariables } from '../../../src/utils'
 import { addSingleFileToStorage } from '../../../src/storageUtils'
 import fetch from 'node-fetch'
 
@@ -81,7 +81,7 @@ class Agent_Agentflow implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'agentAgentflow'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Agent'
         this.category = 'Agent Flows'
         this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
@@ -159,6 +159,27 @@ class Agent_Agentflow implements INode {
                 ],
                 show: {
                     agentModel: 'chatOpenAI'
+                }
+            },
+            {
+                label: 'Gemini Built-in Tools',
+                name: 'agentToolsBuiltInGemini',
+                type: 'multiOptions',
+                optional: true,
+                options: [
+                    {
+                        label: 'URL Context',
+                        name: 'urlContext',
+                        description: 'Extract content from given URLs'
+                    },
+                    {
+                        label: 'Google Search',
+                        name: 'googleSearch',
+                        description: 'Search real-time web content'
+                    }
+                ],
+                show: {
+                    agentModel: 'chatGoogleGenerativeAI'
                 }
             },
             {
@@ -765,6 +786,23 @@ class Agent_Agentflow implements INode {
                 }
             }
 
+            const agentToolsBuiltInGemini = convertMultiOptionsToStringArray(nodeData.inputs?.agentToolsBuiltInGemini)
+            if (agentToolsBuiltInGemini && agentToolsBuiltInGemini.length > 0) {
+                for (const tool of agentToolsBuiltInGemini) {
+                    const builtInTool: ICommonObject = {
+                        [tool]: {}
+                    }
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
+                }
+            }
+
             if (llmNodeInstance && toolsInstance.length > 0) {
                 if (llmNodeInstance.bindTools === undefined) {
                     throw new Error(`Agent needs to have a function calling capable models.`)
@@ -1086,13 +1124,7 @@ class Agent_Agentflow implements INode {
             }
 
             // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', finalResponse)
-                    }
-                }
-            }
+            newState = processTemplateVariables(newState, finalResponse)
 
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
@@ -1183,53 +1215,80 @@ class Agent_Agentflow implements INode {
             return builtInUsedTools
         }
 
-        const { output, tools } = response.response_metadata
+        const { output, tools, groundingMetadata, urlContextMetadata } = response.response_metadata
 
-        if (!output || !Array.isArray(output) || output.length === 0 || !tools || !Array.isArray(tools) || tools.length === 0) {
-            return builtInUsedTools
+        // Handle OpenAI built-in tools
+        if (output && Array.isArray(output) && output.length > 0 && tools && Array.isArray(tools) && tools.length > 0) {
+            for (const outputItem of output) {
+                if (outputItem.type && outputItem.type.endsWith('_call')) {
+                    let toolInput = outputItem.action ?? outputItem.code
+                    let toolOutput = outputItem.status === 'completed' ? 'Success' : outputItem.status
+
+                    // Handle image generation calls specially
+                    if (outputItem.type === 'image_generation_call') {
+                        // Create input summary for image generation
+                        toolInput = {
+                            prompt: outputItem.revised_prompt || 'Image generation request',
+                            size: outputItem.size || '1024x1024',
+                            quality: outputItem.quality || 'standard',
+                            output_format: outputItem.output_format || 'png'
+                        }
+
+                        // Check if image has been processed (base64 replaced with file path)
+                        if (outputItem.result && !outputItem.result.startsWith('data:') && !outputItem.result.includes('base64')) {
+                            toolOutput = `Image generated and saved`
+                        } else {
+                            toolOutput = `Image generated (base64)`
+                        }
+                    }
+
+                    // Remove "_call" suffix to get the base tool name
+                    const baseToolName = outputItem.type.replace('_call', '')
+
+                    // Find matching tool that includes the base name in its type
+                    const matchingTool = tools.find((tool) => tool.type && tool.type.includes(baseToolName))
+
+                    if (matchingTool) {
+                        // Check for duplicates
+                        if (builtInUsedTools.find((tool) => tool.tool === matchingTool.type)) {
+                            continue
+                        }
+
+                        builtInUsedTools.push({
+                            tool: matchingTool.type,
+                            toolInput,
+                            toolOutput
+                        })
+                    }
+                }
+            }
         }
 
-        for (const outputItem of output) {
-            if (outputItem.type && outputItem.type.endsWith('_call')) {
-                let toolInput = outputItem.action ?? outputItem.code
-                let toolOutput = outputItem.status === 'completed' ? 'Success' : outputItem.status
+        // Handle Gemini googleSearch tool
+        if (groundingMetadata && groundingMetadata.webSearchQueries && Array.isArray(groundingMetadata.webSearchQueries)) {
+            // Check for duplicates
+            if (!builtInUsedTools.find((tool) => tool.tool === 'googleSearch')) {
+                builtInUsedTools.push({
+                    tool: 'googleSearch',
+                    toolInput: {
+                        queries: groundingMetadata.webSearchQueries
+                    },
+                    toolOutput: `Searched for: ${groundingMetadata.webSearchQueries.join(', ')}`
+                })
+            }
+        }
 
-                // Handle image generation calls specially
-                if (outputItem.type === 'image_generation_call') {
-                    // Create input summary for image generation
-                    toolInput = {
-                        prompt: outputItem.revised_prompt || 'Image generation request',
-                        size: outputItem.size || '1024x1024',
-                        quality: outputItem.quality || 'standard',
-                        output_format: outputItem.output_format || 'png'
-                    }
-
-                    // Check if image has been processed (base64 replaced with file path)
-                    if (outputItem.result && !outputItem.result.startsWith('data:') && !outputItem.result.includes('base64')) {
-                        toolOutput = `Image generated and saved`
-                    } else {
-                        toolOutput = `Image generated (base64)`
-                    }
-                }
-
-                // Remove "_call" suffix to get the base tool name
-                const baseToolName = outputItem.type.replace('_call', '')
-
-                // Find matching tool that includes the base name in its type
-                const matchingTool = tools.find((tool) => tool.type && tool.type.includes(baseToolName))
-
-                if (matchingTool) {
-                    // Check for duplicates
-                    if (builtInUsedTools.find((tool) => tool.tool === matchingTool.type)) {
-                        continue
-                    }
-
-                    builtInUsedTools.push({
-                        tool: matchingTool.type,
-                        toolInput,
-                        toolOutput
-                    })
-                }
+        // Handle Gemini urlContext tool
+        if (urlContextMetadata && urlContextMetadata.urlMetadata && Array.isArray(urlContextMetadata.urlMetadata)) {
+            // Check for duplicates
+            if (!builtInUsedTools.find((tool) => tool.tool === 'urlContext')) {
+                builtInUsedTools.push({
+                    tool: 'urlContext',
+                    toolInput: {
+                        urlMetadata: urlContextMetadata.urlMetadata
+                    },
+                    toolOutput: `Processed ${urlContextMetadata.urlMetadata.length} URL(s)`
+                })
             }
         }
 
@@ -1723,9 +1782,20 @@ class Agent_Agentflow implements INode {
                     }
 
                     console.error('Error invoking tool:', e)
+                    const errMsg = getErrorMessage(e)
+                    let toolInput = toolCall.args
+                    if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                        const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                        try {
+                            toolInput = JSON.parse(args)
+                        } catch (e) {
+                            console.error('Error parsing tool input from tool:', e)
+                        }
+                    }
+
                     usedTools.push({
                         tool: selectedTool.name,
-                        toolInput: toolCall.args,
+                        toolInput,
                         toolOutput: '',
                         error: getErrorMessage(e)
                     })
@@ -1995,9 +2065,20 @@ class Agent_Agentflow implements INode {
                         }
 
                         console.error('Error invoking tool:', e)
+                        const errMsg = getErrorMessage(e)
+                        let toolInput = toolCall.args
+                        if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                            const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                            try {
+                                toolInput = JSON.parse(args)
+                            } catch (e) {
+                                console.error('Error parsing tool input from tool:', e)
+                            }
+                        }
+
                         usedTools.push({
                             tool: selectedTool.name,
-                            toolInput: toolCall.args,
+                            toolInput,
                             toolOutput: '',
                             error: getErrorMessage(e)
                         })
