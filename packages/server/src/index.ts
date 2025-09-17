@@ -163,7 +163,8 @@ export class App {
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
 
         // Enhanced trust proxy settings for load balancer
-        this.app.set('trust proxy', true) // Trust all proxies
+        const trust_proxy: boolean = process.env.TRUST_PROXY === 'false' ? false : true // Default to trust all proxies
+        this.app.set('trust proxy', trust_proxy)
 
         // Allow access from specified domains
         this.app.use(cors(getCorsOptions()))
