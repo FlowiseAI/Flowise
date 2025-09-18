@@ -1,7 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, stripHTMLFromToolInput } from '../../../src/utils'
+import { getBaseClasses, stripHTMLFromToolInput, parseJsonBody } from '../../../src/utils'
 import { RequestParameters, desc, RequestsPutTool } from './core'
-import JSON5 from 'json5'
 
 const codeExample = `{
     "name": {
@@ -141,11 +140,11 @@ class RequestsPut_Tools implements INode {
         if (bodySchema) obj.bodySchema = stripHTMLFromToolInput(bodySchema)
         if (maxOutputLength) obj.maxOutputLength = parseInt(maxOutputLength, 10)
         if (headers) {
-            const parsedHeaders = typeof headers === 'object' ? headers : JSON5.parse(stripHTMLFromToolInput(headers))
+            const parsedHeaders = typeof headers === 'object' ? headers : parseJsonBody(stripHTMLFromToolInput(headers))
             obj.headers = parsedHeaders
         }
         if (body) {
-            const parsedBody = typeof body === 'object' ? body : JSON5.parse(body)
+            const parsedBody = typeof body === 'object' ? body : parseJsonBody(body)
             obj.body = parsedBody
         }
 

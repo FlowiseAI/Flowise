@@ -1,10 +1,9 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { MCPToolkit, validateMCPServerConfig } from '../core'
-import { getVars, prepareSandboxVars } from '../../../../src/utils'
+import { getVars, prepareSandboxVars, parseJsonBody } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
 import hash from 'object-hash'
-import JSON5 from 'json5'
 
 const mcpServerConfig = `{
     "command": "npx",
@@ -270,7 +269,7 @@ function substituteVariablesInString(str: string, sandbox: any): string {
 
 function convertToValidJSONString(inputString: string) {
     try {
-        const jsObject = JSON5.parse(inputString)
+        const jsObject = parseJsonBody(inputString)
         return JSON.stringify(jsObject, null, 2)
     } catch (error) {
         console.error('Error converting to JSON:', error)
