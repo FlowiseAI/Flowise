@@ -139,6 +139,11 @@ services:
             - REDIS_CA=${REDIS_CA}
             - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
             - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
+
+              # SECURITY
+            - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
+            - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
+            - HTTP_DENY_LIST=${HTTP_DENY_LIST}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
             interval: 10s
@@ -276,6 +281,11 @@ services:
             - REDIS_CA=${REDIS_CA}
             - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
             - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
+
+              # SECURITY
+            - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
+            - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
+            - HTTP_DENY_LIST=${HTTP_DENY_LIST}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${WORKER_PORT:-5566}/healthz']
             interval: 10s
