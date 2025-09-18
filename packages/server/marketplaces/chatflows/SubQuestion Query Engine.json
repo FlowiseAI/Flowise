@@ -1,0 +1,1234 @@
+{
+    "description": "Breaks down query into sub questions for each relevant data source, then combine into final response",
+    "usecases": ["SQL"],
+    "framework": ["LlamaIndex"],
+    "nodes": [
+        {
+            "width": 300,
+            "height": 749,
+            "id": "compactrefineLlamaIndex_0",
+            "position": {
+                "x": -443.9012456561584,
+                "y": 826.6100190232154
+            },
+            "type": "customNode",
+            "data": {
+                "id": "compactrefineLlamaIndex_0",
+                "label": "Compact and Refine",
+                "version": 1,
+                "name": "compactrefineLlamaIndex",
+                "type": "CompactRefine",
+                "baseClasses": ["CompactRefine", "ResponseSynthesizer"],
+                "tags": ["LlamaIndex"],
+                "category": "Response Synthesizer",
+                "description": "CompactRefine is a slight variation of Refine that first compacts the text chunks into the smallest possible number of chunks.",
+                "inputParams": [
+                    {
+                        "label": "Refine Prompt",
+                        "name": "refinePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "The original query is as follows: {query}\nWe have provided an existing answer: {existingAnswer}\nWe have the opportunity to refine the existing answer (only if needed) with some more context below.\n------------\n{context}\n------------\nGiven the new context, refine the original answer to better answer the query. If the context isn't useful, return the original answer.\nRefined Answer:",
+                        "warning": "Prompt can contains no variables, or up to 3 variables. Variables must be {existingAnswer}, {context} and {query}",
+                        "optional": true,
+                        "id": "compactrefineLlamaIndex_0-input-refinePrompt-string"
+                    },
+                    {
+                        "label": "Text QA Prompt",
+                        "name": "textQAPrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "default": "Context information is below.\n---------------------\n{context}\n---------------------\nGiven the context information and not prior knowledge, answer the query.\nQuery: {query}\nAnswer:",
+                        "warning": "Prompt can contains no variables, or up to 2 variables. Variables must be {context} and {query}",
+                        "optional": true,
+                        "id": "compactrefineLlamaIndex_0-input-textQAPrompt-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "refinePrompt": "A user has selected a set of SEC filing documents and has asked a question about them.\nThe SEC documents have the following titles:\n- Apple Inc (APPL) FORM 10K 2022\n- Tesla Inc (TSLA) FORM 10K 2022\nThe original query is as follows: {query}\nWe have provided an existing answer: {existingAnswer}\nWe have the opportunity to refine the existing answer (only if needed) with some more context below.\n------------\n{context}\n------------\nGiven the new context, refine the original answer to better answer the query. If the context isn't useful, return the original answer.\nRefined Answer:",
+                    "textQAPrompt": "A user has selected a set of SEC filing documents and has asked a question about them.\nThe SEC documents have the following titles:\n- Apple Inc (APPL) FORM 10K 2022\n- Tesla Inc (TSLA) FORM 10K 2022\nContext information is below.\n---------------------\n{context}\n---------------------\nGiven the context information and not prior knowledge, answer the query.\nQuery: {query}\nAnswer:"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "compactrefineLlamaIndex_0-output-compactrefineLlamaIndex-CompactRefine|ResponseSynthesizer",
+                        "name": "compactrefineLlamaIndex",
+                        "label": "CompactRefine",
+                        "type": "CompactRefine | ResponseSynthesizer"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -443.9012456561584,
+                "y": 826.6100190232154
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 611,
+            "id": "pineconeLlamaIndex_0",
+            "position": {
+                "x": 35.45798119088212,
+                "y": -132.1789597307308
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeLlamaIndex_0",
+                "label": "Pinecone",
+                "version": 1,
+                "name": "pineconeLlamaIndex",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorIndexRetriever"],
+                "tags": ["LlamaIndex"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeLlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeLlamaIndex_0-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeLlamaIndex_0-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_0-input-document-Document"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "BaseEmbedding_LlamaIndex",
+                        "id": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex"
+                    }
+                ],
+                "inputs": {
+                    "document": [],
+                    "model": "{{chatOpenAI_LlamaIndex_0.data.instance}}",
+                    "embeddings": "{{openAIEmbedding_LlamaIndex_0.data.instance}}",
+                    "pineconeIndex": "flowiseindex",
+                    "pineconeNamespace": "pinecone-form10k",
+                    "pineconeMetadataFilter": "{\"source\":\"tesla\"}",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorIndexRetriever"
+                            },
+                            {
+                                "id": "pineconeLlamaIndex_0-output-vectorStore-Pinecone|VectorStoreIndex",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store Index",
+                                "type": "Pinecone | VectorStoreIndex"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 35.45798119088212,
+                "y": -132.1789597307308
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 529,
+            "id": "chatOpenAI_LlamaIndex_0",
+            "position": {
+                "x": -455.232655468177,
+                "y": -711.0080711676725
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_LlamaIndex_0",
+                "label": "ChatOpenAI",
+                "version": 2.0,
+                "name": "chatOpenAI_LlamaIndex",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel_LlamaIndex", "BaseLLM"],
+                "tags": ["LlamaIndex"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI Chat LLM specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_LlamaIndex_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_LlamaIndex_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_0-input-topP-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_0-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo-16k",
+                    "temperature": "0",
+                    "maxTokens": "",
+                    "topP": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM",
+                        "name": "chatOpenAI_LlamaIndex",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel_LlamaIndex | BaseLLM"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -455.232655468177,
+                "y": -711.0080711676725
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 334,
+            "id": "openAIEmbedding_LlamaIndex_0",
+            "position": {
+                "x": -451.0082548287243,
+                "y": -127.15143353229783
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbedding_LlamaIndex_0",
+                "label": "OpenAI Embedding",
+                "version": 2,
+                "name": "openAIEmbedding_LlamaIndex",
+                "type": "OpenAIEmbedding",
+                "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
+                "tags": ["LlamaIndex"],
+                "category": "Embeddings",
+                "description": "OpenAI Embedding specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbedding_LlamaIndex_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbedding_LlamaIndex_0-input-modelName-options"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_0-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "timeout": "",
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+                        "name": "openAIEmbedding_LlamaIndex",
+                        "label": "OpenAIEmbedding",
+                        "type": "OpenAIEmbedding | BaseEmbedding_LlamaIndex | BaseEmbedding"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": -451.0082548287243,
+                "y": -127.15143353229783
+            }
+        },
+        {
+            "width": 300,
+            "height": 611,
+            "id": "pineconeLlamaIndex_1",
+            "position": {
+                "x": 43.95604951980056,
+                "y": -783.0024679245387
+            },
+            "type": "customNode",
+            "data": {
+                "id": "pineconeLlamaIndex_1",
+                "label": "Pinecone",
+                "version": 1,
+                "name": "pineconeLlamaIndex",
+                "type": "Pinecone",
+                "baseClasses": ["Pinecone", "VectorIndexRetriever"],
+                "tags": ["LlamaIndex"],
+                "category": "Vector Stores",
+                "description": "Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["pineconeApi"],
+                        "id": "pineconeLlamaIndex_1-input-credential-credential"
+                    },
+                    {
+                        "label": "Pinecone Index",
+                        "name": "pineconeIndex",
+                        "type": "string",
+                        "id": "pineconeLlamaIndex_1-input-pineconeIndex-string"
+                    },
+                    {
+                        "label": "Pinecone Namespace",
+                        "name": "pineconeNamespace",
+                        "type": "string",
+                        "placeholder": "my-first-namespace",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_1-input-pineconeNamespace-string"
+                    },
+                    {
+                        "label": "Pinecone Metadata Filter",
+                        "name": "pineconeMetadataFilter",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "pineconeLlamaIndex_1-input-pineconeMetadataFilter-json"
+                    },
+                    {
+                        "label": "Top K",
+                        "name": "topK",
+                        "description": "Number of top results to fetch. Default to 4",
+                        "placeholder": "4",
+                        "type": "number",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_1-input-topK-number"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Document",
+                        "name": "document",
+                        "type": "Document",
+                        "list": true,
+                        "optional": true,
+                        "id": "pineconeLlamaIndex_1-input-document-Document"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "pineconeLlamaIndex_1-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "BaseEmbedding_LlamaIndex",
+                        "id": "pineconeLlamaIndex_1-input-embeddings-BaseEmbedding_LlamaIndex"
+                    }
+                ],
+                "inputs": {
+                    "document": [],
+                    "model": "{{chatOpenAI_LlamaIndex_0.data.instance}}",
+                    "embeddings": "{{openAIEmbedding_LlamaIndex_0.data.instance}}",
+                    "pineconeIndex": "flowiseindex",
+                    "pineconeNamespace": "pinecone-form10k",
+                    "pineconeMetadataFilter": "{\"source\":\"apple\"}",
+                    "topK": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "options": [
+                            {
+                                "id": "pineconeLlamaIndex_1-output-retriever-Pinecone|VectorIndexRetriever",
+                                "name": "retriever",
+                                "label": "Pinecone Retriever",
+                                "type": "Pinecone | VectorIndexRetriever"
+                            },
+                            {
+                                "id": "pineconeLlamaIndex_1-output-vectorStore-Pinecone|VectorStoreIndex",
+                                "name": "vectorStore",
+                                "label": "Pinecone Vector Store Index",
+                                "type": "Pinecone | VectorStoreIndex"
+                            }
+                        ],
+                        "default": "retriever"
+                    }
+                ],
+                "outputs": {
+                    "output": "retriever"
+                },
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 43.95604951980056,
+                "y": -783.0024679245387
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 529,
+            "id": "chatOpenAI_LlamaIndex_1",
+            "position": {
+                "x": -446.80851289432655,
+                "y": 246.8790997755625
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_LlamaIndex_1",
+                "label": "ChatOpenAI",
+                "version": 2.0,
+                "name": "chatOpenAI_LlamaIndex",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel_LlamaIndex", "BaseLLM"],
+                "tags": ["LlamaIndex"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI Chat LLM specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_LlamaIndex_1-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_LlamaIndex_1-input-modelName-options"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-topP-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_LlamaIndex_1-input-timeout-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "modelName": "gpt-3.5-turbo-16k",
+                    "temperature": "0",
+                    "maxTokens": "",
+                    "topP": "",
+                    "timeout": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_LlamaIndex_1-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM",
+                        "name": "chatOpenAI_LlamaIndex",
+                        "label": "ChatOpenAI",
+                        "type": "ChatOpenAI | BaseChatModel_LlamaIndex | BaseLLM"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": -446.80851289432655,
+                "y": 246.8790997755625
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 334,
+            "id": "openAIEmbedding_LlamaIndex_1",
+            "position": {
+                "x": -37.812177549447284,
+                "y": 577.9112529482311
+            },
+            "type": "customNode",
+            "data": {
+                "id": "openAIEmbedding_LlamaIndex_1",
+                "label": "OpenAI Embedding",
+                "version": 2,
+                "name": "openAIEmbedding_LlamaIndex",
+                "type": "OpenAIEmbedding",
+                "baseClasses": ["OpenAIEmbedding", "BaseEmbedding_LlamaIndex", "BaseEmbedding"],
+                "tags": ["LlamaIndex"],
+                "category": "Embeddings",
+                "description": "OpenAI Embedding specific for LlamaIndex",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "openAIEmbedding_LlamaIndex_1-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "text-embedding-ada-002",
+                        "id": "openAIEmbedding_LlamaIndex_1-input-modelName-options"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_1-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "openAIEmbedding_LlamaIndex_1-input-basepath-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "timeout": "",
+                    "basepath": "",
+                    "modelName": "text-embedding-ada-002"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "openAIEmbedding_LlamaIndex_1-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+                        "name": "openAIEmbedding_LlamaIndex",
+                        "label": "OpenAIEmbedding",
+                        "type": "OpenAIEmbedding | BaseEmbedding_LlamaIndex | BaseEmbedding"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": -37.812177549447284,
+                "y": 577.9112529482311
+            }
+        },
+        {
+            "width": 300,
+            "height": 382,
+            "id": "queryEngine_0",
+            "position": {
+                "x": 416.2466817793368,
+                "y": -600.1335182096643
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngine_0",
+                "label": "Query Engine",
+                "version": 2,
+                "name": "queryEngine",
+                "type": "QueryEngine",
+                "baseClasses": ["QueryEngine", "BaseQueryEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Simple query engine built to answer question over your data, without memory",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "queryEngine_0-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "VectorIndexRetriever",
+                        "id": "queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever"
+                    },
+                    {
+                        "label": "Response Synthesizer",
+                        "name": "responseSynthesizer",
+                        "type": "ResponseSynthesizer",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/response_synthesizer\">more</a>",
+                        "optional": true,
+                        "id": "queryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
+                    }
+                ],
+                "inputs": {
+                    "vectorStoreRetriever": "{{pineconeLlamaIndex_1.data.instance}}",
+                    "responseSynthesizer": "",
+                    "returnSourceDocuments": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine",
+                        "name": "queryEngine",
+                        "label": "QueryEngine",
+                        "description": "Simple query engine built to answer question over your data, without memory",
+                        "type": "QueryEngine | BaseQueryEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 416.2466817793368,
+                "y": -600.1335182096643
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 511,
+            "id": "queryEngineToolLlamaIndex_2",
+            "position": {
+                "x": 766.9839000102993,
+                "y": -654.6926410455919
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngineToolLlamaIndex_2",
+                "label": "QueryEngine Tool",
+                "version": 2,
+                "name": "queryEngineToolLlamaIndex",
+                "type": "QueryEngineTool",
+                "baseClasses": ["QueryEngineTool"],
+                "tags": ["LlamaIndex"],
+                "category": "Tools",
+                "description": "Tool used to invoke query engine",
+                "inputParams": [
+                    {
+                        "label": "Tool Name",
+                        "name": "toolName",
+                        "type": "string",
+                        "description": "Tool name must be small capital letter with underscore. Ex: my_tool",
+                        "id": "queryEngineToolLlamaIndex_2-input-toolName-string"
+                    },
+                    {
+                        "label": "Tool Description",
+                        "name": "toolDesc",
+                        "type": "string",
+                        "rows": 4,
+                        "id": "queryEngineToolLlamaIndex_2-input-toolDesc-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Base QueryEngine",
+                        "name": "baseQueryEngine",
+                        "type": "BaseQueryEngine",
+                        "id": "queryEngineToolLlamaIndex_2-input-baseQueryEngine-BaseQueryEngine"
+                    }
+                ],
+                "inputs": {
+                    "baseQueryEngine": "{{queryEngine_0.data.instance}}",
+                    "toolName": "apple_tool",
+                    "toolDesc": "A SEC Form 10K filing describing the financials of Apple Inc (APPL) for the 2022 time period."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngineToolLlamaIndex_2-output-queryEngineToolLlamaIndex-QueryEngineTool",
+                        "name": "queryEngineToolLlamaIndex",
+                        "label": "QueryEngineTool",
+                        "description": "Tool used to invoke query engine",
+                        "type": "QueryEngineTool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 766.9839000102993,
+                "y": -654.6926410455919
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 511,
+            "id": "queryEngineToolLlamaIndex_1",
+            "position": {
+                "x": 771.5434180813253,
+                "y": -109.03650423344013
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngineToolLlamaIndex_1",
+                "label": "QueryEngine Tool",
+                "version": 2,
+                "name": "queryEngineToolLlamaIndex",
+                "type": "QueryEngineTool",
+                "baseClasses": ["QueryEngineTool"],
+                "tags": ["LlamaIndex"],
+                "category": "Tools",
+                "description": "Tool used to invoke query engine",
+                "inputParams": [
+                    {
+                        "label": "Tool Name",
+                        "name": "toolName",
+                        "type": "string",
+                        "description": "Tool name must be small capital letter with underscore. Ex: my_tool",
+                        "id": "queryEngineToolLlamaIndex_1-input-toolName-string"
+                    },
+                    {
+                        "label": "Tool Description",
+                        "name": "toolDesc",
+                        "type": "string",
+                        "rows": 4,
+                        "id": "queryEngineToolLlamaIndex_1-input-toolDesc-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Base QueryEngine",
+                        "name": "baseQueryEngine",
+                        "type": "BaseQueryEngine",
+                        "id": "queryEngineToolLlamaIndex_1-input-baseQueryEngine-BaseQueryEngine"
+                    }
+                ],
+                "inputs": {
+                    "baseQueryEngine": "{{queryEngine_1.data.instance}}",
+                    "toolName": "tesla_tool",
+                    "toolDesc": "A SEC Form 10K filing describing the financials of Tesla Inc (TSLA) for the 2022 time period."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngineToolLlamaIndex_1-output-queryEngineToolLlamaIndex-QueryEngineTool",
+                        "name": "queryEngineToolLlamaIndex",
+                        "label": "QueryEngineTool",
+                        "description": "Tool used to invoke query engine",
+                        "type": "QueryEngineTool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 771.5434180813253,
+                "y": -109.03650423344013
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 382,
+            "id": "queryEngine_1",
+            "position": {
+                "x": 411.8632262885343,
+                "y": -68.91392354277994
+            },
+            "type": "customNode",
+            "data": {
+                "id": "queryEngine_1",
+                "label": "Query Engine",
+                "version": 2,
+                "name": "queryEngine",
+                "type": "QueryEngine",
+                "baseClasses": ["QueryEngine", "BaseQueryEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Simple query engine built to answer question over your data, without memory",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "queryEngine_1-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Vector Store Retriever",
+                        "name": "vectorStoreRetriever",
+                        "type": "VectorIndexRetriever",
+                        "id": "queryEngine_1-input-vectorStoreRetriever-VectorIndexRetriever"
+                    },
+                    {
+                        "label": "Response Synthesizer",
+                        "name": "responseSynthesizer",
+                        "type": "ResponseSynthesizer",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/response_synthesizer\">more</a>",
+                        "optional": true,
+                        "id": "queryEngine_1-input-responseSynthesizer-ResponseSynthesizer"
+                    }
+                ],
+                "inputs": {
+                    "vectorStoreRetriever": "{{pineconeLlamaIndex_0.data.instance}}",
+                    "responseSynthesizer": "",
+                    "returnSourceDocuments": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "queryEngine_1-output-queryEngine-QueryEngine|BaseQueryEngine",
+                        "name": "queryEngine",
+                        "label": "QueryEngine",
+                        "description": "Simple query engine built to answer question over your data, without memory",
+                        "type": "QueryEngine | BaseQueryEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 411.8632262885343,
+                "y": -68.91392354277994
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 484,
+            "id": "subQuestionQueryEngine_0",
+            "position": {
+                "x": 1204.489328490966,
+                "y": 347.2090726754211
+            },
+            "type": "customNode",
+            "data": {
+                "id": "subQuestionQueryEngine_0",
+                "label": "Sub Question Query Engine",
+                "version": 2,
+                "name": "subQuestionQueryEngine",
+                "type": "SubQuestionQueryEngine",
+                "baseClasses": ["SubQuestionQueryEngine", "BaseQueryEngine"],
+                "tags": ["LlamaIndex"],
+                "category": "Engine",
+                "description": "Breaks complex query into sub questions for each relevant data source, then gather all the intermediate reponses and synthesizes a final response",
+                "inputParams": [
+                    {
+                        "label": "Return Source Documents",
+                        "name": "returnSourceDocuments",
+                        "type": "boolean",
+                        "optional": true,
+                        "id": "subQuestionQueryEngine_0-input-returnSourceDocuments-boolean"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "QueryEngine Tools",
+                        "name": "queryEngineTools",
+                        "type": "QueryEngineTool",
+                        "list": true,
+                        "id": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
+                    },
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel_LlamaIndex",
+                        "id": "subQuestionQueryEngine_0-input-model-BaseChatModel_LlamaIndex"
+                    },
+                    {
+                        "label": "Embeddings",
+                        "name": "embeddings",
+                        "type": "BaseEmbedding_LlamaIndex",
+                        "id": "subQuestionQueryEngine_0-input-embeddings-BaseEmbedding_LlamaIndex"
+                    },
+                    {
+                        "label": "Response Synthesizer",
+                        "name": "responseSynthesizer",
+                        "type": "ResponseSynthesizer",
+                        "description": "ResponseSynthesizer is responsible for sending the query, nodes, and prompt templates to the LLM to generate a response. See <a target=\"_blank\" href=\"https://ts.llamaindex.ai/modules/response_synthesizer\">more</a>",
+                        "optional": true,
+                        "id": "subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
+                    }
+                ],
+                "inputs": {
+                    "queryEngineTools": ["{{queryEngineToolLlamaIndex_2.data.instance}}", "{{queryEngineToolLlamaIndex_1.data.instance}}"],
+                    "model": "{{chatOpenAI_LlamaIndex_1.data.instance}}",
+                    "embeddings": "{{openAIEmbedding_LlamaIndex_1.data.instance}}",
+                    "responseSynthesizer": "{{compactrefineLlamaIndex_0.data.instance}}",
+                    "returnSourceDocuments": true
+                },
+                "outputAnchors": [
+                    {
+                        "id": "subQuestionQueryEngine_0-output-subQuestionQueryEngine-SubQuestionQueryEngine|BaseQueryEngine",
+                        "name": "subQuestionQueryEngine",
+                        "label": "SubQuestionQueryEngine",
+                        "description": "Breaks complex query into sub questions for each relevant data source, then gather all the intermediate reponses and synthesizes a final response",
+                        "type": "SubQuestionQueryEngine | BaseQueryEngine"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1204.489328490966,
+                "y": 347.2090726754211
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 82,
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1208.1786832265154,
+                "y": 238.26647262900994
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Break questions into subqueries, then retrieve corresponding context using queryengine tools"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1208.1786832265154,
+                "y": 238.26647262900994
+            },
+            "dragging": false
+        },
+        {
+            "width": 300,
+            "height": 82,
+            "id": "stickyNote_1",
+            "position": {
+                "x": 416.8958270395809,
+                "y": -179.9680840754678
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_1",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_1-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Query previously upserted documents with corresponding metadata key value pair - \n{ source: \"<company>\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_1-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "selected": false,
+            "positionAbsolute": {
+                "x": 416.8958270395809,
+                "y": -179.9680840754678
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "chatOpenAI_LlamaIndex_0",
+            "sourceHandle": "chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM",
+            "target": "pineconeLlamaIndex_1",
+            "targetHandle": "pineconeLlamaIndex_1-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "chatOpenAI_LlamaIndex_0-chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM-pineconeLlamaIndex_1-pineconeLlamaIndex_1-input-model-BaseChatModel_LlamaIndex"
+        },
+        {
+            "source": "openAIEmbedding_LlamaIndex_0",
+            "sourceHandle": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+            "target": "pineconeLlamaIndex_1",
+            "targetHandle": "pineconeLlamaIndex_1-input-embeddings-BaseEmbedding_LlamaIndex",
+            "type": "buttonedge",
+            "id": "openAIEmbedding_LlamaIndex_0-openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-pineconeLlamaIndex_1-pineconeLlamaIndex_1-input-embeddings-BaseEmbedding_LlamaIndex"
+        },
+        {
+            "source": "openAIEmbedding_LlamaIndex_0",
+            "sourceHandle": "openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex",
+            "type": "buttonedge",
+            "id": "openAIEmbedding_LlamaIndex_0-openAIEmbedding_LlamaIndex_0-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-embeddings-BaseEmbedding_LlamaIndex"
+        },
+        {
+            "source": "chatOpenAI_LlamaIndex_0",
+            "sourceHandle": "chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM",
+            "target": "pineconeLlamaIndex_0",
+            "targetHandle": "pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "chatOpenAI_LlamaIndex_0-chatOpenAI_LlamaIndex_0-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM-pineconeLlamaIndex_0-pineconeLlamaIndex_0-input-model-BaseChatModel_LlamaIndex"
+        },
+        {
+            "source": "pineconeLlamaIndex_1",
+            "sourceHandle": "pineconeLlamaIndex_1-output-retriever-Pinecone|VectorIndexRetriever",
+            "target": "queryEngine_0",
+            "targetHandle": "queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever",
+            "type": "buttonedge",
+            "id": "pineconeLlamaIndex_1-pineconeLlamaIndex_1-output-retriever-Pinecone|VectorIndexRetriever-queryEngine_0-queryEngine_0-input-vectorStoreRetriever-VectorIndexRetriever"
+        },
+        {
+            "source": "queryEngine_0",
+            "sourceHandle": "queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine",
+            "target": "queryEngineToolLlamaIndex_2",
+            "targetHandle": "queryEngineToolLlamaIndex_2-input-baseQueryEngine-BaseQueryEngine",
+            "type": "buttonedge",
+            "id": "queryEngine_0-queryEngine_0-output-queryEngine-QueryEngine|BaseQueryEngine-queryEngineToolLlamaIndex_2-queryEngineToolLlamaIndex_2-input-baseQueryEngine-BaseQueryEngine"
+        },
+        {
+            "source": "pineconeLlamaIndex_0",
+            "sourceHandle": "pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever",
+            "target": "queryEngine_1",
+            "targetHandle": "queryEngine_1-input-vectorStoreRetriever-VectorIndexRetriever",
+            "type": "buttonedge",
+            "id": "pineconeLlamaIndex_0-pineconeLlamaIndex_0-output-retriever-Pinecone|VectorIndexRetriever-queryEngine_1-queryEngine_1-input-vectorStoreRetriever-VectorIndexRetriever"
+        },
+        {
+            "source": "queryEngine_1",
+            "sourceHandle": "queryEngine_1-output-queryEngine-QueryEngine|BaseQueryEngine",
+            "target": "queryEngineToolLlamaIndex_1",
+            "targetHandle": "queryEngineToolLlamaIndex_1-input-baseQueryEngine-BaseQueryEngine",
+            "type": "buttonedge",
+            "id": "queryEngine_1-queryEngine_1-output-queryEngine-QueryEngine|BaseQueryEngine-queryEngineToolLlamaIndex_1-queryEngineToolLlamaIndex_1-input-baseQueryEngine-BaseQueryEngine"
+        },
+        {
+            "source": "queryEngineToolLlamaIndex_2",
+            "sourceHandle": "queryEngineToolLlamaIndex_2-output-queryEngineToolLlamaIndex-QueryEngineTool",
+            "target": "subQuestionQueryEngine_0",
+            "targetHandle": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool",
+            "type": "buttonedge",
+            "id": "queryEngineToolLlamaIndex_2-queryEngineToolLlamaIndex_2-output-queryEngineToolLlamaIndex-QueryEngineTool-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
+        },
+        {
+            "source": "queryEngineToolLlamaIndex_1",
+            "sourceHandle": "queryEngineToolLlamaIndex_1-output-queryEngineToolLlamaIndex-QueryEngineTool",
+            "target": "subQuestionQueryEngine_0",
+            "targetHandle": "subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool",
+            "type": "buttonedge",
+            "id": "queryEngineToolLlamaIndex_1-queryEngineToolLlamaIndex_1-output-queryEngineToolLlamaIndex-QueryEngineTool-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-queryEngineTools-QueryEngineTool"
+        },
+        {
+            "source": "chatOpenAI_LlamaIndex_1",
+            "sourceHandle": "chatOpenAI_LlamaIndex_1-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM",
+            "target": "subQuestionQueryEngine_0",
+            "targetHandle": "subQuestionQueryEngine_0-input-model-BaseChatModel_LlamaIndex",
+            "type": "buttonedge",
+            "id": "chatOpenAI_LlamaIndex_1-chatOpenAI_LlamaIndex_1-output-chatOpenAI_LlamaIndex-ChatOpenAI|BaseChatModel_LlamaIndex|BaseLLM-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-model-BaseChatModel_LlamaIndex"
+        },
+        {
+            "source": "openAIEmbedding_LlamaIndex_1",
+            "sourceHandle": "openAIEmbedding_LlamaIndex_1-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding",
+            "target": "subQuestionQueryEngine_0",
+            "targetHandle": "subQuestionQueryEngine_0-input-embeddings-BaseEmbedding_LlamaIndex",
+            "type": "buttonedge",
+            "id": "openAIEmbedding_LlamaIndex_1-openAIEmbedding_LlamaIndex_1-output-openAIEmbedding_LlamaIndex-OpenAIEmbedding|BaseEmbedding_LlamaIndex|BaseEmbedding-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-embeddings-BaseEmbedding_LlamaIndex"
+        },
+        {
+            "source": "compactrefineLlamaIndex_0",
+            "sourceHandle": "compactrefineLlamaIndex_0-output-compactrefineLlamaIndex-CompactRefine|ResponseSynthesizer",
+            "target": "subQuestionQueryEngine_0",
+            "targetHandle": "subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer",
+            "type": "buttonedge",
+            "id": "compactrefineLlamaIndex_0-compactrefineLlamaIndex_0-output-compactrefineLlamaIndex-CompactRefine|ResponseSynthesizer-subQuestionQueryEngine_0-subQuestionQueryEngine_0-input-responseSynthesizer-ResponseSynthesizer"
+        }
+    ]
+}

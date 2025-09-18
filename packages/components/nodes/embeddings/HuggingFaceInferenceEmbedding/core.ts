@@ -1,5 +1,5 @@
 import { HfInference } from '@huggingface/inference'
-import { Embeddings, EmbeddingsParams } from 'langchain/embeddings/base'
+import { Embeddings, EmbeddingsParams } from '@langchain/core/embeddings'
 import { getEnvironmentVariable } from '../../../src/utils'
 
 export interface HuggingFaceInferenceEmbeddingsParams extends EmbeddingsParams {

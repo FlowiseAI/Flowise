@@ -1,6 +1,6 @@
+import { SerpAPI } from '@langchain/community/tools/serpapi'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { SerpAPI } from 'langchain/tools'
 
 class SerpAPI_Tools implements INode {
     label: string
@@ -19,7 +19,7 @@ class SerpAPI_Tools implements INode {
         this.name = 'serpAPI'
         this.version = 1.0
         this.type = 'SerpAPI'
-        this.icon = 'serp.png'
+        this.icon = 'serp.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around SerpAPI - a real-time API to access Google search results'
         this.inputs = []

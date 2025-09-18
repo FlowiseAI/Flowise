@@ -4,6 +4,8 @@ import { Dirent } from 'fs'
 import { getNodeModulesPackagePath } from './utils'
 import { promises } from 'fs'
 import { ICommonObject } from 'flowise-components'
+import logger from './utils/logger'
+import { appConfig } from './AppConfig'
 
 export class NodesPool {
     componentNodes: IComponentNodes = {}
@@ -15,46 +17,63 @@ export class NodesPool {
      */
     async initialize() {
         await this.initializeNodes()
-        await this.initializeCrdentials()
+        await this.initializeCredentials()
     }
 
     /**
      * Initialize nodes
      */
     private async initializeNodes() {
+        const disabled_nodes = process.env.DISABLED_NODES ? process.env.DISABLED_NODES.split(',') : []
         const packagePath = getNodeModulesPackagePath('flowise-components')
         const nodesPath = path.join(packagePath, 'dist', 'nodes')
         const nodeFiles = await this.getFiles(nodesPath)
         return Promise.all(
             nodeFiles.map(async (file) => {
                 if (file.endsWith('.js')) {
-                    const nodeModule = await require(file)
+                    try {
+                        const nodeModule = await require(file)
 
-                    if (nodeModule.nodeClass) {
-                        const newNodeInstance = new nodeModule.nodeClass()
-                        newNodeInstance.filePath = file
+                        if (nodeModule.nodeClass) {
+                            const newNodeInstance = new nodeModule.nodeClass()
+                            newNodeInstance.filePath = file
 
-                        this.componentNodes[newNodeInstance.name] = newNodeInstance
+                            // Replace file icon with absolute path
+                            if (
+                                newNodeInstance.icon &&
+                                (newNodeInstance.icon.endsWith('.svg') ||
+                                    newNodeInstance.icon.endsWith('.png') ||
+                                    newNodeInstance.icon.endsWith('.jpg'))
+                            ) {
+                                const filePath = file.replace(/\\/g, '/').split('/')
+                                filePath.pop()
+                                const nodeIconAbsolutePath = `${filePath.join('/')}/${newNodeInstance.icon}`
+                                newNodeInstance.icon = nodeIconAbsolutePath
 
-                        // Replace file icon with absolute path
-                        if (
-                            newNodeInstance.icon &&
-                            (newNodeInstance.icon.endsWith('.svg') ||
-                                newNodeInstance.icon.endsWith('.png') ||
-                                newNodeInstance.icon.endsWith('.jpg'))
-                        ) {
-                            const filePath = file.replace(/\\/g, '/').split('/')
-                            filePath.pop()
-                            const nodeIconAbsolutePath = `${filePath.join('/')}/${newNodeInstance.icon}`
-                            this.componentNodes[newNodeInstance.name].icon = nodeIconAbsolutePath
-
-                            // Store icon path for componentCredentials
-                            if (newNodeInstance.credential) {
-                                for (const credName of newNodeInstance.credential.credentialNames) {
-                                    this.credentialIconPath[credName] = nodeIconAbsolutePath
+                                // Store icon path for componentCredentials
+                                if (newNodeInstance.credential) {
+                                    for (const credName of newNodeInstance.credential.credentialNames) {
+                                        this.credentialIconPath[credName] = nodeIconAbsolutePath
+                                    }
                                 }
                             }
+
+                            const skipCategories = ['Analytic', 'SpeechToText']
+                            const conditionOne = !skipCategories.includes(newNodeInstance.category)
+
+                            const isCommunityNodesAllowed = appConfig.showCommunityNodes
+                            const isAuthorPresent = newNodeInstance.author
+                            let conditionTwo = true
+                            if (!isCommunityNodesAllowed && isAuthorPresent) conditionTwo = false
+
+                            const isDisabled = disabled_nodes.includes(newNodeInstance.name)
+
+                            if (conditionOne && conditionTwo && !isDisabled) {
+                                this.componentNodes[newNodeInstance.name] = newNodeInstance
+                            }
                         }
+                    } catch (err) {
+                        logger.error(`❌ [server]: Error during initDatabase with file ${file}:`, err)
                     }
                 }
             })
@@ -64,7 +83,7 @@ export class NodesPool {
     /**
      * Initialize credentials
      */
-    private async initializeCrdentials() {
+    private async initializeCredentials() {
         const packagePath = getNodeModulesPackagePath('flowise-components')
         const nodesPath = path.join(packagePath, 'dist', 'credentials')
         const nodeFiles = await this.getFiles(nodesPath)

@@ -1,0 +1,11 @@
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* For momentum scroll on mobile devices */
+    scrollbar-width: none; /* For Firefox */
+}
+
+.button {
+    flex: 0 0 auto; /* Don't grow, don't shrink, base width on content */
+}

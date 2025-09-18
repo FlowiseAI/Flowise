@@ -1,6 +1,6 @@
+import { Serper } from '@langchain/community/tools/serper'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Serper } from 'langchain/tools'
 
 class Serper_Tools implements INode {
     label: string
@@ -19,7 +19,7 @@ class Serper_Tools implements INode {
         this.name = 'serper'
         this.version = 1.0
         this.type = 'Serper'
-        this.icon = 'serper.png'
+        this.icon = 'serper.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around Serper.dev - Google Search API'
         this.inputs = []

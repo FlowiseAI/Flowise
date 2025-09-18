@@ -1,5 +1,7 @@
 # Contributor Covenant Code of Conduct
 
+English | [中文](./i18n/CODE_OF_CONDUCT-ZH.md)
+
 ## Our Pledge
 
 In the interest of fostering an open and welcoming environment, we as

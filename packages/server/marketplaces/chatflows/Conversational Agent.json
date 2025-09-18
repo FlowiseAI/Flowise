@@ -1,5 +1,7 @@
 {
-    "description": "A conversational agent for a chat model which utilize chat specific prompts",
+    "description": "A conversational agent designed to use tools and chat model to provide responses",
+    "usecases": ["Agent"],
+    "framework": ["Langchain"],
     "nodes": [
         {
             "width": 300,
@@ -13,8 +15,8 @@
             "data": {
                 "id": "calculator_1",
                 "label": "Calculator",
-                "name": "calculator",
                 "version": 1,
+                "name": "calculator",
                 "type": "Calculator",
                 "baseClasses": ["Calculator", "Tool", "StructuredTool", "BaseLangChain"],
                 "category": "Tools",
@@ -42,7 +44,7 @@
         },
         {
             "width": 300,
-            "height": 376,
+            "height": 253,
             "id": "bufferMemory_1",
             "position": {
                 "x": 607.6260576768354,
@@ -52,32 +54,36 @@
             "data": {
                 "id": "bufferMemory_1",
                 "label": "Buffer Memory",
+                "version": 2,
                 "name": "bufferMemory",
-                "version": 1,
                 "type": "BufferMemory",
                 "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
-                "description": "Remembers previous conversational back and forths directly",
+                "description": "Retrieve chat messages stored in database",
                 "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "bufferMemory_1-input-sessionId-string"
+                    },
                     {
                         "label": "Memory Key",
                         "name": "memoryKey",
                         "type": "string",
                         "default": "chat_history",
+                        "additionalParams": true,
                         "id": "bufferMemory_1-input-memoryKey-string"
-                    },
-                    {
-                        "label": "Input Key",
-                        "name": "inputKey",
-                        "type": "string",
-                        "default": "input",
-                        "id": "bufferMemory_1-input-inputKey-string"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "memoryKey": "chat_history",
-                    "inputKey": "input"
+                    "sessionId": "",
+                    "memoryKey": "chat_history"
                 },
                 "outputAnchors": [
                     {
@@ -99,7 +105,7 @@
         },
         {
             "width": 300,
-            "height": 277,
+            "height": 276,
             "id": "serpAPI_0",
             "position": {
                 "x": 451.83740798447855,
@@ -109,8 +115,8 @@
             "data": {
                 "id": "serpAPI_0",
                 "label": "Serp API",
-                "name": "serpAPI",
                 "version": 1,
+                "name": "serpAPI",
                 "type": "SerpAPI",
                 "baseClasses": ["SerpAPI", "Tool", "StructuredTool"],
                 "category": "Tools",
@@ -146,7 +152,7 @@
         },
         {
             "width": 300,
-            "height": 523,
+            "height": 670,
             "id": "chatOpenAI_0",
             "position": {
                 "x": 97.01321406237057,
@@ -156,8 +162,8 @@
             "data": {
                 "id": "chatOpenAI_0",
                 "label": "ChatOpenAI",
+                "version": 6,
                 "name": "chatOpenAI",
-                "version": 1,
                 "type": "ChatOpenAI",
                 "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel"],
                 "category": "Chat Models",
@@ -173,43 +179,9 @@
                     {
                         "label": "Model Name",
                         "name": "modelName",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "gpt-4",
-                                "name": "gpt-4"
-                            },
-                            {
-                                "label": "gpt-4-0613",
-                                "name": "gpt-4-0613"
-                            },
-                            {
-                                "label": "gpt-4-32k",
-                                "name": "gpt-4-32k"
-                            },
-                            {
-                                "label": "gpt-4-32k-0613",
-                                "name": "gpt-4-32k-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo",
-                                "name": "gpt-3.5-turbo"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-0613",
-                                "name": "gpt-3.5-turbo-0613"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k",
-                                "name": "gpt-3.5-turbo-16k"
-                            },
-                            {
-                                "label": "gpt-3.5-turbo-16k-0613",
-                                "name": "gpt-3.5-turbo-16k-0613"
-                            }
-                        ],
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
                         "default": "gpt-3.5-turbo",
-                        "optional": true,
                         "id": "chatOpenAI_0-input-modelName-options"
                     },
                     {
@@ -267,18 +239,70 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
                     }
                 ],
-                "inputAnchors": [],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
                 "inputs": {
-                    "modelName": "gpt-3.5-turbo",
+                    "modelName": "gpt-3.5-turbo-16k",
                     "temperature": 0.9,
                     "maxTokens": "",
                     "topP": "",
                     "frequencyPenalty": "",
                     "presencePenalty": "",
                     "timeout": "",
-                    "basepath": ""
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low"
                 },
                 "outputAnchors": [
                     {
@@ -300,20 +324,20 @@
         },
         {
             "width": 300,
-            "height": 383,
+            "height": 435,
             "id": "conversationalAgent_0",
             "position": {
-                "x": 1164.4550359451973,
-                "y": 283.40041124403075
+                "x": 1191.1524476753796,
+                "y": 324.2479396683294
             },
             "type": "customNode",
             "data": {
                 "id": "conversationalAgent_0",
                 "label": "Conversational Agent",
+                "version": 3,
                 "name": "conversationalAgent",
-                "version": 1,
                 "type": "AgentExecutor",
-                "baseClasses": ["AgentExecutor", "BaseChain"],
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
                 "category": "Agents",
                 "description": "Conversational agent for a chat model. It will utilize chat specific prompts",
                 "inputParams": [
@@ -326,6 +350,14 @@
                         "optional": true,
                         "additionalParams": true,
                         "id": "conversationalAgent_0-input-systemMessage-string"
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "conversationalAgent_0-input-maxIterations-number"
                     }
                 ],
                 "inputAnchors": [
@@ -337,19 +369,29 @@
                         "id": "conversationalAgent_0-input-tools-Tool"
                     },
                     {
-                        "label": "Language Model",
+                        "label": "Chat Model",
                         "name": "model",
-                        "type": "BaseLanguageModel",
-                        "id": "conversationalAgent_0-input-model-BaseLanguageModel"
+                        "type": "BaseChatModel",
+                        "id": "conversationalAgent_0-input-model-BaseChatModel"
                     },
                     {
                         "label": "Memory",
                         "name": "memory",
                         "type": "BaseChatMemory",
                         "id": "conversationalAgent_0-input-memory-BaseChatMemory"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationalAgent_0-input-inputModeration-Moderation"
                     }
                 ],
                 "inputs": {
+                    "inputModeration": "",
                     "tools": ["{{calculator_1.data.instance}}", "{{serpAPI_0.data.instance}}"],
                     "model": "{{chatOpenAI_0.data.instance}}",
                     "memory": "{{bufferMemory_1.data.instance}}",
@@ -357,10 +399,10 @@
                 },
                 "outputAnchors": [
                     {
-                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain",
+                        "id": "conversationalAgent_0-output-conversationalAgent-AgentExecutor|BaseChain|Runnable",
                         "name": "conversationalAgent",
                         "label": "AgentExecutor",
-                        "type": "AgentExecutor | BaseChain"
+                        "type": "AgentExecutor | BaseChain | Runnable"
                     }
                 ],
                 "outputs": {},
@@ -368,8 +410,61 @@
             },
             "selected": false,
             "positionAbsolute": {
-                "x": 1164.4550359451973,
-                "y": 283.40041124403075
+                "x": 1191.1524476753796,
+                "y": 324.2479396683294
+            },
+            "dragging": false
+        },
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 1190.081066428271,
+                "y": 21.014152635796393
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 2,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "tags": ["Utilities"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "This agent works very similar to Tool Agent with slightly higher error rate.\n\nDifference being this agent uses prompt to instruct LLM using tools, as opposed to using LLM's function calling capability.\n\nFor LLMs that support function calling, it is recommended to use Tool Agent.\n\nExample question:\n1. What is the net worth of Elon Musk?\n2. Multiply the net worth by 2"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 284,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1190.081066428271,
+                "y": 21.014152635796393
             },
             "dragging": false
         }
@@ -401,9 +496,9 @@
             "source": "chatOpenAI_0",
             "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel",
             "target": "conversationalAgent_0",
-            "targetHandle": "conversationalAgent_0-input-model-BaseLanguageModel",
+            "targetHandle": "conversationalAgent_0-input-model-BaseChatModel",
             "type": "buttonedge",
-            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseLanguageModel",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel-conversationalAgent_0-conversationalAgent_0-input-model-BaseChatModel",
             "data": {
                 "label": ""
             }

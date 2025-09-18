@@ -10,7 +10,8 @@ module.exports = {
                         }
                     }
                 ]
-            }
+            },
+            ignoreWarnings: [/Failed to parse source map/] // Ignore warnings about source maps
         }
     }
 }

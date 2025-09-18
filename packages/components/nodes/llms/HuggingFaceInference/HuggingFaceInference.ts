@@ -1,3 +1,4 @@
+import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { HFInput, HuggingFaceInference } from './core'
@@ -17,9 +18,9 @@ class HuggingFaceInference_LLMs implements INode {
     constructor() {
         this.label = 'HuggingFace Inference'
         this.name = 'huggingFaceInference_LLMs'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'HuggingFaceInference'
-        this.icon = 'huggingface.png'
+        this.icon = 'HuggingFace.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around HuggingFace large language models'
         this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInference)]
@@ -30,6 +31,12 @@ class HuggingFaceInference_LLMs implements INode {
             credentialNames: ['huggingFaceApi']
         }
         this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
             {
                 label: 'Model',
                 name: 'model',
@@ -106,6 +113,8 @@ class HuggingFaceInference_LLMs implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const huggingFaceApiKey = getCredentialParam('huggingFaceApiKey', credentialData, nodeData)
 
+        const cache = nodeData.inputs?.cache as BaseCache
+
         const obj: Partial<HFInput> = {
             model,
             apiKey: huggingFaceApiKey
@@ -119,6 +128,8 @@ class HuggingFaceInference_LLMs implements INode {
         if (endpoint) obj.endpoint = endpoint
 
         const huggingFace = new HuggingFaceInference(obj)
+        if (cache) huggingFace.cache = cache
+
         return huggingFace
     }
 }

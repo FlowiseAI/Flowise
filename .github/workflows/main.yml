@@ -1,17 +1,14 @@
 name: Node CI
-
 on:
     push:
         branches:
             - main
-
     pull_request:
         branches:
             - '*'
-
+    workflow_dispatch:
 permissions:
     contents: read
-
 jobs:
     build:
         strategy:
@@ -22,16 +19,34 @@ jobs:
         env:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: 9.0.4
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node-version }}
-
-            - run: npm i -g yarn
-
-            - run: yarn install --ignore-engines
-
-            - run: yarn lint
-
-            - run: yarn build
+                  cache: 'pnpm'
+                  cache-dependency-path: 'pnpm-lock.yaml'
+            - run: pnpm install
+            - run: pnpm lint
+            - run: pnpm build
+              env:
+                  NODE_OPTIONS: '--max_old_space_size=4096'
+            - name: Cypress install
+              run: pnpm cypress install
+            - name: Install dependencies (Cypress Action)
+              uses: cypress-io/github-action@v6
+              with:
+                  working-directory: ./
+                  runTests: false
+            - name: Cypress test
+              uses: cypress-io/github-action@v6
+              with:
+                  install: false
+                  working-directory: packages/server
+                  start: pnpm start
+                  wait-on: 'http://localhost:3000'
+                  wait-on-timeout: 120
+                  browser: chrome

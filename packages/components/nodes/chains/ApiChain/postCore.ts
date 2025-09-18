@@ -1,8 +1,8 @@
-import { BaseLanguageModel } from 'langchain/base_language'
-import { CallbackManagerForChainRun } from 'langchain/callbacks'
+import { BaseLanguageModel } from '@langchain/core/language_models/base'
+import { CallbackManagerForChainRun } from '@langchain/core/callbacks/manager'
 import { BaseChain, ChainInputs, LLMChain, SerializedAPIChain } from 'langchain/chains'
-import { BasePromptTemplate, PromptTemplate } from 'langchain/prompts'
-import { ChainValues } from 'langchain/schema'
+import { BasePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
+import { ChainValues } from '@langchain/core/utils/types'
 import fetch from 'node-fetch'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:
@@ -91,6 +91,21 @@ export class APIChain extends BaseChain implements APIChainInput {
             const api_url_body = await this.apiRequestChain.predict({ question, api_docs: this.apiDocs }, runManager?.getChild())
 
             const { url, data } = JSON.parse(api_url_body)
+
+            // Validate request is not to internal/private networks
+            const urlObj = new URL(url)
+            const hostname = urlObj.hostname
+
+            if (
+                hostname === 'localhost' ||
+                hostname === '127.0.0.1' ||
+                hostname.startsWith('192.168.') ||
+                hostname.startsWith('10.') ||
+                hostname.startsWith('172.16.') ||
+                hostname.includes('internal')
+            ) {
+                throw new Error('Access to internal networks is not allowed')
+            }
 
             const res = await fetch(url, {
                 method: 'POST',
