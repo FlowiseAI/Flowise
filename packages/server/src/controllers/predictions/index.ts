@@ -77,26 +77,6 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
 
                     const apiResponse = await predictionsServices.buildChatflow(req)
                     sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
-
-                    const chatflow = await chatflowsService.getChatflowById(req.params.id)
-                    if (chatflow && shouldAutoPlayTTS(chatflow.textToSpeech) && apiResponse.text) {
-                        const options = {
-                            orgId: req.body.orgId || '',
-                            chatflowid: req.params.id,
-                            chatId: apiResponse.chatId,
-                            appDataSource: getRunningExpressApp().AppDataSource,
-                            databaseEntities: getRunningExpressApp().AppDataSource?.entityMetadatas || []
-                        }
-
-                        await generateTTSForResponseStream(
-                            apiResponse.text,
-                            chatflow.textToSpeech,
-                            options,
-                            apiResponse.chatId,
-                            apiResponse.chatMessageId,
-                            sseStreamer
-                        )
-                    }
                 } catch (error) {
                     if (chatId) {
                         sseStreamer.streamErrorEvent(chatId, getErrorMessage(error))

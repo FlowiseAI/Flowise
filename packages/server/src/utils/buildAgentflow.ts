@@ -2180,6 +2180,7 @@ export const executeAgentFlow = async ({
     if (sessionId) result.sessionId = sessionId
 
     if (shouldAutoPlayTTS(chatflow.textToSpeech) && result.text) {
+        logger.info('Generating TTS for response in executeAgentFlow')
         const options = {
             orgId,
             chatflowid,
