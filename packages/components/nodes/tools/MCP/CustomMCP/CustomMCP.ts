@@ -1,6 +1,6 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { MCPToolkit } from '../core'
+import { MCPToolkit, validateMCPServerConfig } from '../core'
 import { getVars, prepareSandboxVars } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
 import hash from 'object-hash'
@@ -75,8 +75,8 @@ class Custom_MCP implements INode {
                 },
                 placeholder: mcpServerConfig,
                 warning:
-                    process.env.CUSTOM_MCP_SECURITY_CHECK === 'true'
-                        ? 'In next release, only Remote MCP with url is supported. Read more <a href="https://docs.flowiseai.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
+                    process.env.CUSTOM_MCP_PROTOCOL === 'sse'
+                        ? 'Only Remote MCP with url is supported. Read more <a href="https://docs.flowiseai.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
                         : undefined
             },
             {
@@ -172,6 +172,14 @@ class Custom_MCP implements INode {
                 const substitutedString = substituteVariablesInString(mcpServerConfig, sandbox)
                 const serverParamsString = convertToValidJSONString(substitutedString)
                 serverParams = JSON.parse(serverParamsString)
+            }
+
+            if (process.env.CUSTOM_MCP_SECURITY_CHECK !== 'false') {
+                try {
+                    validateMCPServerConfig(serverParams)
+                } catch (error) {
+                    throw new Error(`Security validation failed: ${error.message}`)
+                }
             }
 
             // Compatible with stdio and SSE

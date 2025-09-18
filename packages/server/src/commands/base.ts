@@ -74,7 +74,10 @@ export abstract class BaseCommand extends Command {
         REDIS_KEY: Flags.string(),
         REDIS_CA: Flags.string(),
         REDIS_KEEP_ALIVE: Flags.string(),
-        ENABLE_BULLMQ_DASHBOARD: Flags.string()
+        ENABLE_BULLMQ_DASHBOARD: Flags.string(),
+        CUSTOM_MCP_SECURITY_CHECK: Flags.string(),
+        CUSTOM_MCP_PROTOCOL: Flags.string(),
+        HTTP_DENY_LIST: Flags.string()
     }
 
     protected async stopProcess() {
@@ -202,5 +205,10 @@ export abstract class BaseCommand extends Command {
         if (flags.REMOVE_ON_COUNT) process.env.REMOVE_ON_COUNT = flags.REMOVE_ON_COUNT
         if (flags.REDIS_KEEP_ALIVE) process.env.REDIS_KEEP_ALIVE = flags.REDIS_KEEP_ALIVE
         if (flags.ENABLE_BULLMQ_DASHBOARD) process.env.ENABLE_BULLMQ_DASHBOARD = flags.ENABLE_BULLMQ_DASHBOARD
+
+        // Security
+        if (flags.CUSTOM_MCP_SECURITY_CHECK) process.env.CUSTOM_MCP_SECURITY_CHECK = flags.CUSTOM_MCP_SECURITY_CHECK
+        if (flags.CUSTOM_MCP_PROTOCOL) process.env.CUSTOM_MCP_PROTOCOL = flags.CUSTOM_MCP_PROTOCOL
+        if (flags.HTTP_DENY_LIST) process.env.HTTP_DENY_LIST = flags.HTTP_DENY_LIST
     }
 }
