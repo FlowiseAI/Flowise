@@ -211,7 +211,7 @@ const saveCustomTemplate = async (body: any): Promise<any> => {
         Object.assign(customTemplate, body)
 
         if (body.chatflowId) {
-            const chatflow = await chatflowsService.getChatflowById(body.chatflowId)
+            const chatflow = await chatflowsService.getChatflowById(body.chatflowId, body.workspaceId)
             const flowData = JSON.parse(chatflow.flowData)
             const { framework, exportJson } = _generateExportFlowData(flowData)
             flowDataStr = JSON.stringify(exportJson)

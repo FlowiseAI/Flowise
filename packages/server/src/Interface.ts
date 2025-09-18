@@ -69,7 +69,7 @@ export interface IChatFlow {
     apiConfig?: string
     category?: string
     type?: ChatflowType
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface IChatMessage {
@@ -114,7 +114,7 @@ export interface ITool {
     func?: string
     updatedDate: Date
     createdDate: Date
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface IAssistant {
@@ -124,7 +124,7 @@ export interface IAssistant {
     iconSrc?: string
     updatedDate: Date
     createdDate: Date
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface ICredential {
@@ -134,7 +134,7 @@ export interface ICredential {
     encryptedData: string
     updatedDate: Date
     createdDate: Date
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface IVariable {
@@ -144,7 +144,7 @@ export interface IVariable {
     type: string
     updatedDate: Date
     createdDate: Date
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface ILead {
@@ -176,7 +176,7 @@ export interface IExecution {
     createdDate: Date
     updatedDate: Date
     stoppedDate: Date
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface IComponentNodes {
@@ -332,7 +332,7 @@ export interface ICredentialReqBody {
     name: string
     credentialName: string
     plainDataObj: ICredentialDataDecrypted
-    workspaceId?: string
+    workspaceId: string
 }
 
 // Decrypted credential object sent back to client
@@ -351,7 +351,7 @@ export interface IApiKey {
     apiKey: string
     apiSecret: string
     updatedDate: Date
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface ICustomTemplate {
@@ -365,7 +365,7 @@ export interface ICustomTemplate {
     badge?: string
     framework?: string
     usecases?: string
-    workspaceId?: string
+    workspaceId: string
 }
 
 export interface IFlowConfig {
