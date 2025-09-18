@@ -9,7 +9,6 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { v4 as uuidv4 } from 'uuid'
 import { getErrorMessage } from '../../errors/utils'
 import { MODE } from '../../Interface'
-import { generateTTSForResponseStream, shouldAutoPlayTTS } from '../../utils/buildChatflow'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {

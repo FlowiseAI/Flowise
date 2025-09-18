@@ -73,6 +73,7 @@ import attachmentsApi from '@/api/attachments'
 import chatmessagefeedbackApi from '@/api/chatmessagefeedback'
 import leadsApi from '@/api/lead'
 import executionsApi from '@/api/executions'
+import ttsApi from '@/api/tts'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -485,6 +486,15 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const handleAbort = async () => {
         setIsMessageStopping(true)
         try {
+            // Stop all TTS streams first
+            stopAllTTS()
+
+            // Abort TTS for any active streams
+            const activeTTSMessages = Object.keys(isTTSLoading).concat(Object.keys(isTTSPlaying))
+            for (const messageId of activeTTSMessages) {
+                await ttsApi.abortTTS({ chatId, chatMessageId: messageId })
+            }
+
             await chatmessageApi.abortMessage(chatflowid, chatId)
         } catch (error) {
             setIsMessageStopping(false)
@@ -1083,6 +1093,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     case 'tts_end':
                         handleTTSEnd()
                         break
+                    case 'tts_abort':
+                        handleTTSAbort(payload.data)
+                        break
                     case 'end':
                         setLocalStorageChatflow(chatflowid, chatId)
                         closeResponse()
@@ -1583,9 +1596,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         setIsLeadSaving(false)
     }
 
-    const handleTTSStop = (messageId) => {
-        setTTSAction(true)
-
+    const cleanupTTSForMessage = (messageId) => {
         if (ttsAudio[messageId]) {
             ttsAudio[messageId].pause()
             ttsAudio[messageId].currentTime = 0
@@ -1612,6 +1623,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             delete newState[messageId]
             return newState
         })
+    }
+
+    const handleTTSStop = async (messageId) => {
+        setTTSAction(true)
+        await ttsApi.abortTTS({ chatId, chatMessageId: messageId })
+        cleanupTTSForMessage(messageId)
     }
 
     const stopAllTTS = () => {
@@ -1995,6 +2012,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             }
             return prevState
         })
+    }
+
+    const handleTTSAbort = (data) => {
+        const messageId = data.chatMessageId
+        cleanupTTSForMessage(messageId)
     }
 
     useEffect(() => {
