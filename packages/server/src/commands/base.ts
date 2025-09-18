@@ -22,6 +22,7 @@ export abstract class BaseCommand extends Command {
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
         TOOL_FUNCTION_EXTERNAL_DEP: Flags.string(),
+        ALLOW_BUILTIN_DEP: Flags.string(),
         NUMBER_OF_PROXIES: Flags.string(),
         DATABASE_TYPE: Flags.string(),
         DATABASE_PATH: Flags.string(),
@@ -143,9 +144,10 @@ export abstract class BaseCommand extends Command {
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
         if (flags.LOG_LEVEL) process.env.LOG_LEVEL = flags.LOG_LEVEL
 
-        // Tool functions
+        // Custom tool/function dependencies
         if (flags.TOOL_FUNCTION_BUILTIN_DEP) process.env.TOOL_FUNCTION_BUILTIN_DEP = flags.TOOL_FUNCTION_BUILTIN_DEP
         if (flags.TOOL_FUNCTION_EXTERNAL_DEP) process.env.TOOL_FUNCTION_EXTERNAL_DEP = flags.TOOL_FUNCTION_EXTERNAL_DEP
+        if (flags.ALLOW_BUILTIN_DEP) process.env.ALLOW_BUILTIN_DEP = flags.ALLOW_BUILTIN_DEP
 
         // Database config
         if (flags.DATABASE_TYPE) process.env.DATABASE_TYPE = flags.DATABASE_TYPE
