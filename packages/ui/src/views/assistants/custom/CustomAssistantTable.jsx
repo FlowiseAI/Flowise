@@ -86,10 +86,12 @@ function CustomAssistantTable({
         : []
 
     const getRowName = (row) => JSON.parse(row.details)?.name || 'Unnamed'
+    const getRowCategory = (row) => JSON.parse(row.details)?.category || '-'
     const getRowTags = (row) => {
-        const category = JSON.parse(row.details)?.category
-        return category ? category.split(';') : []
+        const tags = JSON.parse(row.details)?.tags
+        return tags ? tags.split(';') : []
     }
+    const getRowDescription = (row) => JSON.parse(row.details)?.description || '-'
     const getRowImages = (row) => (row.iconSrc ? [{ imageSrc: row.iconSrc }] : [])
 
     return (
@@ -129,6 +131,7 @@ function CustomAssistantTable({
                                 <StyledTableCell><Skeleton variant='text' /></StyledTableCell>
                                 <StyledTableCell><Skeleton variant='text' /></StyledTableCell>
                                 <StyledTableCell><Skeleton variant='text' /></StyledTableCell>
+                                <StyledTableCell><Skeleton variant='text' /></StyledTableCell>
                                 {isActionsAvailable && <StyledTableCell><Skeleton variant='text' /></StyledTableCell>}
                             </StyledTableRow>
                         ))
@@ -161,48 +164,18 @@ function CustomAssistantTable({
                                         ))}
                                     </Stack>
                                 </StyledTableCell>
-                                <StyledTableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        {getRowImages(row)
-                                            .slice(0, 5)
-                                            .map((item, idx) => (
-                                                <Tooltip key={idx} title={item.label || ''} placement='top'>
-                                                    <Box
-                                                        sx={{
-                                                            width: 30,
-                                                            height: 30,
-                                                            borderRadius: '50%',
-                                                            backgroundColor: customization.isDarkMode
-                                                                ? theme.palette.common.white
-                                                                : theme.palette.grey[300] + 75,
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            overflow: 'hidden'
-                                                        }}
-                                                    >
-                                                        {item.imageSrc && <img src={item.imageSrc} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt='' />}
-                                                        {item.icon && <item.icon size={25} color={item.color} />}
-                                                    </Box>
-                                                </Tooltip>
-                                            ))}
-                                        {getRowImages(row).length > 5 && (
-                                            <MoreItemsTooltip images={getRowImages(row).slice(5).map((i) => ({ label: i.label }))}>
-                                                <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
-                                                    + {getRowImages(row).length - 5} More
-                                                </Typography>
-                                            </MoreItemsTooltip>
-                                        )}
-                                    </Box>
-                                </StyledTableCell>
+
+                                <StyledTableCell>{getRowDescription(row)}</StyledTableCell>
+
                                 <StyledTableCell>{moment(row.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}</StyledTableCell>
+
                                 {isActionsAvailable && (
                                     <StyledTableCell>
                                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} justifyContent='center' alignItems='center'>
                                             <CustomAssitantListMenu
                                                 assistant={row}
                                                 setError={setError}
-                                                updateAssistantsApi={updateAssistantsApi} // ✅ fixed prop name
+                                                updateAssistantsApi={updateAssistantsApi}
                                             />
                                         </Stack>
                                     </StyledTableCell>

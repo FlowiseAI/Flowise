@@ -47,6 +47,7 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
     const [renameName, setRenameName] = useState('')
     const [renameTags, setRenameTags] = useState('')
     const [renameDescription, setRenameDescription] = useState('')
+    const [renameCategory, setRenameCategory] = useState('')
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [tagDialogOpen, setTagDialogOpen] = useState(false)
@@ -57,9 +58,10 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
             try {
                 const details = JSON.parse(assistant.details)
                 setRenameName(details.name || '')
-                setRenameTags(details.category || '')
+                setRenameTags(details.tags || '')
+                setRenameCategory(details.category || '')
                 setRenameDescription(details.description || '')
-            } catch {}
+            } catch { }
         }
     }, [assistant])
 
@@ -74,6 +76,7 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
             id: assistant.id,
             name: renameName,
             tags: renameTags,
+            category: renameCategory,
             description: renameDescription,
             credential: assistant.credential
         })
@@ -122,34 +125,44 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
         if (assistant.details) {
             try {
                 const parsed = JSON.parse(assistant.details)
-                if (parsed.category) {
-                    setTagDialogProps({ category: parsed.category.split(';') })
+                if (parsed.tags) {
+                    setTagDialogProps({
+                        category: parsed.tags.split(';')   // ✅ match TagDialog expectation
+                    })
+                } else {
+                    setTagDialogProps({ category: [] })
                 }
-            } catch {}
+            } catch {
+                setTagDialogProps({ category: [] })
+            }
         }
         setTagDialogOpen(true)
     }
 
+
+
     const saveTags = async (categories) => {
         setTagDialogOpen(false)
-        const categoryTags = categories.join(';')
         try {
             const parsed = JSON.parse(assistant.details || '{}')
+            const categoryTags = categories.join(';')
+
             const details = JSON.stringify({
                 ...parsed,
-                category: categoryTags
+                tags: categoryTags    // ✅ store as semicolon-separated string
             })
+
             await assistantsApi.updateAssistant(assistant.id, { details })
+
             if (updateAssistantsApi && typeof updateAssistantsApi.request === 'function') {
                 await updateAssistantsApi.request('CUSTOM')
             }
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message:
-                    typeof error.response?.data === 'object'
-                        ? error.response.data.message
-                        : error.response?.data,
+                message: typeof error.response?.data === 'object'
+                    ? error.response.data.message
+                    : error.response?.data,
                 options: {
                     key: new Date().getTime(),
                     variant: 'error',
@@ -163,6 +176,8 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
             })
         }
     }
+
+
 
     return (
         <>
