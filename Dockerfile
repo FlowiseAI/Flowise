@@ -24,6 +24,8 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
+ENV DATABASE_URL=${DATABASE_URL}
+
 WORKDIR /usr/src
 
 # Copy app source
