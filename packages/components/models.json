@@ -396,6 +396,18 @@
                     "name": "gpt-4.5-preview",
                     "input_cost": 0.000075,
                     "output_cost": 0.00015
+                },
+                {
+                    "label": "gpt-4.1-mini",
+                    "name": "gpt-4.1-mini",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.0000016
+                },
+                {
+                    "label": "gpt-5-chat-latest",
+                    "name": "gpt-5-chat-latest",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
                 }
             ]
         },
@@ -455,6 +467,18 @@
                     "name": "gpt-4-1106-preview",
                     "input_cost": 0.00001,
                     "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4.1-mini",
+                    "name": "gpt-4.1-mini",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.0000016
+                },
+                {
+                    "label": "gpt-5-chat-latest",
+                    "name": "gpt-5-chat-latest",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
                 }
             ]
         },
@@ -1682,6 +1706,18 @@
                     "name": "gpt-4-32k",
                     "input_cost": 0.00006,
                     "output_cost": 0.00012
+                },
+                {
+                    "label": "gpt-4.1-mini",
+                    "name": "gpt-4.1-mini",
+                    "input_cost": 0.0000004,
+                    "output_cost": 0.0000016
+                },
+                {
+                    "label": "gpt-5-chat-latest",
+                    "name": "gpt-5-chat-latest",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
                 }
             ]
         },

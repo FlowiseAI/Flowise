@@ -5,10 +5,11 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
 import { User, UserStatus } from '../database/entities/user.entity'
 import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
-import { DataSource, QueryRunner } from 'typeorm'
+import { DataSource, ILike, QueryRunner } from 'typeorm'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getHash } from '../utils/encryption.util'
+import { sanitizeUser } from '../../utils/sanitize.util'
 
 export const enum UserErrorMessage {
     EXPIRED_TEMP_TOKEN = 'Expired Temporary Token',
@@ -53,8 +54,9 @@ export class UserService {
     }
 
     public async readUserByEmail(email: string | undefined, queryRunner: QueryRunner) {
+        if (!email) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_EMAIL)
         this.validateUserEmail(email)
-        return await queryRunner.manager.findOneBy(User, { email })
+        return await queryRunner.manager.findOneBy(User, { email: ILike(email) })
     }
 
     public async readUserByToken(token: string | undefined, queryRunner: QueryRunner) {
@@ -95,7 +97,18 @@ export class UserService {
             data.updatedBy = data.id
         }
 
-        return queryRunner.manager.create(User, data)
+        const userObj = queryRunner.manager.create(User, data)
+
+        this.telemetry.sendTelemetry(
+            TelemetryEventType.USER_CREATED,
+            {
+                userId: userObj.id,
+                createdBy: userObj.createdBy
+            },
+            userObj.id
+        )
+
+        return userObj
     }
 
     public async saveUser(data: Partial<User>, queryRunner: QueryRunner) {
@@ -117,15 +130,6 @@ export class UserService {
         } finally {
             await queryRunner.release()
         }
-
-        this.telemetry.sendTelemetry(
-            TelemetryEventType.USER_CREATED,
-            {
-                userId: newUser.id,
-                createdBy: newUser.createdBy
-            },
-            newUser.id
-        )
 
         return newUser
     }
@@ -174,6 +178,6 @@ export class UserService {
             if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
 
-        return updatedUser
+        return sanitizeUser(updatedUser)
     }
 }

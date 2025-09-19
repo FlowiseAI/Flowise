@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "3.0.5",
+    "version": "3.0.7",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -26,6 +26,7 @@
         "@mui/x-tree-view": "^7.25.0",
         "@reduxjs/toolkit": "^2.2.7",
         "@tabler/icons-react": "^3.30.0",
+        "@tiptap/extension-code-block-lowlight": "^3.4.3",
         "@tiptap/extension-mention": "^2.11.5",
         "@tiptap/extension-placeholder": "^2.11.5",
         "@tiptap/pm": "^2.11.5",
@@ -34,7 +35,7 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
-        "axios": "1.7.9",
+        "axios": "1.12.0",
         "clsx": "^1.1.1",
         "dompurify": "^3.2.6",
         "dotenv": "^16.0.0",
@@ -46,6 +47,7 @@
         "history": "^5.0.0",
         "html-react-parser": "^3.0.4",
         "lodash": "^4.17.21",
+        "lowlight": "^3.3.0",
         "moment": "^2.29.3",
         "notistack": "^2.0.4",
         "prop-types": "^15.7.2",

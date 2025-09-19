@@ -133,6 +133,7 @@ interface IExecuteNodeParams {
     orgId: string
     workspaceId: string
     subscriptionId: string
+    productId: string
 }
 
 interface IExecuteAgentFlowParams extends Omit<IExecuteFlowParams, 'incomingInput'> {
@@ -215,6 +216,7 @@ export const resolveVariables = async (
     variableOverrides: IVariableOverride[],
     uploadedFilesContent: string,
     chatHistory: IMessage[],
+    componentNodes: IComponentNodes,
     agentFlowExecutedData?: IAgentflowExecutedData[],
     iterationContext?: ICommonObject
 ): Promise<INodeData> => {
@@ -389,6 +391,135 @@ export const resolveVariables = async (
     }
 
     const getParamValues = async (paramsObj: ICommonObject) => {
+        /*
+         * EXAMPLE SCENARIO:
+         *
+         * 1. Agent node has inputParam: { name: "agentTools", type: "array", array: [{ name: "agentSelectedTool", loadConfig: true }] }
+         * 2. Inputs contain: { agentTools: [{ agentSelectedTool: "requestsGet", agentSelectedToolConfig: { requestsGetHeaders: "Bearer {{ $vars.TOKEN }}" } }] }
+         * 3. We need to resolve the variable in requestsGetHeaders because RequestsGet node defines requestsGetHeaders with acceptVariable: true
+         *
+         * STEP 1: Find all parameters with loadConfig=true (e.g., "agentSelectedTool")
+         * STEP 2: Find their values in inputs (e.g., "requestsGet")
+         * STEP 3: Look up component node definition for "requestsGet"
+         * STEP 4: Find which of its parameters have acceptVariable=true (e.g., "requestsGetHeaders")
+         * STEP 5: Find the config object (e.g., "agentSelectedToolConfig")
+         * STEP 6: Resolve variables in config parameters that accept variables
+         */
+
+        // Helper function to find params with loadConfig recursively
+        // Example: Finds ["agentModel", "agentSelectedTool"] from the inputParams structure
+        const findParamsWithLoadConfig = (inputParams: any[]): string[] => {
+            const paramsWithLoadConfig: string[] = []
+
+            for (const param of inputParams) {
+                // Direct loadConfig param (e.g., agentModel with loadConfig: true)
+                if (param.loadConfig === true) {
+                    paramsWithLoadConfig.push(param.name)
+                }
+
+                // Check nested array parameters (e.g., agentTools.array contains agentSelectedTool with loadConfig: true)
+                if (param.type === 'array' && param.array && Array.isArray(param.array)) {
+                    const nestedParams = findParamsWithLoadConfig(param.array)
+                    paramsWithLoadConfig.push(...nestedParams)
+                }
+            }
+
+            return paramsWithLoadConfig
+        }
+
+        // Helper function to find value of a parameter recursively in nested objects/arrays
+        // Example: Searches for "agentSelectedTool" value in complex nested inputs structure
+        // Returns "requestsGet" when found in agentTools[0].agentSelectedTool
+        const findParamValue = (obj: any, paramName: string): any => {
+            if (typeof obj !== 'object' || obj === null) {
+                return undefined
+            }
+
+            // Handle arrays (e.g., agentTools array)
+            if (Array.isArray(obj)) {
+                for (const item of obj) {
+                    const result = findParamValue(item, paramName)
+                    if (result !== undefined) {
+                        return result
+                    }
+                }
+                return undefined
+            }
+
+            // Direct property match
+            if (Object.prototype.hasOwnProperty.call(obj, paramName)) {
+                return obj[paramName]
+            }
+
+            // Recursively search nested objects
+            for (const value of Object.values(obj)) {
+                const result = findParamValue(value, paramName)
+                if (result !== undefined) {
+                    return result
+                }
+            }
+
+            return undefined
+        }
+
+        // Helper function to process config parameters with acceptVariable
+        // Example: Processes agentSelectedToolConfig object, resolving variables in requestsGetHeaders
+        const processConfigParams = async (configObj: any, configParamWithAcceptVariables: string[]) => {
+            if (typeof configObj !== 'object' || configObj === null) {
+                return
+            }
+
+            for (const [key, value] of Object.entries(configObj)) {
+                // Only resolve variables for parameters that accept them
+                // Example: requestsGetHeaders is in configParamWithAcceptVariables, so resolve "Bearer {{ $vars.TOKEN }}"
+                if (configParamWithAcceptVariables.includes(key)) {
+                    configObj[key] = await resolveNodeReference(value)
+                }
+            }
+        }
+
+        // STEP 1: Get all params with loadConfig from inputParams
+        // Example result: ["agentModel", "agentSelectedTool"]
+        const paramsWithLoadConfig = findParamsWithLoadConfig(reactFlowNodeData.inputParams)
+
+        // STEP 2-6: Process each param with loadConfig
+        for (const paramWithLoadConfig of paramsWithLoadConfig) {
+            // STEP 2: Find the value of this parameter in the inputs
+            // Example: paramWithLoadConfig="agentSelectedTool", paramValue="requestsGet"
+            const paramValue = findParamValue(paramsObj, paramWithLoadConfig)
+
+            if (paramValue && componentNodes[paramValue]) {
+                // STEP 3: Get the node instance inputs to find params with acceptVariable
+                // Example: componentNodes["requestsGet"] contains the RequestsGet node definition
+                const nodeInstance = componentNodes[paramValue]
+                const configParamWithAcceptVariables: string[] = []
+
+                // STEP 4: Find which parameters of the component accept variables
+                // Example: RequestsGet has inputs like { name: "requestsGetHeaders", acceptVariable: true }
+                if (nodeInstance.inputs && Array.isArray(nodeInstance.inputs)) {
+                    for (const input of nodeInstance.inputs) {
+                        if (input.acceptVariable === true) {
+                            configParamWithAcceptVariables.push(input.name)
+                        }
+                    }
+                }
+                // Example result: configParamWithAcceptVariables = ["requestsGetHeaders", "requestsGetUrl", ...]
+
+                // STEP 5: Look for the config object (paramName + "Config")
+                // Example: Look for "agentSelectedToolConfig" in the inputs
+                const configParamName = paramWithLoadConfig + 'Config'
+                const configValue = findParamValue(paramsObj, configParamName)
+
+                // STEP 6: Process config object to resolve variables
+                // Example: Resolve "Bearer {{ $vars.TOKEN }}" in requestsGetHeaders
+                if (configValue && configParamWithAcceptVariables.length > 0) {
+                    await processConfigParams(configValue, configParamWithAcceptVariables)
+                }
+            }
+        }
+
+        // Original logic for direct acceptVariable params (maintains backward compatibility)
+        // Example: Direct params like agentUserMessage with acceptVariable: true
         for (const key in paramsObj) {
             const paramValue = paramsObj[key]
             const isAcceptVariable = reactFlowNodeData.inputParams.find((param) => param.name === key)?.acceptVariable ?? false
@@ -838,7 +969,8 @@ const executeNode = async ({
     iterationContext,
     orgId,
     workspaceId,
-    subscriptionId
+    subscriptionId,
+    productId
 }: IExecuteNodeParams): Promise<{
     result: any
     shouldStop?: boolean
@@ -879,6 +1011,7 @@ const executeNode = async ({
         const chatHistory = [...pastChatHistory, ...runtimeChatHistory]
         const flowConfig: IFlowConfig = {
             chatflowid: chatflow.id,
+            chatflowId: chatflow.id,
             chatId,
             sessionId,
             apiMessageId,
@@ -910,6 +1043,7 @@ const executeNode = async ({
             variableOverrides,
             uploadedFilesContent,
             chatHistory,
+            componentNodes,
             agentFlowExecutedData,
             iterationContext
         )
@@ -961,6 +1095,7 @@ const executeNode = async ({
             chatId,
             sessionId,
             chatflowid: chatflow.id,
+            chatflowId: chatflow.id,
             apiMessageId: flowConfig.apiMessageId,
             logger,
             appDataSource,
@@ -1060,7 +1195,8 @@ const executeNode = async ({
                             },
                             orgId,
                             workspaceId,
-                            subscriptionId
+                            subscriptionId,
+                            productId
                         })
 
                         // Store the result
@@ -1287,7 +1423,8 @@ export const executeAgentFlow = async ({
     isTool = false,
     orgId,
     workspaceId,
-    subscriptionId
+    subscriptionId,
+    productId
 }: IExecuteAgentFlowParams) => {
     logger.debug('\n🚀 Starting flow execution')
 
@@ -1754,7 +1891,8 @@ export const executeAgentFlow = async ({
                 iterationContext,
                 orgId,
                 workspaceId,
-                subscriptionId
+                subscriptionId,
+                productId
             })
 
             if (executionResult.agentFlowExecutedData) {
@@ -2020,7 +2158,9 @@ export const executeAgentFlow = async ({
             chatflowId: chatflowid,
             chatId,
             type: evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-            flowGraph: getTelemetryFlowObj(nodes, edges)
+            flowGraph: getTelemetryFlowObj(nodes, edges),
+            productId,
+            subscriptionId
         },
         orgId
     )

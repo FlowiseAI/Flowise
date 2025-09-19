@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
-import { TOOL_ARGS_PREFIX } from '../../../src/agents'
+import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Google Calendar API for managing events and calendars`
 
@@ -208,7 +208,7 @@ class ListEventsTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error listing events: ${error}`
+            return formatToolError(`Error listing events: ${error}`, params)
         }
     }
 }
@@ -291,7 +291,7 @@ class CreateEventTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'POST', body: eventData, params })
             return response
         } catch (error) {
-            return `Error creating event: ${error}`
+            return formatToolError(`Error creating event: ${error}`, params)
         }
     }
 }
@@ -323,7 +323,7 @@ class GetEventTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error getting event: ${error}`
+            return formatToolError(`Error getting event: ${error}`, params)
         }
     }
 }
@@ -400,7 +400,7 @@ class UpdateEventTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'PUT', body: updateData, params })
             return response
         } catch (error) {
-            return `Error updating event: ${error}`
+            return formatToolError(`Error updating event: ${error}`, params)
         }
     }
 }
@@ -432,7 +432,7 @@ class DeleteEventTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'DELETE', params })
             return response || 'Event deleted successfully'
         } catch (error) {
-            return `Error deleting event: ${error}`
+            return formatToolError(`Error deleting event: ${error}`, params)
         }
     }
 }
@@ -467,7 +467,7 @@ class QuickAddEventTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'POST', params })
             return response
         } catch (error) {
-            return `Error quick adding event: ${error}`
+            return formatToolError(`Error quick adding event: ${error}`, params)
         }
     }
 }
@@ -505,7 +505,7 @@ class ListCalendarsTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error listing calendars: ${error}`
+            return formatToolError(`Error listing calendars: ${error}`, params)
         }
     }
 }
@@ -545,7 +545,7 @@ class CreateCalendarTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'POST', body: calendarData, params })
             return response
         } catch (error) {
-            return `Error creating calendar: ${error}`
+            return formatToolError(`Error creating calendar: ${error}`, params)
         }
     }
 }
@@ -577,7 +577,7 @@ class GetCalendarTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error getting calendar: ${error}`
+            return formatToolError(`Error getting calendar: ${error}`, params)
         }
     }
 }
@@ -616,7 +616,7 @@ class UpdateCalendarTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'PUT', body: updateData, params })
             return response
         } catch (error) {
-            return `Error updating calendar: ${error}`
+            return formatToolError(`Error updating calendar: ${error}`, params)
         }
     }
 }
@@ -648,7 +648,7 @@ class DeleteCalendarTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'DELETE', params })
             return response || 'Calendar deleted successfully'
         } catch (error) {
-            return `Error deleting calendar: ${error}`
+            return formatToolError(`Error deleting calendar: ${error}`, params)
         }
     }
 }
@@ -680,7 +680,7 @@ class ClearCalendarTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'POST', params })
             return response || 'Calendar cleared successfully'
         } catch (error) {
-            return `Error clearing calendar: ${error}`
+            return formatToolError(`Error clearing calendar: ${error}`, params)
         }
     }
 }
@@ -729,7 +729,7 @@ class QueryFreebusyTool extends BaseGoogleCalendarTool {
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'POST', body: freebusyData, params })
             return response
         } catch (error) {
-            return `Error querying freebusy: ${error}`
+            return formatToolError(`Error querying freebusy: ${error}`, params)
         }
     }
 }
@@ -742,122 +742,57 @@ export const createGoogleCalendarTools = (args?: RequestParameters): DynamicStru
 
     // Event tools
     if (actions.includes('listEvents')) {
-        tools.push(
-            new ListEventsTool({
-                accessToken,
-                defaultParams: defaultParams.listEvents
-            })
-        )
+        tools.push(new ListEventsTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('createEvent')) {
-        tools.push(
-            new CreateEventTool({
-                accessToken,
-                defaultParams: defaultParams.createEvent
-            })
-        )
+        tools.push(new CreateEventTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('getEvent')) {
-        tools.push(
-            new GetEventTool({
-                accessToken,
-                defaultParams: defaultParams.getEvent
-            })
-        )
+        tools.push(new GetEventTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('updateEvent')) {
-        tools.push(
-            new UpdateEventTool({
-                accessToken,
-                defaultParams: defaultParams.updateEvent
-            })
-        )
+        tools.push(new UpdateEventTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('deleteEvent')) {
-        tools.push(
-            new DeleteEventTool({
-                accessToken,
-                defaultParams: defaultParams.deleteEvent
-            })
-        )
+        tools.push(new DeleteEventTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('quickAddEvent')) {
-        tools.push(
-            new QuickAddEventTool({
-                accessToken,
-                defaultParams: defaultParams.quickAddEvent
-            })
-        )
+        tools.push(new QuickAddEventTool({ accessToken, defaultParams }))
     }
 
     // Calendar tools
     if (actions.includes('listCalendars')) {
-        tools.push(
-            new ListCalendarsTool({
-                accessToken,
-                defaultParams: defaultParams.listCalendars
-            })
-        )
+        tools.push(new ListCalendarsTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('createCalendar')) {
-        tools.push(
-            new CreateCalendarTool({
-                accessToken,
-                defaultParams: defaultParams.createCalendar
-            })
-        )
+        tools.push(new CreateCalendarTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('getCalendar')) {
-        tools.push(
-            new GetCalendarTool({
-                accessToken,
-                defaultParams: defaultParams.getCalendar
-            })
-        )
+        tools.push(new GetCalendarTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('updateCalendar')) {
-        tools.push(
-            new UpdateCalendarTool({
-                accessToken,
-                defaultParams: defaultParams.updateCalendar
-            })
-        )
+        tools.push(new UpdateCalendarTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('deleteCalendar')) {
-        tools.push(
-            new DeleteCalendarTool({
-                accessToken,
-                defaultParams: defaultParams.deleteCalendar
-            })
-        )
+        tools.push(new DeleteCalendarTool({ accessToken, defaultParams }))
     }
 
     if (actions.includes('clearCalendar')) {
-        tools.push(
-            new ClearCalendarTool({
-                accessToken,
-                defaultParams: defaultParams.clearCalendar
-            })
-        )
+        tools.push(new ClearCalendarTool({ accessToken, defaultParams }))
     }
 
     // Freebusy tools
     if (actions.includes('queryFreebusy')) {
-        tools.push(
-            new QueryFreebusyTool({
-                accessToken,
-                defaultParams: defaultParams.queryFreebusy
-            })
-        )
+        tools.push(new QueryFreebusyTool({ accessToken, defaultParams }))
     }
 
     return tools
