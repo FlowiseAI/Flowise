@@ -287,8 +287,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
                 event: 'tts_end',
                 data: { chatMessageId }
             }
-            client.response.write('event: tts_end\n')
-            client.response.write('data: ' + JSON.stringify(clientResponse.data) + '\n\n')
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
     }
 

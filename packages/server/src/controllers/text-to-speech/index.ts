@@ -77,9 +77,6 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
         res.setHeader('Access-Control-Allow-Headers', 'Cache-Control')
 
         const appServer = getRunningExpressApp()
-
-        appServer.sseStreamer.addExternalClient(chatId, res)
-
         const options = {
             orgId: '',
             chatflowid: chatflowId || '',
@@ -100,20 +97,33 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             textToSpeechConfig,
             options,
             (format: string) => {
-                appServer.sseStreamer.streamTTSStartEvent(chatId, chatMessageId, format)
+                const startResponse = {
+                    event: 'tts_start',
+                    data: { chatMessageId, format }
+                }
+                res.write('event: tts_start\n')
+                res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
             },
             (chunk: Buffer) => {
                 const audioBase64 = chunk.toString('base64')
-                appServer.sseStreamer.streamTTSDataEvent(chatId, chatMessageId, audioBase64)
+                const clientResponse = {
+                    event: 'tts_data',
+                    data: { chatMessageId, audioChunk: audioBase64 }
+                }
+                res.write('event: tts_data\n')
+                res.write(`data: ${JSON.stringify(clientResponse)}\n\n`)
             },
             async () => {
-                appServer.sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
-                appServer.sseStreamer.removeClient(chatId)
+                const endResponse = {
+                    event: 'tts_end',
+                    data: { chatMessageId }
+                }
+                res.write('event: tts_end\n')
+                res.write(`data: ${JSON.stringify(endResponse)}\n\n`)
+                res.end()
             }
         )
     } catch (error) {
-        const appServer = getRunningExpressApp()
-
         if (!res.headersSent) {
             res.setHeader('Content-Type', 'text/event-stream')
             res.setHeader('Cache-Control', 'no-cache')
@@ -127,10 +137,6 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
         res.write('event: tts_error\n')
         res.write(`data: ${JSON.stringify(errorResponse)}\n\n`)
         res.end()
-
-        if (req.body.chatId) {
-            appServer.sseStreamer.removeClient(req.body.chatId)
-        }
     }
 }
 
