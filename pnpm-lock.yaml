@@ -977,6 +977,9 @@ importers:
             '@tabler/icons-react':
                 specifier: ^3.30.0
                 version: 3.31.0(react@18.2.0)
+            '@tiptap/extension-code-block-lowlight':
+                specifier: ^3.4.3
+                version: 3.4.3(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/extension-code-block@2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0)(highlight.js@11.11.1)(lowlight@3.3.0)
             '@tiptap/extension-mention':
                 specifier: ^2.11.5
                 version: 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0)(@tiptap/suggestion@2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0))
@@ -1037,6 +1040,9 @@ importers:
             lodash:
                 specifier: ^4.17.21
                 version: 4.17.21
+            lowlight:
+                specifier: ^3.3.0
+                version: 3.3.0
             moment:
                 specifier: ^2.29.3
                 version: 2.30.1
@@ -7135,6 +7141,15 @@ packages:
         peerDependencies:
             '@tiptap/core': ^2.7.0
 
+    '@tiptap/extension-code-block-lowlight@3.4.3':
+        resolution: { integrity: sha512-d3vEhv2cLDdWL2unqRkF0LkGEDEm/pJCWZwSjqzYFe3vrTEsTExorpwZoVV8i9uX/DPG4AdM+mf3hLK9L5FZoA== }
+        peerDependencies:
+            '@tiptap/core': ^3.4.3
+            '@tiptap/extension-code-block': ^3.4.3
+            '@tiptap/pm': ^3.4.3
+            highlight.js: ^11
+            lowlight: ^2 || ^3
+
     '@tiptap/extension-code-block@2.12.0':
         resolution: { integrity: sha512-1D7cYAjgxEFHdfC/35Ooi4GqWKB5sszbW8iI7N16XILNln26xb0d5KflXqYrwr9CN/ZnZoCl2o6YsP7xEObcZA== }
         peerDependencies:
@@ -11595,6 +11610,10 @@ packages:
     highlight.js@10.7.3:
         resolution: { integrity: sha512-tzcUFauisWKNHaRkN4Wjl/ZA07gENAjFl3J/c480dprkGTg5EQstgaNFqBfUqCq54kZRIEcreTsAgF/m2quD7A== }
 
+    highlight.js@11.11.1:
+        resolution: { integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w== }
+        engines: { node: '>=12.0.0' }
+
     history@5.3.0:
         resolution: { integrity: sha512-ZqaKwjjrAYUYfLG+htGaIIZ4nioX2L70ZUMIFysS3xvBsSG4x/n1V6TXV3N8ZYNuFGlDirFg32T7B6WOUPDYcQ== }
 
@@ -13089,6 +13108,9 @@ packages:
 
     lowlight@1.20.0:
         resolution: { integrity: sha512-8Ktj+prEb1RoCPkEOrPMYUN/nCggB7qAWe3a7OpMjWQkh3l2RD5wKRQ+o8Q8YuI9RG/xs95waaI/E6ym/7NsTw== }
+
+    lowlight@3.3.0:
+        resolution: { integrity: sha512-0JNhgFoPvP6U6lE/UdVsSq99tn6DhjjpAj5MxG49ewd2mOBVtwWYIT8ClyABhq198aXXODMU6Ox8DrGy/CpTZQ== }
 
     lru-cache@10.2.0:
         resolution: { integrity: sha512-2bIM8x+VAf6JT4bKAljS1qUWgMsqZRPGJS6FSahIMPVvctcNhyVp7AJu7quxOW9jwkryBReKZY5tY5JYv2n/7Q== }
@@ -27410,6 +27432,14 @@ snapshots:
         dependencies:
             '@tiptap/core': 2.12.0(@tiptap/pm@2.12.0)
 
+    '@tiptap/extension-code-block-lowlight@3.4.3(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/extension-code-block@2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0)(highlight.js@11.11.1)(lowlight@3.3.0)':
+        dependencies:
+            '@tiptap/core': 2.12.0(@tiptap/pm@2.12.0)
+            '@tiptap/extension-code-block': 2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0)
+            '@tiptap/pm': 2.12.0
+            highlight.js: 11.11.1
+            lowlight: 3.3.0
+
     '@tiptap/extension-code-block@2.12.0(@tiptap/core@2.12.0(@tiptap/pm@2.12.0))(@tiptap/pm@2.12.0)':
         dependencies:
             '@tiptap/core': 2.12.0(@tiptap/pm@2.12.0)
@@ -33109,6 +33139,8 @@ snapshots:
 
     highlight.js@10.7.3: {}
 
+    highlight.js@11.11.1: {}
+
     history@5.3.0:
         dependencies:
             '@babel/runtime': 7.24.0
@@ -35298,6 +35330,12 @@ snapshots:
         dependencies:
             fault: 1.0.4
             highlight.js: 10.7.3
+
+    lowlight@3.3.0:
+        dependencies:
+            '@types/hast': 3.0.4
+            devlop: 1.1.0
+            highlight.js: 11.11.1
 
     lru-cache@10.2.0: {}
 
