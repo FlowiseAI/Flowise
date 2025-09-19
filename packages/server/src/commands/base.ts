@@ -77,7 +77,8 @@ export abstract class BaseCommand extends Command {
         ENABLE_BULLMQ_DASHBOARD: Flags.string(),
         CUSTOM_MCP_SECURITY_CHECK: Flags.string(),
         CUSTOM_MCP_PROTOCOL: Flags.string(),
-        HTTP_DENY_LIST: Flags.string()
+        HTTP_DENY_LIST: Flags.string(),
+        TRUST_PROXY: Flags.string()
     }
 
     protected async stopProcess() {
@@ -210,5 +211,6 @@ export abstract class BaseCommand extends Command {
         if (flags.CUSTOM_MCP_SECURITY_CHECK) process.env.CUSTOM_MCP_SECURITY_CHECK = flags.CUSTOM_MCP_SECURITY_CHECK
         if (flags.CUSTOM_MCP_PROTOCOL) process.env.CUSTOM_MCP_PROTOCOL = flags.CUSTOM_MCP_PROTOCOL
         if (flags.HTTP_DENY_LIST) process.env.HTTP_DENY_LIST = flags.HTTP_DENY_LIST
+        if (flags.TRUST_PROXY) process.env.TRUST_PROXY = flags.TRUST_PROXY
     }
 }
