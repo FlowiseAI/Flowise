@@ -899,7 +899,6 @@ export const executeFlow = async ({
         if (Object.keys(setVariableNodesOutput).length) result.flowVariables = setVariableNodesOutput
 
         if (shouldAutoPlayTTS(chatflow.textToSpeech) && result.text) {
-            logger.info('Generating TTS for response in executeFlow')
             const options = {
                 orgId,
                 chatflowid,
