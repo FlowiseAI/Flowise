@@ -164,7 +164,7 @@ export class App {
 
         // Enhanced trust proxy settings for load balancer
         let trustProxy: string | boolean | number | undefined = process.env.TRUST_PROXY
-        if (typeof trustProxy === 'undefined' || trustProxy === 'true') {
+        if (typeof trustProxy === 'undefined' || trustProxy.trim() === '' || trustProxy === 'true') {
             // Default to trust all proxies
             trustProxy = true
         } else if (trustProxy === 'false') {
