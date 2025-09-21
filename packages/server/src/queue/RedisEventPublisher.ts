@@ -428,6 +428,22 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         }
     }
 
+    streamTTSAbortEvent(chatId: string, chatMessageId: string): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    chatMessageId,
+                    eventType: 'tts_abort',
+                    data: {}
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming TTS abort event:', error)
+        }
+    }
+
     async disconnect() {
         if (this.redisPublisher) {
             await this.redisPublisher.quit()

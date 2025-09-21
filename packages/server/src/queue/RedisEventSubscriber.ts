@@ -169,6 +169,9 @@ export class RedisEventSubscriber {
             case 'tts_end':
                 this.sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
                 break
+            case 'tts_abort':
+                this.sseStreamer.streamTTSAbortEvent(chatId, chatMessageId)
+                break
         }
     }
 

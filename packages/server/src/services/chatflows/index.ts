@@ -369,7 +369,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
                 let isTTSEnabled = false
                 if (ttsConfig) {
                     Object.keys(ttsConfig).forEach((provider) => {
-                        if (ttsConfig?.[provider]?.status) {
+                        if (provider !== 'none' && ttsConfig?.[provider]?.status) {
                             isTTSEnabled = true
                         }
                     })

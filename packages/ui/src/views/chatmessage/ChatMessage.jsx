@@ -998,11 +998,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     setUserInput('')
                     setUploadedFiles([])
 
-                    // Handle auto-play audio for non-streaming responses
-                    if (data.audioData) {
-                        handleAutoPlayAudio(data.audioData)
-                    }
-
                     setTimeout(() => {
                         inputRef.current?.focus()
                         scrollToBottom()
@@ -1080,9 +1075,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     case 'abort':
                         abortMessage(payload.data)
                         closeResponse()
-                        break
-                    case 'audio':
-                        handleAutoPlayAudio(payload.data)
                         break
                     case 'tts_start':
                         handleTTSStart(payload.data)
@@ -1748,30 +1740,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 const newState = { ...prev }
                 delete newState[messageId]
                 return newState
-            })
-        }
-    }
-
-    const handleAutoPlayAudio = async (audioData) => {
-        try {
-            // Stop all existing TTS audio before playing auto-play audio
-            stopAllTTS()
-
-            const audioBuffer = Uint8Array.from(atob(audioData), (c) => c.charCodeAt(0))
-            const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' })
-            const audioUrl = URL.createObjectURL(audioBlob)
-            const audio = new Audio(audioUrl)
-
-            audio.addEventListener('ended', () => {
-                URL.revokeObjectURL(audioUrl)
-            })
-
-            await audio.play()
-        } catch (error) {
-            console.error('Error playing auto TTS audio:', error)
-            enqueueSnackbar({
-                message: 'Auto-play audio failed',
-                options: { variant: 'error' }
             })
         }
     }
