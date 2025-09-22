@@ -2189,7 +2189,15 @@ export const executeAgentFlow = async ({
         }
 
         if (sseStreamer) {
-            await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, chatMessage?.id, sseStreamer)
+            await generateTTSForResponseStream(
+                result.text,
+                chatflow.textToSpeech,
+                options,
+                chatId,
+                chatMessage?.id,
+                sseStreamer,
+                abortController
+            )
         }
     }
 

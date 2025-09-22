@@ -92,37 +92,51 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             model: model
         }
 
-        await convertTextToSpeechStream(
-            text,
-            textToSpeechConfig,
-            options,
-            (format: string) => {
-                const startResponse = {
-                    event: 'tts_start',
-                    data: { chatMessageId, format }
+        // Create and store AbortController
+        const abortController = new AbortController()
+        const ttsAbortId = `tts_${chatId}_${chatMessageId}`
+        appServer.abortControllerPool.add(ttsAbortId, abortController)
+
+        try {
+            await convertTextToSpeechStream(
+                text,
+                textToSpeechConfig,
+                options,
+                abortController,
+                (format: string) => {
+                    const startResponse = {
+                        event: 'tts_start',
+                        data: { chatMessageId, format }
+                    }
+                    res.write('event: tts_start\n')
+                    res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
+                },
+                (chunk: Buffer) => {
+                    const audioBase64 = chunk.toString('base64')
+                    const clientResponse = {
+                        event: 'tts_data',
+                        data: { chatMessageId, audioChunk: audioBase64 }
+                    }
+                    res.write('event: tts_data\n')
+                    res.write(`data: ${JSON.stringify(clientResponse)}\n\n`)
+                },
+                async () => {
+                    const endResponse = {
+                        event: 'tts_end',
+                        data: { chatMessageId }
+                    }
+                    res.write('event: tts_end\n')
+                    res.write(`data: ${JSON.stringify(endResponse)}\n\n`)
+                    res.end()
+                    // Clean up from pool on successful completion
+                    appServer.abortControllerPool.remove(ttsAbortId)
                 }
-                res.write('event: tts_start\n')
-                res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
-            },
-            (chunk: Buffer) => {
-                const audioBase64 = chunk.toString('base64')
-                const clientResponse = {
-                    event: 'tts_data',
-                    data: { chatMessageId, audioChunk: audioBase64 }
-                }
-                res.write('event: tts_data\n')
-                res.write(`data: ${JSON.stringify(clientResponse)}\n\n`)
-            },
-            async () => {
-                const endResponse = {
-                    event: 'tts_end',
-                    data: { chatMessageId }
-                }
-                res.write('event: tts_end\n')
-                res.write(`data: ${JSON.stringify(endResponse)}\n\n`)
-                res.end()
-            }
-        )
+            )
+        } catch (error) {
+            // Clean up from pool on error
+            appServer.abortControllerPool.remove(ttsAbortId)
+            throw error
+        }
     } catch (error) {
         if (!res.headersSent) {
             res.setHeader('Content-Type', 'text/event-stream')
@@ -160,6 +174,11 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
 
         const appServer = getRunningExpressApp()
 
+        // Abort the TTS generation using existing pool
+        const ttsAbortId = `tts_${chatId}_${chatMessageId}`
+        appServer.abortControllerPool.abort(ttsAbortId)
+
+        // Send abort event to client
         appServer.sseStreamer.streamTTSAbortEvent(chatId, chatMessageId)
 
         res.json({ message: 'TTS stream aborted successfully', chatId, chatMessageId })

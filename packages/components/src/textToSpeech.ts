@@ -14,6 +14,7 @@ export const convertTextToSpeechStream = async (
     text: string,
     textToSpeechConfig: ICommonObject,
     options: ICommonObject,
+    abortController: AbortController,
     onStart: (format: string) => void,
     onChunk: (chunk: Buffer) => void,
     onEnd: () => void
@@ -33,29 +34,34 @@ export const convertTextToSpeechStream = async (
                                 apiKey: credentialData.openAIApiKey
                             })
 
-                            const response = await openai.audio.speech.create({
-                                model: 'gpt-4o-mini-tts',
-                                voice: (textToSpeechConfig.voice || 'alloy') as
-                                    | 'alloy'
-                                    | 'ash'
-                                    | 'ballad'
-                                    | 'coral'
-                                    | 'echo'
-                                    | 'fable'
-                                    | 'nova'
-                                    | 'onyx'
-                                    | 'sage'
-                                    | 'shimmer',
-                                input: text,
-                                response_format: 'mp3'
-                            })
+                            const response = await openai.audio.speech.create(
+                                {
+                                    model: 'gpt-4o-mini-tts',
+                                    voice: (textToSpeechConfig.voice || 'alloy') as
+                                        | 'alloy'
+                                        | 'ash'
+                                        | 'ballad'
+                                        | 'coral'
+                                        | 'echo'
+                                        | 'fable'
+                                        | 'nova'
+                                        | 'onyx'
+                                        | 'sage'
+                                        | 'shimmer',
+                                    input: text,
+                                    response_format: 'mp3'
+                                },
+                                {
+                                    signal: abortController.signal
+                                }
+                            )
 
                             const stream = response.body as unknown as Readable
                             if (!stream) {
                                 throw new Error('Failed to get response stream')
                             }
 
-                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20)
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController)
                             break
                         }
 
@@ -66,17 +72,21 @@ export const convertTextToSpeechStream = async (
                                 apiKey: credentialData.elevenLabsApiKey
                             })
 
-                            const response = await client.textToSpeech.stream(textToSpeechConfig.voice || '21m00Tcm4TlvDq8ikWAM', {
-                                text: text,
-                                modelId: 'eleven_multilingual_v2'
-                            })
+                            const response = await client.textToSpeech.stream(
+                                textToSpeechConfig.voice || '21m00Tcm4TlvDq8ikWAM',
+                                {
+                                    text: text,
+                                    modelId: 'eleven_multilingual_v2'
+                                },
+                                { abortSignal: abortController.signal }
+                            )
 
                             const stream = Readable.fromWeb(response as unknown as ReadableStream)
                             if (!stream) {
                                 throw new Error('Failed to get response stream')
                             }
 
-                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40)
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40, abortController)
                             break
                         }
                     }
@@ -99,7 +109,8 @@ const processStreamWithRateLimit = async (
     resolve: () => void,
     reject: (error: any) => void,
     targetChunkSize: number = 640,
-    rateLimitMs: number = 20
+    rateLimitMs: number = 20,
+    abortController: AbortController
 ) => {
     const TARGET_CHUNK_SIZE = targetChunkSize
     const RATE_LIMIT_MS = rateLimitMs
@@ -109,6 +120,13 @@ const processStreamWithRateLimit = async (
 
     const processChunks = async () => {
         while (!isEnded || buffer.length > 0) {
+            // Check if aborted
+            if (abortController.signal.aborted) {
+                stream.destroy()
+                reject(new Error('TTS generation aborted'))
+                return
+            }
+
             if (buffer.length >= TARGET_CHUNK_SIZE) {
                 const chunk = buffer.subarray(0, TARGET_CHUNK_SIZE)
                 buffer = buffer.subarray(TARGET_CHUNK_SIZE)
@@ -129,7 +147,9 @@ const processStreamWithRateLimit = async (
     }
 
     stream.on('data', (chunk) => {
-        buffer = Buffer.concat([buffer, Buffer.from(chunk)])
+        if (!abortController.signal.aborted) {
+            buffer = Buffer.concat([buffer, Buffer.from(chunk)])
+        }
     })
 
     stream.on('end', () => {
@@ -138,6 +158,12 @@ const processStreamWithRateLimit = async (
 
     stream.on('error', (error) => {
         reject(error)
+    })
+
+    // Handle abort signal
+    abortController.signal.addEventListener('abort', () => {
+        stream.destroy()
+        reject(new Error('TTS generation aborted'))
     })
 
     processChunks().catch(reject)

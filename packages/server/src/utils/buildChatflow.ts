@@ -95,7 +95,8 @@ const generateTTSForResponseStream = async (
     options: ICommonObject,
     chatId: string,
     chatMessageId: string,
-    sseStreamer: IServerSideEventStreamer
+    sseStreamer: IServerSideEventStreamer,
+    abortController?: AbortController
 ): Promise<void> => {
     try {
         if (!textToSpeechConfig) return
@@ -121,6 +122,7 @@ const generateTTSForResponseStream = async (
             responseText,
             activeProviderConfig,
             options,
+            abortController || new AbortController(),
             (format: string) => {
                 sseStreamer.streamTTSStartEvent(chatId, chatMessageId, format)
             },
@@ -908,9 +910,25 @@ export const executeFlow = async ({
             }
 
             if (streaming && sseStreamer) {
-                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, chatMessage?.id, sseStreamer)
+                await generateTTSForResponseStream(
+                    result.text,
+                    chatflow.textToSpeech,
+                    options,
+                    chatId,
+                    chatMessage?.id,
+                    sseStreamer,
+                    signal
+                )
             } else if (sseStreamer) {
-                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, chatMessage?.id, sseStreamer)
+                await generateTTSForResponseStream(
+                    result.text,
+                    chatflow.textToSpeech,
+                    options,
+                    chatId,
+                    chatMessage?.id,
+                    sseStreamer,
+                    signal
+                )
             }
         }
 
