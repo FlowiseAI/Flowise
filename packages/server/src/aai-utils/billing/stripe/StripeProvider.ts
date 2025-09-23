@@ -298,11 +298,6 @@ export class StripeProvider {
         try {
             log.info('Syncing usage to Stripe', { count: creditsData.length })
 
-            // Validate batch size
-            if (creditsData.length > BILLING_CONFIG.VALIDATION.MAX_BATCH_SIZE) {
-                throw new Error(`Batch size ${creditsData.length} exceeds maximum of ${BILLING_CONFIG.VALIDATION.MAX_BATCH_SIZE}`)
-            }
-
             // Parallel fetch meters and prepare events
             const [meters] = await Promise.all([this.stripeClient.billing.meters.list()])
             const metersMap = new Map(meters.data.map((meter) => [meter.display_name || meter.id, meter.id]))

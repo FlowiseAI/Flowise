@@ -30,6 +30,13 @@
     pointer-events: none;
 }
 
+.heroFallback {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.2), rgba(0, 0, 0, 0.9));
+    opacity: 0.85;
+}
+
 .heroContent {
     position: relative;
     z-index: 2;
@@ -44,6 +51,980 @@
     box-sizing: border-box;
     color: white;
     margin: 0 auto;
+}
+
+.heroCelebration {
+    font-size: clamp(3rem, 6vw, 4.5rem);
+    margin-bottom: 0.75rem;
+}
+
+.heroChecklist {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 2.5rem;
+    display: grid;
+    gap: 0.85rem;
+}
+
+.heroChecklistItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.heroChecklistIcon {
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.heroActionRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    width: 100%;
+}
+
+.heroActionPrimary {
+    display: grid;
+    gap: 1.5rem;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 18px;
+    padding: 1.75rem;
+}
+
+.heroActionFooter {
+    display: flex;
+    justify-content: center;
+}
+
+.heroVoiceCard {
+    display: grid;
+    gap: 1rem;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(0, 0, 0, 0.65));
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 18px;
+    padding: 1.75rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.heroVoiceHeader {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.heroVoiceTitle {
+    margin: 0;
+    font-size: 1.6rem;
+    color: #ffffff;
+}
+
+.heroVoiceCopy {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 1rem;
+}
+
+.heroVoiceButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.9rem 1.6rem;
+    border-radius: 999px;
+    background: #00ffff;
+    color: #001828;
+    font-weight: 600;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.heroVoiceButton:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 255, 255, 0.35);
+}
+
+.heroVoiceAssurance {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.heroSecondaryLinks {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.landingHero {
+    padding: 6rem 0 4rem;
+    background: radial-gradient(circle at top right, rgba(0, 255, 255, 0.15), rgba(0, 0, 0, 0.85));
+}
+
+.heroContainer {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding: 0 1.5rem;
+}
+
+.heroGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    gap: 3rem;
+    align-items: center;
+}
+
+.heroCopy {
+    color: #ffffff;
+}
+
+.heroEyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #00ffff;
+    background: rgba(0, 255, 255, 0.15);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 999px;
+    padding: 0.55rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.heroHeadline {
+    font-size: clamp(2.6rem, 4.3vw, 3.8rem);
+    line-height: 1.05;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    background: linear-gradient(120deg, #ffffff, #00ffff 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.heroSubhead {
+    font-size: 1.2rem;
+    opacity: 0.88;
+    margin-bottom: 2rem;
+    max-width: 640px;
+}
+
+.heroHighlightsHeading {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.75rem;
+}
+
+.heroProofSection {
+    background: rgba(0, 18, 40, 0.92);
+    padding: 2.75rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.heroProofGrid {
+    display: grid;
+    gap: 2rem;
+    align-items: center;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.heroProofLabel {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.75rem;
+}
+
+.logoStrip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.logoStrip span {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.6rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.heroCarousel {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.heroCarouselCard {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 14px;
+    padding: 1.15rem 1.4rem;
+    min-height: 96px;
+    animation: heroCarouselFade 0.4s ease;
+}
+
+.heroCarouselIcon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.heroCarouselCopy {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.heroCarouselIndicators {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.heroCarouselIndicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.heroCarouselIndicator:hover,
+.heroCarouselIndicator:focus {
+    transform: scale(1.1);
+    outline: none;
+}
+
+.heroCarouselIndicatorActive {
+    background: #00ffff;
+    border-color: #00ffff;
+}
+
+@keyframes heroCarouselFade {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.testimonialCard {
+    background: rgba(0, 0, 0, 0.5);
+    border-left: 3px solid #00ffff;
+    padding: 1.2rem 1.4rem;
+    border-radius: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.testimonialAuthor {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    font-weight: 600;
+    color: #00ffff;
+}
+
+.heroFormCard {
+    background: rgba(0, 16, 40, 0.9);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 18px;
+    padding: 2.5rem 2.25rem;
+    box-shadow: 0 28px 48px rgba(0, 0, 0, 0.45);
+    position: relative;
+}
+
+.scarcityBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 0, 0.15);
+    border: 1px solid rgba(255, 255, 0, 0.4);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #ffff80;
+    margin-bottom: 1.25rem;
+}
+
+.heroFormHeading {
+    text-align: center;
+    margin-bottom: 1.75rem;
+}
+
+.heroFormHeading h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.65rem;
+    color: #ffffff;
+}
+
+.heroFormHeading p {
+    margin: 0;
+    font-size: 0.98rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.formCountdown {
+    margin-top: 1.75rem;
+}
+
+.formFooterNote {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+}
+
+.riskList {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+    text-align: left;
+}
+
+.calendarButtons {
+    margin-top: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.calendarButton {
+    background: rgba(0, 255, 255, 0.15);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 999px;
+    padding: 0.45rem 1.2rem;
+    font-size: 0.85rem;
+    color: #00ffff;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.calendarButton:hover {
+    background: rgba(0, 255, 255, 0.25);
+}
+
+.valueStackSection {
+    background: rgba(7, 14, 28, 0.95);
+    padding: 5rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sectionTitle {
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    background: linear-gradient(120deg, #ffffff, #00ffff 70%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sectionSubtitle {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 3rem auto;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.valueStackGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.valueCard {
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.6rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.valueCard strong {
+    font-size: 1rem;
+    color: #00ffff;
+}
+
+.valueTotal {
+    margin-top: 2.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #ffff80;
+    font-weight: 600;
+}
+
+.presenterSection {
+    background: rgba(0, 10, 24, 0.92);
+    padding: 4.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.presenterIntro {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.presenterGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.75rem;
+}
+
+.presenterCard {
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 2rem;
+    display: grid;
+    gap: 1.25rem;
+}
+
+.presenterHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.presenterPhoto {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(0, 255, 255, 0.6);
+}
+
+.presenterPlaceholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 255, 255, 0.15);
+    color: #00ffff;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.presenterTitle {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+}
+
+.presenterBio {
+    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.presenterHighlight {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
+    color: #ffffa6;
+}
+
+.carouselSection {
+    background: rgba(0, 8, 18, 0.92);
+    padding: 4rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.carouselCard {
+    max-width: 720px;
+    margin: 0 auto;
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 24px;
+    padding: 3rem;
+    text-align: center;
+}
+
+.carouselQuote {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.92);
+    margin-bottom: 1.5rem;
+}
+
+.carouselAuthor {
+    font-size: 0.95rem;
+    color: rgba(0, 255, 255, 0.8);
+    margin-bottom: 1.5rem;
+}
+
+.carouselDots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.carouselDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.carouselDotActive {
+    background: #00ffff;
+}
+
+.videoSection {
+    background: rgba(0, 12, 26, 0.95);
+    padding: 4rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.videoWrapper {
+    max-width: 820px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.videoFrame {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.videoFrame iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.videoCaption {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.toolkitSection {
+    background: rgba(6, 14, 30, 0.95);
+    padding: 4.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.toolkitGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.toolkitCard {
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 18px;
+    padding: 2rem 1.75rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.toolkitCard h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #00ffff;
+}
+
+.toolkitCard p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.toolkitIcon {
+    font-size: 1.8rem;
+}
+
+.roadmapSection {
+    background: rgba(2, 10, 24, 0.92);
+    padding: 4.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.roadmapGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.roadmapCard {
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 18px;
+    padding: 1.75rem;
+}
+
+.roadmapHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+}
+
+.roadmapPhase {
+    font-weight: 600;
+    color: #00ffff;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.roadmapDuration {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.roadmapCard ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.bonusSection {
+    background: rgba(10, 24, 38, 0.95);
+    padding: 3.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bonusCard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 0, 0.08);
+    border: 1px solid rgba(255, 255, 0, 0.35);
+    border-radius: 18px;
+    padding: 2.5rem 2rem;
+}
+
+.bonusCard h2 {
+    margin: 0.5rem 0 0.75rem;
+    color: #ffff80;
+}
+
+.bonusCard p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.bonusCard ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.bonusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #1a1a05;
+    background: #ffff80;
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+}
+
+.testimonialGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+.miniStat {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+}
+
+.miniStatValue {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #00ffff;
+}
+
+.miniStatLabel {
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.faqGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.faqCard {
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.faqCard h4 {
+    color: #00ffff;
+    margin-bottom: 0.75rem;
+}
+
+.finalCtaCard {
+    background: rgba(0, 20, 50, 0.9);
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    padding: 3.5rem 3rem;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+}
+
+.finalCtaHeadline {
+    font-size: 2.1rem;
+    margin-bottom: 1rem;
+    color: #00ffff;
+}
+
+.finalCtaCopy {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 2rem;
+}
+
+.finalCtaFooter {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.countdownContainer {
+    /* existing styles extended via inline overrides */
+}
+
+.countdownUnit {
+    text-align: center;
+}
+
+.stickyCtaBar {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    background: rgba(0, 18, 36, 0.95);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    transform: translateY(140%);
+    transition: transform 0.35s ease;
+    z-index: 999;
+    backdrop-filter: blur(12px);
+}
+
+.stickyCtaBarVisible {
+    transform: translateY(0);
+}
+
+.stickyCtaButton {
+    background: linear-gradient(120deg, #00ffff, #00cccc);
+    color: #001020;
+    border: none;
+    border-radius: 999px;
+    padding: 0.85rem 1.8rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(0, 255, 255, 0.35);
+    transition: transform 0.2s ease;
+}
+
+.stickyCtaButton:hover {
+    transform: translateY(-1px);
+}
+
+.desktopStickyHeader {
+    position: fixed;
+    top: 0.75rem;
+    left: 0;
+    right: 0;
+    display: none;
+    justify-content: center;
+    transform: translateY(-150%);
+    transition: transform 0.35s ease;
+    z-index: 998;
+}
+
+.desktopStickyHeaderVisible {
+    transform: translateY(0);
+}
+
+.desktopStickyInner {
+    background: rgba(0, 18, 36, 0.95);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 999px;
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.desktopStickyInner span {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+}
+
+@media (max-width: 996px) {
+    .heroGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .heroCarousel {
+        margin: 0 auto 2rem;
+    }
+
+    .heroProofGrid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .logoStrip {
+        justify-content: center;
+    }
+
+    .heroFormCard {
+        padding: 2rem 1.75rem;
+    }
+
+    .valueStackGrid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .presenterGrid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .carouselCard {
+        padding: 2.25rem 1.75rem;
+    }
+
+    .desktopStickyHeader {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .landingHero {
+        padding: 4.5rem 0 3rem;
+    }
+
+    .heroEyebrow {
+        margin: 0 auto 1.25rem;
+    }
+
+    .heroCarouselCard {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+
+    .heroCarouselCopy {
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    .heroFormCard {
+        padding: 1.75rem 1.4rem;
+    }
+
+    .testimonialCard {
+        font-size: 0.9rem;
+    }
+
+    .riskList {
+        text-align: center;
+    }
+
+    .calendarButtons {
+        justify-content: center;
+    }
+}
+
+@media (min-width: 996px) {
+    .stickyCtaBar {
+        display: none;
+    }
+
+    .desktopStickyHeader {
+        display: flex;
+    }
 }
 
 .heroSubtitle {
@@ -178,6 +1159,89 @@
 .pricingSection h2 {
     color: #00ffff;
     margin-bottom: 2rem;
+}
+
+.sectionEyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.8rem;
+    color: rgba(0, 255, 255, 0.8);
+    margin-bottom: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.sectionHeading {
+    margin: 0;
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    color: #ffffff;
+}
+
+.sectionLead {
+    margin: 1rem 0 2.5rem;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.confirmationSection {
+    background: rgba(0, 12, 28, 0.92);
+}
+
+.confirmationCard {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2.75rem;
+    display: grid;
+    gap: 2rem;
+}
+
+.confirmationGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.confirmationItem {
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.2rem 1.1rem;
+    display: grid;
+    gap: 0.6rem;
+}
+
+.confirmationItem h3 {
+    margin: 0;
+    color: #ffffff;
+}
+
+.confirmationIcon {
+    font-size: 1.5rem;
+}
+
+.confirmationCopy {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+}
+
+.confirmationProTip {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: rgba(255, 255, 0, 0.08);
+    border: 1px solid rgba(255, 255, 0, 0.35);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.confirmationProTipIcon {
+    font-size: 1.2rem;
+    line-height: 1.2;
 }
 
 .videoContainer {
@@ -340,10 +1404,11 @@
     border: 1px solid rgba(0, 255, 255, 0.3);
     border-radius: 20px;
     padding: 2rem;
-    height: 100%;
+    /* Remove forced stretching that can create oversized panels */
+    height: auto;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
     margin-bottom: 2rem;
@@ -440,9 +1505,68 @@
     filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.5));
 }
 
+.expectationVoiceNote {
+    margin: 3rem auto 0;
+    max-width: 680px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 14px;
+    padding: 0.9rem 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+}
+
+.bonusGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.bonusCard {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.bonusIcon {
+    font-size: 1.6rem;
+}
+
+.bonusMeta {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.65);
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 12px;
+    padding: 0.4rem 0.75rem;
+    display: inline-block;
+}
+
+.bonusVoiceBand {
+    margin-top: 2.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 14px;
+    padding: 1.1rem 1.4rem;
+    font-size: 0.95rem;
+}
+
 .stepCard {
     text-align: center;
-    min-height: 250px;
+    /* Keep cards compact to avoid giant vertical gaps */
+    min-height: 140px;
 }
 
 .stepNumber {
@@ -786,6 +1910,645 @@
     .pricingCardHighlighted:hover {
         transform: translateY(-5px);
     }
+}
+
+.legalFooter {
+    background: rgba(0, 0, 0, 0.85);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.5rem 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.85rem;
+}
+
+.legalLinks {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 0.35rem;
+}
+
+.legalFooter a {
+    color: rgba(0, 255, 255, 0.8);
+    text-decoration: none;
+}
+
+.legalFooter a:hover {
+    text-decoration: underline;
+}
+
+.videoSection {
+    background: rgba(4, 12, 26, 0.95);
+    padding: 4rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.videoCard {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 2.5rem;
+    display: grid;
+    gap: 1.75rem;
+}
+
+.videoHeader h2 {
+    margin: 0.75rem 0;
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    color: #ffffff;
+}
+
+.videoHeader p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.videoTakeaways {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.95rem;
+}
+
+.videoEmbed {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.videoEmbed iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.videoPlaceholder {
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px dashed rgba(0, 255, 255, 0.4);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.videoCaption {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.videoResources {
+    margin-top: 1.75rem;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.videoFootnote {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+}
+
+.progressiveSection {
+    background: rgba(6, 16, 30, 0.9);
+    padding: 4rem 0;
+}
+
+.progressiveCard {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 18px;
+    padding: 2.75rem;
+}
+
+.progressiveCard h2 {
+    margin: 0.5rem 0 1rem;
+    color: #00ffff;
+}
+
+.progressiveCard p {
+    margin-bottom: 2rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.progressiveForm {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.progressiveChoice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.25rem;
+}
+
+.progressiveChoiceColumn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 14px;
+    padding: 1.25rem 1.4rem;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.progressiveChoiceColumn h3 {
+    margin: 0;
+    color: #ffffff;
+}
+
+.progressiveVoiceColumn {
+    background: rgba(0, 255, 255, 0.12);
+    border-color: rgba(0, 255, 255, 0.4);
+}
+
+.progressiveChoiceCopy {
+    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.progressiveVoiceButtonWrap {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.progressiveVoiceButton {
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 255, 255, 0.55);
+    color: #00ffff;
+    background: transparent;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.progressiveVoiceButton:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(0, 255, 255, 0.25);
+}
+
+.progressiveProof {
+    margin-top: 1.75rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.customerLogoSection {
+    background: rgba(5, 15, 30, 0.95);
+    padding: 4rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.customerLogoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2.5rem;
+}
+
+.customerLogoCard {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.75rem;
+    display: grid;
+    gap: 0.6rem;
+}
+
+.customerLogoInitials {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.6), rgba(0, 136, 255, 0.6));
+    color: #001828;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.customerLogoName {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.customerLogoHighlight {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.customerLogoMetric {
+    font-size: 0.9rem;
+    color: #00ffff;
+    font-weight: 600;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+
+.formField {
+    display: grid;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.formField input,
+.formField textarea {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    background: rgba(0, 0, 0, 0.45);
+    color: #ffffff;
+    font-size: 1rem;
+    transition: border 0.2s ease, background 0.2s ease;
+}
+
+.formField input:focus,
+.formField textarea:focus {
+    border-color: #00ffff;
+    outline: none;
+    background: rgba(0, 255, 255, 0.08);
+}
+
+.formFieldFull {
+    grid-column: 1 / -1;
+}
+
+.formCheckbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.formCheckbox input {
+    width: auto;
+    margin-top: 0.2rem;
+}
+
+.formError {
+    background: rgba(255, 68, 68, 0.12);
+    border: 1px solid rgba(255, 68, 68, 0.6);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    color: #ff9b9b;
+    font-size: 0.9rem;
+}
+
+.formSuccess {
+    background: rgba(0, 255, 123, 0.12);
+    border: 1px solid rgba(0, 255, 123, 0.4);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    color: #80ffbf;
+    font-size: 0.9rem;
+}
+
+.formSubmit {
+    justify-self: flex-start;
+    padding: 0.95rem 2.5rem;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(120deg, #00ffff, #00b7ff);
+    color: #001828;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formSubmit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.formSubmit:not(:disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 32px rgba(0, 255, 255, 0.25);
+}
+
+.fitCallSection {
+    background: rgba(3, 8, 18, 0.95);
+    padding: 4rem 0;
+}
+
+.fitCallGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    align-items: stretch;
+}
+
+.fitCallContent {
+    background: linear-gradient(135deg, rgba(10, 40, 60, 0.85), rgba(0, 0, 0, 0.7));
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 3rem;
+    display: grid;
+    gap: 1.4rem;
+}
+
+.fitCallScarcity {
+    margin: 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.fitCallVoicePanel {
+    display: flex;
+    align-items: stretch;
+}
+
+.fitCallVoiceCard {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 2.2rem;
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+}
+
+.fitCallVoiceCard h3 {
+    margin: 0;
+    color: #ffffff;
+}
+
+.fitCallVoiceCard p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.fitCallVoiceHint {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.fitCallCard {
+    background: linear-gradient(135deg, rgba(10, 40, 60, 0.85), rgba(0, 0, 0, 0.7));
+    border: 1px solid rgba(0, 255, 255, 0.18);
+    border-radius: 20px;
+    padding: 3rem;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.midCtaSection {
+    background: rgba(0, 10, 25, 0.9);
+    padding: 4rem 0;
+}
+
+.midCtaCard {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 3rem;
+    display: grid;
+    gap: 2rem;
+}
+
+.midCtaCopy h2 {
+    margin: 0 0 0.75rem;
+    color: #ffffff;
+}
+
+.midCtaCopy p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.midCtaForm {
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.fitCallCard h2 {
+    margin: 0;
+    color: #ffffff;
+}
+
+.fitCallCard p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.fitCallList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.fitCallButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.95rem 2.2rem;
+    border-radius: 999px;
+    background: #00ffff;
+    color: #001828;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fitCallButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(0, 255, 255, 0.3);
+}
+
+.shareActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.shareSnippetsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.shareSnippet {
+    display: grid;
+    gap: 0.75rem;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1.2rem;
+}
+
+.shareSnippetLabel {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.shareSnippet textarea {
+    width: 100%;
+    min-height: 140px;
+    resize: none;
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.45);
+    color: rgba(255, 255, 255, 0.8);
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.copyButton {
+    justify-self: center;
+    padding: 0.65rem 1.8rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    background: rgba(0, 255, 255, 0.12);
+    color: #00ffff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.copyButton:hover {
+    background: rgba(0, 255, 255, 0.2);
+}
+
+.copyButton:active {
+    transform: translateY(1px);
+}
+
+.finalAssuranceSection {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 4rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.finalAssuranceCard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 22px;
+    padding: 3rem;
+}
+
+.finalAssuranceCopy {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.finalAssuranceCopy h2 {
+    margin: 0;
+    color: #ffffff;
+}
+
+.finalAssuranceCopy p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.finalAssuranceList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.95rem;
+}
+
+.finalAssuranceFaqs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.finalAssuranceFaqs h3 {
+    margin: 0 0 0.4rem 0;
+    color: #00ffff;
+}
+
+.finalAssuranceFaqs p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.finalAssuranceAction {
+    display: flex;
+    align-items: stretch;
+}
+
+.finalAssuranceWidget {
+    background: rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 18px;
+    padding: 2rem;
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    text-align: center;
+}
+
+.finalAssuranceWidget h3 {
+    margin: 0;
+    color: #ffffff;
+}
+
+.finalAssuranceWidget p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.finalAssuranceButton {
+    padding: 0.9rem 1.8rem;
+    border-radius: 999px;
+    background: #00ffff;
+    color: #001828;
+    font-weight: 600;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.finalAssuranceButton:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 32px rgba(0, 255, 255, 0.3);
+}
+
+.finalAssuranceCaption {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
 }
 
 .animatedIntegrationsWrapper {

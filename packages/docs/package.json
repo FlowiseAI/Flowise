@@ -17,11 +17,12 @@
         "@docusaurus/preset-classic": "3.8.1",
         "@docusaurus/theme-mermaid": "3.8.1",
         "@elevenlabs/react": "^0.3.0",
-        "@mdx-js/react": "^3.1.1",
+        "@mdx-js/react": "^3.1.0",
         "clsx": "^2.1.1",
         "docusaurus-plugin-openapi-docs": "^4.5.1",
         "docusaurus-theme-openapi-docs": "^4.5.1",
         "js-yaml": "^4.1.0",
+        "dotenv": "^16.6.1",
         "prism-react-renderer": "^2.4.1",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
@@ -35,7 +36,7 @@
         "typescript": "~5.5.4"
     },
     "engines": {
-        "node": ">=18.0"
+        "node": ">=20.0"
     },
     "name": "docs",
     "private": true,
@@ -43,6 +44,7 @@
         "build": "pnpm api-docs && docusaurus build && node scripts/fix-sitemap.js",
         "clear": "docusaurus clear",
         "deploy": "docusaurus deploy",
+        "dev": "docusaurus start --listen 4242",
         "docs": "docusaurus start --port 4242",
         "docusaurus": "docusaurus",
         "serve": "docusaurus serve",

@@ -197,3 +197,4 @@ requiredVars.env
 
 bwsconfig.json
 .bwsconfig.cache
+_docs/

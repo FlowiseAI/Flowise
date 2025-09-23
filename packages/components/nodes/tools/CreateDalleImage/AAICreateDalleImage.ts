@@ -101,7 +101,8 @@ export class AAIDallePostTool extends Tool {
             }
 
             // Convert FILE-STORAGE:: reference to a full URL with domain
-            const domain = process.env.DOMAIN || process.env.FLOWISE_DOMAIN || this.baseURL || 'http://localhost:4000'
+            const domain =
+                process.env.API_HOST || process.env.DOMAIN || process.env.FLOWISE_DOMAIN || this.baseURL || 'http://localhost:4000'
             const imageFileName = imageStorageUrl.replace('FILE-STORAGE::', '')
             const fullImageUrl = `${domain}/api/v1/get-upload-file?chatflowId=dalle-images&chatId=${orgId}%2F${usrId}&fileName=${imageFileName}`
 
@@ -308,7 +309,7 @@ class AAIDallePost_Tool implements INode {
     constructor() {
         this.label = 'Answer DALL-E Post'
         this.name = 'aaiDallePost'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'AAIDallePost'
         this.icon = 'openai.svg'
         this.category = 'Tools'
@@ -459,8 +460,8 @@ class AAIDallePost_Tool implements INode {
         if (process.env.NODE_ENV === 'development') {
             baseURL = 'http://localhost:4000'
         } else {
-            // In production, use the current domain (Flowise server)
-            baseURL = process.env.DOMAIN || process.env.FLOWISE_DOMAIN || 'http://localhost:4000'
+            // In production, prefer external API host, then fall back to Flowise domain
+            baseURL = process.env.API_HOST || process.env.DOMAIN || process.env.FLOWISE_DOMAIN || 'http://localhost:4000'
         }
 
         const obj: RequestParameters = {}

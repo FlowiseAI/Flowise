@@ -2107,11 +2107,15 @@ export async function registerOAuthClient(redirectUri: string): Promise<{
     authorization_endpoint: string
     scope: string
 }> {
+    const baseUrl = process.env.ATLASSIAN_MCP_SERVER_URL
+    if (!baseUrl) {
+        throw new Error('ATLASSIAN_MCP_SERVER_URL environment variable is not set')
+    }
     try {
         logger.info('[ATLASSIAN OAUTH]: Starting OAuth client registration')
 
         // Step 1: Get MCP metadata
-        const metadata = await fetchMCPMetadata()
+        const metadata = await fetchMCPMetadata(baseUrl)
         logger.debug('[ATLASSIAN OAUTH]: Retrieved MCP metadata')
 
         // Step 2: Register dynamic client
@@ -2121,25 +2125,7 @@ export async function registerOAuthClient(redirectUri: string): Promise<{
             client_uri: process.env.API_HOST,
             grant_types: ['authorization_code', 'refresh_token'],
             response_types: ['code'],
-            scope: [
-                'offline_access',
-                'read:account',
-                'read:confluence-content.all',
-                'read:confluence-content.summary',
-                'read:confluence-groups',
-                'read:confluence-props',
-                'read:confluence-space.summary',
-                'read:confluence-user',
-                'read:jira-user',
-                'read:jira-work',
-                'read:me',
-                'readonly:content.attachment:confluence',
-                'search:confluence',
-                'write:confluence-content',
-                'write:confluence-file',
-                'write:confluence-props',
-                'write:jira-work'
-            ].join(' ')
+            scope: `offline-access read:me read:account read:jira-user read:jira-work write:jira-work read:confluence-user write:confluence-content read:confluence-content.all search:confluence read:space:confluence read:page:confluence write:page:confluence read:hierarchical-content:confluence read:attachment:confluence read:comment:confluence write:comment:confluence`
         }
 
         logger.debug('[ATLASSIAN OAUTH]: Registering client with MCP server')
@@ -2305,8 +2291,13 @@ export async function refreshStoredCredentialTokens(credentialId: string, appDat
             return true // Token is still valid
         }
 
+        const baseUrl = process.env.ATLASSIAN_MCP_SERVER_URL
+        if (!baseUrl) {
+            throw new Error('ATLASSIAN_MCP_SERVER_URL environment variable is not set')
+        }
+
         // Get MCP metadata
-        const metadata = await fetchMCPMetadata()
+        const metadata = await fetchMCPMetadata(baseUrl)
 
         // Refresh tokens
         const tokenResponse = await fetch(metadata.token_endpoint, {

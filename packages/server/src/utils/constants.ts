@@ -26,6 +26,7 @@ export const WHITELIST_URLS = [
     '/api/v1/salesforce-auth/callback',
     '/api/v1/atlassian-auth',
     '/api/v1/atlassian-auth/callback',
+    '/api/v1/atlassian-auth/mcp-initialize',
     '/api/v1/gmail/labels',
     '/api/v1/gmail/messages',
     '/api/v1/gmail/message',

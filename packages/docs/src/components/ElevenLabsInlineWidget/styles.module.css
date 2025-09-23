@@ -71,6 +71,178 @@
     animation: pulse 2s infinite;
 }
 
+.widgetWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.floatingPlaceholder {
+    font-size: 0.85rem;
+    color: rgba(17, 24, 39, 0.6);
+    text-align: center;
+    background: rgba(226, 232, 240, 0.6);
+    border-radius: 12px;
+    padding: 0.6rem 0.9rem;
+    max-width: 320px;
+}
+
+.inlineContainer {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
+.statusArea {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    color: rgba(17, 24, 39, 0.7);
+    text-align: center;
+    min-height: 1.1rem;
+}
+
+.connectingNotice {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #2563eb;
+    font-weight: 500;
+}
+
+.connectingSpinner {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(37, 99, 235, 0.4);
+    border-top-color: #2563eb;
+    animation: spin 1s linear infinite;
+}
+
+.errorText {
+    color: #dc2626;
+}
+
+.endedText {
+    color: #047857;
+}
+
+.callPanel {
+    width: 100%;
+    max-width: 320px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 18px;
+    padding: 1.2rem 1rem;
+    display: grid;
+    gap: 1rem;
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.35);
+    color: #e2e8f0;
+}
+
+.callPanelChip {
+    max-width: none;
+}
+
+.callPanelInline {
+    max-width: 280px;
+}
+
+.floatingRoot {
+    position: fixed;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    z-index: 2147483646;
+    pointer-events: none;
+}
+
+.floatingRoot .callPanel {
+    pointer-events: auto;
+}
+
+.callHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: rgba(226, 232, 240, 0.85);
+}
+
+.callDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
+}
+
+.callLabel {
+    flex: 1;
+    margin-left: 0.5rem;
+}
+
+.callTimer {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    color: #38bdf8;
+}
+
+.callWave {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: flex-end;
+    gap: 6px;
+    height: 32px;
+}
+
+.callWave span {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.9), rgba(8, 47, 73, 0.1));
+    animation: wave 1.2s ease-in-out infinite;
+}
+
+.callWave span:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.callWave span:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.callAction {
+    width: 100%;
+}
+
+@keyframes wave {
+    0%,
+    100% {
+        height: 30%;
+    }
+    50% {
+        height: 100%;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @keyframes pulse {
     0%,
     100% {

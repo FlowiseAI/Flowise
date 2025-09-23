@@ -64,6 +64,7 @@ variables: # Pass environment variables as key value pairs.
     CHATFLOW_DOMAIN: 'http://flowise:4000'
     DOMAIN: 'http://flowise:4000'
     FLOWISE_DOMAIN: 'http://flowise:4000'
+    API_HOST: 'https://api.${CLIENT_DOMAIN}'
     NODE_ENV: 'production'
     PORT: '4000'
     NUMBER_OF_PROXIES: '1'

@@ -84,6 +84,12 @@ let nextConfig = withBundleAnalyzer({
                 hostname: 'localhost',
                 port: '4000',
                 pathname: '/**'
+            },
+            {
+                protocol: 'https',
+                hostname: '**.theanswer.ai',
+                port: '',
+                pathname: '/**'
             }
         ]
     },

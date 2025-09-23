@@ -28,7 +28,8 @@ const CACHE_DURATION = 30 * 60 * 1000
  * Fetches MCP OAuth metadata from the well-known endpoint
  * Uses caching to avoid repeated requests
  */
-export async function fetchMCPMetadata(baseUrl: string = 'https://mcp.atlassian.com'): Promise<MCPOAuthMetadata> {
+
+export async function fetchMCPMetadata(baseUrl: string): Promise<MCPOAuthMetadata> {
     const metadataUrl = `${baseUrl}/.well-known/oauth-authorization-server`
     const cacheKey = metadataUrl
 
