@@ -20,6 +20,7 @@ class WriteFile_Tools implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    warning: string
 
     constructor() {
         this.label = 'Write File'
@@ -28,6 +29,7 @@ class WriteFile_Tools implements INode {
         this.type = 'WriteFile'
         this.icon = 'writefile.svg'
         this.category = 'Tools'
+        this.warning = 'This tool can be used to write files to the disk. It is recommended to use this tool with caution.'
         this.description = 'Write file to disk'
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(WriteFileTool)]
         this.inputs = [

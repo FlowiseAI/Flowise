@@ -20,6 +20,7 @@ class ReadFile_Tools implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    warning: string
 
     constructor() {
         this.label = 'Read File'
@@ -28,6 +29,7 @@ class ReadFile_Tools implements INode {
         this.type = 'ReadFile'
         this.icon = 'readfile.svg'
         this.category = 'Tools'
+        this.warning = 'This tool can be used to read files from the disk. It is recommended to use this tool with caution.'
         this.description = 'Read file from disk'
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(ReadFileTool)]
         this.inputs = [
