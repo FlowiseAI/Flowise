@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import moment from 'moment'
+import { useTheme } from '@mui/material/styles'
 
 // material-ui
 import { styled } from '@mui/material/styles'
@@ -17,8 +18,8 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
-    useTheme
+    Paper
+    // useTheme
 } from '@mui/material'
 
 // project imports
@@ -252,7 +253,13 @@ const Credentials = () => {
                             <StyledPermissionButton
                                 permissionId='credentials:create'
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={(theme) => ({
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    backgroundColor: theme?.customization?.isDarkMode ? '#fff' : '#1a2b4d',
+                                    color: theme?.customization?.isDarkMode ? '#000' : '#fff',
+                                    '&:hover': { backgroundColor: theme?.customization?.isDarkMode ? '#e0e0e0' : '#222' }
+                                })}
                                 onClick={listCredential}
                                 startIcon={<IconPlus />}
                             >
@@ -400,12 +407,20 @@ const Credentials = () => {
                                                                 </StyledTableCell>
                                                                 <StyledTableCell>
                                                                     <PermissionIconButton
+                                                                        sx={(theme) => ({
+                                                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                                                        })}
                                                                         permissionId={'credentials:create,credentials:update'}
                                                                         title='Edit'
-                                                                        color='primary'
                                                                         onClick={() => edit(credential)}
                                                                     >
-                                                                        <IconEdit />
+                                                                        <IconEdit
+                                                                            sx={(theme) => ({
+                                                                                color: theme?.customization?.isDarkMode
+                                                                                    ? 'white'
+                                                                                    : 'inherit'
+                                                                            })}
+                                                                        />
                                                                     </PermissionIconButton>
                                                                 </StyledTableCell>
                                                                 <StyledTableCell>

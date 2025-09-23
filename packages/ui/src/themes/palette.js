@@ -13,7 +13,7 @@ export default function themePalette(theme) {
         },
         primary: {
             light: theme.customization.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.primaryLight,
-            main: theme.colors?.primaryMain,
+            main: theme.customization.isDarkMode ? theme.colors?.darkPrimaryLight : theme.colors?.primaryMain,
             dark: theme.customization.isDarkMode ? theme.colors?.darkPrimaryDark : theme.colors?.primaryDark,
             200: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.primary200,
             800: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.primary800
@@ -69,10 +69,10 @@ export default function themePalette(theme) {
             900: theme.colors?.darkPaper
         },
         text: {
-            primary: theme.darkTextPrimary,
-            secondary: theme.darkTextSecondary,
-            dark: theme.textDark,
-            hint: theme.colors?.grey100
+            primary: theme.darkTextPrimary || (theme.customization.isDarkMode ? '#ffffff' : '#000000'),
+            secondary: theme.darkTextSecondary || (theme.customization.isDarkMode ? '#cccccc' : '#333333'),
+            dark: theme.textDark || (theme.customization.isDarkMode ? '#eeeeee' : '#111111'),
+            hint: theme.colors?.grey100 || '#999999'
         },
         background: {
             paper: theme.paper,

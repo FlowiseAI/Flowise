@@ -23,7 +23,10 @@ const HowToUseVariablesDialog = ({ show, onCancel }) => {
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
+            <DialogTitle
+                sx={(theme) => ({ fontSize: '1rem', color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })}
+                id='alert-dialog-title'
+            >
                 How To Use Variables
             </DialogTitle>
             <DialogContent>

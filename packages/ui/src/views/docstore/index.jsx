@@ -160,9 +160,8 @@ const Documents = () => {
                     >
                         {hasDocStores && (
                             <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
+                                sx={{ borderRadius: 2, maxHeight: 40, color: theme?.customization?.isDarkMode ? 'white' : 'primary' }}
                                 value={view}
-                                color='primary'
                                 exclusive
                                 onChange={handleChange}
                             >
@@ -195,7 +194,13 @@ const Documents = () => {
                         <StyledPermissionButton
                             permissionId={'documentStores:create'}
                             variant='contained'
-                            sx={{ borderRadius: 2, height: '100%' }}
+                            sx={(theme) => ({
+                                borderRadius: 2,
+                                height: '100%',
+                                backgroundColor: theme?.customization?.isDarkMode ? '#fff' : '#1a2b4d',
+                                color: theme?.customization?.isDarkMode ? '#000' : '#fff',
+                                '&:hover': { backgroundColor: theme?.customization?.isDarkMode ? '#e0e0e0' : '#222' }
+                            })}
                             onClick={addNew}
                             startIcon={<IconPlus />}
                             id='btn_createVariable'

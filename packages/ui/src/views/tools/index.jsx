@@ -166,9 +166,8 @@ const Tools = () => {
                             description='External functions or APIs the agent can use to take action'
                         >
                             <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
+                                sx={{ borderRadius: 2, maxHeight: 40, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
                                 value={view}
-                                color='primary'
                                 disabled={total === 0}
                                 exclusive
                                 onChange={handleChange}
@@ -204,7 +203,11 @@ const Tools = () => {
                                     variant='outlined'
                                     onClick={() => inputRef.current.click()}
                                     startIcon={<IconFileUpload />}
-                                    sx={{ borderRadius: 2, height: 40 }}
+                                    sx={(theme) => ({
+                                        borderRadius: 2,
+                                        height: 40,
+                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    })}
                                 >
                                     Load
                                 </PermissionButton>
@@ -223,7 +226,13 @@ const Tools = () => {
                                     variant='contained'
                                     onClick={addNew}
                                     startIcon={<IconPlus />}
-                                    sx={{ borderRadius: 2, height: 40 }}
+                                    sx={(theme) => ({
+                                        borderRadius: 2,
+                                        height: 40,
+                                        backgroundColor: theme?.customization?.isDarkMode ? '#fff' : '#1a2b4d',
+                                        color: theme?.customization?.isDarkMode ? '#000' : '#fff',
+                                        '&:hover': { backgroundColor: theme?.customization?.isDarkMode ? '#e0e0e0' : '#222' }
+                                    })}
                                 >
                                     Create
                                 </StyledPermissionButton>

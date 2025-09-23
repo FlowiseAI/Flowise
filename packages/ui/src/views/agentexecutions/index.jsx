@@ -336,21 +336,32 @@ const AgentExecutions = () => {
                                     >
                                         Apply
                                     </Button>
-                                    <Button variant='outlined' onClick={resetFilters} size='small'>
+                                    <Button
+                                        variant='outlined'
+                                        onClick={resetFilters}
+                                        size='small'
+                                        sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })}
+                                    >
                                         Reset
                                     </Button>
                                     <Available permissions={['executions:delete']}>
                                         <Tooltip title='Delete selected executions'>
                                             <span>
                                                 <IconButton
-                                                    sx={{ height: 30, width: 30 }}
+                                                    sx={(theme) => ({
+                                                        height: 30,
+                                                        width: 30,
+                                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                                    })}
                                                     size='small'
                                                     color='error'
                                                     onClick={handleDeleteDialogOpen}
                                                     edge='end'
                                                     disabled={selectedExecutionIds.length === 0}
                                                 >
-                                                    <IconTrash />
+                                                    <IconTrash
+                                                        sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })}
+                                                    />
                                                 </IconButton>
                                             </span>
                                         </Tooltip>

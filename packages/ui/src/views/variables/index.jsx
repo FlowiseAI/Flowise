@@ -226,13 +226,27 @@ const Variables = () => {
                             title='Variables'
                             description='Create and manage global variables'
                         >
-                            <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
+                            <Button
+                                variant='outlined'
+                                sx={(theme) => ({
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                })}
+                                onClick={() => setShowHowToDialog(true)}
+                            >
                                 How To Use
                             </Button>
                             <StyledPermissionButton
                                 permissionId={'variables:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={(theme) => ({
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    backgroundColor: theme?.customization?.isDarkMode ? '#fff' : '#1a2b4d',
+                                    color: theme?.customization?.isDarkMode ? '#000' : '#fff',
+                                    '&:hover': { backgroundColor: theme?.customization?.isDarkMode ? '#e0e0e0' : '#222' }
+                                })}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                                 id='btn_createVariable'

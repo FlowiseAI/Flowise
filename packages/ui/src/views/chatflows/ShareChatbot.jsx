@@ -23,6 +23,7 @@ import useNotifier from '@/utils/useNotifier'
 
 // Const
 import { baseURL } from '@/store/constant'
+import { isDate } from 'lodash'
 
 const defaultConfig = {
     backgroundColor: '#ffffff',
@@ -441,8 +442,12 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 >
                     <IconCopy />
                 </IconButton>
-                <IconButton title='Open New Tab' color='primary' onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}>
-                    <IconArrowUpRightCircle />
+                <IconButton
+                    title='Preview model in new tab'
+                    sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })}
+                    onClick={() => window.open(`${baseURL}/chatbot/${chatflowid}`, '_blank')}
+                >
+                    <IconArrowUpRightCircle sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })} />
                 </IconButton>
                 <div style={{ flex: 1 }} />
                 <Available permission={'chatflows:update,agentflows:update'}>
@@ -463,28 +468,28 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 </Available>
             </Stack>
 
-            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 }} variant='outlined'>
+            <Card sx={(theme) => ({ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 })} variant='outlined'>
                 <Stack sx={{ mt: 1, mb: 2, alignItems: 'center' }} direction='row' spacing={2}>
                     <Typography variant='h4'>Title Settings</Typography>
                 </Stack>
-                {textField(title, 'title', 'Title', 'string', 'Flowise Assistant')}
+                {textField(title, 'title', 'Title', 'string', 'DigiWorks Assistant')}
                 {textField(
                     titleAvatarSrc,
                     'titleAvatarSrc',
                     'Title Avatar Link',
                     'string',
-                    `https://raw.githubusercontent.com/FlowiseAI/Flowise/main/assets/FloWiseAI_dark.png`
+                    `Enter image link, e.g. https://example.com/image.png`
                 )}
                 {colorField(titleBackgroundColor, 'titleBackgroundColor', 'Title Background Color')}
                 {colorField(titleTextColor, 'titleTextColor', 'Title TextColor')}
             </Card>
 
-            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 }} variant='outlined'>
+            <Card sx={(theme) => ({ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 })} variant='outlined'>
                 <Stack sx={{ mt: 1, mb: 2, alignItems: 'center' }} direction='row' spacing={2}>
                     <Typography variant='h4'>General Settings</Typography>
                 </Stack>
-                {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Hello! This is custom welcome message')}
-                {textField(errorMessage, 'errorMessage', 'Error Message', 'string', 'This is custom error message')}
+                {textField(welcomeMessage, 'welcomeMessage', 'Welcome Message', 'string', 'Enter the custom welcome message')}
+                {textField(errorMessage, 'errorMessage', 'Error Message', 'string', 'Enter the custom error message')}
                 {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
                 {textField(fontSize, 'fontSize', 'Font Size', 'number')}
                 {colorField(poweredByTextColor, 'poweredByTextColor', 'PoweredBy TextColor')}
@@ -494,7 +499,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                     booleanField(generateNewSession, 'generateNewSession', 'Start new session when chatbot link is opened or refreshed')}
             </Card>
 
-            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 }} variant='outlined'>
+            <Card sx={(theme) => ({ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 })} variant='outlined'>
                 <Stack sx={{ mt: 1, mb: 2, alignItems: 'center' }} direction='row' spacing={2}>
                     <Typography variant='h4'>Bot Message</Typography>
                 </Stack>
@@ -505,12 +510,12 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                     'botMessageAvatarSrc',
                     'Avatar Link',
                     'string',
-                    `https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png`
+                    `Enter image link, e.g. https://example.com/image.png`
                 )}
                 {booleanField(botMessageShowAvatar, 'botMessageShowAvatar', 'Show Avatar')}
             </Card>
 
-            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 }} variant='outlined'>
+            <Card sx={(theme) => ({ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 })} variant='outlined'>
                 <Stack sx={{ mt: 1, mb: 2, alignItems: 'center' }} direction='row' spacing={2}>
                     <Typography variant='h4'>User Message</Typography>
                 </Stack>
@@ -521,19 +526,19 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                     'userMessageAvatarSrc',
                     'Avatar Link',
                     'string',
-                    `https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png`
+                    `Enter image link, e.g. https://example.com/image.png`
                 )}
                 {booleanField(userMessageShowAvatar, 'userMessageShowAvatar', 'Show Avatar')}
             </Card>
 
-            <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 }} variant='outlined'>
+            <Card sx={(theme) => ({ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 })} variant='outlined'>
                 <Stack sx={{ mt: 1, mb: 2, alignItems: 'center' }} direction='row' spacing={2}>
                     <Typography variant='h4'>Text Input</Typography>
                 </Stack>
                 {colorField(textInputBackgroundColor, 'textInputBackgroundColor', 'Background Color')}
                 {colorField(textInputTextColor, 'textInputTextColor', 'Text Color')}
-                {textField(textInputPlaceholder, 'textInputPlaceholder', 'TextInput Placeholder', 'string', `Type question..`)}
-                {colorField(textInputSendButtonColor, 'textInputSendButtonColor', 'TextIntput Send Button Color')}
+                {textField(textInputPlaceholder, 'textInputPlaceholder', 'Text Input Placeholder', 'string', `Type question..`)}
+                {colorField(textInputSendButtonColor, 'textInputSendButtonColor', 'Text Intput Send Button Color')}
             </Card>
 
             <StyledPermissionButton
@@ -578,7 +583,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                     horizontal: 'left'
                 }}
             >
-                <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
+                <Typography variant='h6' sx={(theme) => ({ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark })}>
                     Copied!
                 </Typography>
             </Popover>
