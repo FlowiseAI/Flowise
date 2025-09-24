@@ -21,8 +21,8 @@
         "clsx": "^2.1.1",
         "docusaurus-plugin-openapi-docs": "^4.5.1",
         "docusaurus-theme-openapi-docs": "^4.5.1",
-        "js-yaml": "^4.1.0",
         "dotenv": "^16.6.1",
+        "js-yaml": "^4.1.0",
         "prism-react-renderer": "^2.4.1",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
@@ -33,6 +33,7 @@
         "@docusaurus/module-type-aliases": "3.8.1",
         "@docusaurus/tsconfig": "3.8.1",
         "@docusaurus/types": "3.8.1",
+        "@vercel/node": "^5.3.24",
         "typescript": "~5.5.4"
     },
     "engines": {
@@ -44,7 +45,7 @@
         "build": "pnpm api-docs && docusaurus build && node scripts/fix-sitemap.js",
         "clear": "docusaurus clear",
         "deploy": "docusaurus deploy",
-        "dev": "docusaurus start --listen 4242",
+        "dev": "docusaurus start --port 4242",
         "docs": "docusaurus start --port 4242",
         "docusaurus": "docusaurus",
         "serve": "docusaurus serve",
