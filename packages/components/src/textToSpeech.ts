@@ -20,6 +20,13 @@ export const convertTextToSpeechStream = async (
     onEnd: () => void
 ): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
+        let streamDestroyed = false
+
+        // Handle abort signal early
+        if (abortController.signal.aborted) {
+            reject(new Error('TTS generation aborted'))
+            return
+        }
         const processStream = async () => {
             try {
                 if (textToSpeechConfig) {
@@ -61,7 +68,9 @@ export const convertTextToSpeechStream = async (
                                 throw new Error('Failed to get response stream')
                             }
 
-                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController)
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20, abortController, () => {
+                                streamDestroyed = true
+                            })
                             break
                         }
 
@@ -86,7 +95,9 @@ export const convertTextToSpeechStream = async (
                                 throw new Error('Failed to get response stream')
                             }
 
-                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40, abortController)
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40, abortController, () => {
+                                streamDestroyed = true
+                            })
                             break
                         }
                     }
@@ -97,6 +108,13 @@ export const convertTextToSpeechStream = async (
                 reject(error)
             }
         }
+
+        // Handle abort signal
+        abortController.signal.addEventListener('abort', () => {
+            if (!streamDestroyed) {
+                reject(new Error('TTS generation aborted'))
+            }
+        })
 
         processStream()
     })
@@ -110,7 +128,8 @@ const processStreamWithRateLimit = async (
     reject: (error: any) => void,
     targetChunkSize: number = 640,
     rateLimitMs: number = 20,
-    abortController: AbortController
+    abortController: AbortController,
+    onStreamDestroy?: () => void
 ) => {
     const TARGET_CHUNK_SIZE = targetChunkSize
     const RATE_LIMIT_MS = rateLimitMs
@@ -122,7 +141,10 @@ const processStreamWithRateLimit = async (
         while (!isEnded || buffer.length > 0) {
             // Check if aborted
             if (abortController.signal.aborted) {
-                stream.destroy()
+                if (!stream.destroyed) {
+                    stream.destroy()
+                }
+                onStreamDestroy?.()
                 reject(new Error('TTS generation aborted'))
                 return
             }
@@ -162,7 +184,10 @@ const processStreamWithRateLimit = async (
 
     // Handle abort signal
     abortController.signal.addEventListener('abort', () => {
-        stream.destroy()
+        if (!stream.destroyed) {
+            stream.destroy()
+        }
+        onStreamDestroy?.()
         reject(new Error('TTS generation aborted'))
     })
 

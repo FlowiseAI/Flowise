@@ -492,7 +492,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             // Abort TTS for any active streams
             const activeTTSMessages = Object.keys(isTTSLoading).concat(Object.keys(isTTSPlaying))
             for (const messageId of activeTTSMessages) {
-                await ttsApi.abortTTS({ chatId, chatMessageId: messageId })
+                await ttsApi.abortTTS({ chatflowId: chatflowid, chatId, chatMessageId: messageId })
             }
 
             await chatmessageApi.abortMessage(chatflowid, chatId)
@@ -1619,7 +1619,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
     const handleTTSStop = async (messageId) => {
         setTTSAction(true)
-        await ttsApi.abortTTS({ chatId, chatMessageId: messageId })
+        await ttsApi.abortTTS({ chatflowId: chatflowid, chatId, chatMessageId: messageId })
         cleanupTTSForMessage(messageId)
     }
 

@@ -156,7 +156,7 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
 
 const abortTextToSpeech = async (req: Request, res: Response) => {
     try {
-        const { chatId, chatMessageId } = req.body
+        const { chatId, chatMessageId, chatflowId } = req.body
 
         if (!chatId) {
             throw new InternalFlowiseError(
@@ -172,11 +172,22 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
             )
         }
 
+        if (!chatflowId) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `Error: textToSpeechController.abortTextToSpeech - chatflowId not provided!`
+            )
+        }
+
         const appServer = getRunningExpressApp()
 
         // Abort the TTS generation using existing pool
         const ttsAbortId = `tts_${chatId}_${chatMessageId}`
         appServer.abortControllerPool.abort(ttsAbortId)
+
+        // Also abort the main chat flow AbortController for auto-TTS
+        const chatFlowAbortId = `${chatflowId}_${chatId}`
+        appServer.abortControllerPool.abort(chatFlowAbortId)
 
         // Send abort event to client
         appServer.sseStreamer.streamTTSAbortEvent(chatId, chatMessageId)
