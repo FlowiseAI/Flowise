@@ -2,6 +2,7 @@ import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { getCredentialData, getCredentialParam } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
+import hash from 'object-hash'
 
 class Teradata_MCP implements INode {
     label: string
@@ -37,7 +38,7 @@ class Teradata_MCP implements INode {
                 label: 'MCP Server URL',
                 name: 'mcpUrl',
                 type: 'string',
-                placeholder: 'https://your-mcp-server-url/mcp/',
+                placeholder: 'http://teradata-mcp-server:8001/mcp',
                 description: 'URL of your Teradata MCP server',
                 optional: false
             },
@@ -99,11 +100,10 @@ class Teradata_MCP implements INode {
 
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const mcpUrl = nodeData.inputs?.mcpUrl
+        const mcpUrl = nodeData.inputs?.mcpUrl || 'http://teradata-mcp-server:8001/mcp'
         if (!mcpUrl) {
             throw new Error('Missing MCP Server URL')
         }
-
         // Determine auth method from credentials
         let serverParams: any = {
             url: mcpUrl,
@@ -121,11 +121,25 @@ class Teradata_MCP implements INode {
         } else {
             throw new Error('Missing credentials: provide Bearer token from flow/credentials OR username/password from credentials')
         }
+        const workspaceId = options?.searchOptions?.workspaceId?._value || options?.workspaceId || 'tdws_default'
+        let sandbox: ICommonObject = {}
+        const cacheKey = hash({ workspaceId, serverParams, sandbox })
+        if (options.cachePool) {
+            const cachedResult = await options.cachePool.getMCPCache(cacheKey)
+            if (cachedResult) {
+                if (cachedResult.tools.length > 0) {
+                    return cachedResult.tools
+                }
+            }
+        }
 
         // Use SSE for remote HTTP MCP servers
         const toolkit = new MCPToolkit(serverParams, 'sse')
         await toolkit.initialize()
         const tools = toolkit.tools ?? []
+        if (options.cachePool) {
+            await options.cachePool.addMCPCache(cacheKey, { toolkit, tools })
+        }
         return tools as Tool[]
     }
 }
