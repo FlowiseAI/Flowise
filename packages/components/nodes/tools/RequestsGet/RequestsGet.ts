@@ -1,7 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, stripHTMLFromToolInput } from '../../../src/utils'
+import { getBaseClasses, stripHTMLFromToolInput, parseJsonBody } from '../../../src/utils'
 import { desc, RequestParameters, RequestsGetTool } from './core'
-import JSON5 from 'json5'
 
 const codeExample = `{
     "id": {
@@ -131,7 +130,7 @@ class RequestsGet_Tools implements INode {
         if (queryParamsSchema) obj.queryParamsSchema = queryParamsSchema
         if (maxOutputLength) obj.maxOutputLength = parseInt(maxOutputLength, 10)
         if (headers) {
-            const parsedHeaders = typeof headers === 'object' ? headers : JSON5.parse(stripHTMLFromToolInput(headers))
+            const parsedHeaders = typeof headers === 'object' ? headers : parseJsonBody(stripHTMLFromToolInput(headers))
             obj.headers = parsedHeaders
         }
 

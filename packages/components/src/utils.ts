@@ -1408,7 +1408,7 @@ const parseOutput = (output: any): any => {
     // Check if it looks like JSON (starts with { or [)
     if ((trimmedOutput.startsWith('{') && trimmedOutput.endsWith('}')) || (trimmedOutput.startsWith('[') && trimmedOutput.endsWith(']'))) {
         try {
-            const parsedOutput = JSON5.parse(trimmedOutput)
+            const parsedOutput = parseJsonBody(trimmedOutput)
             return parsedOutput
         } catch (e) {
             return output
@@ -1543,7 +1543,7 @@ export const executeJavaScriptCode = async (
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
             : defaultAllowBuiltInDep
         const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
+        const deps = process.env.ALLOW_BUILTIN_DEP === 'true' ? availableDependencies.concat(externalDeps) : externalDeps
 
         const defaultNodeVMOptions: any = {
             console: 'inherit',
@@ -1658,4 +1658,72 @@ export const processTemplateVariables = (state: ICommonObject, finalOutput: any)
     }
 
     return newState
+}
+
+/**
+ * Parse JSON body with comprehensive error handling and cleanup
+ * @param {string} body - The JSON string to parse
+ * @returns {any} - The parsed JSON object
+ * @throws {Error} - Detailed error message with suggestions for common JSON issues
+ */
+export const parseJsonBody = (body: string): any => {
+    try {
+        // First try to parse as-is with JSON5 (which handles more cases than standard JSON)
+        return JSON5.parse(body)
+    } catch (error) {
+        try {
+            // If that fails, try to clean up common issues
+            let cleanedBody = body
+
+            // 1. Remove unnecessary backslash escapes for square brackets and braces
+            // eslint-disable-next-line
+            cleanedBody = cleanedBody.replace(/\\(?=[\[\]{}])/g, '')
+
+            // 2. Fix single quotes to double quotes (but preserve quotes inside strings)
+            cleanedBody = cleanedBody.replace(/'/g, '"')
+
+            // 3. Remove trailing commas before closing brackets/braces
+            cleanedBody = cleanedBody.replace(/,(\s*[}\]])/g, '$1')
+
+            // 4. Remove comments (// and /* */)
+            cleanedBody = cleanedBody
+                .replace(/\/\/.*$/gm, '') // Remove single-line comments
+                .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
+
+            return JSON5.parse(cleanedBody)
+        } catch (secondError) {
+            try {
+                // 3rd attempt: try with standard JSON.parse on original body
+                return JSON.parse(body)
+            } catch (thirdError) {
+                try {
+                    // 4th attempt: try with standard JSON.parse on cleaned body
+                    const finalCleanedBody = body
+                        // eslint-disable-next-line
+                        .replace(/\\(?=[\[\]{}])/g, '') // Basic escape cleanup
+                        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+                        .trim()
+
+                    return JSON.parse(finalCleanedBody)
+                } catch (fourthError) {
+                    // Provide comprehensive error message with suggestions
+                    const suggestions = [
+                        '• Ensure all strings are enclosed in double quotes',
+                        '• Remove trailing commas',
+                        '• Remove comments (// or /* */)',
+                        '• Escape special characters properly (\\n for newlines, \\" for quotes)',
+                        '• Use double quotes instead of single quotes',
+                        '• Remove unnecessary backslashes before brackets [ ] { }'
+                    ]
+
+                    throw new Error(
+                        `Invalid JSON format in body. Original error: ${error.message}. ` +
+                            `After cleanup attempts: ${secondError.message}. 3rd attempt: ${thirdError.message}. Final attempt: ${fourthError.message}.\n\n` +
+                            `Common fixes:\n${suggestions.join('\n')}\n\n` +
+                            `Received body: ${body.substring(0, 200)}${body.length > 200 ? '...' : ''}`
+                    )
+                }
+            }
+        }
+    }
 }
