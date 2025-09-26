@@ -18,6 +18,6 @@ router.put(['/', '/:id'], checkAnyPermission('chatflows:create,chatflows:update'
 router.delete(['/', '/:id'], checkPermission('chatflows:delete'), chatflowsController.deleteChatflow)
 
 // CHECK FOR CHANGE
-router.get('/has-changed/:id/:lastUpdatedDateTime', chatflowsController.checkIfChatflowHasChanged)
+router.get('/has-changed/:id/:lastUpdatedDateTime', checkPermission('chatflows:update'), chatflowsController.checkIfChatflowHasChanged)
 
 export default router
