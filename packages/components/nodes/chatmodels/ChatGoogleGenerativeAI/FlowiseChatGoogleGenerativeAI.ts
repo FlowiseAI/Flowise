@@ -59,6 +59,7 @@ export interface GoogleGenerativeAIChatInput extends BaseChatModelParams, Pick<G
     apiVersion?: string
     baseUrl?: string
     streaming?: boolean
+    responseModalities?: string[]
 }
 
 class LangchainChatGoogleGenerativeAI
@@ -87,12 +88,21 @@ class LangchainChatGoogleGenerativeAI
 
     streamUsage = true
 
+    responseModalities?: string[]
+
     private client: GenerativeModel
 
     private contextCache?: FlowiseGoogleAICacheManager
 
+    private userContext?: { organizationId: string; userId: string; userEmail: string }
+
     get _isMultimodalModel() {
-        return this.modelName.includes('vision') || this.modelName.startsWith('gemini-1.5') || this.modelName.startsWith('gemini-2.5')
+        return (
+            this.modelName.includes('vision') ||
+            this.modelName.startsWith('gemini-1.5') ||
+            this.modelName.startsWith('gemini-2.5') ||
+            this.modelName.includes('image-preview')
+        )
     }
 
     constructor(fields?: GoogleGenerativeAIChatInput) {
@@ -149,28 +159,34 @@ class LangchainChatGoogleGenerativeAI
 
         this.streamUsage = fields?.streamUsage ?? this.streamUsage
 
+        this.responseModalities = fields?.responseModalities ?? this.responseModalities
+
         this.getClient()
     }
 
     async getClient(prompt?: Content[], tools?: Tool[]) {
-        this.client = new GenerativeAI(this.apiKey ?? '').getGenerativeModel(
-            {
-                model: this.modelName,
-                tools,
-                safetySettings: this.safetySettings as SafetySetting[],
-                generationConfig: {
-                    candidateCount: 1,
-                    stopSequences: this.stopSequences,
-                    maxOutputTokens: this.maxOutputTokens,
-                    temperature: this.temperature,
-                    topP: this.topP,
-                    topK: this.topK
-                }
-            },
-            {
-                baseUrl: this.baseUrl
+        const modelConfig: any = {
+            model: this.modelName,
+            tools,
+            safetySettings: this.safetySettings as SafetySetting[],
+            generationConfig: {
+                candidateCount: 1,
+                stopSequences: this.stopSequences,
+                maxOutputTokens: this.maxOutputTokens,
+                temperature: this.temperature,
+                topP: this.topP,
+                topK: this.topK
             }
-        )
+        }
+
+        // Add responseModalities for image generation models
+        if (this.responseModalities && this.responseModalities.length > 0) {
+            modelConfig.config = { responseModalities: this.responseModalities }
+        }
+
+        this.client = new GenerativeAI(this.apiKey ?? '').getGenerativeModel(modelConfig, {
+            baseUrl: this.baseUrl
+        })
         if (this.contextCache) {
             const cachedContent = await this.contextCache.lookup({
                 contents: prompt ? [{ ...prompt[0], parts: prompt[0].parts.slice(0, 1) }] : [],
@@ -229,6 +245,82 @@ class LangchainChatGoogleGenerativeAI
 
     setContextCache(contextCache: FlowiseGoogleAICacheManager): void {
         this.contextCache = contextCache
+    }
+
+    setUserContext(userContext: { organizationId: string; userId: string; userEmail: string }): void {
+        this.userContext = userContext
+    }
+
+    /**
+     * Extract user context from stored instance or use fallbacks
+     */
+    extractUserContext(options?: any): { organizationId: string; userId: string; userEmail: string } {
+        // First try stored user context (set during initialization)
+        if (this.userContext) {
+            return this.userContext
+        }
+
+        // Try to get user from Flowise run params (from buildAgentflow.ts)
+        const user = options?.user || options?.runParams?.user
+
+        if (user?.id && user?.organizationId) {
+            return {
+                organizationId: user.organizationId,
+                userId: user.id,
+                userEmail: user.email || `${user.id}@local`
+            }
+        }
+
+        // Fallback to system context for tool calls or when user context is unavailable
+        return {
+            organizationId: 'system-org',
+            userId: 'chat-system',
+            userEmail: 'system@chat.local'
+        }
+    }
+
+    async uploadImageToStorage(imageData: any, userContext: { organizationId: string; userId: string; userEmail: string }) {
+        try {
+            // Import and use the storage utility directly
+            const { addSingleFileToStorage } = await import('../../../src/storageUtils')
+            const crypto = await import('node:crypto')
+
+            // Convert base64 to Buffer
+            const buffer = Buffer.from(imageData.data, 'base64')
+
+            // Generate unique identifier for this image generation session
+            const timestamp = Date.now()
+            const randomSuffix = crypto.randomBytes(8).toString('hex')
+            const sessionId = `${timestamp}_${randomSuffix}`
+
+            // Create image filename with session ID
+            const mimeType = imageData.mimeType || 'image/png'
+            const fileExtension = mimeType.split('/')[1] || 'png'
+            const imageFilename = `${sessionId}_chat_generated_image.${fileExtension}`
+
+            // Store the image using organization/user folder structure
+            const imageStorageUrl = await addSingleFileToStorage(
+                mimeType,
+                buffer,
+                imageFilename,
+                'gemini-images',
+                userContext.organizationId,
+                userContext.userId
+            )
+
+            // Convert FILE-STORAGE:: reference to a full URL with domain
+            const domain = process.env.DOMAIN || process.env.FLOWISE_DOMAIN || 'http://localhost:4000'
+            const imageFileName = imageStorageUrl.replace('FILE-STORAGE::', '')
+            const fullImageUrl = `${domain}/api/v1/get-upload-file?chatflowId=gemini-images&chatId=${userContext.organizationId}%2F${userContext.userId}&fileName=${imageFileName}`
+            return {
+                url: fullImageUrl,
+                success: true,
+                sessionId
+            }
+        } catch (error) {
+            console.warn('Upload error:', error)
+            return { success: false, error: String(error) }
+        }
     }
 
     async getNumTokens(prompt: BaseMessage[]) {
@@ -293,6 +385,30 @@ class LangchainChatGoogleGenerativeAI
         // Map the API response to a ChatResult object for LangChain
         const generationResult = mapGenerateContentResultToChatResult(res.response, this.modelName, genAIUsageMetadata)
 
+        // Handle image data if present in non-streaming mode
+        if (generationResult.generations?.[0]?.message?.additional_kwargs?.imageData) {
+            try {
+                const imageData = generationResult.generations[0].message.additional_kwargs.imageData
+
+                // Extract user context from LangChain run config or use fallbacks
+                const userContext = this.extractUserContext(options)
+
+                const uploadResponse = await this.uploadImageToStorage(imageData, userContext)
+
+                if (uploadResponse.success) {
+                    // Update the generation with the uploaded image URL
+                    generationResult.generations[0].message.additional_kwargs.imageUrl = uploadResponse.url
+                    generationResult.generations[0].message.additional_kwargs.imageSessionId = uploadResponse.sessionId
+                    const imageMarkdown = `\n\n![Generated Image](${uploadResponse.url})`
+                    generationResult.generations[0].text += imageMarkdown
+                    // CRITICAL: Also update the message content to include the image markdown
+                    generationResult.generations[0].message.content = generationResult.generations[0].text
+                }
+            } catch (error) {
+                console.warn('Failed to upload generated image:', error)
+            }
+        }
+
         // Optionally notify the run manager of the new token (for streaming UI updates)
         await _runManager?.handleLLMNewToken(generationResult.generations?.length ? generationResult.generations[0].text : '')
         return generationResult
@@ -323,6 +439,8 @@ class LangchainChatGoogleGenerativeAI
             const stream = this._streamResponseChunks(messages, options, runManager)
             // Store the final chunks by their index (for multi-candidate support)
             const finalChunks: Record<number, ChatGenerationChunk> = {}
+            // Track custom text modifications (like image markdown) separately
+            const customTextModifications: Record<number, string> = {}
 
             // Aggregate all streamed chunks by their index
             for await (const chunk of stream) {
@@ -339,10 +457,16 @@ class LangchainChatGoogleGenerativeAI
                 if (finalChunks[index] === undefined) {
                     // First chunk for this index
                     finalChunks[index] = chunk
+                    // Track any custom text modifications
+                    customTextModifications[index] = chunk.text
                 } else {
                     // Concatenate the chunks for the same index
                     const existingChunk = finalChunks[index]
                     const concatenated = existingChunk.concat(chunk)
+
+                    // Preserve custom text modifications by manually tracking them
+                    customTextModifications[index] = (customTextModifications[index] || '') + chunk.text
+
                     // Use the latest chunk's usage_metadata (which has the correct diff details)
                     // @ts-ignore - Custom metadata structure
                     concatenated.message.usage_metadata = chunk.message.usage_metadata
@@ -376,7 +500,18 @@ class LangchainChatGoogleGenerativeAI
             // Sort and collect all generations in order by index
             const generations = Object.entries(finalChunks)
                 .sort(([aKey], [bKey]) => parseInt(aKey, 10) - parseInt(bKey, 10))
-                .map(([_, value]) => value)
+                .map(([indexStr, value]) => {
+                    const index = parseInt(indexStr, 10)
+                    // Override the text with our custom modifications to preserve image markdown
+                    if (customTextModifications[index] !== undefined) {
+                        value.text = customTextModifications[index]
+                        // Also update the message content
+                        if (value.message) {
+                            value.message.content = customTextModifications[index]
+                        }
+                    }
+                    return value
+                })
 
             // Attach aggregated token usage to each generation
             for (const generation of generations) {
@@ -409,6 +544,9 @@ class LangchainChatGoogleGenerativeAI
         // Convert input messages to Google API content format
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
         prompt = checkIfEmptyContentAndSameRole(prompt)
+
+        // Convert any function response parts in the prompt for compatibility
+        this.convertFunctionResponse(prompt)
 
         // Prepare API request parameters
         const parameters = this.invocationParams(options)
@@ -519,6 +657,30 @@ class LangchainChatGoogleGenerativeAI
             })
             index += 1 // Increment chunk index for next chunk
             if (!chunk) continue // Skip if chunk is null
+
+            // Handle image data if present
+            if (chunk.message.additional_kwargs?.imageData) {
+                try {
+                    const imageData = chunk.message.additional_kwargs.imageData
+
+                    // Extract user context from LangChain run config or use fallbacks
+                    const userContext = this.extractUserContext(options)
+
+                    const uploadResponse = await this.uploadImageToStorage(imageData, userContext)
+
+                    if (uploadResponse.success) {
+                        // Update the chunk with the uploaded image URL
+                        chunk.message.additional_kwargs.imageUrl = uploadResponse.url
+                        chunk.message.additional_kwargs.imageSessionId = uploadResponse.sessionId
+                        const imageMarkdown = `\n\n![Generated Image](${uploadResponse.url})`
+                        chunk.text += imageMarkdown
+                        // CRITICAL: Also update the message content to include the image markdown
+                        chunk.message.content = chunk.text
+                    }
+                } catch (error) {
+                    console.warn('Failed to upload generated image:', error)
+                }
+            }
 
             // Yield the chunk to the consumer
             yield chunk
@@ -789,25 +951,44 @@ function mapGenerateContentResultToChatResult(
 
     // Extract content and generation info from the candidate
     const { content, ...generationInfo } = candidate
-    // Get the generated text (if any)
-    const text = content?.parts[0]?.text ?? ''
+
+    // Handle both text and image content
+    let text = ''
+    let imageData: any = null
+
+    if (content?.parts) {
+        for (const part of content.parts) {
+            if (part.text) {
+                text += part.text
+            } else if (part.inlineData) {
+                // Store image data for handling
+                imageData = part.inlineData
+            }
+        }
+    }
 
     // Extract usage metadata if available (for reporting token usage)
     const usageMetadata: any = extra?.usageMetadata
 
     // Build the ChatGeneration object for LangChain
+    const additionalKwargs: any = {
+        model_name,
+        ...generationInfo
+    }
+
+    if (imageData) {
+        additionalKwargs.imageData = imageData
+    }
+
     const generation: ChatGeneration = {
         text,
         message: new AIMessage({
             content: text,
             tool_calls: functionCalls,
-            additional_kwargs: {
-                model_name,
-                ...generationInfo
-            },
+            additional_kwargs: additionalKwargs,
             usage_metadata: {
                 input_tokens: usageMetadata?.promptTokenCount ?? 0, // Number of prompt tokens used
-                output_tokens: usageMetadata?.candidatesTokenCount ?? 0 + usageMetadata?.thoughtsTokenCount ?? 0, // Output tokens
+                output_tokens: (usageMetadata?.candidatesTokenCount ?? 0) + (usageMetadata?.thoughtsTokenCount ?? 0), // Output tokens
                 total_tokens: usageMetadata?.totalTokenCount ?? 0, // Total tokens used
                 input_token_details: Array.isArray(usageMetadata?.promptTokensDetails)
                     ? usageMetadata?.promptTokensDetails.reduce((acc: any, curr: any) => {
@@ -848,7 +1029,21 @@ function convertResponseContentToChatGenerationChunk(
     const functionCalls = response.functionCalls()
     const [candidate] = response.candidates
     const { content, ...generationInfo } = candidate
-    const text = content?.parts?.[0]?.text ?? ''
+
+    // Handle both text and image content
+    let text = ''
+    let imageData: any = null
+
+    if (content?.parts) {
+        for (const part of content.parts) {
+            if (part.text) {
+                text += part.text
+            } else if (part.inlineData) {
+                // Store image data for handling
+                imageData = part.inlineData
+            }
+        }
+    }
 
     const toolCallChunks: ToolCallChunk[] = []
     if (functionCalls) {
@@ -861,6 +1056,11 @@ function convertResponseContentToChatGenerationChunk(
         )
     }
 
+    const additionalKwargs: any = {}
+    if (imageData) {
+        additionalKwargs.imageData = imageData
+    }
+
     return new ChatGenerationChunk({
         text,
         message: new AIMessageChunk({
@@ -869,7 +1069,7 @@ function convertResponseContentToChatGenerationChunk(
             tool_call_chunks: toolCallChunks,
             // Each chunk can have unique "generationInfo", and merging strategy is unclear,
             // so leave blank for now.
-            additional_kwargs: {},
+            additional_kwargs: additionalKwargs,
             usage_metadata: extra.usageMetadata as any
         }),
         generationInfo

@@ -47,7 +47,7 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gemini-1.5-flash'
+                default: 'gemini-2.5-flash'
             },
             {
                 label: 'Custom Model Name',
@@ -173,6 +173,25 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
+            },
+            {
+                label: 'Response Modalities',
+                name: 'responseModalities',
+                type: 'multiOptions',
+                description: 'Specify output modalities. Enable IMAGE for image generation capabilities.',
+                options: [
+                    {
+                        label: 'TEXT',
+                        name: 'TEXT'
+                    },
+                    {
+                        label: 'IMAGE',
+                        name: 'IMAGE'
+                    }
+                ],
+                default: ['TEXT'],
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -184,7 +203,7 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
         }
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string, _options: ICommonObject): Promise<any> {
         // Use AAI default credentials instead of user-provided credentials
         const apiKey = process.env.AAI_DEFAULT_GOOGLE_GENERATIVE_AI_API_KEY
 
@@ -204,6 +223,7 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
         const contextCache = nodeData.inputs?.contextCache as FlowiseGoogleAICacheManager
         const streaming = nodeData.inputs?.streaming as boolean
         const baseUrl = nodeData.inputs?.baseUrl as string | undefined
+        const responseModalities = nodeData.inputs?.responseModalities as string
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
@@ -219,6 +239,7 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
         if (cache) obj.cache = cache
         if (temperature) obj.temperature = parseFloat(temperature)
         if (baseUrl) obj.baseUrl = baseUrl
+        if (responseModalities) obj.responseModalities = convertMultiOptionsToStringArray(responseModalities)
 
         // Safety Settings
         let harmCategories: string[] = convertMultiOptionsToStringArray(harmCategory)
@@ -243,8 +264,17 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
         model.setMultiModalOption(multiModalOption)
         if (contextCache) model.setContextCache(contextCache)
 
+        // Set user context for image uploads
+        if (_options?.user) {
+            model.setUserContext({
+                organizationId: _options.user.organizationId,
+                userId: _options.user.id,
+                userEmail: _options.user.email || `${_options.user.id}@local`
+            })
+        }
+
         return model
     }
 }
 
-module.exports = { nodeClass: AAIGoogleGenerativeAI_ChatModels } 
+module.exports = { nodeClass: AAIGoogleGenerativeAI_ChatModels }
