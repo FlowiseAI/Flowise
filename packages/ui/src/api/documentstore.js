@@ -1,6 +1,7 @@
 import client from './client'
 
 const getAllDocumentStores = () => client.get('/document-store/store')
+const getAdminDocumentStores = () => client.get('/admin/document-stores')
 const getDocumentLoaders = () => client.get('/document-store/components/loaders')
 const getSpecificDocumentStore = (id) => client.get(`/document-store/store/${id}`)
 const createDocumentStore = (body) => client.post(`/document-store/store`, body)
@@ -33,6 +34,7 @@ const generateDocStoreToolDesc = (storeId, body) => client.post('/document-store
 
 export default {
     getAllDocumentStores,
+    getAdminDocumentStores,
     getSpecificDocumentStore,
     createDocumentStore,
     deleteLoaderFromStore,

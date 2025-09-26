@@ -69,6 +69,17 @@ import { INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
+type AdminDocumentStoreDTO = DocumentStoreDTO & {
+    user: {
+        id?: string
+        name?: string | null
+        email?: string | null
+    }
+    userId?: string
+    organizationId?: string
+    isOwner: boolean
+}
+
 const createDocumentStore = async (newDocumentStore: DocumentStore, userId: string, organizationId: string) => {
     try {
         const appServer = getRunningExpressApp()
@@ -97,6 +108,51 @@ const getAllDocumentStores = async (user: IUser) => {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.getAllDocumentStores - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getAdminDocumentStores = async (user: IUser): Promise<AdminDocumentStoreDTO[]> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const { id: userId, organizationId, permissions, roles } = user
+        const documentStoreRepository = appServer.AppDataSource.getRepository(DocumentStore)
+        const queryBuilder = documentStoreRepository
+            .createQueryBuilder('documentStore')
+            .leftJoin('User', 'user', 'user.id = documentStore.userId')
+            .addSelect(['user.id', 'user.name', 'user.email'])
+
+        if (organizationId) {
+            queryBuilder.where('documentStore.organizationId = :organizationId', { organizationId })
+        }
+
+        const isAdmin = Boolean(roles?.includes('Admin') || permissions?.includes('org:manage'))
+        if (!isAdmin && userId) {
+            queryBuilder.andWhere('documentStore.userId = :userId', { userId })
+        }
+
+        const rawResults = await queryBuilder.orderBy('documentStore.updatedDate', 'DESC').getRawAndEntities()
+
+        return rawResults.entities.map((entity, index) => {
+            const dto = DocumentStoreDTO.fromEntity(entity)
+            const raw = rawResults.raw[index]
+
+            return {
+                ...dto,
+                user: {
+                    id: raw?.user_id ?? entity.userId,
+                    name: raw?.user_name ?? null,
+                    email: raw?.user_email ?? null
+                },
+                userId: entity.userId,
+                organizationId: entity.organizationId,
+                isOwner: entity.userId === userId
+            }
+        })
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getAdminDocumentStores - ${getErrorMessage(error)}`
         )
     }
 }
@@ -2264,6 +2320,7 @@ export default {
     createDocumentStore,
     deleteLoaderFromDocumentStore,
     getAllDocumentStores,
+    getAdminDocumentStores,
     getAllDocumentFileChunks,
     getDocumentStoreById,
     getUsedChatflowNames,

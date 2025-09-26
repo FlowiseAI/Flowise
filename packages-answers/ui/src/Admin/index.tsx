@@ -49,6 +49,19 @@ const AdminDashboard = () => {
                             <Card variant='outlined'>
                                 <CardContent>
                                     <Typography variant='h5' component='div'>
+                                        Document Stores
+                                    </Typography>
+                                    <Typography variant='body2'>View and manage document stores across the organization.</Typography>
+                                </CardContent>
+                                <CardActions>
+                                    <Button component={Link} to='/admin/document-stores' size='small' fullWidth variant='contained'>
+                                        Manage
+                                    </Button>
+                                </CardActions>
+                            </Card>
+                            <Card variant='outlined'>
+                                <CardContent>
+                                    <Typography variant='h5' component='div'>
                                         Org Credentials
                                     </Typography>
                                     <Typography variant='body2'>Control which integrations are available to your organization.</Typography>
