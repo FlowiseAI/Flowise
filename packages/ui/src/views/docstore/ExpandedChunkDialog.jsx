@@ -26,11 +26,21 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
     const [metadata, setMetadata] = useState({})
 
     const onClipboardCopy = (e) => {
-        const src = e.src
-        if (Array.isArray(src) || typeof src === 'object') {
-            navigator.clipboard.writeText(JSON.stringify(src, null, '  '))
-        } else {
-            navigator.clipboard.writeText(src)
+        // Check if clipboard API is available
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+            console.warn('Clipboard API not available')
+            return
+        }
+
+        try {
+            const src = e.src
+            if (Array.isArray(src) || typeof src === 'object') {
+                navigator.clipboard.writeText(JSON.stringify(src, null, '  '))
+            } else {
+                navigator.clipboard.writeText(src || '')
+            }
+        } catch (error) {
+            console.error('Error copying to clipboard:', error)
         }
     }
 
