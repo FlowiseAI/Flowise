@@ -77,20 +77,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
     }
 
     async connect() {
-        logger.info(`[RedisEventPublisher] Connecting to Redis...`)
         await this.redisPublisher.connect()
-
-        // Log connection details after successful connection
-        const connInfo = this.redisPublisher.options?.socket
-        const connInfoString = JSON.stringify(connInfo)
-            .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
-            .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
-        logger.info(`[RedisEventPublisher] Connected to Redis: ${connInfoString}`)
-
-        // Add error event listener
-        this.redisPublisher.on('error', (err) => {
-            logger.error(`[RedisEventPublisher] Redis connection error`, { error: err })
-        })
     }
 
     streamCustomEvent(chatId: string, eventType: string, data: any) {

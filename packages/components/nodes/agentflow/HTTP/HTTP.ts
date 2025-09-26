@@ -2,7 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { AxiosRequestConfig, Method, ResponseType } from 'axios'
 import FormData from 'form-data'
 import * as querystring from 'querystring'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { secureAxiosRequest } from '../../../src/httpSecurity'
 
 class HTTP_Agentflow implements INode {
@@ -18,37 +18,6 @@ class HTTP_Agentflow implements INode {
     documentation?: string
     credential: INodeParams
     inputs: INodeParams[]
-
-    private sanitizeJsonString(jsonString: string): string {
-        // Remove common problematic escape sequences that are not valid JSON
-        let sanitized = jsonString
-            // Remove escaped square brackets (not valid JSON)
-            .replace(/\\(\[|\])/g, '$1')
-            // Fix unquoted string values in JSON (simple case)
-            .replace(/:\s*([a-zA-Z][a-zA-Z0-9]*)\s*([,}])/g, ': "$1"$2')
-            // Fix trailing commas
-            .replace(/,(\s*[}\]])/g, '$1')
-
-        return sanitized
-    }
-
-    private parseJsonBody(body: string): any {
-        try {
-            // First try to parse as-is
-            return JSON.parse(body)
-        } catch (error) {
-            try {
-                // If that fails, try to sanitize and parse
-                const sanitized = this.sanitizeJsonString(body)
-                return JSON.parse(sanitized)
-            } catch (sanitizeError) {
-                // If sanitization also fails, throw the original error with helpful message
-                throw new Error(
-                    `Invalid JSON format in body. Original error: ${error.message}. Please ensure your JSON is properly formatted with quoted strings and valid escape sequences.`
-                )
-            }
-        }
-    }
 
     constructor() {
         this.label = 'HTTP'
@@ -305,7 +274,7 @@ class HTTP_Agentflow implements INode {
             if (method !== 'GET' && body) {
                 switch (bodyType) {
                     case 'json': {
-                        requestConfig.data = typeof body === 'string' ? this.parseJsonBody(body) : body
+                        requestConfig.data = typeof body === 'string' ? parseJsonBody(body) : body
                         requestHeaders['Content-Type'] = 'application/json'
                         break
                     }
@@ -323,7 +292,7 @@ class HTTP_Agentflow implements INode {
                         break
                     }
                     case 'xWwwFormUrlencoded':
-                        requestConfig.data = querystring.stringify(typeof body === 'string' ? this.parseJsonBody(body) : body)
+                        requestConfig.data = querystring.stringify(typeof body === 'string' ? parseJsonBody(body) : body)
                         requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
                         break
                 }

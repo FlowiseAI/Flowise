@@ -194,7 +194,8 @@ class Postgres_VectorStores implements INode {
                 name: 'pgMetadataFilter',
                 type: 'json',
                 additionalParams: true,
-                optional: true
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Content Column Name',

@@ -459,9 +459,9 @@ export const getPastChatHistoryImageMessages = async (
 /**
  * Updates the flow state with new values
  */
-export const updateFlowState = (state: ICommonObject, llmUpdateState: IFlowState[]): ICommonObject => {
+export const updateFlowState = (state: ICommonObject, updateState: IFlowState[]): ICommonObject => {
     let newFlowState: Record<string, any> = {}
-    for (const state of llmUpdateState) {
+    for (const state of updateState) {
         newFlowState[state.key] = state.value
     }
 

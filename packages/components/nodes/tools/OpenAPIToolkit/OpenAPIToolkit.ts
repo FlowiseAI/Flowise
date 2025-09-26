@@ -46,7 +46,8 @@ class OpenAPIToolkit_Tools implements INode {
                 type: 'json',
                 description: 'Request headers to be sent with the API request. For example, {"Authorization": "Bearer token"}',
                 additionalParams: true,
-                optional: true
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Remove null parameters',

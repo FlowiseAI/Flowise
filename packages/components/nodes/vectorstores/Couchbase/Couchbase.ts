@@ -96,7 +96,8 @@ class Couchbase_VectorStores implements INode {
                 name: 'couchbaseMetadataFilter',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Top K',

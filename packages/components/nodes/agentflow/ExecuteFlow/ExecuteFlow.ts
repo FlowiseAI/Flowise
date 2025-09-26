@@ -8,7 +8,7 @@ import {
     IServerSideEventStreamer
 } from '../../../src/Interface'
 import axios, { AxiosRequestConfig } from 'axios'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, processTemplateVariables, parseJsonBody } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { updateFlowState } from '../utils'
@@ -167,9 +167,7 @@ class ExecuteFlow_Agentflow implements INode {
         let overrideConfig = nodeData.inputs?.executeFlowOverrideConfig
         if (typeof overrideConfig === 'string' && overrideConfig.startsWith('{') && overrideConfig.endsWith('}')) {
             try {
-                // Handle escaped square brackets and other common escape sequences
-                const unescapedConfig = overrideConfig.replace(/\\(\[|\])/g, '$1')
-                overrideConfig = JSON.parse(unescapedConfig)
+                overrideConfig = parseJsonBody(overrideConfig)
             } catch (parseError) {
                 throw new Error(`Invalid JSON in executeFlowOverrideConfig: ${parseError.message}`)
             }
@@ -222,13 +220,7 @@ class ExecuteFlow_Agentflow implements INode {
             }
 
             // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', resultText)
-                    }
-                }
-            }
+            newState = processTemplateVariables(newState, resultText)
 
             // Only add to runtime chat history if this is the first node
             const inputMessages = []

@@ -32,9 +32,10 @@ services:
             - LOG_PATH=${LOG_PATH}
             - LOG_LEVEL=${LOG_LEVEL}
 
-            # CUSTOM TOOL DEPENDENCIES
+            # CUSTOM TOOL/FUNCTION DEPENDENCIES
             - TOOL_FUNCTION_BUILTIN_DEP=${TOOL_FUNCTION_BUILTIN_DEP}
             - TOOL_FUNCTION_EXTERNAL_DEP=${TOOL_FUNCTION_EXTERNAL_DEP}
+            - ALLOW_BUILTIN_DEP=${ALLOW_BUILTIN_DEP}
 
             # STORAGE
             - STORAGE_TYPE=${STORAGE_TYPE}
@@ -123,6 +124,11 @@ services:
             - REDIS_CA=${REDIS_CA}
             - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
             - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
+
+              # SECURITY
+            - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
+            - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
+            - HTTP_DENY_LIST=${HTTP_DENY_LIST}
         ports:
             - '${PORT}:${PORT}'
         healthcheck:
