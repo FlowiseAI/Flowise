@@ -187,7 +187,10 @@ const abortTextToSpeech = async (req: Request, res: Response) => {
 
         // Also abort the main chat flow AbortController for auto-TTS
         const chatFlowAbortId = `${chatflowId}_${chatId}`
-        appServer.abortControllerPool.abort(chatFlowAbortId)
+        if (appServer.abortControllerPool.get(chatFlowAbortId)) {
+            appServer.abortControllerPool.abort(chatFlowAbortId)
+            appServer.sseStreamer.streamMetadataEvent(chatId, { chatId, chatMessageId })
+        }
 
         // Send abort event to client
         appServer.sseStreamer.streamTTSAbortEvent(chatId, chatMessageId)
