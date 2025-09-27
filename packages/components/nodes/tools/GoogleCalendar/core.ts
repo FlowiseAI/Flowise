@@ -288,10 +288,11 @@ class CreateEventTool extends BaseGoogleCalendarTool {
             }
 
             if (params.visibility) eventData.visibility = params.visibility
-            const sendUpdates = params?.sendUpdates || 'all'
-            const query = new URLSearchParams({ sendUpdates })
+            const queryParams = new URLSearchParams()
+            if (params.sendUpdates) queryParams.append('sendUpdates', params.sendUpdates)
 
-            const endpoint = `calendars/${encodeURIComponent(params.calendarId)}/events?${query.toString()}`
+            const endpoint = `calendars/${encodeURIComponent(params.calendarId)}/events?${queryParams.toString()}`
+
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'POST', body: eventData, params })
             return response
         } catch (error) {
@@ -399,8 +400,8 @@ class UpdateEventTool extends BaseGoogleCalendarTool {
             }
 
             if (params.visibility) updateData.visibility = params.visibility
-            const sendUpdates = params?.sendUpdates || 'all'
-            const queryParams = new URLSearchParams({ sendUpdates })
+            const queryParams = new URLSearchParams()
+            if (params.sendUpdates) queryParams.append('sendUpdates', params.sendUpdates)
 
             const endpoint = `calendars/${encodeURIComponent(params.calendarId)}/events/${encodeURIComponent(
                 params.eventId
