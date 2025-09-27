@@ -363,7 +363,18 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
         if (dbResponse.chatbotConfig || uploadsConfig) {
             try {
                 const parsedConfig = dbResponse.chatbotConfig ? JSON.parse(dbResponse.chatbotConfig) : {}
-                return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData }
+                const ttsConfig =
+                    typeof dbResponse.textToSpeech === 'string' ? JSON.parse(dbResponse.textToSpeech) : dbResponse.textToSpeech
+
+                let isTTSEnabled = false
+                if (ttsConfig) {
+                    Object.keys(ttsConfig).forEach((provider) => {
+                        if (provider !== 'none' && ttsConfig?.[provider]?.status) {
+                            isTTSEnabled = true
+                        }
+                    })
+                }
+                return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData, isTTSEnabled }
             } catch (e) {
                 throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
             }

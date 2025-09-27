@@ -64,6 +64,7 @@ export interface IChatFlow {
     apikeyid?: string
     analytic?: string
     speechToText?: string
+    textToSpeech?: string
     chatbotConfig?: string
     followUpPrompts?: string
     apiConfig?: string
