@@ -5,6 +5,7 @@ import $RefParser from '@apidevtools/json-schema-ref-parser'
 import { z, ZodSchema, ZodTypeAny } from 'zod'
 import { defaultCode, DynamicStructuredTool, howToUseCode } from './core'
 import { DataSource } from 'typeorm'
+import fetch from 'node-fetch'
 
 class OpenAPIToolkit_Tools implements INode {
     label: string
@@ -21,17 +22,64 @@ class OpenAPIToolkit_Tools implements INode {
     constructor() {
         this.label = 'OpenAPI Toolkit'
         this.name = 'openAPIToolkit'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'OpenAPIToolkit'
         this.icon = 'openapi.svg'
         this.category = 'Tools'
         this.description = 'Load OpenAPI specification, and converts each API endpoint to a tool'
         this.inputs = [
             {
-                label: 'YAML File',
-                name: 'yamlFile',
+                label: 'Input Type',
+                name: 'inputType',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Upload File',
+                        name: 'file'
+                    },
+                    {
+                        label: 'Provide Link',
+                        name: 'link'
+                    }
+                ],
+                default: 'file',
+                description: 'Choose how to provide the OpenAPI specification'
+            },
+            {
+                label: 'OpenAPI File',
+                name: 'openApiFile',
                 type: 'file',
-                fileType: '.yaml'
+                fileType: '.yaml,.json',
+                description: 'Upload your OpenAPI specification file (YAML or JSON)',
+                show: {
+                    inputType: 'file'
+                }
+            },
+            {
+                label: 'OpenAPI Link',
+                name: 'openApiLink',
+                type: 'string',
+                placeholder: 'https://api.example.com/openapi.yaml or https://api.example.com/openapi.json',
+                description: 'Provide a link to your OpenAPI specification (YAML or JSON)',
+                show: {
+                    inputType: 'link'
+                }
+            },
+            {
+                label: 'Server',
+                name: 'selectedServer',
+                type: 'asyncOptions',
+                loadMethod: 'listServers',
+                description: 'Select which server to use for API calls',
+                refresh: true
+            },
+            {
+                label: 'Available Endpoints',
+                name: 'selectedEndpoints',
+                type: 'asyncMultiOptions',
+                loadMethod: 'listEndpoints',
+                description: 'Select which endpoints to expose as tools',
+                refresh: true
             },
             {
                 label: 'Return Direct',
@@ -46,8 +94,7 @@ class OpenAPIToolkit_Tools implements INode {
                 type: 'json',
                 description: 'Request headers to be sent with the API request. For example, {"Authorization": "Bearer token"}',
                 additionalParams: true,
-                optional: true,
-                acceptVariable: true
+                optional: true
             },
             {
                 label: 'Remove null parameters',
@@ -76,48 +123,236 @@ class OpenAPIToolkit_Tools implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const toolReturnDirect = nodeData.inputs?.returnDirect as boolean
-        const yamlFileBase64 = nodeData.inputs?.yamlFile as string
+        const inputType = nodeData.inputs?.inputType as string
+        const openApiFile = nodeData.inputs?.openApiFile as string
+        const openApiLink = nodeData.inputs?.openApiLink as string
+        const selectedServer = nodeData.inputs?.selectedServer as string
         const customCode = nodeData.inputs?.customCode as string
         const _headers = nodeData.inputs?.headers as string
         const removeNulls = nodeData.inputs?.removeNulls as boolean
 
         const headers = typeof _headers === 'object' ? _headers : _headers ? JSON.parse(_headers) : {}
 
-        let data
-        if (yamlFileBase64.startsWith('FILE-STORAGE::')) {
-            const file = yamlFileBase64.replace('FILE-STORAGE::', '')
-            const orgId = options.orgId
-            const chatflowid = options.chatflowid
-            const fileData = await getFileFromStorage(file, orgId, chatflowid)
-            const utf8String = fileData.toString('utf-8')
+        const specData = await this.loadOpenApiSpec(
+            {
+                inputType,
+                openApiFile,
+                openApiLink
+            },
+            options
+        )
+        if (!specData) throw new Error('Failed to load OpenAPI spec')
 
-            data = load(utf8String)
+        const _data: any = await $RefParser.dereference(specData)
+
+        // Use selected server or fallback to first server
+        let baseUrl: string
+        if (selectedServer && selectedServer !== 'error') {
+            baseUrl = selectedServer
         } else {
-            const splitDataURI = yamlFileBase64.split(',')
-            splitDataURI.pop()
-            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-            const utf8String = bf.toString('utf-8')
-            data = load(utf8String)
-        }
-        if (!data) {
-            throw new Error('Failed to load OpenAPI spec')
+            baseUrl = _data.servers?.[0]?.url
         }
 
-        const _data: any = await $RefParser.dereference(data)
-
-        const baseUrl = _data.servers[0]?.url
-        if (!baseUrl) {
-            throw new Error('OpenAPI spec does not contain a server URL')
-        }
+        if (!baseUrl) throw new Error('OpenAPI spec does not contain a server URL')
 
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
-
         const flow = { chatflowId: options.chatflowid }
 
-        const tools = getTools(_data.paths, baseUrl, headers, variables, flow, toolReturnDirect, customCode, removeNulls)
+        let tools = getTools(_data.paths, baseUrl, headers, variables, flow, toolReturnDirect, customCode, removeNulls)
+
+        // Filter by selected endpoints if provided
+        const _selected = nodeData.inputs?.selectedEndpoints
+        let selected: string[] = []
+        if (_selected) {
+            try {
+                selected = typeof _selected === 'string' ? JSON.parse(_selected) : _selected
+            } catch (e) {
+                selected = []
+            }
+        }
+        if (selected.length) {
+            tools = tools.filter((t: any) => selected.includes(t.name))
+        }
+
         return tools
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        listServers: async (nodeData: INodeData, options: ICommonObject) => {
+            try {
+                const inputType = nodeData.inputs?.inputType as string
+                const openApiFile = nodeData.inputs?.openApiFile as string
+                const openApiLink = nodeData.inputs?.openApiLink as string
+                const specData: any = await this.loadOpenApiSpec(
+                    {
+                        inputType,
+                        openApiFile,
+                        openApiLink
+                    },
+                    options
+                )
+                if (!specData) return []
+                const _data: any = await $RefParser.dereference(specData)
+                const items: { label: string; name: string; description?: string }[] = []
+                const servers = _data.servers || []
+
+                if (servers.length === 0) {
+                    return [
+                        {
+                            label: 'No Servers Found',
+                            name: 'error',
+                            description: 'No servers defined in the OpenAPI specification'
+                        }
+                    ]
+                }
+
+                for (let i = 0; i < servers.length; i++) {
+                    const server = servers[i]
+                    const serverUrl = server.url || `Server ${i + 1}`
+                    const serverDesc = server.description || serverUrl
+                    items.push({
+                        label: serverUrl,
+                        name: serverUrl,
+                        description: serverDesc
+                    })
+                }
+
+                return items
+            } catch (e) {
+                return [
+                    {
+                        label: 'No Servers Found',
+                        name: 'error',
+                        description: 'No available servers, check the link/file and refresh'
+                    }
+                ]
+            }
+        },
+        listEndpoints: async (nodeData: INodeData, options: ICommonObject) => {
+            try {
+                const inputType = nodeData.inputs?.inputType as string
+                const openApiFile = nodeData.inputs?.openApiFile as string
+                const openApiLink = nodeData.inputs?.openApiLink as string
+                const specData: any = await this.loadOpenApiSpec(
+                    {
+                        inputType,
+                        openApiFile,
+                        openApiLink
+                    },
+                    options
+                )
+                if (!specData) return []
+                const _data: any = await $RefParser.dereference(specData)
+                const items: { label: string; name: string; description?: string }[] = []
+                const paths = _data.paths || {}
+                for (const path in paths) {
+                    const methods = paths[path]
+                    for (const method in methods) {
+                        if (['get', 'post', 'put', 'delete', 'patch'].includes(method)) {
+                            const spec = methods[method]
+                            const opId = spec.operationId || `${method.toUpperCase()} ${path}`
+                            const desc = spec.description || spec.summary || opId
+                            items.push({ label: opId, name: opId, description: desc })
+                        }
+                    }
+                }
+                items.sort((a, b) => a.label.localeCompare(b.label))
+                return items
+            } catch (e) {
+                return [
+                    {
+                        label: 'No Endpoints Found',
+                        name: 'error',
+                        description: 'No available endpoints, check the link/file and refresh'
+                    }
+                ]
+            }
+        }
+    }
+
+    private async loadOpenApiSpec(
+        args: {
+            inputType?: string
+            openApiFile?: string
+            openApiLink?: string
+        },
+        options: ICommonObject
+    ): Promise<any | null> {
+        const { inputType = 'file', openApiFile = '', openApiLink = '' } = args
+        try {
+            if (inputType === 'link' && openApiLink) {
+                const res = await fetch(openApiLink)
+                const text = await res.text()
+
+                // Auto-detect format from URL extension or content
+                const isJsonUrl = openApiLink.toLowerCase().includes('.json')
+                const isYamlUrl = openApiLink.toLowerCase().includes('.yaml') || openApiLink.toLowerCase().includes('.yml')
+
+                if (isJsonUrl) {
+                    return JSON.parse(text)
+                } else if (isYamlUrl) {
+                    return load(text)
+                } else {
+                    // Auto-detect format from content
+                    try {
+                        return JSON.parse(text)
+                    } catch (_) {
+                        return load(text)
+                    }
+                }
+            }
+
+            if (inputType === 'file' && openApiFile) {
+                let utf8String: string
+                let fileName = ''
+
+                if (openApiFile.startsWith('FILE-STORAGE::')) {
+                    const file = openApiFile.replace('FILE-STORAGE::', '')
+                    fileName = file
+                    const orgId = options.orgId
+                    const chatflowid = options.chatflowid
+                    const fileData = await getFileFromStorage(file, orgId, chatflowid)
+                    utf8String = fileData.toString('utf-8')
+                } else {
+                    // Extract filename from data URI if possible
+                    const splitDataURI = openApiFile.split(',')
+                    const mimeType = splitDataURI[0] || ''
+                    if (mimeType.includes('filename=')) {
+                        const filenameMatch = mimeType.match(/filename=([^;]+)/)
+                        if (filenameMatch) {
+                            fileName = filenameMatch[1]
+                        }
+                    }
+                    splitDataURI.pop()
+                    const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                    utf8String = bf.toString('utf-8')
+                }
+
+                // Auto-detect format from file extension or content
+                const isJsonFile = fileName.toLowerCase().endsWith('.json')
+                const isYamlFile = fileName.toLowerCase().endsWith('.yaml') || fileName.toLowerCase().endsWith('.yml')
+
+                if (isJsonFile) {
+                    return JSON.parse(utf8String)
+                } else if (isYamlFile) {
+                    return load(utf8String)
+                } else {
+                    // Auto-detect format from content
+                    try {
+                        return JSON.parse(utf8String)
+                    } catch (_) {
+                        return load(utf8String)
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error loading OpenAPI spec:', e)
+            return null
+        }
+        return null
     }
 }
 
