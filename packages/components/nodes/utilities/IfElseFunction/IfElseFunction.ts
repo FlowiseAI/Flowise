@@ -131,16 +131,12 @@ class IfElseFunction_Utilities implements INode {
         const sandbox = createCodeExecutionSandbox(input, variables, flow, additionalSandbox)
 
         try {
-            const responseTrue = await executeJavaScriptCode(ifFunction, sandbox, {
-                timeout: 10000
-            })
+            const responseTrue = await executeJavaScriptCode(ifFunction, sandbox)
 
             if (responseTrue)
                 return { output: typeof responseTrue === 'string' ? handleEscapeCharacters(responseTrue, false) : responseTrue, type: true }
 
-            const responseFalse = await executeJavaScriptCode(elseFunction, sandbox, {
-                timeout: 10000
-            })
+            const responseFalse = await executeJavaScriptCode(elseFunction, sandbox)
 
             return { output: typeof responseFalse === 'string' ? handleEscapeCharacters(responseFalse, false) : responseFalse, type: false }
         } catch (e) {

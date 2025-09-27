@@ -130,8 +130,7 @@ class ChatPromptTemplate_Prompts implements INode {
 
             try {
                 const response = await executeJavaScriptCode(messageHistoryCode, sandbox, {
-                    libraries: ['axios', '@langchain/core'],
-                    timeout: 10000
+                    libraries: ['axios', '@langchain/core']
                 })
 
                 const parsedResponse = JSON.parse(response)

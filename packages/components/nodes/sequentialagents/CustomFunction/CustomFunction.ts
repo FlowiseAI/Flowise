@@ -166,9 +166,7 @@ class CustomFunction_SeqAgents implements INode {
             const sandbox = createCodeExecutionSandbox(input, variables, flow, additionalSandbox)
 
             try {
-                const response = await executeJavaScriptCode(javascriptFunction, sandbox, {
-                    timeout: 10000
-                })
+                const response = await executeJavaScriptCode(javascriptFunction, sandbox)
 
                 if (returnValueAs === 'stateObj') {
                     if (typeof response !== 'object') {

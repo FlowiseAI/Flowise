@@ -264,8 +264,7 @@ class ExecuteFlow_SeqAgents implements INode {
 
             try {
                 let response = await executeJavaScriptCode(code, sandbox, {
-                    useSandbox: false,
-                    timeout: 10000
+                    useSandbox: false
                 })
 
                 if (typeof response === 'object') {

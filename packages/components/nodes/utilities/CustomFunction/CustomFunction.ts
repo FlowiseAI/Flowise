@@ -132,9 +132,7 @@ class CustomFunction_Utilities implements INode {
         const sandbox = createCodeExecutionSandbox(input, variables, flow, additionalSandbox)
 
         try {
-            const response = await executeJavaScriptCode(javascriptFunction, sandbox, {
-                timeout: 10000
-            })
+            const response = await executeJavaScriptCode(javascriptFunction, sandbox)
 
             if (typeof response === 'string' && !isEndingNode) {
                 return handleEscapeCharacters(response, false)

@@ -282,9 +282,7 @@ const runCondition = async (nodeData: INodeData, input: string, options: ICommon
         const sandbox = createCodeExecutionSandbox(input, variables, flow)
 
         try {
-            const response = await executeJavaScriptCode(conditionFunction, sandbox, {
-                timeout: 10000
-            })
+            const response = await executeJavaScriptCode(conditionFunction, sandbox)
 
             if (typeof response !== 'string') throw new Error('Condition function must return a string')
             return response

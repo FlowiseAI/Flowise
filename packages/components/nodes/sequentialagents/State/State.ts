@@ -204,9 +204,7 @@ class State_SeqAgents implements INode {
             const sandbox = createCodeExecutionSandbox('', variables, flow)
 
             try {
-                const response = await executeJavaScriptCode(`return ${stateMemoryCode}`, sandbox, {
-                    timeout: 10000
-                })
+                const response = await executeJavaScriptCode(`return ${stateMemoryCode}`, sandbox)
 
                 if (typeof response !== 'object') throw new Error('State must be an object')
                 const returnOutput: ISeqAgentNode = {
