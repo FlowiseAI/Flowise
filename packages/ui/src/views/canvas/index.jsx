@@ -24,6 +24,7 @@ import StickyNote from './StickyNote'
 import CanvasHeader from './CanvasHeader'
 import AddNodes from './AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import SaveChatflowDialog from '@/ui-component/dialog/SaveChatflowDialog'
 import ChatPopUp from '@/views/chatmessage/ChatPopUp'
 import VectorStorePopUp from '@/views/vectorstore/VectorStorePopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
@@ -104,6 +105,7 @@ const Canvas = () => {
     const [lastUpdatedDateTime, setLasUpdatedDateTime] = useState('')
     const [chatflowName, setChatflowName] = useState('')
     const [flowData, setFlowData] = useState('')
+    const [flowDialogOpen, setFlowDialogOpen] = useState(false)
 
     // ==============================|| Chatflow API ||============================== //
 
@@ -240,6 +242,16 @@ const Canvas = () => {
                 setFlowData(flowData)
                 getHasChatflowChangedApi.request(chatflow.id, lastUpdatedDateTime)
             }
+        }
+    }
+
+    const openSaveDialog = () => {
+        if (chatflow?.id) {
+            // If chatflow has an ID, save directly using the flow name
+            handleSaveFlow(chatflow.name)
+        } else {
+            // If no ID, open the save dialog
+            setFlowDialogOpen(true)
         }
     }
 
@@ -431,7 +443,8 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
+            setFlowDialogOpen(false) // Close the save dialog
+            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
@@ -645,12 +658,22 @@ const Canvas = () => {
                                     </Fab>
                                 )}
                                 {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
+                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} onOpenSaveDialog={openSaveDialog} />
                             </ReactFlow>
                         </div>
                     </div>
                 </Box>
                 <ConfirmDialog />
+                <SaveChatflowDialog
+                    show={flowDialogOpen}
+                    dialogProps={{
+                        title: 'Save Flow',
+                        cancelButtonName: 'Cancel',
+                        confirmButtonName: 'Save'
+                    }}
+                    onCancel={() => setFlowDialogOpen(false)}
+                    onConfirm={(name) => handleSaveFlow(name)}
+                />
             </Box>
         </>
     )

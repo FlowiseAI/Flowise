@@ -27,7 +27,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // Utils
 import { getLocalStorageChatflow, removeLocalStorageChatHistory } from '@/utils/genericHelper'
 
-const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
+const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange, onOpenSaveDialog }) => {
     const theme = useTheme()
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
@@ -215,6 +215,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                                         open={open}
                                         previews={previews}
                                         setPreviews={setPreviews}
+                                        onOpenSaveDialog={onOpenSaveDialog}
                                     />
                                 </MainCard>
                             </ClickAwayListener>
@@ -238,7 +239,8 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
 ChatPopUp.propTypes = {
     chatflowid: PropTypes.string,
     isAgentCanvas: PropTypes.bool,
-    onOpenChange: PropTypes.func
+    onOpenChange: PropTypes.func,
+    onOpenSaveDialog: PropTypes.func
 }
 
 export default memo(ChatPopUp)

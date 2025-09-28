@@ -38,7 +38,8 @@ import {
     IconSquareFilled,
     IconCheck,
     IconPaperclip,
-    IconSparkles
+    IconSparkles,
+    IconDeviceFloppy
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -162,7 +163,7 @@ CardWithDeleteOverlay.propTypes = {
     onDelete: PropTypes.func
 }
 
-const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
+const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews, onOpenSaveDialog }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -1672,6 +1673,43 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
     }
 
+    // If no chatflowid and this is an agent canvas, show save prompt
+    if (!chatflowid) {
+        const handleSaveFlow = () => {
+            // Use the proper Flowise save dialog
+            if (onOpenSaveDialog) {
+                onOpenSaveDialog()
+            }
+        }
+
+        return (
+            <Box
+                sx={{
+                    width: '100%',
+                    height: '100%',
+                    position: 'relative',
+                    backgroundColor: theme.palette.background.paper,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    p: 3
+                }}
+            >
+                <IconDeviceFloppy size={48} style={{ marginBottom: 16, color: theme.palette.text.secondary }} />
+                <Typography variant='h6' gutterBottom>
+                    Save Flow to Continue
+                </Typography>
+                <Typography variant='body2' color='text.secondary' align='center' sx={{ mb: 3 }}>
+                    You need to save this {isAgentCanvas ? 'agent flow' : 'chatflow'} before you can test it with messages.
+                </Typography>
+                <Button variant='contained' color='primary' onClick={handleSaveFlow} startIcon={<IconDeviceFloppy size={16} />}>
+                    Save Flow
+                </Button>
+            </Box>
+        )
+    }
+
     if (isConfigLoading) {
         return (
             <Box
@@ -2507,7 +2545,8 @@ ChatMessage.propTypes = {
     isAgentCanvas: PropTypes.bool,
     isDialog: PropTypes.bool,
     previews: PropTypes.array,
-    setPreviews: PropTypes.func
+    setPreviews: PropTypes.func,
+    onOpenSaveDialog: PropTypes.func
 }
 
 export default memo(ChatMessage)
