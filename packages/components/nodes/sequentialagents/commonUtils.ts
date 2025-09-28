@@ -396,9 +396,7 @@ export const checkMessageHistory = async (
         const sandbox = createCodeExecutionSandbox('', variables, flow)
 
         try {
-            const response = await executeJavaScriptCode(messageHistory, sandbox, {
-                timeout: 10000
-            })
+            const response = await executeJavaScriptCode(messageHistory, sandbox)
 
             if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
             if (sysPrompt) {
