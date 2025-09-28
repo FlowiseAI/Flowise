@@ -394,7 +394,7 @@
                     "baseOptions": "",
                     "allowImageUploads": true,
                     "imageResolution": "low",
-                    "reasoningEffort": "medium"
+                    "reasoningEffort": ""
                 },
                 "outputAnchors": [
                     {

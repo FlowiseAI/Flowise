@@ -1,7 +1,7 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { MCPToolkit } from '../core'
-import { getVars, prepareSandboxVars } from '../../../../src/utils'
+import { MCPToolkit, validateMCPServerConfig } from '../core'
+import { getVars, prepareSandboxVars, parseJsonBody } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
 import hash from 'object-hash'
 
@@ -72,7 +72,11 @@ class Custom_MCP implements INode {
                     label: 'How to use',
                     value: howToUseCode
                 },
-                placeholder: mcpServerConfig
+                placeholder: mcpServerConfig,
+                warning:
+                    process.env.CUSTOM_MCP_PROTOCOL === 'sse'
+                        ? 'Only Remote MCP with url is supported. Read more <a href="https://docs.flowiseai.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
+                        : undefined
             },
             {
                 label: 'Available Actions',
@@ -169,9 +173,19 @@ class Custom_MCP implements INode {
                 serverParams = JSON.parse(serverParamsString)
             }
 
+            if (process.env.CUSTOM_MCP_SECURITY_CHECK !== 'false') {
+                try {
+                    validateMCPServerConfig(serverParams)
+                } catch (error) {
+                    throw new Error(`Security validation failed: ${error.message}`)
+                }
+            }
+
             // Compatible with stdio and SSE
             let toolkit: MCPToolkit
-            if (serverParams?.command === undefined) {
+            if (process.env.CUSTOM_MCP_PROTOCOL === 'sse') {
+                toolkit = new MCPToolkit(serverParams, 'sse')
+            } else if (serverParams?.command === undefined) {
                 toolkit = new MCPToolkit(serverParams, 'sse')
             } else {
                 toolkit = new MCPToolkit(serverParams, 'stdio')
@@ -255,7 +269,7 @@ function substituteVariablesInString(str: string, sandbox: any): string {
 
 function convertToValidJSONString(inputString: string) {
     try {
-        const jsObject = Function('return ' + inputString)()
+        const jsObject = parseJsonBody(inputString)
         return JSON.stringify(jsObject, null, 2)
     } catch (error) {
         console.error('Error converting to JSON:', error)

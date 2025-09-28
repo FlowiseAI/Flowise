@@ -1,10 +1,9 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import axios, { AxiosRequestConfig, Method, ResponseType } from 'axios'
+import { AxiosRequestConfig, Method, ResponseType } from 'axios'
 import FormData from 'form-data'
 import * as querystring from 'querystring'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
-import * as ipaddr from 'ipaddr.js'
-import dns from 'dns/promises'
+import { getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
+import { secureAxiosRequest } from '../../../src/httpSecurity'
 
 class HTTP_Agentflow implements INode {
     label: string
@@ -19,37 +18,6 @@ class HTTP_Agentflow implements INode {
     documentation?: string
     credential: INodeParams
     inputs: INodeParams[]
-
-    private sanitizeJsonString(jsonString: string): string {
-        // Remove common problematic escape sequences that are not valid JSON
-        let sanitized = jsonString
-            // Remove escaped square brackets (not valid JSON)
-            .replace(/\\(\[|\])/g, '$1')
-            // Fix unquoted string values in JSON (simple case)
-            .replace(/:\s*([a-zA-Z][a-zA-Z0-9]*)\s*([,}])/g, ': "$1"$2')
-            // Fix trailing commas
-            .replace(/,(\s*[}\]])/g, '$1')
-
-        return sanitized
-    }
-
-    private parseJsonBody(body: string): any {
-        try {
-            // First try to parse as-is
-            return JSON.parse(body)
-        } catch (error) {
-            try {
-                // If that fails, try to sanitize and parse
-                const sanitized = this.sanitizeJsonString(body)
-                return JSON.parse(sanitized)
-            } catch (sanitizeError) {
-                // If sanitization also fails, throw the original error with helpful message
-                throw new Error(
-                    `Invalid JSON format in body. Original error: ${error.message}. Please ensure your JSON is properly formatted with quoted strings and valid escape sequences.`
-                )
-            }
-        }
-    }
 
     constructor() {
         this.label = 'HTTP'
@@ -232,44 +200,6 @@ class HTTP_Agentflow implements INode {
         ]
     }
 
-    private isDeniedIP(ip: string, denyList: string[]): void {
-        const parsedIp = ipaddr.parse(ip)
-        for (const entry of denyList) {
-            if (entry.includes('/')) {
-                try {
-                    const [range, _] = entry.split('/')
-                    const parsedRange = ipaddr.parse(range)
-                    if (parsedIp.kind() === parsedRange.kind()) {
-                        if (parsedIp.match(ipaddr.parseCIDR(entry))) {
-                            throw new Error('Access to this host is denied by policy.')
-                        }
-                    }
-                } catch (error) {
-                    throw new Error(`isDeniedIP: ${error}`)
-                }
-            } else if (ip === entry) throw new Error('Access to this host is denied by policy.')
-        }
-    }
-
-    private async checkDenyList(url: string) {
-        const httpDenyListString: string | undefined = process.env.HTTP_DENY_LIST
-        if (!httpDenyListString) return url
-        const httpDenyList = httpDenyListString.split(',').map((ip) => ip.trim())
-
-        const urlObj = new URL(url)
-
-        const hostname = urlObj.hostname
-
-        if (ipaddr.isValid(hostname)) {
-            this.isDeniedIP(hostname, httpDenyList)
-        } else {
-            const addresses = await dns.lookup(hostname, { all: true })
-            for (const address of addresses) {
-                this.isDeniedIP(address.address, httpDenyList)
-            }
-        }
-    }
-
     async run(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const method = nodeData.inputs?.method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
         const url = nodeData.inputs?.url as string
@@ -332,8 +262,6 @@ class HTTP_Agentflow implements INode {
             // Build final URL with query parameters
             const finalUrl = queryString ? `${url}${url.includes('?') ? '&' : '?'}${queryString}` : url
 
-            await this.checkDenyList(finalUrl)
-
             // Prepare request config
             const requestConfig: AxiosRequestConfig = {
                 method: method as Method,
@@ -346,7 +274,7 @@ class HTTP_Agentflow implements INode {
             if (method !== 'GET' && body) {
                 switch (bodyType) {
                     case 'json': {
-                        requestConfig.data = typeof body === 'string' ? this.parseJsonBody(body) : body
+                        requestConfig.data = typeof body === 'string' ? parseJsonBody(body) : body
                         requestHeaders['Content-Type'] = 'application/json'
                         break
                     }
@@ -364,14 +292,14 @@ class HTTP_Agentflow implements INode {
                         break
                     }
                     case 'xWwwFormUrlencoded':
-                        requestConfig.data = querystring.stringify(typeof body === 'string' ? this.parseJsonBody(body) : body)
+                        requestConfig.data = querystring.stringify(typeof body === 'string' ? parseJsonBody(body) : body)
                         requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
                         break
                 }
             }
 
-            // Make the HTTP request
-            const response = await axios(requestConfig)
+            // Make the secure HTTP request that validates all URLs in redirect chains
+            const response = await secureAxiosRequest(requestConfig)
 
             // Process response based on response type
             let responseData

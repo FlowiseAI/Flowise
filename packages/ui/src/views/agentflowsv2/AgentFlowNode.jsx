@@ -21,7 +21,11 @@ import {
     IconTrash,
     IconInfoCircle,
     IconLoader,
-    IconAlertCircleFilled
+    IconAlertCircleFilled,
+    IconCode,
+    IconWorldWww,
+    IconPhoto,
+    IconBrandGoogle
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -124,6 +128,30 @@ const AgentFlowNode = ({ data }) => {
 
         if (!foundIcon) return null
         return <foundIcon.icon size={24} color={'white'} />
+    }
+
+    const getBuiltInOpenAIToolIcon = (toolName) => {
+        switch (toolName) {
+            case 'web_search_preview':
+                return <IconWorldWww size={14} color={'white'} />
+            case 'code_interpreter':
+                return <IconCode size={14} color={'white'} />
+            case 'image_generation':
+                return <IconPhoto size={14} color={'white'} />
+            default:
+                return null
+        }
+    }
+
+    const getBuiltInGeminiToolIcon = (toolName) => {
+        switch (toolName) {
+            case 'urlContext':
+                return <IconWorldWww size={14} color={'white'} />
+            case 'googleSearch':
+                return <IconBrandGoogle size={14} color={'white'} />
+            default:
+                return null
+        }
     }
 
     useEffect(() => {
@@ -407,7 +435,27 @@ const AgentFlowNode = ({ data }) => {
                                                 : [],
                                         toolProperty: ['selectedTool', 'toolAgentflowSelectedTool']
                                     },
-                                    { tools: data.inputs?.agentKnowledgeVSEmbeddings, toolProperty: ['vectorStore', 'embeddingModel'] }
+                                    { tools: data.inputs?.agentKnowledgeVSEmbeddings, toolProperty: ['vectorStore', 'embeddingModel'] },
+                                    {
+                                        tools: data.inputs?.agentToolsBuiltInOpenAI
+                                            ? (typeof data.inputs.agentToolsBuiltInOpenAI === 'string'
+                                                  ? JSON.parse(data.inputs.agentToolsBuiltInOpenAI)
+                                                  : data.inputs.agentToolsBuiltInOpenAI
+                                              ).map((tool) => ({ builtInTool: tool }))
+                                            : [],
+                                        toolProperty: 'builtInTool',
+                                        isBuiltInOpenAI: true
+                                    },
+                                    {
+                                        tools: data.inputs?.agentToolsBuiltInGemini
+                                            ? (typeof data.inputs.agentToolsBuiltInGemini === 'string'
+                                                  ? JSON.parse(data.inputs.agentToolsBuiltInGemini)
+                                                  : data.inputs.agentToolsBuiltInGemini
+                                              ).map((tool) => ({ builtInTool: tool }))
+                                            : [],
+                                        toolProperty: 'builtInTool',
+                                        isBuiltInGemini: true
+                                    }
                                 ]
 
                                 // Filter out undefined tools and render each valid collection
@@ -440,6 +488,58 @@ const AgentFlowNode = ({ data }) => {
                                                 } else {
                                                     const toolName = tool[config.toolProperty]
                                                     if (!toolName) return []
+
+                                                    // Handle built-in OpenAI tools with icons
+                                                    if (config.isBuiltInOpenAI) {
+                                                        const icon = getBuiltInOpenAIToolIcon(toolName)
+                                                        if (!icon) return []
+
+                                                        return [
+                                                            <Box
+                                                                key={`tool-${configIndex}-${toolIndex}`}
+                                                                sx={{
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: customization.isDarkMode
+                                                                        ? darken(data.color, 0.5)
+                                                                        : darken(data.color, 0.2),
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    padding: 0.2
+                                                                }}
+                                                            >
+                                                                {icon}
+                                                            </Box>
+                                                        ]
+                                                    }
+
+                                                    // Handle built-in Gemini tools with icons
+                                                    if (config.isBuiltInGemini) {
+                                                        const icon = getBuiltInGeminiToolIcon(toolName)
+                                                        if (!icon) return []
+
+                                                        return [
+                                                            <Box
+                                                                key={`tool-${configIndex}-${toolIndex}`}
+                                                                sx={{
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: customization.isDarkMode
+                                                                        ? darken(data.color, 0.5)
+                                                                        : darken(data.color, 0.2),
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    padding: 0.2
+                                                                }}
+                                                            >
+                                                                {icon}
+                                                            </Box>
+                                                        ]
+                                                    }
 
                                                     return [
                                                         <Box

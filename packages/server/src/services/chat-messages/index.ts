@@ -10,7 +10,6 @@ import { UsageCacheManager } from '../../UsageCacheManager'
 import { utilAddChatMessage } from '../../utils/addChatMesage'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
 
 // Add chatmessages for chatflowid
@@ -129,7 +128,7 @@ const removeAllChatMessages = async (
                 const { totalSize } = await removeFilesFromStorage(orgId, chatflowid, chatId)
                 await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
             } catch (e) {
-                logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}`)
+                // Don't throw error if file deletion fails because file might not exist
             }
         }
         const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
@@ -165,8 +164,12 @@ const removeChatMessagesByMessageIds = async (
             await appServer.AppDataSource.getRepository(ChatMessageFeedback).delete(feedbackDeleteOptions)
 
             // Delete all uploads corresponding to this chatflow/chatId
-            const { totalSize } = await removeFilesFromStorage(orgId, chatflowid, chatId)
-            await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
+            try {
+                const { totalSize } = await removeFilesFromStorage(orgId, chatflowid, chatId)
+                await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
+            } catch (e) {
+                // Don't throw error if file deletion fails because file might not exist
+            }
         }
 
         // Delete executions if they exist
@@ -179,7 +182,7 @@ const removeChatMessagesByMessageIds = async (
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatMessagesService.removeAllChatMessages - ${getErrorMessage(error)}`
+            `Error: chatMessagesService.removeChatMessagesByMessageIds - ${getErrorMessage(error)}`
         )
     }
 }

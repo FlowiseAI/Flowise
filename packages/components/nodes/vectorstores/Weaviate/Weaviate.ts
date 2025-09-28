@@ -120,7 +120,8 @@ class Weaviate_VectorStores implements INode {
                 name: 'weaviateFilter',
                 type: 'json',
                 additionalParams: true,
-                optional: true
+                optional: true,
+                acceptVariable: true
             }
         ]
         addMMRInputParams(this.inputs)

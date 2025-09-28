@@ -25,30 +25,49 @@ export class QueueManager {
     private predictionQueueEventsProducer?: QueueEventsProducer
 
     private constructor() {
-        let tlsOpts = undefined
-        if (process.env.REDIS_URL && process.env.REDIS_URL.startsWith('rediss://')) {
-            tlsOpts = {
-                rejectUnauthorized: false
+        if (process.env.REDIS_URL) {
+            let tlsOpts = undefined
+            if (process.env.REDIS_URL.startsWith('rediss://')) {
+                tlsOpts = {
+                    rejectUnauthorized: false
+                }
+            } else if (process.env.REDIS_TLS === 'true') {
+                tlsOpts = {
+                    cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
+                    key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
+                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+                }
             }
-        } else if (process.env.REDIS_TLS === 'true') {
-            tlsOpts = {
-                cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
-                key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+            this.connection = {
+                url: process.env.REDIS_URL,
+                tls: tlsOpts,
+                enableReadyCheck: true,
+                keepAlive:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
             }
-        }
-        this.connection = {
-            url: process.env.REDIS_URL || undefined,
-            host: process.env.REDIS_HOST || 'localhost',
-            port: parseInt(process.env.REDIS_PORT || '6379'),
-            username: process.env.REDIS_USERNAME || undefined,
-            password: process.env.REDIS_PASSWORD || undefined,
-            tls: tlsOpts,
-            enableReadyCheck: true,
-            keepAlive:
-                process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                    ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                    : undefined
+        } else {
+            let tlsOpts = undefined
+            if (process.env.REDIS_TLS === 'true') {
+                tlsOpts = {
+                    cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
+                    key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
+                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+                }
+            }
+            this.connection = {
+                host: process.env.REDIS_HOST || 'localhost',
+                port: parseInt(process.env.REDIS_PORT || '6379'),
+                username: process.env.REDIS_USERNAME || undefined,
+                password: process.env.REDIS_PASSWORD || undefined,
+                tls: tlsOpts,
+                enableReadyCheck: true,
+                keepAlive:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
+            }
         }
     }
 
@@ -120,6 +139,7 @@ export class QueueManager {
             usageCacheManager
         })
         this.registerQueue('prediction', predictionQueue)
+
         this.predictionQueueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
             connection: this.connection
         })

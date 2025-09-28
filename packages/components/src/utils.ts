@@ -8,7 +8,7 @@ import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
-import { omit } from 'lodash'
+import { omit, get } from 'lodash'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
@@ -18,6 +18,8 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
 import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
+import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
+import JSON5 from 'json5'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -83,7 +85,6 @@ export const availableDependencies = [
     '@upstash/redis',
     '@zilliz/milvus2-sdk-node',
     'apify-client',
-    'axios',
     'cheerio',
     'chromadb',
     'cohere-ai',
@@ -101,10 +102,8 @@ export const availableDependencies = [
     'linkifyjs',
     'lunary',
     'mammoth',
-    'moment',
     'mongodb',
     'mysql2',
-    'node-fetch',
     'node-html-markdown',
     'notion-to-md',
     'openai',
@@ -119,6 +118,8 @@ export const availableDependencies = [
     'typeorm',
     'weaviate-ts-client'
 ]
+
+const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
 
 export const defaultAllowBuiltInDep = [
     'assert',
@@ -421,7 +422,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 
     if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
     try {
-        const resp = await fetch(currentURL)
+        const resp = await secureFetch(currentURL)
 
         if (resp.status > 399) {
             if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
@@ -452,6 +453,8 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
  * @returns {Promise<string[]>}
  */
 export async function webCrawl(stringURL: string, limit: number): Promise<string[]> {
+    await checkDenyList(stringURL)
+
     const URLObj = new URL(stringURL)
     const modifyURL = stringURL.slice(-1) === '/' ? stringURL.slice(0, -1) : stringURL
     return await crawl(URLObj.protocol + '//' + URLObj.hostname, modifyURL, [], limit)
@@ -475,7 +478,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
     let urls: string[] = []
     if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
     try {
-        const resp = await fetch(currentURL)
+        const resp = await secureFetch(currentURL)
 
         if (resp.status > 399) {
             if (process.env.DEBUG === 'true') console.error(`error in fetch with status code: ${resp.status}, on page: ${currentURL}`)
@@ -1346,8 +1349,8 @@ export const refreshOAuth2Token = async (
 export const stripHTMLFromToolInput = (input: string) => {
     const turndownService = new TurndownService()
     let cleanedInput = turndownService.turndown(input)
-    // After conversion, replace any escaped underscores with regular underscores
-    cleanedInput = cleanedInput.replace(/\\_/g, '_')
+    // After conversion, replace any escaped underscores and square brackets with regular unescaped ones
+    cleanedInput = cleanedInput.replace(/\\([_[\]])/g, '$1')
     return cleanedInput
 }
 
@@ -1383,6 +1386,39 @@ const convertRequireToImport = (requireLine: string): string | null => {
 }
 
 /**
+ * Parse output if it's a stringified JSON or array
+ * @param {any} output - The output to parse
+ * @returns {any} - The parsed output or original output if not parseable
+ */
+const parseOutput = (output: any): any => {
+    // If output is not a string, return as-is
+    if (typeof output !== 'string') {
+        return output
+    }
+
+    // Trim whitespace
+    const trimmedOutput = output.trim()
+
+    // Check if it's an empty string
+    if (!trimmedOutput) {
+        return output
+    }
+
+    // Check if it looks like JSON (starts with { or [)
+    if ((trimmedOutput.startsWith('{') && trimmedOutput.endsWith('}')) || (trimmedOutput.startsWith('[') && trimmedOutput.endsWith(']'))) {
+        try {
+            const parsedOutput = parseJsonBody(trimmedOutput)
+            return parsedOutput
+        } catch (e) {
+            return output
+        }
+    }
+
+    // Return the original string if it doesn't look like JSON
+    return output
+}
+
+/**
  * Execute JavaScript code using either Sandbox or NodeVM
  * @param {string} code - The JavaScript code to execute
  * @param {ICommonObject} sandbox - The sandbox object with variables
@@ -1400,8 +1436,12 @@ export const executeJavaScriptCode = async (
         nodeVMOptions?: ICommonObject
     } = {}
 ): Promise<any> => {
-    const { timeout = 10000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
+    const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
     const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
+    let timeoutMs = timeout
+    if (process.env.SANDBOX_TIMEOUT) {
+        timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
+    }
 
     if (shouldUseSandbox) {
         try {
@@ -1458,7 +1498,7 @@ export const executeJavaScriptCode = async (
                 }
             }
 
-            const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY })
+            const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs })
 
             // Install libraries
             for (const library of libraries) {
@@ -1497,7 +1537,7 @@ export const executeJavaScriptCode = async (
             // Clean up sandbox
             sbx.kill()
 
-            return output
+            return parseOutput(output)
         } catch (e) {
             throw new Error(`Sandbox Execution Error: ${e}`)
         }
@@ -1506,18 +1546,48 @@ export const executeJavaScriptCode = async (
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
             : defaultAllowBuiltInDep
         const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
+        let deps = process.env.ALLOW_BUILTIN_DEP === 'true' ? availableDependencies.concat(externalDeps) : externalDeps
+        deps.push(...defaultAllowExternalDependencies)
+        deps = [...new Set(deps)]
+
+        // Create secure wrappers for HTTP libraries
+        const secureWrappers: ICommonObject = {}
+
+        // Axios
+        const secureAxiosWrapper = async (config: any) => {
+            return await secureAxiosRequest(config)
+        }
+        secureAxiosWrapper.get = async (url: string, config: any = {}) => secureAxiosWrapper({ ...config, method: 'GET', url })
+        secureAxiosWrapper.post = async (url: string, data: any, config: any = {}) =>
+            secureAxiosWrapper({ ...config, method: 'POST', url, data })
+        secureAxiosWrapper.put = async (url: string, data: any, config: any = {}) =>
+            secureAxiosWrapper({ ...config, method: 'PUT', url, data })
+        secureAxiosWrapper.delete = async (url: string, config: any = {}) => secureAxiosWrapper({ ...config, method: 'DELETE', url })
+        secureAxiosWrapper.patch = async (url: string, data: any, config: any = {}) =>
+            secureAxiosWrapper({ ...config, method: 'PATCH', url, data })
+
+        secureWrappers['axios'] = secureAxiosWrapper
+
+        // Node Fetch
+        const secureNodeFetch = async (url: string, options: any = {}) => {
+            return await secureFetch(url, options)
+        }
+        secureWrappers['node-fetch'] = secureNodeFetch
 
         const defaultNodeVMOptions: any = {
             console: 'inherit',
             sandbox,
             require: {
-                external: { modules: deps },
-                builtin: builtinDeps
+                external: {
+                    modules: deps,
+                    transitive: false // Prevent transitive dependencies
+                },
+                builtin: builtinDeps,
+                mock: secureWrappers // Replace HTTP libraries with secure wrappers
             },
             eval: false,
             wasm: false,
-            timeout
+            timeout: timeoutMs
         }
 
         // Merge with custom nodeVMOptions if provided
@@ -1529,16 +1599,17 @@ export const executeJavaScriptCode = async (
             const response = await vm.run(`module.exports = async function() {${code}}()`, __dirname)
 
             let finalOutput = response
-            if (typeof response === 'object') {
-                finalOutput = JSON.stringify(response, null, 2)
-            }
 
             // Stream output if streaming function provided
             if (streamOutput && finalOutput) {
-                streamOutput(finalOutput)
+                let streamOutputString = finalOutput
+                if (typeof response === 'object') {
+                    streamOutputString = JSON.stringify(finalOutput, null, 2)
+                }
+                streamOutput(streamOutputString)
             }
 
-            return finalOutput
+            return parseOutput(finalOutput)
         } catch (e) {
             throw new Error(`NodeVM Execution Error: ${e}`)
         }
@@ -1573,4 +1644,119 @@ export const createCodeExecutionSandbox = (
     sandbox['$flow'] = flow
 
     return sandbox
+}
+
+/**
+ * Process template variables in state object, replacing {{ output }} and {{ output.property }} patterns
+ * @param {ICommonObject} state - The state object to process
+ * @param {any} finalOutput - The output value to substitute
+ * @returns {ICommonObject} - The processed state object
+ */
+export const processTemplateVariables = (state: ICommonObject, finalOutput: any): ICommonObject => {
+    if (!state || Object.keys(state).length === 0) {
+        return state
+    }
+
+    const newState = { ...state }
+
+    for (const key in newState) {
+        const stateValue = newState[key].toString()
+        if (stateValue.includes('{{ output') || stateValue.includes('{{output')) {
+            // Handle simple output replacement (with or without spaces)
+            if (stateValue === '{{ output }}' || stateValue === '{{output}}') {
+                newState[key] = finalOutput
+                continue
+            }
+
+            // Handle JSON path expressions like {{ output.updated }} or {{output.updated}}
+            // eslint-disable-next-line
+            const match = stateValue.match(/\{\{\s*output\.([\w\.]+)\s*\}\}/)
+            if (match) {
+                try {
+                    // Parse the response if it's JSON
+                    const jsonResponse = typeof finalOutput === 'string' ? JSON.parse(finalOutput) : finalOutput
+                    // Get the value using lodash get
+                    const path = match[1]
+                    const value = get(jsonResponse, path)
+                    newState[key] = value ?? stateValue // Fall back to original if path not found
+                } catch (e) {
+                    // If JSON parsing fails, keep original template
+                    newState[key] = stateValue
+                }
+            } else {
+                // Handle simple {{ output }} replacement for backward compatibility
+                newState[key] = newState[key].replaceAll('{{ output }}', finalOutput)
+            }
+        }
+    }
+
+    return newState
+}
+
+/**
+ * Parse JSON body with comprehensive error handling and cleanup
+ * @param {string} body - The JSON string to parse
+ * @returns {any} - The parsed JSON object
+ * @throws {Error} - Detailed error message with suggestions for common JSON issues
+ */
+export const parseJsonBody = (body: string): any => {
+    try {
+        // First try to parse as-is with JSON5 (which handles more cases than standard JSON)
+        return JSON5.parse(body)
+    } catch (error) {
+        try {
+            // If that fails, try to clean up common issues
+            let cleanedBody = body
+
+            // 1. Remove unnecessary backslash escapes for square brackets and braces
+            // eslint-disable-next-line
+            cleanedBody = cleanedBody.replace(/\\(?=[\[\]{}])/g, '')
+
+            // 2. Fix single quotes to double quotes (but preserve quotes inside strings)
+            cleanedBody = cleanedBody.replace(/'/g, '"')
+
+            // 3. Remove trailing commas before closing brackets/braces
+            cleanedBody = cleanedBody.replace(/,(\s*[}\]])/g, '$1')
+
+            // 4. Remove comments (// and /* */)
+            cleanedBody = cleanedBody
+                .replace(/\/\/.*$/gm, '') // Remove single-line comments
+                .replace(/\/\*[\s\S]*?\*\//g, '') // Remove multi-line comments
+
+            return JSON5.parse(cleanedBody)
+        } catch (secondError) {
+            try {
+                // 3rd attempt: try with standard JSON.parse on original body
+                return JSON.parse(body)
+            } catch (thirdError) {
+                try {
+                    // 4th attempt: try with standard JSON.parse on cleaned body
+                    const finalCleanedBody = body
+                        // eslint-disable-next-line
+                        .replace(/\\(?=[\[\]{}])/g, '') // Basic escape cleanup
+                        .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+                        .trim()
+
+                    return JSON.parse(finalCleanedBody)
+                } catch (fourthError) {
+                    // Provide comprehensive error message with suggestions
+                    const suggestions = [
+                        '• Ensure all strings are enclosed in double quotes',
+                        '• Remove trailing commas',
+                        '• Remove comments (// or /* */)',
+                        '• Escape special characters properly (\\n for newlines, \\" for quotes)',
+                        '• Use double quotes instead of single quotes',
+                        '• Remove unnecessary backslashes before brackets [ ] { }'
+                    ]
+
+                    throw new Error(
+                        `Invalid JSON format in body. Original error: ${error.message}. ` +
+                            `After cleanup attempts: ${secondError.message}. 3rd attempt: ${thirdError.message}. Final attempt: ${fourthError.message}.\n\n` +
+                            `Common fixes:\n${suggestions.join('\n')}\n\n` +
+                            `Received body: ${body.substring(0, 200)}${body.length > 200 ? '...' : ''}`
+                    )
+                }
+            }
+        }
+    }
 }

@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, stripHTMLFromToolInput } from '../../../src/utils'
+import { getBaseClasses, stripHTMLFromToolInput, parseJsonBody } from '../../../src/utils'
 import { desc, RequestParameters, RequestsDeleteTool } from './core'
 
 const codeExample = `{
@@ -35,7 +35,7 @@ class RequestsDelete_Tools implements INode {
         this.icon = 'del.png'
         this.category = 'Tools'
         this.description = 'Execute HTTP DELETE requests'
-        this.baseClasses = [this.type, ...getBaseClasses(RequestsDeleteTool)]
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsDeleteTool), 'Tool']
         this.inputs = [
             {
                 label: 'URL',
@@ -130,7 +130,7 @@ class RequestsDelete_Tools implements INode {
         if (queryParamsSchema) obj.queryParamsSchema = queryParamsSchema
         if (maxOutputLength) obj.maxOutputLength = parseInt(maxOutputLength, 10)
         if (headers) {
-            const parsedHeaders = typeof headers === 'object' ? headers : JSON.parse(stripHTMLFromToolInput(headers))
+            const parsedHeaders = typeof headers === 'object' ? headers : parseJsonBody(stripHTMLFromToolInput(headers))
             obj.headers = parsedHeaders
         }
 

@@ -249,7 +249,8 @@ export const executeFlow = async ({
     isTool,
     orgId,
     workspaceId,
-    subscriptionId
+    subscriptionId,
+    productId
 }: IExecuteFlowParams) => {
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
@@ -421,7 +422,8 @@ export const executeFlow = async ({
             isTool,
             orgId,
             workspaceId,
-            subscriptionId
+            subscriptionId,
+            productId
         })
     }
 
@@ -478,6 +480,7 @@ export const executeFlow = async ({
 
     const flowConfig: IFlowConfig = {
         chatflowid,
+        chatflowId: chatflow.id,
         chatId,
         sessionId,
         chatHistory,
@@ -812,7 +815,9 @@ export const executeFlow = async ({
                 chatflowId: chatflowid,
                 chatId,
                 type: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges)
+                flowGraph: getTelemetryFlowObj(nodes, edges),
+                productId,
+                subscriptionId
             },
             orgId
         )
@@ -922,6 +927,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         chatflow.analytic = JSON.stringify(newEval)
     }
 
+    let organizationId = ''
+
     try {
         // Validate API Key if its external API request
         if (!isInternal) {
@@ -949,7 +956,11 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         }
 
         const orgId = org.id
+        organizationId = orgId
         const subscriptionId = org.subscriptionId as string
+
+        const subscriptionDetails = await appServer.usageCacheManager.getSubscriptionDataFromCache(subscriptionId)
+        const productId = subscriptionDetails?.productId || ''
 
         await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
 
@@ -971,13 +982,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             usageCacheManager: appServer.usageCacheManager,
             orgId,
             workspaceId,
-            subscriptionId
+            subscriptionId,
+            productId
         }
 
         if (process.env.MODE === MODE.QUEUE) {
             const predictionQueue = appServer.queueManager.getQueue('prediction')
             const job = await predictionQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
+            logger.debug(`[server]: [${orgId}/${chatflow.id}/${chatId}]: Job added to queue: ${job.id}`)
 
             const queueEvents = predictionQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -1002,7 +1014,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             return result
         }
     } catch (e) {
-        logger.error('[server]: Error:', e)
+        logger.error(`[server]:${organizationId}/${chatflow.id}/${chatId} Error:`, e)
         appServer.abortControllerPool.remove(`${chatflow.id}_${chatId}`)
         incrementFailedMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
         if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {

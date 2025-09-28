@@ -5,7 +5,6 @@ const router = express.Router()
 
 // CREATE
 router.post('/', checkAnyPermission('chatflows:create,chatflows:update'), chatflowsController.saveChatflow)
-router.post('/importchatflows', checkPermission('chatflows:import'), chatflowsController.importChatflows)
 
 // READ
 router.get('/', checkAnyPermission('chatflows:view,chatflows:update'), chatflowsController.getAllChatflows)
