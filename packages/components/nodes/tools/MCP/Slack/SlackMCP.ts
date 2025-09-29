@@ -107,7 +107,8 @@ class Slack_MCP implements INode {
         const teamId = getCredentialParam('teamId', credentialData, nodeData)
 
         if (!botToken || !teamId) {
-            throw new Error('Missing Credentials')
+            console.error('Slack MCP: Missing Credentials - botToken or teamId not provided')
+            return []
         }
 
         const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-slack/dist/index.js')

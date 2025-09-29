@@ -106,7 +106,8 @@ class PostgreSQL_MCP implements INode {
         const postgresUrl = getCredentialParam('postgresUrl', credentialData, nodeData)
 
         if (!postgresUrl) {
-            throw new Error('No postgres url provided')
+            console.error('PostgreSQL MCP: No postgres url provided')
+            return []
         }
 
         const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-postgres/dist/index.js')

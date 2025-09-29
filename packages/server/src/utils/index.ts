@@ -68,42 +68,6 @@ import {
 } from '@aws-sdk/client-secrets-manager'
 import { fetchMCPMetadata, MCPOAuthMetadata } from './mcp-metadata'
 
-/**
- * Enhanced error message for MCP connection errors with deep links to credentials
- */
-const enhanceMcpInitializationError = (error: any, reactFlowNode: IReactFlowNode, baseURL: string): string => {
-    const errorMessage = getErrorMessage(error)
-
-    // Check if this is an MCP connection error
-    if (errorMessage.includes('MCP') && errorMessage.includes('Connection closed')) {
-        // Extract credential name from input parameters
-        let credentialType = ''
-        if (reactFlowNode.data.inputParams) {
-            const credentialParam = reactFlowNode.data.inputParams.find((param: any) => param.type === 'credential')
-            if (credentialParam && credentialParam.credentialNames && credentialParam.credentialNames.length > 0) {
-                credentialType = credentialParam.credentialNames[0]
-            }
-        }
-
-        if (credentialType) {
-            // Generate deep link URL for credential setup
-            const credentialLink = `/sidekick-studio/credentials?cred=${credentialType}`
-            const mcpDocsLink = `https://answeragent.ai/docs/sidekick-studio/chatflows/tools-mcp`
-
-            return `**This Sidekick needs an integration setup.** [Click here to set it up](${credentialLink}). [Read more about how to troubleshoot MCP servers and integrations](${mcpDocsLink}).`
-        }
-
-        // Generic MCP error message if we can't identify the specific credential
-        const credentialsLink = `/sidekick-studio/credentials`
-        const mcpDocsLink = `https://answeragent.ai/docs/sidekick-studio/chatflows/tools-mcp`
-
-        return `**This Sidekick needs an integration setup.** [Click here to check your credentials](${credentialsLink}) | [Read more about how to troubleshoot MCP servers and integrations](${mcpDocsLink}).`
-    }
-
-    // Return original error message if not an MCP connection error
-    return errorMessage
-}
-
 export const QUESTION_VAR_PREFIX = 'question'
 export const FILE_ATTACHMENT_PREFIX = 'file_attachment'
 export const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
@@ -743,11 +707,7 @@ export const buildFlow = async ({
             }
         } catch (e: any) {
             logger.error(e)
-
-            // Enhanced error message for MCP connection issues
-            const enhancedErrorMessage = enhanceMcpInitializationError(e, reactFlowNode, baseURL || 'http://localhost:3000')
-
-            throw new Error(enhancedErrorMessage)
+            throw e
         }
 
         let neighbourNodeIds = graph[nodeId]

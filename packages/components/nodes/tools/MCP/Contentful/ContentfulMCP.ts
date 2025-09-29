@@ -119,7 +119,8 @@ class Contentful_MCP implements INode {
         const environmentId = nodeData.inputs?.environmentId
 
         if (!managementToken || !spaceId || !environmentId) {
-            throw new Error('Missing Credentials')
+            console.error('Contentful MCP: Missing Credentials - managementToken, spaceId, or environmentId not provided')
+            return []
         }
 
         const packagePath = getNodeModulesPackagePath('@last-rev/contentful-mcp-server/bin/mcp-server.js')
