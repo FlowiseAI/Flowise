@@ -203,28 +203,37 @@ export class App {
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
 
         await initializeJwtCookieMiddleware(this.app, this.identityManager)
-
+        logger.info(`Inside config:`)
         this.app.use(async (req, res, next) => {
             // Step 1: Check if the req path contains /api/v1 regardless of case
             if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
+                logger.info(`Inside config2:`)
                 // Step 2: Check if the req path is casesensitive
                 if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
+                    logger.info(`Inside config3:`)
                     // Step 3: Check if the req path is in the whitelist
                     const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
                     if (isWhitelisted) {
+                        logger.info(`Inside config4:`)
                         next()
                     } else if (req.headers['x-request-from'] === 'internal') {
+                        logger.info(`Inside config5:`)
                         verifyToken(req, res, next)
                     } else {
+                        logger.info(`Inside config6:`)
                         // Only check license validity for non-open-source platforms
                         if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
+                            logger.info(`Inside config7:`)
                             if (!this.identityManager.isLicenseValid()) {
+                                logger.info(`Inside config8:`)
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
                         }
 
                         const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
+                        logger.info(`Inside config9:`)
                         if (!isValid) {
+                            logger.info(`Inside config10:`)
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
@@ -232,7 +241,9 @@ export class App {
                         const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
                             where: { id: apiKeyWorkSpaceId }
                         })
+                        logger.info(`Inside config11:`)
                         if (!workspace) {
+                            logger.info(`Inside config12:`)
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
@@ -240,7 +251,9 @@ export class App {
                         const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
                             where: { name: GeneralRole.OWNER, organizationId: IsNull() }
                         })
+                        logger.info(`Inside config13:`)
                         if (!ownerRole) {
+                            logger.info(`Inside config14:`)
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
@@ -249,14 +262,17 @@ export class App {
                         const org = await this.AppDataSource.getRepository(Organization).findOne({
                             where: { id: activeOrganizationId }
                         })
+                        logger.info(`Inside config15:`)
                         if (!org) {
+                            logger.info(`Inside config16:`)
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
                         const subscriptionId = org.subscriptionId as string
                         const customerId = org.customerId as string
                         const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
+                        logger.info(`Inside config17:`)
                         const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
-
+                        logger.info(`Inside config18:`)
                         // @ts-ignore
                         req.user = {
                             permissions: [...JSON.parse(ownerRole.permissions)],

@@ -1,0 +1,139 @@
+{
+    "policies": [
+        {
+            "description": "",
+            "resource": {
+                "id": "Chatflows",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Agentflows",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Executions",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Marketplaces",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Assistants",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["Manager"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Tools",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Credentials",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Variables",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+
+        {
+            "description": "",
+            "resource": {
+                "id": "API Keys",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "Document Stores",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+
+
+        {
+            "description": "",
+            "resource": {
+                "id": "Roles",
+                "type": "task"
+            },
+            "action":{
+                "type":"view"
+            },
+            "roles": ["admin"]
+        },
+        {
+            "description": "",
+            "resource": {
+                "id": "1234",
+                "type": "task"
+            },
+            "action":{
+                "type":"read"
+            },
+            "roles": ["admin1"]
+        }
+    ]
+}
