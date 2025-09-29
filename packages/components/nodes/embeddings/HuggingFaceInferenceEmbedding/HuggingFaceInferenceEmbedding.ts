@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { HuggingFaceInferenceEmbeddings, HuggingFaceInferenceEmbeddingsParams } from './core'
+import { HuggingFaceInferenceEmbeddings, HuggingFaceInferenceEmbeddingsParams } from '@langchain/community/dist/embeddings/hf.cjs'
 
 class HuggingFaceInferenceEmbedding_Embeddings implements INode {
     label: string
@@ -53,7 +53,7 @@ class HuggingFaceInferenceEmbedding_Embeddings implements INode {
         }
 
         if (modelName) obj.model = modelName
-        if (endpoint) obj.endpoint = endpoint
+        if (endpoint) obj.endpointUrl = endpoint
 
         const model = new HuggingFaceInferenceEmbeddings(obj)
         return model
