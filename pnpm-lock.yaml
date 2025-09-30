@@ -253,7 +253,7 @@ importers:
                 version: 14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1)
             next-auth:
                 specifier: ^4.24.11
-                version: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+                version: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
             openai:
                 specifier: 4.96.0
                 version: 4.96.0(encoding@0.1.13)(ws@8.17.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.25.76)
@@ -543,7 +543,7 @@ importers:
                 version: 14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1)
             next-auth:
                 specifier: ^4.24.11
-                version: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+                version: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
             react:
                 specifier: 18.2.0
                 version: 18.2.0
@@ -730,7 +730,7 @@ importers:
                 version: 6.12.0(@aws-sdk/credential-providers@3.887.0(aws-crt@1.27.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.7)
             next-auth:
                 specifier: ^4.24.11
-                version: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+                version: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
             node-fetch:
                 specifier: ^3.3.2
                 version: 3.3.2
@@ -857,8 +857,8 @@ importers:
                 specifier: ^1.0.0
                 version: 1.0.0
             '@answerai/jira-mcp':
-                specifier: ^1.0.2
-                version: 1.0.2
+                specifier: ^1.1.0
+                version: 1.1.0
             '@answerai/salesforce-mcp':
                 specifier: ^0.1.0
                 version: 0.1.0(@types/node@24.3.1)(encoding@0.1.13)
@@ -2351,8 +2351,8 @@ packages:
         engines: { node: '>=18.0.0' }
         hasBin: true
 
-    '@answerai/jira-mcp@1.0.2':
-        resolution: { integrity: sha512-nLdQY6Kfcj/X0u/l+ehG+0bUIyOrPLDIJT2F7eg3ceusgOZpmdUEG02G5KjVDpC4q6SiNxFLxIGuGqupC4QNMw== }
+    '@answerai/jira-mcp@1.1.0':
+        resolution: { integrity: sha512-LXRITz1f8L+dGoZEPogn2gWIV5Lg5EVc2orxjc0kL8RUAV0ilq2MO/b8XtLT0CyE2Nkihrmkn4mu7rFmYEQHoA== }
         engines: { node: '>=18.0.0' }
         hasBin: true
 
@@ -22089,7 +22089,7 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    '@answerai/jira-mcp@1.0.2':
+    '@answerai/jira-mcp@1.1.0':
         dependencies:
             '@modelcontextprotocol/sdk': 1.18.0
             typescript: 5.9.2
@@ -28367,7 +28367,7 @@ snapshots:
     '@next-auth/prisma-adapter@1.0.7(@prisma/client@5.22.0(prisma@5.22.0))(next-auth@4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0))':
         dependencies:
             '@prisma/client': 5.22.0(prisma@5.22.0)
-            next-auth: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+            next-auth: 4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
 
     '@next/bundle-analyzer@13.5.11(bufferutil@4.0.9)(utf-8-validate@6.0.5)':
         dependencies:
@@ -35819,8 +35819,8 @@ snapshots:
             '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@5.5.4)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@7.32.0)
-            eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.10.1)(eslint@7.32.0)
+            eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0)
+            eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
             eslint-plugin-jsx-a11y: 6.10.2(eslint@7.32.0)
             eslint-plugin-react: 7.37.5(eslint@7.32.0)
             eslint-plugin-react-hooks: 4.6.2(eslint@7.32.0)
@@ -35883,7 +35883,7 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@7.32.0):
+    eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0):
         dependencies:
             '@nolyfill/is-core-module': 1.0.39
             debug: 4.4.1(supports-color@8.1.1)
@@ -35894,7 +35894,7 @@ snapshots:
             tinyglobby: 0.2.15
             unrs-resolver: 1.11.1
         optionalDependencies:
-            eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.10.1)(eslint@7.32.0)
+            eslint-plugin-import: 2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -35913,14 +35913,14 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    eslint-module-utils@2.12.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@7.32.0):
+    eslint-module-utils@2.12.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0):
         dependencies:
             debug: 3.2.7(supports-color@5.5.0)
         optionalDependencies:
             '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@5.5.4)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@7.32.0)
+            eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -35953,7 +35953,7 @@ snapshots:
             lodash: 4.17.21
             string-natural-compare: 3.0.1
 
-    eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.10.1)(eslint@7.32.0):
+    eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0):
         dependencies:
             '@rtsao/scc': 1.1.0
             array-includes: 3.1.9
@@ -35964,7 +35964,7 @@ snapshots:
             doctrine: 2.1.0
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-module-utils: 2.12.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@7.32.0)
+            eslint-module-utils: 2.12.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
             hasown: 2.0.2
             is-core-module: 2.16.1
             is-glob: 4.0.3
@@ -41790,7 +41790,7 @@ snapshots:
 
     netmask@2.0.2: {}
 
-    next-auth@4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    next-auth@4.24.11(next@14.2.32(@babel/core@7.28.4)(@opentelemetry/api@1.9.0)(@playwright/test@1.55.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.92.1))(nodemailer@6.9.16)(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
         dependencies:
             '@babel/runtime': 7.28.4
             '@panva/hkdf': 1.2.1
