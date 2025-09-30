@@ -1739,6 +1739,7 @@ class Agent_Agentflow implements INode {
             sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
         }
 
+        // Remove tool calls with no id
         const toBeRemovedToolCalls = []
         for (let i = 0; i < response.tool_calls.length; i++) {
             const toolCall = response.tool_calls[i]
@@ -2047,6 +2048,7 @@ class Agent_Agentflow implements INode {
             sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
         }
 
+        // Remove tool calls with no id
         const toBeRemovedToolCalls = []
         for (let i = 0; i < response.tool_calls.length; i++) {
             const toolCall = response.tool_calls[i]
