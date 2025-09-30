@@ -487,15 +487,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         setIsMessageStopping(true)
         try {
             // Stop all TTS streams first
+            await handleTTSAbortAll()
             stopAllTTS()
 
-            // Abort TTS for any active streams
-            const activeTTSMessages = Object.keys(isTTSLoading).concat(Object.keys(isTTSPlaying))
-            for (const messageId of activeTTSMessages) {
-                await ttsApi.abortTTS({ chatflowId: chatflowid, chatId, chatMessageId: messageId })
-            }
-
             await chatmessageApi.abortMessage(chatflowid, chatId)
+            setIsMessageStopping(false)
         } catch (error) {
             setIsMessageStopping(false)
             enqueueSnackbar({
@@ -1621,6 +1617,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         setTTSAction(true)
         await ttsApi.abortTTS({ chatflowId: chatflowid, chatId, chatMessageId: messageId })
         cleanupTTSForMessage(messageId)
+        setIsMessageStopping(false)
     }
 
     const stopAllTTS = () => {
@@ -1654,6 +1651,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
 
         setTTSAction(true)
+
+        // abort all ongoing streams and clear audio sources
+        await handleTTSAbortAll()
         stopAllTTS()
 
         handleTTSStart({ chatMessageId: messageId, format: 'mp3' })
@@ -1798,7 +1798,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             audio.addEventListener('playing', () => {
                 setIsTTSLoading((prevState) => {
                     const newState = { ...prevState }
-                    newState[data.chatMessageId] = false
+                    delete newState[data.chatMessageId]
                     return newState
                 })
                 setIsTTSPlaying((prevState) => ({
@@ -1985,6 +1985,13 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const handleTTSAbort = (data) => {
         const messageId = data.chatMessageId
         cleanupTTSForMessage(messageId)
+    }
+
+    const handleTTSAbortAll = async () => {
+        const activeTTSMessages = Object.keys(isTTSLoading).concat(Object.keys(isTTSPlaying))
+        for (const messageId of activeTTSMessages) {
+            await ttsApi.abortTTS({ chatflowId: chatflowid, chatId, chatMessageId: messageId })
+        }
     }
 
     useEffect(() => {
