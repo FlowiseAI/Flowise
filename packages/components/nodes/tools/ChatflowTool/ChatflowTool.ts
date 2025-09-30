@@ -372,8 +372,7 @@ try {
         const sandbox = createCodeExecutionSandbox('', [], {}, additionalSandbox)
 
         let response = await executeJavaScriptCode(code, sandbox, {
-            useSandbox: false,
-            timeout: 10000
+            useSandbox: false
         })
 
         if (typeof response === 'object') {

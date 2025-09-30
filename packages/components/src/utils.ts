@@ -18,7 +18,7 @@ import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
 import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
-import { secureFetch, checkDenyList } from './httpSecurity'
+import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
 import JSON5 from 'json5'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
@@ -85,7 +85,6 @@ export const availableDependencies = [
     '@upstash/redis',
     '@zilliz/milvus2-sdk-node',
     'apify-client',
-    'axios',
     'cheerio',
     'chromadb',
     'cohere-ai',
@@ -103,10 +102,8 @@ export const availableDependencies = [
     'linkifyjs',
     'lunary',
     'mammoth',
-    'moment',
     'mongodb',
     'mysql2',
-    'node-fetch',
     'node-html-markdown',
     'notion-to-md',
     'openai',
@@ -121,6 +118,8 @@ export const availableDependencies = [
     'typeorm',
     'weaviate-ts-client'
 ]
+
+const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
 
 export const defaultAllowBuiltInDep = [
     'assert',
@@ -1439,6 +1438,10 @@ export const executeJavaScriptCode = async (
 ): Promise<any> => {
     const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
     const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
+    let timeoutMs = timeout
+    if (process.env.SANDBOX_TIMEOUT) {
+        timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
+    }
 
     if (shouldUseSandbox) {
         try {
@@ -1495,7 +1498,7 @@ export const executeJavaScriptCode = async (
                 }
             }
 
-            const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs: timeout })
+            const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs })
 
             // Install libraries
             for (const library of libraries) {
@@ -1543,18 +1546,48 @@ export const executeJavaScriptCode = async (
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
             : defaultAllowBuiltInDep
         const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = process.env.ALLOW_BUILTIN_DEP === 'true' ? availableDependencies.concat(externalDeps) : externalDeps
+        let deps = process.env.ALLOW_BUILTIN_DEP === 'true' ? availableDependencies.concat(externalDeps) : externalDeps
+        deps.push(...defaultAllowExternalDependencies)
+        deps = [...new Set(deps)]
+
+        // Create secure wrappers for HTTP libraries
+        const secureWrappers: ICommonObject = {}
+
+        // Axios
+        const secureAxiosWrapper = async (config: any) => {
+            return await secureAxiosRequest(config)
+        }
+        secureAxiosWrapper.get = async (url: string, config: any = {}) => secureAxiosWrapper({ ...config, method: 'GET', url })
+        secureAxiosWrapper.post = async (url: string, data: any, config: any = {}) =>
+            secureAxiosWrapper({ ...config, method: 'POST', url, data })
+        secureAxiosWrapper.put = async (url: string, data: any, config: any = {}) =>
+            secureAxiosWrapper({ ...config, method: 'PUT', url, data })
+        secureAxiosWrapper.delete = async (url: string, config: any = {}) => secureAxiosWrapper({ ...config, method: 'DELETE', url })
+        secureAxiosWrapper.patch = async (url: string, data: any, config: any = {}) =>
+            secureAxiosWrapper({ ...config, method: 'PATCH', url, data })
+
+        secureWrappers['axios'] = secureAxiosWrapper
+
+        // Node Fetch
+        const secureNodeFetch = async (url: string, options: any = {}) => {
+            return await secureFetch(url, options)
+        }
+        secureWrappers['node-fetch'] = secureNodeFetch
 
         const defaultNodeVMOptions: any = {
             console: 'inherit',
             sandbox,
             require: {
-                external: { modules: deps },
-                builtin: builtinDeps
+                external: {
+                    modules: deps,
+                    transitive: false // Prevent transitive dependencies
+                },
+                builtin: builtinDeps,
+                mock: secureWrappers // Replace HTTP libraries with secure wrappers
             },
             eval: false,
             wasm: false,
-            timeout
+            timeout: timeoutMs
         }
 
         // Merge with custom nodeVMOptions if provided
