@@ -43,7 +43,8 @@ import {
     QUESTION_VAR_PREFIX,
     CURRENT_DATE_TIME_VAR_PREFIX,
     _removeCredentialId,
-    validateHistorySchema
+    validateHistorySchema,
+    LOOP_COUNT_VAR_PREFIX
 } from '.'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Variable } from '../database/entities/Variable'
@@ -85,6 +86,8 @@ interface IProcessNodeOutputsParams {
     waitingNodes: Map<string, IWaitingNode>
     loopCounts: Map<string, number>
     abortController?: AbortController
+    sseStreamer?: IServerSideEventStreamer
+    chatId: string
 }
 
 interface IAgentFlowRuntime {
@@ -131,6 +134,7 @@ interface IExecuteNodeParams {
     parentExecutionId?: string
     isRecursive?: boolean
     iterationContext?: ICommonObject
+    loopCounts?: Map<string, number>
     orgId: string
     workspaceId: string
     subscriptionId: string
@@ -219,7 +223,8 @@ export const resolveVariables = async (
     chatHistory: IMessage[],
     componentNodes: IComponentNodes,
     agentFlowExecutedData?: IAgentflowExecutedData[],
-    iterationContext?: ICommonObject
+    iterationContext?: ICommonObject,
+    loopCounts?: Map<string, number>
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -284,6 +289,20 @@ export const resolveVariables = async (
 
             if (variableFullPath === RUNTIME_MESSAGES_LENGTH_VAR_PREFIX) {
                 resolvedValue = resolvedValue.replace(match, flowConfig?.runtimeChatHistoryLength ?? 0)
+            }
+
+            if (variableFullPath === LOOP_COUNT_VAR_PREFIX) {
+                // Get the current loop count from the most recent loopAgentflow node execution
+                let currentLoopCount = 0
+                if (loopCounts && agentFlowExecutedData) {
+                    // Find the most recent loopAgentflow node execution to get its loop count
+                    const loopNodes = [...agentFlowExecutedData].reverse().filter((data) => data.data?.name === 'loopAgentflow')
+                    if (loopNodes.length > 0) {
+                        const latestLoopNode = loopNodes[0]
+                        currentLoopCount = loopCounts.get(latestLoopNode.nodeId) || 0
+                    }
+                }
+                resolvedValue = resolvedValue.replace(match, currentLoopCount.toString())
             }
 
             if (variableFullPath === CURRENT_DATE_TIME_VAR_PREFIX) {
@@ -743,7 +762,9 @@ async function processNodeOutputs({
     edges,
     nodeExecutionQueue,
     waitingNodes,
-    loopCounts
+    loopCounts,
+    sseStreamer,
+    chatId
 }: IProcessNodeOutputsParams): Promise<{ humanInput?: IHumanInput }> {
     logger.debug(`\n🔄 Processing outputs from node: ${nodeId}`)
 
@@ -824,6 +845,11 @@ async function processNodeOutputs({
             }
         } else {
             logger.debug(`    ⚠️ Maximum loop count (${maxLoop}) reached, stopping loop`)
+            const fallbackMessage = result.output.fallbackMessage || `Loop completed after reaching maximum iteration count of ${maxLoop}.`
+            if (sseStreamer) {
+                sseStreamer.streamTokenEvent(chatId, fallbackMessage)
+            }
+            result.output = { ...result.output, content: fallbackMessage }
         }
     }
 
@@ -968,6 +994,7 @@ const executeNode = async ({
     isInternal,
     isRecursive,
     iterationContext,
+    loopCounts,
     orgId,
     workspaceId,
     subscriptionId,
@@ -1046,7 +1073,8 @@ const executeNode = async ({
             chatHistory,
             componentNodes,
             agentFlowExecutedData,
-            iterationContext
+            iterationContext,
+            loopCounts
         )
 
         // Handle human input if present
@@ -1890,6 +1918,7 @@ export const executeAgentFlow = async ({
                 analyticHandlers,
                 isRecursive,
                 iterationContext,
+                loopCounts,
                 orgId,
                 workspaceId,
                 subscriptionId,
@@ -1958,7 +1987,8 @@ export const executeAgentFlow = async ({
                 nodeExecutionQueue,
                 waitingNodes,
                 loopCounts,
-                abortController
+                sseStreamer,
+                chatId
             })
 
             // Update humanInput if it was changed
