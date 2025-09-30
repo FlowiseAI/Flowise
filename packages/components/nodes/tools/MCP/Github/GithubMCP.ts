@@ -106,7 +106,8 @@ class Github_MCP implements INode {
         const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
 
         if (!accessToken) {
-            throw new Error('Missing Github Access Token')
+            console.error('Github MCP: Missing Github Access Token')
+            return []
         }
 
         const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-github/dist/index.js')

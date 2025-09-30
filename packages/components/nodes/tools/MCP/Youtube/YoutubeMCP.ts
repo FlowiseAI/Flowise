@@ -106,7 +106,8 @@ class Youtube_MCP implements INode {
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
         if (!apiKey) {
-            throw new Error('Missing Youtube API Key')
+            console.error('Youtube MCP: Missing Youtube API Key')
+            return []
         }
 
         const packagePath = getNodeModulesPackagePath('youtube-data-mcp-server/dist/index.js')

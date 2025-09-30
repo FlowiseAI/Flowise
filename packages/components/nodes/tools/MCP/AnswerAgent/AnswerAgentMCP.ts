@@ -103,13 +103,15 @@ class AnswerAgent_MCP implements INode {
         // Get API host from environment variable
         const apiHost = options.user?.chatflowDomain
         if (!apiHost) {
-            throw new Error('API_HOST environment variable is not set')
+            console.error('AnswerAgent MCP: API_HOST environment variable is not set')
+            return []
         }
 
         // Get user's API key from database
         const apiKey = await this.getUserApiKey(nodeData, options)
         if (!apiKey) {
-            throw new Error('Unable to retrieve user API key from database')
+            console.error('AnswerAgent MCP: Unable to retrieve user API key from database')
+            return []
         }
 
         // Get the package path for the AnswerAgent MCP server

@@ -125,7 +125,8 @@ class Atlassian_MCP implements INode {
         const credentialData = await getCredentialData(nodeData.credential || '', options)
 
         if (!credentialData.access_token) {
-            throw new Error('Access token not found in credential data')
+            console.error('Atlassian MCP: Access token not found in credential data')
+            return []
         }
 
         if (!process.env.ATLASSIAN_MCP_SERVER_URL) {

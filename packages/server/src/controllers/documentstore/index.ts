@@ -33,6 +33,23 @@ const getAllDocumentStores = async (req: Request, res: Response, next: NextFunct
     }
 }
 
+const getAdminDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const isAdmin = req.user?.roles?.includes('Admin') || req.user?.permissions?.includes('org:manage')
+        if (!isAdmin) {
+            throw new InternalFlowiseError(
+                StatusCodes.FORBIDDEN,
+                `Error: documentStoreController.getAdminDocumentStores - admin permissions required!`
+            )
+        }
+
+        const apiResponse = await documentStoreService.getAdminDocumentStores(req.user!)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const deleteLoaderFromDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const storeId = req.params.id
@@ -532,6 +549,7 @@ export default {
     deleteDocumentStore,
     createDocumentStore,
     getAllDocumentStores,
+    getAdminDocumentStores,
     deleteLoaderFromDocumentStore,
     getDocumentStoreById,
     getDocumentStoreFileChunks,

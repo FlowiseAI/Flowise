@@ -1,5 +1,6 @@
 import express from 'express'
 import chatflowsController from '../../controllers/chatflows'
+import documentStoreController from '../../controllers/documentstore'
 import organizationsController from '../../controllers/organizations'
 import enforceAbility from '../../middlewares/authentication/enforceAbility'
 const router = express.Router()
@@ -12,6 +13,10 @@ router.get('/chatflows/:id/versions', enforceAbility('ChatFlow'), chatflowsContr
 // UPDATE
 router.put('/chatflows/bulk-update', enforceAbility('ChatFlow'), chatflowsController.bulkUpdateChatflows)
 router.post('/chatflows/:id/rollback/:version', enforceAbility('ChatFlow'), chatflowsController.rollbackChatflowToVersion)
+
+// DOCUMENT STORES
+// READ
+router.get('/document-stores', enforceAbility('DocumentStore'), documentStoreController.getAdminDocumentStores)
 
 // ORGANIZATIONS
 // READ

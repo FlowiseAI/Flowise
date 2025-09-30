@@ -87,33 +87,53 @@ export class MCPToolkit extends BaseToolkit {
 
     async initialize() {
         if (this._tools === null) {
-            this.client = await this.createClient()
+            try {
+                this.client = await this.createClient()
 
-            this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema)
+                this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema)
 
-            this.tools = await this.get_tools()
+                this.tools = await this.get_tools()
 
-            // Close the initial client after initialization
-            await this.client.close()
+                // Close the initial client after initialization
+                await this.client.close()
+            } catch (error) {
+                console.error('MCP Toolkit: Failed to initialize, setting empty tools:', error)
+                this._tools = { tools: [] }
+                this.tools = []
+                if (this.client) {
+                    try {
+                        await this.client.close()
+                    } catch (closeError) {
+                        console.error('MCP Toolkit: Error closing client:', closeError)
+                    }
+                }
+            }
         }
     }
 
     async get_tools(): Promise<Tool[]> {
-        if (this._tools === null || this.client === null) {
-            throw new Error('Must initialize the toolkit first')
+        if (this._tools === null) {
+            console.error('MCP Toolkit: get_tools called before initialization, returning empty array')
+            return []
         }
-        const toolsPromises = this._tools.tools.map(async (tool: any) => {
-            if (this.client === null) {
-                throw new Error('Client is not initialized')
-            }
-            return await MCPTool({
-                toolkit: this,
-                name: tool.name,
-                description: tool.description || '',
-                argsSchema: createSchemaModel(tool.inputSchema)
+        if (this.client === null) {
+            console.error('MCP Toolkit: Client not initialized, returning empty array')
+            return []
+        }
+        try {
+            const toolsPromises = this._tools.tools.map(async (tool: any) => {
+                return await MCPTool({
+                    toolkit: this,
+                    name: tool.name,
+                    description: tool.description || '',
+                    argsSchema: createSchemaModel(tool.inputSchema)
+                })
             })
-        })
-        return Promise.all(toolsPromises)
+            return Promise.all(toolsPromises)
+        } catch (error) {
+            console.error('MCP Toolkit: Error creating tools, returning empty array:', error)
+            return []
+        }
     }
 }
 

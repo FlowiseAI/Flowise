@@ -78,6 +78,7 @@ class Custom_MCP implements INode {
                     description: rest.description || name
                 }))
             } catch (error) {
+                console.error('Custom MCP: Error listing actions:', error)
                 return [
                     {
                         label: 'No Available Actions',
@@ -109,7 +110,8 @@ class Custom_MCP implements INode {
         const mcpServerConfig = nodeData.inputs?.mcpServerConfig as string
 
         if (!mcpServerConfig) {
-            throw new Error('MCP Server Config is required')
+            console.error('Custom MCP: MCP Server Config is required')
+            return []
         }
 
         try {
@@ -135,7 +137,8 @@ class Custom_MCP implements INode {
 
             return tools as Tool[]
         } catch (error) {
-            throw new Error(`Invalid MCP Server Config: ${error}`)
+            console.error('Custom MCP: Invalid MCP Server Config:', error)
+            return []
         }
     }
 }

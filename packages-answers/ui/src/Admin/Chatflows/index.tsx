@@ -161,9 +161,21 @@ const AdminChatflows = () => {
     }
 
     const getCanvasRoute = (chatflow: any) => {
-        // Check the actual flow type, not the filter selection
+        // For react-router-dom Link component (relative paths)
         console.log('🤖id', chatflow.id)
         console.log('type', chatflow)
+        if (chatflow.type === 'AGENTFLOW') {
+            return `/v2/agentcanvas/${chatflow.id}`
+        } else if (chatflow.type === 'MULTIAGENT') {
+            return `/agentcanvas/${chatflow.id}`
+        } else {
+            // Default to regular chatflow canvas
+            return `/canvas/${chatflow.id}`
+        }
+    }
+
+    const getCanvasFullUrl = (chatflow: any) => {
+        // For window.open() (full URLs with base path)
         if (chatflow.type === 'AGENTFLOW') {
             return `/sidekick-studio/v2/agentcanvas/${chatflow.id}`
         } else if (chatflow.type === 'MULTIAGENT') {
@@ -1371,7 +1383,7 @@ const AdminChatflows = () => {
                                                     <Tooltip title='View Chatflow' placement='top'>
                                                         <IconButton
                                                             size='small'
-                                                            onClick={() => window.open(getCanvasRoute(chatflow), '_blank')}
+                                                            onClick={() => window.open(getCanvasFullUrl(chatflow), '_blank')}
                                                             sx={{
                                                                 color: 'rgba(255, 255, 255, 0.7)',
                                                                 '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }

@@ -17,7 +17,7 @@ class AAIChatAnthropic_ChatModels implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     tags: string[]
-    
+
     constructor() {
         this.label = 'Answer ChatAnthropic'
         this.name = 'aaiChatAnthropic'
@@ -39,7 +39,7 @@ class AAIChatAnthropic_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'claude-3-sonnet-20240229'
+                default: 'claude-sonnet-4-0'
             },
             {
                 label: 'Temperature',
@@ -170,4 +170,4 @@ class AAIChatAnthropic_ChatModels implements INode {
     }
 }
 
-module.exports = { nodeClass: AAIChatAnthropic_ChatModels } 
+module.exports = { nodeClass: AAIChatAnthropic_ChatModels }

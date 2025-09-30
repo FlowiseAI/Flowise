@@ -115,7 +115,8 @@ class SalesforceOauth_MCP implements INode {
 
         // Validate refresh token
         if (!refreshToken) {
-            throw new Error('Refresh token is required for Salesforce OAuth MCP')
+            console.error('Salesforce OAuth MCP: Refresh token is required for Salesforce OAuth MCP')
+            return []
         }
 
         // Get environment variables for OAuth configuration
@@ -125,9 +126,10 @@ class SalesforceOauth_MCP implements INode {
 
         // Validate environment variables
         if (!salesforceClientId || !salesforceClientSecret || !salesforceInstanceUrl) {
-            throw new Error(
-                'Missing required environment variables: SALESFORCE_CLIENT_ID, SALESFORCE_CLIENT_SECRET, SALESFORCE_INSTANCE_URL'
+            console.error(
+                'Salesforce OAuth MCP: Missing required environment variables: SALESFORCE_CLIENT_ID, SALESFORCE_CLIENT_SECRET, SALESFORCE_INSTANCE_URL'
             )
+            return []
         }
 
         const packagePath = getNodeModulesPackagePath('@answerai/salesforce-mcp/dist/index.js')

@@ -199,6 +199,14 @@ class ChatOpenAI_ChatModels implements INode {
                 default: 'medium',
                 optional: false,
                 additionalParams: true
+            },
+            {
+                label: 'Prompt Cache Key',
+                name: 'promptCacheKey',
+                type: 'string',
+                description: 'Cache key for OpenAI prompt caching to optimize cache hit rates and reduce costs',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -225,6 +233,7 @@ class ChatOpenAI_ChatModels implements INode {
         const proxyUrl = nodeData.inputs?.proxyUrl as string
         const baseOptions = nodeData.inputs?.baseOptions
         const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.Chat.ChatCompletionReasoningEffort
+        const promptCacheKey = nodeData.inputs?.promptCacheKey as string
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
@@ -261,6 +270,7 @@ class ChatOpenAI_ChatModels implements INode {
             obj.stop = stopSequenceArray
         }
         if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
+        if (promptCacheKey) (obj as any).prompt_cache_key = promptCacheKey
 
         let parsedBaseOptions: any | undefined = undefined
 
