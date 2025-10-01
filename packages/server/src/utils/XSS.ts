@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import sanitizeHtml from 'sanitize-html'
+import { DomainValidationService } from '../services/domainValidation'
 
 export function sanitizeMiddleware(req: Request, res: Response, next: NextFunction): void {
     // decoding is necessary as the url is encoded by the browser
@@ -24,18 +25,41 @@ export function getAllowedCorsOrigins(): string {
     return process.env.CORS_ORIGINS ?? '*'
 }
 
+
 export function getCorsOptions(): any {
-    const corsOptions = {
-        origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-            const allowedOrigins = getAllowedCorsOrigins()
-            if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
-                callback(null, true)
-            } else {
-                callback(null, false)
+    return function (req: any, callback: (err: Error | null, options?: any) => void) {
+        const corsOptions = {
+            origin: async function (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) {
+                const allowedOrigins = getAllowedCorsOrigins()
+                const isPredictionRequest = DomainValidationService.isPredictionRequest(req.url)
+                
+                // First check global CORS origins
+                if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
+                    
+                    // Additional prediction-specific validation
+                    if (isPredictionRequest) {
+                        const chatflowId = DomainValidationService.extractChatflowId(req.url)
+                        if (chatflowId && origin) {
+                            const isAllowed = await DomainValidationService.validateChatflowDomain(
+                                chatflowId, 
+                                origin, 
+                                req.user?.activeWorkspaceId
+                            )
+                            
+                            originCallback(null, isAllowed)
+                        } else {
+                            originCallback(null, true)
+                        }
+                    } else {
+                        originCallback(null, true)
+                    }
+                } else {
+                    originCallback(null, false)
+                }
             }
         }
+        callback(null, corsOptions)
     }
-    return corsOptions
 }
 
 export function getAllowedIframeOrigins(): string {
