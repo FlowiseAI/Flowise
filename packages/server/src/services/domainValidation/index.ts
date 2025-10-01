@@ -11,7 +11,8 @@ export class DomainValidationService {
      */
     static async validateChatflowDomain(chatflowId: string, origin: string, workspaceId?: string): Promise<boolean> {
         try {
-            const chatflow = await chatflowsService.getChatflowById(chatflowId, workspaceId)
+            // TODO: Add workspaceId from here
+            const chatflow = await chatflowsService.getChatflowById(chatflowId)
             
             if (!chatflow?.chatbotConfig) {
                 logger.info(`No chatbotConfig found for chatflow ${chatflowId}, allowing domain`)
@@ -86,7 +87,8 @@ export class DomainValidationService {
      */
     static async getUnauthorizedOriginError(chatflowId: string, workspaceId?: string): Promise<string> {
         try {
-            const chatflow = await chatflowsService.getChatflowById(chatflowId, workspaceId)
+            // TODO: Add workspaceId from here
+            const chatflow = await chatflowsService.getChatflowById(chatflowId)
             
             if (chatflow?.chatbotConfig) {
                 const config = JSON.parse(chatflow.chatbotConfig)
