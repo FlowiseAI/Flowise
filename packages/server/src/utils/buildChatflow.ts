@@ -908,28 +908,7 @@ export const executeFlow = async ({
                 appDataSource,
                 databaseEntities
             }
-
-            if (streaming && sseStreamer) {
-                await generateTTSForResponseStream(
-                    result.text,
-                    chatflow.textToSpeech,
-                    options,
-                    chatId,
-                    chatMessage?.id,
-                    sseStreamer,
-                    signal
-                )
-            } else if (sseStreamer) {
-                await generateTTSForResponseStream(
-                    result.text,
-                    chatflow.textToSpeech,
-                    options,
-                    chatId,
-                    chatMessage?.id,
-                    sseStreamer,
-                    signal
-                )
-            }
+            await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, chatMessage?.id, sseStreamer, signal)
         }
 
         return result
