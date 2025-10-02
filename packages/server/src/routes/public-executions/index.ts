@@ -1,14 +1,10 @@
-import express from 'express'
-import executionController from '../../controllers/executions'
-const router = express.Router()
 
-// CREATE
+import executionController from '../../controllers/executions';
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // READ
-router.get(['/', '/:id'], executionController.getPublicExecutionById)
+router.get(['/', '/:id'], ['public'], executionController.getPublicExecutionById);
 
-// UPDATE
-
-// DELETE
-
-export default router
+export default router.getRouter();

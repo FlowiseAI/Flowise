@@ -1,17 +1,17 @@
-import express from 'express'
 import executionController from '../../controllers/executions'
-import { checkAnyPermission } from '../../enterprise/rbac/PermissionCheck'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // READ
-router.get('/', checkAnyPermission('executions:view'), executionController.getAllExecutions)
-router.get(['/', '/:id'], checkAnyPermission('executions:view'), executionController.getExecutionById)
+router.get('/', ['executions:view'], executionController.getAllExecutions)
+router.get('/:id', ['executions:view'], executionController.getExecutionById)
 
 // PUT
-router.put(['/', '/:id'], executionController.updateExecution)
+router.put(['/', '/:id'], ['public'], executionController.updateExecution)
 
 // DELETE - single execution or multiple executions
-router.delete('/:id', checkAnyPermission('executions:delete'), executionController.deleteExecutions)
-router.delete('/', checkAnyPermission('executions:delete'), executionController.deleteExecutions)
+router.delete('/:id', ['executions:delete'], executionController.deleteExecutions)
+router.delete('/', ['executions:delete'], executionController.deleteExecutions)
 
-export default router
+export default router.getRouter()

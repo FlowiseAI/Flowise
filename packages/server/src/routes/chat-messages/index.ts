@@ -1,17 +1,18 @@
-import express from 'express'
 import chatMessageController from '../../controllers/chat-messages'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // CREATE
-router.post(['/', '/:id'], chatMessageController.createChatMessage)
+router.post(['/', '/:id'], ['public'], chatMessageController.createChatMessage)
 
 // READ
-router.get(['/', '/:id'], chatMessageController.getAllChatMessages)
+router.get(['/', '/:id'], ['public'], chatMessageController.getAllChatMessages)
 
 // UPDATE
-router.put(['/abort/', '/abort/:chatflowid/:chatid'], chatMessageController.abortChatMessage)
+router.put(['/abort/', '/abort/:chatflowid/:chatid'], ['public'], chatMessageController.abortChatMessage)
 
 // DELETE
-router.delete(['/', '/:id'], chatMessageController.removeAllChatMessages)
+router.delete(['/', '/:id'], ['public'], chatMessageController.removeAllChatMessages)
 
-export default router
+export default router.getRouter()

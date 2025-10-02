@@ -37,6 +37,7 @@ import openaiAssistantsFileRouter from './openai-assistants-files'
 import openaiAssistantsVectorStoreRouter from './openai-assistants-vector-store'
 import openaiRealtimeRouter from './openai-realtime'
 import pingRouter from './ping'
+import policyGuard from '../middlewares/policy-guard'
 import predictionRouter from './predictions'
 import promptListsRouter from './prompts-lists'
 import publicChatbotRouter from './public-chatbots'
@@ -69,6 +70,8 @@ import loginMethodRouter from '../enterprise/routes/login-method.route'
 import { IdentityManager } from '../IdentityManager'
 
 const router = express.Router()
+
+router.use(policyGuard)
 
 router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)

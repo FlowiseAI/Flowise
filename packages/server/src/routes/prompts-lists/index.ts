@@ -1,8 +1,9 @@
-import express from 'express'
 import promptsListController from '../../controllers/prompts-lists'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // CREATE
-router.post('/', promptsListController.createPromptsList)
+router.post('/', ['public'], promptsListController.createPromptsList)
 
-export default router
+export default router.getRouter()

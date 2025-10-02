@@ -1,9 +1,9 @@
-import express from 'express'
 import statsController from '../../controllers/stats'
+import { entitled } from '../../services/entitled-router'
 
-const router = express.Router()
+const router = entitled.Router()
 
 // READ
-router.get(['/', '/:id'], statsController.getChatflowStats)
+router.get(['/', '/:id'], ['public'], statsController.getChatflowStats)
 
-export default router
+export default router.getRouter()

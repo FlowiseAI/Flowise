@@ -1,15 +1,10 @@
-import express from 'express'
 import openaiAssistantsController from '../../controllers/openai-assistants'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
 
-// CREATE
+const router = entitled.Router()
 
 // READ
-router.get('/', openaiAssistantsController.getAllOpenaiAssistants)
-router.get(['/', '/:id'], openaiAssistantsController.getSingleOpenaiAssistant)
+router.get('/', ['public'], openaiAssistantsController.getAllOpenaiAssistants)
+router.get(['/', '/:id'], ['public'], openaiAssistantsController.getSingleOpenaiAssistant)
 
-// UPDATE
-
-// DELETE
-
-export default router
+export default router.getRouter()

@@ -1,9 +1,10 @@
-import express from 'express'
-import auditController from '../../controllers/audit'
-import { checkPermission } from '../../rbac/PermissionCheck'
-const router = express.Router()
 
-router.post(['/', '/login-activity'], checkPermission('loginActivity:view'), auditController.fetchLoginActivity)
-router.post(['/', '/login-activity/delete'], checkPermission('loginActivity:delete'), auditController.deleteLoginActivity)
+import auditController from '../../controllers/audit';
+import { EntitledRouter } from '../../utils/EntitledRouter';
 
-export default router
+const router = entitled.Router();
+
+router.post(['/', '/login-activity'], ['loginActivity:view'], auditController.fetchLoginActivity);
+router.post(['/', '/login-activity/delete'], ['loginActivity:delete'], auditController.deleteLoginActivity);
+
+export default router.getRouter();

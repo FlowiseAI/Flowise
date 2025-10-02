@@ -1,16 +1,16 @@
-import express from 'express'
-import { RoleController } from '../controllers/role.controller'
-import { checkPermission } from '../rbac/PermissionCheck'
 
-const router = express.Router()
-const roleController = new RoleController()
+import { RoleController } from '../controllers/role.controller';
+import { EntitledRouter } from '../../routes/entitled-router';
 
-router.get('/', roleController.read)
+const router = entitled.Router();
+const roleController = new RoleController();
 
-router.post('/', checkPermission('roles:manage'), roleController.create)
+router.get('/', ['public'], roleController.read);
 
-router.put('/', checkPermission('roles:manage'), roleController.update)
+router.post('/', ['roles:manage'], roleController.create);
 
-router.delete('/', checkPermission('roles:manage'), roleController.delete)
+router.put('/', ['roles:manage'], roleController.update);
 
-export default router
+router.delete('/', ['roles:manage'], roleController.delete);
+
+export default router.getRouter();

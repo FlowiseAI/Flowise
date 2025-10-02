@@ -1,15 +1,13 @@
-import express from 'express'
 import upsertHistoryController from '../../controllers/upsert-history'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
 
-// CREATE
+const router = entitled.Router()
 
 // READ
-router.get(['/', '/:id'], upsertHistoryController.getAllUpsertHistory)
+router.get(['/', '/:id'], ['public'], upsertHistoryController.getAllUpsertHistory)
 
 // PATCH
-router.patch('/', upsertHistoryController.patchDeleteUpsertHistory)
+router.patch('/', ['public'], upsertHistoryController.patchDeleteUpsertHistory)
 
-// DELETE
-
-export default router
+export default router.getRouter()
+ 

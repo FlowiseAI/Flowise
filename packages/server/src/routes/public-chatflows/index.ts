@@ -1,14 +1,10 @@
-import express from 'express'
-import chatflowsController from '../../controllers/chatflows'
-const router = express.Router()
 
-// CREATE
+import chatflowsController from '../../controllers/chatflows';
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // READ
-router.get(['/', '/:id'], chatflowsController.getSinglePublicChatflow)
+router.get(['/', '/:id'], ['public'], chatflowsController.getSinglePublicChatflow);
 
-// UPDATE
-
-// DELETE
-
-export default router
+export default router.getRouter();

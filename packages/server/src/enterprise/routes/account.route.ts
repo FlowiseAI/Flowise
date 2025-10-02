@@ -1,39 +1,39 @@
-import express from 'express'
-import { AccountController } from '../controllers/account.controller'
-import { IdentityManager } from '../../IdentityManager'
-import { checkAnyPermission } from '../rbac/PermissionCheck'
 
-const router = express.Router()
-const accountController = new AccountController()
+import { AccountController } from '../controllers/account.controller';
+import { IdentityManager } from '../../IdentityManager';
+import { EntitledRouter } from '../../routes/entitled-router';
 
-router.post('/register', accountController.register)
+const router = entitled.Router();
+const accountController = new AccountController();
+
+router.post('/register', ['public'], accountController.register);
 
 // feature flag to workspace since only user who has workspaces can invite
 router.post(
-    '/invite',
-    IdentityManager.checkFeatureByPlan('feat:workspaces'),
-    checkAnyPermission('workspace:add-user,users:manage'),
-    accountController.invite
-)
+  '/invite',
+  ['workspace:add-user', 'users:manage'],
+  IdentityManager.checkFeatureByPlan('feat:workspaces'),
+  accountController.invite
+);
 
-router.post('/login', accountController.login)
+router.post('/login', ['public'], accountController.login);
 
-router.post('/logout', accountController.logout)
+router.post('/logout', ['public'], accountController.logout);
 
-router.post('/verify', accountController.verify)
+router.post('/verify', ['public'], accountController.verify);
 
-router.post('/resend-verification', accountController.resendVerificationEmail)
+router.post('/resend-verification', ['public'], accountController.resendVerificationEmail);
 
-router.post('/forgot-password', accountController.forgotPassword)
+router.post('/forgot-password', ['public'], accountController.forgotPassword);
 
-router.post('/reset-password', accountController.resetPassword)
+router.post('/reset-password', ['public'], accountController.resetPassword);
 
-router.post('/cancel-subscription', accountController.cancelPreviousCloudSubscrption)
+router.post('/cancel-subscription', ['public'], accountController.cancelPreviousCloudSubscrption);
 
-router.post('/billing', accountController.createStripeCustomerPortalSession)
+router.post('/billing', ['public'], accountController.createStripeCustomerPortalSession);
 
-router.get('/basic-auth', accountController.getBasicAuth)
+router.get('/basic-auth', ['public'], accountController.getBasicAuth);
 
-router.post('/basic-auth', accountController.checkBasicAuth)
+router.post('/basic-auth', ['public'], accountController.checkBasicAuth);
 
-export default router
+export default router.getRouter();

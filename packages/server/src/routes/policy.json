@@ -1,0 +1,1785 @@
+
+[
+  {
+    "path": "/api/v1/chatflows",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:view"]
+  },
+  {
+    "path": "/api/v1/chatflows/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:view"]
+  },
+  {
+    "path": "/api/v1/chatflows",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:create"]
+  },
+  {
+    "path": "/api/v1/chatflows/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:update"]
+  },
+  {
+    "path": "/api/v1/chatflows/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:delete"]
+  },
+  {
+    "path": "/api/v1/chatflows/apikey/:apikey",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chatflows/has-changed/:id/:lastUpdatedDateTime",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/credentials",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:create"]
+  },
+  {
+    "path": "/api/v1/credentials",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:view"]
+  },
+  {
+    "path": "/api/v1/credentials/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:view"]
+  },
+  {
+    "path": "/api/v1/credentials/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:update"]
+  },
+  {
+    "path": "/api/v1/credentials/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:delete"]
+  },
+  {
+    "path": "/api/v1/tools",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:create"]
+  },
+  {
+    "path": "/api/v1/tools",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:view"]
+  },
+  {
+    "path": "/api/v1/tools/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:view"]
+  },
+  {
+    "path": "/api/v1/tools/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:update"]
+  },
+  {
+    "path": "/api/v1/tools/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:delete"]
+  },
+  {
+    "path": "/api/v1/assistants",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:create"]
+  },
+  {
+    "path": "/api/v1/assistants",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:view"]
+  },
+  {
+    "path": "/api/v1/assistants/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:view"]
+  },
+  {
+    "path": "/api/v1/assistants/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:update"]
+  },
+  {
+    "path": "/api/v1/assistants/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:delete"]
+  },
+  {
+    "path": "/api/v1/assistants/components/chatmodels",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/assistants/components/docstores",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/assistants/components/tools",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/assistants/generate/instruction",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/variables",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:create"]
+  },
+  {
+    "path": "/api/v1/variables",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:view"]
+  },
+  {
+    "path": "/api/v1/variables/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:update"]
+  },
+  {
+    "path": "/api/v1/variables/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:delete"]
+  },
+  {
+    "path": "/api/v1/marketplaces/templates",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:marketplace"]
+  },
+  {
+    "path": "/api/v1/marketplaces/custom",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:flowexport", "templates:toolexport"]
+  },
+  {
+    "path": "/api/v1/marketplaces/custom",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:custom"]
+  },
+  {
+    "path": "/api/v1/marketplaces/custom/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:custom-delete"]
+  },
+  {
+    "path": "/api/v1/apikey",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:create"]
+  },
+  {
+    "path": "/api/v1/apikey/import",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:import"]
+  },
+  {
+    "path": "/api/v1/apikey",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:view"]
+  },
+  {
+    "path": "/api/v1/apikey/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:update"]
+  },
+  {
+    "path": "/api/v1/apikey/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:delete"]
+  },
+  {
+    "path": "/api/v1/document-stores/upsert/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/document-stores/refresh/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/document-stores/store",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:create"]
+  },
+  {
+    "path": "/api/v1/document-stores/store",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/store/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/store/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:update"]
+  },
+  {
+    "path": "/api/v1/document-stores/store/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:delete"]
+  },
+  {
+    "path": "/api/v1/document-stores/store-configs/:id/:loaderId",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/loaders",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:add-loader"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/:id/:loaderId",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:delete-loader"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/preview",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:preview-process"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/save",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:preview-process"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/process/:loaderId",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:preview-process"]
+  },
+  {
+    "path": "/api/v1/document-stores/chunks/:storeId/:loaderId/:chunkId",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:delete"]
+  },
+  {
+    "path": "/api/v1/document-stores/chunks/:storeId/:loaderId/:chunkId",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:update"]
+  },
+  {
+    "path": "/api/v1/document-stores/chunks/:storeId/:fileId/:pageNo",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/insert",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/save",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/:storeId",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/query",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/embeddings",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/vectorstore",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/recordmanager",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/update",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/generate-tool-desc/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/datasets",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:view"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:view"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:create"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:update"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:delete"]
+  },
+  {
+    "path": "/api/v1/datasets/rows/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:create"]
+  },
+  {
+    "path": "/api/v1/datasets/rows/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:update"]
+  },
+  {
+    "path": "/api/v1/datasets/rows/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:delete"]
+  },
+  {
+    "path": "/api/v1/datasets/rows",
+    "method": "PATCH",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:delete"]
+  },
+  {
+    "path": "/api/v1/datasets/reorder",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:update"]
+  },
+  {
+    "path": "/api/v1/evaluations",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:view"]
+  },
+  {
+    "path": "/api/v1/evaluations/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:view"]
+  },
+  {
+    "path": "/api/v1/evaluations/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:delete"]
+  },
+  {
+    "path": "/api/v1/evaluations",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:create"]
+  },
+  {
+    "path": "/api/v1/evaluations/is-outdated/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/evaluations/run-again/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:run"]
+  },
+  {
+    "path": "/api/v1/evaluations/versions/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:view"]
+  },
+  {
+    "path": "/api/v1/evaluations",
+    "method": "PATCH",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:delete"]
+  },
+  {
+    "path": "/api/v1/evaluators",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:view"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:view"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:create"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:update"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:delete"]
+  },
+  {
+    "path": "/api/v1/executions",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:view"]
+  },
+  {
+    "path": "/api/v1/executions/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:view"]
+  },
+  {
+    "path": "/api/v1/executions/:id",
+    "method": "PUT",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/executions/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:delete"]
+  },
+  {
+    "path": "/api/v1/executions",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:delete"]
+  },
+  {
+    "path": "/api/v1/export-import/export",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:export"]
+  },
+  {
+    "path": "/api/v1/export-import/import",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:import"]
+  },
+  {
+    "path": "/api/v1/logs",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["logs:view"]
+  },
+  {
+    "path": "/api/v1/workspace",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:view"]
+  },
+  {
+    "path": "/api/v1/workspace",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:create"]
+  },
+  {
+    "path": "/api/v1/workspace/switch",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/workspace",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:update"]
+  },
+  {
+    "path": "/api/v1/workspace/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:delete"]
+  },
+  {
+    "path": "/api/v1/workspace/shared/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:create"]
+  },
+  {
+    "path": "/api/v1/workspace/shared/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:create"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["roles:manage"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["roles:manage"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["roles:manage"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["users:manage"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["users:manage"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["users:manage"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:add-user"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:add-user"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:unlink-user"]
+  },
+  {
+    "path": "/api/v1/login-methods",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/login-methods/default",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/login-methods",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["sso:manage"]
+  },
+  {
+    "path": "/api/v1/login-methods",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["sso:manage"]
+  },
+  {
+    "path": "/api/v1/login-methods/test",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["sso:manage"]
+  },
+  {
+    "path": "/api/v1/audit/login-activity",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["loginActivity:view"]
+  },
+  {
+    "path": "/api/v1/audit/login-activity/delete",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["loginActivity:delete"]
+  },
+  {
+    "path": "/api/v1/account/register",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/invite",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:add-user", "users:manage"]
+  },
+  {
+    "path": "/api/v1/account/login",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/logout",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/verify",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/resend-verification",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/forgot-password",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/reset-password",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/cancel-subscription",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/billing",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/basic-auth",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/basic-auth",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chatflows",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:create"]
+  },
+  {
+    "path": "/api/v1/chatflows",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:view"]
+  },
+  {
+    "path": "/api/v1/chatflows/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:view"]
+  },
+  {
+    "path": "/api/v1/chatflows/apikey/:apikey",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chatflows/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:update"]
+  },
+  {
+    "path": "/api/v1/chatflows/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["chatflows:delete"]
+  },
+  {
+    "path": "/api/v1/chatflows/has-changed/:id/:lastUpdatedDateTime",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/credentials",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:create"]
+  },
+  {
+    "path": "/api/v1/credentials",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:view"]
+  },
+  {
+    "path": "/api/v1/credentials/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:view"]
+  },
+  {
+    "path": "/api/v1/credentials/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:update"]
+  },
+  {
+    "path": "/api/v1/credentials/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["credentials:delete"]
+  },
+  {
+    "path": "/api/v1/tools",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:create"]
+  },
+  {
+    "path": "/api/v1/tools",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:view"]
+  },
+  {
+    "path": "/api/v1/tools/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:view"]
+  },
+  {
+    "path": "/api/v1/tools/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:update"]
+  },
+  {
+    "path": "/api/v1/tools/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["tools:delete"]
+  },
+  {
+    "path": "/api/v1/assistants",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:create"]
+  },
+  {
+    "path": "/api/v1/assistants",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:view"]
+  },
+  {
+    "path": "/api/v1/assistants/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:view"]
+  },
+  {
+    "path": "/api/v1/assistants/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:update"]
+  },
+  {
+    "path": "/api/v1/assistants/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["assistants:delete"]
+  },
+  {
+    "path": "/api/v1/assistants/components/chatmodels",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/assistants/components/docstores",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/assistants/components/tools",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/assistants/generate/instruction",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/variables",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:create"]
+  },
+  {
+    "path": "/api/v1/variables",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:view"]
+  },
+  {
+    "path": "/api/v1/variables/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:update"]
+  },
+  {
+    "path": "/api/v1/variables/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["variables:delete"]
+  },
+  {
+    "path": "/api/v1/marketplaces/templates",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:marketplace"]
+  },
+  {
+    "path": "/api/v1/marketplaces/custom",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:flowexport", "templates:toolexport"]
+  },
+  {
+    "path": "/api/v1/marketplaces/custom",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:custom"]
+  },
+  {
+    "path": "/api/v1/marketplaces/custom/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["templates:custom-delete"]
+  },
+  {
+    "path": "/api/v1/apikey",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:create"]
+  },
+  {
+    "path": "/api/v1/apikey/import",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:import"]
+  },
+  {
+    "path": "/api/v1/apikey",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:view"]
+  },
+  {
+    "path": "/api/v1/apikey/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:update"]
+  },
+  {
+    "path": "/api/v1/apikey/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["apikeys:delete"]
+  },
+  {
+    "path": "/api/v1/document-stores/upsert/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/document-stores/refresh/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/document-stores/store",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:create"]
+  },
+  {
+    "path": "/api/v1/document-stores/store",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/store/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/store/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:update"]
+  },
+  {
+    "path": "/api/v1/document-stores/store/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:delete"]
+  },
+  {
+    "path": "/api/v1/document-stores/store-configs/:id/:loaderId",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/loaders",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:add-loader"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/:id/:loaderId",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:delete-loader"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/preview",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:preview-process"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/save",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:preview-process"]
+  },
+  {
+    "path": "/api/v1/document-stores/loader/process/:loaderId",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:preview-process"]
+  },
+  {
+    "path": "/api/v1/document-stores/chunks/:storeId/:loaderId/:chunkId",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:delete"]
+  },
+  {
+    "path": "/api/v1/document-stores/chunks/:storeId/:loaderId/:chunkId",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:update"]
+  },
+  {
+    "path": "/api/v1/document-stores/chunks/:storeId/:fileId/:pageNo",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/insert",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/save",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/:storeId",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/query",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:view"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/embeddings",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/vectorstore",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/components/recordmanager",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/vectorstore/update",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["documentStores:upsert-config"]
+  },
+  {
+    "path": "/api/v1/document-stores/generate-tool-desc/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/datasets",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:view"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:view"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:create"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:update"]
+  },
+  {
+    "path": "/api/v1/datasets/set/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:delete"]
+  },
+  {
+    "path": "/api/v1/datasets/rows/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:create"]
+  },
+  {
+    "path": "/api/v1/datasets/rows/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:update"]
+  },
+  {
+    "path": "/api/v1/datasets/rows/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:delete"]
+  },
+  {
+    "path": "/api/v1/datasets/rows",
+    "method": "PATCH",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:delete"]
+  },
+  {
+    "path": "/api/v1/datasets/reorder",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["datasets:update"]
+  },
+  {
+    "path": "/api/v1/evaluations",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:view"]
+  },
+  {
+    "path": "/api/v1/evaluations/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:view"]
+  },
+  {
+    "path": "/api/v1/evaluations/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:delete"]
+  },
+  {
+    "path": "/api/v1/evaluations",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:create"]
+  },
+  {
+    "path": "/api/v1/evaluations/is-outdated/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/evaluations/run-again/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:run"]
+  },
+  {
+    "path": "/api/v1/evaluations/versions/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:view"]
+  },
+  {
+    "path": "/api/v1/evaluations",
+    "method": "PATCH",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluations:delete"]
+  },
+  {
+    "path": "/api/v1/evaluators",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:view"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:view"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:create"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:update"]
+  },
+  {
+    "path": "/api/v1/evaluators/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["evaluators:delete"]
+  },
+  {
+    "path": "/api/v1/executions",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:view"]
+  },
+  {
+    "path": "/api/v1/executions/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:view"]
+  },
+  {
+    "path": "/api/v1/executions/:id",
+    "method": "PUT",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/executions/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:delete"]
+  },
+  {
+    "path": "/api/v1/executions",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["executions:delete"]
+  },
+  {
+    "path": "/api/v1/export-import/export",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:export"]
+  },
+  {
+    "path": "/api/v1/export-import/import",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:import"]
+  },
+  {
+    "path": "/api/v1/logs",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["logs:view"]
+  },
+  {
+    "path": "/api/v1/workspace",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:view"]
+  },
+  {
+    "path": "/api/v1/workspace",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:create"]
+  },
+  {
+    "path": "/api/v1/workspace/switch",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/workspace",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:update"]
+  },
+  {
+    "path": "/api/v1/workspace/:id",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:delete"]
+  },
+  {
+    "path": "/api/v1/workspace/shared/:id",
+    "method": "GET",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:create"]
+  },
+  {
+    "path": "/api/v1/workspace/shared/:id",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:create"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["roles:manage"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["roles:manage"]
+  },
+  {
+    "path": "/api/v1/roles",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["roles:manage"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["users:manage"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["users:manage"]
+  },
+  {
+    "path": "/api/v1/organization-users",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["users:manage"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:add-user"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:add-user"]
+  },
+  {
+    "path": "/api/v1/workspace-users",
+    "method": "DELETE",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:unlink-user"]
+  },
+  {
+    "path": "/api/v1/login-methods",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/login-methods/default",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/login-methods",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["sso:manage"]
+  },
+  {
+    "path": "/api/v1/login-methods",
+    "method": "PUT",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["sso:manage"]
+  },
+  {
+    "path": "/api/v1/login-methods/test",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["sso:manage"]
+  },
+  {
+    "path": "/api/v1/audit/login-activity",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["loginActivity:view"]
+  },
+  {
+    "path": "/api/v1/audit/login-activity/delete",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["loginActivity:delete"]
+  },
+  {
+    "path": "/api/v1/account/register",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/invite",
+    "method": "POST",
+    "authMethods": ["jwt", "apiKey"],
+    "entitlements": ["workspace:add-user", "users:manage"]
+  },
+  {
+    "path": "/api/v1/account/login",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/logout",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/verify",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/resend-verification",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/forgot-password",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/reset-password",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/cancel-subscription",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/billing",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/basic-auth",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/account/basic-auth",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/node-configs",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chat-messages",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chat-messages/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chat-messages",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chat-messages/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chat-messages/abort/:chatflowid/:chatid",
+    "method": "PUT",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chat-messages/:id",
+    "method": "DELETE",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/prompts-lists",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/upsert-history",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/upsert-history/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/upsert-history",
+    "method": "PATCH",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/get-upload-file",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/get-upload-path",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/openai-realtime",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/openai-realtime/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/openai-realtime",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/openai-realtime/:id",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/public-chatbots",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/public-chatbots/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/public-chatflows",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/public-chatflows/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chatflows-uploads",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/chatflows-uploads/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/node-load-methods",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/node-load-methods/:name",
+    "method": "POST",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/openai-assistants",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/openai-assistants/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/public-executions",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/public-executions/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/stats",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  },
+  {
+    "path": "/api/v1/stats/:id",
+    "method": "GET",
+    "authMethods": ["public"],
+    "entitlements": ["public"]
+  }
+]

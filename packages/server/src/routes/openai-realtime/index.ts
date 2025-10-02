@@ -1,12 +1,13 @@
-import express from 'express'
-import openaiRealTimeController from '../../controllers/openai-realtime'
 
-const router = express.Router()
+import openaiRealTimeController from '../../controllers/openai-realtime';
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // GET
-router.get(['/', '/:id'], openaiRealTimeController.getAgentTools)
+router.get(['/', '/:id'], ['public'], openaiRealTimeController.getAgentTools);
 
 // EXECUTE
-router.post(['/', '/:id'], openaiRealTimeController.executeAgentTool)
+router.post(['/', '/:id'], ['public'], openaiRealTimeController.executeAgentTool);
 
-export default router
+export default router.getRouter();

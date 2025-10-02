@@ -1,17 +1,17 @@
-import express from 'express'
 import evaluatorsController from '../../controllers/evaluators'
-import { checkPermission, checkAnyPermission } from '../../enterprise/rbac/PermissionCheck'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // get all datasets
-router.get('/', checkPermission('evaluators:view'), evaluatorsController.getAllEvaluators)
+router.get('/', ['evaluators:view'], evaluatorsController.getAllEvaluators)
 // get new dataset
-router.get(['/', '/:id'], checkPermission('evaluators:view'), evaluatorsController.getEvaluator)
+router.get(['/', '/:id'], ['evaluators:view'], evaluatorsController.getEvaluator)
 // Create new dataset
-router.post(['/', '/:id'], checkPermission('evaluators:create'), evaluatorsController.createEvaluator)
+router.post(['/', '/:id'], ['evaluators:create'], evaluatorsController.createEvaluator)
 // Update dataset
-router.put(['/', '/:id'], checkAnyPermission('evaluators:create,evaluators:update'), evaluatorsController.updateEvaluator)
+router.put(['/', '/:id'], ['evaluators:update'], evaluatorsController.updateEvaluator)
 // Delete dataset via id
-router.delete(['/', '/:id'], checkPermission('evaluators:delete'), evaluatorsController.deleteEvaluator)
+router.delete(['/', '/:id'], ['evaluators:delete'], evaluatorsController.deleteEvaluator)
 
-export default router
+export default router.getRouter()

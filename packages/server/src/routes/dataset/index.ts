@@ -1,29 +1,29 @@
-import express from 'express'
 import datasetController from '../../controllers/dataset'
-import { checkAnyPermission, checkPermission } from '../../enterprise/rbac/PermissionCheck'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // get all datasets
-router.get('/', checkPermission('datasets:view'), datasetController.getAllDatasets)
+router.get('/', ['datasets:view'], datasetController.getAllDatasets)
 // get new dataset
-router.get(['/set', '/set/:id'], checkPermission('datasets:view'), datasetController.getDataset)
+router.get(['/set', '/set/:id'], ['datasets:view'], datasetController.getDataset)
 // Create new dataset
-router.post(['/set', '/set/:id'], checkPermission('datasets:create'), datasetController.createDataset)
+router.post(['/set', '/set/:id'], ['datasets:create'], datasetController.createDataset)
 // Update dataset
-router.put(['/set', '/set/:id'], checkAnyPermission('datasets:create,datasets:update'), datasetController.updateDataset)
+router.put(['/set', '/set/:id'], ['datasets:update'], datasetController.updateDataset)
 // Delete dataset via id
-router.delete(['/set', '/set/:id'], checkPermission('datasets:delete'), datasetController.deleteDataset)
+router.delete(['/set', '/set/:id'], ['datasets:delete'], datasetController.deleteDataset)
 
 // Create new row in a given dataset
-router.post(['/rows', '/rows/:id'], checkPermission('datasets:create'), datasetController.addDatasetRow)
+router.post(['/rows', '/rows/:id'], ['datasets:create'], datasetController.addDatasetRow)
 // Update row for a dataset
-router.put(['/rows', '/rows/:id'], checkAnyPermission('datasets:create,datasets:update'), datasetController.updateDatasetRow)
+router.put(['/rows', '/rows/:id'], ['datasets:update'], datasetController.updateDatasetRow)
 // Delete dataset row via id
-router.delete(['/rows', '/rows/:id'], checkPermission('datasets:delete'), datasetController.deleteDatasetRow)
+router.delete(['/rows', '/rows/:id'], ['datasets:delete'], datasetController.deleteDatasetRow)
 // PATCH delete by ids
-router.patch('/rows', checkPermission('datasets:delete'), datasetController.patchDeleteRows)
+router.patch('/rows', ['datasets:delete'], datasetController.patchDeleteRows)
 
 // Update row for a dataset
-router.post(['/reorder', '/reorder'], checkAnyPermission('datasets:create,datasets:update'), datasetController.reorderDatasetRow)
+router.post(['/reorder', '/reorder'], ['datasets:update'], datasetController.reorderDatasetRow)
 
-export default router
+export default router.getRouter()

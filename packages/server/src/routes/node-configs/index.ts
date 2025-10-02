@@ -1,8 +1,9 @@
-import express from 'express'
 import nodeConfigsController from '../../controllers/node-configs'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // CREATE
-router.post('/', nodeConfigsController.getAllNodeConfigs)
+router.post('/', ['public'], nodeConfigsController.getAllNodeConfigs)
 
-export default router
+export default router.getRouter()

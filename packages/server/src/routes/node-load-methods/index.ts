@@ -1,7 +1,9 @@
-import express from 'express'
-import nodesRouter from '../../controllers/nodes'
-const router = express.Router()
 
-router.post(['/', '/:name'], nodesRouter.getSingleNodeAsyncOptions)
+import nodesRouter from '../../controllers/nodes';
+import { entitled } from '../../services/entitled-router'
 
-export default router
+const router = entitled.Router()
+
+router.post(['/', '/:name'], ['public'], nodesRouter.getSingleNodeAsyncOptions);
+
+export default router.getRouter();

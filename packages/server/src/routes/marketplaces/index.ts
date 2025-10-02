@@ -1,17 +1,17 @@
-import express from 'express'
 import marketplacesController from '../../controllers/marketplaces'
-import { checkPermission, checkAnyPermission } from '../../enterprise/rbac/PermissionCheck'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // READ
-router.get('/templates', checkPermission('templates:marketplace'), marketplacesController.getAllTemplates)
+router.get('/templates', ['templates:marketplace'], marketplacesController.getAllTemplates)
 
-router.post('/custom', checkAnyPermission('templates:flowexport,templates:toolexport'), marketplacesController.saveCustomTemplate)
+router.post('/custom', ['templates:flowexport', 'templates:toolexport'], marketplacesController.saveCustomTemplate)
 
 // READ
-router.get('/custom', checkPermission('templates:custom'), marketplacesController.getAllCustomTemplates)
+router.get('/custom', ['templates:custom'], marketplacesController.getAllCustomTemplates)
 
 // DELETE
-router.delete(['/', '/custom/:id'], checkPermission('templates:custom-delete'), marketplacesController.deleteCustomTemplate)
+router.delete(['/', '/custom/:id'], ['templates:custom-delete'], marketplacesController.deleteCustomTemplate)
 
-export default router
+export default router.getRouter()

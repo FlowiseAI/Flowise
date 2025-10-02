@@ -1,19 +1,19 @@
-import express from 'express'
 import apikeyController from '../../controllers/apikey'
-import { checkAnyPermission, checkPermission } from '../../enterprise/rbac/PermissionCheck'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+
+const router = entitled.Router()
 
 // CREATE
-router.post('/', checkPermission('apikeys:create'), apikeyController.createApiKey)
-router.post('/import', checkPermission('apikeys:import'), apikeyController.importKeys)
+router.post('/', ['apikeys:create'], apikeyController.createApiKey)
+router.post('/import', ['apikeys:import'], apikeyController.importKeys)
 
 // READ
-router.get('/', checkPermission('apikeys:view'), apikeyController.getAllApiKeys)
+router.get('/', ['apikeys:view'], apikeyController.getAllApiKeys)
 
 // UPDATE
-router.put(['/', '/:id'], checkAnyPermission('apikeys:create,apikeys:update'), apikeyController.updateApiKey)
+router.put(['/', '/:id'], ['apikeys:update'], apikeyController.updateApiKey)
 
 // DELETE
-router.delete(['/', '/:id'], checkPermission('apikeys:delete'), apikeyController.deleteApiKey)
+router.delete(['/', '/:id'], ['apikeys:delete'], apikeyController.deleteApiKey)
 
-export default router
+export default router.getRouter()

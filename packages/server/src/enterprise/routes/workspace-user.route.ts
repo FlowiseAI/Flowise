@@ -1,33 +1,33 @@
-import express from 'express'
-import { WorkspaceUserController } from '../controllers/workspace-user.controller'
-import { IdentityManager } from '../../IdentityManager'
-import { checkPermission } from '../rbac/PermissionCheck'
 
-const router = express.Router()
-const workspaceUserController = new WorkspaceUserController()
+import { WorkspaceUserController } from '../controllers/workspace-user.controller';
+import { IdentityManager } from '../../IdentityManager';
+import { EntitledRouter } from '../../routes/entitled-router';
+
+const router = entitled.Router();
+const workspaceUserController = new WorkspaceUserController();
 
 // no feature flag because user with lower plan can read invited workspaces with higher plan
-router.get('/', workspaceUserController.read)
+router.get('/', ['public'], workspaceUserController.read);
 
 router.post(
-    '/',
-    IdentityManager.checkFeatureByPlan('feat:workspaces'),
-    checkPermission('workspace:add-user'),
-    workspaceUserController.create
-)
+  '/',
+  ['workspace:add-user'],
+  IdentityManager.checkFeatureByPlan('feat:workspaces'),
+  workspaceUserController.create
+);
 
 router.put(
-    '/',
-    IdentityManager.checkFeatureByPlan('feat:workspaces'),
-    checkPermission('workspace:add-user'),
-    workspaceUserController.update
-)
+  '/',
+  ['workspace:add-user'],
+  IdentityManager.checkFeatureByPlan('feat:workspaces'),
+  workspaceUserController.update
+);
 
 router.delete(
-    '/',
-    IdentityManager.checkFeatureByPlan('feat:workspaces'),
-    checkPermission('workspace:unlink-user'),
-    workspaceUserController.delete
-)
+  '/',
+  ['workspace:unlink-user'],
+  IdentityManager.checkFeatureByPlan('feat:workspaces'),
+  workspaceUserController.delete
+);
 
-export default router
+export default router.getRouter();

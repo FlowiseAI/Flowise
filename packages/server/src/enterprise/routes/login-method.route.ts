@@ -1,18 +1,17 @@
-import express from 'express'
 import { LoginMethodController } from '../controllers/login-method.controller'
-import { checkPermission } from '../rbac/PermissionCheck'
+import { EntitledRouter } from '../../routes/entitled-router'
 
-const router = express.Router()
+const router = new EntitledRouter()
 const loginMethodController = new LoginMethodController()
 
-router.get('/', loginMethodController.read)
+router.get('/', ['public'], loginMethodController.read)
 
-router.get('/default', loginMethodController.defaultMethods)
+router.get('/default', ['public'], loginMethodController.defaultMethods)
 
-router.post('/', checkPermission('sso:manage'), loginMethodController.create)
+router.post('/', ['sso:manage'], loginMethodController.create)
 
-router.put('/', checkPermission('sso:manage'), loginMethodController.update)
+router.put('/', ['sso:manage'], loginMethodController.update)
 
-router.post('/test', checkPermission('sso:manage'), loginMethodController.testConfig)
+router.post('/test', ['sso:manage'], loginMethodController.testConfig)
 
-export default router
+export default router.getRouter()

@@ -1,17 +1,16 @@
-import express from 'express'
 import { OrganizationUserController } from '../controllers/organization-user.controller'
-import { checkPermission } from '../rbac/PermissionCheck'
 import { IdentityManager } from '../../IdentityManager'
+import { EntitledRouter } from '../../routes/entitled-router'
 
-const router = express.Router()
+const router = new EntitledRouter()
 const organizationUserController = new OrganizationUserController()
 
-router.get('/', organizationUserController.read)
+router.get('/', ['public'], organizationUserController.read)
 
-router.post('/', IdentityManager.checkFeatureByPlan('feat:users'), checkPermission('users:manage'), organizationUserController.create)
+router.post('/', ['users:manage'], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.create)
 
-router.put('/', IdentityManager.checkFeatureByPlan('feat:users'), checkPermission('users:manage'), organizationUserController.update)
+router.put('/', ['users:manage'], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.update)
 
-router.delete('/', IdentityManager.checkFeatureByPlan('feat:users'), checkPermission('users:manage'), organizationUserController.delete)
+router.delete('/', ['users:manage'], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.delete)
 
-export default router
+export default router.getRouter()
