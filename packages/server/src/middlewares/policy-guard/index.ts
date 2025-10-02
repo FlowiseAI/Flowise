@@ -65,15 +65,11 @@ const authorize = (user: any, policy: Policy, res: Response, next: NextFunction)
         return res.status(401).json({ message: GeneralErrorMessage.UNAUTHORIZED })
     }
 
-    if (user.isApiKeyValidated && policy.authMethods.includes('apiKey')) {
-        return next()
-    }
-
     if (user.isOrganizationAdmin) {
         return next()
     }
 
-    if (policy.authMethods.includes('jwt')) {
+    if (user.isApiKeyValidated && policy.authMethods.includes('apiKey')) {
         const userPermissions = user.permissions || []
         const hasPermission = policy.entitlements.some((p) => userPermissions.includes(p))
 
