@@ -1,6 +1,6 @@
 import { IRouter, RequestHandler, Router as ExpressRouter } from 'express'
 
-class Index {
+class EntitledRouter {
     private readonly router: IRouter
 
     constructor() {
@@ -33,7 +33,7 @@ class Index {
 }
 
 function Router() {
-    return new Index()
+    return new EntitledRouter()
 }
 
 export const entitled = { Router }
