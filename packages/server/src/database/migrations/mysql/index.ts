@@ -40,6 +40,7 @@ import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-Modi
 import { AddTextToSpeechToChatFlow1754986468397 } from './1754986468397-AddTextToSpeechToChatFlow'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 import { AddChatFlowNameIndex1755748356008 } from './1755748356008-AddChatFlowNameIndex'
+import { AddTextToSpeechToChatFlow1759419216034 } from './1759419216034-AddTextToSpeechToChatFlow'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -106,5 +107,6 @@ export const mysqlMigrations = [
     ModifyExecutionDataColumnType1747902489801,
     AddTextToSpeechToChatFlow1754986468397,
     ModifyChatflowType1755066758601,
-    AddChatFlowNameIndex1755748356008
+    AddChatFlowNameIndex1755748356008,
+    AddTextToSpeechToChatFlow1759419216034
 ]
