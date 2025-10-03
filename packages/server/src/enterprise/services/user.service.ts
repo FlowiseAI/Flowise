@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes'
-import bcrypt from 'bcryptjs'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
@@ -8,7 +7,7 @@ import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from 
 import { DataSource, ILike, QueryRunner } from 'typeorm'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
-import { getHash } from '../utils/encryption.util'
+import { compareHash, getHash } from '../utils/encryption.util'
 import { sanitizeUser } from '../../utils/sanitize.util'
 
 export const enum UserErrorMessage {
@@ -24,7 +23,8 @@ export const enum UserErrorMessage {
     USER_EMAIL_UNVERIFIED = 'User Email Unverified',
     USER_NOT_FOUND = 'User Not Found',
     USER_FOUND_MULTIPLE = 'User Found Multiple',
-    INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password'
+    INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password',
+    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match'
 }
 export class UserService {
     private telemetry: Telemetry
@@ -134,7 +134,7 @@ export class UserService {
         return newUser
     }
 
-    public async updateUser(newUserData: Partial<User> & { password?: string }) {
+    public async updateUser(newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmNewPassword?: string }) {
         let queryRunner: QueryRunner | undefined
         let updatedUser: Partial<User>
         try {
@@ -158,10 +158,18 @@ export class UserService {
                 this.validateUserStatus(newUserData.status)
             }
 
-            if (newUserData.password) {
-                const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
-                // @ts-ignore
-                const hash = bcrypt.hashSync(newUserData.password, salt)
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmNewPassword) {
+                if (!oldUserData.credential) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_CREDENTIAL)
+                }
+                // verify old password
+                if (!compareHash(newUserData.oldPassword, oldUserData.credential)) {
+                    throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.INVALID_USER_CREDENTIAL)
+                }
+                if (newUserData.newPassword !== newUserData.confirmNewPassword) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.PASSWORDS_DO_NOT_MATCH)
+                }
+                const hash = getHash(newUserData.newPassword)
                 newUserData.credential = hash
                 newUserData.tempToken = ''
                 newUserData.tokenExpiry = undefined
