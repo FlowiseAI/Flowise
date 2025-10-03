@@ -33,7 +33,16 @@ const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 
 const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET || 'auth_token'
 const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_AUTH_TOKEN_SECRET || 'refresh_token'
 
-const secureCookie = process.env.APP_URL?.startsWith('https') ? true : false
+// Allow explicit override of cookie security settings
+// This is useful when running behind a reverse proxy/load balancer that terminates SSL
+const secureCookie =
+    process.env.SECURE_COOKIES === 'false'
+        ? false
+        : process.env.SECURE_COOKIES === 'true'
+        ? true
+        : process.env.APP_URL?.startsWith('https')
+        ? true
+        : false
 const jwtOptions = {
     secretOrKey: jwtAuthTokenSecret,
     audience: jwtAudience,

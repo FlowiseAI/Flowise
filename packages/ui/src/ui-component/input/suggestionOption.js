@@ -72,6 +72,12 @@ export const suggestionOptions = (
                 category: 'Chat Context'
             },
             {
+                id: 'loop_count',
+                mentionLabel: 'loop_count',
+                description: 'Current loop count',
+                category: 'Chat Context'
+            },
+            {
                 id: 'file_attachment',
                 mentionLabel: 'file_attachment',
                 description: 'Files uploaded from the chat',

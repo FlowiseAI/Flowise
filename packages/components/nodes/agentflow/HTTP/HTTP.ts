@@ -2,9 +2,8 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { AxiosRequestConfig, Method, ResponseType } from 'axios'
 import FormData from 'form-data'
 import * as querystring from 'querystring'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { secureAxiosRequest } from '../../../src/httpSecurity'
-import JSON5 from 'json5'
 
 class HTTP_Agentflow implements INode {
     label: string
@@ -19,16 +18,6 @@ class HTTP_Agentflow implements INode {
     documentation?: string
     credential: INodeParams
     inputs: INodeParams[]
-
-    private parseJsonBody(body: string): any {
-        try {
-            return JSON5.parse(body)
-        } catch (error) {
-            throw new Error(
-                `Invalid JSON format in body. Original error: ${error.message}. Please ensure your JSON is properly formatted with quoted strings and valid escape sequences.`
-            )
-        }
-    }
 
     constructor() {
         this.label = 'HTTP'
@@ -285,7 +274,7 @@ class HTTP_Agentflow implements INode {
             if (method !== 'GET' && body) {
                 switch (bodyType) {
                     case 'json': {
-                        requestConfig.data = typeof body === 'string' ? this.parseJsonBody(body) : body
+                        requestConfig.data = typeof body === 'string' ? parseJsonBody(body) : body
                         requestHeaders['Content-Type'] = 'application/json'
                         break
                     }
@@ -303,7 +292,7 @@ class HTTP_Agentflow implements INode {
                         break
                     }
                     case 'xWwwFormUrlencoded':
-                        requestConfig.data = querystring.stringify(typeof body === 'string' ? this.parseJsonBody(body) : body)
+                        requestConfig.data = querystring.stringify(typeof body === 'string' ? parseJsonBody(body) : body)
                         requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
                         break
                 }

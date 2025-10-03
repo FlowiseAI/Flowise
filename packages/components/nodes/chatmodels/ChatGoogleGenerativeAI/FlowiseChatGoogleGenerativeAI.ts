@@ -770,6 +770,12 @@ export class LangchainChatGoogleGenerativeAI
             this.client.systemInstruction = systemInstruction
             actualPrompt = prompt.slice(1)
         }
+
+        // Ensure actualPrompt is never empty
+        if (actualPrompt.length === 0) {
+            actualPrompt = [{ role: 'user', parts: [{ text: '...' }] }]
+        }
+
         const parameters = this.invocationParams(options)
 
         // Handle streaming
@@ -834,6 +840,12 @@ export class LangchainChatGoogleGenerativeAI
             this.client.systemInstruction = systemInstruction
             actualPrompt = prompt.slice(1)
         }
+
+        // Ensure actualPrompt is never empty
+        if (actualPrompt.length === 0) {
+            actualPrompt = [{ role: 'user', parts: [{ text: '...' }] }]
+        }
+
         const parameters = this.invocationParams(options)
         const request = {
             ...parameters,
