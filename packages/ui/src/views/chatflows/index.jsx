@@ -130,14 +130,12 @@ const Chatflows = () => {
     }, [getAllChatflowsApi.data])
 
     // Grouping chatflows by tags
-    const groupedChatflows = getAllChatflowsApi.data?.data
-        ?.filter(filterFlows)
-        .reduce((acc, item) => {
-            const tag = item.tags || 'Untagged'
-            if (!acc[tag]) acc[tag] = []
-            acc[tag].push(item)
-            return acc
-        }, {})
+    const groupedChatflows = getAllChatflowsApi.data?.data?.filter(filterFlows).reduce((acc, item) => {
+        const tag = item.tags || 'Untagged'
+        if (!acc[tag]) acc[tag] = []
+        acc[tag].push(item)
+        return acc
+    }, {})
 
     return (
         <MainCard>
@@ -155,7 +153,6 @@ const Chatflows = () => {
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
-                            color='primary'
                             disabled={total === 0}
                             exclusive
                             onChange={handleChange}
@@ -170,7 +167,7 @@ const Chatflows = () => {
                                 value='card'
                                 title='Card View'
                             >
-                                <IconLayoutGrid />
+                                <IconLayoutGrid sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })} />
                             </ToggleButton>
                             <ToggleButton
                                 sx={{
@@ -182,7 +179,7 @@ const Chatflows = () => {
                                 value='list'
                                 title='List View'
                             >
-                                <IconList />
+                                <IconList sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })} />
                             </ToggleButton>
                         </ToggleButtonGroup>
                         <StyledPermissionButton
@@ -224,7 +221,7 @@ const Chatflows = () => {
                                                         boxShadow: 1
                                                     }}
                                                 >
-                                                    <Typography variant="subtitle1">{tag}</Typography>
+                                                    <Typography variant='subtitle1'>{tag}</Typography>
                                                 </Box>
 
                                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
@@ -240,7 +237,6 @@ const Chatflows = () => {
                                             </Box>
                                         ))}
                                 </Stack>
-
                             ) : (
                                 <FlowListTable
                                     data={getAllChatflowsApi.data?.data}

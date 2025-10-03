@@ -13,14 +13,14 @@ import useConfirm from '@/hooks/useConfirm'
 import { IconButton, Avatar, ButtonBase, Toolbar, Box, Button, Grid, OutlinedInput, Stack, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import {
-    IconCode,
     IconArrowLeft,
     IconDeviceFloppy,
     IconSettings,
     IconX,
     IconTrash,
     IconWand,
-    IconArrowsMaximize
+    IconArrowsMaximize,
+    IconShare
 } from '@tabler/icons-react'
 
 // Project import
@@ -139,16 +139,16 @@ const CustomAssistantConfigurePreview = () => {
 
     const handleToolDataChange =
         (toolIndex) =>
-            ({ inputParam, newValue }) => {
-                setSelectedTools((prevTools) => {
-                    const updatedTools = [...prevTools]
-                    const updatedTool = { ...updatedTools[toolIndex] }
-                    updatedTool.inputs[inputParam.name] = newValue
-                    updatedTool.inputParams = showHideInputParams(updatedTool)
-                    updatedTools[toolIndex] = updatedTool
-                    return updatedTools
-                })
-            }
+        ({ inputParam, newValue }) => {
+            setSelectedTools((prevTools) => {
+                const updatedTools = [...prevTools]
+                const updatedTool = { ...updatedTools[toolIndex] }
+                updatedTool.inputs[inputParam.name] = newValue
+                updatedTool.inputParams = showHideInputParams(updatedTool)
+                updatedTools[toolIndex] = updatedTool
+                return updatedTools
+            })
+        }
 
     const displayWarning = () => {
         enqueueSnackbar({
@@ -166,76 +166,74 @@ const CustomAssistantConfigurePreview = () => {
     }
 
     const checkInputParamsMandatory = () => {
-        let canSubmit = true;
+        let canSubmit = true
 
         const inputParams = (selectedChatModel.inputParams ?? []).filter((inputParam) => {
-            if (inputParam.hidden) return false;
+            if (inputParam.hidden) return false
 
             // Check conditional visibility
             if (inputParam.show) {
                 for (const [key, value] of Object.entries(inputParam.show)) {
                     if (selectedChatModel.inputs?.[key] !== value) {
-                        return false; // Condition not met, skip this inputParam
+                        return false // Condition not met, skip this inputParam
                     }
                 }
             }
 
-            return true;
-        });
+            return true
+        })
 
         for (const inputParam of inputParams) {
-            const value = selectedChatModel.inputs[inputParam.name];
-            const credential = selectedChatModel.credential;
+            const value = selectedChatModel.inputs[inputParam.name]
+            const credential = selectedChatModel.credential
 
             if (!inputParam.optional && (!value || !credential)) {
                 if (inputParam.type === 'credential' && !credential) {
-                    canSubmit = false;
-                    break;
+                    canSubmit = false
+                    break
                 } else if (inputParam.type !== 'credential' && !value) {
-                    canSubmit = false;
-                    break;
+                    canSubmit = false
+                    break
                 }
             }
         }
 
         if (selectedTools.length > 0) {
             for (let i = 0; i < selectedTools.length; i++) {
-                const tool = selectedTools[i];
+                const tool = selectedTools[i]
                 const inputParams = (tool.inputParams ?? []).filter((inputParam) => {
-                    if (inputParam.hidden) return false;
+                    if (inputParam.hidden) return false
 
                     if (inputParam.show) {
                         for (const [key, value] of Object.entries(inputParam.show)) {
                             if (tool.inputs?.[key] !== value) {
-                                return false;
+                                return false
                             }
                         }
                     }
 
-                    return true;
-                });
+                    return true
+                })
 
                 for (const inputParam of inputParams) {
-                    const value = tool.inputs[inputParam.name];
-                    const credential = tool.credential;
+                    const value = tool.inputs[inputParam.name]
+                    const credential = tool.credential
 
                     if (!inputParam.optional && (!value || !credential)) {
                         if (inputParam.type === 'credential' && !credential) {
-                            canSubmit = false;
-                            break;
+                            canSubmit = false
+                            break
                         } else if (inputParam.type !== 'credential' && !value) {
-                            canSubmit = false;
-                            break;
+                            canSubmit = false
+                            break
                         }
                     }
                 }
             }
         }
 
-        return canSubmit;
-    };
-
-
+        return canSubmit
+    }
 
     const checkMandatoryFields = () => {
         let canSubmit = true
@@ -316,8 +314,9 @@ const CustomAssistantConfigurePreview = () => {
             } catch (error) {
                 setLoading(false)
                 enqueueSnackbar({
-                    message: `Failed to save assistant: ${typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                        }`,
+                    message: `Failed to save assistant: ${
+                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }`,
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -518,8 +517,9 @@ const CustomAssistantConfigurePreview = () => {
         } catch (error) {
             console.error('Error preparing config', error)
             enqueueSnackbar({
-                message: `Failed to save assistant: ${typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                message: `Failed to save assistant: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -688,7 +688,7 @@ const CustomAssistantConfigurePreview = () => {
 
     const onAPIDialogClick = () => {
         setAPIDialogProps({
-            title: 'Embed in website or use as API',
+            title: 'Add the bot to your website or connect it with an API',
             chatflowid: customAssistantFlowId,
             chatflowApiKeyId: canvas.chatflow.apikeyid,
             isSessionMemory: true
@@ -921,7 +921,7 @@ const CustomAssistantConfigurePreview = () => {
                                                             color='inherit'
                                                             onClick={onAPIDialogClick}
                                                         >
-                                                            <IconCode stroke={1.5} size='1.3rem' />
+                                                            <IconShare stroke={1.5} size='1.3rem' />
                                                         </Avatar>
                                                     </ButtonBase>
                                                 )}
@@ -1047,24 +1047,30 @@ const CustomAssistantConfigurePreview = () => {
                                                 <div style={{ flex: 1 }}></div>
                                                 <IconButton
                                                     size='small'
-                                                    sx={{
+                                                    sx={(theme) => ({
                                                         height: 25,
-                                                        width: 25
-                                                    }}
+                                                        width: 25,
+                                                        color: theme.customization?.isDarkMode ? 'white' : 'black'
+                                                    })}
                                                     title='Expand'
-                                                    color='secondary'
                                                     onClick={() => onExpandDialogClicked(customAssistantInstruction)}
                                                 >
-                                                    <IconArrowsMaximize />
+                                                    <IconArrowsMaximize
+                                                        sx={(theme) => ({ color: theme.customization?.isDarkMode ? 'white' : 'inherit' })}
+                                                    />
                                                 </IconButton>
                                                 {selectedChatModel?.name && (
                                                     <Button
                                                         title='Generate instructions using model'
-                                                        sx={{ borderRadius: 20 }}
+                                                        sx={(theme) => ({
+                                                            borderRadius: 20,
+                                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                                        })}
                                                         size='small'
                                                         variant='text'
                                                         onClick={() => generateInstruction()}
                                                         startIcon={<IconWand size={20} />}
+                                                        textColor={(theme) => (theme?.customization?.isDarkMode ? 'white' : 'inherit')}
                                                     >
                                                         Generate
                                                     </Button>

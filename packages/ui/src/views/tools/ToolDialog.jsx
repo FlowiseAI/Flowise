@@ -435,16 +435,17 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                         {dialogProps.type === 'EDIT' && (
                             <>
                                 <PermissionButton
+                                    sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
                                     permissionId={'templates:toolexport'}
                                     style={{ marginRight: '10px' }}
                                     variant='outlined'
                                     onClick={() => onSaveAsTemplate()}
                                     startIcon={<IconTemplate />}
-                                    color='secondary'
                                 >
                                     Save As Template
                                 </PermissionButton>
                                 <PermissionButton
+                                    sx={{ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
                                     permissionId={'tools:export'}
                                     variant='outlined'
                                     onClick={() => exportTool()}
@@ -524,10 +525,20 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             </Stack>
                             {dialogProps.type !== 'TEMPLATE' && (
                                 <Stack direction='row' spacing={1}>
-                                    <Button variant='outlined' onClick={() => setShowPasteJSONDialog(true)} startIcon={<IconCode />}>
+                                    <Button
+                                        variant='outlined'
+                                        onClick={() => setShowPasteJSONDialog(true)}
+                                        startIcon={<IconCode />}
+                                        sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'secondary' })}
+                                    >
                                         Paste JSON
                                     </Button>
-                                    <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
+                                    <Button
+                                        variant='outlined'
+                                        onClick={addNewRow}
+                                        startIcon={<IconPlus />}
+                                        sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'secondary' })}
+                                    >
                                         Add Item
                                     </Button>
                                 </Stack>
@@ -544,14 +555,19 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                             <Stack direction='row'>
                                 <Button
                                     style={{ marginBottom: 10, marginRight: 10 }}
-                                    color='secondary'
+                                    sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'secondary' })}
                                     variant='text'
                                     onClick={() => setShowHowToDialog(true)}
                                 >
                                     How to use Function
                                 </Button>
                                 {dialogProps.type !== 'TEMPLATE' && (
-                                    <Button style={{ marginBottom: 10 }} variant='outlined' onClick={() => setToolFunc(exampleAPIFunc)}>
+                                    <Button
+                                        style={{ marginBottom: 10 }}
+                                        variant='outlined'
+                                        onClick={() => setToolFunc(exampleAPIFunc)}
+                                        sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'secondary' })}
+                                    >
                                         See Example
                                     </Button>
                                 )}

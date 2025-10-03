@@ -61,6 +61,7 @@ import {
     IconFileUpload
 } from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
+import { color } from '@uiw/react-codemirror'
 
 // ==============================|| APIKey ||============================== //
 
@@ -135,8 +136,12 @@ function APIKeyRow(props) {
                 <StyledTableCell>{moment(props.apiKey.createdAt).format('MMMM Do, YYYY')}</StyledTableCell>
                 <Available permission={'apikeys:update,apikeys:create'}>
                     <StyledTableCell>
-                        <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
-                            <IconEdit />
+                        <IconButton
+                            title='Edit'
+                            sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })}
+                            onClick={props.onEditClick}
+                        >
+                            <IconEdit sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })} />
                         </IconButton>
                     </StyledTableCell>
                 </Available>
@@ -393,12 +398,16 @@ const APIKey = () => {
                             search={true}
                             searchPlaceholder='Search API Keys'
                             title='API Keys'
-                            description='Flowise API & SDK authentication keys'
+                            description='DigiWorks API & SDK authentication keys'
                         >
                             <PermissionButton
                                 permissionId={'apikeys:import'}
                                 variant='outlined'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={(theme) => ({
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                })}
                                 onClick={uploadDialog}
                                 startIcon={<IconFileUpload />}
                                 id='btn_importApiKeys'
@@ -408,7 +417,13 @@ const APIKey = () => {
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
                                 variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={(theme) => ({
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    backgroundColor: theme?.customization?.isDarkMode ? '#fff' : '#1a2b4d',
+                                    color: theme?.customization?.isDarkMode ? '#000' : '#fff',
+                                    '&:hover': { backgroundColor: theme?.customization?.isDarkMode ? '#e0e0e0' : '#222' }
+                                })}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                                 id='btn_createApiKey'
@@ -448,7 +463,11 @@ const APIKey = () => {
                                                 <StyledTableCell>Usage</StyledTableCell>
                                                 <StyledTableCell>Updated</StyledTableCell>
                                                 <Available permission={'apikeys:update,apikeys:create'}>
-                                                    <StyledTableCell> </StyledTableCell>
+                                                    <StyledTableCell
+                                                        sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })}
+                                                    >
+                                                        {' '}
+                                                    </StyledTableCell>
                                                 </Available>
                                                 <Available permission={'apikeys:delete'}>
                                                     <StyledTableCell> </StyledTableCell>
@@ -472,7 +491,13 @@ const APIKey = () => {
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
                                                         <Available permission={'apikeys:update,apikeys:create'}>
-                                                            <StyledTableCell> </StyledTableCell>
+                                                            <StyledTableCell
+                                                                sx={(theme) => ({
+                                                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                                                })}
+                                                            >
+                                                                {' '}
+                                                            </StyledTableCell>
                                                         </Available>
                                                         <Available permission={'apikeys:delete'}>
                                                             <StyledTableCell> </StyledTableCell>
@@ -492,7 +517,13 @@ const APIKey = () => {
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
                                                         <Available permission={'apikeys:update,apikeys:create'}>
-                                                            <StyledTableCell> </StyledTableCell>
+                                                            <StyledTableCell
+                                                                sx={(theme) => ({
+                                                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                                                })}
+                                                            >
+                                                                {' '}
+                                                            </StyledTableCell>
                                                         </Available>
                                                         <Available permission={'apikeys:delete'}>
                                                             <StyledTableCell> </StyledTableCell>

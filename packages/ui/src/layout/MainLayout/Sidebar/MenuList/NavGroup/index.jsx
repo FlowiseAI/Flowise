@@ -83,7 +83,7 @@ const NavGroup = ({ item }) => {
                         </Typography>
                     )
                 }
-                sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
+                sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1, zIndex: 2 }}
             >
                 {renderPrimaryItems().map((menu) => listItems(menu))}
             </List>

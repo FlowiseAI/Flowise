@@ -24,6 +24,7 @@ import documentStoreApi from '@/api/documentstore'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
+import { color } from '@uiw/react-codemirror'
 
 const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
@@ -204,7 +205,9 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => onCancel()}>Cancel</Button>
+                <Button onClick={() => onCancel()} sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })}>
+                    Cancel
+                </Button>
                 <StyledButton
                     disabled={!documentStoreName}
                     variant='contained'

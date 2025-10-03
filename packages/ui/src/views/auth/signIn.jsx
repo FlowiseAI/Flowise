@@ -112,7 +112,7 @@ const SignInPage = () => {
         if (loginApi.data) {
             setLoading(false)
             store.dispatch(loginSuccess(loginApi.data))
-            navigate(location.state?.path || '/chatflows')
+            navigate(location.state?.path || '/studio')
             //navigate(0)
         }
 
@@ -122,7 +122,7 @@ const SignInPage = () => {
     useEffect(() => {
         if (ssoLoginApi.data) {
             store.dispatch(loginSuccess(ssoLoginApi.data))
-            navigate(location.state?.path || '/chatflows')
+            navigate(location.state?.path || '/studio')
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -237,7 +237,12 @@ const SignInPage = () => {
                                 </div>
                                 <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
                                 <Typography variant='body2' sx={{ color: theme.palette.grey[600], mt: 1, textAlign: 'right' }}>
-                                    <Link style={{ color: theme.palette.primary.main }} to='/forgot-password'>
+                                    <Link
+                                        style={{
+                                            color: theme.palette.mode === 'light' ? theme.palette.grey[600] : theme.palette.grey[300]
+                                        }}
+                                        to='/forgot-password'
+                                    >
                                         Forgot password?
                                     </Link>
                                 </Typography>

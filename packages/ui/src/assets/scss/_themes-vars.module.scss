@@ -188,10 +188,10 @@ $primary800: #0f1a2e;
 
 // secondary
 $secondaryLight: #94bbf1;
-$secondaryMain: #0B1220;
-$secondaryDark: #0B1220;
-$secondary200: #0B1220;
-$secondary800: #0B1220;
+$secondaryMain: #0b1220;
+$secondaryDark: #0b1220;
+$secondary200: #0b1220;
+$secondary800: #0b1220;
 
 // success Colors
 $successLight: #cdf5d8;
@@ -252,15 +252,15 @@ $darkPrimary800: #32353b;
 
 // secondary dark
 $darkSecondaryLight: #454c59;
-$darkSecondaryMain: #2563EB;
+$darkSecondaryMain: #2563eb;
 $darkSecondaryDark: #ffffff;
 $darkSecondary200: #32353b;
-$darkSecondary800: #2563EB;
+$darkSecondary800: #2563eb;
 
 // text variants
-$darkTextTitle: #d7dcec;
-$darkTextPrimary: #bdc8f0;
-$darkTextSecondary: #8492c4;
+$darkTextTitle: #f5f5f5;
+$darkTextPrimary: #ececec;
+$darkTextSecondary: #bec5db;
 
 // ==============================|| JAVASCRIPT ||============================== //
 
@@ -351,4 +351,3 @@ $darkTextSecondary: #8492c4;
     // transparent
     transparent: $transparent;
 }
-

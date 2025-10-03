@@ -9,7 +9,6 @@ const Overview = Loadable(lazy(() => import('@/views/overview/Overview')))
 
 const Studio = Loadable(lazy(() => import('@/views/studio/Studio')))
 
-
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
 
@@ -83,26 +82,26 @@ const MainRoutes = {
         {
             path: '/overview',
             element: (
-              <RequireAuth permission={'chatflows:view'}>
-                <Overview />
-              </RequireAuth>
+                <RequireAuth permission={'chatflows:view'}>
+                    <Overview />
+                </RequireAuth>
             )
-          },
-          
+        },
+
         {
             path: '/studio',
             element: (
-              <RequireAuth permission={'chatflows:view'}>
-                <Studio />
-              </RequireAuth>
+                <RequireAuth permission={'chatflows:view'}>
+                    <Studio />
+                </RequireAuth>
             )
-          },
-          
+        },
+
         {
             path: '/',
             element: (
                 <RequireAuth permission={'chatflows:view'}>
-                    <Chatflows />
+                    <Studio />
                 </RequireAuth>
             )
         },

@@ -101,18 +101,20 @@ const CustomAssistantLayout = () => {
     }, [])
 
     useEffect(() => setLoading(getAllAssistantsApi.loading), [getAllAssistantsApi.loading])
-    useEffect(() => { if (getAllAssistantsApi.error) setError(getAllAssistantsApi.error) }, [getAllAssistantsApi.error])
+    useEffect(() => {
+        if (getAllAssistantsApi.error) setError(getAllAssistantsApi.error)
+    }, [getAllAssistantsApi.error])
 
-    const groupedAssistants = (getAllAssistantsApi.data || [])
-        .filter(filterAssistants)
-        .reduce((acc, item) => {
-            let parsed = {}
-            try { parsed = JSON.parse(item.details) } catch {}
-            const category = parsed?.category || 'Uncategorized'
-            if (!acc[category]) acc[category] = []
-            acc[category].push({ ...item, parsedDetails: parsed })
-            return acc
-        }, {})
+    const groupedAssistants = (getAllAssistantsApi.data || []).filter(filterAssistants).reduce((acc, item) => {
+        let parsed = {}
+        try {
+            parsed = JSON.parse(item.details)
+        } catch {}
+        const category = parsed?.category || 'Uncategorized'
+        if (!acc[category]) acc[category] = []
+        acc[category].push({ ...item, parsedDetails: parsed })
+        return acc
+    }, {})
 
     return (
         <>
@@ -131,9 +133,8 @@ const CustomAssistantLayout = () => {
                             onBack={() => navigate(-1)}
                         >
                             <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
+                                sx={{ borderRadius: 2, maxHeight: 40, color: theme?.customization?.isDarkMode ? 'white' : 'inherit' }}
                                 value={view}
-                                color='primary'
                                 disabled={!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0}
                                 exclusive
                                 onChange={handleChange}
@@ -184,17 +185,19 @@ const CustomAssistantLayout = () => {
                         ) : view === 'card' ? (
                             Object.entries(groupedAssistants || {}).map(([category, items]) => (
                                 <Box key={category}>
-                                    <Box sx={{
-                                        mb: 2,
-                                        px: 2,
-                                        py: 1,
-                                        display: 'inline-block',
-                                        borderRadius: 2,
-                                        backgroundColor: theme.palette.primary.light,
-                                        color: theme.palette.primary.contrastText,
-                                        fontWeight: 600,
-                                        boxShadow: 1
-                                    }}>
+                                    <Box
+                                        sx={{
+                                            mb: 2,
+                                            px: 2,
+                                            py: 1,
+                                            display: 'inline-block',
+                                            borderRadius: 2,
+                                            backgroundColor: theme.palette.primary.light,
+                                            color: theme.palette.primary.contrastText,
+                                            fontWeight: 600,
+                                            boxShadow: 1
+                                        }}
+                                    >
                                         <Typography variant='subtitle1'>{category}</Typography>
                                     </Box>
 
@@ -228,7 +231,11 @@ const CustomAssistantLayout = () => {
                         {!isLoading && (!getAllAssistantsApi.data?.length || getAllAssistantsApi.data.length === 0) && (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={AssistantEmptySVG} alt='AssistantEmptySVG' />
+                                    <img
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                        src={AssistantEmptySVG}
+                                        alt='AssistantEmptySVG'
+                                    />
                                 </Box>
                                 <div>No Custom Assistants Added Yet</div>
                             </Stack>

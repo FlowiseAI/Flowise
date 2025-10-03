@@ -592,9 +592,8 @@ const Marketplace = () => {
                             description='Explore and use pre-built templates'
                         >
                             <ToggleButtonGroup
-                                sx={{ borderRadius: 2, height: '100%' }}
+                                sx={{ borderRadius: 2, height: '100%', color: theme?.customization?.isDarkMode ? 'white' : 'primary' }}
                                 value={view}
-                                color='primary'
                                 exclusive
                                 onChange={handleViewChange}
                             >
@@ -626,10 +625,30 @@ const Marketplace = () => {
                         </ViewHeader>
                         {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
                             <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
-                                <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
+                                <Tabs
+                                    value={activeTabValue}
+                                    onChange={handleTabChange}
+                                    textColor={theme?.customization?.isDarkMode ? 'inherit' : 'primary'}
+                                    aria-label='tabs'
+                                    TabIndicatorProps={{
+                                        style: {
+                                            backgroundColor: theme?.customization?.isDarkMode ? 'white' : 'primary'
+                                        }
+                                    }}
+                                    sx={{
+                                        '& .MuiTab-root.Mui-selected': {
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }
+                                    }}
+                                >
                                     <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
                                     <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
                                 </Tabs>
+                                {/* 
+                                <Tabs value={activeTabValue} onChange={handleTabChange} textColor={theme?.customization?.isDarkMode ? 'white' : 'primary'} aria-label='tabs'>
+                                    <PermissionTab permissionId='templates:marketplace' value={0}  label='Community Templates' />
+                                    <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
+                                </Tabs> */}
                                 <Autocomplete
                                     id='useCases'
                                     multiple
