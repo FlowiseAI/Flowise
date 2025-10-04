@@ -75,21 +75,38 @@ export const createFileAttachment = async (req: Request) => {
         usage: 'perPage',
         legacyBuild: false
     }
+    let allowedFileTypes: string[] = []
+    let fileUploadEnabled = false
 
     if (chatflow.chatbotConfig) {
         try {
             const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
-            if (chatbotConfig?.fullFileUpload?.pdfFile) {
-                if (chatbotConfig.fullFileUpload.pdfFile.usage) {
-                    pdfConfig.usage = chatbotConfig.fullFileUpload.pdfFile.usage
+            if (chatbotConfig?.fullFileUpload) {
+                fileUploadEnabled = chatbotConfig.fullFileUpload.status
+
+                // Get allowed file types from configuration
+                if (chatbotConfig.fullFileUpload.allowedUploadFileTypes) {
+                    allowedFileTypes = chatbotConfig.fullFileUpload.allowedUploadFileTypes.split(',')
                 }
-                if (chatbotConfig.fullFileUpload.pdfFile.legacyBuild !== undefined) {
-                    pdfConfig.legacyBuild = chatbotConfig.fullFileUpload.pdfFile.legacyBuild
+
+                // PDF specific configuration
+                if (chatbotConfig.fullFileUpload.pdfFile) {
+                    if (chatbotConfig.fullFileUpload.pdfFile.usage) {
+                        pdfConfig.usage = chatbotConfig.fullFileUpload.pdfFile.usage
+                    }
+                    if (chatbotConfig.fullFileUpload.pdfFile.legacyBuild !== undefined) {
+                        pdfConfig.legacyBuild = chatbotConfig.fullFileUpload.pdfFile.legacyBuild
+                    }
                 }
             }
         } catch (e) {
-            // Use default PDF config if parsing fails
+            // Use default config if parsing fails
         }
+    }
+
+    // Check if file upload is enabled
+    if (!fileUploadEnabled) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'File upload is not enabled for this chatflow')
     }
 
     // Find FileLoader node
@@ -109,6 +126,21 @@ export const createFileAttachment = async (req: Request) => {
     if (files.length) {
         const isBase64 = req.body.base64
         for (const file of files) {
+            if (!allowedFileTypes.length) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `File type '${file.mimetype}' is not allowed. Allowed types: ${allowedFileTypes.join(', ')}`
+                )
+            }
+
+            // Validate file type against allowed types
+            if (allowedFileTypes.length > 0 && !allowedFileTypes.includes(file.mimetype)) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `File type '${file.mimetype}' is not allowed. Allowed types: ${allowedFileTypes.join(', ')}`
+                )
+            }
+
             await checkStorage(orgId, subscriptionId, appServer.usageCacheManager)
 
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
