@@ -134,6 +134,7 @@ export interface INodeProperties {
     documentation?: string
     color?: string
     hint?: string
+    warning?: string
 }
 
 export interface INode extends INodeProperties {
