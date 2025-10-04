@@ -47,6 +47,12 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
         }
         const body = req.body
         body.workspaceId = req.user?.activeWorkspaceId
+        if (!body.workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: marketplacesController.saveCustomTemplate - workspace ${body.workspaceId} not found!`
+            )
+        }
         const apiResponse = await marketplacesService.saveCustomTemplate(body)
         return res.json(apiResponse)
     } catch (error) {
