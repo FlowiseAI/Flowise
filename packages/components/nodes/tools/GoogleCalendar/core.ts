@@ -48,6 +48,7 @@ const CreateEventSchema = z.object({
     endDate: z.string().optional().describe('End date for all-day events (YYYY-MM-DD)'),
     timeZone: z.string().optional().describe('Time zone (e.g., America/New_York)'),
     attendees: z.string().optional().describe('Comma-separated list of attendee emails'),
+    sendUpdates: z.enum(['all', 'externalOnly', 'none']).optional().default('all').describe('Whether to send notifications to attendees'),
     recurrence: z.string().optional().describe('Recurrence rules (RRULE format)'),
     reminderMinutes: z.number().optional().describe('Minutes before event to send reminder'),
     visibility: z.enum(['default', 'public', 'private', 'confidential']).optional().describe('Event visibility')
@@ -70,6 +71,7 @@ const UpdateEventSchema = z.object({
     endDate: z.string().optional().describe('Updated end date for all-day events (YYYY-MM-DD)'),
     timeZone: z.string().optional().describe('Updated time zone'),
     attendees: z.string().optional().describe('Updated comma-separated list of attendee emails'),
+    sendUpdates: z.enum(['all', 'externalOnly', 'none']).optional().default('all').describe('Whether to send notifications to attendees'),
     recurrence: z.string().optional().describe('Updated recurrence rules'),
     reminderMinutes: z.number().optional().describe('Updated reminder minutes'),
     visibility: z.enum(['default', 'public', 'private', 'confidential']).optional().describe('Updated event visibility')
@@ -286,8 +288,11 @@ class CreateEventTool extends BaseGoogleCalendarTool {
             }
 
             if (params.visibility) eventData.visibility = params.visibility
+            const queryParams = new URLSearchParams()
+            if (params.sendUpdates) queryParams.append('sendUpdates', params.sendUpdates)
 
-            const endpoint = `calendars/${encodeURIComponent(params.calendarId)}/events`
+            const endpoint = `calendars/${encodeURIComponent(params.calendarId)}/events?${queryParams.toString()}`
+
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'POST', body: eventData, params })
             return response
         } catch (error) {
@@ -395,8 +400,12 @@ class UpdateEventTool extends BaseGoogleCalendarTool {
             }
 
             if (params.visibility) updateData.visibility = params.visibility
+            const queryParams = new URLSearchParams()
+            if (params.sendUpdates) queryParams.append('sendUpdates', params.sendUpdates)
 
-            const endpoint = `calendars/${encodeURIComponent(params.calendarId)}/events/${encodeURIComponent(params.eventId)}`
+            const endpoint = `calendars/${encodeURIComponent(params.calendarId)}/events/${encodeURIComponent(
+                params.eventId
+            )}?${queryParams.toString()}`
             const response = await this.makeGoogleCalendarRequest({ endpoint, method: 'PUT', body: updateData, params })
             return response
         } catch (error) {

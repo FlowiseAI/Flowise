@@ -81,7 +81,7 @@ class Agent_Agentflow implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'agentAgentflow'
-        this.version = 2.0
+        this.version = 2.2
         this.type = 'Agent'
         this.category = 'Agent Flows'
         this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
@@ -159,6 +159,56 @@ class Agent_Agentflow implements INode {
                 ],
                 show: {
                     agentModel: 'chatOpenAI'
+                }
+            },
+            {
+                label: 'Gemini Built-in Tools',
+                name: 'agentToolsBuiltInGemini',
+                type: 'multiOptions',
+                optional: true,
+                options: [
+                    {
+                        label: 'URL Context',
+                        name: 'urlContext',
+                        description: 'Extract content from given URLs'
+                    },
+                    {
+                        label: 'Google Search',
+                        name: 'googleSearch',
+                        description: 'Search real-time web content'
+                    }
+                ],
+                show: {
+                    agentModel: 'chatGoogleGenerativeAI'
+                }
+            },
+            {
+                label: 'Anthropic Built-in Tools',
+                name: 'agentToolsBuiltInAnthropic',
+                type: 'multiOptions',
+                optional: true,
+                options: [
+                    {
+                        label: 'Web Search',
+                        name: 'web_search_20250305',
+                        description: 'Search the web for the latest information'
+                    },
+                    {
+                        label: 'Web Fetch',
+                        name: 'web_fetch_20250910',
+                        description: 'Retrieve full content from specified web pages'
+                    }
+                    /*
+                    * Not supported yet as we need to get bash_code_execution_tool_result from content:
+                    https://docs.claude.com/en/docs/agents-and-tools/tool-use/code-execution-tool#retrieve-generated-files
+                    {
+                        label: 'Code Interpreter',
+                        name: 'code_execution_20250825',
+                        description: 'Write and run Python code in a sandboxed environment'
+                    }*/
+                ],
+                show: {
+                    agentModel: 'chatAnthropic'
                 }
             },
             {
@@ -765,6 +815,60 @@ class Agent_Agentflow implements INode {
                 }
             }
 
+            const agentToolsBuiltInGemini = convertMultiOptionsToStringArray(nodeData.inputs?.agentToolsBuiltInGemini)
+            if (agentToolsBuiltInGemini && agentToolsBuiltInGemini.length > 0) {
+                for (const tool of agentToolsBuiltInGemini) {
+                    const builtInTool: ICommonObject = {
+                        [tool]: {}
+                    }
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
+                }
+            }
+
+            const agentToolsBuiltInAnthropic = convertMultiOptionsToStringArray(nodeData.inputs?.agentToolsBuiltInAnthropic)
+            if (agentToolsBuiltInAnthropic && agentToolsBuiltInAnthropic.length > 0) {
+                for (const tool of agentToolsBuiltInAnthropic) {
+                    // split _ to get the tool name by removing the last part (date)
+                    const toolName = tool.split('_').slice(0, -1).join('_')
+
+                    if (tool === 'code_execution_20250825') {
+                        ;(llmNodeInstance as any).clientOptions = {
+                            defaultHeaders: {
+                                'anthropic-beta': ['code-execution-2025-08-25', 'files-api-2025-04-14']
+                            }
+                        }
+                    }
+
+                    if (tool === 'web_fetch_20250910') {
+                        ;(llmNodeInstance as any).clientOptions = {
+                            defaultHeaders: {
+                                'anthropic-beta': ['web-fetch-2025-09-10']
+                            }
+                        }
+                    }
+
+                    const builtInTool: ICommonObject = {
+                        type: tool,
+                        name: toolName
+                    }
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
+                }
+            }
+
             if (llmNodeInstance && toolsInstance.length > 0) {
                 if (llmNodeInstance.bindTools === undefined) {
                     throw new Error(`Agent needs to have a function calling capable models.`)
@@ -1177,53 +1281,80 @@ class Agent_Agentflow implements INode {
             return builtInUsedTools
         }
 
-        const { output, tools } = response.response_metadata
+        const { output, tools, groundingMetadata, urlContextMetadata } = response.response_metadata
 
-        if (!output || !Array.isArray(output) || output.length === 0 || !tools || !Array.isArray(tools) || tools.length === 0) {
-            return builtInUsedTools
+        // Handle OpenAI built-in tools
+        if (output && Array.isArray(output) && output.length > 0 && tools && Array.isArray(tools) && tools.length > 0) {
+            for (const outputItem of output) {
+                if (outputItem.type && outputItem.type.endsWith('_call')) {
+                    let toolInput = outputItem.action ?? outputItem.code
+                    let toolOutput = outputItem.status === 'completed' ? 'Success' : outputItem.status
+
+                    // Handle image generation calls specially
+                    if (outputItem.type === 'image_generation_call') {
+                        // Create input summary for image generation
+                        toolInput = {
+                            prompt: outputItem.revised_prompt || 'Image generation request',
+                            size: outputItem.size || '1024x1024',
+                            quality: outputItem.quality || 'standard',
+                            output_format: outputItem.output_format || 'png'
+                        }
+
+                        // Check if image has been processed (base64 replaced with file path)
+                        if (outputItem.result && !outputItem.result.startsWith('data:') && !outputItem.result.includes('base64')) {
+                            toolOutput = `Image generated and saved`
+                        } else {
+                            toolOutput = `Image generated (base64)`
+                        }
+                    }
+
+                    // Remove "_call" suffix to get the base tool name
+                    const baseToolName = outputItem.type.replace('_call', '')
+
+                    // Find matching tool that includes the base name in its type
+                    const matchingTool = tools.find((tool) => tool.type && tool.type.includes(baseToolName))
+
+                    if (matchingTool) {
+                        // Check for duplicates
+                        if (builtInUsedTools.find((tool) => tool.tool === matchingTool.type)) {
+                            continue
+                        }
+
+                        builtInUsedTools.push({
+                            tool: matchingTool.type,
+                            toolInput,
+                            toolOutput
+                        })
+                    }
+                }
+            }
         }
 
-        for (const outputItem of output) {
-            if (outputItem.type && outputItem.type.endsWith('_call')) {
-                let toolInput = outputItem.action ?? outputItem.code
-                let toolOutput = outputItem.status === 'completed' ? 'Success' : outputItem.status
+        // Handle Gemini googleSearch tool
+        if (groundingMetadata && groundingMetadata.webSearchQueries && Array.isArray(groundingMetadata.webSearchQueries)) {
+            // Check for duplicates
+            if (!builtInUsedTools.find((tool) => tool.tool === 'googleSearch')) {
+                builtInUsedTools.push({
+                    tool: 'googleSearch',
+                    toolInput: {
+                        queries: groundingMetadata.webSearchQueries
+                    },
+                    toolOutput: `Searched for: ${groundingMetadata.webSearchQueries.join(', ')}`
+                })
+            }
+        }
 
-                // Handle image generation calls specially
-                if (outputItem.type === 'image_generation_call') {
-                    // Create input summary for image generation
-                    toolInput = {
-                        prompt: outputItem.revised_prompt || 'Image generation request',
-                        size: outputItem.size || '1024x1024',
-                        quality: outputItem.quality || 'standard',
-                        output_format: outputItem.output_format || 'png'
-                    }
-
-                    // Check if image has been processed (base64 replaced with file path)
-                    if (outputItem.result && !outputItem.result.startsWith('data:') && !outputItem.result.includes('base64')) {
-                        toolOutput = `Image generated and saved`
-                    } else {
-                        toolOutput = `Image generated (base64)`
-                    }
-                }
-
-                // Remove "_call" suffix to get the base tool name
-                const baseToolName = outputItem.type.replace('_call', '')
-
-                // Find matching tool that includes the base name in its type
-                const matchingTool = tools.find((tool) => tool.type && tool.type.includes(baseToolName))
-
-                if (matchingTool) {
-                    // Check for duplicates
-                    if (builtInUsedTools.find((tool) => tool.tool === matchingTool.type)) {
-                        continue
-                    }
-
-                    builtInUsedTools.push({
-                        tool: matchingTool.type,
-                        toolInput,
-                        toolOutput
-                    })
-                }
+        // Handle Gemini urlContext tool
+        if (urlContextMetadata && urlContextMetadata.urlMetadata && Array.isArray(urlContextMetadata.urlMetadata)) {
+            // Check for duplicates
+            if (!builtInUsedTools.find((tool) => tool.tool === 'urlContext')) {
+                builtInUsedTools.push({
+                    tool: 'urlContext',
+                    toolInput: {
+                        urlMetadata: urlContextMetadata.urlMetadata
+                    },
+                    toolOutput: `Processed ${urlContextMetadata.urlMetadata.length} URL(s)`
+                })
             }
         }
 
@@ -1594,6 +1725,10 @@ class Agent_Agentflow implements INode {
     }> {
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
+        const usedTools: IUsedTool[] = []
+        let sourceDocuments: Array<any> = []
+        let artifacts: any[] = []
+        let isWaitingForHumanInput: boolean | undefined
 
         if (!response.tool_calls || response.tool_calls.length === 0) {
             return { response, usedTools: [], sourceDocuments: [], artifacts: [], totalTokens }
@@ -1604,6 +1739,24 @@ class Agent_Agentflow implements INode {
             sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
         }
 
+        // Remove tool calls with no id
+        const toBeRemovedToolCalls = []
+        for (let i = 0; i < response.tool_calls.length; i++) {
+            const toolCall = response.tool_calls[i]
+            if (!toolCall.id) {
+                toBeRemovedToolCalls.push(toolCall)
+                usedTools.push({
+                    tool: toolCall.name || 'tool',
+                    toolInput: toolCall.args,
+                    toolOutput: response.content
+                })
+            }
+        }
+
+        for (const toolCall of toBeRemovedToolCalls) {
+            response.tool_calls.splice(response.tool_calls.indexOf(toolCall), 1)
+        }
+
         // Add LLM response with tool calls to messages
         messages.push({
             id: response.id,
@@ -1612,11 +1765,6 @@ class Agent_Agentflow implements INode {
             tool_calls: response.tool_calls,
             usage_metadata: response.usage_metadata
         })
-
-        const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
-        let isWaitingForHumanInput: boolean | undefined
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -1761,6 +1909,17 @@ class Agent_Agentflow implements INode {
             }
         }
 
+        if (response.tool_calls.length === 0) {
+            const responseContent = typeof response.content === 'string' ? response.content : JSON.stringify(response.content, null, 2)
+            return {
+                response: new AIMessageChunk(responseContent),
+                usedTools,
+                sourceDocuments,
+                artifacts,
+                totalTokens
+            }
+        }
+
         // Get LLM response after tool calls
         let newResponse: AIMessageChunk
 
@@ -1860,6 +2019,10 @@ class Agent_Agentflow implements INode {
         isWaitingForHumanInput?: boolean
     }> {
         let llmNodeInstance = llmWithoutToolsBind
+        const usedTools: IUsedTool[] = []
+        let sourceDocuments: Array<any> = []
+        let artifacts: any[] = []
+        let isWaitingForHumanInput: boolean | undefined
 
         const lastCheckpointMessages = humanInputAction?.data?.input?.messages ?? []
         if (!lastCheckpointMessages.length) {
@@ -1885,6 +2048,24 @@ class Agent_Agentflow implements INode {
             sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
         }
 
+        // Remove tool calls with no id
+        const toBeRemovedToolCalls = []
+        for (let i = 0; i < response.tool_calls.length; i++) {
+            const toolCall = response.tool_calls[i]
+            if (!toolCall.id) {
+                toBeRemovedToolCalls.push(toolCall)
+                usedTools.push({
+                    tool: toolCall.name || 'tool',
+                    toolInput: toolCall.args,
+                    toolOutput: response.content
+                })
+            }
+        }
+
+        for (const toolCall of toBeRemovedToolCalls) {
+            response.tool_calls.splice(response.tool_calls.indexOf(toolCall), 1)
+        }
+
         // Add LLM response with tool calls to messages
         messages.push({
             id: response.id,
@@ -1893,11 +2074,6 @@ class Agent_Agentflow implements INode {
             tool_calls: response.tool_calls,
             usage_metadata: response.usage_metadata
         })
-
-        const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
-        let isWaitingForHumanInput: boolean | undefined
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
