@@ -25,6 +25,7 @@ import { SwitchInput } from '@/ui-component/switch/Switch'
 import { Input } from '@/ui-component/input/Input'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import langsmithPNG from '@/assets/images/langchain.png'
+import jlincPNG from '@/assets/images/jlinc.png'
 import langfuseSVG from '@/assets/images/langfuse.svg'
 import lunarySVG from '@/assets/images/lunary.svg'
 import langwatchSVG from '@/assets/images/langwatch.svg'
@@ -40,6 +41,42 @@ import chatflowsApi from '@/api/chatflows'
 import Image from 'next/image'
 
 const analyticProviders = [
+    {
+        label: 'JLINC',
+        name: 'jlinc',
+        icon: jlincPNG,
+        url: 'https://jlinc.com',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['jlincApi']
+            },
+            {
+                label: 'Agreement ID',
+                name: 'agreementId',
+                type: 'string',
+                optional: true,
+                description: 'The UUID of the agreement that transactions occur under',
+                placeholder: '00000000-0000-0000-0000-000000000000'
+            },
+            {
+                label: 'System Prefix',
+                name: 'systemPrefix',
+                type: 'string',
+                optional: false,
+                description: 'The prefix to give DID user shortnames',
+                placeholder: 'MyProject'
+            },
+            {
+                label: 'On/Off',
+                name: 'status',
+                type: 'boolean',
+                optional: true
+            }
+        ]
+    },
     {
         label: 'LangSmith',
         name: 'langSmith',

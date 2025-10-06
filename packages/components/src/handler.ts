@@ -41,6 +41,7 @@ import { DataSource } from 'typeorm'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { Serialized } from '@langchain/core/load/serializable'
+import { JLINCTracer } from '@jlinc/langchain'
 
 interface AgentRun extends Run {
     actions: AgentAction[]
@@ -590,7 +591,12 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         organizationId: options.user?.organizationId,
                         aiCredentialsOwnership: aiCredentialsOwnership,
                         messageId: options.messageId,
-                        sessionId: options.sessionId
+                        sessionId: options.sessionId,
+                        ...(options.trackingMetadata &&
+                            Object.keys(options.trackingMetadata).reduce((acc, key) => {
+                                acc[`tracking_${key}`] = options.trackingMetadata![key]
+                                return acc
+                            }, {} as Record<string, any>))
                     }
                     // const trace = langfuse.trace({
                     //     tags: [`Name:${chatflow.name}`],
@@ -709,6 +715,26 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     }
 
                     const tracer: Tracer | undefined = getOpikTracer(opikOptions)
+                    callbacks.push(tracer)
+                } else if (provider === 'jlinc') {
+                    const dataStoreApiUrl = getCredentialParam('dataStoreApiUrl', credentialData, nodeData)
+                    const dataStoreApiKey = getCredentialParam('dataStoreApiKey', credentialData, nodeData)
+                    const archiveApiUrl = getCredentialParam('archiveApiUrl', credentialData, nodeData)
+                    const archiveApiKey = getCredentialParam('archiveApiKey', credentialData, nodeData)
+                    let agreementId = analytic[provider].agreementId as string
+                    if (!agreementId || agreementId === '') {
+                        agreementId = '00000000-0000-0000-0000-000000000000'
+                    }
+                    const systemPrefix = analytic[provider].systemPrefix as string
+                    const tracer = new JLINCTracer({
+                        dataStoreApiUrl,
+                        dataStoreApiKey,
+                        archiveApiUrl,
+                        archiveApiKey,
+                        agreementId,
+                        systemPrefix,
+                        debug: false
+                    })
                     callbacks.push(tracer)
                 }
             }

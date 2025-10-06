@@ -2067,15 +2067,11 @@ export async function registerOAuthClient(redirectUri: string): Promise<{
     authorization_endpoint: string
     scope: string
 }> {
-    const baseUrl = process.env.ATLASSIAN_MCP_SERVER_URL
-    if (!baseUrl) {
-        throw new Error('ATLASSIAN_MCP_SERVER_URL environment variable is not set')
-    }
     try {
         logger.info('[ATLASSIAN OAUTH]: Starting OAuth client registration')
 
         // Step 1: Get MCP metadata
-        const metadata = await fetchMCPMetadata(baseUrl)
+        const metadata = await fetchMCPMetadata()
         logger.debug('[ATLASSIAN OAUTH]: Retrieved MCP metadata')
 
         // Step 2: Register dynamic client
@@ -2251,13 +2247,8 @@ export async function refreshStoredCredentialTokens(credentialId: string, appDat
             return true // Token is still valid
         }
 
-        const baseUrl = process.env.ATLASSIAN_MCP_SERVER_URL
-        if (!baseUrl) {
-            throw new Error('ATLASSIAN_MCP_SERVER_URL environment variable is not set')
-        }
-
         // Get MCP metadata
-        const metadata = await fetchMCPMetadata(baseUrl)
+        const metadata = await fetchMCPMetadata()
 
         // Refresh tokens
         const tokenResponse = await fetch(metadata.token_endpoint, {

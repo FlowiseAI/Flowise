@@ -95,9 +95,9 @@ export interface MarketingConfig {
 export const marketingConfig: MarketingConfig = {
     // Easy to update tracking codes
     tracking: {
-        googleAnalyticsId: process.env.DOCUSAURUS_GA_ID,
+        googleAnalyticsId: process.env.DOCUSAURUS_GA_ID || 'G-VD1X9LNG3N',
         linkedInPixel: process.env.DOCUSAURUS_LINKEDIN_PIXEL,
-        facebookPixel: process.env.DOCUSAURUS_FACEBOOK_PIXEL,
+        facebookPixel: process.env.DOCUSAURUS_FACEBOOK_PIXEL || '25220750360842472',
         gtmId: process.env.DOCUSAURUS_GTM_ID
     },
 

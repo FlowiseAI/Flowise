@@ -60,6 +60,7 @@ COPY packages-answers/tsconfig/package.json ./packages-answers/tsconfig/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/components/package.json ./packages/components/
 COPY packages/embed/package.json ./packages/embed/
+COPY packages/embed-react/package.json ./packages/embed-react/
 
 # Install dependencies (skip postinstall scripts for Docker build)
 RUN --mount=type=cache,id=pnpm,target=/root/.pnpm-store pnpm install --ignore-scripts

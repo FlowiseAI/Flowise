@@ -1,0 +1,94 @@
+.webinarBanner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: linear-gradient(90deg, #00303f, #003545);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    padding: 0.5rem 1rem;
+    z-index: 9999;
+}
+
+.webinarContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.webinarBadge {
+    background: rgba(255, 255, 255, 0.1);
+    color: #00ffff;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.webinarText {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.webinarCta {
+    background: linear-gradient(135deg, #00ffff, #00cccc);
+    color: #000 !important;
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 255, 255, 0.5);
+}
+
+.webinarCta:hover {
+    background: linear-gradient(135deg, #00ffff, #00ffff);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.4);
+    color: #000 !important;
+    text-decoration: none !important;
+}
+
+@media (max-width: 768px) {
+    .webinarBanner {
+        padding: 0.5rem;
+    }
+
+    .webinarContent {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .webinarBadge {
+        font-size: 0.8rem;
+    }
+
+    .webinarText {
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    .webinarCta {
+        font-size: 0.85rem;
+    }
+}
+
+/* Push everything down to account for the fixed banner */
+:global(body) {
+    padding-top: 54px !important;
+}
+
+/* Remove padding for webinar pages and hide navbar */
+.webinarPage {
+    margin-top: -54px;
+}
+
+.webinarPage :global(.navbar) {
+    display: none !important;
+}

@@ -96,7 +96,9 @@ export default function WebinarCountdown({ className, showSeconds = true, compac
                 textAlign: 'center'
             }}
         >
-            {!compact && <div style={{ fontSize: '1rem', marginBottom: '0.5rem', opacity: 0.9 }}>⏰ Webinar starts in:</div>}
+            {!compact && (
+                <div style={{ fontSize: '1rem', marginBottom: '0.5rem', opacity: 0.9, color: 'white' }}>⏰ Webinar starts in:</div>
+            )}
 
             <div
                 style={{
@@ -119,7 +121,9 @@ export default function WebinarCountdown({ className, showSeconds = true, compac
                         >
                             {formatNumber(timeLeft.days)}
                         </div>
-                        <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8 }}>{timeLeft.days === 1 ? 'day' : 'days'}</div>
+                        <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8, color: 'white' }}>
+                            {timeLeft.days === 1 ? 'day' : 'days'}
+                        </div>
                     </div>
                 )}
 
@@ -134,7 +138,9 @@ export default function WebinarCountdown({ className, showSeconds = true, compac
                     >
                         {formatNumber(timeLeft.hours)}
                     </div>
-                    <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8 }}>{timeLeft.hours === 1 ? 'hour' : 'hours'}</div>
+                    <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8, color: 'white' }}>
+                        {timeLeft.hours === 1 ? 'hour' : 'hours'}
+                    </div>
                 </div>
 
                 <div className={styles.countdownUnit}>
@@ -148,7 +154,9 @@ export default function WebinarCountdown({ className, showSeconds = true, compac
                     >
                         {formatNumber(timeLeft.minutes)}
                     </div>
-                    <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8 }}>{timeLeft.minutes === 1 ? 'min' : 'mins'}</div>
+                    <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8, color: 'white' }}>
+                        {timeLeft.minutes === 1 ? 'min' : 'mins'}
+                    </div>
                 </div>
 
                 {showSeconds && (
@@ -163,7 +171,7 @@ export default function WebinarCountdown({ className, showSeconds = true, compac
                         >
                             {formatNumber(timeLeft.seconds)}
                         </div>
-                        <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8 }}>
+                        <div style={{ fontSize: compact ? '0.7rem' : '0.8rem', opacity: 0.8, color: 'white' }}>
                             {timeLeft.seconds === 1 ? 'sec' : 'secs'}
                         </div>
                     </div>
@@ -171,7 +179,7 @@ export default function WebinarCountdown({ className, showSeconds = true, compac
             </div>
 
             {!compact && (
-                <div style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '0.5rem' }}>
+                <div style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '0.5rem', color: 'white' }}>
                     {webinarConfig.webinarDate} at {webinarConfig.webinarTime}
                 </div>
             )}

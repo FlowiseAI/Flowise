@@ -44,7 +44,6 @@
         "@mui/x-tree-view": "^7.29.1",
         "@next-auth/prisma-adapter": "^1.0.7",
         "@textea/json-viewer": "2.14.1",
-        "aai-embed-react": "~1.0.8",
         "axios": "^1.12.1",
         "clsx": "^1.2.1",
         "cors": "^2.8.5",

@@ -22,3 +22,5 @@ export const GOOGLE_DRIVE_SUPPORTED_MIME_TYPES = [
     'application/vnd.ms-powerpoint',
     'text/plain'
 ].join(',')
+
+export const ATLASSIAN_MCP_SERVER_URL = 'https://atlassian-remote-mcp.last-rev-llc.workers.dev'

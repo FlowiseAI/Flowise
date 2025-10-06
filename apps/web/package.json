@@ -35,6 +35,7 @@
         "@svgr/webpack": "^8.1.0",
         "@textea/json-viewer": "2.14.1",
         "aai-embed": "workspace:*",
+        "aai-embed-react": "workspace:*",
         "add": "^2.0.6",
         "aws-crt": "^1.27.3",
         "axios": "^1.12.1",

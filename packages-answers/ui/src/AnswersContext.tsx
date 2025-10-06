@@ -495,7 +495,11 @@ export function AnswersProvider({
                     audio,
                     socketIOClientId: isChatFlowAvailableToStream ? socketIOClientId : undefined,
                     chatType: 'ANSWERAI',
-                    action
+                    action,
+                    trackingMetadata: {
+                        url: typeof window !== 'undefined' ? window.location.href : undefined,
+                        source: 'theanswer'
+                    }
                 }
 
                 if (isChatFlowAvailableToStream) {

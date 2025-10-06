@@ -61,6 +61,8 @@ import { AddSettingsToCustomTemplate1752780175001 } from './1752780175001-AddSet
 import { AddPgvectorExtension1752614575000 } from './1752614575000-AddPgvectorExtension'
 import { AddEnabledIntegrationsToOrganization1752614576000 } from './1752614576000-AddEnabledIntegrationsToOrganization'
 import { AddVersioningToChatFlow1753000000000 } from './1753000000000-AddVersioningToChatFlow'
+import { AddUniqueConstraintDefaultChatflows1753000000001 } from './1753000000001-AddUniqueConstraintDefaultChatflows'
+import { AddTrackingMetadataToChatMessage1753200000000 } from './1753200000000-AddTrackingMetadataToChatMessage'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -125,5 +127,7 @@ export const postgresMigrations = [
     AddSettingsToCustomTemplate1752780175001,
     AddPgvectorExtension1752614575000,
     AddEnabledIntegrationsToOrganization1752614576000,
-    AddVersioningToChatFlow1753000000000
+    AddVersioningToChatFlow1753000000000,
+    AddUniqueConstraintDefaultChatflows1753000000001,
+    AddTrackingMetadataToChatMessage1753200000000
 ]

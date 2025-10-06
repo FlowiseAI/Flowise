@@ -116,19 +116,52 @@ export interface WebinarConfig {
     }>
 }
 
+// Helper function to get the next Thursday at 11am PT
+const getNextThursdayAt11PT = (): Date => {
+    const now = new Date()
+    const result = new Date(now)
+
+    // Get day of week (0 = Sunday, 4 = Thursday)
+    const currentDay = result.getDay()
+    const daysUntilThursday = (4 - currentDay + 7) % 7 || 7 // If it's Thursday, get next Thursday
+
+    // Set to next Thursday
+    result.setDate(result.getDate() + daysUntilThursday)
+
+    // Set time to 11:00 AM PT (18:00 UTC or 19:00 UTC depending on DST)
+    // For simplicity, we'll use 18:00 UTC (11:00 AM PST / PDT varies)
+    result.setUTCHours(18, 0, 0, 0)
+
+    // If we're past 11am PT on Thursday, move to next week
+    if (daysUntilThursday === 0 && now > result) {
+        result.setDate(result.getDate() + 7)
+    }
+
+    return result
+}
+
+// Dynamic date calculation
+const nextWebinar = getNextThursdayAt11PT()
+const webinarDateFormatted = nextWebinar.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+})
+
 export const webinarConfig: WebinarConfig = {
-    // Basic webinar details - EASY TO UPDATE
-    webinarDate: 'Saturday, January 18, 2025',
-    webinarTime: '11:00 AM PST',
-    webinarDateTimeISO: '2025-01-18T19:00:00Z',
+    // Basic webinar details - DYNAMICALLY CALCULATED
+    webinarDate: webinarDateFormatted,
+    webinarTime: '11:00 AM PT',
+    webinarDateTimeISO: nextWebinar.toISOString(),
     maxSeats: 200,
     currentRegistrations: 147,
     scarcity: {
         totalSeats: 200,
-        registrationDeadline: '2025-01-18T18:59:59Z',
+        registrationDeadline: new Date(nextWebinar.getTime() - 60000).toISOString(), // 1 minute before start
         urgencyMessages: [
-            "Only {remainingSeats} seats left for Saturday's live session",
-            'Registration closes Saturday at 11:00 AM PST',
+            "Only {remainingSeats} seats left for Thursday's live session",
+            'Registration closes Thursday at 11:00 AM PT',
             '⚡ Limited seating — save your spot now'
         ]
     },
@@ -141,7 +174,12 @@ export const webinarConfig: WebinarConfig = {
             'Early access to the Enterprise AI Playbook PDF before it goes public'
         ]
     },
-    pressFeatures: [{ name: 'TechCrunch' }, { name: 'Forbes AI 50' }, { name: 'AWS Startups' }, { name: 'Google Cloud Innovators' }],
+    pressFeatures: [
+        { name: 'Enterprise AI Leaders' },
+        { name: 'Cloud Native Solutions' },
+        { name: 'AI Implementation Partners' },
+        { name: 'Innovation Workshop Series' }
+    ],
     hostHighlights: [
         {
             speaker: 'Brad Taylor',
@@ -155,22 +193,22 @@ export const webinarConfig: WebinarConfig = {
     ],
     testimonialQuotes: [
         {
-            quote: '“We replaced six scattered systems with one compliant AI interface in just four weeks.”',
+            quote: '"We are consolidating multiple knowledge systems into a unified AI interface with promising early results."',
             author: 'Customer Success Lead',
-            role: 'Enterprise Enablement',
-            company: 'Integral Ad Science'
+            role: 'Enterprise Technology',
+            company: 'Fortune 500 AdTech Company'
         },
         {
-            quote: '“120 analyst hours every week back in our pipeline — the Palatine playbook alone paid for the program.”',
-            author: 'Deal Operations Director',
-            role: 'Private Equity',
-            company: 'Palatine Capital Partners'
+            quote: '"The potential to save 100+ analyst hours weekly is what drove us to implement this AI framework."',
+            author: 'Operations Director',
+            role: 'Financial Services',
+            company: 'Leading Private Equity Firm'
         },
         {
-            quote: '“Our reps now find answers in seconds and stay on-message across nine regions.”',
-            author: 'Director of Sales Enablement',
-            role: 'Commercial Operations',
-            company: 'Moonstruck Medical'
+            quote: '"Our pilot teams are finding information dramatically faster, improving response times across regions."',
+            author: 'Sales Enablement Lead',
+            role: 'Healthcare Technology',
+            company: 'Multi-Regional Healthcare Provider'
         }
     ],
     roadmap: [
@@ -220,36 +258,36 @@ export const webinarConfig: WebinarConfig = {
 
     // Headlines - easily A/B testable
     headlines: {
-        primary: 'From AI Chaos to Enterprise Success: Deploy AI Agents in 4 Weeks, Not 6 Months',
+        primary: 'From AI Chaos to Enterprise Success: Deploy AI Agents in weeks, Not months',
         alternate1: 'Stop Paying AI Tax: How Enterprises Cut Costs 30% While Scaling AI',
         alternate2: 'The Enterprise AI Playbook: Vendor-Free Implementation in 30 Days'
     },
 
     // Customer success metrics - UPDATE THESE EASILY
     customerStats: {
-        palatine: {
-            saved: '120 analyst-hours/week',
-            roi: '$312K annual savings',
-            deployment: '12 weeks',
-            systems: '50-60 daily broker emails automated'
+        financial: {
+            saved: 'Target: 100+ hours/week',
+            roi: 'Projected 6-figure annual savings',
+            deployment: '8-12 weeks typical',
+            systems: 'Automating repetitive document processing'
         },
-        ias: {
-            deployment: '4 weeks',
-            systems: '6 systems consolidated to 1 AI interface',
-            roi: '40% faster ticket resolution'
+        adtech: {
+            deployment: '4-6 weeks',
+            systems: 'Consolidating multiple data sources',
+            roi: 'Targeting 30%+ faster resolution'
         },
-        moonstruck: {
-            reps: '9 sales reps unified',
-            search: 'minutes to seconds search time',
-            roi: 'Operations team freed for strategic work'
+        healthcare: {
+            reps: 'Multiple teams in pilot',
+            search: 'Dramatically improved search times',
+            roi: 'Freeing teams for strategic initiatives'
         },
-        wow: {
-            conversion: 'POC → $36K annual license',
-            roi: 'Complete support workflow automation'
+        telecom: {
+            conversion: 'Active POC in progress',
+            roi: 'Workflow automation underway'
         },
-        contentful: {
-            systems: '6 scattered systems to 1 unified interface',
-            roi: '90% of queries handled instantly by AI'
+        saas: {
+            systems: 'Unifying scattered knowledge bases',
+            roi: 'AI-powered instant responses in testing'
         }
     },
 
@@ -443,7 +481,7 @@ export const webinarConfig: WebinarConfig = {
     faqs: [
         {
             question: "This sounds too complex to implement. How do we know it won't be another 18-month project?",
-            answer: "IAS (Integral Ad Science) deployed our full solution in exactly 4 weeks with all employees onboarded. We've proven this timeline works because we pre-built 100+ integrations (SFDC, Jira, Confluence, etc.) and use a human-in-the-loop approach rather than trying to automate everything at once."
+            answer: "IAS (Integral Ad Science) deployed our full solution in exactly weeks with all employees onboarded. We've proven this timeline works because we pre-built 100+ integrations (SFDC, Jira, Confluence, etc.) and use a human-in-the-loop approach rather than trying to automate everything at once."
         },
         {
             question: "What about vendor lock-in? We've been burned before by platforms that held our data hostage.",

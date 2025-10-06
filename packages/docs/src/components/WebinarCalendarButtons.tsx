@@ -23,7 +23,7 @@ export default function WebinarCalendarButtons(): JSX.Element | null {
         return null
     }
 
-    const title = encodeURIComponent('Enterprise AI Webinar: Deploy AI Agents in 4 Weeks')
+    const title = encodeURIComponent('Enterprise AI Webinar: Deploy AI Agents in weeks')
     const details = encodeURIComponent(
         "Live 60-minute working session with Bradley Taylor & Adam Harris. You'll get the 4-week deployment playbook, ROI calculator, and security checklist."
     )
@@ -32,7 +32,7 @@ export default function WebinarCalendarButtons(): JSX.Element | null {
     const googleLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startISO}/${endISO}&details=${details}&location=${location}`
     const outlookLink = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${title}&body=${details}&startdt=${startISO}&enddt=${endISO}&location=${location}`
 
-    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//AnswerAI//Enterprise AI Webinar//EN\nBEGIN:VEVENT\nUID:${startISO}@theanswer.ai\nDTSTAMP:${startISO}\nDTSTART:${startISO}\nDTEND:${endISO}\nSUMMARY:Enterprise AI Webinar: Deploy AI Agents in 4 Weeks\nDESCRIPTION:Live 60-minute working session with Bradley Taylor & Adam Harris.\nLOCATION:Live Online Webinar\nEND:VEVENT\nEND:VCALENDAR`
+    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//AnswerAI//Enterprise AI Webinar//EN\nBEGIN:VEVENT\nUID:${startISO}@theanswer.ai\nDTSTAMP:${startISO}\nDTSTART:${startISO}\nDTEND:${endISO}\nSUMMARY:Enterprise AI Webinar: Deploy AI Agents in weeks\nDESCRIPTION:Live 60-minute working session with Bradley Taylor & Adam Harris.\nLOCATION:Live Online Webinar\nEND:VEVENT\nEND:VCALENDAR`
     const icsLink = `data:text/calendar;charset=utf8,${encodeURIComponent(icsContent)}`
 
     return (

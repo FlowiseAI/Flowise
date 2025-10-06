@@ -1,7 +1,8 @@
-import React, { useState, FormEvent, useEffect } from 'react'
+import React, { useState, FormEvent, useEffect, useRef } from 'react'
 import clsx from 'clsx'
 import { marketingConfig, calculateLeadScore } from '@site/src/config/marketingConfig'
 import { webinarConfig } from '@site/src/config/webinarContent'
+import { trackingService } from '@site/src/services/trackingService'
 import styles from '../pages/index.module.css'
 
 interface FormData {
@@ -17,6 +18,7 @@ export default function WebinarRegistrationForm(): JSX.Element {
     const [errors, setErrors] = useState<ValidationErrors>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [isSubmitted, setIsSubmitted] = useState(false)
+    const formInteractionStarted = useRef(false)
 
     // Load saved email from localStorage
     useEffect(() => {
@@ -27,6 +29,20 @@ export default function WebinarRegistrationForm(): JSX.Element {
             }
         }
     }, [])
+
+    // Track form abandonment when user leaves page
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            if (formInteractionStarted.current && !isSubmitted && formData.email) {
+                trackingService.trackFormInteraction('abandon', 'webinar-registration-unload')
+            }
+        }
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('beforeunload', handleBeforeUnload)
+            return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+        }
+    }, [formData.email, isSubmitted])
 
     const validateEmail = (email: string): boolean => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -41,6 +57,12 @@ export default function WebinarRegistrationForm(): JSX.Element {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target
         setFormData({ email: value })
+
+        // Track form interaction on first input
+        if (!formInteractionStarted.current && value.length > 0) {
+            formInteractionStarted.current = true
+            trackingService.trackFormInteraction('start', 'webinar-registration')
+        }
 
         // Save to localStorage
         if (typeof window !== 'undefined') {
@@ -92,6 +114,16 @@ export default function WebinarRegistrationForm(): JSX.Element {
             if (result.success) {
                 setIsSubmitted(true)
 
+                // Track successful registration with Meta Pixel and other tracking services
+                trackingService.trackWebinarRegistration({
+                    email: formData.email,
+                    leadScore: calculateLeadScore(formData),
+                    value: 100 // Estimated lead value
+                })
+
+                // Track form completion
+                trackingService.trackFormInteraction('complete', 'webinar-registration')
+
                 // Clear saved email
                 if (typeof window !== 'undefined') {
                     localStorage.removeItem('webinar_registration_email')
@@ -107,6 +139,9 @@ export default function WebinarRegistrationForm(): JSX.Element {
                 }, 2000)
             } else {
                 setErrors({ submit: result.message || 'Registration failed. Please try again.' })
+
+                // Track form abandonment on error
+                trackingService.trackFormInteraction('abandon', 'webinar-registration')
             }
         } catch (error) {
             console.error('Registration error:', error)
@@ -234,7 +269,7 @@ export default function WebinarRegistrationForm(): JSX.Element {
             </button>
 
             <div style={{ marginTop: '1rem', textAlign: 'center', opacity: 0.8, fontSize: '0.9rem' }}>
-                <p>🔒 Your information is secure and will never be shared</p>
+                <p style={{ color: 'white' }}>🔒 Your information is secure and will never be shared</p>
             </div>
         </form>
     )

@@ -519,6 +519,10 @@ const config: Config = {
     ],
     themes: ['docusaurus-theme-openapi-docs'], // export theme components
 
+    scripts: [],
+
+    headTags: [],
+
     themeConfig: {
         // Replace with your project's social card
         image: 'img/answer-angent-ai-ogimage.png',

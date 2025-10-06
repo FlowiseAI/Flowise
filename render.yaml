@@ -330,7 +330,7 @@ services:
     # ================================================================
     - type: keyvalue
       name: aai-unified4-redis
-      plan: standard
+      plan: free
       region: virginia
       maxmemoryPolicy: allkeys-lru
       ipAllowList: []

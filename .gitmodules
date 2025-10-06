@@ -1,4 +1,4 @@
 [submodule "packages/embed"]
 	path = packages/embed
-	url = https://github.com/the-answerai/chat-embed.git
+	url = https://github.com/the-answerai/aai-embed.git
 	branch = a-main

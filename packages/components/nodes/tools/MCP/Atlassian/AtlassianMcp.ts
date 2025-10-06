@@ -21,6 +21,7 @@ import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { MCPToolkit } from '../core'
 import { getCredentialData } from '../../../../src/utils'
+import { ATLASSIAN_MCP_SERVER_URL } from '../../../../src/constants'
 
 class Atlassian_MCP implements INode {
     label: string
@@ -129,13 +130,8 @@ class Atlassian_MCP implements INode {
             return []
         }
 
-        if (!process.env.ATLASSIAN_MCP_SERVER_URL) {
-            console.error('ATLASSIAN_MCP_SERVER_URL environment variable is not set')
-            return []
-        }
-
         const serverParams = {
-            url: `${process.env.ATLASSIAN_MCP_SERVER_URL}/sse`
+            url: `${ATLASSIAN_MCP_SERVER_URL}/sse`
         }
 
         const toolkit = new MCPToolkit(serverParams, 'sse', credentialData.access_token)

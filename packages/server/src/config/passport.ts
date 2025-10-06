@@ -96,11 +96,6 @@ export default function (passport: any) {
                     return done(null, false, { message: 'Authorization code missing' })
                 }
 
-                const baseUrl = process.env.ATLASSIAN_MCP_SERVER_URL
-                if (!baseUrl) {
-                    return done(null, false, { message: 'ATLASSIAN_MCP_SERVER_URL environment variable is not set' })
-                }
-
                 // Get MCP client info from state parameter (sessionId)
                 const sessionId = state
                 const mcpClientInfo = sessionId ? getPendingRegistration(sessionId) : null
@@ -110,7 +105,7 @@ export default function (passport: any) {
                 }
 
                 // Fetch MCP metadata and use MCP client credentials
-                const metadata = await fetchMCPMetadata(baseUrl)
+                const metadata = await fetchMCPMetadata()
                 const tokenURL = metadata.token_endpoint
                 const clientId = mcpClientInfo.client_id
                 const clientSecret = mcpClientInfo.client_secret

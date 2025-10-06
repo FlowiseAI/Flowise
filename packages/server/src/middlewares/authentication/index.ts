@@ -158,8 +158,15 @@ export const authenticationHandlerMiddleware =
                         // Find or create default chatflows for the user
                         const defaultChatflowId = await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
                         // Update user with the latest defaultChatflowId
-                        if (defaultChatflowId) {
-                            user.defaultChatflowId = defaultChatflowId
+                        if (defaultChatflowId && user.defaultChatflowId !== defaultChatflowId) {
+                            try {
+                                // Persist the update to the database to prevent race conditions
+                                await AppDataSource.getRepository(User).update(user.id, { defaultChatflowId })
+                                user.defaultChatflowId = defaultChatflowId
+                            } catch (error) {
+                                console.warn(`Failed to update defaultChatflowId for user ${user.id}:`, error)
+                                // Continue - don't break auth flow for non-critical update
+                            }
                         }
 
                         // Set permissions based on roles

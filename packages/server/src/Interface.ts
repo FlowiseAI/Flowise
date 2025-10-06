@@ -127,6 +127,7 @@ export interface IChatMessage {
     leadEmail?: string
     action?: string | null
     followUpPrompts?: string
+    trackingMetadata?: string
 }
 
 export interface IChatMessageFeedback {
@@ -330,6 +331,7 @@ export interface IncomingInput {
     action?: IAction
     chatType?: string
     streaming?: boolean
+    trackingMetadata?: ICommonObject
 }
 
 export interface IncomingAgentflowInput extends Omit<IncomingInput, 'question'> {

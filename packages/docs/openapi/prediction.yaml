@@ -163,6 +163,15 @@ components:
                                 type: string
                                 description: The MIME type of the file or resource
                                 example: image/png
+                trackingMetadata:
+                    type: object
+                    description: Custom tracking metadata for analytics and reporting purposes (optional). This data is stored in the database and sent to Langfuse with field names prefixed with 'tracking_'.
+                    additionalProperties: true
+                    example:
+                        url: https://example.com/page
+                        source: my-application
+                        userId: user-123
+                        customField: customValue
         PredictionResponse:
             type: object
             properties:

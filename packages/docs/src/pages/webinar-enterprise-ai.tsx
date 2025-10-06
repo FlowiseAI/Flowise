@@ -7,7 +7,6 @@ import WebinarCountdown from '@site/src/components/WebinarCountdown'
 import WebinarCalendarButtons from '@site/src/components/WebinarCalendarButtons'
 import { webinarConfig, getAvailableSeats, getLocalWebinarDateTime, getRegistrationDeadline } from '@site/src/config/webinarContent'
 import { trackingService } from '@site/src/services/trackingService'
-import WebinarLegalFooter from '@site/src/components/WebinarLegalFooter'
 
 import styles from './index.module.css'
 
@@ -16,7 +15,7 @@ const RiskAssurances = () => (
         <li>✅ 30-day replay access + slides</li>
         <li>✅ Zero sales pitch — just frameworks and dashboards</li>
         <li>✅ Privacy-first: your email stays with us (no spam)</li>
-        <li>✅ Can’t attend live? Register anyway and we’ll deliver the replay + toolkit automatically</li>
+        <li>✅ Can&apos;t attend live? Register anyway and we&apos;ll deliver the replay + toolkit automatically</li>
     </ul>
 )
 
@@ -80,11 +79,11 @@ function WebinarHero() {
     const heroBullets = [
         {
             icon: '⚙️',
-            copy: '4-week IAS rollout: six disconnected systems unified into one governed assistant.'
+            copy: '4-week enterprise rollout: multiple disconnected systems unified into one governed AI assistant.'
         },
         {
             icon: '💰',
-            copy: '$312K annual savings: Palatine’s automation play is still running live after 90 days.'
+            copy: 'Targeting 6-figure annual savings: automation frameworks proven in live deployments.'
         },
         {
             icon: '🛡️',
@@ -100,7 +99,7 @@ function WebinarHero() {
         },
         {
             icon: '🤝',
-            copy: 'Hybrid support: live AnswerAgent voice coaches plus human office hours so your team isn’t alone day one.'
+            copy: 'Hybrid support: live AnswerAgent voice coaches plus human office hours so your team isn&apos;t alone day one.'
         }
     ]
 
@@ -163,7 +162,7 @@ function WebinarHero() {
                             and framework they built to deploy enterprise AI agents in weeks, not months.
                         </p>
 
-                        <div className={styles.heroHighlightsHeading}>What you’ll see live</div>
+                        <div className={styles.heroHighlightsHeading}>What you&apos;ll see live</div>
                         <div className={styles.heroCarousel} aria-live='polite' aria-atomic='true'>
                             <div key={activeBulletIndex} className={styles.heroCarouselCard}>
                                 <span className={styles.heroCarouselIcon} aria-hidden='true'>
@@ -213,7 +212,6 @@ function WebinarHero() {
                         </div>
 
                         <RiskAssurances />
-                        <WebinarCalendarButtons />
                     </div>
                 </div>
             </div>
@@ -226,9 +224,9 @@ function HeroProofSection() {
     const testimonial =
         webinarConfig.testimonialQuotes?.[0] ||
         ({
-            quote: '“We went from scattered information across 6 systems to one unified AI interface in 28 days.”',
+            quote: '"We are seeing promising early results from unifying our scattered systems into one AI interface."',
             author: 'Customer Success Lead',
-            company: 'Integral Ad Science'
+            company: 'Enterprise Technology'
         } as const)
 
     const hasPress = pressFeatures.length > 0
@@ -331,8 +329,7 @@ function ValueProposition() {
                                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎯</div>
                                 <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Live 4-Week Framework</h3>
                                 <p style={{ fontSize: '1.1rem' }}>
-                                    Watch the exact deployment process used by IAS to go from scattered systems to unified AI in just 4
-                                    weeks.
+                                    Watch the exact deployment process used to go from scattered systems to unified AI in just 4-6 weeks.
                                 </p>
                             </div>
 
@@ -347,8 +344,8 @@ function ValueProposition() {
                                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💰</div>
                                 <h3 style={{ color: '#00ff00', marginBottom: '1rem' }}>Real ROI Numbers</h3>
                                 <p style={{ fontSize: '1.1rem' }}>
-                                    $312K saved (Palatine), 120 hours/week (IAS), minutes-to-seconds search time (Moonstruck). See the
-                                    actual proof.
+                                    100+ hours/week saved potential, dramatically faster search times, 6-figure annual savings projected.
+                                    See the framework.
                                 </p>
                             </div>
 
@@ -405,29 +402,29 @@ function CustomerLogosSection() {
     const stats = webinarConfig.customerStats
     const customers = [
         {
-            name: 'Integral Ad Science',
-            highlight: '4-week deployment • 6 systems → 1 AI hub',
-            metric: stats.ias?.roi || '40% faster ticket resolution'
+            name: 'Fortune 500 AdTech',
+            highlight: '4-6 week deployment • Multiple systems unified',
+            metric: stats.adtech?.roi || 'Targeting 30%+ faster resolution'
         },
         {
-            name: 'Palatine Capital Partners',
-            highlight: '120 analyst-hours/week automated',
-            metric: stats.palatine?.saved || '$312K annual savings'
+            name: 'Leading Financial Services',
+            highlight: 'Target: 100+ hours/week automated',
+            metric: stats.financial?.saved || 'Projected 6-figure annual savings'
         },
         {
-            name: 'Moonstruck Medical',
-            highlight: '9 reps unified • search in seconds',
-            metric: stats.moonstruck?.search || '3× faster enablement'
+            name: 'Healthcare Technology',
+            highlight: 'Multiple teams in pilot',
+            metric: stats.healthcare?.search || 'Dramatically faster search'
         },
         {
-            name: 'WOW! Internet',
-            highlight: 'Support workflows automated',
-            metric: stats.wow?.conversion || 'POC → $36K annual license'
+            name: 'Major Telecom Provider',
+            highlight: 'Workflow automation underway',
+            metric: stats.telecom?.conversion || 'Active POC in progress'
         },
         {
-            name: 'Contentful',
-            highlight: '90% of knowledge requests automated',
-            metric: stats.contentful?.roi || '6 systems consolidated'
+            name: 'Enterprise SaaS Platform',
+            highlight: 'Knowledge bases being unified',
+            metric: stats.saas?.roi || 'AI-powered responses in testing'
         }
     ]
 
@@ -443,7 +440,8 @@ function CustomerLogosSection() {
             <div className='container'>
                 <h2 className={styles.sectionTitle}>Trusted by teams shipping enterprise AI in weeks</h2>
                 <p className={styles.sectionSubtitle}>
-                    These teams used the playbook you’ll learn on Saturday to launch compliance-ready AI agents and unlock immediate ROI.
+                    These teams used the playbook you&apos;ll learn on Thursday to launch compliance-ready AI agents and unlock immediate
+                    ROI.
                 </p>
                 <div className={styles.customerLogoGrid}>
                     {customers.map((customer) => (
@@ -504,7 +502,7 @@ function ValueStackSection() {
                         </div>
                     ))}
                 </div>
-                <div className={styles.valueTotal}>Total value: $1,035 — access it all free on Saturday.</div>
+                <div className={styles.valueTotal}>Total value: $1,035 — access it all free on Thursday.</div>
             </div>
         </section>
     )
@@ -516,7 +514,7 @@ function MidPageCTA() {
             <div className='container'>
                 <div className={styles.midCtaCard}>
                     <div className={styles.midCtaCopy}>
-                        <h2>Need the playbook before Saturday?</h2>
+                        <h2>Need the playbook before Thursday?</h2>
                         <p>Drop your email to hold your seat and get the Enterprise AI readiness checklist + ROI worksheet immediately.</p>
                     </div>
                     <div className={styles.midCtaForm}>
@@ -551,34 +549,35 @@ function CustomerSuccessSection() {
                 <div className={styles.testimonialGrid}>
                     <div className={styles.miniStat}>
                         <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💰</div>
-                        <div className={styles.miniStatValue}>$312K</div>
-                        <div className={styles.miniStatLabel}>Annual savings at Palatine Capital</div>
+                        <div className={styles.miniStatValue}>6-Figure</div>
+                        <div className={styles.miniStatLabel}>Projected annual savings</div>
                         <p style={{ marginTop: '1.25rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                            Automated 120 analyst-hours every week by routing 50-60 broker emails straight into underwriting workflows.
+                            Target: automating 100+ analyst-hours weekly through intelligent document routing and processing workflows.
                         </p>
                     </div>
 
                     <div className={styles.miniStat}>
                         <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>⚡</div>
-                        <div className={styles.miniStatValue}>4 Weeks</div>
-                        <div className={styles.miniStatLabel}>Full deployment at IAS</div>
+                        <div className={styles.miniStatValue}>4-6 weeks</div>
+                        <div className={styles.miniStatLabel}>Typical deployment timeline</div>
                         <p style={{ marginTop: '1.25rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                            Unified 6 scattered systems into a single AI interface with complete audit trails and compliance approvals.
+                            Unifying scattered systems into a single AI interface with complete audit trails and compliance approvals.
                         </p>
                     </div>
 
                     <div className={styles.miniStat}>
                         <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🚀</div>
                         <div className={styles.miniStatValue}>3× Faster</div>
-                        <div className={styles.miniStatLabel}>Sales enablement at Moonstruck</div>
+                        <div className={styles.miniStatLabel}>Sales enablement improvement</div>
                         <p style={{ marginTop: '1.25rem', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                            9 distributed reps now get answers in seconds, freeing operations to focus on strategic launches and compliance.
+                            Distributed teams getting answers in seconds, freeing operations to focus on strategic initiatives and
+                            compliance.
                         </p>
                     </div>
                 </div>
 
                 <p style={{ textAlign: 'center', marginTop: '3rem', fontSize: '1rem', color: 'rgba(255,255,255,0.75)' }}>
-                    💡 Saturday’s session walks through these playbooks step-by-step so you can replicate them inside your org.
+                    💡 Thursday&apos;s session walks through these playbooks step-by-step so you can replicate them inside your org.
                 </p>
             </div>
         </section>
@@ -782,7 +781,7 @@ function AgendaSection() {
             <div className='container'>
                 <h2 className={styles.sectionTitle}>60-Minute Game Plan</h2>
                 <p className={styles.sectionSubtitle}>
-                    We move fast — you’ll leave with a week-by-week rollout timeline, governance blueprint, and next-step checklist.
+                    We move fast — you&apos;ll leave with a week-by-week rollout timeline, governance blueprint, and next-step checklist.
                 </p>
 
                 <div className='row'>
@@ -821,8 +820,8 @@ function FinalCTA() {
                         <div className={styles.finalCtaCard}>
                             <h2 className={styles.finalCtaHeadline}>Ready to Launch an AI Win in the Next 30 Days?</h2>
                             <p className={styles.finalCtaCopy}>
-                                Save your seat for Saturday’s live workshop and walk away with the exact templates, governance safeguards,
-                                and deployment timeline that closed enterprise deals for IAS, Palatine, Moonstruck, and more.
+                                Save your seat for Thursday&apos;s live workshop and walk away with the exact templates, governance
+                                safeguards, and deployment timeline that's driving success for leading enterprises.
                             </p>
 
                             <div
@@ -878,24 +877,24 @@ function SimpleFAQ() {
                             <div className={styles.faqCard}>
                                 <h4>Is this a sales pitch?</h4>
                                 <p style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
-                                    Nope. It’s a live teardown of the frameworks and dashboards that drive our enterprise deployments.
-                                    You’ll see product, but there’s no sales deck.
+                                    Nope. It&apos;s a live teardown of the frameworks and dashboards that drive our enterprise deployments.
+                                    You&apos;ll see product, but there&apos;s no sales deck.
                                 </p>
                             </div>
 
                             <div className={styles.faqCard}>
                                 <h4>Will it be recorded?</h4>
                                 <p style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
-                                    Yes — register and you’ll get 30-day replay access plus the slide deck, worksheets, and toolkit
+                                    Yes — register and you&apos;ll get 30-day replay access plus the slide deck, worksheets, and toolkit
                                     downloads.
                                 </p>
                             </div>
 
                             <div className={styles.faqCard}>
-                                <h4>What if I can’t attend live?</h4>
+                                <h4>What if I can&apos;t attend live?</h4>
                                 <p style={{ fontSize: '0.95rem', lineHeight: 1.6 }}>
-                                    Secure your seat anyway and catch the replay. We’ll also send the templates and instructions so you can
-                                    execute at your pace.
+                                    Secure your seat anyway and catch the replay. We&apos;ll also send the templates and instructions so you
+                                    can execute at your pace.
                                 </p>
                             </div>
                         </div>
@@ -1006,9 +1005,8 @@ export default function WebinarEnterpriseAI(): JSX.Element {
     return (
         <div data-theme='dark'>
             <Layout
-                title='Enterprise AI Webinar - Deploy AI Agents in 4 Weeks'
-                description='Free Saturday webinar: From AI Chaos to Enterprise Success. See how IAS, Palatine Capital, and Moonstruck Medical deployed AI in 4 weeks vs 6+ months. Live demo of vendor-free framework.'
-                noFooter
+                title='Enterprise AI Webinar - Deploy AI Agents in weeks'
+                description='Free Thursday webinar: From AI Chaos to Enterprise Success. See how leading enterprises are deploying AI in weeks vs 6+ months. Live demo of vendor-free framework.'
                 noNavbar
             >
                 <WebinarHero />
@@ -1029,7 +1027,6 @@ export default function WebinarEnterpriseAI(): JSX.Element {
                     <FinalCTA />
                     <SimpleFAQ />
                 </main>
-                <WebinarLegalFooter />
                 <StickyCTA />
             </Layout>
         </div>
