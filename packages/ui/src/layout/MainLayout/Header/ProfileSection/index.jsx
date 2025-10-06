@@ -500,18 +500,18 @@ const ProfileSection = ({ handleLogout }) => {
                                                     </ListItemIcon>
                                                     <ListItemText primary={<Typography variant='body2'>Version</Typography>} />
                                                 </ListItemButton>
-                                                {isAuthenticated && !currentUser.isSSO && !isCloud && (
+                                                {isAuthenticated && !currentUser.isSSO && (
                                                     <ListItemButton
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         onClick={() => {
                                                             setOpen(false)
-                                                            navigate('/user-profile')
+                                                            navigate('/account')
                                                         }}
                                                     >
                                                         <ListItemIcon>
                                                             <IconUserEdit stroke={1.5} size='1.3rem' />
                                                         </ListItemIcon>
-                                                        <ListItemText primary={<Typography variant='body2'>Update Profile</Typography>} />
+                                                        <ListItemText primary={<Typography variant='body2'>Account Settings</Typography>} />
                                                     </ListItemButton>
                                                 )}
                                                 <ListItemButton
