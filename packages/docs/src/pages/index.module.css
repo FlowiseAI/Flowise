@@ -1169,9 +1169,11 @@
     font-size: 0.8rem;
     color: rgba(0, 255, 255, 0.8);
     margin-bottom: 0.75rem;
-    display: inline-flex;
+    /* display: inline-flex; */
     align-items: center;
     gap: 0.35rem;
+    text-align: center;
+    justify-content: center;
 }
 
 .sectionHeading {

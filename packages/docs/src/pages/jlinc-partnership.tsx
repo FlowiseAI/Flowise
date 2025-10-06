@@ -14,7 +14,6 @@ function PartnershipHero() {
                 <ThreeJsScene className={styles.threeJsCanvas} />
             </div>
             <div className={styles.heroContent}>
-                <div className={styles.heroEyebrow}>Strategic Partnership Announcement</div>
                 <h1 className={styles.heroTitle}>Cryptographically-Verifiable AI Collaboration</h1>
                 <p className={styles.heroSubtitle} style={{ fontSize: '1.3rem', maxWidth: '800px', margin: '0 auto' }}>
                     Answer Agents × JLINC brings immutable data provenance to AI agent workflows—finally enabling trustworthy AI adoption in
@@ -1287,7 +1286,6 @@ export default function JLINCPartnership(): JSX.Element {
                     }}
                 />
                 <PartnershipHero />
-                <UsingAnswerAgentAISubmenu />
                 <main>
                     <VisionSection />
                     <ProblemSection />
@@ -1295,13 +1293,13 @@ export default function JLINCPartnership(): JSX.Element {
                     <ComparisonSection />
                     <BenefitsSection />
                     <IndustryUseCases />
-                    <TechnicalArchitecture />
+                    {/* <TechnicalArchitecture /> */}
                     <AboutJLINCSection />
-                    <ImplementationRoadmap />
-                    <PartnershipVisionSection />
+                    {/* <ImplementationRoadmap /> */}
+                    {/* <PartnershipVisionSection /> */}
                     <FAQSection />
                     <DemoCTASection />
-                    <CoFooter />
+                    {/* <CoFooter /> */}
                 </main>
             </Layout>
         </div>

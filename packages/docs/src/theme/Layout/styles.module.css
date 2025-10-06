@@ -80,8 +80,8 @@
 }
 
 /* Push everything down to account for the fixed banner */
-:global(body) {
-    padding-top: 54px !important;
+:global(.navbar) {
+    top: 54px !important;
 }
 
 /* Remove padding for webinar pages and hide navbar */

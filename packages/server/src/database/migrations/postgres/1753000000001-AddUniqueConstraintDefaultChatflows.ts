@@ -4,20 +4,15 @@ export class AddUniqueConstraintDefaultChatflows1753000000001 implements Migrati
     name = 'AddUniqueConstraintDefaultChatflows1753000000001'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        // NOTE: Before running this migration, you should manually clean up duplicate chatflows
-        // using the SQL scripts provided:
-        // 1. Run 1-analyze-duplicate-chatflows.sql to see duplicates
-        // 2. Run 2-generate-cleanup-statements.sql to get DELETE statements
-        // 3. Manually execute the DELETE statements after reviewing them
-        // 4. Then run this migration to add the unique constraint
+        // Automatically clean up duplicate chatflows, keeping the most recently updated one
 
-        // Check if there are any remaining duplicates before adding the constraint
+        // First, check if there are any duplicates
         const duplicateCheck = await queryRunner.query(`
             SELECT COUNT(*) as duplicate_count
             FROM (
                 SELECT "userId", "parentChatflowId"
                 FROM "chat_flow"
-                WHERE "parentChatflowId" IS NOT NULL 
+                WHERE "parentChatflowId" IS NOT NULL
                   AND "deletedDate" IS NULL
                 GROUP BY "userId", "parentChatflowId"
                 HAVING COUNT(*) > 1
@@ -27,21 +22,40 @@ export class AddUniqueConstraintDefaultChatflows1753000000001 implements Migrati
         const duplicateCount = parseInt(duplicateCheck[0]?.duplicate_count || '0')
 
         if (duplicateCount > 0) {
-            throw new Error(
-                `Cannot add unique constraint: ${duplicateCount} duplicate chatflow groups still exist. ` +
-                    `Please run the manual cleanup scripts first:\n` +
-                    `1. 1-analyze-duplicate-chatflows.sql\n` +
-                    `2. 2-generate-cleanup-statements.sql\n` +
-                    `3. Manually execute the DELETE statements\n` +
-                    `4. Then re-run this migration`
-            )
+            console.log(`Found ${duplicateCount} duplicate chatflow groups. Cleaning up automatically...`)
+
+            // Delete duplicate chatflows, keeping only the most recently updated one for each group
+            const deleteResult = await queryRunner.query(`
+                DELETE FROM "chat_flow"
+                WHERE id IN (
+                    SELECT cf.id
+                    FROM "chat_flow" cf
+                    INNER JOIN (
+                        SELECT
+                            "userId",
+                            "parentChatflowId",
+                            MAX("updatedDate") as max_updated_date
+                        FROM "chat_flow"
+                        WHERE "parentChatflowId" IS NOT NULL
+                          AND "deletedDate" IS NULL
+                        GROUP BY "userId", "parentChatflowId"
+                        HAVING COUNT(*) > 1
+                    ) duplicates
+                    ON cf."userId" = duplicates."userId"
+                    AND cf."parentChatflowId" = duplicates."parentChatflowId"
+                    WHERE cf."deletedDate" IS NULL
+                    AND cf."updatedDate" < duplicates.max_updated_date
+                )
+            `)
+
+            console.log(`Deleted ${deleteResult[1]} duplicate chatflow records`)
         }
 
         // Add the unique constraint
         // This prevents multiple default chatflows from the same template for the same user
         await queryRunner.query(`
-            CREATE UNIQUE INDEX "idx_unique_user_parent_chatflow" 
-            ON "chat_flow" ("userId", "parentChatflowId") 
+            CREATE UNIQUE INDEX "idx_unique_user_parent_chatflow"
+            ON "chat_flow" ("userId", "parentChatflowId")
             WHERE "parentChatflowId" IS NOT NULL AND "deletedDate" IS NULL
         `)
     }
