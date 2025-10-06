@@ -134,7 +134,7 @@ export class UserService {
         return newUser
     }
 
-    public async updateUser(newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmNewPassword?: string }) {
+    public async updateUser(newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string }) {
         let queryRunner: QueryRunner | undefined
         let updatedUser: Partial<User>
         try {
@@ -158,7 +158,7 @@ export class UserService {
                 this.validateUserStatus(newUserData.status)
             }
 
-            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmNewPassword) {
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
                 if (!oldUserData.credential) {
                     throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_CREDENTIAL)
                 }
@@ -166,7 +166,7 @@ export class UserService {
                 if (!compareHash(newUserData.oldPassword, oldUserData.credential)) {
                     throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.INVALID_USER_CREDENTIAL)
                 }
-                if (newUserData.newPassword !== newUserData.confirmNewPassword) {
+                if (newUserData.newPassword !== newUserData.confirmPassword) {
                     throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.PASSWORDS_DO_NOT_MATCH)
                 }
                 const hash = getHash(newUserData.newPassword)

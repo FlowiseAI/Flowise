@@ -49,7 +49,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 import { gridSpacing } from '@/store/constant'
 import { useConfig } from '@/store/context/ConfigContext'
 import { useError } from '@/store/context/ErrorContext'
-import { userProfileUpdated } from '@/store/reducers/authSlice'
+import { logoutSuccess, userProfileUpdated } from '@/store/reducers/authSlice'
 
 // ==============================|| ACCOUNT SETTINGS ||============================== //
 
@@ -73,6 +73,7 @@ const AccountSettings = () => {
     const [profileName, setProfileName] = useState('')
     const [email, setEmail] = useState('')
     const [migrateEmail, setMigrateEmail] = useState('')
+    const [oldPassword, setOldPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [usage, setUsage] = useState(null)
@@ -105,6 +106,7 @@ const AccountSettings = () => {
     const getCustomerDefaultSourceApi = useApi(userApi.getCustomerDefaultSource)
     const updateAdditionalSeatsApi = useApi(userApi.updateAdditionalSeats)
     const getCurrentUsageApi = useApi(userApi.getCurrentUsage)
+    const logoutApi = useApi(accountApi.logout)
 
     useEffect(() => {
         if (isCloud) {
@@ -137,6 +139,17 @@ const AccountSettings = () => {
             setUsage(getCurrentUsageApi.data)
         }
     }, [getCurrentUsageApi.data])
+
+    useEffect(() => {
+        try {
+            if (logoutApi.data && logoutApi.data.message === 'logged_out') {
+                store.dispatch(logoutSuccess())
+                window.location.href = logoutApi.data.redirectTo
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }, [logoutApi.data])
 
     useEffect(() => {
         if (openRemoveSeatsDialog || openAddSeatsDialog) {
@@ -243,6 +256,9 @@ const AccountSettings = () => {
     const savePassword = async () => {
         try {
             const validationErrors = []
+            if (!oldPassword) {
+                validationErrors.push('Old Password cannot be left blank')
+            }
             if (newPassword !== confirmPassword) {
                 validationErrors.push('New Password and Confirm Password do not match')
             }
@@ -269,11 +285,17 @@ const AccountSettings = () => {
 
             const obj = {
                 id: currentUser.id,
-                password: newPassword
+                oldPassword,
+                newPassword,
+                confirmPassword
             }
             const saveProfileResp = await userApi.updateUser(obj)
             if (saveProfileResp.data) {
                 store.dispatch(userProfileUpdated(saveProfileResp.data))
+                setOldPassword('')
+                setNewPassword('')
+                setConfirmPassword('')
+                await logoutApi.request()
                 enqueueSnackbar({
                     message: 'Password updated',
                     options: {
@@ -711,7 +733,7 @@ const AccountSettings = () => {
                                 <SettingsSection
                                     action={
                                         <StyledButton
-                                            disabled={!newPassword || !confirmPassword || newPassword !== confirmPassword}
+                                            disabled={!oldPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
                                             onClick={savePassword}
                                             sx={{ borderRadius: 2, height: 40 }}
                                             variant='contained'
@@ -730,6 +752,25 @@ const AccountSettings = () => {
                                             py: 2
                                         }}
                                     >
+                                        <Box
+                                            sx={{
+                                                gridColumn: 'span 2 / span 2',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 1
+                                            }}
+                                        >
+                                            <Typography variant='body1'>Old Password</Typography>
+                                            <OutlinedInput
+                                                id='oldPassword'
+                                                type='password'
+                                                fullWidth
+                                                placeholder='Old Password'
+                                                name='oldPassword'
+                                                onChange={(e) => setOldPassword(e.target.value)}
+                                                value={oldPassword}
+                                            />
+                                        </Box>
                                         <Box
                                             sx={{
                                                 gridColumn: 'span 2 / span 2',
@@ -763,12 +804,12 @@ const AccountSettings = () => {
                                                 gap: 1
                                             }}
                                         >
-                                            <Typography variant='body1'>Confirm Password</Typography>
+                                            <Typography variant='body1'>Confirm New Password</Typography>
                                             <OutlinedInput
                                                 id='confirmPassword'
                                                 type='password'
                                                 fullWidth
-                                                placeholder='Confirm Password'
+                                                placeholder='Confirm New Password'
                                                 name='confirmPassword'
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 value={confirmPassword}
