@@ -69,6 +69,14 @@ class Mem0_Memory implements INode {
                 optional: true
             },
             {
+                label: 'Enable Graph Memory',
+                name: 'enable_graph',
+                type: 'boolean',
+                description: 'Enable graph-based memory to capture relationships between entities. Requires graph memory to be configured in your Mem0 account.',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Search Only',
                 name: 'searchOnly',
                 type: 'boolean',
