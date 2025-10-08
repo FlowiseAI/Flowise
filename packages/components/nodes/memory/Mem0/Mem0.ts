@@ -69,6 +69,14 @@ class Mem0_Memory implements INode {
                 optional: true
             },
             {
+                label: 'Enable Graph Memory',
+                name: 'enable_graph',
+                type: 'boolean',
+                description: 'Enable graph-based memory to capture relationships between entities. Requires graph memory to be configured in your Mem0 account.',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Search Only',
                 name: 'searchOnly',
                 type: 'boolean',
@@ -274,7 +282,35 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
         if (this.memoryOptions) {
             this.memoryOptions.user_id = effectiveUserId
         }
-        return super.loadMemoryVariables(values)
+
+        // Override to handle graph response format
+        const searchType = values[this.inputKey] ? 'search' : 'get_all'
+        let response: any
+
+        try {
+            if (searchType === 'get_all') {
+                response = await this.mem0Client.getAll({
+                    user_id: effectiveUserId,
+                    ...this.memoryOptions
+                })
+            } else {
+                response = await this.mem0Client.search(values[this.inputKey], {
+                    user_id: effectiveUserId,
+                    ...this.memoryOptions
+                })
+            }
+
+            // Handle graph response: when enable_graph is true, API returns {results: [...], relations: [...]}
+            const memories = Array.isArray(response) ? response : response?.results || []
+
+            // Format memories as string
+            const memoryString = memories.map((m: any) => m.memory).filter(Boolean).join('\n')
+
+            return { [this.memoryKey]: memoryString }
+        } catch (error) {
+            console.error('Error loading memories:', error)
+            return { [this.memoryKey]: '' }
+        }
     }
 
     async saveContext(inputValues: InputValues, outputValues: OutputValues, overrideUserId = ''): Promise<void> {
