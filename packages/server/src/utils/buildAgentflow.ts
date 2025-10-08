@@ -832,7 +832,7 @@ const executeNode = async ({
         }
 
         // Get available variables and resolve them
-        const availableVariables = await appDataSource.getRepository(Variable).find({ where: { userId: user.id } })
+        const availableVariables = !user ? [] : await appDataSource.getRepository(Variable).find({ where: { userId: user.id } })
 
         // Prepare flow config
         let updatedState = cloneDeep(agentflowRuntime.state)
