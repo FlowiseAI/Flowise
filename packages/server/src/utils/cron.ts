@@ -27,7 +27,7 @@ const ENABLE_BILLING_SYNC_CRON = process.env.ENABLE_BILLING_SYNC_CRON !== 'false
  * Initialize cron jobs
  */
 export function initCronJobs() {
-    if (ENABLE_BILLING_SYNC_CRON) {
+    if (ENABLE_BILLING_SYNC_CRON && !!process.env.BILLING_STRIPE_SECRET_KEY) {
         logger.info(`📅 [cron]: Initializing billing usage sync cron job with schedule: ${BILLING_SYNC_CRON_SCHEDULE}`)
 
         // Validate cron schedule
