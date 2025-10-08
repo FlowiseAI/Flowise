@@ -34,12 +34,12 @@ export class AddUniqueConstraintDefaultChatflows1753000000001 implements Migrati
                                ROW_NUMBER() OVER (
                                    PARTITION BY cf."userId", cf."parentChatflowId"
                                    ORDER BY
-                                       CASE WHEN u."defaultChatflowId" = cf.id THEN 0 ELSE 1 END,
+                                       CASE WHEN u."defaultChatflowId"::text = cf.id::text THEN 0 ELSE 1 END,
                                        cf."updatedDate" DESC,
                                        cf.id DESC
                                ) as row_num
                         FROM "chat_flow" cf
-                        LEFT JOIN "user" u ON u.id = cf."userId"
+                        LEFT JOIN "user" u ON u.id::text = cf."userId"::text
                         WHERE cf."parentChatflowId" IS NOT NULL
                           AND cf."deletedDate" IS NULL
                     ) ranked
