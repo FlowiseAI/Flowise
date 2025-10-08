@@ -24,27 +24,26 @@ export class AddUniqueConstraintDefaultChatflows1753000000001 implements Migrati
         if (duplicateCount > 0) {
             console.log(`Found ${duplicateCount} duplicate chatflow groups. Cleaning up automatically...`)
 
-            // Delete duplicate chatflows, keeping only the most recently updated one for each group
+            // Delete duplicate chatflows, keeping the best one for each group
+            // Priority: 1) User's defaultChatflowId if set, 2) Most recently updated, 3) Highest id
             const deleteResult = await queryRunner.query(`
                 DELETE FROM "chat_flow"
                 WHERE id IN (
-                    SELECT cf.id
-                    FROM "chat_flow" cf
-                    INNER JOIN (
-                        SELECT
-                            "userId",
-                            "parentChatflowId",
-                            MAX("updatedDate") as max_updated_date
-                        FROM "chat_flow"
-                        WHERE "parentChatflowId" IS NOT NULL
-                          AND "deletedDate" IS NULL
-                        GROUP BY "userId", "parentChatflowId"
-                        HAVING COUNT(*) > 1
-                    ) duplicates
-                    ON cf."userId" = duplicates."userId"
-                    AND cf."parentChatflowId" = duplicates."parentChatflowId"
-                    WHERE cf."deletedDate" IS NULL
-                    AND cf."updatedDate" < duplicates.max_updated_date
+                    SELECT id FROM (
+                        SELECT cf.id,
+                               ROW_NUMBER() OVER (
+                                   PARTITION BY cf."userId", cf."parentChatflowId"
+                                   ORDER BY
+                                       CASE WHEN u."defaultChatflowId" = cf.id THEN 0 ELSE 1 END,
+                                       cf."updatedDate" DESC,
+                                       cf.id DESC
+                               ) as row_num
+                        FROM "chat_flow" cf
+                        LEFT JOIN "user" u ON u.id = cf."userId"
+                        WHERE cf."parentChatflowId" IS NOT NULL
+                          AND cf."deletedDate" IS NULL
+                    ) ranked
+                    WHERE row_num > 1
                 )
             `)
 
