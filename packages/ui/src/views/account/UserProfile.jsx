@@ -13,6 +13,7 @@ import SettingsSection from '@/ui-component/form/settings'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // API
+import accountApi from '@/api/account.api'
 import userApi from '@/api/user'
 import useApi from '@/hooks/useApi'
 
@@ -21,7 +22,7 @@ import { store } from '@/store'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import { gridSpacing } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
-import { userProfileUpdated } from '@/store/reducers/authSlice'
+import { logoutSuccess, userProfileUpdated } from '@/store/reducers/authSlice'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
@@ -41,6 +42,7 @@ const UserProfile = () => {
     const currentUser = useSelector((state) => state.auth.user)
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
 
+    const [oldPasswordVal, setOldPasswordVal] = useState('')
     const [newPasswordVal, setNewPasswordVal] = useState('')
     const [confirmPasswordVal, setConfirmPasswordVal] = useState('')
     const [usernameVal, setUsernameVal] = useState('')
@@ -50,6 +52,7 @@ const UserProfile = () => {
     const [authErrors, setAuthErrors] = useState([])
 
     const getUserApi = useApi(userApi.getUserById)
+    const logoutApi = useApi(accountApi.logout)
 
     const validateAndSubmit = async () => {
         const validationErrors = []
@@ -67,6 +70,9 @@ const UserProfile = () => {
             validationErrors.push('Email cannot be left blank!')
         }
         if (newPasswordVal || confirmPasswordVal) {
+            if (!oldPasswordVal) {
+                validationErrors.push('Old Password cannot be left blank!')
+            }
             if (newPasswordVal !== confirmPasswordVal) {
                 validationErrors.push('New Password and Confirm Password do not match')
             }
@@ -82,28 +88,49 @@ const UserProfile = () => {
         const body = {
             id: currentUser.id,
             email: emailVal,
-            name: usernameVal
+            name: usernameVal,
+            oldPassword: oldPasswordVal,
+            newPassword: newPasswordVal,
+            confirmNewPassword: confirmPasswordVal
         }
-        if (newPasswordVal) body.password = newPasswordVal
         setLoading(true)
         try {
             const updateResponse = await userApi.updateUser(body)
             setAuthErrors([])
             setLoading(false)
             if (updateResponse.data) {
+                if (oldPasswordVal && newPasswordVal && confirmPasswordVal) {
+                    setOldPasswordVal('')
+                    setNewPasswordVal('')
+                    setConfirmPasswordVal('')
+                    logoutApi.request()
+                    enqueueSnackbar({
+                        message: 'User Details Updated! Logged Out...',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                } else {
+                    enqueueSnackbar({
+                        message: 'User Details Updated!',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                }
                 store.dispatch(userProfileUpdated(updateResponse.data))
-                enqueueSnackbar({
-                    message: 'User Details Updated!',
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'success',
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
             }
         } catch (error) {
             setLoading(false)
@@ -123,6 +150,17 @@ const UserProfile = () => {
             })
         }
     }
+
+    useEffect(() => {
+        try {
+            if (logoutApi.data && logoutApi.data.message === 'logged_out') {
+                store.dispatch(logoutSuccess())
+                window.location.href = logoutApi.data.redirectTo
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }, [logoutApi.data])
 
     useEffect(() => {
         if (getUserApi.data) {
@@ -236,6 +274,23 @@ const UserProfile = () => {
                                         name='name'
                                         onChange={(e) => setUsernameVal(e.target.value)}
                                         value={usernameVal}
+                                    />
+                                </Box>
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                        <Typography>
+                                            Old Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        </Typography>
+                                        <div style={{ flexGrow: 1 }}></div>
+                                    </div>
+                                    <OutlinedInput
+                                        id='op'
+                                        type='password'
+                                        fullWidth
+                                        size='small'
+                                        name='old_password'
+                                        onChange={(e) => setOldPasswordVal(e.target.value)}
+                                        value={oldPasswordVal}
                                     />
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>

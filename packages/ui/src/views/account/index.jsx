@@ -49,7 +49,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 import { gridSpacing } from '@/store/constant'
 import { useConfig } from '@/store/context/ConfigContext'
 import { useError } from '@/store/context/ErrorContext'
-import { userProfileUpdated } from '@/store/reducers/authSlice'
+import { logoutSuccess, userProfileUpdated } from '@/store/reducers/authSlice'
 
 // ==============================|| ACCOUNT SETTINGS ||============================== //
 
@@ -72,6 +72,7 @@ const AccountSettings = () => {
     const [isLoading, setLoading] = useState(true)
     const [profileName, setProfileName] = useState('')
     const [email, setEmail] = useState('')
+    const [oldPassword, setOldPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [usage, setUsage] = useState(null)
@@ -104,10 +105,19 @@ const AccountSettings = () => {
     const getCustomerDefaultSourceApi = useApi(userApi.getCustomerDefaultSource)
     const updateAdditionalSeatsApi = useApi(userApi.updateAdditionalSeats)
     const getCurrentUsageApi = useApi(userApi.getCurrentUsage)
+    const logoutApi = useApi(accountApi.logout)
+
+    useEffect(() => {
+        if (currentUser) {
+            getUserByIdApi.request(currentUser.id)
+        } else {
+            window.location.href = '/login'
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentUser])
 
     useEffect(() => {
         if (isCloud) {
-            getUserByIdApi.request(currentUser.id)
             getPricingPlansApi.request()
             getAdditionalSeatsQuantityApi.request(currentUser?.activeOrganizationSubscriptionId)
             getCurrentUsageApi.request()
@@ -135,6 +145,17 @@ const AccountSettings = () => {
             setUsage(getCurrentUsageApi.data)
         }
     }, [getCurrentUsageApi.data])
+
+    useEffect(() => {
+        try {
+            if (logoutApi.data && logoutApi.data.message === 'logged_out') {
+                store.dispatch(logoutSuccess())
+                window.location.href = logoutApi.data.redirectTo
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }, [logoutApi.data])
 
     useEffect(() => {
         if (openRemoveSeatsDialog || openAddSeatsDialog) {
@@ -241,6 +262,9 @@ const AccountSettings = () => {
     const savePassword = async () => {
         try {
             const validationErrors = []
+            if (!oldPassword) {
+                validationErrors.push('Old Password cannot be left blank')
+            }
             if (newPassword !== confirmPassword) {
                 validationErrors.push('New Password and Confirm Password do not match')
             }
@@ -267,11 +291,17 @@ const AccountSettings = () => {
 
             const obj = {
                 id: currentUser.id,
-                password: newPassword
+                oldPassword,
+                newPassword,
+                confirmPassword
             }
             const saveProfileResp = await userApi.updateUser(obj)
             if (saveProfileResp.data) {
                 store.dispatch(userProfileUpdated(saveProfileResp.data))
+                setOldPassword('')
+                setNewPassword('')
+                setConfirmPassword('')
+                await logoutApi.request()
                 enqueueSnackbar({
                     message: 'Password updated',
                     options: {
@@ -411,257 +441,276 @@ const AccountSettings = () => {
                         </Box>
                     ) : (
                         <>
-                            <SettingsSection title='Subscription & Billing'>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(3, 1fr)'
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            gridColumn: 'span 2 / span 2',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'start',
-                                            justifyContent: 'center',
-                                            gap: 1,
-                                            px: 2.5,
-                                            py: 2
-                                        }}
-                                    >
-                                        {currentPlanTitle && (
-                                            <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                                <Typography variant='body2'>Current Organization Plan:</Typography>
-                                                <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
-                                                    {currentPlanTitle.toUpperCase()}
-                                                </Typography>
-                                            </Stack>
-                                        )}
-                                        <Typography
-                                            sx={{ opacity: customization.isDarkMode ? 0.7 : 1 }}
-                                            variant='body2'
-                                            color='text.secondary'
-                                        >
-                                            Update your billing details and subscription
-                                        </Typography>
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'end',
-                                            px: 2.5,
-                                            py: 2,
-                                            gap: 2
-                                        }}
-                                    >
-                                        <Button
-                                            variant='outlined'
-                                            endIcon={!isBillingLoading && <IconExternalLink />}
-                                            disabled={!currentUser.isOrganizationAdmin || isBillingLoading}
-                                            onClick={handleBillingPortalClick}
-                                            sx={{ borderRadius: 2, height: 40 }}
-                                        >
-                                            {isBillingLoading ? (
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <CircularProgress size={16} color='inherit' />
-                                                    Loading
-                                                </Box>
-                                            ) : (
-                                                'Billing'
-                                            )}
-                                        </Button>
-                                        <Button
-                                            variant='contained'
+                            {isCloud && (
+                                <>
+                                    <SettingsSection title='Subscription & Billing'>
+                                        <Box
                                             sx={{
-                                                mr: 1,
-                                                ml: 2,
-                                                minWidth: 160,
-                                                height: 40,
-                                                borderRadius: 15,
-                                                background: (theme) =>
-                                                    `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
-                                                color: (theme) => theme.palette.secondary.contrastText,
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                                                transition: 'all 0.3s ease',
-                                                '&:hover': {
-                                                    background: (theme) =>
-                                                        `linear-gradient(90deg, ${darken(theme.palette.primary.main, 0.1)} 10%, ${darken(
-                                                            theme.palette.secondary.main,
-                                                            0.1
-                                                        )} 100%)`,
-                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
-                                                }
+                                                width: '100%',
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(3, 1fr)'
                                             }}
-                                            endIcon={<IconSparkles />}
-                                            disabled={!currentUser.isOrganizationAdmin}
-                                            onClick={() => setOpenPricingDialog(true)}
                                         >
-                                            Change Plan
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            </SettingsSection>
-                            <SettingsSection title='Seats'>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(3, 1fr)'
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            gridColumn: 'span 2 / span 2',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'start',
-                                            justifyContent: 'center',
-                                            gap: 1,
-                                            px: 2.5,
-                                            py: 2
-                                        }}
-                                    >
-                                        <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                            <Typography variant='body2'>Seats Included in Plan:</Typography>
-                                            <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
-                                                {getAdditionalSeatsQuantityApi.loading ? <CircularProgress size={16} /> : includedSeats}
-                                            </Typography>
-                                        </Stack>
-                                        <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                            <Typography variant='body2'>Additional Seats Purchased:</Typography>
-                                            <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
-                                                {getAdditionalSeatsQuantityApi.loading ? <CircularProgress size={16} /> : purchasedSeats}
-                                            </Typography>
-                                        </Stack>
-                                        <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                            <Typography variant='body2'>Occupied Seats:</Typography>
-                                            <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
-                                                {getAdditionalSeatsQuantityApi.loading ? (
-                                                    <CircularProgress size={16} />
-                                                ) : (
-                                                    `${occupiedSeats}/${totalSeats}`
-                                                )}
-                                            </Typography>
-                                        </Stack>
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'end',
-                                            gap: 2,
-                                            px: 2.5,
-                                            py: 2
-                                        }}
-                                    >
-                                        {getAdditionalSeatsQuantityApi.data?.quantity > 0 && currentPlanTitle.toUpperCase() === 'PRO' && (
-                                            <Button
-                                                variant='outlined'
-                                                disabled={!currentUser.isOrganizationAdmin || !getAdditionalSeatsQuantityApi.data?.quantity}
-                                                onClick={() => {
-                                                    setOpenRemoveSeatsDialog(true)
+                                            <Box
+                                                sx={{
+                                                    gridColumn: 'span 2 / span 2',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'start',
+                                                    justifyContent: 'center',
+                                                    gap: 1,
+                                                    px: 2.5,
+                                                    py: 2
                                                 }}
-                                                color='error'
-                                                sx={{ borderRadius: 2, height: 40 }}
                                             >
-                                                Remove Seats
-                                            </Button>
-                                        )}
-                                        <StyledButton
-                                            variant='contained'
-                                            disabled={!currentUser.isOrganizationAdmin}
-                                            onClick={() => {
-                                                if (currentPlanTitle.toUpperCase() === 'PRO') {
-                                                    setOpenAddSeatsDialog(true)
-                                                } else {
-                                                    setOpenPricingDialog(true)
-                                                }
+                                                {currentPlanTitle && (
+                                                    <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                                        <Typography variant='body2'>Current Organization Plan:</Typography>
+                                                        <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
+                                                            {currentPlanTitle.toUpperCase()}
+                                                        </Typography>
+                                                    </Stack>
+                                                )}
+                                                <Typography
+                                                    sx={{ opacity: customization.isDarkMode ? 0.7 : 1 }}
+                                                    variant='body2'
+                                                    color='text.secondary'
+                                                >
+                                                    Update your billing details and subscription
+                                                </Typography>
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'end',
+                                                    px: 2.5,
+                                                    py: 2,
+                                                    gap: 2
+                                                }}
+                                            >
+                                                <Button
+                                                    variant='outlined'
+                                                    endIcon={!isBillingLoading && <IconExternalLink />}
+                                                    disabled={!currentUser.isOrganizationAdmin || isBillingLoading}
+                                                    onClick={handleBillingPortalClick}
+                                                    sx={{ borderRadius: 2, height: 40 }}
+                                                >
+                                                    {isBillingLoading ? (
+                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                            <CircularProgress size={16} color='inherit' />
+                                                            Loading
+                                                        </Box>
+                                                    ) : (
+                                                        'Billing'
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    variant='contained'
+                                                    sx={{
+                                                        mr: 1,
+                                                        ml: 2,
+                                                        minWidth: 160,
+                                                        height: 40,
+                                                        borderRadius: 15,
+                                                        background: (theme) =>
+                                                            `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
+                                                        color: (theme) => theme.palette.secondary.contrastText,
+                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                                        transition: 'all 0.3s ease',
+                                                        '&:hover': {
+                                                            background: (theme) =>
+                                                                `linear-gradient(90deg, ${darken(
+                                                                    theme.palette.primary.main,
+                                                                    0.1
+                                                                )} 10%, ${darken(theme.palette.secondary.main, 0.1)} 100%)`,
+                                                            boxShadow: '0 4px 8px rgba(0,0,0,0.3)'
+                                                        }
+                                                    }}
+                                                    endIcon={<IconSparkles />}
+                                                    disabled={!currentUser.isOrganizationAdmin}
+                                                    onClick={() => setOpenPricingDialog(true)}
+                                                >
+                                                    Change Plan
+                                                </Button>
+                                            </Box>
+                                        </Box>
+                                    </SettingsSection>
+                                    <SettingsSection title='Seats'>
+                                        <Box
+                                            sx={{
+                                                width: '100%',
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(3, 1fr)'
                                             }}
-                                            title='Add Seats is available only for PRO plan'
-                                            sx={{ borderRadius: 2, height: 40 }}
                                         >
-                                            Add Seats
-                                        </StyledButton>
-                                    </Box>
-                                </Box>
-                            </SettingsSection>
-                            <SettingsSection title='Usage'>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(2, 1fr)'
-                                    }}
-                                >
-                                    <Box sx={{ p: 2.5, borderRight: 1, borderColor: theme.palette.grey[900] + 25 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <Typography variant='h3'>Predictions</Typography>
-                                            <Typography variant='body2' color='text.secondary'>
-                                                {`${usage?.predictions?.usage || 0} / ${usage?.predictions?.limit || 0}`}
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                                            <Box sx={{ width: '100%', mr: 1 }}>
-                                                <LinearProgress
-                                                    sx={{
-                                                        height: 10,
-                                                        borderRadius: 5,
-                                                        '& .MuiLinearProgress-bar': {
-                                                            backgroundColor: (theme) => {
-                                                                if (predictionsUsageInPercent > 90) return theme.palette.error.main
-                                                                if (predictionsUsageInPercent > 75) return theme.palette.warning.main
-                                                                if (predictionsUsageInPercent > 50) return theme.palette.success.light
-                                                                return theme.palette.success.main
+                                            <Box
+                                                sx={{
+                                                    gridColumn: 'span 2 / span 2',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'start',
+                                                    justifyContent: 'center',
+                                                    gap: 1,
+                                                    px: 2.5,
+                                                    py: 2
+                                                }}
+                                            >
+                                                <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                                    <Typography variant='body2'>Seats Included in Plan:</Typography>
+                                                    <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
+                                                        {getAdditionalSeatsQuantityApi.loading ? (
+                                                            <CircularProgress size={16} />
+                                                        ) : (
+                                                            includedSeats
+                                                        )}
+                                                    </Typography>
+                                                </Stack>
+                                                <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                                    <Typography variant='body2'>Additional Seats Purchased:</Typography>
+                                                    <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
+                                                        {getAdditionalSeatsQuantityApi.loading ? (
+                                                            <CircularProgress size={16} />
+                                                        ) : (
+                                                            purchasedSeats
+                                                        )}
+                                                    </Typography>
+                                                </Stack>
+                                                <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                                    <Typography variant='body2'>Occupied Seats:</Typography>
+                                                    <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
+                                                        {getAdditionalSeatsQuantityApi.loading ? (
+                                                            <CircularProgress size={16} />
+                                                        ) : (
+                                                            `${occupiedSeats}/${totalSeats}`
+                                                        )}
+                                                    </Typography>
+                                                </Stack>
+                                            </Box>
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'end',
+                                                    gap: 2,
+                                                    px: 2.5,
+                                                    py: 2
+                                                }}
+                                            >
+                                                {getAdditionalSeatsQuantityApi.data?.quantity > 0 &&
+                                                    currentPlanTitle.toUpperCase() === 'PRO' && (
+                                                        <Button
+                                                            variant='outlined'
+                                                            disabled={
+                                                                !currentUser.isOrganizationAdmin ||
+                                                                !getAdditionalSeatsQuantityApi.data?.quantity
                                                             }
+                                                            onClick={() => {
+                                                                setOpenRemoveSeatsDialog(true)
+                                                            }}
+                                                            color='error'
+                                                            sx={{ borderRadius: 2, height: 40 }}
+                                                        >
+                                                            Remove Seats
+                                                        </Button>
+                                                    )}
+                                                <StyledButton
+                                                    variant='contained'
+                                                    disabled={!currentUser.isOrganizationAdmin}
+                                                    onClick={() => {
+                                                        if (currentPlanTitle.toUpperCase() === 'PRO') {
+                                                            setOpenAddSeatsDialog(true)
+                                                        } else {
+                                                            setOpenPricingDialog(true)
                                                         }
                                                     }}
-                                                    value={predictionsUsageInPercent > 100 ? 100 : predictionsUsageInPercent}
-                                                    variant='determinate'
-                                                />
+                                                    title='Add Seats is available only for PRO plan'
+                                                    sx={{ borderRadius: 2, height: 40 }}
+                                                >
+                                                    Add Seats
+                                                </StyledButton>
                                             </Box>
-                                            <Typography variant='body2' color='text.secondary'>{`${predictionsUsageInPercent.toFixed(
-                                                2
-                                            )}%`}</Typography>
                                         </Box>
-                                    </Box>
-                                    <Box sx={{ p: 2.5 }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                            <Typography variant='h3'>Storage</Typography>
-                                            <Typography variant='body2' color='text.secondary'>
-                                                {`${(usage?.storage?.usage || 0).toFixed(2)}MB / ${(usage?.storage?.limit || 0).toFixed(
-                                                    2
-                                                )}MB`}
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                                            <Box sx={{ width: '100%', mr: 1 }}>
-                                                <LinearProgress
-                                                    sx={{
-                                                        height: 10,
-                                                        borderRadius: 5,
-                                                        '& .MuiLinearProgress-bar': {
-                                                            backgroundColor: (theme) => {
-                                                                if (storageUsageInPercent > 90) return theme.palette.error.main
-                                                                if (storageUsageInPercent > 75) return theme.palette.warning.main
-                                                                if (storageUsageInPercent > 50) return theme.palette.success.light
-                                                                return theme.palette.success.main
-                                                            }
-                                                        }
-                                                    }}
-                                                    value={storageUsageInPercent > 100 ? 100 : storageUsageInPercent}
-                                                    variant='determinate'
-                                                />
+                                    </SettingsSection>
+                                    <SettingsSection title='Usage'>
+                                        <Box
+                                            sx={{
+                                                width: '100%',
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(2, 1fr)'
+                                            }}
+                                        >
+                                            <Box sx={{ p: 2.5, borderRight: 1, borderColor: theme.palette.grey[900] + 25 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <Typography variant='h3'>Predictions</Typography>
+                                                    <Typography variant='body2' color='text.secondary'>
+                                                        {`${usage?.predictions?.usage || 0} / ${usage?.predictions?.limit || 0}`}
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                                                    <Box sx={{ width: '100%', mr: 1 }}>
+                                                        <LinearProgress
+                                                            sx={{
+                                                                height: 10,
+                                                                borderRadius: 5,
+                                                                '& .MuiLinearProgress-bar': {
+                                                                    backgroundColor: (theme) => {
+                                                                        if (predictionsUsageInPercent > 90) return theme.palette.error.main
+                                                                        if (predictionsUsageInPercent > 75)
+                                                                            return theme.palette.warning.main
+                                                                        if (predictionsUsageInPercent > 50)
+                                                                            return theme.palette.success.light
+                                                                        return theme.palette.success.main
+                                                                    }
+                                                                }
+                                                            }}
+                                                            value={predictionsUsageInPercent > 100 ? 100 : predictionsUsageInPercent}
+                                                            variant='determinate'
+                                                        />
+                                                    </Box>
+                                                    <Typography
+                                                        variant='body2'
+                                                        color='text.secondary'
+                                                    >{`${predictionsUsageInPercent.toFixed(2)}%`}</Typography>
+                                                </Box>
                                             </Box>
-                                            <Typography variant='body2' color='text.secondary'>{`${storageUsageInPercent.toFixed(
-                                                2
-                                            )}%`}</Typography>
+                                            <Box sx={{ p: 2.5 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <Typography variant='h3'>Storage</Typography>
+                                                    <Typography variant='body2' color='text.secondary'>
+                                                        {`${(usage?.storage?.usage || 0).toFixed(2)}MB / ${(
+                                                            usage?.storage?.limit || 0
+                                                        ).toFixed(2)}MB`}
+                                                    </Typography>
+                                                </Box>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                                                    <Box sx={{ width: '100%', mr: 1 }}>
+                                                        <LinearProgress
+                                                            sx={{
+                                                                height: 10,
+                                                                borderRadius: 5,
+                                                                '& .MuiLinearProgress-bar': {
+                                                                    backgroundColor: (theme) => {
+                                                                        if (storageUsageInPercent > 90) return theme.palette.error.main
+                                                                        if (storageUsageInPercent > 75) return theme.palette.warning.main
+                                                                        if (storageUsageInPercent > 50) return theme.palette.success.light
+                                                                        return theme.palette.success.main
+                                                                    }
+                                                                }
+                                                            }}
+                                                            value={storageUsageInPercent > 100 ? 100 : storageUsageInPercent}
+                                                            variant='determinate'
+                                                        />
+                                                    </Box>
+                                                    <Typography variant='body2' color='text.secondary'>{`${storageUsageInPercent.toFixed(
+                                                        2
+                                                    )}%`}</Typography>
+                                                </Box>
+                                            </Box>
                                         </Box>
-                                    </Box>
-                                </Box>
-                            </SettingsSection>
+                                    </SettingsSection>
+                                </>
+                            )}
                             <SettingsSection
                                 action={
                                     <StyledButton onClick={saveProfileData} sx={{ borderRadius: 2, height: 40 }} variant='contained'>
@@ -709,7 +758,7 @@ const AccountSettings = () => {
                                 <SettingsSection
                                     action={
                                         <StyledButton
-                                            disabled={!newPassword || !confirmPassword || newPassword !== confirmPassword}
+                                            disabled={!oldPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
                                             onClick={savePassword}
                                             sx={{ borderRadius: 2, height: 40 }}
                                             variant='contained'
@@ -728,6 +777,25 @@ const AccountSettings = () => {
                                             py: 2
                                         }}
                                     >
+                                        <Box
+                                            sx={{
+                                                gridColumn: 'span 2 / span 2',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 1
+                                            }}
+                                        >
+                                            <Typography variant='body1'>Old Password</Typography>
+                                            <OutlinedInput
+                                                id='oldPassword'
+                                                type='password'
+                                                fullWidth
+                                                placeholder='Old Password'
+                                                name='oldPassword'
+                                                onChange={(e) => setOldPassword(e.target.value)}
+                                                value={oldPassword}
+                                            />
+                                        </Box>
                                         <Box
                                             sx={{
                                                 gridColumn: 'span 2 / span 2',
@@ -761,12 +829,12 @@ const AccountSettings = () => {
                                                 gap: 1
                                             }}
                                         >
-                                            <Typography variant='body1'>Confirm Password</Typography>
+                                            <Typography variant='body1'>Confirm New Password</Typography>
                                             <OutlinedInput
                                                 id='confirmPassword'
                                                 type='password'
                                                 fullWidth
-                                                placeholder='Confirm Password'
+                                                placeholder='Confirm New Password'
                                                 name='confirmPassword'
                                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                                 value={confirmPassword}
