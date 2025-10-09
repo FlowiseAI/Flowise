@@ -1,4 +1,4 @@
-FROM flowiseai/flowise:2.0.6
+FROM flowiseai/flowise:3.0.7
 ENV PORT=10000
 ENV NODE_OPTIONS="--max-old-space-size=450"
 EXPOSE 10000
