@@ -215,7 +215,6 @@ const ProfileSection = ({ handleLogout }) => {
     const theme = useTheme()
 
     const customization = useSelector((state) => state.customization)
-    const { isCloud } = useConfig()
 
     const [open, setOpen] = useState(false)
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)

@@ -9,6 +9,7 @@ import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { compareHash, getHash } from '../utils/encryption.util'
 import { sanitizeUser } from '../../utils/sanitize.util'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 
 export const enum UserErrorMessage {
     EXPIRED_TEMP_TOKEN = 'Expired Temporary Token',
@@ -179,6 +180,11 @@ export class UserService {
             await queryRunner.startTransaction()
             await this.saveUser(updatedUser, queryRunner)
             await queryRunner.commitTransaction()
+
+            // Invalidate all sessions for this user if password was changed
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
+                await destroyAllSessionsForUser(updatedUser.id as string)
+            }
         } catch (error) {
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             throw error
