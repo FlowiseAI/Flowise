@@ -72,7 +72,6 @@ const AccountSettings = () => {
     const [isLoading, setLoading] = useState(true)
     const [profileName, setProfileName] = useState('')
     const [email, setEmail] = useState('')
-    const [migrateEmail, setMigrateEmail] = useState('')
     const [oldPassword, setOldPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
@@ -135,7 +134,6 @@ const AccountSettings = () => {
             if (getUserByIdApi.data) {
                 setProfileName(getUserByIdApi.data?.name || '')
                 setEmail(getUserByIdApi.data?.email || '')
-                setMigrateEmail(getUserByIdApi.data?.email || '')
             }
         } catch (e) {
             console.error(e)
