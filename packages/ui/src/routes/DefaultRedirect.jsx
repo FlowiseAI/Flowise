@@ -1,7 +1,7 @@
-import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
-import { useSelector } from 'react-redux'
 import { useConfig } from '@/store/context/ConfigContext'
+import { useSelector } from 'react-redux'
+import { Navigate } from 'react-router-dom'
 
 /**
  * Component that redirects users to the first accessible page based on their permissions
@@ -11,6 +11,7 @@ export const DefaultRedirect = () => {
     const { hasPermission, hasDisplay } = useAuth()
     const { isOpenSource } = useConfig()
     const isGlobal = useSelector((state) => state.auth.isGlobal)
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
 
     // Define the order of routes to check (based on the menu order in dashboard.js)
     const routesToCheck = [
@@ -38,6 +39,11 @@ export const DefaultRedirect = () => {
         { path: '/logs', permission: 'logs:view', display: 'feat:logs' },
         { path: '/account', display: 'feat:account' }
     ]
+
+    // If user is not authenticated, redirect to login which will resolve to the correct page
+    if (!isAuthenticated) {
+        return <Navigate to='/login' replace />
+    }
 
     // For open source, redirect to chatflows (no permission checks)
     if (isOpenSource) {
