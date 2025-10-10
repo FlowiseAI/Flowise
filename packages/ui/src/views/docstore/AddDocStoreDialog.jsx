@@ -8,6 +8,7 @@ import {
     enqueueSnackbar as enqueueSnackbarAction,
     closeSnackbar as closeSnackbarAction
 } from '@/store/actions'
+import { useTheme } from '@mui/material/styles'
 
 // Material
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Box, Typography, OutlinedInput } from '@mui/material'
@@ -27,6 +28,7 @@ import useNotifier from '@/utils/useNotifier'
 import { color } from '@uiw/react-codemirror'
 
 const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const theme = useTheme()
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()

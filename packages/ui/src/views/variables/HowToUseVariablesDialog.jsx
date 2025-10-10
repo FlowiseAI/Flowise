@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { Dialog, DialogContent, DialogTitle } from '@mui/material'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { useTheme } from '@mui/material/styles'
 
 const overrideConfig = `{
     overrideConfig: {
@@ -13,6 +14,7 @@ const overrideConfig = `{
 
 const HowToUseVariablesDialog = ({ show, onCancel }) => {
     const portalElement = document.getElementById('portal')
+    const theme = useTheme()
 
     const component = show ? (
         <Dialog

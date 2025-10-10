@@ -18,6 +18,7 @@ const tiles = [
 ]
 
 export default function Studio() {
+    const theme = useTheme()
     return (
         <MainCard>
             <Box>

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import ReactJson from 'flowise-react-json-view'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import { useTheme } from '@mui/material/styles'
 
 // Material
 import { Button, Dialog, IconButton, DialogContent, DialogTitle, Typography } from '@mui/material'
@@ -14,6 +15,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import { PermissionButton, PermissionIconButton } from '@/ui-component/button/RBACButtons'
 
 const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDeleteChunk, isReadOnly }) => {
+    const theme = useTheme()
     const portalElement = document.getElementById('portal')
 
     const customization = useSelector((state) => state.customization)

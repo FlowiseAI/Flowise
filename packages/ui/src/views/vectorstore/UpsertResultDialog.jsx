@@ -7,8 +7,10 @@ import { Typography, Card, CardContent, Button, Dialog, DialogActions, DialogCon
 import StatsCard from '@/ui-component/cards/StatsCard'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { IconZoomScan } from '@tabler/icons-react'
+import { useTheme } from '@mui/material/styles'
 
 const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery }) => {
+    const theme = useTheme()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)

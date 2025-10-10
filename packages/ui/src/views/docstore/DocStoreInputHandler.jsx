@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
 import { useSelector } from 'react-redux'
+import { useTheme } from '@mui/material/styles'
 
 // material-ui
 import { Box, Typography, IconButton, Button } from '@mui/material'
@@ -29,6 +30,7 @@ import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 // ===========================|| DocStoreInputHandler ||=========================== //
 
 const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataChange }) => {
+    const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const flowContextValue = useContext(flowContext)
     const nodeDataChangeHandler = onNodeDataChange || flowContextValue?.onNodeDataChange
