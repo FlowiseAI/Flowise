@@ -18,6 +18,7 @@ import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/
 import { Available } from '@/ui-component/rbac/available'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 import PasteJSONDialog from './PasteJSONDialog'
+import { useTheme } from '@mui/material/styles'
 
 // Icons
 import { IconX, IconFileDownload, IconPlus, IconTemplate, IconCode } from '@tabler/icons-react'
@@ -60,6 +61,7 @@ try {
 }`
 
 const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, setError }) => {
+    const theme = useTheme()
     const portalElement = document.getElementById('portal')
 
     const customization = useSelector((state) => state.customization)

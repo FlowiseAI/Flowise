@@ -4,8 +4,10 @@ import { useState } from 'react'
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { useTheme } from '@mui/material/styles'
 
 const PasteJSONDialog = ({ show, onCancel, onConfirm, customization }) => {
+    const theme = useTheme()
     const portalElement = document.getElementById('portal')
     const [jsonInput, setJsonInput] = useState('')
     const [error, setError] = useState('')
