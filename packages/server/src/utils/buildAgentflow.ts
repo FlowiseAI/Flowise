@@ -11,7 +11,8 @@ import {
     IMessage,
     IServerSideEventStreamer,
     convertChatHistoryToText,
-    generateFollowUpPrompts
+    generateFollowUpPrompts,
+    isAnalyticsEnabled
 } from 'flowise-components'
 import {
     IncomingAgentflowInput,
@@ -54,6 +55,7 @@ import { utilAddChatMessage } from './addChatMesage'
 import { CachePool } from '../CachePool'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Telemetry } from './telemetry'
+import { LangfuseSpanClient, LangfuseTraceClient } from 'langfuse'
 
 interface IWaitingNode {
     nodeId: string
@@ -90,7 +92,7 @@ interface IAgentFlowRuntime {
 }
 
 interface IExecuteNodeParams {
-    user: IUser
+    user?: IUser
     nodeId: string
     reactFlowNode: IReactFlowNode
     nodes: IReactFlowNode[]
@@ -125,10 +127,14 @@ interface IExecuteNodeParams {
     parentExecutionId?: string
     isRecursive?: boolean
     iterationContext?: ICommonObject
+    parentLangfuseTrace?: LangfuseTraceClient
+    parentLangfuseSpan?: LangfuseSpanClient
 }
 
 interface IExecuteAgentFlowParams extends Omit<IExecuteFlowParams, 'incomingInput'> {
     incomingInput: IncomingAgentflowInput
+    parentLangfuseTrace?: LangfuseTraceClient
+    parentLangfuseSpan?: LangfuseSpanClient
 }
 
 const MAX_LOOP_COUNT = process.env.MAX_LOOP_COUNT ? parseInt(process.env.MAX_LOOP_COUNT) : 10
@@ -800,12 +806,64 @@ const executeNode = async ({
     analyticHandlers,
     isInternal,
     isRecursive,
-    iterationContext
+    iterationContext,
+    parentLangfuseTrace,
+    parentLangfuseSpan
 }: IExecuteNodeParams): Promise<{
     result: any
     shouldStop?: boolean
     agentFlowExecutedData?: IAgentflowExecutedData[]
 }> => {
+    let langfuseSpan: LangfuseSpanClient | undefined
+    let spanName = nodeId
+    const safeSerialize = (value: any) => {
+        if (value === undefined || value === null) return value
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+        try {
+            return JSON.parse(JSON.stringify(value))
+        } catch (err) {
+            logger.debug(`Failed to serialize Langfuse span payload for node ${spanName}: ${getErrorMessage(err)}`)
+            return '[Unserializable]'
+        }
+    }
+
+    const buildSpanOutput = (data: any): ICommonObject => {
+        const spanOutput: ICommonObject = {}
+        if (data) {
+            if (data.output !== undefined) spanOutput.output = safeSerialize(data.output)
+            if (data.state !== undefined) spanOutput.state = safeSerialize(data.state)
+            if (data.usedTools !== undefined) spanOutput.usedTools = safeSerialize(data.usedTools)
+            if (data.sourceDocuments !== undefined) spanOutput.sourceDocuments = safeSerialize(data.sourceDocuments)
+            if (!Object.keys(spanOutput).length) spanOutput.result = safeSerialize(data)
+        }
+        return spanOutput
+    }
+
+    const reflectNodeName = reactFlowNode.data.name
+    const reflectNodeLabel = reactFlowNode.data.label ?? reflectNodeName
+    const reflectNodeType = reactFlowNode.data.type ?? reactFlowNode.data.name
+
+    const finishLangfuseSpan = (status: string, payload: ICommonObject, duration?: number) => {
+        if (!langfuseSpan) return
+        try {
+            langfuseSpan.update({
+                metadata: {
+                    nodeId,
+                    nodeName: reflectNodeName,
+                    nodeLabel: reflectNodeLabel,
+                    nodeType: reflectNodeType,
+                    status,
+                    spanName,
+                    ...(duration !== undefined ? { durationMs: duration } : {})
+                }
+            })
+            langfuseSpan.end({ output: payload })
+        } catch (err) {
+            logger.warn(`Failed to finalize Langfuse span for node ${spanName}: ${getErrorMessage(err)}`)
+        }
+        langfuseSpan = undefined
+    }
+    let nodeStartTime = 0
     try {
         if (abortController?.signal?.aborted) {
             throw new Error('Aborted')
@@ -930,12 +988,47 @@ const executeNode = async ({
             abortController,
             analyticHandlers,
             parentTraceIds,
+            parentLangfuseTrace,
+            parentLangfuseSpan,
             humanInputAction,
             iterationContext
         }
 
+        const langfuseTrace = parentLangfuseTrace
+        const spanInput: ICommonObject = {
+            nodeId
+        }
+        if (finalInput !== undefined) spanInput.finalInput = safeSerialize(finalInput)
+        if (reactFlowNodeData.inputs !== undefined) spanInput.resolvedInputs = safeSerialize(reactFlowNodeData.inputs)
+        spanName = reactFlowNode?.data?.label || reactFlowNode.data.name
+        if (langfuseTrace) {
+            try {
+                langfuseSpan = langfuseTrace.span({
+                    name: spanName,
+                    metadata: {
+                        nodeId,
+                        nodeName: reactFlowNode.data.name,
+                        nodeType: reactFlowNode.data.type ?? reactFlowNode.data.name,
+                        status: 'IN_PROGRESS'
+                    },
+                    input: spanInput
+                })
+            } catch (err) {
+                logger.warn(`Failed to create Langfuse span for node ${spanName}: ${getErrorMessage(err)}`)
+            }
+        }
+
+        if (langfuseSpan) {
+            runParams.parentLangfuseSpan = langfuseSpan
+        } else if (parentLangfuseSpan) {
+            runParams.parentLangfuseSpan = parentLangfuseSpan
+        }
+
+        nodeStartTime = Date.now()
+
         // Execute node
         let results = await newNodeInstance.run(reactFlowNodeData, finalInput, runParams)
+        const nodeDuration = Date.now() - nodeStartTime
 
         // Handle iteration node with recursive execution
         if (
@@ -1006,7 +1099,9 @@ const executeNode = async ({
                             iterationContext: {
                                 ...iterationContext,
                                 agentflowRuntime
-                            }
+                            },
+                            parentLangfuseTrace,
+                            parentLangfuseSpan: langfuseSpan
                         })
 
                         // Store the result
@@ -1122,6 +1217,7 @@ const executeNode = async ({
 
             sseStreamer?.streamActionEvent(chatId, humanInputAction)
 
+            finishLangfuseSpan('STOPPED', buildSpanOutput(results), nodeDuration)
             return { result: results, shouldStop: true, agentFlowExecutedData }
         }
 
@@ -1169,11 +1265,16 @@ const executeNode = async ({
 
             sseStreamer?.streamActionEvent(chatId, humanInputAction)
 
+            finishLangfuseSpan('STOPPED', buildSpanOutput(results), nodeDuration)
             return { result: results, shouldStop: true, agentFlowExecutedData }
         }
 
+        finishLangfuseSpan('FINISHED', buildSpanOutput(results), nodeDuration)
         return { result: results, agentFlowExecutedData }
     } catch (error) {
+        const spanErrorStatus = getErrorMessage(error).includes('Aborted') ? 'TERMINATED' : 'ERROR'
+        const errorDuration = nodeStartTime ? Date.now() - nodeStartTime : undefined
+        finishLangfuseSpan(spanErrorStatus, { error: getErrorMessage(error) }, errorDuration)
         logger.error(`[server]: Error executing node ${nodeId}: ${getErrorMessage(error)}`)
         throw error
     }
@@ -1215,9 +1316,22 @@ export const executeAgentFlow = async ({
     parentExecutionId,
     iterationContext,
     isTool = false,
-    user
+    user,
+    parentLangfuseTrace: inheritedLangfuseTrace,
+    parentLangfuseSpan
 }: IExecuteAgentFlowParams) => {
     logger.debug('\n🚀 Starting flow execution')
+
+    const safeTraceSerialize = (value: any) => {
+        if (value === undefined || value === null) return value
+        if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+        try {
+            return JSON.parse(JSON.stringify(value))
+        } catch (err) {
+            logger.debug(`Failed to serialize value for Langfuse trace output: ${getErrorMessage(err)}`)
+            return '[Unserializable]'
+        }
+    }
 
     const question = incomingInput.question
     const form = incomingInput.form
@@ -1437,21 +1551,28 @@ export const executeAgentFlow = async ({
 
     let analyticHandlers: AnalyticHandler | undefined
     let parentTraceIds: ICommonObject | undefined
+    let parentLangfuseTrace: LangfuseTraceClient | undefined = inheritedLangfuseTrace
 
     try {
-        if (chatflow.analytic) {
+        if (isAnalyticsEnabled(chatflow.analytic)) {
             analyticHandlers = AnalyticHandler.getInstance({ inputs: {} } as any, {
                 appDataSource,
                 databaseEntities,
                 componentNodes,
                 analytic: chatflow.analytic,
-                chatId
+                chatId,
+                useNodeLevelLangfuseSpans: true
             })
             await analyticHandlers.init()
             parentTraceIds = await analyticHandlers.onChainStart(
                 'Agentflow',
                 form && Object.keys(form).length > 0 ? JSON.stringify(form) : question || ''
             )
+
+            const langfuseTraceId = parentTraceIds?.langFuse?.trace
+            if (!parentLangfuseTrace && langfuseTraceId && analyticHandlers) {
+                parentLangfuseTrace = analyticHandlers.getParentTraceClient('langFuse', langfuseTraceId)
+            }
         }
     } catch (error) {
         logger.error(`[server]: Error initializing analytic handlers: ${getErrorMessage(error)}`)
@@ -1486,7 +1607,7 @@ export const executeAgentFlow = async ({
 
             // Execute current node
             const executionResult = await executeNode({
-                user: user!,
+                user: user,
                 nodeId: currentNode.nodeId,
                 reactFlowNode,
                 nodes,
@@ -1519,6 +1640,8 @@ export const executeAgentFlow = async ({
                 abortController,
                 parentTraceIds,
                 analyticHandlers,
+                parentLangfuseTrace,
+                parentLangfuseSpan,
                 isRecursive,
                 iterationContext
             })
@@ -1674,6 +1797,23 @@ export const executeAgentFlow = async ({
 
     if (parentTraceIds && analyticHandlers) {
         await analyticHandlers.onChainEnd(parentTraceIds, content, true)
+    }
+
+    if (parentLangfuseTrace) {
+        try {
+            parentLangfuseTrace.update({
+                metadata: {
+                    status,
+                    nodeCount: agentFlowExecutedData.length
+                },
+                output: {
+                    finalOutput: safeTraceSerialize(lastNodeOutput),
+                    status
+                }
+            })
+        } catch (err) {
+            logger.warn(`Failed to update Langfuse trace metadata: ${getErrorMessage(err)}`)
+        }
     }
 
     if (isRecursive) {

@@ -7,6 +7,7 @@ interface FlowNode {
     data: {
         id: string
         type: string
+        category?: string
         credential?: string
         inputs?: {
             modelName?: string
@@ -37,6 +38,7 @@ interface CredentialInfo {
     nodeId: string
     nodeType: string
     credentialId: string
+    visibility?: string[]
 }
 
 /**
@@ -54,6 +56,7 @@ interface ModelInfo {
 interface ExtractionResult {
     credentials: CredentialInfo[]
     models: ModelInfo[]
+    hasPlatformAINodes: boolean
 }
 
 /**
@@ -68,13 +71,19 @@ function extractCredentialsAndModels(flowData: FlowData | string): ExtractionRes
     // Initialize result object
     const result: ExtractionResult = {
         credentials: [],
-        models: []
+        models: [],
+        hasPlatformAINodes: false
     }
 
     // Check if flow has nodes
     if (!flow.nodes || !Array.isArray(flow.nodes)) {
         return result
     }
+
+    // Check for AAI platform AI nodes
+    result.hasPlatformAINodes = flow.nodes.some(
+        (node) => node.data?.type?.startsWith('AAI') && ['Chat Models', 'Embeddings'].includes(node.data.category || '')
+    )
 
     // Iterate through nodes
     flow.nodes.forEach((node) => {

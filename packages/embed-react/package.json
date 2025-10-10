@@ -1,6 +1,6 @@
 {
     "name": "aai-embed-react",
-    "version": "1.0.7",
+    "version": "3.0.10",
     "description": "React library to display flowise chatbot on your website",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -35,7 +35,7 @@
         "typescript": "~5.5.4"
     },
     "peerDependencies": {
-        "aai-embed": "^3.0.0",
+        "aai-embed": "^3.0.10",
         "react": "18.x"
     }
 }

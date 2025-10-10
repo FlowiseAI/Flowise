@@ -8,7 +8,8 @@ export const log = console as unknown as Logger
 export const DEFAULT_CUSTOMER_ID = process.env.BILLING_DEFAULT_STRIPE_CUSTOMER_ID
 
 // Load environment variables with defaults
-const BILLING_CREDIT_PRICE_USD = parseFloat(process.env.BILLING_CREDIT_PRICE_USD || '0')
+// Base rate: $20 for 500,000 credits = $0.00004 per credit
+const BILLING_CREDIT_PRICE_USD = parseFloat(process.env.BILLING_CREDIT_PRICE_USD || '0.00004')
 const MARGIN_MULTIPLIER = parseFloat(process.env.BILLING_MARGIN_MULTIPLIER || '1')
 const BILLING_PRO_PLAN_CREDITS = parseInt(process.env.BILLING_PRO_PLAN_CREDITS || '500000')
 const BILLING_FREE_PLAN_CREDITS = parseInt(process.env.BILLING_FREE_PLAN_CREDITS || '10000')

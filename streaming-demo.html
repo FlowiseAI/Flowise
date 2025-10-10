@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AnswerAI Streaming Demo</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                overflow: hidden;
+            }
+
+            .header {
+                background: linear-gradient(135deg, #24c3a1 0%, #1a9b7f 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 2.5em;
+                margin-bottom: 10px;
+                font-weight: 300;
+            }
+
+            .header p {
+                font-size: 1.1em;
+                opacity: 0.9;
+            }
+
+            .content {
+                padding: 30px;
+            }
+
+            .form-section {
+                background: #f8f9fa;
+                padding: 25px;
+                border-radius: 10px;
+                margin-bottom: 30px;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #333;
+            }
+
+            input,
+            select,
+            textarea {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e1e5e9;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: border-color 0.3s;
+            }
+
+            input:focus,
+            select:focus,
+            textarea:focus {
+                outline: none;
+                border-color: #24c3a1;
+            }
+
+            .button-group {
+                display: flex;
+                gap: 15px;
+                margin-top: 20px;
+            }
+
+            button {
+                padding: 12px 25px;
+                border: none;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .btn-primary {
+                background: #24c3a1;
+                color: white;
+            }
+
+            .btn-primary:hover:not(:disabled) {
+                background: #1a9b7f;
+                transform: translateY(-2px);
+            }
+
+            .btn-secondary {
+                background: #6c757d;
+                color: white;
+            }
+
+            .btn-secondary:hover:not(:disabled) {
+                background: #545b62;
+            }
+
+            button:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .status-section {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .status-header {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .status-indicator {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #6c757d;
+            }
+
+            .status-indicator.active {
+                background: #24c3a1;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            .progress-bar {
+                width: 100%;
+                height: 6px;
+                background: #e1e5e9;
+                border-radius: 3px;
+                overflow: hidden;
+                margin-bottom: 15px;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #24c3a1, #1a9b7f);
+                width: 0%;
+                transition: width 0.3s;
+                animation: shimmer 2s infinite;
+            }
+
+            @keyframes shimmer {
+                0% {
+                    background-position: -200px 0;
+                }
+                100% {
+                    background-position: 200px 0;
+                }
+            }
+
+            .current-node {
+                background: #e3f2fd;
+                border-left: 4px solid #2196f3;
+                padding: 10px 15px;
+                margin-bottom: 15px;
+                border-radius: 0 8px 8px 0;
+            }
+
+            .progress-log {
+                background: #1e1e1e;
+                color: #00ff00;
+                padding: 20px;
+                border-radius: 8px;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                height: 200px;
+                overflow-y: auto;
+                white-space: pre-wrap;
+                margin-bottom: 20px;
+            }
+
+            .results-section {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 20px;
+            }
+
+            .result-item {
+                background: white;
+                border-radius: 8px;
+                padding: 20px;
+                margin-bottom: 15px;
+                border-left: 4px solid #24c3a1;
+            }
+
+            .result-title {
+                font-weight: 600;
+                color: #24c3a1;
+                margin-bottom: 10px;
+                font-size: 1.1em;
+            }
+
+            .result-content {
+                color: #333;
+                line-height: 1.6;
+            }
+
+            .streaming-response {
+                background: #fff3cd;
+                border: 1px solid #ffeaa7;
+                border-radius: 8px;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .streaming-response h4 {
+                color: #856404;
+                margin-bottom: 10px;
+            }
+
+            .event-counts {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 10px;
+                margin-top: 20px;
+            }
+
+            .event-count {
+                background: white;
+                padding: 10px;
+                border-radius: 6px;
+                text-align: center;
+                border: 1px solid #e1e5e9;
+            }
+
+            .event-count-number {
+                font-size: 1.5em;
+                font-weight: bold;
+                color: #24c3a1;
+            }
+
+            .event-count-label {
+                font-size: 0.9em;
+                color: #666;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            .error-message {
+                background: #f8d7da;
+                color: #721c24;
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 15px;
+                border-left: 4px solid #dc3545;
+            }
+
+            .code-block {
+                background: #f4f4f4;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 10px;
+                font-family: 'Courier New', monospace;
+                font-size: 0.9em;
+                overflow-x: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🤖 AnswerAI Direct Streaming Demo</h1>
+                <p>Connect directly to AnswerAI for real-time AI agent streaming (no local service required)</p>
+            </div>
+
+            <div class="content">
+                <!-- Configuration Form -->
+                <div class="form-section">
+                    <h3>Configuration</h3>
+                    <div class="form-group">
+                        <label for="answerAiUrl">AnswerAI Server URL:</label>
+                        <input type="text" id="answerAiUrl" value="http://localhost:4000" placeholder="http://localhost:4000" />
+                        <small style="color: #666; font-size: 0.9em">Direct AnswerAI endpoint (not your local service)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="chatflowId">Chatflow ID:</label>
+                        <input type="text" id="chatflowId" placeholder="8e56531d-f396-4afa-a864-fcea5dd97ab6" />
+                        <small style="color: #666; font-size: 0.9em">Your AnswerAI chatflow ID for domain research</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="question">Research Question:</label>
+                        <input
+                            type="text"
+                            id="question"
+                            value="Medical devices for cardiac monitoring"
+                            placeholder="What domain/topic to research"
+                        />
+                        <small style="color: #666; font-size: 0.9em">The domain or topic you want the AI to research</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="streamingMode">Streaming Mode:</label>
+                        <select id="streamingMode">
+                            <option value="user-friendly">User Friendly (Simplified)</option>
+                            <option value="verbose">Verbose (All Events)</option>
+                        </select>
+                    </div>
+                    <div class="button-group">
+                        <button id="startBtn" class="btn-primary">🚀 Start Analysis</button>
+                        <button id="stopBtn" class="btn-secondary" disabled>⏹ Stop Analysis</button>
+                        <button id="clearBtn" class="btn-secondary">🗑 Clear Results</button>
+                    </div>
+                </div>
+
+                <!-- Status Section -->
+                <div id="statusSection" class="status-section hidden">
+                    <div class="status-header">
+                        <div id="statusIndicator" class="status-indicator"></div>
+                        <h3>Analysis Status</h3>
+                        <span id="duration">0s</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div id="currentNode" class="current-node hidden">
+                        <strong>Current Node:</strong> <span id="currentNodeText">-</span>
+                    </div>
+                    <div class="progress-log" id="progressLog"></div>
+                </div>
+
+                <!-- Streaming Response -->
+                <div id="streamingSection" class="hidden">
+                    <div class="streaming-response">
+                        <h4>🤖 Live AI Response</h4>
+                        <div id="streamingContent"></div>
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div id="resultsSection" class="results-section hidden">
+                    <h3>Analysis Results</h3>
+                    <div id="resultsContainer"></div>
+
+                    <!-- Event Statistics -->
+                    <div class="event-counts" id="eventCounts"></div>
+                </div>
+
+                <!-- Error Section -->
+                <div id="errorSection" class="error-message hidden"><strong>Error:</strong> <span id="errorMessage"></span></div>
+            </div>
+        </div>
+
+        <script>
+            // Global variables
+            let abortController = null
+            let startTime = null
+            let durationInterval = null
+            let eventCounts = {}
+            let analysisResults = {}
+            let streamingResponse = ''
+            let elements = {}
+
+            // Initialize DOM elements when page loads
+            document.addEventListener('DOMContentLoaded', function () {
+                elements = {
+                    answerAiUrl: document.getElementById('answerAiUrl'),
+                    chatflowId: document.getElementById('chatflowId'),
+                    question: document.getElementById('question'),
+                    streamingMode: document.getElementById('streamingMode'),
+                    startBtn: document.getElementById('startBtn'),
+                    stopBtn: document.getElementById('stopBtn'),
+                    clearBtn: document.getElementById('clearBtn'),
+                    statusSection: document.getElementById('statusSection'),
+                    statusIndicator: document.getElementById('statusIndicator'),
+                    duration: document.getElementById('duration'),
+                    progressFill: document.getElementById('progressFill'),
+                    currentNode: document.getElementById('currentNode'),
+                    currentNodeText: document.getElementById('currentNodeText'),
+                    progressLog: document.getElementById('progressLog'),
+                    streamingSection: document.getElementById('streamingSection'),
+                    streamingContent: document.getElementById('streamingContent'),
+                    resultsSection: document.getElementById('resultsSection'),
+                    resultsContainer: document.getElementById('resultsContainer'),
+                    eventCounts: document.getElementById('eventCounts'),
+                    errorSection: document.getElementById('errorSection'),
+                    errorMessage: document.getElementById('errorMessage')
+                }
+
+                // Event listeners
+                elements.startBtn.addEventListener('click', startAnalysis)
+                elements.stopBtn.addEventListener('click', stopAnalysis)
+                elements.clearBtn.addEventListener('click', clearResults)
+
+                // Initialize
+                logProgress(
+                    '🚀 Direct AnswerAI Demo ready! Configure your AnswerAI server and chatflow, then click "Start Analysis"',
+                    'success'
+                )
+            })
+
+            // Utility functions
+            function generateChatId() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    const r = (Math.random() * 16) | 0
+                    const v = c == 'x' ? r : (r & 0x3) | 0x8
+                    return v.toString(16)
+                })
+            }
+
+            function formatDuration(ms) {
+                const seconds = Math.floor(ms / 1000)
+                const minutes = Math.floor(seconds / 60)
+                if (minutes > 0) {
+                    return `${minutes}m ${seconds % 60}s`
+                }
+                return `${seconds}s`
+            }
+
+            function logProgress(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString()
+                const colors = {
+                    info: '#00ff00',
+                    warning: '#ffff00',
+                    error: '#ff0000',
+                    success: '#00ff88'
+                }
+
+                const logEntry = `[${timestamp}] ${message}\n`
+                elements.progressLog.innerHTML += `<span style="color: ${colors[type] || colors.info}">${logEntry}</span>`
+                elements.progressLog.scrollTop = elements.progressLog.scrollHeight
+            }
+
+            function showError(message) {
+                elements.errorMessage.textContent = message
+                elements.errorSection.classList.remove('hidden')
+                logProgress(`❌ ${message}`, 'error')
+            }
+
+            function hideError() {
+                elements.errorSection.classList.add('hidden')
+            }
+
+            function updateEventCounts() {
+                elements.eventCounts.innerHTML = ''
+                Object.entries(eventCounts).forEach(([eventType, count]) => {
+                    const eventDiv = document.createElement('div')
+                    eventDiv.className = 'event-count'
+                    eventDiv.innerHTML = `
+                    <div class="event-count-number">${count}</div>
+                    <div class="event-count-label">${eventType}</div>
+                `
+                    elements.eventCounts.appendChild(eventDiv)
+                })
+            }
+
+            function updateResults() {
+                elements.resultsContainer.innerHTML = ''
+
+                // Show streaming response first if available
+                if (streamingResponse) {
+                    elements.streamingContent.innerHTML = streamingResponse.replace(/\n/g, '<br>')
+                    elements.streamingSection.classList.remove('hidden')
+                }
+
+                // Show other analysis results
+                Object.entries(analysisResults).forEach(([key, value]) => {
+                    if (key === 'streamingResponse') return // Skip, handled above
+
+                    const resultDiv = document.createElement('div')
+                    resultDiv.className = 'result-item'
+
+                    const title = key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())
+
+                    let content = value
+                    if (typeof value === 'object') {
+                        content = `<div class="code-block">${JSON.stringify(value, null, 2)}</div>`
+                    } else if (typeof value === 'string' && value.length > 200) {
+                        content = value.replace(/\n/g, '<br>')
+                    }
+
+                    resultDiv.innerHTML = `
+                    <div class="result-title">${title}</div>
+                    <div class="result-content">${content}</div>
+                `
+
+                    elements.resultsContainer.appendChild(resultDiv)
+                })
+
+                if (Object.keys(analysisResults).length > 0 || streamingResponse) {
+                    elements.resultsSection.classList.remove('hidden')
+                }
+            }
+
+            // SSE Parsing function (from streamingUtils.js)
+            function parseSSE(chunk) {
+                const lines = chunk.split('\n')
+                const events = []
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim()
+                    if (line.startsWith('data:')) {
+                        const data = line.substring(5).trim()
+                        if (data && data !== '[DONE]') {
+                            try {
+                                const parsed = JSON.parse(data)
+                                events.push(parsed)
+                            } catch (e) {
+                                // Skip invalid JSON
+                            }
+                        }
+                    }
+                }
+
+                return events
+            }
+
+            // Event handlers
+            function handleUserFriendlyEvent(eventType, data) {
+                const isVerbose = elements.streamingMode.value === 'verbose'
+
+                switch (eventType) {
+                    case 'start':
+                        logProgress(`🚀 ${data}`, 'success')
+                        break
+
+                    case 'token':
+                        streamingResponse += data
+                        updateResults()
+                        if (isVerbose) {
+                            logProgress(`Token: ${data}`)
+                        }
+                        break
+
+                    case 'nextAgentFlow':
+                        if (data.status === 'INPROGRESS') {
+                            elements.currentNodeText.textContent = data.nodeLabel
+                            elements.currentNode.classList.remove('hidden')
+                            logProgress(`▶ ${data.nodeLabel}...`)
+                        } else if (data.status === 'FINISHED') {
+                            logProgress(`✓ ${data.nodeLabel} completed`, 'success')
+                        } else if (data.status === 'ERROR') {
+                            logProgress(`✗ ${data.nodeLabel} failed`, 'error')
+                            if (data.error) {
+                                logProgress(`  Error: ${data.error}`, 'error')
+                            }
+                        } else if (data.status === 'STOPPED') {
+                            logProgress(`⏸ ${data.nodeLabel} stopped`, 'warning')
+                        }
+                        break
+
+                    case 'agentFlowExecutedData':
+                        if (Array.isArray(data)) {
+                            data.forEach((node) => {
+                                if (node.output?.content) {
+                                    try {
+                                        const parsed = JSON.parse(node.output.content)
+                                        if (parsed && typeof parsed === 'object') {
+                                            analysisResults = { ...analysisResults, ...parsed }
+                                            logProgress(`📊 Received structured data from ${node.nodeLabel}`)
+                                        }
+                                    } catch (e) {
+                                        const nodeKey = node.nodeLabel || `Step_${Date.now()}`
+                                        analysisResults[nodeKey] = node.output.content
+                                        logProgress(`📝 Received text from ${node.nodeLabel}`)
+                                    }
+                                }
+                            })
+                            updateResults()
+                        }
+                        break
+
+                    case 'action':
+                        logProgress('⏸ Waiting for approval...', 'warning')
+                        break
+
+                    case 'error':
+                        logProgress(`❌ Error: ${data}`, 'error')
+                        showError(data)
+                        break
+
+                    case 'end':
+                        logProgress('✅ Analysis completed', 'success')
+                        stopAnalysis()
+                        break
+
+                    case 'domainUpdated':
+                        logProgress('💾 Analysis saved to database', 'success')
+                        break
+
+                    case 'abort':
+                        logProgress('⏸ Analysis cancelled', 'warning')
+                        break
+
+                    default:
+                        if (isVerbose) {
+                            logProgress(`📡 ${eventType}: ${JSON.stringify(data)}`)
+                        }
+
+                        // Try to extract useful data from unknown events
+                        if (data && typeof data === 'object') {
+                            if (data.text || data.response || data.content) {
+                                analysisResults[`${eventType}_response`] = data.text || data.response || data.content
+                                updateResults()
+                            }
+                            if (data.analysis || data.result) {
+                                analysisResults[eventType] = data.analysis || data.result
+                                updateResults()
+                            }
+                        }
+                }
+            }
+
+            // Main streaming function
+            async function startAnalysis() {
+                const answerAiUrl = elements.answerAiUrl.value.trim()
+                const chatflowId = elements.chatflowId.value.trim()
+                const question = elements.question.value.trim()
+
+                if (!answerAiUrl || !chatflowId || !question) {
+                    showError('Please fill in all required fields')
+                    return
+                }
+
+                hideError()
+
+                // Reset state
+                eventCounts = {}
+                analysisResults = {}
+                streamingResponse = ''
+                elements.progressLog.innerHTML = ''
+                elements.resultsContainer.innerHTML = ''
+                elements.streamingContent.innerHTML = ''
+
+                // Show status section
+                elements.statusSection.classList.remove('hidden')
+                elements.statusIndicator.classList.add('active')
+                elements.startBtn.disabled = true
+                elements.stopBtn.disabled = false
+
+                // Start duration timer
+                startTime = Date.now()
+                durationInterval = setInterval(() => {
+                    const elapsed = Date.now() - startTime
+                    elements.duration.textContent = formatDuration(elapsed)
+                }, 1000)
+
+                abortController = new AbortController()
+
+                try {
+                    const chatId = generateChatId()
+                    // Direct AnswerAI endpoint like in alpha.js
+                    const url = `${answerAiUrl}/api/v1/prediction/${chatflowId}`
+
+                    const payload = {
+                        question: question,
+                        streaming: true,
+                        chatId: chatId
+                    }
+
+                    logProgress(`🔗 Connecting to: ${url}`, 'info')
+                    logProgress(`📋 Chat ID: ${chatId}`, 'info')
+                    logProgress(`📋 Payload: ${JSON.stringify(payload)}`, 'info')
+
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload),
+                        signal: abortController.signal
+                    })
+
+                    if (!response.ok) {
+                        const errorText = await response.text()
+                        throw new Error(`HTTP ${response.status}: ${errorText}`)
+                    }
+
+                    // Check if response is streaming or not
+                    const contentType = response.headers.get('content-type')
+                    logProgress(`📡 Response Content-Type: ${contentType}`, 'info')
+
+                    if (contentType && contentType.includes('application/json')) {
+                        // Non-streaming response - handle as single JSON
+                        logProgress('⚠️ Received non-streaming JSON response', 'warning')
+                        const jsonResponse = await response.json()
+                        logProgress('📄 Complete response received at once', 'info')
+
+                        // Display the non-streaming response
+                        if (jsonResponse.text) {
+                            streamingResponse = jsonResponse.text
+                            updateResults()
+                        }
+
+                        // Show the full response in results
+                        analysisResults['Complete Response'] = jsonResponse
+                        updateResults()
+
+                        logProgress('✅ Non-streaming analysis completed', 'success')
+                        stopAnalysis()
+                        return
+                    }
+
+                    if (!response.body) {
+                        throw new Error('No response body')
+                    }
+
+                    const reader = response.body.getReader()
+                    const decoder = new TextDecoder()
+                    let buffer = ''
+
+                    logProgress('📡 Streaming started... (SSE mode)', 'success')
+                    logProgress(`📡 Expected Content-Type: text/event-stream or text/plain`, 'info')
+
+                    while (true) {
+                        const { done, value } = await reader.read()
+
+                        if (done) {
+                            break
+                        }
+
+                        buffer += decoder.decode(value, { stream: true })
+
+                        // Process complete SSE messages
+                        const events = parseSSE(buffer)
+                        events.forEach((event) => {
+                            const { event: eventType, data } = event
+
+                            // Count events
+                            eventCounts[eventType] = (eventCounts[eventType] || 0) + 1
+                            updateEventCounts()
+
+                            // Handle event
+                            handleUserFriendlyEvent(eventType, data)
+                        })
+
+                        // Keep incomplete message in buffer
+                        const lastNewline = buffer.lastIndexOf('\n\n')
+                        if (lastNewline !== -1) {
+                            buffer = buffer.substring(lastNewline + 2)
+                        }
+                    }
+
+                    logProgress('🎉 Streaming completed successfully', 'success')
+                } catch (error) {
+                    if (error.name === 'AbortError') {
+                        logProgress('⏸ Stream was cancelled', 'warning')
+                    } else {
+                        showError(error.message)
+                        console.error('Streaming error:', error)
+                    }
+                } finally {
+                    stopAnalysis()
+                }
+            }
+
+            function stopAnalysis() {
+                if (abortController) {
+                    abortController.abort()
+                    abortController = null
+                }
+
+                if (durationInterval) {
+                    clearInterval(durationInterval)
+                    durationInterval = null
+                }
+
+                elements.statusIndicator.classList.remove('active')
+                elements.startBtn.disabled = false
+                elements.stopBtn.disabled = true
+                elements.currentNode.classList.add('hidden')
+            }
+
+            function clearResults() {
+                eventCounts = {}
+                analysisResults = {}
+                streamingResponse = ''
+                elements.progressLog.innerHTML = ''
+                elements.resultsContainer.innerHTML = ''
+                elements.streamingContent.innerHTML = ''
+                elements.statusSection.classList.add('hidden')
+                elements.streamingSection.classList.add('hidden')
+                elements.resultsSection.classList.add('hidden')
+                hideError()
+            }
+        </script>
+    </body>
+</html>

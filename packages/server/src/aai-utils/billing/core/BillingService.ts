@@ -20,7 +20,7 @@ import {
 } from './types'
 import { LangfuseProvider } from '../langfuse/LangfuseProvider'
 import { StripeProvider } from '../stripe/StripeProvider'
-import { log } from '../config'
+import { log, BILLING_CONFIG } from '../config'
 import Stripe from 'stripe'
 import { MeterEventSummary } from '../stripe/types'
 
@@ -163,7 +163,7 @@ export class BillingService implements BillingProvider {
                     currency: invoice.currency,
                     dueDate: invoice.dueDate,
                     // Calculate total credits used based on the invoice amount
-                    totalCreditsUsed: Math.round(invoice.amount / (0.00004 * 100)) // Assuming $0.001 per credit
+                    totalCreditsUsed: Math.round(invoice.amount / (BILLING_CONFIG.CREDIT_TO_USD * 100))
                 }
             }
         } catch (error) {

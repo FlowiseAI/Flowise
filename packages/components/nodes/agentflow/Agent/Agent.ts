@@ -11,7 +11,7 @@ import {
     IUsedTool
 } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
-import { AnalyticHandler } from '../../../src/handler'
+import { AnalyticHandler, additionalCallbacks } from '../../../src/handler'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { ILLMMessage } from '../Interface.Agentflow'
 import { Tool } from '@langchain/core/tools'
@@ -20,6 +20,7 @@ import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
+import { LangfuseSpanClient } from 'langfuse'
 import {
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
@@ -477,6 +478,19 @@ class Agent_Agentflow implements INode {
                 throw new Error('Model is required')
             }
 
+            // Setup analytics tracing options and attach to options object for easy access
+            const callbacks = await additionalCallbacks(nodeData, {
+                ...options,
+                parentLangfuseTrace: options.parentLangfuseTrace,
+                parentLangfuseSpan: options.parentLangfuseSpan
+            })
+            const llmCallOptions: ICommonObject = { signal: abortController?.signal }
+            if (callbacks && callbacks.length > 0) {
+                llmCallOptions.callbacks = callbacks
+            }
+            options._llmCallOptions = llmCallOptions
+            options._parentToolSpan = options.parentLangfuseSpan as LangfuseSpanClient | undefined
+
             // Extract tools
             const tools = nodeData.inputs?.agentTools as ITool[]
 
@@ -856,9 +870,9 @@ class Agent_Agentflow implements INode {
                 }
             } else {
                 if (isStreamable) {
-                    response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+                    response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, options)
                 } else {
-                    response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+                    response = await llmNodeInstance.invoke(messages, options._llmCallOptions || { signal: abortController?.signal })
                 }
             }
 
@@ -1056,6 +1070,7 @@ class Agent_Agentflow implements INode {
         runtimeImageMessagesWithFileRef: BaseMessageLike[]
         pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
         const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
         pastChatHistory = updatedPastMessages
         pastImageMessagesWithFileRef.push(...transformedPastMessages)
@@ -1102,12 +1117,12 @@ class Agent_Agentflow implements INode {
                             )
                         }
                     ],
-                    { signal: abortController?.signal }
+                    llmCallOptions
                 )
                 messages.push({ role: 'assistant', content: summary.content as string })
             } else if (memoryType === 'conversationSummaryBuffer') {
                 // Summary buffer: Summarize messages that exceed token limit
-                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController)
+                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController, options)
             } else {
                 // Default: Use all messages
                 messages.push(...pastMessages)
@@ -1131,8 +1146,10 @@ class Agent_Agentflow implements INode {
         pastMessages: BaseMessageLike[],
         llmNodeInstance: BaseChatModel,
         nodeData: INodeData,
-        abortController: AbortController
+        abortController: AbortController,
+        options: ICommonObject
     ): Promise<void> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
         const maxTokenLimit = (nodeData.inputs?.agentMemoryMaxTokenLimit as number) || 2000
 
         // Convert past messages to a format suitable for token counting
@@ -1166,7 +1183,7 @@ class Agent_Agentflow implements INode {
                         content: DEFAULT_SUMMARIZER_TEMPLATE.replace('{conversation}', messagesToSummarizeString)
                     }
                 ],
-                { signal: abortController?.signal }
+                llmCallOptions
             )
 
             // Add summary as a system message at the beginning, then add remaining messages
@@ -1186,12 +1203,13 @@ class Agent_Agentflow implements INode {
         llmNodeInstance: BaseChatModel,
         messages: BaseMessageLike[],
         chatId: string,
-        abortController: AbortController
+        options: ICommonObject
     ): Promise<AIMessageChunk> {
+        const llmCallOptions = options._llmCallOptions || { signal: options.abortController?.signal }
         let response = new AIMessageChunk('')
 
         try {
-            for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
+            for await (const chunk of await llmNodeInstance.stream(messages, llmCallOptions)) {
                 if (sseStreamer) {
                     let content = ''
                     if (Array.isArray(chunk.content) && chunk.content.length > 0) {
@@ -1394,6 +1412,10 @@ class Agent_Agentflow implements INode {
         totalTokens: number
         isWaitingForHumanInput?: boolean
     }> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
+        const parentToolSpan = options._parentToolSpan
+        let analyticHandlers = options.analyticHandlers as AnalyticHandler
+
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
 
@@ -1445,6 +1467,12 @@ class Agent_Agentflow implements INode {
                     return { response, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput: true }
                 }
 
+                let toolSpan = analyticHandlers?.createToolSpan(parentToolSpan, toolCall.name, toolCall.args, {
+                    nodeId: nodeData.id,
+                    nodeLabel: nodeData.label,
+                    toolCallId: toolCall.id
+                })
+
                 try {
                     //@ts-ignore
                     let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
@@ -1491,11 +1519,28 @@ class Agent_Agentflow implements INode {
                         toolInput: toolCall.args,
                         toolOutput
                     })
+
+                    if (toolSpan && analyticHandlers) {
+                        const spanPayload: ICommonObject = {
+                            output: analyticHandlers.safeSerializeForTrace(toolOutput)
+                        }
+                        if (parsedDocs !== undefined) spanPayload.sourceDocuments = analyticHandlers.safeSerializeForTrace(parsedDocs)
+                        if (parsedArtifacts !== undefined) spanPayload.artifacts = analyticHandlers.safeSerializeForTrace(parsedArtifacts)
+                        analyticHandlers.finishToolSpan(toolSpan, 'FINISHED', spanPayload)
+                        toolSpan = undefined
+                    }
                 } catch (e) {
                     console.error('Error invoking tool:', e)
 
                     // Enhanced error message for MCP connection issues
                     const enhancedErrorMessage = this.enhanceMcpErrorMessage(e, toolCall.name, nodeData, options)
+
+                    if (toolSpan && analyticHandlers) {
+                        analyticHandlers.finishToolSpan(toolSpan, 'ERROR', {
+                            error: analyticHandlers.safeSerializeForTrace(enhancedErrorMessage)
+                        })
+                        toolSpan = undefined
+                    }
 
                     usedTools.push({
                         tool: selectedTool.name,
@@ -1534,9 +1579,9 @@ class Agent_Agentflow implements INode {
         let newResponse: AIMessageChunk
 
         if (isStreamable) {
-            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, options)
         } else {
-            newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            newResponse = await llmNodeInstance.invoke(messages, llmCallOptions)
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer) {
@@ -1629,6 +1674,9 @@ class Agent_Agentflow implements INode {
         totalTokens: number
         isWaitingForHumanInput?: boolean
     }> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
+        const parentToolSpan = options._parentToolSpan
+        const analyticHandlers = options.analyticHandlers as AnalyticHandler
         let llmNodeInstance = llmWithoutToolsBind
 
         const lastCheckpointMessages = humanInputAction?.data?.input?.messages ?? []
@@ -1688,8 +1736,17 @@ class Agent_Agentflow implements INode {
                 if (humanInput.type === 'reject') {
                     messages.pop()
                     toolsInstance = toolsInstance.filter((tool) => tool.name !== toolCall.name)
+                    continue
                 }
+
                 if (humanInput.type === 'proceed') {
+                    let toolSpan: LangfuseSpanClient | undefined
+                    toolSpan = analyticHandlers?.createToolSpan(parentToolSpan, toolCall.name, toolCall.args, {
+                        nodeId: nodeData.id,
+                        nodeLabel: nodeData.label,
+                        toolCallId: toolCall.id
+                    })
+
                     try {
                         //@ts-ignore
                         let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
@@ -1736,11 +1793,29 @@ class Agent_Agentflow implements INode {
                             toolInput: toolCall.args,
                             toolOutput
                         })
+
+                        if (toolSpan && analyticHandlers) {
+                            const spanPayload: ICommonObject = {
+                                output: analyticHandlers.safeSerializeForTrace(toolOutput)
+                            }
+                            if (parsedDocs !== undefined) spanPayload.sourceDocuments = analyticHandlers.safeSerializeForTrace(parsedDocs)
+                            if (parsedArtifacts !== undefined)
+                                spanPayload.artifacts = analyticHandlers.safeSerializeForTrace(parsedArtifacts)
+                            analyticHandlers.finishToolSpan(toolSpan, 'FINISHED', spanPayload)
+                            toolSpan = undefined
+                        }
                     } catch (e) {
                         console.error('Error invoking tool:', e)
 
                         // Enhanced error message for MCP connection issues
                         const enhancedErrorMessage = this.enhanceMcpErrorMessage(e, toolCall.name, nodeData, options)
+
+                        if (toolSpan && analyticHandlers) {
+                            analyticHandlers.finishToolSpan(toolSpan, 'ERROR', {
+                                error: analyticHandlers.safeSerializeForTrace(enhancedErrorMessage)
+                            })
+                            toolSpan = undefined
+                        }
 
                         usedTools.push({
                             tool: selectedTool.name,
@@ -1789,9 +1864,9 @@ class Agent_Agentflow implements INode {
         }
 
         if (isStreamable) {
-            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, options)
         } else {
-            newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            newResponse = await llmNodeInstance.invoke(messages, llmCallOptions)
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer) {

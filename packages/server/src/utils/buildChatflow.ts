@@ -89,7 +89,7 @@ const initEndingNode = async ({
     nodeOverrides,
     variableOverrides
 }: {
-    user: IUser
+    user?: IUser
     endingNodeIds: string[]
     componentNodes: IComponentNodes
     reactFlowNodes: IReactFlowNode[]
@@ -928,7 +928,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             telemetry: appServer.telemetry,
             cachePool: appServer.cachePool,
             componentNodes: appServer.nodesPool.componentNodes,
-            user: req.user!,
+            user: req.user,
             isTool // used to disable streaming if incoming request its from ChatflowTool
         }
 

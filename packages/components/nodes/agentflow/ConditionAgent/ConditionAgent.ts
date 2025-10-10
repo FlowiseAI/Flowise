@@ -1,4 +1,4 @@
-import { AnalyticHandler } from '../../../src/handler'
+import { AnalyticHandler, additionalCallbacks } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import {
@@ -239,6 +239,17 @@ class ConditionAgent_Agentflow implements INode {
             if (!model) {
                 throw new Error('Model is required')
             }
+            // Setup analytics tracing options and attach to options object for easy access
+            const callbacks = await additionalCallbacks(nodeData, {
+                ...options,
+                parentLangfuseTrace: options.parentLangfuseTrace,
+                parentLangfuseSpan: options.parentLangfuseSpan
+            })
+            const llmCallOptions: ICommonObject = { signal: abortController?.signal }
+            if (callbacks && callbacks.length > 0) {
+                llmCallOptions.callbacks = callbacks
+            }
+            options._llmCallOptions = llmCallOptions
             const conditionAgentInput = nodeData.inputs?.conditionAgentInput as string
             let input = conditionAgentInput || question
             const conditionAgentInstructions = nodeData.inputs?.conditionAgentInstructions as string
@@ -360,7 +371,7 @@ class ConditionAgent_Agentflow implements INode {
             // Track execution time
             const startTime = Date.now()
 
-            response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            response = await llmNodeInstance.invoke(messages, options._llmCallOptions || { signal: abortController?.signal })
 
             // Calculate execution time
             const endTime = Date.now()
@@ -482,6 +493,7 @@ class ConditionAgent_Agentflow implements INode {
         runtimeImageMessagesWithFileRef: BaseMessageLike[]
         pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
         const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
         pastChatHistory = updatedPastMessages
         pastImageMessagesWithFileRef.push(...transformedPastMessages)
@@ -523,12 +535,12 @@ class ConditionAgent_Agentflow implements INode {
                             )
                         }
                     ],
-                    { signal: abortController?.signal }
+                    llmCallOptions
                 )
                 messages.push({ role: 'assistant', content: summary.content as string })
             } else if (memoryType === 'conversationSummaryBuffer') {
                 // Summary buffer: Summarize messages that exceed token limit
-                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController)
+                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController, options)
             } else {
                 // Default: Use all messages
                 messages.push(...pastMessages)
@@ -549,8 +561,10 @@ class ConditionAgent_Agentflow implements INode {
         pastMessages: BaseMessageLike[],
         llmNodeInstance: BaseChatModel,
         nodeData: INodeData,
-        abortController: AbortController
+        abortController: AbortController,
+        options: ICommonObject
     ): Promise<void> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
         const maxTokenLimit = (nodeData.inputs?.conditionAgentMemoryMaxTokenLimit as number) || 2000
 
         // Convert past messages to a format suitable for token counting
@@ -584,7 +598,7 @@ class ConditionAgent_Agentflow implements INode {
                         content: DEFAULT_SUMMARIZER_TEMPLATE.replace('{conversation}', messagesToSummarizeString)
                     }
                 ],
-                { signal: abortController?.signal }
+                llmCallOptions
             )
 
             // Add summary as a system message at the beginning, then add remaining messages

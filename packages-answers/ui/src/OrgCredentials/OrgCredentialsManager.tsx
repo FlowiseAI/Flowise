@@ -213,6 +213,11 @@ const OrgCredentialsManager: React.FC = () => {
     return (
         <Container maxWidth='lg'>
             <Box py={3}>
+                <Box sx={{ mb: 2 }}>
+                    <Button onClick={() => (window.location.href = '/sidekick-studio/admin')} size='small' variant='text'>
+                        ← Back to admin
+                    </Button>
+                </Box>
                 <Box display='flex' alignItems='center' mb={3}>
                     <SettingsIcon sx={{ mr: 2, fontSize: 32 }} />
                     <Typography variant='h4' component='h1'>

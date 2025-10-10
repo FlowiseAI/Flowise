@@ -1,6 +1,5 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import {
     Box,
     Skeleton,
@@ -160,22 +159,8 @@ const AdminChatflows = () => {
         refreshChatflows()
     }
 
-    const getCanvasRoute = (chatflow: any) => {
-        // For react-router-dom Link component (relative paths)
-        console.log('🤖id', chatflow.id)
-        console.log('type', chatflow)
-        if (chatflow.type === 'AGENTFLOW') {
-            return `/v2/agentcanvas/${chatflow.id}`
-        } else if (chatflow.type === 'MULTIAGENT') {
-            return `/agentcanvas/${chatflow.id}`
-        } else {
-            // Default to regular chatflow canvas
-            return `/canvas/${chatflow.id}`
-        }
-    }
-
     const getCanvasFullUrl = (chatflow: any) => {
-        // For window.open() (full URLs with base path)
+        // Generate full absolute URL with /sidekick-studio prefix for navigation
         if (chatflow.type === 'AGENTFLOW') {
             return `/sidekick-studio/v2/agentcanvas/${chatflow.id}`
         } else if (chatflow.type === 'MULTIAGENT') {
@@ -330,8 +315,8 @@ const AdminChatflows = () => {
                 setRollbackConfirmOpen(false)
                 setSelectedVersionForRollback(null)
                 handleCloseVersions()
-                // Refresh data
-                window.location.reload()
+                // Refresh data without full page reload
+                refreshChatflows()
             } catch (error) {
                 console.error('Failed to rollback chatflow:', error)
             }
@@ -361,7 +346,7 @@ const AdminChatflows = () => {
     return (
         <Box sx={{ p: { xs: 1, md: 4 } }}>
             <Box sx={{ mb: 2 }}>
-                <Button component={Link} to='/admin' size='small' variant='text'>
+                <Button onClick={() => (window.location.href = '/sidekick-studio/admin')} size='small' variant='text'>
                     ← Back to admin
                 </Button>
             </Box>
@@ -645,7 +630,7 @@ const AdminChatflows = () => {
                                                 <Tooltip title='View Template' placement='top'>
                                                     <IconButton
                                                         size='small'
-                                                        onClick={() => window.open(getCanvasRoute(fullDefaultTemplate), '_blank')}
+                                                        onClick={() => window.open(getCanvasFullUrl(fullDefaultTemplate), '_blank')}
                                                         sx={{
                                                             color: 'rgba(255, 193, 7, 0.8)',
                                                             bgcolor: 'rgba(255, 193, 7, 0.1)',
@@ -1213,19 +1198,22 @@ const AdminChatflows = () => {
                                                 <Box>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
                                                         <Typography
+                                                            component='a'
+                                                            href={getCanvasFullUrl(chatflow)}
+                                                            target='_blank'
+                                                            rel='noopener noreferrer'
                                                             sx={{
                                                                 color: 'rgba(255, 255, 255, 0.9)',
                                                                 cursor: 'pointer',
                                                                 fontSize: '0.875rem',
+                                                                textDecoration: 'none',
                                                                 '&:hover': {
                                                                     color: 'rgba(255, 255, 255, 1)',
                                                                     textDecoration: 'underline'
                                                                 }
                                                             }}
                                                         >
-                                                            <Link to={getCanvasRoute(chatflow)} target='_blank' rel='noopener noreferrer'>
-                                                                {chatflow.name}
-                                                            </Link>
+                                                            {chatflow.name}
                                                         </Typography>
                                                         {defaultTemplateData && chatflow.id === defaultTemplateData.id && (
                                                             <Chip

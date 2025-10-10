@@ -1,3 +1,4 @@
 .workspace
 scripts/*
 !scripts/copilot-switch-app.sh
+!scripts/copilot-auto-readme.md

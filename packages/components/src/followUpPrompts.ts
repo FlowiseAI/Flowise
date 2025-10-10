@@ -26,7 +26,18 @@ export const generateFollowUpPrompts = async (
         const providerConfig = followUpPromptsConfig[followUpPromptsConfig.selectedProvider]
         if (!providerConfig) return undefined
         const credentialId = providerConfig.credentialId as string
-        const credentialData = await getCredentialData(credentialId ?? '', options)
+
+        let credentialData: ICommonObject
+        try {
+            credentialData = await getCredentialData(credentialId ?? '', options)
+            if (!credentialData || Object.keys(credentialData).length === 0) {
+                console.warn('No credential data found for follow-up prompts, skipping generation')
+                return undefined
+            }
+        } catch (error) {
+            console.error('Error retrieving credential data for follow-up prompts:', error)
+            return undefined
+        }
         const followUpPromptsPrompt = providerConfig.prompt.replace('{history}', apiMessageContent)
 
         switch (followUpPromptsConfig.selectedProvider) {

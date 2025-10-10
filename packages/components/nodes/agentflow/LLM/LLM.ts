@@ -3,7 +3,7 @@ import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams, IServe
 import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { z } from 'zod'
-import { AnalyticHandler } from '../../../src/handler'
+import { AnalyticHandler, additionalCallbacks } from '../../../src/handler'
 import { ILLMMessage, IStructuredOutput } from '../Interface.Agentflow'
 import {
     getPastChatHistoryImageMessages,
@@ -346,6 +346,18 @@ class LLM_Agentflow implements INode {
                 throw new Error('Model is required')
             }
 
+            // Setup analytics tracing options and attach to options object for easy access
+            const callbacks = await additionalCallbacks(nodeData, {
+                ...options,
+                parentLangfuseTrace: options.parentLangfuseTrace,
+                parentLangfuseSpan: options.parentLangfuseSpan
+            })
+            const llmCallOptions: ICommonObject = { signal: abortController?.signal }
+            if (callbacks && callbacks.length > 0) {
+                llmCallOptions.callbacks = callbacks
+            }
+            options._llmCallOptions = llmCallOptions
+
             // Extract memory and configuration options
             const enableMemory = nodeData.inputs?.llmEnableMemory as boolean
             const memoryType = nodeData.inputs?.llmMemoryType as string
@@ -453,9 +465,9 @@ class LLM_Agentflow implements INode {
             const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
             if (isStreamable) {
-                response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+                response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, options)
             } else {
-                response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+                response = await llmNodeInstance.invoke(messages, options._llmCallOptions || { signal: abortController?.signal })
 
                 // Stream whole response back to UI if this is the last node
                 if (isLastNode && options.sseStreamer) {
@@ -620,6 +632,7 @@ class LLM_Agentflow implements INode {
         runtimeImageMessagesWithFileRef: BaseMessageLike[]
         pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
         const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
         pastChatHistory = updatedPastMessages
         pastImageMessagesWithFileRef.push(...transformedPastMessages)
@@ -666,12 +679,12 @@ class LLM_Agentflow implements INode {
                             )
                         }
                     ],
-                    { signal: abortController?.signal }
+                    llmCallOptions
                 )
                 messages.push({ role: 'assistant', content: summary.content as string })
             } else if (memoryType === 'conversationSummaryBuffer') {
                 // Summary buffer: Summarize messages that exceed token limit
-                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController)
+                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController, options)
             } else {
                 // Default: Use all messages
                 messages.push(...pastMessages)
@@ -695,8 +708,10 @@ class LLM_Agentflow implements INode {
         pastMessages: BaseMessageLike[],
         llmNodeInstance: BaseChatModel,
         nodeData: INodeData,
-        abortController: AbortController
+        abortController: AbortController,
+        options: ICommonObject
     ): Promise<void> {
+        const llmCallOptions = options._llmCallOptions || { signal: abortController?.signal }
         const maxTokenLimit = (nodeData.inputs?.llmMemoryMaxTokenLimit as number) || 2000
 
         // Convert past messages to a format suitable for token counting
@@ -730,7 +745,7 @@ class LLM_Agentflow implements INode {
                         content: DEFAULT_SUMMARIZER_TEMPLATE.replace('{conversation}', messagesToSummarizeString)
                     }
                 ],
-                { signal: abortController?.signal }
+                llmCallOptions
             )
 
             // Add summary as a system message at the beginning, then add remaining messages
@@ -803,12 +818,13 @@ class LLM_Agentflow implements INode {
         llmNodeInstance: BaseChatModel,
         messages: BaseMessageLike[],
         chatId: string,
-        abortController: AbortController
+        options: ICommonObject
     ): Promise<AIMessageChunk> {
+        const llmCallOptions = options._llmCallOptions || { signal: options.abortController?.signal }
         let response = new AIMessageChunk('')
 
         try {
-            for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
+            for await (const chunk of await llmNodeInstance.stream(messages, llmCallOptions)) {
                 if (sseStreamer) {
                     let content = ''
                     if (Array.isArray(chunk.content) && chunk.content.length > 0) {

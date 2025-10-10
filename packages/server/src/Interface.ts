@@ -463,7 +463,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     fileUploads?: IFileUpload[]
     uploadedFilesContent?: string
     isUpsert?: boolean
-    user: IUser
+    user?: IUser
     isRecursive?: boolean
     parentExecutionId?: string
     iterationContext?: ICommonObject

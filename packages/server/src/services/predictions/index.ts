@@ -9,7 +9,7 @@ const buildChatflow = async (fullRequest: Request) => {
     try {
         const { chatId, question: prompt, overrideConfig } = fullRequest.body
         const chatflowId = fullRequest.params.id
-        const user = fullRequest.user!
+        const user = fullRequest.user
 
         // Ensure overrideConfig.sessionId is a valid UUID v4
         if (overrideConfig?.sessionId) {
