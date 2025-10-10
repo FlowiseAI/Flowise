@@ -67,7 +67,8 @@ class HTTP_Agentflow implements INode {
             {
                 label: 'URL',
                 name: 'url',
-                type: 'string'
+                type: 'string',
+                acceptVariable: true
             },
             {
                 label: 'Headers',
