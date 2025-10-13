@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
-import { TOOL_ARGS_PREFIX } from '../../../src/agents'
+import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Microsoft Outlook API for managing calendars, events, and messages`
 
@@ -201,7 +201,7 @@ class ListCalendarsTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error listing calendars: ${error}`
+            return formatToolError(`Error listing calendars: ${error}`, {})
         }
     }
 }
@@ -230,7 +230,7 @@ class GetCalendarTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error getting calendar: ${error}`
+            return formatToolError(`Error getting calendar: ${error}`, params)
         }
     }
 }
@@ -263,7 +263,7 @@ class CreateCalendarTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'POST', calendarData, params)
             return response
         } catch (error) {
-            return `Error creating calendar: ${error}`
+            return formatToolError(`Error creating calendar: ${error}`, params)
         }
     }
 }
@@ -296,7 +296,7 @@ class UpdateCalendarTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'PATCH', calendarData, params)
             return response
         } catch (error) {
-            return `Error updating calendar: ${error}`
+            return formatToolError(`Error updating calendar: ${error}`, params)
         }
     }
 }
@@ -325,7 +325,7 @@ class DeleteCalendarTool extends BaseOutlookTool {
             await this.makeGraphRequest(url, 'DELETE', undefined, params)
             return `Calendar ${params.calendarId} deleted successfully`
         } catch (error) {
-            return `Error deleting calendar: ${error}`
+            return formatToolError(`Error deleting calendar: ${error}`, params)
         }
     }
 }
@@ -372,7 +372,7 @@ class ListEventsTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error listing events: ${error}`
+            return formatToolError(`Error listing events: ${error}`, params)
         }
     }
 }
@@ -401,7 +401,7 @@ class GetEventTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error getting event: ${error}`
+            return formatToolError(`Error getting event: ${error}`, params)
         }
     }
 }
@@ -452,7 +452,7 @@ class CreateEventTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'POST', eventData, params)
             return response
         } catch (error) {
-            return `Error creating event: ${error}`
+            return formatToolError(`Error creating event: ${error}`, params)
         }
     }
 }
@@ -484,7 +484,7 @@ class UpdateEventTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'PATCH', eventData, params)
             return response
         } catch (error) {
-            return `Error updating event: ${error}`
+            return formatToolError(`Error updating event: ${error}`, params)
         }
     }
 }
@@ -513,7 +513,7 @@ class DeleteEventTool extends BaseOutlookTool {
             await this.makeGraphRequest(url, 'DELETE', undefined, params)
             return `Event ${params.eventId} deleted successfully`
         } catch (error) {
-            return `Error deleting event: ${error}`
+            return formatToolError(`Error deleting event: ${error}`, params)
         }
     }
 }
@@ -548,7 +548,7 @@ class ListMessagesTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error listing messages: ${error}`
+            return formatToolError(`Error listing messages: ${error}`, params)
         }
     }
 }
@@ -577,7 +577,7 @@ class GetMessageTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
-            return `Error getting message: ${error}`
+            return formatToolError(`Error getting message: ${error}`, params)
         }
     }
 }
@@ -617,7 +617,7 @@ class CreateDraftMessageTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'POST', messageData, params)
             return response
         } catch (error) {
-            return `Error creating draft message: ${error}`
+            return formatToolError(`Error creating draft message: ${error}`, params)
         }
     }
 }
@@ -658,7 +658,7 @@ class SendMessageTool extends BaseOutlookTool {
             await this.makeGraphRequest(url, 'POST', messageData, params)
             return 'Message sent successfully'
         } catch (error) {
-            return `Error sending message: ${error}`
+            return formatToolError(`Error sending message: ${error}`, params)
         }
     }
 }
@@ -690,7 +690,7 @@ class UpdateMessageTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'PATCH', messageData, params)
             return response
         } catch (error) {
-            return `Error updating message: ${error}`
+            return formatToolError(`Error updating message: ${error}`, params)
         }
     }
 }
@@ -719,7 +719,7 @@ class DeleteMessageTool extends BaseOutlookTool {
             await this.makeGraphRequest(url, 'DELETE', undefined, params)
             return `Message ${params.messageId} deleted successfully`
         } catch (error) {
-            return `Error deleting message: ${error}`
+            return formatToolError(`Error deleting message: ${error}`, params)
         }
     }
 }
@@ -752,7 +752,7 @@ class CopyMessageTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'POST', copyData, params)
             return response
         } catch (error) {
-            return `Error copying message: ${error}`
+            return formatToolError(`Error copying message: ${error}`, params)
         }
     }
 }
@@ -785,7 +785,7 @@ class MoveMessageTool extends BaseOutlookTool {
             const response = await this.makeGraphRequest(url, 'POST', moveData, params)
             return response
         } catch (error) {
-            return `Error moving message: ${error}`
+            return formatToolError(`Error moving message: ${error}`, params)
         }
     }
 }
@@ -818,7 +818,7 @@ class ReplyMessageTool extends BaseOutlookTool {
             await this.makeGraphRequest(url, 'POST', replyData, params)
             return 'Reply sent successfully'
         } catch (error) {
-            return `Error replying to message: ${error}`
+            return formatToolError(`Error replying to message: ${error}`, params)
         }
     }
 }
@@ -865,163 +865,103 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
 
     // Calendar tools
     if (actions.includes('listCalendars')) {
-        const listTool = new ListCalendarsTool({
-            accessToken,
-            defaultParams: defaultParams.listCalendars
-        })
+        const listTool = new ListCalendarsTool({ accessToken, defaultParams })
         tools.push(listTool)
     }
 
     if (actions.includes('getCalendar')) {
-        const getTool = new GetCalendarTool({
-            accessToken,
-            defaultParams: defaultParams.getCalendar
-        })
+        const getTool = new GetCalendarTool({ accessToken, defaultParams })
         tools.push(getTool)
     }
 
     if (actions.includes('createCalendar')) {
-        const createTool = new CreateCalendarTool({
-            accessToken,
-            defaultParams: defaultParams.createCalendar
-        })
+        const createTool = new CreateCalendarTool({ accessToken, defaultParams })
         tools.push(createTool)
     }
 
     if (actions.includes('updateCalendar')) {
-        const updateTool = new UpdateCalendarTool({
-            accessToken,
-            defaultParams: defaultParams.updateCalendar
-        })
+        const updateTool = new UpdateCalendarTool({ accessToken, defaultParams })
         tools.push(updateTool)
     }
 
     if (actions.includes('deleteCalendar')) {
-        const deleteTool = new DeleteCalendarTool({
-            accessToken,
-            defaultParams: defaultParams.deleteCalendar
-        })
+        const deleteTool = new DeleteCalendarTool({ accessToken, defaultParams })
         tools.push(deleteTool)
     }
 
     if (actions.includes('listEvents')) {
-        const listTool = new ListEventsTool({
-            accessToken,
-            defaultParams: defaultParams.listEvents
-        })
+        const listTool = new ListEventsTool({ accessToken, defaultParams })
         tools.push(listTool)
     }
 
     if (actions.includes('getEvent')) {
-        const getTool = new GetEventTool({
-            accessToken,
-            defaultParams: defaultParams.getEvent
-        })
+        const getTool = new GetEventTool({ accessToken, defaultParams })
         tools.push(getTool)
     }
 
     if (actions.includes('createEvent')) {
-        const createTool = new CreateEventTool({
-            accessToken,
-            defaultParams: defaultParams.createEvent
-        })
+        const createTool = new CreateEventTool({ accessToken, defaultParams })
         tools.push(createTool)
     }
 
     if (actions.includes('updateEvent')) {
-        const updateTool = new UpdateEventTool({
-            accessToken,
-            defaultParams: defaultParams.updateEvent
-        })
+        const updateTool = new UpdateEventTool({ accessToken, defaultParams })
         tools.push(updateTool)
     }
 
     if (actions.includes('deleteEvent')) {
-        const deleteTool = new DeleteEventTool({
-            accessToken,
-            defaultParams: defaultParams.deleteEvent
-        })
+        const deleteTool = new DeleteEventTool({ accessToken, defaultParams })
         tools.push(deleteTool)
     }
 
     // Message tools
     if (actions.includes('listMessages')) {
-        const listTool = new ListMessagesTool({
-            accessToken,
-            defaultParams: defaultParams.listMessages
-        })
+        const listTool = new ListMessagesTool({ accessToken, defaultParams })
         tools.push(listTool)
     }
 
     if (actions.includes('getMessage')) {
-        const getTool = new GetMessageTool({
-            accessToken,
-            defaultParams: defaultParams.getMessage
-        })
+        const getTool = new GetMessageTool({ accessToken, defaultParams })
         tools.push(getTool)
     }
 
     if (actions.includes('createDraftMessage')) {
-        const createTool = new CreateDraftMessageTool({
-            accessToken,
-            defaultParams: defaultParams.createDraftMessage
-        })
+        const createTool = new CreateDraftMessageTool({ accessToken, defaultParams })
         tools.push(createTool)
     }
 
     if (actions.includes('sendMessage')) {
-        const sendTool = new SendMessageTool({
-            accessToken,
-            defaultParams: defaultParams.sendMessage
-        })
+        const sendTool = new SendMessageTool({ accessToken, defaultParams })
         tools.push(sendTool)
     }
 
     if (actions.includes('updateMessage')) {
-        const updateTool = new UpdateMessageTool({
-            accessToken,
-            defaultParams: defaultParams.updateMessage
-        })
+        const updateTool = new UpdateMessageTool({ accessToken, defaultParams })
         tools.push(updateTool)
     }
 
     if (actions.includes('deleteMessage')) {
-        const deleteTool = new DeleteMessageTool({
-            accessToken,
-            defaultParams: defaultParams.deleteMessage
-        })
+        const deleteTool = new DeleteMessageTool({ accessToken, defaultParams })
         tools.push(deleteTool)
     }
 
     if (actions.includes('copyMessage')) {
-        const copyTool = new CopyMessageTool({
-            accessToken,
-            defaultParams: defaultParams.copyMessage
-        })
+        const copyTool = new CopyMessageTool({ accessToken, defaultParams })
         tools.push(copyTool)
     }
 
     if (actions.includes('moveMessage')) {
-        const moveTool = new MoveMessageTool({
-            accessToken,
-            defaultParams: defaultParams.moveMessage
-        })
+        const moveTool = new MoveMessageTool({ accessToken, defaultParams })
         tools.push(moveTool)
     }
 
     if (actions.includes('replyMessage')) {
-        const replyTool = new ReplyMessageTool({
-            accessToken,
-            defaultParams: defaultParams.replyMessage
-        })
+        const replyTool = new ReplyMessageTool({ accessToken, defaultParams })
         tools.push(replyTool)
     }
 
     if (actions.includes('forwardMessage')) {
-        const forwardTool = new ForwardMessageTool({
-            accessToken,
-            defaultParams: defaultParams.forwardMessage
-        })
+        const forwardTool = new ForwardMessageTool({ accessToken, defaultParams })
         tools.push(forwardTool)
     }
 

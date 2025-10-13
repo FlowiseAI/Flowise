@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 
@@ -17,14 +17,18 @@ import Placeholder from '@tiptap/extension-placeholder'
 import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Mention from '@tiptap/extension-mention'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from '@/ui-component/input/suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
+
+const lowlight = createLowlight(common)
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
 // Add styled component for editor wrapper
-const StyledEditorContent = styled(EditorContent)(({ theme, rows }) => ({
+const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDarkMode }) => ({
     '& .ProseMirror': {
         padding: '0px 14px',
         height: rows ? `${rows * 1.4375}rem` : '2.4rem',
@@ -32,40 +36,48 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows }) => ({
         overflowX: rows ? 'auto' : 'hidden',
         lineHeight: rows ? '1.4375em' : '0.875em',
         fontWeight: 500,
-        color: theme.palette.grey[900],
-        border: `1px solid ${theme.palette.textBackground.border}`,
+        color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
+        border: `1px solid ${theme.palette.grey[900] + 25}`,
         borderRadius: '10px',
         backgroundColor: theme.palette.textBackground.main,
         boxSizing: 'border-box',
         whiteSpace: rows ? 'pre-wrap' : 'nowrap',
         '&:hover': {
-            borderColor: theme.palette.text.primary,
-            cursor: 'text'
+            borderColor: disabled ? `${theme.palette.grey[900] + 25}` : theme.palette.text.primary,
+            cursor: disabled ? 'default' : 'text'
         },
         '&:focus': {
-            borderColor: theme.palette.primary.main,
-            boxShadow: `0 0 0 0px ${theme.palette.primary.main}`,
+            borderColor: disabled ? `${theme.palette.grey[900] + 25}` : theme.palette.primary.main,
             outline: 'none'
-        },
-        '&[disabled]': {
-            backgroundColor: theme.palette.action.disabledBackground,
-            color: theme.palette.action.disabled
         },
         // Placeholder for first paragraph when editor is empty
         '& p.is-editor-empty:first-of-type::before': {
             content: 'attr(data-placeholder)',
             float: 'left',
-            color: theme.palette.text.primary,
-            opacity: 0.4,
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+            opacity: disabled ? 0.6 : 0.4,
             pointerEvents: 'none',
             height: 0
-        }
+        },
+        // Set CSS custom properties for theme-aware styling based on the screenshot
+        '--code-bg': isDarkMode ? '#2d2d2d' : '#f5f5f5',
+        '--code-color': isDarkMode ? '#d4d4d4' : '#333333',
+        '--hljs-comment': isDarkMode ? '#6a9955' : '#6a9955',
+        '--hljs-variable': isDarkMode ? '#9cdcfe' : '#d73a49', // Light blue for variables (var, i)
+        '--hljs-number': isDarkMode ? '#b5cea8' : '#e36209', // Light green for numbers (1, 20, 15, etc.)
+        '--hljs-string': isDarkMode ? '#ce9178' : '#22863a', // Orange/peach for strings ("FizzBuzz", "Fizz", "Buzz")
+        '--hljs-title': isDarkMode ? '#dcdcaa' : '#6f42c1', // Yellow for function names (log)
+        '--hljs-keyword': isDarkMode ? '#569cd6' : '#005cc5', // Blue for keywords (for, if, else)
+        '--hljs-operator': isDarkMode ? '#d4d4d4' : '#333333', // White/gray for operators (=, %, ==, etc.)
+        '--hljs-punctuation': isDarkMode ? '#d4d4d4' : '#333333' // White/gray for punctuation ({, }, ;, etc.)
     }
 }))
 
 // define your extension array
 const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
-    StarterKit,
+    StarterKit.configure({
+        codeBlock: false
+    }),
     Mention.configure({
         HTMLAttributes: {
             class: 'variable'
@@ -86,6 +98,11 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
             isNodeInsideInteration
         ),
         deleteTriggerWithBackspace: true
+    }),
+    CodeBlockLowlight.configure({
+        lowlight,
+        enableTabIndentation: true,
+        tabSize: 2
     })
 ]
 
@@ -93,6 +110,8 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
+    const customization = useSelector((state) => state.customization)
+    const isDarkMode = customization.isDarkMode
 
     const [inputValue, setInputValue] = useState('')
     const [inputParam, setInputParam] = useState(null)
@@ -201,7 +220,12 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
                                 }}
                             >
                                 <Box sx={{ mt: 1, border: '' }}>
-                                    <StyledEditorContent editor={editor} rows={15} />
+                                    <StyledEditorContent
+                                        editor={editor}
+                                        rows={15}
+                                        disabled={dialogProps.disabled}
+                                        isDarkMode={isDarkMode}
+                                    />
                                 </Box>
                             </PerfectScrollbar>
                         </div>

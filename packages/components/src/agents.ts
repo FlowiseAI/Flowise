@@ -30,6 +30,16 @@ export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n
 export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
 export const TOOL_ARGS_PREFIX = '\n\n----FLOWISE_TOOL_ARGS----\n\n'
 
+/**
+ * Utility function to format tool error messages with parameters for debugging
+ * @param errorMessage - The base error message
+ * @param params - The parameters that were passed to the tool
+ * @returns Formatted error message with tool arguments appended
+ */
+export const formatToolError = (errorMessage: string, params: any): string => {
+    return errorMessage + TOOL_ARGS_PREFIX + JSON.stringify(params)
+}
+
 export type AgentFinish = {
     returnValues: Record<string, any>
     log: string

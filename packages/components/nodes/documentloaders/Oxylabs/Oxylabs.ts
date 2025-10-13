@@ -95,20 +95,29 @@ export class OxylabsLoader extends BaseDocumentLoader {
     }
 
     public async load(): Promise<DocumentInterface[]> {
-        const response = await this.sendAPIRequest<OxylabsResponse>({
-            url: this.params.query,
+        let isUrlSource = this.params.source == 'universal'
+
+        const params = {
             source: this.params.source,
             geo_location: this.params.geo_location,
-            render: this.params.render,
+            render: this.params.render ? 'html' : null,
             parse: this.params.parse,
-            user_agent_type: this.params.user_agent_type
-        })
+            user_agent_type: this.params.user_agent_type,
+            markdown: !this.params.parse,
+            url: isUrlSource ? this.params.query : null,
+            query: !isUrlSource ? this.params.query : null
+        }
 
-        const docs: OxylabsDocument[] = response.data.results.map((result, index) => ({
-            id: `${response.data.job.id.toString()}-${index}`,
-            pageContent: result.content,
-            metadata: {}
-        }))
+        const response = await this.sendAPIRequest<OxylabsResponse>(params)
+
+        const docs: OxylabsDocument[] = response.data.results.map((result, index) => {
+            const content = typeof result.content === 'string' ? result.content : JSON.stringify(result.content)
+            return {
+                id: `${response.data.job.id.toString()}-${index}`,
+                pageContent: content,
+                metadata: {}
+            }
+        })
 
         return docs
     }

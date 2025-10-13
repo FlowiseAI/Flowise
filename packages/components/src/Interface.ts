@@ -134,6 +134,7 @@ export interface INodeProperties {
     documentation?: string
     color?: string
     hint?: string
+    warning?: string
 }
 
 export interface INode extends INodeProperties {
@@ -446,6 +447,10 @@ export interface IServerSideEventStreamer {
     removeMcpConnection?(chatId: string, toolName?: string): void
     markMcpConnectionCompleting?(chatId: string, toolName?: string): void
     hasMcpConnections?(chatId: string): boolean
+    // Text-to-speech streaming methods
+    streamTTSStartEvent(chatId: string, chatMessageId: string, format: string): void
+    streamTTSDataEvent(chatId: string, chatMessageId: string, audioChunk: string): void
+    streamTTSEndEvent(chatId: string, chatMessageId: string): void
 }
 
 export enum FollowUpPromptProvider {

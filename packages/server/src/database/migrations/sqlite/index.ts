@@ -34,10 +34,13 @@ import { AddSeqNoToDatasetRow1733752119696 } from './1733752119696-AddSeqNoToDat
 import { AddExecutionEntity1738090872625 } from './1738090872625-AddExecutionEntity'
 import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpenSourceAssistantTable'
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
-import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 import { AddFlowHistoryEntity1750000000000 } from './1750000000000-AddFlowHistoryEntity'
 import { AddCurrentHistoryVersion1750000000001 } from './1750000000001-AddCurrentHistoryVersion'
 import { AddAssistantHistoryVersion1750000000002 } from './1750000000002-AddAssistantHistoryVersion'
+import { AddTextToSpeechToChatFlow1754986486669 } from './1754986486669-AddTextToSpeechToChatFlow'
+import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
+import { AddTextToSpeechToChatFlow1759419136055 } from './1759419136055-AddTextToSpeechToChatFlow'
+import { AddChatFlowNameIndex1759424923093 } from './1759424923093-AddChatFlowNameIndex'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
@@ -99,8 +102,11 @@ export const sqliteMigrations = [
     FixOpenSourceAssistantTable1743758056188,
     AddErrorToEvaluationRun1744964560174,
     ExecutionLinkWorkspaceId1746862866554,
-    ModifyChatflowType1755066758601,
     AddFlowHistoryEntity1750000000000,
     AddCurrentHistoryVersion1750000000001,
-    AddAssistantHistoryVersion1750000000002
+    AddAssistantHistoryVersion1750000000002,
+    AddTextToSpeechToChatFlow1754986486669,
+    ModifyChatflowType1755066758601,
+    AddTextToSpeechToChatFlow1759419136055,
+    AddChatFlowNameIndex1759424923093
 ]

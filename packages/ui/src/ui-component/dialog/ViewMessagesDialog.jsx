@@ -185,7 +185,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [chatlogs, setChatLogs] = useState([])
-    const [allChatlogs, setAllChatLogs] = useState([])
     const [chatMessages, setChatMessages] = useState([])
     const [stats, setStats] = useState({})
     const [selectedMessageIndex, setSelectedMessageIndex] = useState(0)
@@ -361,6 +360,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         if ('windows' === getOS()) {
             fileSeparator = '\\'
         }
+
+        const resp = await chatmessageApi.getAllChatmessageFromChatflow(dialogProps.chatflow.id, {
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined,
+            startDate: startDate,
+            endDate: endDate,
+            order: 'DESC'
+        })
+
+        const allChatlogs = resp.data ?? []
         for (let i = 0; i < allChatlogs.length; i += 1) {
             const chatmsg = allChatlogs[i]
             const chatPK = getChatPK(chatmsg)
@@ -748,7 +757,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         if (getChatmessageApi.data) {
             getStoragePathFromServer.request()
 
-            setAllChatLogs(getChatmessageApi.data)
             const chatPK = processChatLogs(getChatmessageApi.data)
             setSelectedMessageIndex(0)
             if (chatPK) {
@@ -784,7 +792,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
         return () => {
             setChatLogs([])
-            setAllChatLogs([])
             setChatMessages([])
             setChatTypeFilter(['INTERNAL', 'EXTERNAL'])
             setFeedbackTypeFilter([])
