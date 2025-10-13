@@ -109,6 +109,7 @@ const chatflowTypeByKey: Partial<Record<ConflictEntityKey, EnumChatflowType>> = 
 }
 
 const assistantTypeByKey: Partial<Record<ConflictEntityKey, AssistantType>> = {
+const assistantTypeByKey: Partial<Record<ConflictEntityKey, string>> = {
     AssistantCustom: 'CUSTOM',
     AssistantOpenAI: 'OPENAI',
     AssistantAzure: 'AZURE'
