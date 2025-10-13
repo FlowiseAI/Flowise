@@ -442,6 +442,12 @@ export interface IServerSideEventStreamer {
     streamAbortEvent(chatId: string): void
     streamEndEvent(chatId: string): void
     streamUsageMetadataEvent(chatId: string, data: any): void
+    // Enhanced MCP streaming methods
+    addMcpConnection?(chatId: string, toolName?: string): void
+    removeMcpConnection?(chatId: string, toolName?: string): void
+    markMcpConnectionCompleting?(chatId: string, toolName?: string): void
+    hasMcpConnections?(chatId: string): boolean
+    // Text-to-speech streaming methods
     streamTTSStartEvent(chatId: string, chatMessageId: string, format: string): void
     streamTTSDataEvent(chatId: string, chatMessageId: string, audioChunk: string): void
     streamTTSEndEvent(chatId: string, chatMessageId: string): void

@@ -10,8 +10,66 @@ export class UserController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
             const userService = new UserService()
-            const user = await userService.createUser(req.body)
-            return res.status(StatusCodes.CREATED).json(user)
+            const { createDirectly, user: userData, workspace, role } = req.body
+
+            if (createDirectly && userData?.password) {
+                // Direct user creation with password
+                const newUser = await userService.createUserDirectly({
+                    email: userData.email,
+                    name: userData.name || userData.email,
+                    credential: userData.password,
+                    createdBy: userData.createdBy || req.user?.id
+                })
+
+                // Add to same organization and workspace as creator
+                if (workspace?.id && role?.id && req.user?.activeOrganizationId) {
+                    const queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+                    await queryRunner.connect()
+
+                    try {
+                        // Create organization user association using proper service methods
+                        const { OrganizationUserService } = await import('../services/organization-user.service')
+                        const { RoleService } = await import('../services/role.service')
+                        const organizationUserService = new OrganizationUserService()
+                        const roleService = new RoleService()
+
+                        // Get the general "member" role instead of using organization-specific role
+                        const memberRole = await roleService.readGeneralRoleByName('member', queryRunner)
+
+                        const newOrgUser = organizationUserService.createNewOrganizationUser(
+                            {
+                                userId: newUser.id,
+                                organizationId: req.user.activeOrganizationId,
+                                roleId: memberRole.id,
+                                createdBy: req.user?.id,
+                                updatedBy: req.user?.id
+                            },
+                            queryRunner
+                        )
+
+                        await organizationUserService.saveOrganizationUser(newOrgUser, queryRunner)
+
+                        // Create workspace user association
+                        const { WorkspaceUserService } = await import('../services/workspace-user.service')
+                        const workspaceUserService = new WorkspaceUserService()
+                        await workspaceUserService.createWorkspaceUser({
+                            userId: newUser.id,
+                            workspaceId: workspace.id,
+                            roleId: role.id,
+                            createdBy: req.user?.id,
+                            updatedBy: req.user?.id
+                        })
+                    } finally {
+                        await queryRunner.release()
+                    }
+                }
+
+                return res.status(StatusCodes.CREATED).json(newUser)
+            } else {
+                // Traditional invitation flow - pass the whole request body to existing logic
+                const user = await userService.createUser(userData || req.body)
+                return res.status(StatusCodes.CREATED).json(user)
+            }
         } catch (error) {
             next(error)
         }

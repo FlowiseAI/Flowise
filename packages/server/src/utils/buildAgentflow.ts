@@ -586,7 +586,7 @@ function getNodeInputConnections(edges: IReactFlowEdge[], nodeId: string): IReac
  * Analyzes node dependencies and sets up expected inputs
  */
 function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: IReactFlowNode[]): IWaitingNode {
-    logger.debug(`\n🔍 Analyzing dependencies for node: ${nodeId}`)
+    logger.info(`\n🔍 Analyzing dependencies for node: ${nodeId}`)
     const inputConnections = getNodeInputConnections(edges, nodeId)
     const waitingNode: IWaitingNode = {
         nodeId,
@@ -607,13 +607,13 @@ function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: I
         const conditionParent = findConditionParent(connection.source, edges, nodes)
 
         if (conditionParent) {
-            logger.debug(`  📌 Found conditional input from ${connection.source} (condition: ${conditionParent})`)
+            logger.info(`  📌 Found conditional input from ${connection.source} (condition: ${conditionParent})`)
             waitingNode.isConditional = true
             const group = inputsByCondition.get(conditionParent) || []
             group.push(connection.source)
             inputsByCondition.set(conditionParent, group)
         } else {
-            logger.debug(`  📌 Found required input from ${connection.source}`)
+            logger.info(`  📌 Found required input from ${connection.source}`)
             waitingNode.expectedInputs.add(connection.source)
         }
     }
@@ -621,7 +621,7 @@ function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: I
     // Set up conditional groups
     inputsByCondition.forEach((sources, conditionId) => {
         if (conditionId) {
-            logger.debug(`  📋 Conditional group ${conditionId}: [${sources.join(', ')}]`)
+            logger.info(`  📋 Conditional group ${conditionId}: [${sources.join(', ')}]`)
             waitingNode.conditionalGroups.set(conditionId, sources)
         }
     })
@@ -694,11 +694,18 @@ function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
     }
 
     // Check conditional groups
-    for (const [groupId, possibleSources] of waitingNode.conditionalGroups) {
-        // Need at least one input from each conditional group
-        const hasInputFromGroup = possibleSources.some((source) => waitingNode.receivedInputs.has(source))
-        logger.debug(`  📊 Conditional group ${groupId}: ${hasInputFromGroup ? '✅' : '❌'}`)
-        if (!hasInputFromGroup) return false
+    // For conditional groups, we need at least one active group (not all groups)
+    // This allows for dual condition setups where only one path executes
+    if (waitingNode.conditionalGroups.size > 0) {
+        let hasAtLeastOneActiveGroup = false
+        for (const [groupId, possibleSources] of waitingNode.conditionalGroups) {
+            const hasInputFromGroup = possibleSources.some((source) => waitingNode.receivedInputs.has(source))
+            logger.debug(`  📊 Conditional group ${groupId}: ${hasInputFromGroup ? '✅' : '❌'}`)
+            if (hasInputFromGroup) {
+                hasAtLeastOneActiveGroup = true
+            }
+        }
+        if (!hasAtLeastOneActiveGroup) return false
     }
 
     return true
@@ -766,7 +773,18 @@ async function processNodeOutputs({
     sseStreamer,
     chatId
 }: IProcessNodeOutputsParams): Promise<{ humanInput?: IHumanInput }> {
+    // Temporary: Use both logger.debug and console.log to ensure visibility
     logger.debug(`\n🔄 Processing outputs from node: ${nodeId}`)
+    logger.debug(`  📊 Node name: ${nodeName}`)
+    logger.debug(`  📊 Result output:`, JSON.stringify(result?.output, null, 2))
+
+    // Fallback console output when debug isn't working
+    const logLevel = process.env.LOG_LEVEL
+    if (logLevel === 'debug') {
+        logger.debug(`\n🔄 [FALLBACK] Processing outputs from node: ${nodeId}`)
+        logger.debug(`  📊 [FALLBACK] Node name: ${nodeName}`)
+        logger.debug(`  📊 [FALLBACK] Result output:`, JSON.stringify(result?.output, null, 2))
+    }
 
     let updatedHumanInput = humanInput
 
@@ -774,12 +792,29 @@ async function processNodeOutputs({
     logger.debug(`  👉 Child nodes: [${childNodeIds.join(', ')}]`)
 
     const currentNode = nodes.find((n) => n.id === nodeId)
-    if (!currentNode) return { humanInput: updatedHumanInput }
+    if (!currentNode) {
+        logger.debug(`  ❌ Current node ${nodeId} not found in nodes array`)
+        return { humanInput: updatedHumanInput }
+    }
 
     // Get nodes to ignore based on conditions
     const ignoreNodeIds = await determineNodesToIgnore(currentNode, result, edges, nodeId)
     if (ignoreNodeIds.length) {
         logger.debug(`  ⏭️  Skipping nodes: [${ignoreNodeIds.join(', ')}]`)
+    }
+
+    logger.debug(`  📊 Current node type: ${currentNode.data.name}`)
+    if (currentNode.data.name === 'conditionAgentflow' || currentNode.data.name === 'conditionAgentAgentflow') {
+        logger.debug(`  🎯 CONDITION NODE DEBUG:`)
+        logger.debug(`    Node ID: ${nodeId}`)
+        logger.debug(`    Node Name: ${currentNode.data.name}`)
+        logger.debug(`    Has result.output: ${!!result?.output}`)
+        logger.debug(`    Has conditions: ${!!result?.output?.conditions}`)
+        if (result?.output?.conditions) {
+            logger.debug(`    Conditions:`, JSON.stringify(result.output.conditions, null, 2))
+        }
+        logger.debug(`    Child nodes to process: [${childNodeIds.join(', ')}]`)
+        logger.debug(`    Nodes to ignore: [${ignoreNodeIds.join(', ')}]`)
     }
 
     for (const childId of childNodeIds) {

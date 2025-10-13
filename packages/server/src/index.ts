@@ -151,6 +151,22 @@ export class App {
             await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager.getPlatformType())
 
             logger.info('🎉 [server]: All initialization steps completed successfully!')
+
+            // Log current log level and instructions
+            const currentLogLevel = process.env.LOG_LEVEL || 'info'
+            logger.info(`📋 [server]: Current log level: ${currentLogLevel}`)
+
+            // Test logger levels
+            logger.debug('🧪 [server]: DEBUG level test - this should only appear when LOG_LEVEL=debug')
+            logger.info('🧪 [server]: INFO level test - this should always appear')
+            logger.warn('🧪 [server]: WARN level test - this should always appear')
+
+            if (currentLogLevel !== 'debug') {
+                logger.info(`💡 [server]: To enable debug logs (for AgentFlow troubleshooting):`)
+                logger.info(`   Set LOG_LEVEL=debug in your .env file and restart the server`)
+            } else {
+                logger.info(`🔍 [server]: Debug logging is enabled - AgentFlow execution will show detailed logs`)
+            }
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
         }

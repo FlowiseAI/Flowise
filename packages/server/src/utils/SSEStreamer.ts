@@ -8,10 +8,20 @@ type Client = {
     response: Response
     // optional property with default value
     started?: boolean
+    // flag to indicate client is pending removal due to active MCP connections
+    pendingRemoval?: boolean
 }
 
 export class SSEStreamer implements IServerSideEventStreamer {
     clients: { [id: string]: Client } = {}
+    private activeMcpConnections: Map<
+        string,
+        {
+            toolName: string
+            startTime: number
+            status: 'active' | 'completing'
+        }
+    > = new Map()
 
     addExternalClient(chatId: string, res: Response) {
         this.clients[chatId] = { clientType: 'EXTERNAL', response: res, started: false }
@@ -21,7 +31,52 @@ export class SSEStreamer implements IServerSideEventStreamer {
         this.clients[chatId] = { clientType: 'INTERNAL', response: res, started: false }
     }
 
+    addMcpConnection(chatId: string, toolName?: string) {
+        const connectionId = `${chatId}:${toolName || 'unknown'}`
+        this.activeMcpConnections.set(connectionId, {
+            toolName: toolName || 'unknown',
+            startTime: Date.now(),
+            status: 'active'
+        })
+    }
+
+    markMcpConnectionCompleting(chatId: string, toolName?: string) {
+        const connectionId = `${chatId}:${toolName || 'unknown'}`
+        const connection = this.activeMcpConnections.get(connectionId)
+        if (connection) {
+            connection.status = 'completing'
+        }
+    }
+
+    removeMcpConnection(chatId: string, toolName?: string) {
+        const connectionId = `${chatId}:${toolName || 'unknown'}`
+        this.activeMcpConnections.delete(connectionId)
+
+        const hasActiveConnections = Array.from(this.activeMcpConnections.keys()).some((key) => key.startsWith(`${chatId}:`))
+
+        if (!hasActiveConnections && this.clients[chatId]?.pendingRemoval) {
+            this.forceRemoveClient(chatId)
+        }
+    }
+
+    hasMcpConnections(chatId: string): boolean {
+        return Array.from(this.activeMcpConnections.keys()).some((key) => key.startsWith(`${chatId}:`))
+    }
+
     removeClient(chatId: string) {
+        const client = this.clients[chatId]
+        if (client) {
+            // Check if there are active MCP connections for this chatId
+            if (this.hasMcpConnections(chatId)) {
+                client.pendingRemoval = true
+                return
+            }
+
+            this.forceRemoveClient(chatId)
+        }
+    }
+
+    forceRemoveClient(chatId: string) {
         const client = this.clients[chatId]
         if (client) {
             const clientResponse = {
@@ -31,6 +86,8 @@ export class SSEStreamer implements IServerSideEventStreamer {
             client.response.write('message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
             client.response.end()
             delete this.clients[chatId]
+            // Also clean up any remaining MCP connections
+            this.activeMcpConnections.delete(chatId)
         }
     }
 

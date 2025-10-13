@@ -36,6 +36,9 @@ import { AddExecutionEntity1738090872625 } from './1738090872625-AddExecutionEnt
 import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpenSourceAssistantTable'
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
 import { ModifyExecutionSessionIdFieldType1748450230238 } from './1748450230238-ModifyExecutionSessionIdFieldType'
+import { AddFlowHistoryEntity1750000000000 } from './1750000000000-AddFlowHistoryEntity'
+import { AddCurrentHistoryVersion1750000000001 } from './1750000000001-AddCurrentHistoryVersion'
+import { AddAssistantHistoryVersion1750000000002 } from './1750000000002-AddAssistantHistoryVersion'
 import { AddTextToSpeechToChatFlow1754986480347 } from './1754986480347-AddTextToSpeechToChatFlow'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 import { AddTextToSpeechToChatFlow1759419194331 } from './1759419194331-AddTextToSpeechToChatFlow'
@@ -103,6 +106,9 @@ export const postgresMigrations = [
     AddErrorToEvaluationRun1744964560174,
     ExecutionLinkWorkspaceId1746862866554,
     ModifyExecutionSessionIdFieldType1748450230238,
+    AddFlowHistoryEntity1750000000000,
+    AddCurrentHistoryVersion1750000000001,
+    AddAssistantHistoryVersion1750000000002,
     AddTextToSpeechToChatFlow1754986480347,
     ModifyChatflowType1755066758601,
     AddTextToSpeechToChatFlow1759419194331,

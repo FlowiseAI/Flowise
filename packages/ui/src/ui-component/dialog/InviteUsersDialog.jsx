@@ -19,7 +19,9 @@ import {
     Tooltip,
     styled,
     Popper,
-    CircularProgress
+    CircularProgress,
+    FormControlLabel,
+    Checkbox
 } from '@mui/material'
 import { autocompleteClasses } from '@mui/material/Autocomplete'
 
@@ -114,6 +116,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [availableRoles, setAvailableRoles] = useState([])
     const [selectedRole, setSelectedRole] = useState('')
     const [isSaving, setIsSaving] = useState(false)
+    const [createDirectly, setCreateDirectly] = useState(false)
+    const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
 
     const getAllRolesApi = useApi(roleApi.getAllRolesByOrganizationId)
     const getAllWorkspacesByOrganizationIdApi = useApi(workspaceApi.getAllWorkspacesByOrganizationId)
@@ -219,6 +224,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             setWorkspaces([])
             setSelectedRole(null)
             setSelectedWorkspace(null)
+            setCreateDirectly(false)
+            setPassword('')
+            setConfirmPassword('')
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
@@ -282,6 +290,55 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     }
 
     const saveInvite = async () => {
+        if (createDirectly) {
+            // Validate passwords
+            if (!password || !confirmPassword) {
+                enqueueSnackbar({
+                    message: 'Please enter and confirm the password',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
+            if (password !== confirmPassword) {
+                enqueueSnackbar({
+                    message: 'Passwords do not match',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
+            if (password.length < 8) {
+                enqueueSnackbar({
+                    message: 'Password must be at least 8 characters long',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                return
+            }
+        }
+
         if (selectedUsers.length) {
             const existingEmails = []
             for (const orgUser of orgUsers) {
@@ -309,39 +366,37 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         try {
             const responses = await Promise.all(
                 selectedUsers.map(async (item) => {
-                    const saveObj = item.isNewUser
+                    const baseUserData = item.isNewUser
                         ? {
-                              user: {
-                                  email: item.email,
-                                  createdBy: currentUser.id
-                              },
-                              workspace: {
-                                  id: selectedWorkspace.id
-                              },
-                              role: {
-                                  id: selectedRole.id
-                              }
+                              email: item.email,
+                              createdBy: currentUser.id
                           }
                         : {
-                              user: {
-                                  email: item.user.email,
-                                  createdBy: currentUser.id
-                              },
-                              workspace: {
-                                  id: selectedWorkspace.id
-                              },
-                              role: {
-                                  id: selectedRole.id
-                              }
+                              email: item.user.email,
+                              createdBy: currentUser.id
                           }
 
-                    const response = await accountApi.inviteAccount(saveObj)
+                    const saveObj = {
+                        user: {
+                            ...baseUserData,
+                            ...(createDirectly && password ? { password } : {})
+                        },
+                        workspace: {
+                            id: selectedWorkspace.id
+                        },
+                        role: {
+                            id: selectedRole.id
+                        },
+                        ...(createDirectly ? { createDirectly: true } : {})
+                    }
+
+                    const response = createDirectly ? await userApi.createUser(saveObj) : await accountApi.inviteAccount(saveObj)
                     return response.data
                 })
             )
             if (responses.length > 0) {
                 enqueueSnackbar({
-                    message: 'Users invited to workspace',
+                    message: createDirectly ? 'Users created successfully' : 'Users invited to workspace',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -359,7 +414,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             console.error('Error in saveInvite:', error)
             enqueueSnackbar({
-                message: `Failed to invite users to workspace: ${error.response?.data?.message || error.message || 'Unknown error'}`,
+                message: `Failed to ${createDirectly ? 'create' : 'invite'} users: ${
+                    error.response?.data?.message || error.message || 'Unknown error'
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -610,6 +667,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         if (isSaving || selectedUsers.length === 0 || !selectedWorkspace || !selectedRole) {
             return true
         }
+        if (createDirectly && (!password || !confirmPassword || password !== confirmPassword || password.length < 8)) {
+            return true
+        }
         return false
     }
 
@@ -634,10 +694,51 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconUser style={{ marginRight: '10px' }} />
-                    Invite Users
+                    {createDirectly ? 'Create Users' : 'Invite Users'}
                 </div>
             </DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box>
+                    <FormControlLabel
+                        control={
+                            <Checkbox checked={createDirectly} onChange={(e) => setCreateDirectly(e.target.checked)} color='primary' />
+                        }
+                        label='Create users directly with password (bypasses email invitation)'
+                        sx={{ mb: 2 }}
+                    />
+                </Box>
+                {createDirectly && (
+                    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
+                        <Box>
+                            <Typography>
+                                Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                type='password'
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder='Enter password'
+                                variant='outlined'
+                                sx={{ mt: 0.5 }}
+                            />
+                        </Box>
+                        <Box>
+                            <Typography>
+                                Confirm Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
+                            <TextField
+                                fullWidth
+                                type='password'
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder='Confirm password'
+                                variant='outlined'
+                                sx={{ mt: 0.5 }}
+                            />
+                        </Box>
+                    </Box>
+                )}
                 <Box>
                     <Typography>
                         Select Users<span style={{ color: 'red' }}>&nbsp;*</span>
@@ -710,7 +811,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     onClick={saveInvite}
                     startIcon={isSaving ? <CircularProgress size={20} color='inherit' /> : null}
                 >
-                    {dialogProps.confirmButtonName}
+                    {createDirectly ? 'Create User' : dialogProps.confirmButtonName}
                 </StyledButton>
             </DialogActions>
             <ConfirmDialog />
