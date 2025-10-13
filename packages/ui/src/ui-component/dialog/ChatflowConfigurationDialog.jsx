@@ -15,6 +15,7 @@ import ChatLinksSettings from '@/ui-component/extended/ChatLinksSettings'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
 import Security from '@/ui-component/extended/Security'
+import JlincSettings from '@/ui-component/extended/JlincSettings'
 // import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 
 const CHATFLOW_CONFIGURATION_TABS = [
@@ -25,6 +26,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Security',
         id: 'security'
+    },
+    {
+        label: 'Audit Log',
+        id: 'jlinc'
     },
     {
         label: 'Visibility',
@@ -166,6 +171,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                         {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
                         {item.id === 'postProcessing' ? <PostProcessing dialogProps={dialogProps} /> : null}
                         {item.id === 'security' ? <Security dialogProps={dialogProps} /> : null}
+                        {item.id === 'jlinc' ? <JlincSettings dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>

@@ -27,7 +27,7 @@ import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
 import { LangWatch, LangWatchSpan, LangWatchTrace, autoconvertTypedValues } from 'langwatch'
-import { CredentialInfo, extractCredentialsAndModels } from './flowCredentialExtractor'
+import { extractCredentialsAndModels } from './flowCredentialExtractor'
 export interface TraceMetadata {
     stripeCustomerId: string
     subscriptionTier?: string
@@ -72,6 +72,19 @@ function applyEnvAnalyticsOverrides(analyticConfig?: string | object): any {
             publicKey: process.env.LANGFUSE_PUBLIC_KEY,
             endpoint: process.env.LANGFUSE_HOST ?? 'https://cloud.langfuse.com',
             sdkIntegration: 'Flowise'
+        }
+    }
+
+    // JLINC env override - takes precedence over UI configuration
+    if (process.env.JLINC_DATA_STORE_API_KEY) {
+        analytic.jlinc = {
+            status: true,
+            dataStoreApiUrl: process.env.JLINC_DATA_STORE_API_URL,
+            dataStoreApiKey: process.env.JLINC_DATA_STORE_API_KEY,
+            archiveApiUrl: process.env.JLINC_ARCHIVE_API_URL,
+            archiveApiKey: process.env.JLINC_ARCHIVE_API_KEY,
+            agreementId: process.env.JLINC_AGREEMENT_ID ?? '00000000-0000-0000-0000-000000000000',
+            systemPrefix: process.env.JLINC_SYSTEM_PREFIX
         }
     }
 
@@ -794,15 +807,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const tracer: Tracer | undefined = getOpikTracer(opikOptions)
                     callbacks.push(tracer)
                 } else if (provider === 'jlinc') {
-                    const dataStoreApiUrl = getCredentialParam('dataStoreApiUrl', credentialData, nodeData)
-                    const dataStoreApiKey = getCredentialParam('dataStoreApiKey', credentialData, nodeData)
-                    const archiveApiUrl = getCredentialParam('archiveApiUrl', credentialData, nodeData)
-                    const archiveApiKey = getCredentialParam('archiveApiKey', credentialData, nodeData)
-                    let agreementId = analytic[provider].agreementId as string
+                    const dataStoreApiUrl =
+                        analytic[provider]?.dataStoreApiUrl ?? getCredentialParam('dataStoreApiUrl', credentialData, nodeData)
+                    const dataStoreApiKey =
+                        analytic[provider]?.dataStoreApiKey ?? getCredentialParam('dataStoreApiKey', credentialData, nodeData)
+                    const archiveApiUrl = analytic[provider]?.archiveApiUrl ?? getCredentialParam('archiveApiUrl', credentialData, nodeData)
+                    const archiveApiKey = analytic[provider]?.archiveApiKey ?? getCredentialParam('archiveApiKey', credentialData, nodeData)
+                    let agreementId = analytic[provider]?.agreementId as string
                     if (!agreementId || agreementId === '') {
                         agreementId = '00000000-0000-0000-0000-000000000000'
                     }
-                    const systemPrefix = analytic[provider].systemPrefix as string
+                    const systemPrefix = analytic[provider]?.systemPrefix as string
                     const tracer = new JLINCTracer({
                         dataStoreApiUrl,
                         dataStoreApiKey,

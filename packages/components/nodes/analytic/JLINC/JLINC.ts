@@ -17,7 +17,7 @@ class JLINC_Analytic implements INode {
         this.name = 'jlinc'
         this.version = 1.0
         this.type = 'JLINC'
-        this.icon = 'jlinc.png'
+        this.icon = 'jlinc.svg'
         this.category = 'Analytic'
         this.baseClasses = [this.type]
         this.inputs = []
