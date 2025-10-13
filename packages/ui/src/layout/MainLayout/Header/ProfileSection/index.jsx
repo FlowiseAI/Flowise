@@ -15,13 +15,16 @@ import {
     Button,
     ButtonBase,
     Checkbox,
+    Chip,
     ClickAwayListener,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     Divider,
     FormControlLabel,
+    Switch,
     List,
     ListItemButton,
     ListItemIcon,
@@ -70,6 +73,8 @@ const dataToExport = [
     'Tools',
     'Variables'
 ]
+
+const getConflictKey = (conflict) => `${conflict.type}:${conflict.importId}`
 
 const ExportDialog = ({ show, onCancel, onExport }) => {
     const portalElement = document.getElementById('portal')
@@ -175,6 +180,142 @@ ExportDialog.propTypes = {
     onExport: PropTypes.func
 }
 
+const ImportReviewDialog = ({
+    show,
+    loading,
+    conflicts,
+    decisions,
+    onDecisionChange,
+    onApplyAll,
+    onCancel,
+    onConfirm,
+    disableConfirm
+}) => {
+    const portalElement = document.getElementById('portal')
+
+    const allDuplicate =
+        conflicts.length > 0 && conflicts.every((conflict) => decisions[getConflictKey(conflict)] === 'duplicate')
+
+    const component = show ? (
+        <Dialog open={show} fullWidth maxWidth='md' aria-labelledby='import-review-dialog-title'>
+            <DialogTitle sx={{ fontSize: '1rem' }} id='import-review-dialog-title'>
+                Review Import
+            </DialogTitle>
+            <DialogContent dividers sx={{ pt: 2 }}>
+                {loading ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 4 }}>
+                        <CircularProgress sx={{ mb: 2 }} />
+                        <Typography variant='body2' color='textSecondary'>
+                            Analyzing imported data. This may take a moment.
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Stack spacing={2}>
+                        <Typography variant='body2'>
+                            Flowise defaults to updating elements when a name conflict is detected. Use the controls below to
+                            choose whether each conflicting element should be updated or duplicated.
+                        </Typography>
+                        {conflicts.length === 0 ? (
+                            <Box>
+                                <Typography variant='subtitle2'>No conflicts detected</Typography>
+                                <Typography variant='body2' color='textSecondary'>
+                                    All imported items will be added or updated automatically.
+                                </Typography>
+                            </Box>
+                        ) : (
+                            <Stack spacing={2}>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            color='primary'
+                                            checked={allDuplicate}
+                                            onChange={(event) => onApplyAll(event.target.checked ? 'duplicate' : 'update')}
+                                        />
+                                    }
+                                    label={
+                                        allDuplicate
+                                            ? 'Duplicate all conflicts'
+                                            : 'Update conflicts by default'
+                                    }
+                                />
+                                <Stack spacing={1.5}>
+                                    {conflicts.map((conflict) => {
+                                        const key = getConflictKey(conflict)
+                                        const action = decisions[key] || 'update'
+                                        return (
+                                            <Box
+                                                key={key}
+                                                sx={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    gap: 2,
+                                                    border: '1px solid',
+                                                    borderColor: 'divider',
+                                                    borderRadius: 1,
+                                                    px: 2,
+                                                    py: 1.5
+                                                }}
+                                            >
+                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Chip size='small' label={conflict.type} color='primary' variant='outlined' />
+                                                        <Typography variant='subtitle2'>{conflict.name}</Typography>
+                                                    </Box>
+                                                    <Typography variant='caption' color='textSecondary'>
+                                                        Existing ID: {conflict.existingId}
+                                                    </Typography>
+                                                </Box>
+                                                <FormControlLabel
+                                                    control={
+                                                        <Switch
+                                                            color='primary'
+                                                            checked={action === 'duplicate'}
+                                                            onChange={(event) =>
+                                                                onDecisionChange(
+                                                                    conflict,
+                                                                    event.target.checked ? 'duplicate' : 'update'
+                                                                )
+                                                            }
+                                                        />
+                                                    }
+                                                    label={action === 'duplicate' ? 'Duplicate' : 'Update'}
+                                                />
+                                            </Box>
+                                        )
+                                    })}
+                                </Stack>
+                            </Stack>
+                        )}
+                    </Stack>
+                )}
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onCancel} disabled={loading}>
+                    Cancel
+                </Button>
+                <Button variant='contained' onClick={onConfirm} disabled={loading || disableConfirm}>
+                    Import
+                </Button>
+            </DialogActions>
+        </Dialog>
+    ) : null
+
+    return createPortal(component, portalElement)
+}
+
+ImportReviewDialog.propTypes = {
+    show: PropTypes.bool,
+    loading: PropTypes.bool,
+    conflicts: PropTypes.array,
+    decisions: PropTypes.object,
+    onDecisionChange: PropTypes.func,
+    onApplyAll: PropTypes.func,
+    onCancel: PropTypes.func,
+    onConfirm: PropTypes.func,
+    disableConfirm: PropTypes.bool
+}
+
 const ImportDialog = ({ show }) => {
     const portalElement = document.getElementById('portal')
 
@@ -222,6 +363,10 @@ const ProfileSection = ({ handleLogout }) => {
 
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
     const [importDialogOpen, setImportDialogOpen] = useState(false)
+    const [importReviewOpen, setImportReviewOpen] = useState(false)
+    const [importConflicts, setImportConflicts] = useState([])
+    const [conflictDecisions, setConflictDecisions] = useState({})
+    const [pendingImportPayload, setPendingImportPayload] = useState(null)
 
     const anchorRef = useRef(null)
     const inputRef = useRef()
@@ -230,6 +375,7 @@ const ProfileSection = ({ handleLogout }) => {
     const currentUser = useSelector((state) => state.auth.user)
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
 
+    const previewImportApi = useApi(exportImportApi.previewImportData)
     const importAllApi = useApi(exportImportApi.importData)
     const exportAllApi = useApi(exportImportApi.exportData)
     const prevOpen = useRef(open)
@@ -272,17 +418,77 @@ const ProfileSection = ({ handleLogout }) => {
         if (!e.target.files) return
 
         const file = e.target.files[0]
-        setImportDialogOpen(true)
+        if (!file) return
 
         const reader = new FileReader()
         reader.onload = (evt) => {
-            if (!evt?.target?.result) {
-                return
+            try {
+                if (!evt?.target?.result) {
+                    throw new Error('Empty file')
+                }
+                const body = JSON.parse(evt.target.result)
+                setPendingImportPayload(body)
+                setImportConflicts([])
+                setConflictDecisions({})
+                setImportReviewOpen(true)
+                previewImportApi.request(body)
+            } catch (error) {
+                setImportReviewOpen(false)
+                setPendingImportPayload(null)
+                errorFailed(`Failed to read import file: ${getErrorMessage(error)}`)
+            } finally {
+                if (inputRef.current) inputRef.current.value = ''
             }
-            const body = JSON.parse(evt.target.result)
-            importAllApi.request(body)
+        }
+        reader.onerror = () => {
+            setImportReviewOpen(false)
+            setPendingImportPayload(null)
+            errorFailed('Failed to read import file')
+            if (inputRef.current) inputRef.current.value = ''
         }
         reader.readAsText(file)
+    }
+
+    const handleConflictDecisionChange = (conflict, action) => {
+        setConflictDecisions((prev) => ({
+            ...prev,
+            [getConflictKey(conflict)]: action
+        }))
+    }
+
+    const handleApplyAllConflicts = (action) => {
+        setConflictDecisions((prev) => {
+            const updated = { ...prev }
+            importConflicts.forEach((conflict) => {
+                updated[getConflictKey(conflict)] = action
+            })
+            return updated
+        })
+    }
+
+    const handleImportReviewCancel = () => {
+        setImportReviewOpen(false)
+        setPendingImportPayload(null)
+        setImportConflicts([])
+        setConflictDecisions({})
+        if (inputRef.current) inputRef.current.value = ''
+    }
+
+    const handleConfirmImport = () => {
+        if (!pendingImportPayload) return
+        const conflictResolutions = importConflicts.map((conflict) => ({
+            type: conflict.type,
+            importId: conflict.importId,
+            existingId: conflict.existingId,
+            action: conflictDecisions[getConflictKey(conflict)] || 'update'
+        }))
+        const body = {
+            ...pendingImportPayload,
+            conflictResolutions
+        }
+        setImportDialogOpen(true)
+        setImportReviewOpen(false)
+        importAllApi.request(body)
     }
 
     const importAllSuccess = () => {
@@ -306,6 +512,36 @@ const ProfileSection = ({ handleLogout }) => {
         inputRef.current.click()
     }
 
+    useEffect(() => {
+        if (previewImportApi.loading) return
+        if (!importReviewOpen) return
+        if (!pendingImportPayload) return
+        if (!previewImportApi.data) return
+        const conflicts = previewImportApi.data.conflicts || []
+        setImportConflicts(conflicts)
+        const initialDecisions = {}
+        conflicts.forEach((conflict) => {
+            initialDecisions[getConflictKey(conflict)] = 'update'
+        })
+        setConflictDecisions(initialDecisions)
+    }, [previewImportApi.data, previewImportApi.loading, importReviewOpen, pendingImportPayload])
+
+    useEffect(() => {
+        if (!previewImportApi.error) return
+        setImportReviewOpen(false)
+        setPendingImportPayload(null)
+        setImportConflicts([])
+        setConflictDecisions({})
+        let errMsg = 'Invalid Imported File'
+        let error = previewImportApi.error
+        if (error?.response?.data) {
+            errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+        }
+        errorFailed(`Failed to analyze import: ${errMsg}`)
+        if (inputRef.current) inputRef.current.value = ''
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [previewImportApi.error])
+
     const onExport = (data) => {
         const body = {}
         if (data.includes('Agentflows')) body.agentflow = true
@@ -328,6 +564,9 @@ const ProfileSection = ({ handleLogout }) => {
     useEffect(() => {
         if (importAllApi.data) {
             importAllSuccess()
+            setPendingImportPayload(null)
+            setImportConflicts([])
+            setConflictDecisions({})
             navigate(0)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -336,6 +575,9 @@ const ProfileSection = ({ handleLogout }) => {
     useEffect(() => {
         if (importAllApi.error) {
             setImportDialogOpen(false)
+            setPendingImportPayload(null)
+            setImportConflicts([])
+            setConflictDecisions({})
             let errMsg = 'Invalid Imported File'
             let error = importAllApi.error
             if (error?.response?.data) {
@@ -534,6 +776,17 @@ const ProfileSection = ({ handleLogout }) => {
             </Popper>
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
             <ExportDialog show={exportDialogOpen} onCancel={() => setExportDialogOpen(false)} onExport={(data) => onExport(data)} />
+            <ImportReviewDialog
+                show={importReviewOpen}
+                loading={previewImportApi.loading}
+                conflicts={importConflicts}
+                decisions={conflictDecisions}
+                onDecisionChange={handleConflictDecisionChange}
+                onApplyAll={handleApplyAllConflicts}
+                onCancel={handleImportReviewCancel}
+                onConfirm={handleConfirmImport}
+                disableConfirm={!pendingImportPayload}
+            />
             <ImportDialog show={importDialogOpen} />
         </>
     )

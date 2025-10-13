@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { EntityManager, In, QueryRunner } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { Assistant } from '../../database/entities/Assistant'
-import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
@@ -60,6 +60,85 @@ type ExportData = {
     Execution: Execution[]
     Tool: Tool[]
     Variable: Variable[]
+}
+
+type ConflictEntityKey = keyof Pick<
+    ExportData,
+    | 'AgentFlow'
+    | 'AgentFlowV2'
+    | 'AssistantFlow'
+    | 'AssistantCustom'
+    | 'AssistantOpenAI'
+    | 'AssistantAzure'
+    | 'ChatFlow'
+    | 'CustomTemplate'
+    | 'DocumentStore'
+    | 'Tool'
+    | 'Variable'
+>
+
+type ConflictResolutionAction = 'update' | 'duplicate'
+
+type ConflictResolution = {
+    type: ConflictEntityKey
+    importId: string
+    existingId: string
+    action: ConflictResolutionAction
+}
+
+type ImportPayload = ExportData & {
+    conflictResolutions?: ConflictResolution[]
+}
+
+type ImportPreviewConflict = {
+    type: ConflictEntityKey
+    name: string
+    importId: string
+    existingId: string
+}
+
+type ImportPreview = {
+    conflicts: ImportPreviewConflict[]
+}
+
+const chatflowTypeByKey: Partial<Record<ConflictEntityKey, EnumChatflowType>> = {
+    AgentFlow: EnumChatflowType.MULTIAGENT,
+    AgentFlowV2: EnumChatflowType.AGENTFLOW,
+    AssistantFlow: EnumChatflowType.ASSISTANT,
+    ChatFlow: EnumChatflowType.CHATFLOW
+}
+
+const assistantTypeByKey: Partial<Record<ConflictEntityKey, string>> = {
+    AssistantCustom: 'CUSTOM',
+    AssistantOpenAI: 'OPENAI',
+    AssistantAzure: 'AZURE'
+}
+
+const conflictEntityKeys: ConflictEntityKey[] = [
+    'AgentFlow',
+    'AgentFlowV2',
+    'AssistantFlow',
+    'AssistantCustom',
+    'AssistantOpenAI',
+    'AssistantAzure',
+    'ChatFlow',
+    'CustomTemplate',
+    'DocumentStore',
+    'Tool',
+    'Variable'
+]
+
+const getAssistantName = (details?: string): string | undefined => {
+    if (!details) return undefined
+    try {
+        const parsed = JSON.parse(details)
+        if (parsed && typeof parsed === 'object' && parsed.name) {
+            return parsed.name
+        }
+    } catch (error) {
+        // ignore malformed assistant details
+    }
+    return undefined
 }
 
 const convertExportInput = (body: any): ExportInput => {
@@ -182,7 +261,230 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
     }
 }
 
-async function replaceDuplicateIdsForChatFlow(queryRunner: QueryRunner, originalData: ExportData, chatflows: ChatFlow[]) {
+const previewImportData = async (importData: ExportData, activeWorkspaceId: string): Promise<ImportPreview> => {
+    try {
+        const appServer = getRunningExpressApp()
+        if (!appServer) {
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error: Unable to access application server')
+        }
+
+        const dataSource = appServer.AppDataSource
+        if (!dataSource) {
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error: Database connection not available')
+        }
+
+        const normalizedData: ImportPayload = {
+            AgentFlow: importData.AgentFlow || [],
+            AgentFlowV2: importData.AgentFlowV2 || [],
+            AssistantCustom: importData.AssistantCustom || [],
+            AssistantFlow: importData.AssistantFlow || [],
+            AssistantOpenAI: importData.AssistantOpenAI || [],
+            AssistantAzure: importData.AssistantAzure || [],
+            ChatFlow: importData.ChatFlow || [],
+            ChatMessage: importData.ChatMessage || [],
+            ChatMessageFeedback: importData.ChatMessageFeedback || [],
+            CustomTemplate: importData.CustomTemplate || [],
+            DocumentStore: importData.DocumentStore || [],
+            DocumentStoreFileChunk: importData.DocumentStoreFileChunk || [],
+            Execution: importData.Execution || [],
+            Tool: importData.Tool || [],
+            Variable: importData.Variable || []
+        }
+
+        const conflicts: ImportPreviewConflict[] = []
+
+        const chatflowRepo = dataSource.getRepository(ChatFlow)
+        const customTemplateRepo = dataSource.getRepository(CustomTemplate)
+        const documentStoreRepo = dataSource.getRepository(DocumentStore)
+        const toolRepo = dataSource.getRepository(Tool)
+        const variableRepo = dataSource.getRepository(Variable)
+        const assistantRepo = dataSource.getRepository(Assistant)
+
+        const findFirstImportByName = <T extends { name?: string }>(items: T[], name: string): T | undefined =>
+            items.find((item) => item.name === name)
+
+        for (const entityKey of conflictEntityKeys) {
+            const items = normalizedData[entityKey]
+            if (!items || items.length === 0) continue
+
+            if (chatflowTypeByKey[entityKey]) {
+                const names = items.map((item: any) => item.name).filter((name: string | undefined) => !!name)
+                if (names.length === 0) continue
+                const existingChatflows = await chatflowRepo.find({
+                    where: {
+                        workspaceId: activeWorkspaceId,
+                        type: chatflowTypeByKey[entityKey],
+                        name: In(names)
+                    }
+                })
+                for (const existing of existingChatflows) {
+                    const importItem = findFirstImportByName(items as any[], existing.name)
+                    if (importItem) {
+                        conflicts.push({
+                            type: entityKey,
+                            name: existing.name,
+                            existingId: existing.id,
+                            importId: (importItem as any).id
+                        })
+                    }
+                }
+                continue
+            }
+
+            if (assistantTypeByKey[entityKey]) {
+                const importedByName = new Map<string, Assistant>()
+                for (const assistant of items as Assistant[]) {
+                    const name = getAssistantName(assistant.details)
+                    if (name) {
+                        importedByName.set(name, assistant)
+                    }
+                }
+                if (importedByName.size === 0) continue
+
+                const existingAssistants = await assistantRepo.find({
+                    where: {
+                        workspaceId: activeWorkspaceId,
+                        type: assistantTypeByKey[entityKey]
+                    }
+                })
+                for (const existing of existingAssistants) {
+                    const existingName = getAssistantName(existing.details)
+                    if (!existingName) continue
+                    const importItem = importedByName.get(existingName)
+                    if (importItem) {
+                        conflicts.push({
+                            type: entityKey,
+                            name: existingName,
+                            existingId: existing.id,
+                            importId: importItem.id
+                        })
+                    }
+                }
+                continue
+            }
+
+            if (entityKey === 'CustomTemplate') {
+                const names = (items as CustomTemplate[])
+                    .map((item) => item.name)
+                    .filter((name): name is string => !!name)
+                if (names.length === 0) continue
+                const existingTemplates = await customTemplateRepo.find({
+                    where: {
+                        workspaceId: activeWorkspaceId,
+                        name: In(names)
+                    }
+                })
+                for (const existing of existingTemplates) {
+                    const importItem = findFirstImportByName(items as any[], existing.name)
+                    if (importItem) {
+                        conflicts.push({
+                            type: entityKey,
+                            name: existing.name,
+                            existingId: existing.id,
+                            importId: (importItem as any).id
+                        })
+                    }
+                }
+                continue
+            }
+
+            if (entityKey === 'DocumentStore') {
+                const names = (items as DocumentStore[])
+                    .map((item) => item.name)
+                    .filter((name): name is string => !!name)
+                if (names.length === 0) continue
+                const existingStores = await documentStoreRepo.find({
+                    where: {
+                        workspaceId: activeWorkspaceId,
+                        name: In(names)
+                    }
+                })
+                for (const existing of existingStores) {
+                    const importItem = findFirstImportByName(items as any[], existing.name)
+                    if (importItem) {
+                        conflicts.push({
+                            type: entityKey,
+                            name: existing.name,
+                            existingId: existing.id,
+                            importId: (importItem as any).id
+                        })
+                    }
+                }
+                continue
+            }
+
+            if (entityKey === 'Tool') {
+                const names = (items as Tool[])
+                    .map((item) => item.name)
+                    .filter((name): name is string => !!name)
+                if (names.length === 0) continue
+                const existingTools = await toolRepo.find({
+                    where: {
+                        workspaceId: activeWorkspaceId,
+                        name: In(names)
+                    }
+                })
+                for (const existing of existingTools) {
+                    const importItem = findFirstImportByName(items as any[], existing.name)
+                    if (importItem) {
+                        conflicts.push({
+                            type: entityKey,
+                            name: existing.name,
+                            existingId: existing.id,
+                            importId: (importItem as any).id
+                        })
+                    }
+                }
+                continue
+            }
+
+            if (entityKey === 'Variable') {
+                const names = (items as Variable[])
+                    .map((item) => item.name)
+                    .filter((name): name is string => !!name)
+                if (names.length === 0) continue
+                const existingVariables = await variableRepo.find({
+                    where: {
+                        workspaceId: activeWorkspaceId,
+                        name: In(names)
+                    }
+                })
+                for (const existing of existingVariables) {
+                    const importItem = findFirstImportByName(items as any[], existing.name)
+                    if (importItem) {
+                        conflicts.push({
+                            type: entityKey,
+                            name: existing.name,
+                            existingId: existing.id,
+                            importId: (importItem as any).id
+                        })
+                    }
+                }
+            }
+        }
+
+        conflicts.sort((a, b) => {
+            if (a.type === b.type) return a.name.localeCompare(b.name)
+            return conflictEntityKeys.indexOf(a.type) - conflictEntityKeys.indexOf(b.type)
+        })
+
+        return {
+            conflicts
+        }
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: exportImportService.previewImportData - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+async function replaceDuplicateIdsForChatFlow(
+    queryRunner: QueryRunner,
+    originalData: ExportData,
+    chatflows: ChatFlow[],
+    idsToSkip: Set<string> = new Set()
+) {
     try {
         const ids = chatflows.map((chatflow) => chatflow.id)
         const records = await queryRunner.manager.find(ChatFlow, {
@@ -190,6 +492,7 @@ async function replaceDuplicateIdsForChatFlow(queryRunner: QueryRunner, original
         })
         if (records.length < 0) return originalData
         for (let record of records) {
+            if (idsToSkip.has(record.id)) continue
             const oldId = record.id
             const newId = uuidv4()
             originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
@@ -203,7 +506,12 @@ async function replaceDuplicateIdsForChatFlow(queryRunner: QueryRunner, original
     }
 }
 
-async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, originalData: ExportData, assistants: Assistant[]) {
+async function replaceDuplicateIdsForAssistant(
+    queryRunner: QueryRunner,
+    originalData: ExportData,
+    assistants: Assistant[],
+    idsToSkip: Set<string> = new Set()
+) {
     try {
         const ids = assistants.map((assistant) => assistant.id)
         const records = await queryRunner.manager.find(Assistant, {
@@ -211,6 +519,7 @@ async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, origina
         })
         if (records.length < 0) return originalData
         for (let record of records) {
+            if (idsToSkip.has(record.id)) continue
             const oldId = record.id
             const newId = uuidv4()
             originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
@@ -451,7 +760,12 @@ async function replaceDuplicateIdsForChatMessageFeedback(
     }
 }
 
-async function replaceDuplicateIdsForCustomTemplate(queryRunner: QueryRunner, originalData: ExportData, customTemplates: CustomTemplate[]) {
+async function replaceDuplicateIdsForCustomTemplate(
+    queryRunner: QueryRunner,
+    originalData: ExportData,
+    customTemplates: CustomTemplate[],
+    idsToSkip: Set<string> = new Set()
+) {
     try {
         const ids = customTemplates.map((customTemplate) => customTemplate.id)
         const records = await queryRunner.manager.find(CustomTemplate, {
@@ -459,6 +773,7 @@ async function replaceDuplicateIdsForCustomTemplate(queryRunner: QueryRunner, or
         })
         if (records.length < 0) return originalData
         for (let record of records) {
+            if (idsToSkip.has(record.id)) continue
             const oldId = record.id
             const newId = uuidv4()
             originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
@@ -472,7 +787,12 @@ async function replaceDuplicateIdsForCustomTemplate(queryRunner: QueryRunner, or
     }
 }
 
-async function replaceDuplicateIdsForDocumentStore(queryRunner: QueryRunner, originalData: ExportData, documentStores: DocumentStore[]) {
+async function replaceDuplicateIdsForDocumentStore(
+    queryRunner: QueryRunner,
+    originalData: ExportData,
+    documentStores: DocumentStore[],
+    idsToSkip: Set<string> = new Set()
+) {
     try {
         const ids = documentStores.map((documentStore) => documentStore.id)
         const records = await queryRunner.manager.find(DocumentStore, {
@@ -480,6 +800,7 @@ async function replaceDuplicateIdsForDocumentStore(queryRunner: QueryRunner, ori
         })
         if (records.length < 0) return originalData
         for (let record of records) {
+            if (idsToSkip.has(record.id)) continue
             const oldId = record.id
             const newId = uuidv4()
             originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
@@ -522,7 +843,12 @@ async function replaceDuplicateIdsForDocumentStoreFileChunk(
     }
 }
 
-async function replaceDuplicateIdsForTool(queryRunner: QueryRunner, originalData: ExportData, tools: Tool[]) {
+async function replaceDuplicateIdsForTool(
+    queryRunner: QueryRunner,
+    originalData: ExportData,
+    tools: Tool[],
+    idsToSkip: Set<string> = new Set()
+) {
     try {
         const ids = tools.map((tool) => tool.id)
         const records = await queryRunner.manager.find(Tool, {
@@ -530,6 +856,7 @@ async function replaceDuplicateIdsForTool(queryRunner: QueryRunner, originalData
         })
         if (records.length < 0) return originalData
         for (let record of records) {
+            if (idsToSkip.has(record.id)) continue
             const oldId = record.id
             const newId = uuidv4()
             originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
@@ -543,7 +870,12 @@ async function replaceDuplicateIdsForTool(queryRunner: QueryRunner, originalData
     }
 }
 
-async function replaceDuplicateIdsForVariable(queryRunner: QueryRunner, originalData: ExportData, variables: Variable[]) {
+async function replaceDuplicateIdsForVariable(
+    queryRunner: QueryRunner,
+    originalData: ExportData,
+    variables: Variable[],
+    idsToSkip: Set<string> = new Set()
+) {
     try {
         const ids = variables.map((variable) => variable.id)
         const records = await queryRunner.manager.find(Variable, {
@@ -553,6 +885,7 @@ async function replaceDuplicateIdsForVariable(queryRunner: QueryRunner, original
             originalData.Variable = originalData.Variable.filter((variable) => variable.type !== 'runtime')
         if (records.length < 0) return originalData
         for (let record of records) {
+            if (idsToSkip.has(record.id)) continue
             const oldId = record.id
             const newId = uuidv4()
             originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
@@ -608,8 +941,50 @@ async function saveBatch(manager: EntityManager, entity: any, items: any[], batc
     }
 }
 
-const importData = async (importData: ExportData, orgId: string, activeWorkspaceId: string, subscriptionId: string) => {
-    // Initialize missing properties with empty arrays to avoid "undefined" errors
+const importData = async (importData: ImportPayload, orgId: string, activeWorkspaceId: string, subscriptionId: string) => {
+    importData.AgentFlow = importData.AgentFlow || []
+    importData.AgentFlowV2 = importData.AgentFlowV2 || []
+    importData.AssistantCustom = importData.AssistantCustom || []
+    importData.AssistantFlow = importData.AssistantFlow || []
+    importData.AssistantOpenAI = importData.AssistantOpenAI || []
+    importData.AssistantAzure = importData.AssistantAzure || []
+    importData.ChatFlow = importData.ChatFlow || []
+    importData.ChatMessage = importData.ChatMessage || []
+    importData.ChatMessageFeedback = importData.ChatMessageFeedback || []
+    importData.CustomTemplate = importData.CustomTemplate || []
+    importData.DocumentStore = importData.DocumentStore || []
+    importData.DocumentStoreFileChunk = importData.DocumentStoreFileChunk || []
+    importData.Execution = importData.Execution || []
+    importData.Tool = importData.Tool || []
+    importData.Variable = importData.Variable || []
+
+    const conflictResolutions = importData.conflictResolutions || []
+    delete importData.conflictResolutions
+
+    const idsToSkipMap = conflictEntityKeys.reduce((acc, key) => {
+        acc[key] = new Set<string>()
+        return acc
+    }, {} as Record<ConflictEntityKey, Set<string>>)
+
+    const idRemap: Record<string, string> = {}
+
+    for (const resolution of conflictResolutions) {
+        if (!resolution || !resolution.type || !resolution.importId || !resolution.existingId) continue
+        if (resolution.action === 'update') {
+            idRemap[resolution.importId] = resolution.existingId
+            idsToSkipMap[resolution.type].add(resolution.existingId)
+        }
+    }
+
+    if (Object.keys(idRemap).length > 0) {
+        let serialized = JSON.stringify(importData)
+        for (const [oldId, newId] of Object.entries(idRemap)) {
+            if (!oldId || !newId || oldId === newId) continue
+            serialized = serialized.replaceAll(oldId, newId)
+        }
+        importData = JSON.parse(serialized)
+    }
+
     importData.AgentFlow = importData.AgentFlow || []
     importData.AgentFlowV2 = importData.AgentFlowV2 || []
     importData.AssistantCustom = importData.AssistantCustom || []
@@ -636,89 +1011,134 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
                 importData.AgentFlow = reduceSpaceForChatflowFlowData(importData.AgentFlow)
                 importData.AgentFlow = insertWorkspaceId(importData.AgentFlow, activeWorkspaceId)
                 const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('MULTIAGENT', orgId)
-                const newChatflowCount = importData.AgentFlow.length
+                const newChatflowCount = importData.AgentFlow.filter((chatflow) => !idsToSkipMap.AgentFlow.has(chatflow.id)).length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingChatflowCount + newChatflowCount
                 )
-                importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlow)
+                importData = await replaceDuplicateIdsForChatFlow(
+                    queryRunner,
+                    importData,
+                    importData.AgentFlow,
+                    idsToSkipMap.AgentFlow
+                )
             }
             if (importData.AgentFlowV2.length > 0) {
                 importData.AgentFlowV2 = reduceSpaceForChatflowFlowData(importData.AgentFlowV2)
                 importData.AgentFlowV2 = insertWorkspaceId(importData.AgentFlowV2, activeWorkspaceId)
                 const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('AGENTFLOW', orgId)
-                const newChatflowCount = importData.AgentFlowV2.length
+                const newChatflowCount = importData.AgentFlowV2.filter(
+                    (chatflow) => !idsToSkipMap.AgentFlowV2.has(chatflow.id)
+                ).length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingChatflowCount + newChatflowCount
                 )
-                importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlowV2)
+                importData = await replaceDuplicateIdsForChatFlow(
+                    queryRunner,
+                    importData,
+                    importData.AgentFlowV2,
+                    idsToSkipMap.AgentFlowV2
+                )
             }
             if (importData.AssistantCustom.length > 0) {
                 importData.AssistantCustom = insertWorkspaceId(importData.AssistantCustom, activeWorkspaceId)
                 const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization('CUSTOM', orgId)
-                const newAssistantCount = importData.AssistantCustom.length
+                const newAssistantCount = importData.AssistantCustom.filter(
+                    (assistant) => !idsToSkipMap.AssistantCustom.has(assistant.id)
+                ).length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingAssistantCount + newAssistantCount
                 )
-                importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantCustom)
+                importData = await replaceDuplicateIdsForAssistant(
+                    queryRunner,
+                    importData,
+                    importData.AssistantCustom,
+                    idsToSkipMap.AssistantCustom
+                )
             }
             if (importData.AssistantFlow.length > 0) {
                 importData.AssistantFlow = reduceSpaceForChatflowFlowData(importData.AssistantFlow)
                 importData.AssistantFlow = insertWorkspaceId(importData.AssistantFlow, activeWorkspaceId)
                 const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('ASSISTANT', orgId)
-                const newChatflowCount = importData.AssistantFlow.length
+                const newChatflowCount = importData.AssistantFlow.filter(
+                    (chatflow) => !idsToSkipMap.AssistantFlow.has(chatflow.id)
+                ).length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingChatflowCount + newChatflowCount
                 )
-                importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AssistantFlow)
+                importData = await replaceDuplicateIdsForChatFlow(
+                    queryRunner,
+                    importData,
+                    importData.AssistantFlow,
+                    idsToSkipMap.AssistantFlow
+                )
             }
             if (importData.AssistantOpenAI.length > 0) {
                 importData.AssistantOpenAI = insertWorkspaceId(importData.AssistantOpenAI, activeWorkspaceId)
                 const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization('OPENAI', orgId)
-                const newAssistantCount = importData.AssistantOpenAI.length
+                const newAssistantCount = importData.AssistantOpenAI.filter(
+                    (assistant) => !idsToSkipMap.AssistantOpenAI.has(assistant.id)
+                ).length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingAssistantCount + newAssistantCount
                 )
-                importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantOpenAI)
+                importData = await replaceDuplicateIdsForAssistant(
+                    queryRunner,
+                    importData,
+                    importData.AssistantOpenAI,
+                    idsToSkipMap.AssistantOpenAI
+                )
             }
             if (importData.AssistantAzure.length > 0) {
                 importData.AssistantAzure = insertWorkspaceId(importData.AssistantAzure, activeWorkspaceId)
                 const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization('AZURE', orgId)
-                const newAssistantCount = importData.AssistantAzure.length
+                const newAssistantCount = importData.AssistantAzure.filter(
+                    (assistant) => !idsToSkipMap.AssistantAzure.has(assistant.id)
+                ).length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingAssistantCount + newAssistantCount
                 )
-                importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantAzure)
+                importData = await replaceDuplicateIdsForAssistant(
+                    queryRunner,
+                    importData,
+                    importData.AssistantAzure,
+                    idsToSkipMap.AssistantAzure
+                )
             }
             if (importData.ChatFlow.length > 0) {
                 importData.ChatFlow = reduceSpaceForChatflowFlowData(importData.ChatFlow)
                 importData.ChatFlow = insertWorkspaceId(importData.ChatFlow, activeWorkspaceId)
                 const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('CHATFLOW', orgId)
-                const newChatflowCount = importData.ChatFlow.length
+                const newChatflowCount = importData.ChatFlow.filter((chatflow) => !idsToSkipMap.ChatFlow.has(chatflow.id)).length
                 await checkUsageLimit(
                     'flows',
                     subscriptionId,
                     getRunningExpressApp().usageCacheManager,
                     existingChatflowCount + newChatflowCount
                 )
-                importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.ChatFlow)
+                importData = await replaceDuplicateIdsForChatFlow(
+                    queryRunner,
+                    importData,
+                    importData.ChatFlow,
+                    idsToSkipMap.ChatFlow
+                )
             }
             if (importData.ChatMessage.length > 0) {
                 importData = await replaceDuplicateIdsForChatMessage(queryRunner, importData, importData.ChatMessage, activeWorkspaceId)
@@ -733,17 +1153,27 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
                 )
             if (importData.CustomTemplate.length > 0) {
                 importData.CustomTemplate = insertWorkspaceId(importData.CustomTemplate, activeWorkspaceId)
-                importData = await replaceDuplicateIdsForCustomTemplate(queryRunner, importData, importData.CustomTemplate)
+                importData = await replaceDuplicateIdsForCustomTemplate(
+                    queryRunner,
+                    importData,
+                    importData.CustomTemplate,
+                    idsToSkipMap.CustomTemplate
+                )
             }
             if (importData.DocumentStore.length > 0) {
                 importData.DocumentStore = insertWorkspaceId(importData.DocumentStore, activeWorkspaceId)
-                importData = await replaceDuplicateIdsForDocumentStore(queryRunner, importData, importData.DocumentStore)
+                importData = await replaceDuplicateIdsForDocumentStore(
+                    queryRunner,
+                    importData,
+                    importData.DocumentStore,
+                    idsToSkipMap.DocumentStore
+                )
             }
             if (importData.DocumentStoreFileChunk.length > 0)
                 importData = await replaceDuplicateIdsForDocumentStoreFileChunk(queryRunner, importData, importData.DocumentStoreFileChunk)
             if (importData.Tool.length > 0) {
                 importData.Tool = insertWorkspaceId(importData.Tool, activeWorkspaceId)
-                importData = await replaceDuplicateIdsForTool(queryRunner, importData, importData.Tool)
+                importData = await replaceDuplicateIdsForTool(queryRunner, importData, importData.Tool, idsToSkipMap.Tool)
             }
             if (importData.Execution.length > 0) {
                 importData.Execution = insertWorkspaceId(importData.Execution, activeWorkspaceId)
@@ -751,7 +1181,12 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             }
             if (importData.Variable.length > 0) {
                 importData.Variable = insertWorkspaceId(importData.Variable, activeWorkspaceId)
-                importData = await replaceDuplicateIdsForVariable(queryRunner, importData, importData.Variable)
+                importData = await replaceDuplicateIdsForVariable(
+                    queryRunner,
+                    importData,
+                    importData.Variable,
+                    idsToSkipMap.Variable
+                )
             }
 
             importData = sanitizeNullBytes(importData)
@@ -794,5 +1229,6 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
 export default {
     convertExportInput,
     exportData,
+    previewImportData,
     importData
 }
