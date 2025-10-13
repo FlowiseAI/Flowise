@@ -25,7 +25,7 @@ import executionService, { ExecutionFilters } from '../executions'
 import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
 import variableService from '../variables'
-import { Platform } from '../../Interface'
+import { AssistantType, Platform } from '../../Interface'
 import { sanitizeNullBytes } from '../../utils/sanitize.util'
 
 type ExportInput = {
@@ -108,6 +108,7 @@ const chatflowTypeByKey: Partial<Record<ConflictEntityKey, EnumChatflowType>> = 
     ChatFlow: EnumChatflowType.CHATFLOW
 }
 
+const assistantTypeByKey: Partial<Record<ConflictEntityKey, AssistantType>> = {
 const assistantTypeByKey: Partial<Record<ConflictEntityKey, string>> = {
     AssistantCustom: 'CUSTOM',
     AssistantOpenAI: 'OPENAI',
