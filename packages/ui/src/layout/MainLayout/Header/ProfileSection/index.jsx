@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useNavigate } from 'react-router-dom'
 
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, REMOVE_DIRTY } from '@/store/actions'
 import { exportData, stringify } from '@/utils/exportImport'
@@ -24,6 +24,7 @@ import {
     DialogTitle,
     Divider,
     FormControlLabel,
+    Link,
     Switch,
     List,
     ListItemButton,
@@ -34,7 +35,7 @@ import {
     Stack,
     Typography
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { alpha, useTheme } from '@mui/material/styles'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -185,16 +186,66 @@ const ImportReviewDialog = ({
     loading,
     conflicts,
     decisions,
+    selections,
     onDecisionChange,
+    onSelectionChange,
+    onToggleAllSelections,
     onApplyAll,
     onCancel,
     onConfirm,
     disableConfirm
 }) => {
     const portalElement = document.getElementById('portal')
+    const theme = useTheme()
 
     const allDuplicate =
         conflicts.length > 0 && conflicts.every((conflict) => decisions[getConflictKey(conflict)] === 'duplicate')
+    const allSelected = conflicts.length > 0 && conflicts.every((conflict) => selections[getConflictKey(conflict)])
+
+    const typeDisplayConfig = useMemo(
+        () => ({
+            AgentFlow: { label: 'Agent Flow', color: theme.palette.info.main },
+            AgentFlowV2: { label: 'Agent Flow V2', color: theme.palette.info.dark },
+            AssistantFlow: { label: 'Assistant Flow', color: theme.palette.success.main },
+            AssistantCustom: { label: 'Custom Assistant', color: theme.palette.warning.main },
+            AssistantOpenAI: { label: 'OpenAI Assistant', color: theme.palette.primary.main },
+            AssistantAzure: { label: 'Azure Assistant', color: theme.palette.secondary.main },
+            ChatFlow: { label: 'Chat Flow', color: theme.palette.primary.dark },
+            CustomTemplate: { label: 'Custom Template', color: theme.palette.error.main },
+            DocumentStore: { label: 'Document Store', color: theme.palette.secondary.dark },
+            Tool: { label: 'Tool', color: theme.palette.success.dark },
+            Variable: { label: 'Variable', color: theme.palette.warning.dark }
+        }),
+        [theme]
+    )
+
+    const groupedConflicts = useMemo(() => {
+        const groups = new Map()
+        conflicts.forEach((conflict) => {
+            if (!groups.has(conflict.type)) {
+                groups.set(conflict.type, [])
+            }
+            groups.get(conflict.type).push(conflict)
+        })
+        return Array.from(groups.entries())
+    }, [conflicts])
+
+    const getExistingLink = (conflict) => {
+        const linkMap = {
+            AgentFlow: `/agentcanvas/${conflict.existingId}`,
+            AgentFlowV2: `/v2/agentcanvas/${conflict.existingId}`,
+            AssistantFlow: `/canvas/${conflict.existingId}`,
+            AssistantCustom: `/assistants/custom/${conflict.existingId}`,
+            AssistantOpenAI: '/assistants/openai',
+            AssistantAzure: '/assistants/openai',
+            ChatFlow: `/canvas/${conflict.existingId}`,
+            CustomTemplate: '/marketplaces',
+            DocumentStore: `/document-stores/${conflict.existingId}`,
+            Tool: '/tools',
+            Variable: '/variables'
+        }
+        return linkMap[conflict.type]
+    }
 
     const component = show ? (
         <Dialog open={show} fullWidth maxWidth='md' aria-labelledby='import-review-dialog-title'>
@@ -224,63 +275,167 @@ const ImportReviewDialog = ({
                             </Box>
                         ) : (
                             <Stack spacing={2}>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            color='primary'
-                                            checked={allDuplicate}
-                                            onChange={(event) => onApplyAll(event.target.checked ? 'duplicate' : 'update')}
-                                        />
-                                    }
-                                    label={
-                                        allDuplicate
-                                            ? 'Duplicate all conflicts'
-                                            : 'Update conflicts by default'
-                                    }
-                                />
+                                <Stack
+                                    direction={{ xs: 'column', sm: 'row' }}
+                                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                    justifyContent='space-between'
+                                    spacing={1.5}
+                                >
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                color='primary'
+                                                checked={allSelected}
+                                                onChange={(event) => onToggleAllSelections(event.target.checked)}
+                                            />
+                                        }
+                                        label='Select all'
+                                    />
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                color='primary'
+                                                checked={allDuplicate}
+                                                onChange={(event) => onApplyAll(event.target.checked ? 'duplicate' : 'update')}
+                                            />
+                                        }
+                                        label={
+                                            allDuplicate
+                                                ? 'Duplicate all conflicts'
+                                                : 'Update conflicts by default'
+                                        }
+                                    />
+                                </Stack>
                                 <Stack spacing={1.5}>
-                                    {conflicts.map((conflict) => {
-                                        const key = getConflictKey(conflict)
-                                        const action = decisions[key] || 'update'
+                                    {groupedConflicts.map(([type, items]) => {
+                                        const meta = typeDisplayConfig[type] || {
+                                            label: type,
+                                            color: theme.palette.grey[500]
+                                        }
+                                        const accentColor = meta.color || theme.palette.grey[500]
+                                        const sectionBackground = alpha(
+                                            accentColor,
+                                            theme.palette.mode === 'dark' ? 0.16 : 0.08
+                                        )
+                                        const borderColor = alpha(accentColor, theme.palette.mode === 'dark' ? 0.4 : 0.25)
+                                        const chipText = theme.palette.getContrastText(accentColor)
+
                                         return (
                                             <Box
-                                                key={key}
+                                                key={type}
                                                 sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between',
-                                                    gap: 2,
                                                     border: '1px solid',
-                                                    borderColor: 'divider',
-                                                    borderRadius: 1,
-                                                    px: 2,
-                                                    py: 1.5
+                                                    borderColor,
+                                                    borderRadius: 2,
+                                                    overflow: 'hidden',
+                                                    backgroundColor: sectionBackground
                                                 }}
                                             >
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Chip size='small' label={conflict.type} color='primary' variant='outlined' />
-                                                        <Typography variant='subtitle2'>{conflict.name}</Typography>
-                                                    </Box>
-                                                    <Typography variant='caption' color='textSecondary'>
-                                                        Existing ID: {conflict.existingId}
-                                                    </Typography>
-                                                </Box>
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            color='primary'
-                                                            checked={action === 'duplicate'}
-                                                            onChange={(event) =>
-                                                                onDecisionChange(
-                                                                    conflict,
-                                                                    event.target.checked ? 'duplicate' : 'update'
-                                                                )
-                                                            }
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        flexDirection: { xs: 'column', sm: 'row' },
+                                                        justifyContent: 'space-between',
+                                                        alignItems: { xs: 'flex-start', sm: 'center' },
+                                                        gap: 1,
+                                                        px: 2,
+                                                        py: 1.5,
+                                                        borderBottom: items.length ? '1px solid' : 'none',
+                                                        borderColor
+                                                    }}
+                                                >
+                                                    <Stack direction='row' spacing={1} alignItems='center'>
+                                                        <Chip
+                                                            size='small'
+                                                            label={meta.label}
+                                                            sx={{ backgroundColor: accentColor, color: chipText }}
                                                         />
-                                                    }
-                                                    label={action === 'duplicate' ? 'Duplicate' : 'Update'}
-                                                />
+                                                        <Typography variant='caption' color='textSecondary'>
+                                                            {items.length} conflict{items.length > 1 ? 's' : ''}
+                                                        </Typography>
+                                                    </Stack>
+                                                </Box>
+                                                <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
+                                                    {items.map((conflict) => {
+                                                        const key = getConflictKey(conflict)
+                                                        const action = decisions[key] || 'update'
+                                                        const isSelected = selections[key] || false
+                                                        const existingLink = getExistingLink(conflict)
+
+                                                        return (
+                                                            <Box
+                                                                key={key}
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    flexDirection: { xs: 'column', sm: 'row' },
+                                                                    alignItems: { xs: 'flex-start', sm: 'center' },
+                                                                    justifyContent: 'space-between',
+                                                                    gap: 2,
+                                                                    border: '1px solid',
+                                                                    borderColor: isSelected
+                                                                        ? 'divider'
+                                                                        : alpha(theme.palette.divider, 0.4),
+                                                                    borderRadius: 1.5,
+                                                                    px: 2,
+                                                                    py: 1.5,
+                                                                    backgroundColor: isSelected
+                                                                        ? theme.palette.background.paper
+                                                                        : alpha(theme.palette.action.disabledBackground, 0.3),
+                                                                    transition: 'background-color 0.2s ease'
+                                                                }}
+                                                            >
+                                                                <Stack direction='row' spacing={1.5} alignItems='flex-start'>
+                                                                    <Checkbox
+                                                                        color='primary'
+                                                                        checked={isSelected}
+                                                                        onChange={(event) =>
+                                                                            onSelectionChange(conflict, event.target.checked)
+                                                                        }
+                                                                    />
+                                                                    <Stack spacing={0.5}>
+                                                                        <Typography variant='subtitle2'>
+                                                                            {conflict.name}
+                                                                        </Typography>
+                                                                        <Typography variant='caption' color='textSecondary'>
+                                                                            Existing ID:{' '}
+                                                                            {existingLink ? (
+                                                                                <Link
+                                                                                    component={RouterLink}
+                                                                                    to={existingLink}
+                                                                                    target='_blank'
+                                                                                    rel='noopener noreferrer'
+                                                                                    sx={{ fontSize: '0.75rem' }}
+                                                                                >
+                                                                                    {conflict.existingId}
+                                                                                </Link>
+                                                                            ) : (
+                                                                                conflict.existingId
+                                                                            )}
+                                                                        </Typography>
+                                                                    </Stack>
+                                                                </Stack>
+                                                                <FormControlLabel
+                                                                    control={
+                                                                        <Switch
+                                                                            color='primary'
+                                                                            checked={action === 'duplicate'}
+                                                                            onChange={(event) =>
+                                                                                onDecisionChange(
+                                                                                    conflict,
+                                                                                    event.target.checked
+                                                                                        ? 'duplicate'
+                                                                                        : 'update'
+                                                                                )
+                                                                            }
+                                                                            disabled={!isSelected}
+                                                                        />
+                                                                    }
+                                                                    label={action === 'duplicate' ? 'Duplicate' : 'Update'}
+                                                                />
+                                                            </Box>
+                                                        )
+                                                    })}
+                                                </Stack>
                                             </Box>
                                         )
                                     })}
@@ -309,7 +464,10 @@ ImportReviewDialog.propTypes = {
     loading: PropTypes.bool,
     conflicts: PropTypes.array,
     decisions: PropTypes.object,
+    selections: PropTypes.object,
     onDecisionChange: PropTypes.func,
+    onSelectionChange: PropTypes.func,
+    onToggleAllSelections: PropTypes.func,
     onApplyAll: PropTypes.func,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func,
@@ -366,6 +524,7 @@ const ProfileSection = ({ handleLogout }) => {
     const [importReviewOpen, setImportReviewOpen] = useState(false)
     const [importConflicts, setImportConflicts] = useState([])
     const [conflictDecisions, setConflictDecisions] = useState({})
+    const [conflictSelections, setConflictSelections] = useState({})
     const [pendingImportPayload, setPendingImportPayload] = useState(null)
 
     const anchorRef = useRef(null)
@@ -430,11 +589,13 @@ const ProfileSection = ({ handleLogout }) => {
                 setPendingImportPayload(body)
                 setImportConflicts([])
                 setConflictDecisions({})
+                setConflictSelections({})
                 setImportReviewOpen(true)
                 previewImportApi.request(body)
             } catch (error) {
                 setImportReviewOpen(false)
                 setPendingImportPayload(null)
+                setConflictSelections({})
                 errorFailed(`Failed to read import file: ${getErrorMessage(error)}`)
             } finally {
                 if (inputRef.current) inputRef.current.value = ''
@@ -443,6 +604,7 @@ const ProfileSection = ({ handleLogout }) => {
         reader.onerror = () => {
             setImportReviewOpen(false)
             setPendingImportPayload(null)
+            setConflictSelections({})
             errorFailed('Failed to read import file')
             if (inputRef.current) inputRef.current.value = ''
         }
@@ -454,6 +616,23 @@ const ProfileSection = ({ handleLogout }) => {
             ...prev,
             [getConflictKey(conflict)]: action
         }))
+    }
+
+    const handleConflictSelectionChange = (conflict, isSelected) => {
+        setConflictSelections((prev) => ({
+            ...prev,
+            [getConflictKey(conflict)]: isSelected
+        }))
+    }
+
+    const handleSelectAllConflicts = (isSelected) => {
+        setConflictSelections((prev) => {
+            const updated = { ...prev }
+            importConflicts.forEach((conflict) => {
+                updated[getConflictKey(conflict)] = isSelected
+            })
+            return updated
+        })
     }
 
     const handleApplyAllConflicts = (action) => {
@@ -471,19 +650,31 @@ const ProfileSection = ({ handleLogout }) => {
         setPendingImportPayload(null)
         setImportConflicts([])
         setConflictDecisions({})
+        setConflictSelections({})
         if (inputRef.current) inputRef.current.value = ''
     }
 
     const handleConfirmImport = () => {
         if (!pendingImportPayload) return
-        const conflictResolutions = importConflicts.map((conflict) => ({
+        const selectedConflicts = importConflicts.filter(
+            (conflict) => conflictSelections[getConflictKey(conflict)]
+        )
+        const conflictResolutions = selectedConflicts.map((conflict) => ({
             type: conflict.type,
             importId: conflict.importId,
             existingId: conflict.existingId,
             action: conflictDecisions[getConflictKey(conflict)] || 'update'
         }))
+        const payload = JSON.parse(JSON.stringify(pendingImportPayload))
+        importConflicts.forEach((conflict) => {
+            if (conflictSelections[getConflictKey(conflict)]) return
+            const collection = payload[conflict.type]
+            if (Array.isArray(collection)) {
+                payload[conflict.type] = collection.filter((item) => item.id !== conflict.importId)
+            }
+        })
         const body = {
-            ...pendingImportPayload,
+            ...payload,
             conflictResolutions
         }
         setImportDialogOpen(true)
@@ -520,10 +711,13 @@ const ProfileSection = ({ handleLogout }) => {
         const conflicts = previewImportApi.data.conflicts || []
         setImportConflicts(conflicts)
         const initialDecisions = {}
+        const initialSelections = {}
         conflicts.forEach((conflict) => {
             initialDecisions[getConflictKey(conflict)] = 'update'
+            initialSelections[getConflictKey(conflict)] = false
         })
         setConflictDecisions(initialDecisions)
+        setConflictSelections(initialSelections)
     }, [previewImportApi.data, previewImportApi.loading, importReviewOpen, pendingImportPayload])
 
     useEffect(() => {
@@ -532,6 +726,7 @@ const ProfileSection = ({ handleLogout }) => {
         setPendingImportPayload(null)
         setImportConflicts([])
         setConflictDecisions({})
+        setConflictSelections({})
         let errMsg = 'Invalid Imported File'
         let error = previewImportApi.error
         if (error?.response?.data) {
@@ -567,6 +762,7 @@ const ProfileSection = ({ handleLogout }) => {
             setPendingImportPayload(null)
             setImportConflicts([])
             setConflictDecisions({})
+            setConflictSelections({})
             navigate(0)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -578,6 +774,7 @@ const ProfileSection = ({ handleLogout }) => {
             setPendingImportPayload(null)
             setImportConflicts([])
             setConflictDecisions({})
+            setConflictSelections({})
             let errMsg = 'Invalid Imported File'
             let error = importAllApi.error
             if (error?.response?.data) {
@@ -781,7 +978,10 @@ const ProfileSection = ({ handleLogout }) => {
                 loading={previewImportApi.loading}
                 conflicts={importConflicts}
                 decisions={conflictDecisions}
+                selections={conflictSelections}
                 onDecisionChange={handleConflictDecisionChange}
+                onSelectionChange={handleConflictSelectionChange}
+                onToggleAllSelections={handleSelectAllConflicts}
                 onApplyAll={handleApplyAllConflicts}
                 onCancel={handleImportReviewCancel}
                 onConfirm={handleConfirmImport}
