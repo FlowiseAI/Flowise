@@ -25,15 +25,26 @@ export function getAllowedCorsOrigins(): string {
     return process.env.CORS_ORIGINS ?? '*'
 }
 
+function parseAllowedOrigins(allowedOrigins: string): string[] {
+    if (allowedOrigins === '*') {
+        return ['*']
+    }
+    return allowedOrigins
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter((origin) => origin.length > 0)
+}
+
 export function getCorsOptions(): any {
-    return function (req: any, callback: (err: Error | null, options?: any) => void) {
+    return (req: any, callback: (err: Error | null, options?: any) => void) => {
         const corsOptions = {
-            origin: async function (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) {
-                const allowedOrigins = getAllowedCorsOrigins()
+            origin: async (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) => {
+                const allowedOriginsString = getAllowedCorsOrigins()
+                const allowedOrigins = parseAllowedOrigins(allowedOriginsString)
                 const isPredictionReq = isPredictionRequest(req.url)
 
                 // First check global CORS origins
-                if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
+                if (!origin || allowedOrigins.includes('*') || (origin && allowedOrigins.includes(origin))) {
                     // Additional prediction-specific validation
                     if (isPredictionReq) {
                         const chatflowId = extractChatflowId(req.url)
