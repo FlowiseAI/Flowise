@@ -374,8 +374,8 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
                         }
                     })
                 }
-                delete parsedConfig.allowedDomains
-                delete parsedConfig.allowedDomainsError
+                delete parsedConfig.allowedOrigins
+                delete parsedConfig.allowedOriginsError
                 return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData, isTTSEnabled }
             } catch (e) {
                 throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
