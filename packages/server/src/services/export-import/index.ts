@@ -9,6 +9,7 @@ import { CustomTemplate } from '../../database/entities/CustomTemplate'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { Execution } from '../../database/entities/Execution'
+import { Credential } from '../../database/entities/Credential'
 import { Tool } from '../../database/entities/Tool'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
@@ -27,6 +28,8 @@ import toolsService from '../tools'
 import variableService from '../variables'
 import { AssistantType, Platform } from '../../Interface'
 import { sanitizeNullBytes } from '../../utils/sanitize.util'
+import credentialsService from '../credentials'
+import logger from '../../utils/logger'
 
 type ExportInput = {
     agentflow: boolean
@@ -101,6 +104,22 @@ type ImportPreview = {
     conflicts: ImportPreviewConflict[]
 }
 
+type FlowCredentialBinding = {
+    chatflowId: string
+    nodeId: string
+    path: (string | number)[]
+    property: string
+    credentialId: string
+}
+
+type ExportCredentialBinding = {
+    nodeId: string
+    path: (string | number)[]
+    property: string
+    credentialName: string | null
+    credentialType: string | null
+}
+
 const chatflowTypeByKey: Partial<Record<ConflictEntityKey, EnumChatflowType>> = {
     AgentFlow: EnumChatflowType.MULTIAGENT,
     AgentFlowV2: EnumChatflowType.AGENTFLOW,
@@ -139,6 +158,288 @@ const getAssistantName = (details?: string): string | undefined => {
         // ignore malformed assistant details
     }
     return undefined
+}
+
+const FLOWISE_CREDENTIAL_ID_KEY = 'FLOWISE_CREDENTIAL_ID'
+
+const sanitizeInputsForExport = (inputs: any, inputParams: any[]): any => {
+    if (!inputs || typeof inputs !== 'object') return {}
+
+    const sanitizedInputs: Record<string, any> = {}
+    for (const inputName of Object.keys(inputs)) {
+        const param = Array.isArray(inputParams)
+            ? inputParams.find((inp: any) => inp && inp.name === inputName)
+            : undefined
+        if (param && (param.type === 'password' || param.type === 'file' || param.type === 'folder')) continue
+        sanitizedInputs[inputName] = inputs[inputName]
+    }
+    return sanitizedInputs
+}
+
+const stripCredentialIds = (
+    value: any,
+    path: (string | number)[],
+    nodeId: string,
+    chatflowId: string,
+    accumulator: FlowCredentialBinding[]
+): any => {
+    if (!value || typeof value !== 'object') return value
+
+    if (Array.isArray(value)) {
+        return value.map((item, index) => stripCredentialIds(item, [...path, index], nodeId, chatflowId, accumulator))
+    }
+
+    const cloned: Record<string, any> = {}
+    for (const [key, child] of Object.entries(value)) {
+        if (key === FLOWISE_CREDENTIAL_ID_KEY) {
+            if (typeof child === 'string' && child.trim().length > 0) {
+                accumulator.push({
+                    chatflowId,
+                    nodeId,
+                    path,
+                    property: key,
+                    credentialId: child
+                })
+            }
+            continue
+        }
+        cloned[key] = stripCredentialIds(child, [...path, key], nodeId, chatflowId, accumulator)
+    }
+    return cloned
+}
+
+const collectCredentialBindingsFromChatflow = (
+    chatflow: ChatFlow
+): { parsed: any; bindings: FlowCredentialBinding[] } | null => {
+    if (!chatflow.flowData) return null
+    try {
+        const parsed = JSON.parse(chatflow.flowData)
+        if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.nodes)) return { parsed, bindings: [] }
+
+        const bindings: FlowCredentialBinding[] = []
+        for (const node of parsed.nodes) {
+            if (!node || typeof node !== 'object') continue
+            const nodeId = node.id || node?.data?.id
+            if (!nodeId || !node.data) continue
+
+            const nodeData = node.data
+            const sanitizedInputs = sanitizeInputsForExport(nodeData.inputs, nodeData.inputParams)
+            const exportableNodeData = {
+                id: nodeData.id,
+                label: nodeData.label,
+                version: nodeData.version,
+                name: nodeData.name,
+                type: nodeData.type,
+                color: nodeData.color,
+                hideOutput: nodeData.hideOutput,
+                hideInput: nodeData.hideInput,
+                baseClasses: nodeData.baseClasses,
+                tags: nodeData.tags,
+                category: nodeData.category,
+                description: nodeData.description,
+                inputParams: nodeData.inputParams,
+                inputAnchors: nodeData.inputAnchors,
+                inputs: sanitizedInputs,
+                outputAnchors: nodeData.outputAnchors,
+                outputs: nodeData.outputs,
+                selected: false
+            }
+
+            stripCredentialIds(exportableNodeData, ['data'], nodeId, chatflow.id, bindings)
+        }
+        return { parsed, bindings }
+    } catch (error) {
+        logger.warn(
+            `Failed to parse chatflow ${chatflow.id} while collecting credential bindings: ${getErrorMessage(error)}`
+        )
+        return null
+    }
+}
+
+const enrichChatflowsWithCredentialMetadata = async (chatflowGroups: ChatFlow[][]): Promise<void> => {
+    const chatflows = chatflowGroups.flat().filter((flow) => !!flow)
+    if (chatflows.length === 0) return
+
+    const processed: Map<string, { parsed: any; bindings: FlowCredentialBinding[] }> = new Map()
+    const credentialIds = new Set<string>()
+
+    for (const chatflow of chatflows) {
+        const result = collectCredentialBindingsFromChatflow(chatflow)
+        if (!result) continue
+        processed.set(chatflow.id, result)
+        for (const binding of result.bindings) {
+            credentialIds.add(binding.credentialId)
+        }
+    }
+
+    if (processed.size === 0) return
+
+    const appServer = getRunningExpressApp()
+    const dataSource = appServer?.AppDataSource
+    if (!dataSource) return
+
+    let credentialLookup = new Map<string, Credential>()
+    if (credentialIds.size > 0) {
+        const credentials = await dataSource.getRepository(Credential).find({
+            where: { id: In(Array.from(credentialIds)) }
+        })
+        credentialLookup = new Map(credentials.map((credential) => [credential.id, credential]))
+    }
+
+    for (const chatflow of chatflows) {
+        const details = processed.get(chatflow.id)
+        if (!details) continue
+        const namedBindings: ExportCredentialBinding[] = []
+        for (const binding of details.bindings) {
+            const credential = credentialLookup.get(binding.credentialId)
+            if (!credential) {
+                logger.warn(
+                    `Credential ${binding.credentialId} referenced in chatflow ${binding.chatflowId} could not be resolved during export`
+                )
+                continue
+            }
+            namedBindings.push({
+                nodeId: binding.nodeId,
+                path: binding.path,
+                property: binding.property,
+                credentialName: credential.name ?? null,
+                credentialType: credential.credentialName ?? null
+            })
+        }
+
+        if (namedBindings.length > 0) {
+            details.parsed.credentialBindings = namedBindings
+        } else if (details.parsed.credentialBindings) {
+            delete details.parsed.credentialBindings
+        }
+
+        if (namedBindings.length > 0) {
+            chatflow.flowData = JSON.stringify(details.parsed)
+        }
+    }
+}
+
+const formatBindingPath = (path: (string | number)[]): string => {
+    if (!path || path.length === 0) return '<root>'
+    let result = ''
+    for (const segment of path) {
+        if (typeof segment === 'number') {
+            result += `[${segment}]`
+        } else {
+            result += result.length === 0 ? segment : `.${segment}`
+        }
+    }
+    return result
+}
+
+const resolveBindingParent = (root: any, path: (string | number)[]): any => {
+    let current = root
+    for (const segment of path) {
+        if (typeof segment === 'number') {
+            if (!Array.isArray(current)) return undefined
+            current = current[segment]
+            continue
+        }
+        if (!current || typeof current !== 'object') return undefined
+        current = (current as Record<string, any>)[segment]
+    }
+    return current
+}
+
+const reinstateCredentialBindingsOnImport = async (
+    chatflowGroups: ChatFlow[][],
+    workspaceId: string
+): Promise<void> => {
+    const chatflows = chatflowGroups.flat().filter((flow) => !!flow)
+    if (chatflows.length === 0) return
+
+    const flowsToProcess: { chatflow: ChatFlow; parsed: any; bindings: ExportCredentialBinding[] }[] = []
+
+    for (const chatflow of chatflows) {
+        if (!chatflow.flowData) continue
+        try {
+            const parsed = JSON.parse(chatflow.flowData)
+            const bindings = Array.isArray(parsed?.credentialBindings) ? parsed.credentialBindings : []
+            if (bindings.length === 0) continue
+            flowsToProcess.push({ chatflow, parsed, bindings })
+        } catch (error) {
+            logger.warn(
+                `Failed to parse chatflow ${chatflow.id} while reinstating credential bindings: ${getErrorMessage(error)}`
+            )
+        }
+    }
+
+    if (flowsToProcess.length === 0) return
+
+    let availableCredentials: any[] = []
+    try {
+        availableCredentials = await credentialsService.getAllCredentials(undefined, workspaceId)
+    } catch (error) {
+        logger.warn(`Unable to load credentials for workspace ${workspaceId}: ${getErrorMessage(error)}`)
+        return
+    }
+
+    const credentialLookup = new Map<string, { id: string }>()
+    for (const credential of availableCredentials) {
+        if (!credential || !credential.name || !credential.credentialName || !credential.id) continue
+        const key = `${credential.name}::${credential.credentialName}`
+        if (!credentialLookup.has(key)) {
+            credentialLookup.set(key, { id: credential.id })
+        }
+    }
+
+    for (const { chatflow, parsed, bindings } of flowsToProcess) {
+        if (!Array.isArray(parsed.nodes)) {
+            delete parsed.credentialBindings
+            chatflow.flowData = JSON.stringify(parsed)
+            continue
+        }
+
+        const nodeLookup = new Map<string, any>()
+        for (const node of parsed.nodes) {
+            if (!node || typeof node !== 'object') continue
+            const nodeId = node.id || node?.data?.id
+            if (nodeId) nodeLookup.set(nodeId, node)
+        }
+
+        for (const binding of bindings) {
+            if (!binding || !binding.nodeId || !Array.isArray(binding.path) || !binding.property) continue
+            if (!binding.credentialName || !binding.credentialType) {
+                logger.warn(
+                    `Credential binding for chatflow ${chatflow.id} on node ${binding.nodeId} is missing name or type`
+                )
+                continue
+            }
+
+            const key = `${binding.credentialName}::${binding.credentialType}`
+            const credential = credentialLookup.get(key)
+            if (!credential) {
+                logger.warn(
+                    `No credential named ${binding.credentialName} of type ${binding.credentialType} found for chatflow ${chatflow.id}`
+                )
+                continue
+            }
+
+            const node = nodeLookup.get(binding.nodeId)
+            if (!node) {
+                logger.warn(`Node ${binding.nodeId} not found in chatflow ${chatflow.id} while applying credential bindings`)
+                continue
+            }
+
+            const parent = resolveBindingParent(node, binding.path)
+            if (!parent || typeof parent !== 'object') {
+                logger.warn(
+                    `Path ${formatBindingPath(binding.path)} could not be resolved in node ${binding.nodeId} for chatflow ${chatflow.id}`
+                )
+                continue
+            }
+
+            ;(parent as Record<string, any>)[binding.property] = credential.id
+        }
+
+        delete parsed.credentialBindings
+        chatflow.flowData = JSON.stringify(parsed)
+    }
 }
 
 const convertExportInput = (body: any): ExportInput => {
@@ -234,6 +535,8 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         let Variable: Variable[] | { data: Variable[]; total: number } =
             exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
         Variable = 'data' in Variable ? Variable.data : Variable
+
+        await enrichChatflowsWithCredentialMetadata([AgentFlow, AgentFlowV2, AssistantFlow, ChatFlow])
 
         return {
             FileDefaultName,
@@ -1000,6 +1303,11 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
     importData.Execution = importData.Execution || []
     importData.Tool = importData.Tool || []
     importData.Variable = importData.Variable || []
+
+    await reinstateCredentialBindingsOnImport(
+        [importData.AgentFlow, importData.AgentFlowV2, importData.AssistantFlow, importData.ChatFlow],
+        activeWorkspaceId
+    )
 
     let queryRunner
     try {
