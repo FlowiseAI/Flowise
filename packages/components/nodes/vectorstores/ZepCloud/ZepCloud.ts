@@ -59,7 +59,8 @@ class Zep_CloudVectorStores implements INode {
                 name: 'zepMetadataFilter',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Top K',

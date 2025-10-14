@@ -64,6 +64,7 @@ export interface IChatFlow {
     apikeyid?: string
     analytic?: string
     speechToText?: string
+    textToSpeech?: string
     chatbotConfig?: string
     followUpPrompts?: string
     apiConfig?: string
@@ -370,6 +371,7 @@ export interface ICustomTemplate {
 
 export interface IFlowConfig {
     chatflowid: string
+    chatflowId: string
     chatId: string
     sessionId: string
     chatHistory: IMessage[]

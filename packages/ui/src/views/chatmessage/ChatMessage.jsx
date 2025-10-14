@@ -38,7 +38,8 @@ import {
     IconSquareFilled,
     IconCheck,
     IconPaperclip,
-    IconSparkles
+    IconSparkles,
+    IconVolume
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -72,6 +73,7 @@ import attachmentsApi from '@/api/attachments'
 import chatmessagefeedbackApi from '@/api/chatmessagefeedback'
 import leadsApi from '@/api/lead'
 import executionsApi from '@/api/executions'
+import ttsApi from '@/api/tts'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -250,6 +252,27 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const [formInputParams, setFormInputParams] = useState([])
 
     const [isConfigLoading, setIsConfigLoading] = useState(true)
+
+    // TTS state
+    const [isTTSLoading, setIsTTSLoading] = useState({})
+    const [isTTSPlaying, setIsTTSPlaying] = useState({})
+    const [ttsAudio, setTtsAudio] = useState({})
+    const [isTTSEnabled, setIsTTSEnabled] = useState(false)
+
+    // TTS streaming state
+    const [ttsStreamingState, setTtsStreamingState] = useState({
+        mediaSource: null,
+        sourceBuffer: null,
+        audio: null,
+        chunkQueue: [],
+        isBuffering: false,
+        audioFormat: null,
+        abortController: null
+    })
+
+    // Ref to prevent auto-scroll during TTS actions (using ref to avoid re-renders)
+    const isTTSActionRef = useRef(false)
+    const ttsTimeoutRef = useRef(null)
 
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
@@ -463,7 +486,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const handleAbort = async () => {
         setIsMessageStopping(true)
         try {
+            // Stop all TTS streams first
+            await handleTTSAbortAll()
+            stopAllTTS()
+
             await chatmessageApi.abortMessage(chatflowid, chatId)
+            setIsMessageStopping(false)
         } catch (error) {
             setIsMessageStopping(false)
             enqueueSnackbar({
@@ -533,6 +561,22 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const scrollToBottom = () => {
         if (ps.current) {
             ps.current.scrollTo({ top: maxScroll })
+        }
+    }
+
+    // Helper function to manage TTS action flag
+    const setTTSAction = (isActive) => {
+        isTTSActionRef.current = isActive
+        if (ttsTimeoutRef.current) {
+            clearTimeout(ttsTimeoutRef.current)
+            ttsTimeoutRef.current = null
+        }
+        if (isActive) {
+            // Reset the flag after a longer delay to ensure all state changes are complete
+            ttsTimeoutRef.current = setTimeout(() => {
+                isTTSActionRef.current = false
+                ttsTimeoutRef.current = null
+            }, 300)
         }
     }
 
@@ -949,6 +993,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     setLoading(false)
                     setUserInput('')
                     setUploadedFiles([])
+
                     setTimeout(() => {
                         inputRef.current?.focus()
                         scrollToBottom()
@@ -1026,6 +1071,18 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     case 'abort':
                         abortMessage(payload.data)
                         closeResponse()
+                        break
+                    case 'tts_start':
+                        handleTTSStart(payload.data)
+                        break
+                    case 'tts_data':
+                        handleTTSDataChunk(payload.data.audioChunk)
+                        break
+                    case 'tts_end':
+                        handleTTSEnd()
+                        break
+                    case 'tts_abort':
+                        handleTTSAbort(payload.data)
                         break
                     case 'end':
                         setLocalStorageChatflow(chatflowid, chatId)
@@ -1293,6 +1350,30 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 }
             }
         }
+
+        // Check if TTS is configured
+        if (getChatflowConfig.data && getChatflowConfig.data.textToSpeech) {
+            try {
+                const ttsConfig =
+                    typeof getChatflowConfig.data.textToSpeech === 'string'
+                        ? JSON.parse(getChatflowConfig.data.textToSpeech)
+                        : getChatflowConfig.data.textToSpeech
+
+                let isEnabled = false
+                if (ttsConfig) {
+                    Object.keys(ttsConfig).forEach((provider) => {
+                        if (provider !== 'none' && ttsConfig?.[provider]?.status) {
+                            isEnabled = true
+                        }
+                    })
+                }
+                setIsTTSEnabled(isEnabled)
+            } catch (error) {
+                setIsTTSEnabled(false)
+            }
+        } else {
+            setIsTTSEnabled(false)
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatflowConfig.data])
 
@@ -1313,9 +1394,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
     }, [isChatFlowAvailableForRAGFileUploads, fullFileUpload])
 
-    // Auto scroll chat to bottom
+    // Auto scroll chat to bottom (but not during TTS actions)
     useEffect(() => {
-        scrollToBottom()
+        if (!isTTSActionRef.current) {
+            scrollToBottom()
+        }
     }, [messages])
 
     useEffect(() => {
@@ -1497,8 +1580,450 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 return allMessages
             })
         }
+
         setIsLeadSaving(false)
     }
+
+    const cleanupTTSForMessage = (messageId) => {
+        if (ttsAudio[messageId]) {
+            ttsAudio[messageId].pause()
+            ttsAudio[messageId].currentTime = 0
+            setTtsAudio((prev) => {
+                const newState = { ...prev }
+                delete newState[messageId]
+                return newState
+            })
+        }
+
+        if (ttsStreamingState.audio) {
+            ttsStreamingState.audio.pause()
+            cleanupTTSStreaming()
+        }
+
+        setIsTTSPlaying((prev) => {
+            const newState = { ...prev }
+            delete newState[messageId]
+            return newState
+        })
+
+        setIsTTSLoading((prev) => {
+            const newState = { ...prev }
+            delete newState[messageId]
+            return newState
+        })
+    }
+
+    const handleTTSStop = async (messageId) => {
+        setTTSAction(true)
+        await ttsApi.abortTTS({ chatflowId: chatflowid, chatId, chatMessageId: messageId })
+        cleanupTTSForMessage(messageId)
+        setIsMessageStopping(false)
+    }
+
+    const stopAllTTS = () => {
+        Object.keys(ttsAudio).forEach((messageId) => {
+            if (ttsAudio[messageId]) {
+                ttsAudio[messageId].pause()
+                ttsAudio[messageId].currentTime = 0
+            }
+        })
+        setTtsAudio({})
+
+        if (ttsStreamingState.abortController) {
+            ttsStreamingState.abortController.abort()
+        }
+
+        if (ttsStreamingState.audio) {
+            ttsStreamingState.audio.pause()
+            cleanupTTSStreaming()
+        }
+
+        setIsTTSPlaying({})
+        setIsTTSLoading({})
+    }
+
+    const handleTTSClick = async (messageId, messageText) => {
+        if (isTTSLoading[messageId]) return
+
+        if (isTTSPlaying[messageId] || ttsAudio[messageId]) {
+            handleTTSStop(messageId)
+            return
+        }
+
+        setTTSAction(true)
+
+        // abort all ongoing streams and clear audio sources
+        await handleTTSAbortAll()
+        stopAllTTS()
+
+        handleTTSStart({ chatMessageId: messageId, format: 'mp3' })
+        try {
+            const abortController = new AbortController()
+            setTtsStreamingState((prev) => ({ ...prev, abortController }))
+
+            const response = await fetch('/api/v1/text-to-speech/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-request-from': 'internal'
+                },
+                credentials: 'include',
+                signal: abortController.signal,
+                body: JSON.stringify({
+                    chatflowId: chatflowid,
+                    chatId: chatId,
+                    chatMessageId: messageId,
+                    text: messageText
+                })
+            })
+
+            if (!response.ok) {
+                throw new Error(`TTS request failed: ${response.status}`)
+            }
+
+            const reader = response.body.getReader()
+            const decoder = new TextDecoder()
+            let buffer = ''
+
+            let done = false
+            while (!done) {
+                if (abortController.signal.aborted) {
+                    break
+                }
+
+                const result = await reader.read()
+                done = result.done
+                if (done) {
+                    break
+                }
+                const value = result.value
+                const chunk = decoder.decode(value, { stream: true })
+                buffer += chunk
+
+                const lines = buffer.split('\n\n')
+                buffer = lines.pop() || ''
+
+                for (const eventBlock of lines) {
+                    if (eventBlock.trim()) {
+                        const event = parseSSEEvent(eventBlock)
+                        if (event) {
+                            switch (event.event) {
+                                case 'tts_start':
+                                    break
+                                case 'tts_data':
+                                    if (!abortController.signal.aborted) {
+                                        handleTTSDataChunk(event.data.audioChunk)
+                                    }
+                                    break
+                                case 'tts_end':
+                                    if (!abortController.signal.aborted) {
+                                        handleTTSEnd()
+                                    }
+                                    break
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                console.error('TTS request was aborted')
+            } else {
+                console.error('Error with TTS:', error)
+                enqueueSnackbar({
+                    message: `TTS failed: ${error.message}`,
+                    options: { variant: 'error' }
+                })
+            }
+        } finally {
+            setIsTTSLoading((prev) => {
+                const newState = { ...prev }
+                delete newState[messageId]
+                return newState
+            })
+        }
+    }
+
+    const parseSSEEvent = (eventBlock) => {
+        const lines = eventBlock.split('\n')
+        const event = {}
+
+        for (const line of lines) {
+            if (line.startsWith('event:')) {
+                event.event = line.substring(6).trim()
+            } else if (line.startsWith('data:')) {
+                const dataStr = line.substring(5).trim()
+                try {
+                    const parsed = JSON.parse(dataStr)
+                    if (parsed.data) {
+                        event.data = parsed.data
+                    }
+                } catch (e) {
+                    console.error('Error parsing SSE data:', e, 'Raw data:', dataStr)
+                }
+            }
+        }
+
+        return event.event ? event : null
+    }
+
+    const initializeTTSStreaming = (data) => {
+        try {
+            const mediaSource = new MediaSource()
+            const audio = new Audio()
+            audio.src = URL.createObjectURL(mediaSource)
+
+            mediaSource.addEventListener('sourceopen', () => {
+                try {
+                    const mimeType = data.format === 'mp3' ? 'audio/mpeg' : 'audio/mpeg'
+                    const sourceBuffer = mediaSource.addSourceBuffer(mimeType)
+
+                    setTtsStreamingState((prevState) => ({
+                        ...prevState,
+                        mediaSource,
+                        sourceBuffer,
+                        audio
+                    }))
+
+                    audio.play().catch((playError) => {
+                        console.error('Error starting audio playback:', playError)
+                    })
+                } catch (error) {
+                    console.error('Error setting up source buffer:', error)
+                    console.error('MediaSource readyState:', mediaSource.readyState)
+                    console.error('Requested MIME type:', mimeType)
+                }
+            })
+
+            audio.addEventListener('playing', () => {
+                setIsTTSLoading((prevState) => {
+                    const newState = { ...prevState }
+                    delete newState[data.chatMessageId]
+                    return newState
+                })
+                setIsTTSPlaying((prevState) => ({
+                    ...prevState,
+                    [data.chatMessageId]: true
+                }))
+            })
+
+            audio.addEventListener('ended', () => {
+                setIsTTSPlaying((prevState) => {
+                    const newState = { ...prevState }
+                    delete newState[data.chatMessageId]
+                    return newState
+                })
+                cleanupTTSStreaming()
+            })
+        } catch (error) {
+            console.error('Error initializing TTS streaming:', error)
+        }
+    }
+
+    const cleanupTTSStreaming = () => {
+        setTtsStreamingState((prevState) => {
+            if (prevState.abortController) {
+                prevState.abortController.abort()
+            }
+
+            if (prevState.audio) {
+                prevState.audio.pause()
+                prevState.audio.removeAttribute('src')
+                if (prevState.audio.src) {
+                    URL.revokeObjectURL(prevState.audio.src)
+                }
+            }
+
+            if (prevState.mediaSource) {
+                if (prevState.mediaSource.readyState === 'open') {
+                    try {
+                        prevState.mediaSource.endOfStream()
+                    } catch (e) {
+                        // Ignore errors during cleanup
+                    }
+                }
+                prevState.mediaSource.removeEventListener('sourceopen', () => {})
+            }
+
+            return {
+                mediaSource: null,
+                sourceBuffer: null,
+                audio: null,
+                chunkQueue: [],
+                isBuffering: false,
+                audioFormat: null,
+                abortController: null
+            }
+        })
+    }
+
+    const processChunkQueue = () => {
+        setTtsStreamingState((prevState) => {
+            if (!prevState.sourceBuffer || prevState.sourceBuffer.updating || prevState.chunkQueue.length === 0) {
+                return prevState
+            }
+
+            const chunk = prevState.chunkQueue.shift()
+
+            try {
+                prevState.sourceBuffer.appendBuffer(chunk)
+                return {
+                    ...prevState,
+                    chunkQueue: [...prevState.chunkQueue],
+                    isBuffering: true
+                }
+            } catch (error) {
+                console.error('Error appending chunk to buffer:', error)
+                return prevState
+            }
+        })
+    }
+
+    const handleTTSStart = (data) => {
+        setTTSAction(true)
+
+        // Stop all existing TTS audio before starting new stream
+        stopAllTTS()
+
+        setIsTTSLoading((prevState) => ({
+            ...prevState,
+            [data.chatMessageId]: true
+        }))
+        setMessages((prevMessages) => {
+            const allMessages = [...cloneDeep(prevMessages)]
+            const lastMessage = allMessages[allMessages.length - 1]
+            if (lastMessage.type === 'userMessage') return allMessages
+            if (lastMessage.id) return allMessages
+            allMessages[allMessages.length - 1].id = data.chatMessageId
+            return allMessages
+        })
+        setTtsStreamingState({
+            mediaSource: null,
+            sourceBuffer: null,
+            audio: null,
+            chunkQueue: [],
+            isBuffering: false,
+            audioFormat: data.format,
+            abortController: null
+        })
+
+        setTimeout(() => initializeTTSStreaming(data), 0)
+    }
+
+    const handleTTSDataChunk = (base64Data) => {
+        try {
+            const audioBuffer = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0))
+
+            setTtsStreamingState((prevState) => {
+                const newState = {
+                    ...prevState,
+                    chunkQueue: [...prevState.chunkQueue, audioBuffer]
+                }
+
+                if (prevState.sourceBuffer && !prevState.sourceBuffer.updating) {
+                    setTimeout(() => processChunkQueue(), 0)
+                }
+
+                return newState
+            })
+        } catch (error) {
+            console.error('Error handling TTS data chunk:', error)
+        }
+    }
+
+    const handleTTSEnd = () => {
+        setTtsStreamingState((prevState) => {
+            if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
+                try {
+                    if (prevState.sourceBuffer && prevState.chunkQueue.length > 0 && !prevState.sourceBuffer.updating) {
+                        const remainingChunks = [...prevState.chunkQueue]
+                        remainingChunks.forEach((chunk, index) => {
+                            setTimeout(() => {
+                                if (prevState.sourceBuffer && !prevState.sourceBuffer.updating) {
+                                    try {
+                                        prevState.sourceBuffer.appendBuffer(chunk)
+                                        if (index === remainingChunks.length - 1) {
+                                            setTimeout(() => {
+                                                if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
+                                                    prevState.mediaSource.endOfStream()
+                                                }
+                                            }, 100)
+                                        }
+                                    } catch (error) {
+                                        console.error('Error appending remaining chunk:', error)
+                                    }
+                                }
+                            }, index * 50)
+                        })
+                        return {
+                            ...prevState,
+                            chunkQueue: []
+                        }
+                    }
+
+                    if (prevState.sourceBuffer && !prevState.sourceBuffer.updating) {
+                        prevState.mediaSource.endOfStream()
+                    } else if (prevState.sourceBuffer) {
+                        prevState.sourceBuffer.addEventListener(
+                            'updateend',
+                            () => {
+                                if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
+                                    prevState.mediaSource.endOfStream()
+                                }
+                            },
+                            { once: true }
+                        )
+                    }
+                } catch (error) {
+                    console.error('Error ending TTS stream:', error)
+                }
+            }
+            return prevState
+        })
+    }
+
+    const handleTTSAbort = (data) => {
+        const messageId = data.chatMessageId
+        cleanupTTSForMessage(messageId)
+    }
+
+    const handleTTSAbortAll = async () => {
+        const activeTTSMessages = Object.keys(isTTSLoading).concat(Object.keys(isTTSPlaying))
+        for (const messageId of activeTTSMessages) {
+            await ttsApi.abortTTS({ chatflowId: chatflowid, chatId, chatMessageId: messageId })
+        }
+    }
+
+    useEffect(() => {
+        if (ttsStreamingState.sourceBuffer) {
+            const sourceBuffer = ttsStreamingState.sourceBuffer
+
+            const handleUpdateEnd = () => {
+                setTtsStreamingState((prevState) => ({
+                    ...prevState,
+                    isBuffering: false
+                }))
+                setTimeout(() => processChunkQueue(), 0)
+            }
+
+            sourceBuffer.addEventListener('updateend', handleUpdateEnd)
+
+            return () => {
+                sourceBuffer.removeEventListener('updateend', handleUpdateEnd)
+            }
+        }
+    }, [ttsStreamingState.sourceBuffer])
+
+    useEffect(() => {
+        return () => {
+            cleanupTTSStreaming()
+            // Cleanup TTS timeout on unmount
+            if (ttsTimeoutRef.current) {
+                clearTimeout(ttsTimeoutRef.current)
+                ttsTimeoutRef.current = null
+            }
+        }
+    }, [])
 
     const getInputDisabled = () => {
         return (
@@ -2151,7 +2676,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                 })}
                                             </div>
                                         )}
-                                        {message.type === 'apiMessage' && message.id && chatFeedbackStatus ? (
+                                        {message.type === 'apiMessage' && message.id ? (
                                             <>
                                                 <Box
                                                     sx={{
@@ -2161,25 +2686,62 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                         gap: 1
                                                     }}
                                                 >
-                                                    <CopyToClipboardButton onClick={() => copyMessageToClipboard(message.message)} />
-                                                    {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_UP' ? (
-                                                        <ThumbsUpButton
-                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
-                                                            rating={message.feedback ? message.feedback.rating : ''}
-                                                            onClick={() => onThumbsUpClick(message.id)}
-                                                        />
-                                                    ) : null}
-                                                    {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_DOWN' ? (
-                                                        <ThumbsDownButton
-                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_DOWN'}
-                                                            rating={message.feedback ? message.feedback.rating : ''}
-                                                            onClick={() => onThumbsDownClick(message.id)}
-                                                        />
-                                                    ) : null}
+                                                    {isTTSEnabled && (
+                                                        <IconButton
+                                                            size='small'
+                                                            onClick={() =>
+                                                                isTTSPlaying[message.id]
+                                                                    ? handleTTSStop(message.id)
+                                                                    : handleTTSClick(message.id, message.message)
+                                                            }
+                                                            disabled={isTTSLoading[message.id]}
+                                                            sx={{
+                                                                backgroundColor: ttsAudio[message.id] ? 'primary.main' : 'transparent',
+                                                                color: ttsAudio[message.id] ? 'white' : 'inherit',
+                                                                '&:hover': {
+                                                                    backgroundColor: ttsAudio[message.id] ? 'primary.dark' : 'action.hover'
+                                                                }
+                                                            }}
+                                                        >
+                                                            {isTTSLoading[message.id] ? (
+                                                                <CircularProgress size={16} />
+                                                            ) : isTTSPlaying[message.id] ? (
+                                                                <IconCircleDot style={{ width: '20px', height: '20px' }} color={'red'} />
+                                                            ) : (
+                                                                <IconVolume
+                                                                    style={{ width: '20px', height: '20px' }}
+                                                                    color={customization.isDarkMode ? 'white' : '#1e88e5'}
+                                                                />
+                                                            )}
+                                                        </IconButton>
+                                                    )}
+                                                    {chatFeedbackStatus && (
+                                                        <>
+                                                            <CopyToClipboardButton
+                                                                onClick={() => copyMessageToClipboard(message.message)}
+                                                            />
+                                                            {!message.feedback ||
+                                                            message.feedback.rating === '' ||
+                                                            message.feedback.rating === 'THUMBS_UP' ? (
+                                                                <ThumbsUpButton
+                                                                    isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
+                                                                    rating={message.feedback ? message.feedback.rating : ''}
+                                                                    onClick={() => onThumbsUpClick(message.id)}
+                                                                />
+                                                            ) : null}
+                                                            {!message.feedback ||
+                                                            message.feedback.rating === '' ||
+                                                            message.feedback.rating === 'THUMBS_DOWN' ? (
+                                                                <ThumbsDownButton
+                                                                    isDisabled={
+                                                                        message.feedback && message.feedback.rating === 'THUMBS_DOWN'
+                                                                    }
+                                                                    rating={message.feedback ? message.feedback.rating : ''}
+                                                                    onClick={() => onThumbsDownClick(message.id)}
+                                                                />
+                                                            ) : null}
+                                                        </>
+                                                    )}
                                                 </Box>
                                             </>
                                         ) : null}

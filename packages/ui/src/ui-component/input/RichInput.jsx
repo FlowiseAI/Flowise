@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
 import { useEditor, EditorContent } from '@tiptap/react'
 import Placeholder from '@tiptap/extension-placeholder'
 import { mergeAttributes } from '@tiptap/core'
@@ -7,12 +8,18 @@ import StarterKit from '@tiptap/starter-kit'
 import { styled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import Mention from '@tiptap/extension-mention'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from './suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
+const lowlight = createLowlight(common)
+
 // define your extension array
 const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
-    StarterKit,
+    StarterKit.configure({
+        codeBlock: false
+    }),
     Mention.configure({
         HTMLAttributes: {
             class: 'variable'
@@ -33,11 +40,16 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
             isNodeInsideInteration
         ),
         deleteTriggerWithBackspace: true
+    }),
+    CodeBlockLowlight.configure({
+        lowlight,
+        enableTabIndentation: true,
+        tabSize: 2
     })
 ]
 
 // Add styled component for editor wrapper
-const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled }) => ({
+const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDarkMode }) => ({
     '& .ProseMirror': {
         padding: '0px 14px',
         height: rows ? `${rows * 1.4375}rem` : '2.4rem',
@@ -67,11 +79,24 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled }) =>
             opacity: disabled ? 0.6 : 0.4,
             pointerEvents: 'none',
             height: 0
-        }
+        },
+        // Set CSS custom properties for theme-aware styling based on the screenshot
+        '--code-bg': isDarkMode ? '#2d2d2d' : '#f5f5f5',
+        '--code-color': isDarkMode ? '#d4d4d4' : '#333333',
+        '--hljs-comment': isDarkMode ? '#6a9955' : '#6a9955',
+        '--hljs-variable': isDarkMode ? '#9cdcfe' : '#d73a49', // Light blue for variables (var, i)
+        '--hljs-number': isDarkMode ? '#b5cea8' : '#e36209', // Light green for numbers (1, 20, 15, etc.)
+        '--hljs-string': isDarkMode ? '#ce9178' : '#22863a', // Orange/peach for strings ("FizzBuzz", "Fizz", "Buzz")
+        '--hljs-title': isDarkMode ? '#dcdcaa' : '#6f42c1', // Yellow for function names (log)
+        '--hljs-keyword': isDarkMode ? '#569cd6' : '#005cc5', // Blue for keywords (for, if, else)
+        '--hljs-operator': isDarkMode ? '#d4d4d4' : '#333333', // White/gray for operators (=, %, ==, etc.)
+        '--hljs-punctuation': isDarkMode ? '#d4d4d4' : '#333333' // White/gray for punctuation ({, }, ;, etc.)
     }
 }))
 
 export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+    const customization = useSelector((state) => state.customization)
+    const isDarkMode = customization.isDarkMode
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
     const [availableState, setAvailableState] = useState([])
     const [nodeData, setNodeData] = useState({})
@@ -117,7 +142,7 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
 
     return (
         <Box sx={{ mt: 1, border: '' }}>
-            <StyledEditorContent editor={editor} rows={inputParam?.rows} disabled={disabled} />
+            <StyledEditorContent editor={editor} rows={inputParam?.rows} disabled={disabled} isDarkMode={isDarkMode} />
         </Box>
     )
 }
