@@ -600,9 +600,15 @@ export const generateExportFlowData = (flowData) => {
 
         nodes[i].data = _removeCredentialId(newNodeData)
     }
+    const credentialBindings = Array.isArray(flowData.credentialBindings) ? flowData.credentialBindings : []
+
     const exportJson = {
         nodes,
         edges
+    }
+
+    if (credentialBindings.length) {
+        exportJson.credentialBindings = credentialBindings.map((binding) => ({ ...binding }))
     }
     return exportJson
 }
