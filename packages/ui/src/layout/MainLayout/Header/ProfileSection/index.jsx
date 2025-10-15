@@ -390,7 +390,7 @@ const ImportReviewDialog = ({
 
                                             return (
                                                 <Box
-                                                    key={type}
+                                                    key={`conflict-${type}`}
                                                     sx={{
                                                         border: '1px solid',
                                                         borderColor,
@@ -568,7 +568,7 @@ const ImportReviewDialog = ({
 
                                         return (
                                             <Box
-                                                key={type}
+                                                key={`new-${type}`}
                                                 sx={{
                                                     border: '1px solid',
                                                     borderColor,
