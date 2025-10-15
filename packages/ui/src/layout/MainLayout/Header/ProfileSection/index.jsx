@@ -40,8 +40,9 @@ import {
     Tabs,
     Typography
 } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
+import { alpha, lighten, useTheme } from '@mui/material/styles'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -80,6 +81,20 @@ const dataToExport = [
     'Tools',
     'Variables'
 ]
+
+const importTypeLabels = {
+    AgentFlow: 'Agent Flow',
+    AgentFlowV2: 'Agent Flow V2',
+    AssistantFlow: 'Assistant Flow',
+    AssistantCustom: 'Custom Assistant',
+    AssistantOpenAI: 'OpenAI Assistant',
+    AssistantAzure: 'Azure Assistant',
+    ChatFlow: 'Chat Flow',
+    CustomTemplate: 'Custom Template',
+    DocumentStore: 'Document Store',
+    Tool: 'Tool',
+    Variable: 'Variable'
+}
 
 const getConflictKey = (conflict) => `${conflict.type}:${conflict.importId}`
 
@@ -281,17 +296,17 @@ const ImportReviewDialog = ({
 
     const typeDisplayConfig = useMemo(
         () => ({
-            AgentFlow: { label: 'Agent Flow', color: theme.palette.info.main },
-            AgentFlowV2: { label: 'Agent Flow V2', color: theme.palette.info.dark },
-            AssistantFlow: { label: 'Assistant Flow', color: theme.palette.success.main },
-            AssistantCustom: { label: 'Custom Assistant', color: theme.palette.warning.main },
-            AssistantOpenAI: { label: 'OpenAI Assistant', color: theme.palette.primary.main },
-            AssistantAzure: { label: 'Azure Assistant', color: theme.palette.secondary.main },
-            ChatFlow: { label: 'Chat Flow', color: theme.palette.primary.dark },
-            CustomTemplate: { label: 'Custom Template', color: theme.palette.error.main },
-            DocumentStore: { label: 'Document Store', color: theme.palette.secondary.dark },
-            Tool: { label: 'Tool', color: theme.palette.success.dark },
-            Variable: { label: 'Variable', color: theme.palette.warning.dark }
+            AgentFlow: { label: importTypeLabels.AgentFlow, color: theme.palette.info.main },
+            AgentFlowV2: { label: importTypeLabels.AgentFlowV2, color: theme.palette.info.dark },
+            AssistantFlow: { label: importTypeLabels.AssistantFlow, color: theme.palette.success.main },
+            AssistantCustom: { label: importTypeLabels.AssistantCustom, color: theme.palette.warning.main },
+            AssistantOpenAI: { label: importTypeLabels.AssistantOpenAI, color: theme.palette.primary.main },
+            AssistantAzure: { label: importTypeLabels.AssistantAzure, color: theme.palette.secondary.main },
+            ChatFlow: { label: importTypeLabels.ChatFlow, color: theme.palette.primary.dark },
+            CustomTemplate: { label: importTypeLabels.CustomTemplate, color: theme.palette.error.main },
+            DocumentStore: { label: importTypeLabels.DocumentStore, color: theme.palette.secondary.dark },
+            Tool: { label: importTypeLabels.Tool, color: theme.palette.success.dark },
+            Variable: { label: importTypeLabels.Variable, color: theme.palette.warning.dark }
         }),
         [theme]
     )
@@ -443,6 +458,22 @@ const ImportReviewDialog = ({
                                                         const action = decisions[key] || 'update'
                                                         const isSelected = conflictSelections[key] || false
                                                         const existingLink = getExistingLink(conflict)
+                                                        const inactiveBackground = lighten(
+                                                            sectionBackground || alpha(theme.palette.action.disabledBackground, 0.3),
+                                                            theme.palette.mode === 'dark' ? 0.08 : 0.24
+                                                        )
+                                                        const activeBackground = alpha(
+                                                            accentColor,
+                                                            theme.palette.mode === 'dark' ? 0.28 : 0.14
+                                                        )
+                                                        const activeBorder = alpha(
+                                                            accentColor,
+                                                            theme.palette.mode === 'dark' ? 0.7 : 0.5
+                                                        )
+                                                        const hoverBackground = lighten(
+                                                            inactiveBackground,
+                                                            theme.palette.mode === 'dark' ? 0.04 : 0.1
+                                                        )
 
                                                             return (
                                                                 <Box
@@ -455,18 +486,20 @@ const ImportReviewDialog = ({
                                                                         gap: 2,
                                                                         border: '1px solid',
                                                                         borderColor: isSelected
-                                                                            ? 'divider'
+                                                                            ? activeBorder
                                                                             : alpha(theme.palette.divider, 0.4),
                                                                         borderRadius: 1.5,
                                                                         px: 2,
                                                                         py: 1.5,
                                                                         backgroundColor: isSelected
-                                                                            ? theme.palette.background.paper
-                                                                            : alpha(
-                                                                                  theme.palette.action.disabledBackground,
-                                                                                  0.3
-                                                                              ),
-                                                                        transition: 'background-color 0.2s ease'
+                                                                            ? activeBackground
+                                                                            : inactiveBackground,
+                                                                        transition: 'background-color 0.2s ease',
+                                                                        '&:hover': {
+                                                                            backgroundColor: isSelected
+                                                                                ? activeBackground
+                                                                                : hoverBackground
+                                                                        }
                                                                     }}
                                                                 >
                                                                     <Stack direction='row' spacing={1.5} alignItems='flex-start'>
@@ -671,6 +704,22 @@ const ImportReviewDialog = ({
                                                 {items.map((item) => {
                                                     const key = getConflictKey(item)
                                                     const isSelected = newItemSelections[key] || false
+                                                    const inactiveBackground = lighten(
+                                                        sectionBackground || alpha(theme.palette.action.disabledBackground, 0.3),
+                                                        theme.palette.mode === 'dark' ? 0.08 : 0.24
+                                                    )
+                                                    const activeBackground = alpha(
+                                                        accentColor,
+                                                        theme.palette.mode === 'dark' ? 0.28 : 0.14
+                                                    )
+                                                    const activeBorder = alpha(
+                                                        accentColor,
+                                                        theme.palette.mode === 'dark' ? 0.7 : 0.5
+                                                    )
+                                                    const hoverBackground = lighten(
+                                                        inactiveBackground,
+                                                        theme.palette.mode === 'dark' ? 0.04 : 0.1
+                                                    )
 
                                                         return (
                                                             <Box
@@ -683,15 +732,20 @@ const ImportReviewDialog = ({
                                                                     gap: 2,
                                                                     border: '1px solid',
                                                                     borderColor: isSelected
-                                                                        ? 'divider'
+                                                                        ? activeBorder
                                                                         : alpha(theme.palette.divider, 0.4),
                                                                     borderRadius: 1.5,
                                                                     px: 2,
                                                                     py: 1.5,
                                                                     backgroundColor: isSelected
-                                                                        ? theme.palette.background.paper
-                                                                        : alpha(theme.palette.action.disabledBackground, 0.3),
-                                                                    transition: 'background-color 0.2s ease'
+                                                                        ? activeBackground
+                                                                        : inactiveBackground,
+                                                                    transition: 'background-color 0.2s ease',
+                                                                    '&:hover': {
+                                                                        backgroundColor: isSelected
+                                                                            ? activeBackground
+                                                                            : hoverBackground
+                                                                    }
                                                                 }}
                                                             >
                                                                 <Stack direction='row' spacing={1.5} alignItems='flex-start'>
@@ -833,17 +887,47 @@ ImportReviewDialog.propTypes = {
     disableConfirm: PropTypes.bool
 }
 
-const ImportDialog = ({ show }) => {
+const ImportDialog = ({ show, status, summary, onClose }) => {
     const portalElement = document.getElementById('portal')
+    const theme = useTheme()
+
+    const isProcessing = status === 'processing'
+
+    const summaryGroups = useMemo(
+        () => [
+            { key: 'created', title: 'New items created', palette: theme.palette.success },
+            { key: 'duplicated', title: 'Items duplicated', palette: theme.palette.info },
+            { key: 'updated', title: 'Existing items updated', palette: theme.palette.primary },
+            { key: 'skipped', title: 'Items skipped', palette: theme.palette.warning }
+        ],
+        [theme]
+    )
+
+    const totalSummaryItems = useMemo(() => {
+        if (!summary) return 0
+        return summaryGroups.reduce((total, group) => total + (summary[group.key]?.length || 0), 0)
+    }, [summary, summaryGroups])
+
+    const handleDialogClose = (event, reason) => {
+        if (isProcessing) return
+        if (onClose) onClose(event, reason)
+    }
 
     const component = show ? (
-        <Dialog open={show} fullWidth maxWidth='sm' aria-labelledby='import-dialog-title' aria-describedby='import-dialog-description'>
+        <Dialog
+            open={show}
+            fullWidth
+            maxWidth='sm'
+            onClose={handleDialogClose}
+            aria-labelledby='import-dialog-title'
+            aria-describedby='import-dialog-description'
+        >
             <DialogTitle sx={{ fontSize: '1rem' }} id='import-dialog-title'>
-                Importing...
+                {isProcessing ? 'Importing...' : 'Import complete'}
             </DialogTitle>
-            <DialogContent>
-                <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', mb: 3 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <DialogContent dividers>
+                {isProcessing ? (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 2 }}>
                         <img
                             style={{
                                 objectFit: 'cover',
@@ -853,10 +937,93 @@ const ImportDialog = ({ show }) => {
                             src={ExportingGIF}
                             alt='ImportingGIF'
                         />
-                        <span>Importing data might takes a while</span>
-                    </div>
-                </Box>
+                        <Typography variant='body2' sx={{ mt: 2 }}>
+                            Importing data might take a little while. You can continue working in the meantime.
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Stack spacing={3} alignItems='center' sx={{ py: 1 }}>
+                        <CheckCircleOutlineIcon color='success' sx={{ fontSize: 40 }} />
+                        <Typography variant='body1' align='center'>
+                            Your import finished successfully.
+                        </Typography>
+                        {summary && totalSummaryItems > 0 ? (
+                            <Stack spacing={2} sx={{ width: '100%' }}>
+                                {summaryGroups.map((group) => {
+                                    const items = summary[group.key] || []
+                                    if (!items.length) return null
+                                    const backgroundColor = alpha(
+                                        group.palette.main,
+                                        theme.palette.mode === 'dark' ? 0.16 : 0.08
+                                    )
+                                    const borderColor = alpha(
+                                        group.palette.main,
+                                        theme.palette.mode === 'dark' ? 0.4 : 0.25
+                                    )
+                                    const hoverColor = lighten(
+                                        backgroundColor,
+                                        theme.palette.mode === 'dark' ? 0.08 : 0.18
+                                    )
+
+                                    return (
+                                        <Stack key={group.key} spacing={1.5}>
+                                            <Typography variant='subtitle2'>
+                                                {group.title} ({items.length})
+                                            </Typography>
+                                            <Stack spacing={1.25}>
+                                                {items.map((item) => {
+                                                    const typeLabel = importTypeLabels[item.type] || item.type
+                                                    const title = item.name || typeLabel || 'Untitled item'
+                                                    const details = [typeLabel]
+                                                    if (item.importId) details.push(`Import ID: ${item.importId}`)
+                                                    if (item.existingId) details.push(`Existing ID: ${item.existingId}`)
+                                                    if (group.key === 'skipped') {
+                                                        if (item.reason === 'conflict') details.push('Conflict not selected')
+                                                        if (item.reason === 'new') details.push('New item not selected')
+                                                    }
+                                                    return (
+                                                        <Box
+                                                            key={`${group.key}-${item.type}-${item.importId || title}-${item.existingId || ''}`}
+                                                            sx={{
+                                                                border: '1px solid',
+                                                                borderColor,
+                                                                borderRadius: 1.5,
+                                                                px: 2,
+                                                                py: 1.25,
+                                                                backgroundColor,
+                                                                transition: 'background-color 0.2s ease',
+                                                                '&:hover': {
+                                                                    backgroundColor: hoverColor
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Typography variant='subtitle2'>{title}</Typography>
+                                                            <Typography variant='caption' color='textSecondary'>
+                                                                {details.join(' • ')}
+                                                            </Typography>
+                                                        </Box>
+                                                    )
+                                                })}
+                                            </Stack>
+                                        </Stack>
+                                    )
+                                })}
+                            </Stack>
+                        ) : (
+                            <Typography variant='body2' color='textSecondary' align='center'>
+                                No items were selected for import.
+                            </Typography>
+                        )}
+                    </Stack>
+                )}
             </DialogContent>
+            {!isProcessing && (
+                <DialogActions>
+                    <Button variant='contained' onClick={onClose} autoFocus>
+                        Close
+                    </Button>
+                </DialogActions>
+            )}
         </Dialog>
     ) : null
 
@@ -864,7 +1031,15 @@ const ImportDialog = ({ show }) => {
 }
 
 ImportDialog.propTypes = {
-    show: PropTypes.bool
+    show: PropTypes.bool,
+    status: PropTypes.oneOf(['idle', 'processing', 'success']),
+    summary: PropTypes.shape({
+        created: PropTypes.array,
+        duplicated: PropTypes.array,
+        updated: PropTypes.array,
+        skipped: PropTypes.array
+    }),
+    onClose: PropTypes.func
 }
 
 // ==============================|| PROFILE MENU ||============================== //
@@ -888,6 +1063,8 @@ const ProfileSection = ({ handleLogout }) => {
     const [newItemSelections, setNewItemSelections] = useState({})
     const [pendingImportPayload, setPendingImportPayload] = useState(null)
     const [importSummary, setImportSummary] = useState(null)
+    const [importStatus, setImportStatus] = useState('idle')
+    const [shouldReloadAfterImport, setShouldReloadAfterImport] = useState(false)
 
     const anchorRef = useRef(null)
     const inputRef = useRef()
@@ -955,6 +1132,8 @@ const ProfileSection = ({ handleLogout }) => {
                 setConflictSelections({})
                 setNewItemSelections({})
                 setImportSummary(null)
+                setImportStatus('idle')
+                setShouldReloadAfterImport(false)
                 setImportReviewOpen(true)
                 previewImportApi.request(body)
             } catch (error) {
@@ -964,6 +1143,8 @@ const ProfileSection = ({ handleLogout }) => {
                 setImportNewItems([])
                 setNewItemSelections({})
                 setImportSummary(null)
+                setImportStatus('idle')
+                setShouldReloadAfterImport(false)
                 errorFailed(`Failed to read import file: ${getErrorMessage(error)}`)
             } finally {
                 if (inputRef.current) inputRef.current.value = ''
@@ -976,6 +1157,8 @@ const ProfileSection = ({ handleLogout }) => {
             setImportNewItems([])
             setNewItemSelections({})
             setImportSummary(null)
+            setImportStatus('idle')
+            setShouldReloadAfterImport(false)
             errorFailed('Failed to read import file')
             if (inputRef.current) inputRef.current.value = ''
         }
@@ -1042,7 +1225,21 @@ const ProfileSection = ({ handleLogout }) => {
         setConflictSelections({})
         setNewItemSelections({})
         setImportSummary(null)
+        setImportStatus('idle')
+        setShouldReloadAfterImport(false)
         if (inputRef.current) inputRef.current.value = ''
+    }
+
+    const handleImportDialogClose = () => {
+        setImportDialogOpen(false)
+        setImportStatus('idle')
+        const shouldReload = shouldReloadAfterImport
+        setShouldReloadAfterImport(false)
+        setImportSummary(null)
+        if (inputRef.current) inputRef.current.value = ''
+        if (shouldReload) {
+            navigate(0)
+        }
     }
 
     const handleConfirmImport = () => {
@@ -1051,6 +1248,44 @@ const ProfileSection = ({ handleLogout }) => {
             (conflict) => conflictSelections[getConflictKey(conflict)]
         )
         const selectedNewItems = importNewItems.filter((item) => newItemSelections[getConflictKey(item)])
+        const duplicateConflicts = []
+        const updatedConflicts = []
+        selectedConflicts.forEach((conflict) => {
+            const action = conflictDecisions[getConflictKey(conflict)] || 'update'
+            const baseInfo = {
+                type: conflict.type,
+                name: conflict.name,
+                importId: conflict.importId,
+                existingId: conflict.existingId
+            }
+            if (action === 'duplicate') {
+                duplicateConflicts.push(baseInfo)
+                return
+            }
+            updatedConflicts.push(baseInfo)
+        })
+        const createdItems = selectedNewItems.map((item) => ({
+            type: item.type,
+            name: item.name,
+            importId: item.importId
+        }))
+        const skippedConflicts = importConflicts
+            .filter((conflict) => !conflictSelections[getConflictKey(conflict)])
+            .map((conflict) => ({
+                type: conflict.type,
+                name: conflict.name,
+                importId: conflict.importId,
+                existingId: conflict.existingId,
+                reason: 'conflict'
+            }))
+        const skippedNew = importNewItems
+            .filter((item) => !newItemSelections[getConflictKey(item)])
+            .map((item) => ({
+                type: item.type,
+                name: item.name,
+                importId: item.importId,
+                reason: 'new'
+            }))
         const conflictResolutions = selectedConflicts.map((conflict) => ({
             type: conflict.type,
             importId: conflict.importId,
@@ -1072,53 +1307,52 @@ const ProfileSection = ({ handleLogout }) => {
                 payload[item.type] = collection.filter((entry) => entry.id !== item.importId)
             }
         })
-        const duplicateCount = selectedConflicts.filter(
-            (conflict) => (conflictDecisions[getConflictKey(conflict)] || 'update') === 'duplicate'
-        ).length
-        const updateCount = selectedConflicts.length - duplicateCount
-        const skippedCount = Math.max(
-            0,
-            importConflicts.length + importNewItems.length - (selectedConflicts.length + selectedNewItems.length)
-        )
         setImportSummary({
-            created: selectedNewItems.length,
-            duplicated: duplicateCount,
-            updated: updateCount,
-            skipped: skippedCount
+            created: createdItems,
+            duplicated: duplicateConflicts,
+            updated: updatedConflicts,
+            skipped: [...skippedConflicts, ...skippedNew]
         })
         const body = {
             ...payload,
             conflictResolutions
         }
+        setImportStatus('processing')
+        setShouldReloadAfterImport(false)
         setImportDialogOpen(true)
         setImportReviewOpen(false)
         importAllApi.request(body)
     }
 
     const importAllSuccess = () => {
-        setImportDialogOpen(false)
         dispatch({ type: REMOVE_DIRTY })
+        setImportStatus('success')
+        setShouldReloadAfterImport(true)
         let message = 'Import All successful'
         if (importSummary) {
             const segments = []
-            if (importSummary.created > 0) {
+            const createdCount = importSummary.created?.length || 0
+            const duplicatedCount = importSummary.duplicated?.length || 0
+            const updatedCount = importSummary.updated?.length || 0
+            const skippedCount = importSummary.skipped?.length || 0
+            if (createdCount > 0) {
                 segments.push(
-                    `${importSummary.created} new item${importSummary.created === 1 ? '' : 's'} created`
+                    `${createdCount} new item${createdCount === 1 ? '' : 's'} created`
                 )
             }
-            if (importSummary.duplicated > 0) {
+            if (duplicatedCount > 0) {
                 segments.push(
-                    `${importSummary.duplicated} item${importSummary.duplicated === 1 ? '' : 's'} duplicated`
+                    `${duplicatedCount} item${duplicatedCount === 1 ? '' : 's'} duplicated`
                 )
             }
-            if (importSummary.updated > 0) {
+            if (updatedCount > 0) {
                 segments.push(
-                    `${importSummary.updated} item${importSummary.updated === 1 ? '' : 's'} updated`
+                    `${updatedCount} item${updatedCount === 1 ? '' : 's'} updated`
                 )
             }
-            if (importSummary.skipped > 0) {
+            if (skippedCount > 0) {
                 segments.push(
-                    `${importSummary.skipped} item${importSummary.skipped === 1 ? '' : 's'} skipped`
+                    `${skippedCount} item${skippedCount === 1 ? '' : 's'} skipped`
                 )
             }
             if (segments.length > 0) {
@@ -1137,7 +1371,6 @@ const ProfileSection = ({ handleLogout }) => {
                 )
             }
         })
-        setImportSummary(null)
     }
 
     const importAll = () => {
@@ -1200,6 +1433,8 @@ const ProfileSection = ({ handleLogout }) => {
         setImportNewItems([])
         setNewItemSelections({})
         setImportSummary(null)
+        setImportStatus('idle')
+        setShouldReloadAfterImport(false)
         let errMsg = 'Invalid Imported File'
         let error = previewImportApi.error
         if (error?.response?.data) {
@@ -1238,7 +1473,6 @@ const ProfileSection = ({ handleLogout }) => {
             setConflictDecisions({})
             setConflictSelections({})
             setNewItemSelections({})
-            navigate(0)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [importAllApi.data])
@@ -1253,6 +1487,8 @@ const ProfileSection = ({ handleLogout }) => {
             setConflictSelections({})
             setNewItemSelections({})
             setImportSummary(null)
+            setImportStatus('idle')
+            setShouldReloadAfterImport(false)
             let errMsg = 'Invalid Imported File'
             let error = importAllApi.error
             if (error?.response?.data) {
@@ -1469,7 +1705,12 @@ const ProfileSection = ({ handleLogout }) => {
                 onConfirm={handleConfirmImport}
                 disableConfirm={!pendingImportPayload}
             />
-            <ImportDialog show={importDialogOpen} />
+            <ImportDialog
+                show={importDialogOpen}
+                status={importStatus}
+                summary={importSummary}
+                onClose={handleImportDialogClose}
+            />
         </>
     )
 }
