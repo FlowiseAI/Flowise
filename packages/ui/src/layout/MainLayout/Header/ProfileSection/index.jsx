@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
@@ -10,6 +10,9 @@ import useNotifier from '@/utils/useNotifier'
 
 // material-ui
 import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
     Avatar,
     Box,
     Button,
@@ -38,6 +41,7 @@ import {
     Typography
 } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar'
@@ -223,6 +227,7 @@ const ImportReviewDialog = ({
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
     const [activeTab, setActiveTab] = useState(0)
+    const [expandedSections, setExpandedSections] = useState({})
 
     const allDuplicate =
         conflicts.length > 0 && conflicts.every((conflict) => decisions[getConflictKey(conflict)] === 'duplicate')
@@ -230,6 +235,24 @@ const ImportReviewDialog = ({
         conflicts.length > 0 && conflicts.every((conflict) => conflictSelections[getConflictKey(conflict)])
     const allNewItemsSelected =
         newItems.length > 0 && newItems.every((item) => newItemSelections[getConflictKey(item)])
+
+    const collapsibleTypes = useMemo(
+        () =>
+            new Set([
+                'AgentFlow',
+                'AgentFlowV2',
+                'AssistantFlow',
+                'AssistantCustom',
+                'AssistantOpenAI',
+                'AssistantAzure',
+                'ChatFlow',
+                'CustomTemplate',
+                'DocumentStore',
+                'Tool',
+                'Variable'
+            ]),
+        []
+    )
 
     useEffect(() => {
         if (!show) return
@@ -243,6 +266,18 @@ const ImportReviewDialog = ({
         }
         setActiveTab(0)
     }, [show, conflicts.length, newItems.length])
+
+    useEffect(() => {
+        if (show) return
+        setExpandedSections({})
+    }, [show])
+
+    const handleSectionToggle = useCallback((type, isExpanded) => {
+        setExpandedSections((prev) => ({
+            ...prev,
+            [type]: isExpanded
+        }))
+    }, [])
 
     const typeDisplayConfig = useMemo(
         () => ({
@@ -388,47 +423,26 @@ const ImportReviewDialog = ({
                                             )
                                             const chipText = theme.palette.getContrastText(accentColor)
 
-                                            return (
-                                                <Box
-                                                    key={`conflict-${type}`}
-                                                    sx={{
-                                                        border: '1px solid',
-                                                        borderColor,
-                                                        borderRadius: 2,
-                                                        overflow: 'hidden',
-                                                        backgroundColor: sectionBackground
-                                                    }}
-                                                >
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            flexDirection: { xs: 'column', sm: 'row' },
-                                                            justifyContent: 'space-between',
-                                                            alignItems: { xs: 'flex-start', sm: 'center' },
-                                                            gap: 1,
-                                                            px: 2,
-                                                            py: 1.5,
-                                                            borderBottom: items.length ? '1px solid' : 'none',
-                                                            borderColor
-                                                        }}
-                                                    >
-                                                        <Stack direction='row' spacing={1} alignItems='center'>
-                                                            <Chip
-                                                                size='small'
-                                                                label={meta.label}
-                                                                sx={{ backgroundColor: accentColor, color: chipText }}
-                                                            />
-                                                            <Typography variant='caption' color='textSecondary'>
-                                                                {items.length} conflict{items.length > 1 ? 's' : ''}
-                                                            </Typography>
-                                                        </Stack>
-                                                    </Box>
-                                                    <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
-                                                        {items.map((conflict) => {
-                                                            const key = getConflictKey(conflict)
-                                                            const action = decisions[key] || 'update'
-                                                            const isSelected = conflictSelections[key] || false
-                                                            const existingLink = getExistingLink(conflict)
+                                            const isCollapsible = collapsibleTypes.has(type)
+                                            const headerContent = (
+                                                <Stack direction='row' spacing={1} alignItems='center'>
+                                                    <Chip
+                                                        size='small'
+                                                        label={meta.label}
+                                                        sx={{ backgroundColor: accentColor, color: chipText }}
+                                                    />
+                                                    <Typography variant='caption' color='textSecondary'>
+                                                        {items.length} conflict{items.length > 1 ? 's' : ''}
+                                                    </Typography>
+                                                </Stack>
+                                            )
+                                            const renderItems = (
+                                                <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
+                                                    {items.map((conflict) => {
+                                                        const key = getConflictKey(conflict)
+                                                        const action = decisions[key] || 'update'
+                                                        const isSelected = conflictSelections[key] || false
+                                                        const existingLink = getExistingLink(conflict)
 
                                                             return (
                                                                 <Box
@@ -511,9 +525,82 @@ const ImportReviewDialog = ({
                                                                         }
                                                                     />
                                                                 </Box>
-                                                            )
-                                                        })}
-                                                    </Stack>
+                                                        )
+                                                    })}
+                                                </Stack>
+                                            )
+
+                                            if (isCollapsible) {
+                                                const expanded = expandedSections[type] ?? false
+                                                return (
+                                                    <Accordion
+                                                        key={`conflict-${type}`}
+                                                        disableGutters
+                                                        square
+                                                        expanded={expanded}
+                                                        onChange={(_, isExpanded) => handleSectionToggle(type, isExpanded)}
+                                                        sx={{
+                                                            border: '1px solid',
+                                                            borderColor,
+                                                            borderRadius: 2,
+                                                            backgroundColor: sectionBackground,
+                                                            boxShadow: 'none',
+                                                            overflow: 'hidden',
+                                                            '&:before': { display: 'none' },
+                                                            '&.Mui-expanded': {
+                                                                margin: 0
+                                                            }
+                                                        }}
+                                                    >
+                                                        <AccordionSummary
+                                                            expandIcon={<ExpandMoreIcon />}
+                                                            sx={{
+                                                                px: 2,
+                                                                py: 1.5,
+                                                                '& .MuiAccordionSummary-content': {
+                                                                    margin: 0,
+                                                                    display: 'flex',
+                                                                    flexDirection: { xs: 'column', sm: 'row' },
+                                                                    justifyContent: 'space-between',
+                                                                    alignItems: { xs: 'flex-start', sm: 'center' },
+                                                                    gap: 1
+                                                                }
+                                                            }}
+                                                        >
+                                                            {headerContent}
+                                                        </AccordionSummary>
+                                                        <AccordionDetails sx={{ px: 0, py: 0 }}>{renderItems}</AccordionDetails>
+                                                    </Accordion>
+                                                )
+                                            }
+
+                                            return (
+                                                <Box
+                                                    key={`conflict-${type}`}
+                                                    sx={{
+                                                        border: '1px solid',
+                                                        borderColor,
+                                                        borderRadius: 2,
+                                                        overflow: 'hidden',
+                                                        backgroundColor: sectionBackground
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            flexDirection: { xs: 'column', sm: 'row' },
+                                                            justifyContent: 'space-between',
+                                                            alignItems: { xs: 'flex-start', sm: 'center' },
+                                                            gap: 1,
+                                                            px: 2,
+                                                            py: 1.5,
+                                                            borderBottom: items.length ? '1px solid' : 'none',
+                                                            borderColor
+                                                        }}
+                                                    >
+                                                        {headerContent}
+                                                    </Box>
+                                                    {renderItems}
                                                 </Box>
                                             )
                                         })}
@@ -566,45 +653,24 @@ const ImportReviewDialog = ({
                                         )
                                         const chipText = theme.palette.getContrastText(accentColor)
 
-                                        return (
-                                            <Box
-                                                key={`new-${type}`}
-                                                sx={{
-                                                    border: '1px solid',
-                                                    borderColor,
-                                                    borderRadius: 2,
-                                                    overflow: 'hidden',
-                                                    backgroundColor: sectionBackground
-                                                }}
-                                            >
-                                                <Box
-                                                    sx={{
-                                                        display: 'flex',
-                                                        flexDirection: { xs: 'column', sm: 'row' },
-                                                        justifyContent: 'space-between',
-                                                        alignItems: { xs: 'flex-start', sm: 'center' },
-                                                        gap: 1,
-                                                        px: 2,
-                                                        py: 1.5,
-                                                        borderBottom: items.length ? '1px solid' : 'none',
-                                                        borderColor
-                                                    }}
-                                                >
-                                                    <Stack direction='row' spacing={1} alignItems='center'>
-                                                        <Chip
-                                                            size='small'
-                                                            label={meta.label}
-                                                            sx={{ backgroundColor: accentColor, color: chipText }}
-                                                        />
-                                                        <Typography variant='caption' color='textSecondary'>
-                                                            {items.length} item{items.length > 1 ? 's' : ''}
-                                                        </Typography>
-                                                    </Stack>
-                                                </Box>
-                                                <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
-                                                    {items.map((item) => {
-                                                        const key = getConflictKey(item)
-                                                        const isSelected = newItemSelections[key] || false
+                                        const isCollapsible = collapsibleTypes.has(type)
+                                        const headerContent = (
+                                            <Stack direction='row' spacing={1} alignItems='center'>
+                                                <Chip
+                                                    size='small'
+                                                    label={meta.label}
+                                                    sx={{ backgroundColor: accentColor, color: chipText }}
+                                                />
+                                                <Typography variant='caption' color='textSecondary'>
+                                                    {items.length} item{items.length > 1 ? 's' : ''}
+                                                </Typography>
+                                            </Stack>
+                                        )
+                                        const renderItems = (
+                                            <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
+                                                {items.map((item) => {
+                                                    const key = getConflictKey(item)
+                                                    const isSelected = newItemSelections[key] || false
 
                                                         return (
                                                             <Box
@@ -652,6 +718,79 @@ const ImportReviewDialog = ({
                                                         )
                                                     })}
                                                 </Stack>
+                                        )
+
+                                        if (isCollapsible) {
+                                            const expanded = expandedSections[type] ?? false
+                                            return (
+                                                <Accordion
+                                                    key={`new-${type}`}
+                                                    disableGutters
+                                                    square
+                                                    expanded={expanded}
+                                                    onChange={(_, isExpanded) => handleSectionToggle(type, isExpanded)}
+                                                    sx={{
+                                                        border: '1px solid',
+                                                        borderColor,
+                                                        borderRadius: 2,
+                                                        backgroundColor: sectionBackground,
+                                                        boxShadow: 'none',
+                                                        overflow: 'hidden',
+                                                        '&:before': { display: 'none' },
+                                                        '&.Mui-expanded': {
+                                                            margin: 0
+                                                        }
+                                                    }}
+                                                >
+                                                    <AccordionSummary
+                                                        expandIcon={<ExpandMoreIcon />}
+                                                        sx={{
+                                                            px: 2,
+                                                            py: 1.5,
+                                                            '& .MuiAccordionSummary-content': {
+                                                                margin: 0,
+                                                                display: 'flex',
+                                                                flexDirection: { xs: 'column', sm: 'row' },
+                                                                justifyContent: 'space-between',
+                                                                alignItems: { xs: 'flex-start', sm: 'center' },
+                                                                gap: 1
+                                                            }
+                                                        }}
+                                                    >
+                                                        {headerContent}
+                                                    </AccordionSummary>
+                                                    <AccordionDetails sx={{ px: 0, py: 0 }}>{renderItems}</AccordionDetails>
+                                                </Accordion>
+                                            )
+                                        }
+
+                                        return (
+                                            <Box
+                                                key={`new-${type}`}
+                                                sx={{
+                                                    border: '1px solid',
+                                                    borderColor,
+                                                    borderRadius: 2,
+                                                    overflow: 'hidden',
+                                                    backgroundColor: sectionBackground
+                                                }}
+                                            >
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        flexDirection: { xs: 'column', sm: 'row' },
+                                                        justifyContent: 'space-between',
+                                                        alignItems: { xs: 'flex-start', sm: 'center' },
+                                                        gap: 1,
+                                                        px: 2,
+                                                        py: 1.5,
+                                                        borderBottom: items.length ? '1px solid' : 'none',
+                                                        borderColor
+                                                    }}
+                                                >
+                                                    {headerContent}
+                                                </Box>
+                                                {renderItems}
                                             </Box>
                                         )
                                     })}
@@ -1045,7 +1184,7 @@ const ProfileSection = ({ handleLogout }) => {
         })
         const initialNewSelections = {}
         newItems.forEach((item) => {
-            initialNewSelections[getConflictKey(item)] = true
+            initialNewSelections[getConflictKey(item)] = false
         })
         setImportNewItems(newItems)
         setNewItemSelections(initialNewSelections)
