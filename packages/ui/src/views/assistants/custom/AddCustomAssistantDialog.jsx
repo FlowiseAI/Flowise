@@ -18,13 +18,15 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm, upda
 
     const [customAssistantName, setCustomAssistantName] = useState('')
     const [category, setCategory] = useState('')
+    const [tags, setTags] = useState('')
     const [description, setDescription] = useState('')
     const [isReadyToSave, setIsReadyToSave] = useState(false)
 
     useEffect(() => {
         if (show) {
             setCustomAssistantName(dialogProps.name ?? '')
-            setCategory(dialogProps.tags ?? '')
+            setCategory(dialogProps.category ?? '')
+            setTags(dialogProps.tags ?? '')
             setDescription(dialogProps.description ?? '')
         }
     }, [show, dialogProps])
@@ -38,6 +40,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm, upda
             const details = JSON.stringify({
                 name: customAssistantName,
                 category,
+                tags,
                 description
             })
 
