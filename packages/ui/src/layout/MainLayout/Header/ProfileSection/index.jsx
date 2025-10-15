@@ -33,6 +33,8 @@ import {
     Paper,
     Popper,
     Stack,
+    Tab,
+    Tabs,
     Typography
 } from '@mui/material'
 import { alpha, useTheme } from '@mui/material/styles'
@@ -76,6 +78,25 @@ const dataToExport = [
 ]
 
 const getConflictKey = (conflict) => `${conflict.type}:${conflict.importId}`
+
+const getImportItemName = (type, item) => {
+    if (!item) return ''
+    if (item.name) return item.name
+    if (item.label) return item.label
+    if (item.title) return item.title
+    if (item.details) {
+        try {
+            const parsedDetails = typeof item.details === 'string' ? JSON.parse(item.details) : item.details
+            if (parsedDetails && typeof parsedDetails === 'object') {
+                if (parsedDetails.name) return parsedDetails.name
+                if (parsedDetails.title) return parsedDetails.title
+            }
+        } catch (error) {
+            // ignore json parse error and fall back to id
+        }
+    }
+    return item.id || `${type} item`
+}
 
 const ExportDialog = ({ show, onCancel, onExport }) => {
     const portalElement = document.getElementById('portal')
@@ -185,22 +206,43 @@ const ImportReviewDialog = ({
     show,
     loading,
     conflicts,
+    newItems,
     decisions,
-    selections,
+    conflictSelections,
+    newItemSelections,
     onDecisionChange,
-    onSelectionChange,
-    onToggleAllSelections,
+    onConflictSelectionChange,
+    onNewItemSelectionChange,
+    onToggleAllConflicts,
     onApplyAll,
+    onToggleAllNewItems,
     onCancel,
     onConfirm,
     disableConfirm
 }) => {
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
+    const [activeTab, setActiveTab] = useState(0)
 
     const allDuplicate =
         conflicts.length > 0 && conflicts.every((conflict) => decisions[getConflictKey(conflict)] === 'duplicate')
-    const allSelected = conflicts.length > 0 && conflicts.every((conflict) => selections[getConflictKey(conflict)])
+    const allConflictsSelected =
+        conflicts.length > 0 && conflicts.every((conflict) => conflictSelections[getConflictKey(conflict)])
+    const allNewItemsSelected =
+        newItems.length > 0 && newItems.every((item) => newItemSelections[getConflictKey(item)])
+
+    useEffect(() => {
+        if (!show) return
+        if (conflicts.length > 0) {
+            setActiveTab(0)
+            return
+        }
+        if (newItems.length > 0) {
+            setActiveTab(1)
+            return
+        }
+        setActiveTab(0)
+    }, [show, conflicts.length, newItems.length])
 
     const typeDisplayConfig = useMemo(
         () => ({
@@ -229,6 +271,17 @@ const ImportReviewDialog = ({
         })
         return Array.from(groups.entries())
     }, [conflicts])
+
+    const groupedNewItems = useMemo(() => {
+        const groups = new Map()
+        newItems.forEach((item) => {
+            if (!groups.has(item.type)) {
+                groups.set(item.type, [])
+            }
+            groups.get(item.type).push(item)
+        })
+        return Array.from(groups.entries())
+    }, [newItems])
 
     const getExistingLink = (conflict) => {
         const linkMap = {
@@ -263,14 +316,215 @@ const ImportReviewDialog = ({
                 ) : (
                     <Stack spacing={2}>
                         <Typography variant='body2'>
-                            Flowise defaults to updating elements when a name conflict is detected. Use the controls below to
-                            choose whether each conflicting element should be updated or duplicated.
+                            Flowise defaults to updating elements when a name conflict is detected. Use the tabs below to review
+                            conflicts and new items before completing the import.
                         </Typography>
-                        {conflicts.length === 0 ? (
+                        <Tabs
+                            value={activeTab}
+                            onChange={(event, value) => setActiveTab(value)}
+                            variant='fullWidth'
+                            sx={{ borderBottom: `1px solid ${alpha(theme.palette.divider, 0.4)}` }}
+                        >
+                            <Tab label={`Conflicts (${conflicts.length})`} />
+                            <Tab label={`New Items (${newItems.length})`} />
+                        </Tabs>
+                        {activeTab === 0 ? (
+                            conflicts.length === 0 ? (
+                                <Box>
+                                    <Typography variant='subtitle2'>No conflicts detected</Typography>
+                                    <Typography variant='body2' color='textSecondary'>
+                                        All imported items without conflicts will be created automatically.
+                                    </Typography>
+                                </Box>
+                            ) : (
+                                <Stack spacing={2}>
+                                    <Stack
+                                        direction={{ xs: 'column', sm: 'row' }}
+                                        alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                        justifyContent='space-between'
+                                        spacing={1.5}
+                                    >
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    color='primary'
+                                                    checked={allConflictsSelected}
+                                                    onChange={(event) => onToggleAllConflicts(event.target.checked)}
+                                                />
+                                            }
+                                            label='Select all'
+                                        />
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    color='primary'
+                                                    checked={allDuplicate}
+                                                    onChange={(event) =>
+                                                        onApplyAll(event.target.checked ? 'duplicate' : 'update')
+                                                    }
+                                                />
+                                            }
+                                            label={
+                                                allDuplicate
+                                                    ? 'Duplicate all conflicts'
+                                                    : 'Update conflicts by default'
+                                            }
+                                        />
+                                    </Stack>
+                                    <Stack spacing={1.5}>
+                                        {groupedConflicts.map(([type, items]) => {
+                                            const meta = typeDisplayConfig[type] || {
+                                                label: type,
+                                                color: theme.palette.grey[500]
+                                            }
+                                            const accentColor = meta.color || theme.palette.grey[500]
+                                            const sectionBackground = alpha(
+                                                accentColor,
+                                                theme.palette.mode === 'dark' ? 0.16 : 0.08
+                                            )
+                                            const borderColor = alpha(
+                                                accentColor,
+                                                theme.palette.mode === 'dark' ? 0.4 : 0.25
+                                            )
+                                            const chipText = theme.palette.getContrastText(accentColor)
+
+                                            return (
+                                                <Box
+                                                    key={type}
+                                                    sx={{
+                                                        border: '1px solid',
+                                                        borderColor,
+                                                        borderRadius: 2,
+                                                        overflow: 'hidden',
+                                                        backgroundColor: sectionBackground
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            flexDirection: { xs: 'column', sm: 'row' },
+                                                            justifyContent: 'space-between',
+                                                            alignItems: { xs: 'flex-start', sm: 'center' },
+                                                            gap: 1,
+                                                            px: 2,
+                                                            py: 1.5,
+                                                            borderBottom: items.length ? '1px solid' : 'none',
+                                                            borderColor
+                                                        }}
+                                                    >
+                                                        <Stack direction='row' spacing={1} alignItems='center'>
+                                                            <Chip
+                                                                size='small'
+                                                                label={meta.label}
+                                                                sx={{ backgroundColor: accentColor, color: chipText }}
+                                                            />
+                                                            <Typography variant='caption' color='textSecondary'>
+                                                                {items.length} conflict{items.length > 1 ? 's' : ''}
+                                                            </Typography>
+                                                        </Stack>
+                                                    </Box>
+                                                    <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
+                                                        {items.map((conflict) => {
+                                                            const key = getConflictKey(conflict)
+                                                            const action = decisions[key] || 'update'
+                                                            const isSelected = conflictSelections[key] || false
+                                                            const existingLink = getExistingLink(conflict)
+
+                                                            return (
+                                                                <Box
+                                                                    key={key}
+                                                                    sx={{
+                                                                        display: 'flex',
+                                                                        flexDirection: { xs: 'column', sm: 'row' },
+                                                                        alignItems: { xs: 'flex-start', sm: 'center' },
+                                                                        justifyContent: 'space-between',
+                                                                        gap: 2,
+                                                                        border: '1px solid',
+                                                                        borderColor: isSelected
+                                                                            ? 'divider'
+                                                                            : alpha(theme.palette.divider, 0.4),
+                                                                        borderRadius: 1.5,
+                                                                        px: 2,
+                                                                        py: 1.5,
+                                                                        backgroundColor: isSelected
+                                                                            ? theme.palette.background.paper
+                                                                            : alpha(
+                                                                                  theme.palette.action.disabledBackground,
+                                                                                  0.3
+                                                                              ),
+                                                                        transition: 'background-color 0.2s ease'
+                                                                    }}
+                                                                >
+                                                                    <Stack direction='row' spacing={1.5} alignItems='flex-start'>
+                                                                        <Checkbox
+                                                                            color='primary'
+                                                                            checked={isSelected}
+                                                                            onChange={(event) =>
+                                                                                onConflictSelectionChange(
+                                                                                    conflict,
+                                                                                    event.target.checked
+                                                                                )
+                                                                            }
+                                                                        />
+                                                                        <Stack spacing={0.5}>
+                                                                            <Typography variant='subtitle2'>
+                                                                                {conflict.name}
+                                                                            </Typography>
+                                                                            <Typography variant='caption' color='textSecondary'>
+                                                                                Existing ID:{' '}
+                                                                                {existingLink ? (
+                                                                                    <Link
+                                                                                        component={RouterLink}
+                                                                                        to={existingLink}
+                                                                                        target='_blank'
+                                                                                        rel='noopener noreferrer'
+                                                                                        sx={{ fontSize: '0.75rem' }}
+                                                                                    >
+                                                                                        {conflict.existingId}
+                                                                                    </Link>
+                                                                                ) : (
+                                                                                    conflict.existingId
+                                                                                )}
+                                                                            </Typography>
+                                                                        </Stack>
+                                                                    </Stack>
+                                                                    <FormControlLabel
+                                                                        control={
+                                                                            <Switch
+                                                                                color='primary'
+                                                                                checked={action === 'duplicate'}
+                                                                                onChange={(event) =>
+                                                                                    onDecisionChange(
+                                                                                        conflict,
+                                                                                        event.target.checked
+                                                                                            ? 'duplicate'
+                                                                                            : 'update'
+                                                                                    )
+                                                                                }
+                                                                                disabled={!isSelected}
+                                                                            />
+                                                                        }
+                                                                        label={
+                                                                            action === 'duplicate'
+                                                                                ? 'Duplicate'
+                                                                                : 'Update'
+                                                                        }
+                                                                    />
+                                                                </Box>
+                                                            )
+                                                        })}
+                                                    </Stack>
+                                                </Box>
+                                            )
+                                        })}
+                                    </Stack>
+                                </Stack>
+                            )
+                        ) : newItems.length === 0 ? (
                             <Box>
-                                <Typography variant='subtitle2'>No conflicts detected</Typography>
+                                <Typography variant='subtitle2'>No new items detected</Typography>
                                 <Typography variant='body2' color='textSecondary'>
-                                    All imported items will be added or updated automatically.
+                                    Only existing items with conflicts require review.
                                 </Typography>
                             </Box>
                         ) : (
@@ -285,29 +539,18 @@ const ImportReviewDialog = ({
                                         control={
                                             <Switch
                                                 color='primary'
-                                                checked={allSelected}
-                                                onChange={(event) => onToggleAllSelections(event.target.checked)}
+                                                checked={allNewItemsSelected}
+                                                onChange={(event) => onToggleAllNewItems(event.target.checked)}
                                             />
                                         }
                                         label='Select all'
                                     />
-                                    <FormControlLabel
-                                        control={
-                                            <Switch
-                                                color='primary'
-                                                checked={allDuplicate}
-                                                onChange={(event) => onApplyAll(event.target.checked ? 'duplicate' : 'update')}
-                                            />
-                                        }
-                                        label={
-                                            allDuplicate
-                                                ? 'Duplicate all conflicts'
-                                                : 'Update conflicts by default'
-                                        }
-                                    />
+                                    <Typography variant='body2' color='textSecondary'>
+                                        Selected items will be created in your workspace.
+                                    </Typography>
                                 </Stack>
                                 <Stack spacing={1.5}>
-                                    {groupedConflicts.map(([type, items]) => {
+                                    {groupedNewItems.map(([type, items]) => {
                                         const meta = typeDisplayConfig[type] || {
                                             label: type,
                                             color: theme.palette.grey[500]
@@ -317,7 +560,10 @@ const ImportReviewDialog = ({
                                             accentColor,
                                             theme.palette.mode === 'dark' ? 0.16 : 0.08
                                         )
-                                        const borderColor = alpha(accentColor, theme.palette.mode === 'dark' ? 0.4 : 0.25)
+                                        const borderColor = alpha(
+                                            accentColor,
+                                            theme.palette.mode === 'dark' ? 0.4 : 0.25
+                                        )
                                         const chipText = theme.palette.getContrastText(accentColor)
 
                                         return (
@@ -351,16 +597,14 @@ const ImportReviewDialog = ({
                                                             sx={{ backgroundColor: accentColor, color: chipText }}
                                                         />
                                                         <Typography variant='caption' color='textSecondary'>
-                                                            {items.length} conflict{items.length > 1 ? 's' : ''}
+                                                            {items.length} item{items.length > 1 ? 's' : ''}
                                                         </Typography>
                                                     </Stack>
                                                 </Box>
                                                 <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
-                                                    {items.map((conflict) => {
-                                                        const key = getConflictKey(conflict)
-                                                        const action = decisions[key] || 'update'
-                                                        const isSelected = selections[key] || false
-                                                        const existingLink = getExistingLink(conflict)
+                                                    {items.map((item) => {
+                                                        const key = getConflictKey(item)
+                                                        const isSelected = newItemSelections[key] || false
 
                                                         return (
                                                             <Box
@@ -389,49 +633,21 @@ const ImportReviewDialog = ({
                                                                         color='primary'
                                                                         checked={isSelected}
                                                                         onChange={(event) =>
-                                                                            onSelectionChange(conflict, event.target.checked)
+                                                                            onNewItemSelectionChange(
+                                                                                item,
+                                                                                event.target.checked
+                                                                            )
                                                                         }
                                                                     />
                                                                     <Stack spacing={0.5}>
                                                                         <Typography variant='subtitle2'>
-                                                                            {conflict.name}
+                                                                            {item.name}
                                                                         </Typography>
                                                                         <Typography variant='caption' color='textSecondary'>
-                                                                            Existing ID:{' '}
-                                                                            {existingLink ? (
-                                                                                <Link
-                                                                                    component={RouterLink}
-                                                                                    to={existingLink}
-                                                                                    target='_blank'
-                                                                                    rel='noopener noreferrer'
-                                                                                    sx={{ fontSize: '0.75rem' }}
-                                                                                >
-                                                                                    {conflict.existingId}
-                                                                                </Link>
-                                                                            ) : (
-                                                                                conflict.existingId
-                                                                            )}
+                                                                            Import ID: {item.importId}
                                                                         </Typography>
                                                                     </Stack>
                                                                 </Stack>
-                                                                <FormControlLabel
-                                                                    control={
-                                                                        <Switch
-                                                                            color='primary'
-                                                                            checked={action === 'duplicate'}
-                                                                            onChange={(event) =>
-                                                                                onDecisionChange(
-                                                                                    conflict,
-                                                                                    event.target.checked
-                                                                                        ? 'duplicate'
-                                                                                        : 'update'
-                                                                                )
-                                                                            }
-                                                                            disabled={!isSelected}
-                                                                        />
-                                                                    }
-                                                                    label={action === 'duplicate' ? 'Duplicate' : 'Update'}
-                                                                />
                                                             </Box>
                                                         )
                                                     })}
@@ -463,12 +679,16 @@ ImportReviewDialog.propTypes = {
     show: PropTypes.bool,
     loading: PropTypes.bool,
     conflicts: PropTypes.array,
+    newItems: PropTypes.array,
     decisions: PropTypes.object,
-    selections: PropTypes.object,
+    conflictSelections: PropTypes.object,
+    newItemSelections: PropTypes.object,
     onDecisionChange: PropTypes.func,
-    onSelectionChange: PropTypes.func,
-    onToggleAllSelections: PropTypes.func,
+    onConflictSelectionChange: PropTypes.func,
+    onNewItemSelectionChange: PropTypes.func,
+    onToggleAllConflicts: PropTypes.func,
     onApplyAll: PropTypes.func,
+    onToggleAllNewItems: PropTypes.func,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func,
     disableConfirm: PropTypes.bool
@@ -523,9 +743,12 @@ const ProfileSection = ({ handleLogout }) => {
     const [importDialogOpen, setImportDialogOpen] = useState(false)
     const [importReviewOpen, setImportReviewOpen] = useState(false)
     const [importConflicts, setImportConflicts] = useState([])
+    const [importNewItems, setImportNewItems] = useState([])
     const [conflictDecisions, setConflictDecisions] = useState({})
     const [conflictSelections, setConflictSelections] = useState({})
+    const [newItemSelections, setNewItemSelections] = useState({})
     const [pendingImportPayload, setPendingImportPayload] = useState(null)
+    const [importSummary, setImportSummary] = useState(null)
 
     const anchorRef = useRef(null)
     const inputRef = useRef()
@@ -588,14 +811,20 @@ const ProfileSection = ({ handleLogout }) => {
                 const body = JSON.parse(evt.target.result)
                 setPendingImportPayload(body)
                 setImportConflicts([])
+                setImportNewItems([])
                 setConflictDecisions({})
                 setConflictSelections({})
+                setNewItemSelections({})
+                setImportSummary(null)
                 setImportReviewOpen(true)
                 previewImportApi.request(body)
             } catch (error) {
                 setImportReviewOpen(false)
                 setPendingImportPayload(null)
                 setConflictSelections({})
+                setImportNewItems([])
+                setNewItemSelections({})
+                setImportSummary(null)
                 errorFailed(`Failed to read import file: ${getErrorMessage(error)}`)
             } finally {
                 if (inputRef.current) inputRef.current.value = ''
@@ -605,6 +834,9 @@ const ProfileSection = ({ handleLogout }) => {
             setImportReviewOpen(false)
             setPendingImportPayload(null)
             setConflictSelections({})
+            setImportNewItems([])
+            setNewItemSelections({})
+            setImportSummary(null)
             errorFailed('Failed to read import file')
             if (inputRef.current) inputRef.current.value = ''
         }
@@ -625,11 +857,28 @@ const ProfileSection = ({ handleLogout }) => {
         }))
     }
 
+    const handleNewItemSelectionChange = (item, isSelected) => {
+        setNewItemSelections((prev) => ({
+            ...prev,
+            [getConflictKey(item)]: isSelected
+        }))
+    }
+
     const handleSelectAllConflicts = (isSelected) => {
         setConflictSelections((prev) => {
             const updated = { ...prev }
             importConflicts.forEach((conflict) => {
                 updated[getConflictKey(conflict)] = isSelected
+            })
+            return updated
+        })
+    }
+
+    const handleSelectAllNewItems = (isSelected) => {
+        setNewItemSelections((prev) => {
+            const updated = { ...prev }
+            importNewItems.forEach((item) => {
+                updated[getConflictKey(item)] = isSelected
             })
             return updated
         })
@@ -649,8 +898,11 @@ const ProfileSection = ({ handleLogout }) => {
         setImportReviewOpen(false)
         setPendingImportPayload(null)
         setImportConflicts([])
+        setImportNewItems([])
         setConflictDecisions({})
         setConflictSelections({})
+        setNewItemSelections({})
+        setImportSummary(null)
         if (inputRef.current) inputRef.current.value = ''
     }
 
@@ -659,6 +911,7 @@ const ProfileSection = ({ handleLogout }) => {
         const selectedConflicts = importConflicts.filter(
             (conflict) => conflictSelections[getConflictKey(conflict)]
         )
+        const selectedNewItems = importNewItems.filter((item) => newItemSelections[getConflictKey(item)])
         const conflictResolutions = selectedConflicts.map((conflict) => ({
             type: conflict.type,
             importId: conflict.importId,
@@ -673,6 +926,27 @@ const ProfileSection = ({ handleLogout }) => {
                 payload[conflict.type] = collection.filter((item) => item.id !== conflict.importId)
             }
         })
+        importNewItems.forEach((item) => {
+            if (newItemSelections[getConflictKey(item)]) return
+            const collection = payload[item.type]
+            if (Array.isArray(collection)) {
+                payload[item.type] = collection.filter((entry) => entry.id !== item.importId)
+            }
+        })
+        const duplicateCount = selectedConflicts.filter(
+            (conflict) => (conflictDecisions[getConflictKey(conflict)] || 'update') === 'duplicate'
+        ).length
+        const updateCount = selectedConflicts.length - duplicateCount
+        const skippedCount = Math.max(
+            0,
+            importConflicts.length + importNewItems.length - (selectedConflicts.length + selectedNewItems.length)
+        )
+        setImportSummary({
+            created: selectedNewItems.length,
+            duplicated: duplicateCount,
+            updated: updateCount,
+            skipped: skippedCount
+        })
         const body = {
             ...payload,
             conflictResolutions
@@ -685,8 +959,35 @@ const ProfileSection = ({ handleLogout }) => {
     const importAllSuccess = () => {
         setImportDialogOpen(false)
         dispatch({ type: REMOVE_DIRTY })
+        let message = 'Import All successful'
+        if (importSummary) {
+            const segments = []
+            if (importSummary.created > 0) {
+                segments.push(
+                    `${importSummary.created} new item${importSummary.created === 1 ? '' : 's'} created`
+                )
+            }
+            if (importSummary.duplicated > 0) {
+                segments.push(
+                    `${importSummary.duplicated} item${importSummary.duplicated === 1 ? '' : 's'} duplicated`
+                )
+            }
+            if (importSummary.updated > 0) {
+                segments.push(
+                    `${importSummary.updated} item${importSummary.updated === 1 ? '' : 's'} updated`
+                )
+            }
+            if (importSummary.skipped > 0) {
+                segments.push(
+                    `${importSummary.skipped} item${importSummary.skipped === 1 ? '' : 's'} skipped`
+                )
+            }
+            if (segments.length > 0) {
+                message = `Import complete: ${segments.join(', ')}.`
+            }
+        }
         enqueueSnackbar({
-            message: `Import All successful`,
+            message,
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -697,6 +998,7 @@ const ProfileSection = ({ handleLogout }) => {
                 )
             }
         })
+        setImportSummary(null)
     }
 
     const importAll = () => {
@@ -718,6 +1020,35 @@ const ProfileSection = ({ handleLogout }) => {
         })
         setConflictDecisions(initialDecisions)
         setConflictSelections(initialSelections)
+        const conflictKeys = new Set(conflicts.map((conflict) => getConflictKey(conflict)))
+        const newItems = []
+        Object.entries(pendingImportPayload).forEach(([type, items]) => {
+            if (!Array.isArray(items)) return
+            items.forEach((item) => {
+                if (!item || !item.id) return
+                const key = getConflictKey({ type, importId: item.id })
+                if (conflictKeys.has(key)) return
+                newItems.push({
+                    type,
+                    importId: item.id,
+                    name: getImportItemName(type, item)
+                })
+            })
+        })
+        newItems.sort((a, b) => {
+            if (a.type === b.type) {
+                const nameA = a.name || ''
+                const nameB = b.name || ''
+                return nameA.localeCompare(nameB)
+            }
+            return a.type.localeCompare(b.type)
+        })
+        const initialNewSelections = {}
+        newItems.forEach((item) => {
+            initialNewSelections[getConflictKey(item)] = true
+        })
+        setImportNewItems(newItems)
+        setNewItemSelections(initialNewSelections)
     }, [previewImportApi.data, previewImportApi.loading, importReviewOpen, pendingImportPayload])
 
     useEffect(() => {
@@ -727,6 +1058,9 @@ const ProfileSection = ({ handleLogout }) => {
         setImportConflicts([])
         setConflictDecisions({})
         setConflictSelections({})
+        setImportNewItems([])
+        setNewItemSelections({})
+        setImportSummary(null)
         let errMsg = 'Invalid Imported File'
         let error = previewImportApi.error
         if (error?.response?.data) {
@@ -761,8 +1095,10 @@ const ProfileSection = ({ handleLogout }) => {
             importAllSuccess()
             setPendingImportPayload(null)
             setImportConflicts([])
+            setImportNewItems([])
             setConflictDecisions({})
             setConflictSelections({})
+            setNewItemSelections({})
             navigate(0)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -773,8 +1109,11 @@ const ProfileSection = ({ handleLogout }) => {
             setImportDialogOpen(false)
             setPendingImportPayload(null)
             setImportConflicts([])
+            setImportNewItems([])
             setConflictDecisions({})
             setConflictSelections({})
+            setNewItemSelections({})
+            setImportSummary(null)
             let errMsg = 'Invalid Imported File'
             let error = importAllApi.error
             if (error?.response?.data) {
@@ -977,12 +1316,16 @@ const ProfileSection = ({ handleLogout }) => {
                 show={importReviewOpen}
                 loading={previewImportApi.loading}
                 conflicts={importConflicts}
+                newItems={importNewItems}
                 decisions={conflictDecisions}
-                selections={conflictSelections}
+                conflictSelections={conflictSelections}
+                newItemSelections={newItemSelections}
                 onDecisionChange={handleConflictDecisionChange}
-                onSelectionChange={handleConflictSelectionChange}
-                onToggleAllSelections={handleSelectAllConflicts}
+                onConflictSelectionChange={handleConflictSelectionChange}
+                onNewItemSelectionChange={handleNewItemSelectionChange}
+                onToggleAllConflicts={handleSelectAllConflicts}
                 onApplyAll={handleApplyAllConflicts}
+                onToggleAllNewItems={handleSelectAllNewItems}
                 onCancel={handleImportReviewCancel}
                 onConfirm={handleConfirmImport}
                 disableConfirm={!pendingImportPayload}
