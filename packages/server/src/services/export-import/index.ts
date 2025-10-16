@@ -246,6 +246,42 @@ const collectCredentialBindingsFromChatflow = (
             }
 
             stripCredentialIds(exportableNodeData, ['data'], nodeId, chatflow.id, bindings)
+
+            const existingBindingKeys = new Set(
+                bindings
+                    .filter((binding) => binding.nodeId === nodeId)
+                    .map((binding) => `${binding.path.join('.') ?? '<root>'}:${binding.property}`)
+            )
+
+            const ensureBinding = (
+                path: (string | number)[],
+                property: string,
+                credentialValue: unknown
+            ) => {
+                if (typeof credentialValue !== 'string') return
+                const trimmed = credentialValue.trim()
+                if (!trimmed) return
+                const key = `${path.join('.') ?? '<root>'}:${property}`
+                if (existingBindingKeys.has(key)) return
+                bindings.push({
+                    chatflowId: chatflow.id,
+                    nodeId,
+                    path,
+                    property,
+                    credentialId: trimmed
+                })
+                existingBindingKeys.add(key)
+            }
+
+            ensureBinding(['data', 'inputs'], FLOWISE_CREDENTIAL_ID_KEY, nodeData.inputs?.[FLOWISE_CREDENTIAL_ID_KEY])
+            ensureBinding(['data'], 'credential', nodeData.credential)
+
+            if (Array.isArray(nodeData.inputParams)) {
+                for (const param of nodeData.inputParams) {
+                    if (!param || param.type !== 'credential' || !param.name) continue
+                    ensureBinding(['data', 'inputs'], param.name, nodeData.inputs?.[param.name])
+                }
+            }
         }
         return { parsed, bindings }
     } catch (error) {
