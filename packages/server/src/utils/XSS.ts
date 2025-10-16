@@ -28,10 +28,15 @@ export function getCorsOptions(): any {
     const corsOptions = {
         origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
             const allowedOrigins = getAllowedCorsOrigins()
-            if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
+            if (!origin || allowedOrigins == '*') {
                 callback(null, true)
             } else {
-                callback(null, false)
+                const allowedOriginsList = allowedOrigins.split(',').map((o) => o.trim().toLowerCase())
+                if (allowedOriginsList.includes(origin.toLowerCase())) {
+                    callback(null, true)
+                } else {
+                    callback(null, false)
+                }
             }
         }
     }
