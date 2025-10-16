@@ -22,13 +22,14 @@ export function sanitizeMiddleware(req: Request, res: Response, next: NextFuncti
 
 export function getAllowedCorsOrigins(): string {
     // Expects FQDN separated by commas, otherwise nothing or * for all.
-    return process.env.CORS_ORIGINS ?? '*'
+    // return process.env.CORS_ORIGINS ?? '*'
+    return process.env.CORS_ORIGINS as string
 }
 
 function parseAllowedOrigins(allowedOrigins: string): string[] {
-    if (allowedOrigins === '*') {
-        return ['*']
-    }
+    // if (allowedOrigins === '*') {
+    //     return ['*']
+    // }
     return allowedOrigins
         .split(',')
         .map((origin) => origin.trim())
