@@ -21,4 +21,4 @@ router.delete('/:id', [Entitlements.chatflows.delete], chatflowsController.delet
 // CHECK FOR CHANGE
 router.get('/has-changed/:id/:lastUpdatedDateTime', [Entitlements.unspecified], chatflowsController.checkIfChatflowHasChanged)
 
-export default router.getRouter()
+export default router

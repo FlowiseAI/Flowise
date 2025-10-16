@@ -1,4 +1,3 @@
-import express from 'express'
 import apikeyRouter from './apikey'
 import assistantsRouter from './assistants'
 import attachmentsRouter from './attachments'
@@ -68,8 +67,9 @@ import workspaceUserRouter from '../enterprise/routes/workspace-user.route'
 import accountRouter from '../enterprise/routes/account.route'
 import loginMethodRouter from '../enterprise/routes/login-method.route'
 import { IdentityManager } from '../IdentityManager'
+import { entitled } from '../services/entitled-router'
 
-const router = express.Router()
+const router = entitled.Router()
 
 router.use(policyGuard)
 

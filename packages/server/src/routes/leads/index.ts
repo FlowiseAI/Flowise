@@ -1,11 +1,12 @@
-import express from 'express'
 import leadsController from '../../controllers/leads'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
+const router = entitled.Router()
 
 // CREATE
-router.post('/', leadsController.createLeadInChatflow)
+router.post('/', [Entitlements.unspecified], leadsController.createLeadInChatflow)
 
 // READ
-router.get(['/', '/:id'], leadsController.getAllLeadsForChatflow)
+router.get(['/', '/:id'], [Entitlements.unspecified], leadsController.getAllLeadsForChatflow)
 
 export default router

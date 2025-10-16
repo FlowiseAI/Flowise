@@ -1,7 +1,7 @@
 import express from 'express'
 import { OrganizationController } from '../controllers/organization.controller'
 
-const router = express.Router()
+const router = entitled.Router()
 const organizationController = new OrganizationController()
 
 router.get('/', organizationController.read)

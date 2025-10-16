@@ -7,4 +7,4 @@ const router = entitled.Router()
 router.post(['/', '/login-activity'], [Entitlements.loginActivity.view], auditController.fetchLoginActivity)
 router.post(['/', '/login-activity/delete'], [Entitlements.loginActivity.delete], auditController.deleteLoginActivity)
 
-export default router.getRouter()
+export default router

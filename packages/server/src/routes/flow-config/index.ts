@@ -1,6 +1,6 @@
 import express from 'express'
 import flowConfigsController from '../../controllers/flow-configs'
-const router = express.Router()
+const router = entitled.Router()
 
 // CREATE
 

@@ -1,8 +1,9 @@
-import express from 'express'
 import fetchLinksController from '../../controllers/fetch-links'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
+const router = entitled.Router()
 
 // READ
-router.get('/', fetchLinksController.getAllLinks)
+router.get('/', [Entitlements.unspecified], fetchLinksController.getAllLinks)
 
 export default router

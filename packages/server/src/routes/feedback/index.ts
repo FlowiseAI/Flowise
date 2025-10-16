@@ -1,14 +1,15 @@
-import express from 'express'
 import feedbackController from '../../controllers/feedback'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
+const router = entitled.Router()
 
 // CREATE
-router.post(['/', '/:id'], feedbackController.createChatMessageFeedbackForChatflow)
+router.post(['/', '/:id'], [Entitlements.unspecified], feedbackController.createChatMessageFeedbackForChatflow)
 
 // READ
-router.get(['/', '/:id'], feedbackController.getAllChatMessageFeedback)
+router.get(['/', '/:id'], [Entitlements.unspecified], feedbackController.getAllChatMessageFeedback)
 
 // UPDATE
-router.put(['/', '/:id'], feedbackController.updateChatMessageFeedbackForChatflow)
+router.put(['/', '/:id'], [Entitlements.unspecified], feedbackController.updateChatMessageFeedbackForChatflow)
 
 export default router

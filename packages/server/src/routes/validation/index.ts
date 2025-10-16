@@ -1,6 +1,6 @@
 import express from 'express'
 import validationController from '../../controllers/validation'
-const router = express.Router()
+const router = entitled.Router()
 
 // READ
 router.get('/:id', validationController.checkFlowValidation)

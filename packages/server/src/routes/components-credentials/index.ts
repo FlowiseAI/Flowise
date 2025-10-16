@@ -1,9 +1,10 @@
-import express from 'express'
 import componentsCredentialsController from '../../controllers/components-credentials'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
+const router = entitled.Router()
 
 // READ
-router.get('/', componentsCredentialsController.getAllComponentsCredentials)
-router.get(['/', '/:name'], componentsCredentialsController.getComponentByName)
+router.get('/', [Entitlements.unspecified], componentsCredentialsController.getAllComponentsCredentials)
+router.get(['/', '/:name'], [Entitlements.unspecified], componentsCredentialsController.getComponentByName)
 
 export default router

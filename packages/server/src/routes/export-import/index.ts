@@ -8,4 +8,4 @@ router.post('/export', [Entitlements.workspace.export], exportImportController.e
 
 router.post('/import', [Entitlements.workspace.import], exportImportController.importData)
 
-export default router.getRouter()
+export default router

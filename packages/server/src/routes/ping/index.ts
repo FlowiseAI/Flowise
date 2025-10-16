@@ -1,8 +1,9 @@
-import express from 'express'
 import pingController from '../../controllers/ping'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
+const router = entitled.Router()
 
 // GET
-router.get('/', pingController.getPing)
+router.get('/', [Entitlements.unspecified], pingController.getPing)
 
 export default router

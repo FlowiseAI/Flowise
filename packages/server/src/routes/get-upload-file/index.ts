@@ -7,4 +7,4 @@ const router = entitled.Router()
 // READ
 router.get('/', [Entitlements.unspecified], getUploadFileController.streamUploadedFile)
 
-export default router.getRouter()
+export default router

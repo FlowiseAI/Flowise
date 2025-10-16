@@ -56,7 +56,6 @@
  * - token_received_at: When token was received (ISO string)
  */
 
-import express from 'express'
 import axios from 'axios'
 import { Request, Response, NextFunction } from 'express'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -65,11 +64,13 @@ import { decryptCredentialData, encryptCredentialData } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { generateSuccessPage, generateErrorPage } from './templates'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
-const router = express.Router()
+const router = entitled.Router()
 
 // Initiate OAuth2 authorization flow
-router.post('/authorize/:credentialId', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/authorize/:credentialId', [Entitlements.unspecified], async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { credentialId } = req.params
 
@@ -154,7 +155,7 @@ router.post('/authorize/:credentialId', async (req: Request, res: Response, next
 })
 
 // OAuth2 callback endpoint
-router.get('/callback', async (req: Request, res: Response) => {
+router.get('/callback', [Entitlements.unspecified], async (req: Request, res: Response) => {
     try {
         const { code, state, error, error_description } = req.query
 
@@ -304,7 +305,7 @@ router.get('/callback', async (req: Request, res: Response) => {
 })
 
 // Refresh OAuth2 access token
-router.post('/refresh/:credentialId', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/refresh/:credentialId', [Entitlements.unspecified], async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { credentialId } = req.params
 
@@ -419,4 +420,4 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
     }
 })
 
-export default router
+export default router.getRouter()

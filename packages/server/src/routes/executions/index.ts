@@ -15,4 +15,4 @@ router.put(['/', '/:id'], [Entitlements.unspecified], executionController.update
 router.delete('/:id', [Entitlements.executions.delete], executionController.deleteExecutions)
 router.delete('/', [Entitlements.executions.delete], executionController.deleteExecutions)
 
-export default router.getRouter()
+export default router

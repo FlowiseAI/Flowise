@@ -15,4 +15,4 @@ router.put('/', [Entitlements.sso.manage], loginMethodController.update)
 
 router.post('/test', [Entitlements.sso.manage], loginMethodController.testConfig)
 
-export default router.getRouter()
+export default router

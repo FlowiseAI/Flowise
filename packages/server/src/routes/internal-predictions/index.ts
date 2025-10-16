@@ -1,8 +1,9 @@
-import express from 'express'
 import internalPredictionsController from '../../controllers/internal-predictions'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
+const router = entitled.Router()
 
 // CREATE
-router.post(['/', '/:id'], internalPredictionsController.createInternalPrediction)
+router.post(['/', '/:id'], [Entitlements.unspecified], internalPredictionsController.createInternalPrediction)
 
 export default router

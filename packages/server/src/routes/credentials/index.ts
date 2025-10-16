@@ -17,4 +17,4 @@ router.put('/:id', [Entitlements.credentials.update], credentialsController.upda
 // DELETE
 router.delete('/:id', [Entitlements.credentials.delete], credentialsController.deleteCredentials)
 
-export default router.getRouter()
+export default router

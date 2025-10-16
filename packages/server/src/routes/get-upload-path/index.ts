@@ -7,4 +7,4 @@ const router = entitled.Router()
 // READ
 router.get('/', [Entitlements.unspecified], getUploadPathController.getPathForUploads)
 
-export default router.getRouter();
+export default router

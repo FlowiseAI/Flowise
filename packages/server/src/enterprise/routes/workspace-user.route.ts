@@ -20,4 +20,4 @@ router.delete(
     workspaceUserController.delete
 )
 
-export default router.getRouter()
+export default router

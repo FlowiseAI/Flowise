@@ -1,6 +1,7 @@
 import express from 'express'
 import filesController from '../../controllers/files'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+const router = entitled.Router()
 
 // READ
 router.get('/', filesController.getAllFiles)

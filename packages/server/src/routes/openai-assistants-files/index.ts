@@ -2,7 +2,7 @@ import express from 'express'
 import openaiAssistantsController from '../../controllers/openai-assistants'
 import { getMulterStorage } from '../../utils'
 
-const router = express.Router()
+const router = entitled.Router()
 
 router.post('/download/', openaiAssistantsController.getFileFromAssistant)
 router.post('/upload/', getMulterStorage().array('files'), openaiAssistantsController.uploadAssistantFiles)

@@ -2,7 +2,7 @@ import express from 'express'
 import predictionsController from '../../controllers/predictions'
 import { getMulterStorage } from '../../utils'
 
-const router = express.Router()
+const router = entitled.Router()
 
 // CREATE
 router.post(

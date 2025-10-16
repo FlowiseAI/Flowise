@@ -1,9 +1,10 @@
-import express from 'express'
 import chatflowsController from '../../controllers/chatflows'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
-const router = express.Router()
+const router = entitled.Router()
 
 // READ
-router.get(['/', '/:id'], chatflowsController.checkIfChatflowIsValidForStreaming)
+router.get(['/', '/:id'], [Entitlements.unspecified], chatflowsController.checkIfChatflowIsValidForStreaming)
 
 export default router

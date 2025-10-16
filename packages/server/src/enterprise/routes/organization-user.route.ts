@@ -14,4 +14,4 @@ router.put('/', [Entitlements.users.manage], IdentityManager.checkFeatureByPlan(
 
 router.delete('/', [Entitlements.users.manage], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.delete)
 
-export default router.getRouter()
+export default router

@@ -24,4 +24,4 @@ router.get('/components/tools', [Entitlements.unspecified], assistantsController
 // Generate Assistant Instruction
 router.post('/generate/instruction', [Entitlements.unspecified], assistantsController.generateAssistantInstruction)
 
-export default router.getRouter()
+export default router

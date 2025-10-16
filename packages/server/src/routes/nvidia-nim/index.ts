@@ -1,6 +1,6 @@
 import express from 'express'
 import nimController from '../../controllers/nvidia-nim'
-const router = express.Router()
+const router = entitled.Router()
 
 // READ
 router.get('/preload', nimController.preload)

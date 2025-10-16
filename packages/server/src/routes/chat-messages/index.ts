@@ -16,4 +16,4 @@ router.put(['/abort/', '/abort/:chatflowid/:chatid'], [Entitlements.unspecified]
 // DELETE
 router.delete(['/', '/:id'], [Entitlements.unspecified], chatMessageController.removeAllChatMessages)
 
-export default router.getRouter()
+export default router

@@ -1,6 +1,6 @@
 import express from 'express'
 import chatMessagesController from '../../controllers/chat-messages'
-const router = express.Router()
+const router = entitled.Router()
 
 // CREATE
 

@@ -36,4 +36,4 @@ router.get('/basic-auth', [Entitlements.unspecified], accountController.getBasic
 
 router.post('/basic-auth', [Entitlements.unspecified], accountController.checkBasicAuth)
 
-export default router.getRouter()
+export default router

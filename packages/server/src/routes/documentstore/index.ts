@@ -74,4 +74,4 @@ router.post('/vectorstore/update', [Entitlements.documentStores.upsertConfig], d
 // generate docstore tool description
 router.post('/generate-tool-desc/:id', [Entitlements.unspecified], documentStoreController.generateDocStoreToolDesc)
 
-export default router.getRouter()
+export default router

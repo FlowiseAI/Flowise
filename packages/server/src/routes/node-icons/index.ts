@@ -1,6 +1,6 @@
 import express from 'express'
 import nodesController from '../../controllers/nodes'
-const router = express.Router()
+const router = entitled.Router()
 
 // CREATE
 

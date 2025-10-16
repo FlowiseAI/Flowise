@@ -7,4 +7,4 @@ const router = entitled.Router()
 // READ
 router.get(['/', '/:id'], [Entitlements.unspecified], chatflowsController.checkIfChatflowIsValidForUploads);
 
-export default router.getRouter()
+export default router

@@ -7,4 +7,4 @@ const router = entitled.Router()
 // READ
 router.get('/', [Entitlements.logs.view], logController.getLogs)
 
-export default router.getRouter()
+export default router

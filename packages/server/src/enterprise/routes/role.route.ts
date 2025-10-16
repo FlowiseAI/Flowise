@@ -13,4 +13,4 @@ router.put('/', [Entitlements.roles.manage], roleController.update)
 
 router.delete('/', [Entitlements.roles.manage], roleController.delete)
 
-export default router.getRouter()
+export default router

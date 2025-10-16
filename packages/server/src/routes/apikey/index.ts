@@ -17,4 +17,4 @@ router.put(['/', '/:id'], [Entitlements.apikeys.update], apikeyController.update
 // DELETE
 router.delete(['/', '/:id'], [Entitlements.apikeys.delete], apikeyController.deleteApiKey)
 
-export default router.getRouter()
+export default router

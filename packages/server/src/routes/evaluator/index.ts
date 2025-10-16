@@ -15,4 +15,4 @@ router.put(['/', '/:id'], [Entitlements.evaluators.update], evaluatorsController
 // Delete dataset via id
 router.delete(['/', '/:id'], [Entitlements.evaluators.delete], evaluatorsController.deleteEvaluator)
 
-export default router.getRouter()
+export default router

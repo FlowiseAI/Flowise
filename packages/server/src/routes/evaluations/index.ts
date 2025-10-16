@@ -13,4 +13,4 @@ router.post('/run-again/:id', [Entitlements.evaluations.run], evaluationsControl
 router.get('/versions/:id', [Entitlements.evaluations.view], evaluationsController.getVersions)
 router.patch('/', [Entitlements.evaluations.delete], evaluationsController.patchDeleteEvaluations)
 
-export default router.getRouter()
+export default router

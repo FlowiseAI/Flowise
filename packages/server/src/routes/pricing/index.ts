@@ -1,6 +1,6 @@
 import express from 'express'
 import pricingController from '../../controllers/pricing'
-const router = express.Router()
+const router = entitled.Router()
 
 // GET
 router.get('/', pricingController.getPricing)

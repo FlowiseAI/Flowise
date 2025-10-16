@@ -1,11 +1,12 @@
-import express from 'express'
 import componentsCredentialsController from '../../controllers/components-credentials'
-const router = express.Router()
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
+const router = entitled.Router()
 
 // CREATE
 
 // READ
-router.get(['/', '/:name'], componentsCredentialsController.getSingleComponentsCredentialIcon)
+router.get(['/', '/:name'], [Entitlements.unspecified], componentsCredentialsController.getSingleComponentsCredentialIcon)
 
 // UPDATE
 

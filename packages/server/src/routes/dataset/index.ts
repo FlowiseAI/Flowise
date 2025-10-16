@@ -27,4 +27,4 @@ router.patch('/rows', [Entitlements.datasets.delete], datasetController.patchDel
 // Update row for a dataset
 router.post(['/reorder', '/reorder'], [Entitlements.datasets.update], datasetController.reorderDatasetRow)
 
-export default router.getRouter()
+export default router
