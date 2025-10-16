@@ -91,6 +91,7 @@ const importTypeLabels = {
     AssistantAzure: 'Azure Assistant',
     ChatFlow: 'Chat Flow',
     ChatMessage: 'Chat Message',
+    ChatMessageFeedback: 'Chat Message Feedback',
     CustomTemplate: 'Custom Template',
     DocumentStore: 'Document Store',
     DocumentStoreFileChunk: 'Document Store File Chunk',
@@ -126,6 +127,73 @@ const getImportItemName = (type, item) => {
         }
     }
     return item.id || `${type} item`
+}
+
+const CLONE_NAME_SUFFIX = ' - clone'
+
+const appendCloneSuffix = (value) => {
+    if (typeof value !== 'string') return value
+    const trimmed = value.trimEnd()
+    if (!trimmed) return value
+    if (trimmed.toLowerCase().endsWith(CLONE_NAME_SUFFIX)) return trimmed
+    return `${trimmed}${CLONE_NAME_SUFFIX}`
+}
+
+const applyCloneSuffixToObject = (object) => {
+    if (!object || typeof object !== 'object') return { value: object, changed: false }
+    const updated = { ...object }
+    let changed = false
+    const fields = ['name', 'label', 'title']
+    fields.forEach((key) => {
+        if (typeof updated[key] === 'string' && updated[key].trim().length > 0) {
+            const nextValue = appendCloneSuffix(updated[key])
+            if (nextValue !== updated[key]) {
+                updated[key] = nextValue
+                changed = true
+            }
+        }
+    })
+    return { value: updated, changed }
+}
+
+const applyCloneSuffixToItem = (item) => {
+    if (!item || typeof item !== 'object') return item
+    const updated = { ...item }
+    let changed = false
+
+    const fields = ['name', 'label', 'title']
+    fields.forEach((key) => {
+        if (typeof updated[key] === 'string' && updated[key].trim().length > 0) {
+            const nextValue = appendCloneSuffix(updated[key])
+            if (nextValue !== updated[key]) {
+                updated[key] = nextValue
+                changed = true
+            }
+        }
+    })
+
+    if (updated.details) {
+        if (typeof updated.details === 'string') {
+            try {
+                const parsed = JSON.parse(updated.details)
+                const { value: transformedDetails, changed: detailsChanged } = applyCloneSuffixToObject(parsed)
+                if (detailsChanged) {
+                    updated.details = JSON.stringify(transformedDetails)
+                    changed = true
+                }
+            } catch (error) {
+                // ignore malformed JSON details
+            }
+        } else if (typeof updated.details === 'object') {
+            const { value: transformedDetails, changed: detailsChanged } = applyCloneSuffixToObject(updated.details)
+            if (detailsChanged) {
+                updated.details = transformedDetails
+                changed = true
+            }
+        }
+    }
+
+    return changed ? updated : item
 }
 
 const ExportDialog = ({ show, onCancel, onExport }) => {
@@ -273,6 +341,7 @@ const ImportReviewDialog = ({
                 'AssistantAzure',
                 'ChatFlow',
                 'ChatMessage',
+                'ChatMessageFeedback',
                 'CustomTemplate',
                 'DocumentStore',
                 'DocumentStoreFileChunk',
@@ -318,6 +387,10 @@ const ImportReviewDialog = ({
             AssistantAzure: { label: importTypeLabels.AssistantAzure, color: theme.palette.secondary.main },
             ChatFlow: { label: importTypeLabels.ChatFlow, color: theme.palette.primary.dark },
             ChatMessage: { label: importTypeLabels.ChatMessage, color: theme.palette.primary.light },
+            ChatMessageFeedback: {
+                label: importTypeLabels.ChatMessageFeedback,
+                color: theme.palette.info.main
+            },
             CustomTemplate: { label: importTypeLabels.CustomTemplate, color: theme.palette.error.main },
             DocumentStore: { label: importTypeLabels.DocumentStore, color: theme.palette.secondary.dark },
             DocumentStoreFileChunk: {
@@ -478,6 +551,14 @@ const ImportReviewDialog = ({
                                                         const action = decisions[key] || 'update'
                                                         const isSelected = conflictSelections[key] || false
                                                         const existingLink = getExistingLink(conflict)
+                                                        const rawName =
+                                                            conflict.name ?? conflict.importId ?? conflict.type ?? ''
+                                                        const baseName =
+                                                            typeof rawName === 'string' ? rawName : String(rawName)
+                                                        const displayName =
+                                                            action === 'duplicate'
+                                                                ? appendCloneSuffix(baseName)
+                                                                : baseName
                                                         const inactiveBackground = lighten(
                                                             sectionBackground || alpha(theme.palette.action.disabledBackground, 0.3),
                                                             theme.palette.mode === 'dark' ? 0.08 : 0.24
@@ -533,14 +614,14 @@ const ImportReviewDialog = ({
                                                                                 )
                                                                             }
                                                                         />
-                                                                        <Stack spacing={0.5}>
-                                                                            <Typography variant='subtitle2'>
-                                                                                {conflict.name}
-                                                                            </Typography>
-                                                                            <Typography variant='caption' color='textSecondary'>
-                                                                                Existing ID:{' '}
-                                                                                {existingLink ? (
-                                                                                    <Link
+                                                                            <Stack spacing={0.5}>
+                                                                                <Typography variant='subtitle2'>
+                                                                                    {displayName}
+                                                                                </Typography>
+                                                                                <Typography variant='caption' color='textSecondary'>
+                                                                                    Existing ID:{' '}
+                                                                                    {existingLink ? (
+                                                                                        <Link
                                                                                         component={RouterLink}
                                                                                         to={existingLink}
                                                                                         target='_blank'
@@ -1268,17 +1349,34 @@ const ProfileSection = ({ handleLogout }) => {
             (conflict) => conflictSelections[getConflictKey(conflict)]
         )
         const selectedNewItems = importNewItems.filter((item) => newItemSelections[getImportItemKey(item)])
+        const payload = JSON.parse(JSON.stringify(pendingImportPayload))
         const duplicateConflicts = []
         const updatedConflicts = []
         selectedConflicts.forEach((conflict) => {
             const action = conflictDecisions[getConflictKey(conflict)] || 'update'
+            const rawName = conflict.name ?? conflict.importId ?? conflict.type ?? ''
+            const baseName = typeof rawName === 'string' ? rawName : String(rawName)
             const baseInfo = {
                 type: conflict.type,
-                name: conflict.name,
+                name: baseName,
                 importId: conflict.importId,
                 existingId: conflict.existingId
             }
             if (action === 'duplicate') {
+                const clonedName = appendCloneSuffix(baseName)
+                if (clonedName && clonedName !== baseInfo.name) {
+                    baseInfo.name = clonedName
+                }
+                const collection = payload[conflict.type]
+                if (Array.isArray(collection)) {
+                    const index = collection.findIndex((item) => item.id === conflict.importId)
+                    if (index !== -1) {
+                        const updatedItem = applyCloneSuffixToItem(collection[index])
+                        if (updatedItem !== collection[index]) {
+                            collection[index] = updatedItem
+                        }
+                    }
+                }
                 duplicateConflicts.push(baseInfo)
                 return
             }
@@ -1312,7 +1410,6 @@ const ProfileSection = ({ handleLogout }) => {
             existingId: conflict.existingId,
             action: conflictDecisions[getConflictKey(conflict)] || 'update'
         }))
-        const payload = JSON.parse(JSON.stringify(pendingImportPayload))
         importConflicts.forEach((conflict) => {
             if (conflictSelections[getConflictKey(conflict)]) return
             const collection = payload[conflict.type]
