@@ -36,7 +36,7 @@ router.delete(['/', '/:id'], checkPermission('chatflows:delete,agentflows:delete
 // CHECK FOR CHANGE
 router.get(
     '/has-changed/:id/:lastUpdatedDateTime',
-    checkPermission('chatflows:update,agentflows:update'),
+    checkAnyPermission('chatflows:update,agentflows:update'),
     chatflowsController.checkIfChatflowHasChanged
 )
 
