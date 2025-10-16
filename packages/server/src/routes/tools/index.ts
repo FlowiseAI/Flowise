@@ -1,19 +1,20 @@
 import toolsController from '../../controllers/tools'
 import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
 const router = entitled.Router()
 
 // CREATE
-router.post('/', ['tools:create'], toolsController.createTool)
+router.post('/', [Entitlements.tools.create], toolsController.createTool)
 
 // READ
-router.get('/', ['tools:view'], toolsController.getAllTools)
-router.get('/:id', ['tools:view'], toolsController.getToolById)
+router.get('/', [Entitlements.tools.view], toolsController.getAllTools)
+router.get('/:id', [Entitlements.tools.view], toolsController.getToolById)
 
 // UPDATE
-router.put('/:id', ['tools:update'], toolsController.updateTool)
+router.put('/:id', [Entitlements.tools.update], toolsController.updateTool)
 
 // DELETE
-router.delete('/:id', ['tools:delete'], toolsController.deleteTool)
+router.delete('/:id', [Entitlements.tools.delete], toolsController.deleteTool)
 
 export default router.getRouter()

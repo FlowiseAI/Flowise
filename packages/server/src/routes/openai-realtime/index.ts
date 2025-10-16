@@ -1,13 +1,13 @@
-
-import openaiRealTimeController from '../../controllers/openai-realtime';
+import openaiRealTimeController from '../../controllers/openai-realtime'
 import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
 const router = entitled.Router()
 
 // GET
-router.get(['/', '/:id'], ['public'], openaiRealTimeController.getAgentTools);
+router.get(['/', '/:id'], [Entitlements.unspecified], openaiRealTimeController.getAgentTools)
 
 // EXECUTE
-router.post(['/', '/:id'], ['public'], openaiRealTimeController.executeAgentTool);
+router.post(['/', '/:id'], [Entitlements.unspecified], openaiRealTimeController.executeAgentTool)
 
-export default router.getRouter();
+export default router.getRouter()

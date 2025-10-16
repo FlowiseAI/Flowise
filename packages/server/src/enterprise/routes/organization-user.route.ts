@@ -1,16 +1,17 @@
 import { OrganizationUserController } from '../controllers/organization-user.controller'
 import { IdentityManager } from '../../IdentityManager'
-import { EntitledRouter } from '../../routes/entitled-router'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../rbac/Entitlements'
 
-const router = new EntitledRouter()
+const router = entitled.Router()
 const organizationUserController = new OrganizationUserController()
 
-router.get('/', ['public'], organizationUserController.read)
+router.get('/', [Entitlements.unspecified], organizationUserController.read)
 
-router.post('/', ['users:manage'], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.create)
+router.post('/', [Entitlements.users.manage], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.create)
 
-router.put('/', ['users:manage'], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.update)
+router.put('/', [Entitlements.users.manage], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.update)
 
-router.delete('/', ['users:manage'], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.delete)
+router.delete('/', [Entitlements.users.manage], IdentityManager.checkFeatureByPlan('feat:users'), organizationUserController.delete)
 
 export default router.getRouter()

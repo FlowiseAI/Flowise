@@ -1,39 +1,39 @@
+import { AccountController } from '../controllers/account.controller'
+import { IdentityManager } from '../../IdentityManager'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../rbac/Entitlements'
 
-import { AccountController } from '../controllers/account.controller';
-import { IdentityManager } from '../../IdentityManager';
-import { EntitledRouter } from '../../routes/entitled-router';
+const router = entitled.Router()
+const accountController = new AccountController()
 
-const router = entitled.Router();
-const accountController = new AccountController();
-
-router.post('/register', ['public'], accountController.register);
+router.post('/register', [Entitlements.unspecified], accountController.register)
 
 // feature flag to workspace since only user who has workspaces can invite
 router.post(
-  '/invite',
-  ['workspace:add-user', 'users:manage'],
-  IdentityManager.checkFeatureByPlan('feat:workspaces'),
-  accountController.invite
-);
+    '/invite',
+    [Entitlements.workspace.addUser, Entitlements.users.manage],
+    IdentityManager.checkFeatureByPlan('feat:workspaces'),
+    accountController.invite
+)
 
-router.post('/login', ['public'], accountController.login);
+router.post('/login', [Entitlements.unspecified], accountController.login)
 
-router.post('/logout', ['public'], accountController.logout);
+router.post('/logout', [Entitlements.unspecified], accountController.logout)
 
-router.post('/verify', ['public'], accountController.verify);
+router.post('/verify', [Entitlements.unspecified], accountController.verify)
 
-router.post('/resend-verification', ['public'], accountController.resendVerificationEmail);
+router.post('/resend-verification', [Entitlements.unspecified], accountController.resendVerificationEmail)
 
-router.post('/forgot-password', ['public'], accountController.forgotPassword);
+router.post('/forgot-password', [Entitlements.unspecified], accountController.forgotPassword)
 
-router.post('/reset-password', ['public'], accountController.resetPassword);
+router.post('/reset-password', [Entitlements.unspecified], accountController.resetPassword)
 
-router.post('/cancel-subscription', ['public'], accountController.cancelPreviousCloudSubscrption);
+router.post('/cancel-subscription', [Entitlements.unspecified], accountController.cancelPreviousCloudSubscrption)
 
-router.post('/billing', ['public'], accountController.createStripeCustomerPortalSession);
+router.post('/billing', [Entitlements.unspecified], accountController.createStripeCustomerPortalSession)
 
-router.get('/basic-auth', ['public'], accountController.getBasicAuth);
+router.get('/basic-auth', [Entitlements.unspecified], accountController.getBasicAuth)
 
-router.post('/basic-auth', ['public'], accountController.checkBasicAuth);
+router.post('/basic-auth', [Entitlements.unspecified], accountController.checkBasicAuth)
 
-export default router.getRouter();
+export default router.getRouter()

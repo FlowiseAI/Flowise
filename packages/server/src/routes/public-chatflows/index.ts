@@ -1,10 +1,10 @@
-
-import chatflowsController from '../../controllers/chatflows';
+import chatflowsController from '../../controllers/chatflows'
 import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
 const router = entitled.Router()
 
 // READ
-router.get(['/', '/:id'], ['public'], chatflowsController.getSinglePublicChatflow);
+router.get(['/', '/:id'], [Entitlements.unspecified], chatflowsController.getSinglePublicChatflow)
 
-export default router.getRouter();
+export default router.getRouter()

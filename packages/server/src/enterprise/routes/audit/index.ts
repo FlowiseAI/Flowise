@@ -1,10 +1,10 @@
+import auditController from '../../controllers/audit'
+import { entitled } from '../../../services/entitled-router'
+import { Entitlements } from '../../rbac/Entitlements'
 
-import auditController from '../../controllers/audit';
-import { EntitledRouter } from '../../utils/EntitledRouter';
+const router = entitled.Router()
 
-const router = entitled.Router();
+router.post(['/', '/login-activity'], [Entitlements.loginActivity.view], auditController.fetchLoginActivity)
+router.post(['/', '/login-activity/delete'], [Entitlements.loginActivity.delete], auditController.deleteLoginActivity)
 
-router.post(['/', '/login-activity'], ['loginActivity:view'], auditController.fetchLoginActivity);
-router.post(['/', '/login-activity/delete'], ['loginActivity:delete'], auditController.deleteLoginActivity);
-
-export default router.getRouter();
+export default router.getRouter()

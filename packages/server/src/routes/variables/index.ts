@@ -1,18 +1,19 @@
 import variablesController from '../../controllers/variables'
 import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
 const router = entitled.Router()
 
 // CREATE
-router.post('/', ['variables:create'], variablesController.createVariable)
+router.post('/', [Entitlements.variables.create], variablesController.createVariable)
 
 // READ
-router.get('/', ['variables:view'], variablesController.getAllVariables)
+router.get('/', [Entitlements.variables.view], variablesController.getAllVariables)
 
 // UPDATE
-router.put('/:id', ['variables:update'], variablesController.updateVariable)
+router.put('/:id', [Entitlements.variables.update], variablesController.updateVariable)
 
 // DELETE
-router.delete('/:id', ['variables:delete'], variablesController.deleteVariable)
+router.delete('/:id', [Entitlements.variables.delete], variablesController.deleteVariable)
 
 export default router.getRouter()

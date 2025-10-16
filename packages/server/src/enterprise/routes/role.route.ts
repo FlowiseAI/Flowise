@@ -1,16 +1,16 @@
+import { RoleController } from '../controllers/role.controller'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../rbac/Entitlements'
 
-import { RoleController } from '../controllers/role.controller';
-import { EntitledRouter } from '../../routes/entitled-router';
+const router = entitled.Router()
+const roleController = new RoleController()
 
-const router = entitled.Router();
-const roleController = new RoleController();
+router.get('/', [Entitlements.unspecified], roleController.read)
 
-router.get('/', ['public'], roleController.read);
+router.post('/', [Entitlements.roles.manage], roleController.create)
 
-router.post('/', ['roles:manage'], roleController.create);
+router.put('/', [Entitlements.roles.manage], roleController.update)
 
-router.put('/', ['roles:manage'], roleController.update);
+router.delete('/', [Entitlements.roles.manage], roleController.delete)
 
-router.delete('/', ['roles:manage'], roleController.delete);
-
-export default router.getRouter();
+export default router.getRouter()

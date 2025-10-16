@@ -1,19 +1,20 @@
 import apikeyController from '../../controllers/apikey'
 import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
 const router = entitled.Router()
 
 // CREATE
-router.post('/', ['apikeys:create'], apikeyController.createApiKey)
-router.post('/import', ['apikeys:import'], apikeyController.importKeys)
+router.post('/', [Entitlements.apikeys.create], apikeyController.createApiKey)
+router.post('/import', [Entitlements.apikeys.import], apikeyController.importKeys)
 
 // READ
-router.get('/', ['apikeys:view'], apikeyController.getAllApiKeys)
+router.get('/', [Entitlements.apikeys.view], apikeyController.getAllApiKeys)
 
 // UPDATE
-router.put(['/', '/:id'], ['apikeys:update'], apikeyController.updateApiKey)
+router.put(['/', '/:id'], [Entitlements.apikeys.update], apikeyController.updateApiKey)
 
 // DELETE
-router.delete(['/', '/:id'], ['apikeys:delete'], apikeyController.deleteApiKey)
+router.delete(['/', '/:id'], [Entitlements.apikeys.delete], apikeyController.deleteApiKey)
 
 export default router.getRouter()

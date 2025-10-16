@@ -1,9 +1,10 @@
 import logController from '../../controllers/log'
 import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 
 const router = entitled.Router()
 
 // READ
-router.get('/', ['logs:view'], logController.getLogs)
+router.get('/', [Entitlements.logs.view], logController.getLogs)
 
 export default router.getRouter()
