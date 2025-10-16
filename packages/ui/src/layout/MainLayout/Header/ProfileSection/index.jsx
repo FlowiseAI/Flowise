@@ -104,6 +104,11 @@ const getConflictKey = (conflict = {}) => {
     return [type, existingId, importId ?? id ?? name].filter(Boolean).join(':')
 }
 
+const getImportItemKey = (item = {}) => {
+    const { type, importId, id, name } = item
+    return [type, importId ?? id ?? name].filter(Boolean).join(':')
+}
+
 const getImportItemName = (type, item) => {
     if (!item) return ''
     if (item.name) return item.name
@@ -255,7 +260,7 @@ const ImportReviewDialog = ({
     const allConflictsSelected =
         conflicts.length > 0 && conflicts.every((conflict) => conflictSelections[getConflictKey(conflict)])
     const allNewItemsSelected =
-        newItems.length > 0 && newItems.every((item) => newItemSelections[getConflictKey(item)])
+        newItems.length > 0 && newItems.every((item) => newItemSelections[getImportItemKey(item)])
 
     const collapsibleTypes = useMemo(
         () =>
@@ -717,7 +722,7 @@ const ImportReviewDialog = ({
                                         const renderItems = (
                                             <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
                                                 {items.map((item) => {
-                                                    const key = getConflictKey(item)
+                                                    const key = getImportItemKey(item)
                                                     const isSelected = newItemSelections[key] || false
                                                     const inactiveBackground = lighten(
                                                         sectionBackground || alpha(theme.palette.action.disabledBackground, 0.3),
@@ -1197,7 +1202,7 @@ const ProfileSection = ({ handleLogout }) => {
     const handleNewItemSelectionChange = (item, isSelected) => {
         setNewItemSelections((prev) => ({
             ...prev,
-            [getConflictKey(item)]: isSelected
+            [getImportItemKey(item)]: isSelected
         }))
     }
 
@@ -1215,7 +1220,7 @@ const ProfileSection = ({ handleLogout }) => {
         setNewItemSelections((prev) => {
             const updated = { ...prev }
             importNewItems.forEach((item) => {
-                updated[getConflictKey(item)] = isSelected
+                updated[getImportItemKey(item)] = isSelected
             })
             return updated
         })
@@ -1262,7 +1267,7 @@ const ProfileSection = ({ handleLogout }) => {
         const selectedConflicts = importConflicts.filter(
             (conflict) => conflictSelections[getConflictKey(conflict)]
         )
-        const selectedNewItems = importNewItems.filter((item) => newItemSelections[getConflictKey(item)])
+        const selectedNewItems = importNewItems.filter((item) => newItemSelections[getImportItemKey(item)])
         const duplicateConflicts = []
         const updatedConflicts = []
         selectedConflicts.forEach((conflict) => {
@@ -1294,7 +1299,7 @@ const ProfileSection = ({ handleLogout }) => {
                 reason: 'conflict'
             }))
         const skippedNew = importNewItems
-            .filter((item) => !newItemSelections[getConflictKey(item)])
+            .filter((item) => !newItemSelections[getImportItemKey(item)])
             .map((item) => ({
                 type: item.type,
                 name: item.name,
@@ -1316,7 +1321,7 @@ const ProfileSection = ({ handleLogout }) => {
             }
         })
         importNewItems.forEach((item) => {
-            if (newItemSelections[getConflictKey(item)]) return
+            if (newItemSelections[getImportItemKey(item)]) return
             const collection = payload[item.type]
             if (Array.isArray(collection)) {
                 payload[item.type] = collection.filter((entry) => entry.id !== item.importId)
@@ -1407,13 +1412,13 @@ const ProfileSection = ({ handleLogout }) => {
         })
         setConflictDecisions(initialDecisions)
         setConflictSelections(initialSelections)
-        const conflictKeys = new Set(conflicts.map((conflict) => getConflictKey(conflict)))
+        const conflictKeys = new Set(conflicts.map((conflict) => getImportItemKey(conflict)))
         const newItems = []
         Object.entries(pendingImportPayload).forEach(([type, items]) => {
             if (!Array.isArray(items)) return
             items.forEach((item) => {
                 if (!item || !item.id) return
-                const key = getConflictKey({ type, importId: item.id })
+                const key = getImportItemKey({ type, importId: item.id })
                 if (conflictKeys.has(key)) return
                 newItems.push({
                     type,
@@ -1432,7 +1437,7 @@ const ProfileSection = ({ handleLogout }) => {
         })
         const initialNewSelections = {}
         newItems.forEach((item) => {
-            initialNewSelections[getConflictKey(item)] = false
+            initialNewSelections[getImportItemKey(item)] = false
         })
         setImportNewItems(newItems)
         setNewItemSelections(initialNewSelections)
