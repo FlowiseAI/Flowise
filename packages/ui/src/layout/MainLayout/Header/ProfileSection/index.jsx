@@ -90,13 +90,19 @@ const importTypeLabels = {
     AssistantOpenAI: 'OpenAI Assistant',
     AssistantAzure: 'Azure Assistant',
     ChatFlow: 'Chat Flow',
+    ChatMessage: 'Chat Message',
     CustomTemplate: 'Custom Template',
     DocumentStore: 'Document Store',
+    DocumentStoreFileChunk: 'Document Store File Chunk',
+    Execution: 'Execution',
     Tool: 'Tool',
     Variable: 'Variable'
 }
 
-const getConflictKey = (conflict) => `${conflict.type}:${conflict.importId}`
+const getConflictKey = (conflict = {}) => {
+    const { type, existingId, importId, id, name } = conflict
+    return [type, existingId, importId ?? id ?? name].filter(Boolean).join(':')
+}
 
 const getImportItemName = (type, item) => {
     if (!item) return ''
@@ -261,8 +267,11 @@ const ImportReviewDialog = ({
                 'AssistantOpenAI',
                 'AssistantAzure',
                 'ChatFlow',
+                'ChatMessage',
                 'CustomTemplate',
                 'DocumentStore',
+                'DocumentStoreFileChunk',
+                'Execution',
                 'Tool',
                 'Variable'
             ]),
@@ -303,8 +312,14 @@ const ImportReviewDialog = ({
             AssistantOpenAI: { label: importTypeLabels.AssistantOpenAI, color: theme.palette.primary.main },
             AssistantAzure: { label: importTypeLabels.AssistantAzure, color: theme.palette.secondary.main },
             ChatFlow: { label: importTypeLabels.ChatFlow, color: theme.palette.primary.dark },
+            ChatMessage: { label: importTypeLabels.ChatMessage, color: theme.palette.primary.light },
             CustomTemplate: { label: importTypeLabels.CustomTemplate, color: theme.palette.error.main },
             DocumentStore: { label: importTypeLabels.DocumentStore, color: theme.palette.secondary.dark },
+            DocumentStoreFileChunk: {
+                label: importTypeLabels.DocumentStoreFileChunk,
+                color: theme.palette.secondary.light
+            },
+            Execution: { label: importTypeLabels.Execution, color: theme.palette.info.light },
             Tool: { label: importTypeLabels.Tool, color: theme.palette.success.dark },
             Variable: { label: importTypeLabels.Variable, color: theme.palette.warning.dark }
         }),
