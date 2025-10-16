@@ -88,11 +88,7 @@ const MarketplaceCanvasV2 = () => {
                     }}
                 >
                     <Toolbar>
-                        <MarketplaceCanvasHeader
-                            flowName={name}
-                            flowData={JSON.parse(flowData)}
-                            onChatflowCopy={state}
-                        />
+                        <MarketplaceCanvasHeader flowName={name} flowData={JSON.parse(flowData)} onChatflowCopy={state} />
                     </Toolbar>
                 </AppBar>
                 <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>

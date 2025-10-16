@@ -85,7 +85,7 @@ const Marketplace = () => {
     const getAllTemplatesMarketplacesApi = useApi(marketplacesApi.getAllTemplatesFromMarketplaces)
 
     const [view, setView] = React.useState(localStorage.getItem('mpDisplayStyle') || 'card')
-    
+
     // Initialize search from URL parameters
     const [search, setSearch] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -94,7 +94,7 @@ const Marketplace = () => {
         }
         return ''
     })
-    
+
     // Check for CSV usecase filter trigger from URL (only once on mount)
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -102,7 +102,7 @@ const Marketplace = () => {
             const usecaseParam = urlParams.get('usecase')
             if (usecaseParam === 'CSV') {
                 setSelectedUsecases(['CSV'])
-                
+
                 // Clear the URL parameter after applying the filter
                 const newUrl = new URL(window.location)
                 newUrl.searchParams.delete('usecase')
@@ -111,7 +111,7 @@ const Marketplace = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-    
+
     const [badgeFilter, setBadgeFilter] = useState([])
     const [typeFilter, setTypeFilter] = useState([])
     const [frameworkFilter, setFrameworkFilter] = useState([])

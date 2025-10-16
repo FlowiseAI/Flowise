@@ -65,7 +65,6 @@ export class TrackingService {
                     custom_parameter_2: 'company_size'
                 }
             })
-
         } catch (error) {
             console.error('Google Analytics initialization failed:', error)
         }
@@ -100,7 +99,6 @@ export class TrackingService {
                 function (...args: any[]) {
                     ;(window.lintrk.q = window.lintrk.q || []).push(args)
                 }
-
         } catch (error) {
             console.error('LinkedIn Pixel initialization failed:', error)
         }
@@ -165,7 +163,6 @@ export class TrackingService {
                 currency: 'USD'
             })
         }
-
     }
 
     // Track webinar registration conversion
@@ -231,7 +228,6 @@ export class TrackingService {
                 })
             }
         }
-
     }
 
     // Track form interactions

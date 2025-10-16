@@ -39,22 +39,21 @@ const commands = [
 // Execute repomix for each command
 for (const { name, sourceDir, outputFile } of commands) {
     console.log(`\n🚀 Generating ${name} from ${sourceDir}...`)
-    
+
     try {
         // Check if source directory exists
         if (!fs.existsSync(sourceDir)) {
             console.warn(`⚠️  Warning: Source directory ${sourceDir} does not exist, skipping ${name}`)
             continue
         }
-        
+
         // Run repomix command
         const cmd = `repomix "${sourceDir}" --output "${outputFile}" --no-file-summary --style xml`
-        
+
         console.log(`Running: ${cmd}`)
         execSync(cmd, { stdio: 'inherit', cwd: docsRoot })
-        
+
         console.log(`✅ Successfully generated ${name} -> ${outputFile}`)
-        
     } catch (error) {
         console.error(`❌ Error generating ${name}: ${error.message}`)
         process.exit(1)
@@ -68,4 +67,4 @@ for (const { name, outputFile } of commands) {
     if (fs.existsSync(outputFile)) {
         console.log(`   - ${name}: ${path.basename(outputFile)}`)
     }
-} 
+}

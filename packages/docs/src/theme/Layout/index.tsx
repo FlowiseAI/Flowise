@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import OriginalLayout from '@theme-original/Layout'
 import { useLocation } from '@docusaurus/router'
 import styles from './styles.module.css'

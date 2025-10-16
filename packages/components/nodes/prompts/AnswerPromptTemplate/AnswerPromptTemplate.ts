@@ -174,4 +174,4 @@ class AnswerPromptTemplate_Prompts implements INode {
     }
 }
 
-module.exports = { nodeClass: AnswerPromptTemplate_Prompts } 
+module.exports = { nodeClass: AnswerPromptTemplate_Prompts }

@@ -40,7 +40,7 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
             const loader = new THREE.TextureLoader()
             // Remove greyscale parameter and add format for color logos
             const logoUrl = `https://logo.clearbit.com/${domain}?size=256&format=png`
-            
+
             loader.load(
                 logoUrl,
                 (texture) => {
@@ -59,21 +59,21 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
                     canvas.width = 256
                     canvas.height = 256
                     const ctx = canvas.getContext('2d')!
-                    
+
                     // Create a colorful gradient background
                     const gradient = ctx.createLinearGradient(0, 0, 256, 256)
                     gradient.addColorStop(0, '#667eea')
                     gradient.addColorStop(1, '#764ba2')
                     ctx.fillStyle = gradient
                     ctx.fillRect(0, 0, 256, 256)
-                    
+
                     ctx.fillStyle = '#fff'
                     ctx.font = 'bold 24px sans-serif'
                     ctx.textAlign = 'center'
                     ctx.textBaseline = 'middle'
                     const companyName = domain.split('.')[0].toUpperCase()
                     ctx.fillText(companyName, 128, 128)
-                    
+
                     const texture = new THREE.CanvasTexture(canvas)
                     resolve(texture)
                 }
@@ -84,18 +84,18 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
     // Generate constellation positions
     const generateConstellationPositions = useCallback((count: number) => {
         const positions: Array<{ x: number; y: number; z: number }> = []
-        const width = 120   // Much larger to use full horizontal space
-        const height = 80   // Much larger to use full vertical space
-        
+        const width = 120 // Much larger to use full horizontal space
+        const height = 80 // Much larger to use full vertical space
+
         for (let i = 0; i < count; i++) {
             // Completely random distribution across the entire area
-            const x = (Math.random() - 0.5) * width    // Full width from -60 to +60
-            const y = (Math.random() - 0.5) * height   // Full height from -40 to +40
-            const z = (Math.random() - 0.5) * 10       // More depth variation
-            
+            const x = (Math.random() - 0.5) * width // Full width from -60 to +60
+            const y = (Math.random() - 0.5) * height // Full height from -40 to +40
+            const z = (Math.random() - 0.5) * 10 // More depth variation
+
             positions.push({ x, y, z })
         }
-        
+
         return positions
     }, [])
 
@@ -108,11 +108,11 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
             opacity: 0.8,
             emissive: 0x221133
         })
-        
+
         const triangle = new THREE.Mesh(geometry, material)
         triangle.rotation.z = Math.PI
         triangle.position.set(0, 0, 0)
-        
+
         return triangle
     }, [])
 
@@ -125,17 +125,21 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
             transparent: true,
             opacity: 0.3
         })
-        
+
         return new THREE.Line(geometry, material)
     }, [])
 
     // Get logo size based on prominence
     const getLogoSize = useCallback((prominence: string) => {
         switch (prominence) {
-            case 'large': return 6.0
-            case 'medium': return 4.5
-            case 'small': return 3.5
-            default: return 4.5
+            case 'large':
+                return 6.0
+            case 'medium':
+                return 4.5
+            case 'small':
+                return 3.5
+            default:
+                return 4.5
         }
     }, [])
 
@@ -192,10 +196,10 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
             for (let i = 0; i < integrations.length; i++) {
                 const integration = integrations[i]
                 const position = positions[i]
-                
+
                 try {
                     const texture = await createLogoTexture(integration.domain)
-                    
+
                     const size = getLogoSize(integration.prominence || 'medium')
                     const geometry = new THREE.PlaneGeometry(size, size)
                     const material = new THREE.MeshLambertMaterial({
@@ -204,35 +208,31 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
                         side: THREE.DoubleSide,
                         alphaTest: 0.1
                     })
-                    
+
                     const mesh = new THREE.Mesh(geometry, material)
                     const group = new THREE.Group()
                     group.add(mesh)
-                    
+
                     // Position in constellation
                     group.position.set(position.x, position.y, position.z)
-                    
+
                     // Store integration data
                     ;(group as any).integrationData = integration
                     ;(group as any).originalPosition = group.position.clone()
                     ;(group as any).prominence = integration.prominence || 'medium'
-                    
+
                     scene.add(group)
                     logoGroups.push(group)
 
                     // Create connection line to triangle
-                    const line = createConnectionLine(
-                        new THREE.Vector3(position.x, position.y, position.z),
-                        new THREE.Vector3(0, 0, 0)
-                    )
+                    const line = createConnectionLine(new THREE.Vector3(position.x, position.y, position.z), new THREE.Vector3(0, 0, 0))
                     scene.add(line)
                     lines.push(line)
-                    
                 } catch (error) {
                     console.warn(`Failed to load logo for ${integration.domain}:`, error)
                 }
             }
-            
+
             logosRef.current = logoGroups
             linesRef.current = lines
         }
@@ -254,17 +254,17 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
             if (isDragging) {
                 const deltaX = event.clientX - previousMousePosition.x
                 const deltaY = event.clientY - previousMousePosition.y
-                
+
                 // Rotate camera around the scene
                 const spherical = new THREE.Spherical()
                 spherical.setFromVector3(camera.position)
                 spherical.theta -= deltaX * 0.01
                 spherical.phi += deltaY * 0.01
                 spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi))
-                
+
                 camera.position.setFromSpherical(spherical)
                 camera.lookAt(0, 0, 0)
-                
+
                 previousMousePosition = { x: event.clientX, y: event.clientY }
                 return
             }
@@ -278,24 +278,24 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
                     // Project 3D logo position to screen coordinates
                     const logoWorldPosition = group.position.clone()
                     const logoScreenPosition = logoWorldPosition.project(camera)
-                    
+
                     // Convert normalized coordinates to screen pixels
                     const canvasRect = renderer.domElement.getBoundingClientRect()
-                    const logoScreenX = (logoScreenPosition.x + 1) * canvasRect.width / 2 + canvasRect.left
-                    const logoScreenY = (-logoScreenPosition.y + 1) * canvasRect.height / 2 + canvasRect.top
-                    
+                    const logoScreenX = ((logoScreenPosition.x + 1) * canvasRect.width) / 2 + canvasRect.left
+                    const logoScreenY = ((-logoScreenPosition.y + 1) * canvasRect.height) / 2 + canvasRect.top
+
                     // Position popup next to the logo
                     const popupWidth = 280
                     const popupHeight = 150
                     const offset = 20
-                    
+
                     let x = logoScreenX + offset
                     let y = logoScreenY - popupHeight / 2
-                    
+
                     // Keep popup on screen
                     const viewportWidth = window.innerWidth
                     const viewportHeight = window.innerHeight
-                    
+
                     if (x + popupWidth > viewportWidth) {
                         x = logoScreenX - popupWidth - offset
                     }
@@ -305,7 +305,7 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
                     if (y + popupHeight > viewportHeight) {
                         y = viewportHeight - popupHeight - 10
                     }
-                    
+
                     setHoverInfo({
                         integration: group.integrationData,
                         x,
@@ -358,17 +358,17 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
             logosRef.current.forEach((group, index) => {
                 const originalPos = (group as any).originalPosition
                 const prominence = (group as any).prominence
-                
+
                 // Subtle floating animation
                 group.position.x = originalPos.x + Math.sin(time * 0.5 + index) * 0.1
                 group.position.y = originalPos.y + Math.cos(time * 0.3 + index) * 0.1
                 group.position.z = originalPos.z + Math.sin(time * 0.7 + index) * 0.2
-                
+
                 // Breathing effect based on prominence
                 const breathingScale = prominence === 'large' ? 1.05 : prominence === 'medium' ? 1.03 : 1.02
                 const scale = 1 + Math.sin(time * 2 + index) * (breathingScale - 1)
                 group.scale.setScalar(scale)
-                
+
                 // Gentle rotation
                 group.rotation.z = Math.sin(time + index) * 0.05
             })
@@ -387,7 +387,7 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
         // Handle resize
         const handleResize = () => {
             if (!mountRef.current) return
-            
+
             camera.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight
             camera.updateProjectionMatrix()
             renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight)
@@ -401,38 +401,38 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
             renderer.domElement.removeEventListener('mousedown', onMouseDown)
             renderer.domElement.removeEventListener('mouseup', onMouseUp)
             renderer.domElement.removeEventListener('mouseleave', onMouseLeave)
-            
+
             if (frameId.current) {
                 cancelAnimationFrame(frameId.current)
             }
-            
+
             if (hoverTimeoutRef.current) {
                 clearTimeout(hoverTimeoutRef.current)
             }
-            
+
             if (mountRef.current && renderer.domElement) {
                 mountRef.current.removeChild(renderer.domElement)
             }
-            
+
             // Clean up Three.js resources
-            logosRef.current.forEach(group => {
+            logosRef.current.forEach((group) => {
                 group.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
                         child.geometry.dispose()
                         if (Array.isArray(child.material)) {
-                            child.material.forEach(material => material.dispose())
+                            child.material.forEach((material) => material.dispose())
                         } else {
                             child.material.dispose()
                         }
                     }
                 })
             })
-            
-            linesRef.current.forEach(line => {
+
+            linesRef.current.forEach((line) => {
                 line.geometry.dispose()
                 ;(line.material as THREE.Material).dispose()
             })
-            
+
             renderer.dispose()
         }
     }, [integrations, createLogoTexture, generateConstellationPositions, createCentralTriangle, createConnectionLine, getLogoSize])
@@ -485,12 +485,8 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
                     <div style={{ fontWeight: 'bold', marginBottom: '6px', color: '#667eea', fontSize: '16px' }}>
                         {hoverInfo.integration.name}
                     </div>
-                    <div style={{ marginBottom: '10px', opacity: 0.9, lineHeight: '1.4' }}>
-                        {hoverInfo.integration.description}
-                    </div>
-                    <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '12px' }}>
-                        Category: {hoverInfo.integration.category}
-                    </div>
+                    <div style={{ marginBottom: '10px', opacity: 0.9, lineHeight: '1.4' }}>{hoverInfo.integration.description}</div>
+                    <div style={{ fontSize: '12px', opacity: 0.7, marginBottom: '12px' }}>Category: {hoverInfo.integration.category}</div>
                     <button
                         style={{
                             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -523,4 +519,4 @@ const AnimatedIntegrations: React.FC<IntegrationProps> = ({ integrations, classN
     )
 }
 
-export default AnimatedIntegrations 
+export default AnimatedIntegrations

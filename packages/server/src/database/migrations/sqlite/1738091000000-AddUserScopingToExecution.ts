@@ -14,4 +14,4 @@ export class AddUserScopingToExecution1738091000000 implements MigrationInterfac
         await queryRunner.query(`ALTER TABLE "execution" DROP COLUMN "userId";`)
         await queryRunner.query(`ALTER TABLE "execution" DROP COLUMN "organizationId";`)
     }
-} 
+}

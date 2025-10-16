@@ -182,7 +182,7 @@ export function safeParseCsvConfiguration(configObject: ICommonObject | Record<s
 export function validateRowsRequested(
     rowsRequested: number,
     totalRows: number,
-    firstRowIsHeaders: boolean // eslint-disable-line @typescript-eslint/no-unused-vars
+    _firstRowIsHeaders: boolean
 ): {
     isValid: boolean
     maxAllowed: number

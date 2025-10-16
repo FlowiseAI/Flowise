@@ -28,14 +28,14 @@ const getExecutionById = async (executionId: string, user?: IUser): Promise<Exec
     try {
         const appServer = getRunningExpressApp()
         const executionRepository = appServer.AppDataSource.getRepository(Execution)
-        
+
         const queryOptions: any = { where: { id: executionId } }
-        
+
         // If user is provided, add user/organization filtering
         if (user) {
             queryOptions.where.organizationId = user.organizationId
         }
-        
+
         const res = await executionRepository.findOne(queryOptions)
         if (!res) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
@@ -119,14 +119,14 @@ const getAllExecutions = async (filters: ExecutionFilters = {}, userFilter?: Use
 const updateExecution = async (executionId: string, data: Partial<Execution>, user?: IUser): Promise<Execution | null> => {
     try {
         const appServer = getRunningExpressApp()
-        
+
         const queryOptions: any = { id: executionId }
-        
+
         // If user is provided, add user/organization filtering
         if (user) {
             queryOptions.organizationId = user.organizationId
         }
-        
+
         const execution = await appServer.AppDataSource.getRepository(Execution).findOneBy(queryOptions)
         if (!execution) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)

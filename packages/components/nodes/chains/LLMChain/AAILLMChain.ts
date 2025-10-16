@@ -1,8 +1,18 @@
-const { nodeClass: OriginalLLMChain } = require('./LLMChain')
+type LLMChainConstructor = new () => {
+    label: string
+    name: string
+    category: string
+    description: string
+    tags?: string[]
+}
 
-class AAILLMChain_Chains extends (OriginalLLMChain as any) {
-    constructor(fields?: { sessionId?: string }) {
-        super(fields)
+const { nodeClass: OriginalLLMChain } = require('./LLMChain') as {
+    nodeClass: LLMChainConstructor
+}
+
+class AAILLMChain_Chains extends OriginalLLMChain {
+    constructor() {
+        super()
         this.label = 'One-Shot Workflow'
         this.name = 'aaiLLMChain'
         this.category = 'Chains'
@@ -11,4 +21,4 @@ class AAILLMChain_Chains extends (OriginalLLMChain as any) {
     }
 }
 
-module.exports = { nodeClass: AAILLMChain_Chains } 
+module.exports = { nodeClass: AAILLMChain_Chains }

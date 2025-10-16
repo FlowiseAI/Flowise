@@ -233,4 +233,4 @@ class AAIExaSearch_Tools implements INode {
     }
 }
 
-module.exports = { nodeClass: AAIExaSearch_Tools } 
+module.exports = { nodeClass: AAIExaSearch_Tools }

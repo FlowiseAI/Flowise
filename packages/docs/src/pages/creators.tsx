@@ -68,9 +68,9 @@ function OriginalSinSection() {
     return (
         <section className={styles.featuresSection}>
             <div className='container'>
-                <h2 className='text--center'>AI's Original Sin</h2>
+                <h2 className='text--center'>AI&apos;s Original Sin</h2>
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
-                    The foundation was built on theft—but it doesn't have to stay that way
+                    The foundation was built on theft—but it doesn&apos;t have to stay that way
                 </p>
                 <div className='row'>
                     <div className='col col--6'>
@@ -79,7 +79,7 @@ function OriginalSinSection() {
                             <h3>The Current Reality</h3>
                             <p>
                                 Major AI companies built their models by scraping billions of creative works without consent, compensation,
-                                or credit. Artists discovered their life's work powering systems that could replace them.
+                                or credit. Artists discovered their life&apos;s work powering systems that could replace them.
                             </p>
                             <div className={styles.appFeatures}>
                                 <span>🚫 No consent required</span>
@@ -92,7 +92,7 @@ function OriginalSinSection() {
                     <div className='col col--6'>
                         <div className={clsx(styles.featureCard, styles.stepCard)}>
                             <div className={styles.comingSoonIcon}>✨</div>
-                            <h3>What We're Building</h3>
+                            <h3>What We&apos;re Building</h3>
                             <p>
                                 The first AI platform where every image, video, and audio sample is ethically sourced. Where creators are
                                 compensated fairly. Where you control how your work is used.
@@ -186,7 +186,7 @@ function WhyNow() {
             <div className='container'>
                 <h2 className='text--center'>Why This Matters Now</h2>
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
-                    The window for ethical AI is closing—but it's not closed yet
+                    The window for ethical AI is closing—but it&apos;s not closed yet
                 </p>
                 <div className='row'>
                     <div className='col col--6'>
@@ -196,7 +196,7 @@ function WhyNow() {
                                 <strong>The Current Landscape</strong>
                                 <br />
                                 Want to use ethically sourced AI for your creative work? Your options are essentially zero. Every major
-                                model was built on stolen art, and the few "ethical" alternatives lack the quality to compete.
+                                model was built on stolen art, and the few &quot;ethical&quot; alternatives lack the quality to compete.
                             </div>
                         </div>
                     </div>
@@ -207,7 +207,7 @@ function WhyNow() {
                                 <strong>Our Opportunity</strong>
                                 <br />
                                 We can build something better. A model trained exclusively on ethically sourced content that rivals or
-                                exceeds the quality of those built on theft. Prove that doing right doesn't mean falling behind.
+                                exceeds the quality of those built on theft. Prove that doing right doesn&apos;t mean falling behind.
                             </div>
                         </div>
                     </div>
@@ -286,7 +286,7 @@ function ClosingRally() {
             <div className='container text--center'>
                 <h2>This Is Our Moment to Choose Differently</h2>
                 <p style={{ fontSize: '1.3rem', marginBottom: '2rem', opacity: 0.9 }}>
-                    To prove that ethical AI isn't just possible—it's better
+                    To prove that ethical AI isn&apos;t just possible—it&apos;s better
                 </p>
                 <div className='row' style={{ marginBottom: '3rem' }}>
                     <div className='col col--12'>
@@ -319,7 +319,7 @@ function ClosingRally() {
                     </a>
                     <div className={styles.secondaryLinks}>
                         <a href='/blog/original-sin' className={styles.secondaryLink}>
-                            📖 Read "Original Sin"
+                            📖 Read &quot;Original Sin&quot;
                         </a>
                         <a href='https://discord.gg/X54ywt8pzj' className={styles.secondaryLink}>
                             💬 Join Discord

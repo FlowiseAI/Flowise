@@ -188,4 +188,4 @@ class AAIDeepseek_ChatModels implements INode {
     }
 }
 
-module.exports = { nodeClass: AAIDeepseek_ChatModels } 
+module.exports = { nodeClass: AAIDeepseek_ChatModels }

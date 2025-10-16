@@ -13,7 +13,7 @@ const getExecutionById = async (req: Request, res: Response, next: NextFunction)
 
         const executionId = req.params.id
         const execution = await executionsService.getExecutionById(executionId, req.user)
-        
+
         // Check ownership for the specific execution
         if (!(await checkOwnership(execution, req.user, req))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
@@ -42,7 +42,7 @@ const updateExecution = async (req: Request, res: Response, next: NextFunction) 
         }
 
         const executionId = req.params.id
-        
+
         // First check if the execution exists and the user has access to it
         const existingExecution = await executionsService.getExecutionById(executionId, req.user)
         if (!(await checkOwnership(existingExecution, req.user, req))) {

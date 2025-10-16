@@ -19,7 +19,7 @@ import { v4 as uuidv4 } from 'uuid'
 import moment from 'moment/moment'
 
 // material-ui
-import { Button, Stack, Grid, Box, Typography, IconButton, Stepper, Step, StepLabel, Tooltip } from '@mui/material'
+import { Button, Stack, Grid, Box, Typography, IconButton, Stepper, Step, StepLabel } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -510,9 +510,12 @@ const VectorStoreConfigure = () => {
                                     </IconButton>
                                 </ViewHeader>
                                 <Box sx={{ mb: 2 }}>
-                                    <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <span role="img" aria-label="info">ℹ️</span>
-                                        <b>Embeddings, Vector Store, and Record Manager are configured and saved as a unit.</b> All changes are applied together. Partial updates are not allowed.
+                                    <Typography variant='body1' sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <span role='img' aria-label='info'>
+                                            ℹ️
+                                        </span>
+                                        <b>Embeddings, Vector Store, and Record Manager are configured and saved as a unit.</b> All changes
+                                        are applied together. Partial updates are not allowed.
                                     </Typography>
                                 </Box>
                                 <Steps />

@@ -90,7 +90,7 @@ const CsvNoticeCard: React.FC<CsvNoticeCardProps> = ({ onRefresh }) => {
                             CSV Processor Setup Required
                         </Typography>
                         <Typography variant='body2' color='textSecondary' sx={{ mb: 1 }}>
-                            To use the CSV Transformer, you need at least one chatflow tagged with 'csv'.
+                            To use the CSV Transformer, you need at least one chatflow tagged with &apos;csv&apos;.
                         </Typography>
                         <Typography variant='body2' color='textSecondary' sx={{ mb: 1 }}>
                             Click below to install our ready-to-use CSV processor template from the marketplace.

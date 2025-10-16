@@ -122,9 +122,9 @@ export const MemoizedReactMarkdown = memo(
                         },
                         img({ src, alt, ...imgProps }) {
                             return (
-                                <Box 
-                                    sx={{ 
-                                        display: 'block', 
+                                <Box
+                                    sx={{
+                                        display: 'block',
                                         margin: '16px 0',
                                         width: '100%',
                                         maxWidth: '800px',
@@ -152,7 +152,7 @@ export const MemoizedReactMarkdown = memo(
                                                 width: '100%',
                                                 height: 'auto'
                                             }}
-                                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+                                            sizes='(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px'
                                             onError={(e) => {
                                                 const imgElement = e.target
                                                 const fallbackImg = document.createElement('img')
@@ -165,19 +165,19 @@ export const MemoizedReactMarkdown = memo(
                                         />
                                     </Box>
                                     <Box sx={{ mt: 1, textAlign: 'center' }}>
-                                        <Link 
+                                        <Link
                                             href={src}
                                             download
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            sx={{ 
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                            sx={{
                                                 display: 'inline-flex',
                                                 alignItems: 'center',
                                                 gap: 0.5,
                                                 fontSize: '0.875rem',
                                                 textDecoration: 'none',
                                                 color: 'primary.main',
-                                                '&:hover': { 
+                                                '&:hover': {
                                                     textDecoration: 'underline'
                                                 }
                                             }}

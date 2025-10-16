@@ -1,7 +1,6 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { getFileFromStorage, handleEscapeCharacters } from '../../../src'
 import { Document } from '@langchain/core/documents'
 

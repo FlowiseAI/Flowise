@@ -261,7 +261,7 @@ class FireCrawl_DocumentLoaders implements INode {
     credential: INodeParams
     outputs: INodeOutputsValue[]
     tags: string[]
-    
+
     constructor() {
         this.label = 'FireCrawl'
         this.name = 'fireCrawl'

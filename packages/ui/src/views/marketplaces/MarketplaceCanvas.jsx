@@ -55,7 +55,7 @@ const MarketplaceCanvas = () => {
     const onChatflowCopy = (stateData) => {
         // stateData is now the complete state with all template information
         const flowDataParsed = stateData.flowData ? JSON.parse(stateData.flowData) : {}
-        
+
         const isAgentCanvas = (flowDataParsed?.nodes || []).some(
             (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
         )

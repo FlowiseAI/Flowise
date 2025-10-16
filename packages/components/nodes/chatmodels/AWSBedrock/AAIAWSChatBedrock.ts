@@ -20,7 +20,7 @@ class AAIAWSChatBedrock_ChatModels implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     tags: string[]
-    
+
     constructor() {
         this.label = 'Answer AWSChatBedrock'
         this.name = 'aaiAwsChatBedrock'
@@ -157,4 +157,4 @@ class AAIAWSChatBedrock_ChatModels implements INode {
     }
 }
 
-module.exports = { nodeClass: AAIAWSChatBedrock_ChatModels } 
+module.exports = { nodeClass: AAIAWSChatBedrock_ChatModels }

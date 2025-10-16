@@ -28,8 +28,6 @@ export function parseCsvWithoutHeaders(input: string): ParsedCsvResult {
     return parseWithoutHeaders(input)
 }
 
-
-
 /**
  * Parse CSV with headers
  */

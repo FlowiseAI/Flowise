@@ -821,7 +821,7 @@ function FinalCTA() {
                             <h2 className={styles.finalCtaHeadline}>Ready to Launch an AI Win in the Next 30 Days?</h2>
                             <p className={styles.finalCtaCopy}>
                                 Save your seat for Thursday&apos;s live workshop and walk away with the exact templates, governance
-                                safeguards, and deployment timeline that's driving success for leading enterprises.
+                                safeguards, and deployment timeline that&apos;s driving success for leading enterprises.
                             </p>
 
                             <div

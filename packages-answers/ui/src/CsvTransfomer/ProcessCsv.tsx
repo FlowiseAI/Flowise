@@ -513,8 +513,8 @@ const ProcessCsv = ({
                             Step 1: Upload CSV File
                         </Typography>
                         <Typography variant='body1' gutterBottom>
-                            Upload the CSV file you want to process with AI. Ensure the first row contains headers. Lines starting with '#'
-                            are treated as comments.
+                            Upload the CSV file you want to process with AI. Ensure the first row contains headers. Lines starting with
+                            &apos;#&apos; are treated as comments.
                         </Typography>
                         <Box {...getRootProps({ style })}>
                             <input {...getInputProps()} />
@@ -527,7 +527,7 @@ const ProcessCsv = ({
                                     </IconButton>
                                 </Stack>
                             ) : (
-                                <Typography>{"Drag 'n' drop a CSV file here, or click to select a file"}</Typography>
+                                <Typography>{'Drag &apos;n&apos; drop a CSV file here, or click to select a file'}</Typography>
                             )}
                         </Box>
                     </Stack>
