@@ -1,6 +1,6 @@
 import express from 'express'
 import chatflowsController from '../../controllers/chatflows'
-import { checkAnyPermission, checkPermission } from '../../enterprise/rbac/PermissionCheck'
+import { checkAnyPermission } from '../../enterprise/rbac/PermissionCheck'
 const router = express.Router()
 
 // CREATE
@@ -31,7 +31,7 @@ router.put(
 )
 
 // DELETE
-router.delete(['/', '/:id'], checkPermission('chatflows:delete,agentflows:delete'), chatflowsController.deleteChatflow)
+router.delete(['/', '/:id'], checkAnyPermission('chatflows:delete,agentflows:delete'), chatflowsController.deleteChatflow)
 
 // CHECK FOR CHANGE
 router.get(
