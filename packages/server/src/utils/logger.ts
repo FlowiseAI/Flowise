@@ -230,27 +230,32 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
     const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
 
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
-        const sanitizedBody = sanitizeObject(req.body)
+        const isDebugLevel = logger.level === 'debug' || process.env.DEBUG === 'true'
 
-        const sanitizedQuery = sanitizeObject(req.query)
-        const sanitizedHeaders = { ...req.headers }
-
-        const sensitiveHeaders = getSensitiveHeaderFields()
-        sensitiveHeaders.forEach((header) => {
-            if (sanitizedHeaders[header]) {
-                sanitizedHeaders[header] = '********'
-            }
-        })
-
-        const requestMetadata = {
+        const requestMetadata: any = {
             request: {
                 method: req.method,
                 url: req.url,
-                body: sanitizedBody,
-                query: sanitizedQuery,
-                params: req.params,
-                headers: sanitizedHeaders
+                params: req.params
             }
+        }
+
+        // Only include headers, body, and query if log level is debug
+        if (isDebugLevel) {
+            const sanitizedBody = sanitizeObject(req.body)
+            const sanitizedQuery = sanitizeObject(req.query)
+            const sanitizedHeaders = { ...req.headers }
+
+            const sensitiveHeaders = getSensitiveHeaderFields()
+            sensitiveHeaders.forEach((header) => {
+                if (sanitizedHeaders[header]) {
+                    sanitizedHeaders[header] = '********'
+                }
+            })
+
+            requestMetadata.request.body = sanitizedBody
+            requestMetadata.request.query = sanitizedQuery
+            requestMetadata.request.headers = sanitizedHeaders
         }
 
         const getRequestEmoji = (method: string) => {
