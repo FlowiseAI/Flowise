@@ -38,6 +38,10 @@ export class StripeManager {
     }
 
     public async getProductIdFromSubscription(subscriptionId: string) {
+        if (!subscriptionId || subscriptionId.trim() === '') {
+            return ''
+        }
+
         if (!this.stripe) {
             throw new Error('Stripe is not initialized')
         }
@@ -62,8 +66,7 @@ export class StripeManager {
 
             return productId
         } catch (error) {
-            console.error('Error getting product ID from subscription:', error)
-            throw error
+            return ''
         }
     }
 

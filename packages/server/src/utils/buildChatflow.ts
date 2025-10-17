@@ -1036,9 +1036,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         const orgId = org.id
         organizationId = orgId
         const subscriptionId = org.subscriptionId as string
-
-        const subscriptionDetails = await appServer.usageCacheManager.getSubscriptionDataFromCache(subscriptionId)
-        const productId = subscriptionDetails?.productId || ''
+        const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
 
         await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
 
