@@ -27,9 +27,12 @@ export function getAllowedCorsOrigins(): string {
 }
 
 function parseAllowedOrigins(allowedOrigins: string): string[] {
-    // if (allowedOrigins === '*') {
-    //     return ['*']
-    // }
+    if (!allowedOrigins) {
+        return []
+    }
+    if (allowedOrigins === '*') {
+        return ['*']
+    }
     return allowedOrigins
         .split(',')
         .map((origin) => origin.trim())
