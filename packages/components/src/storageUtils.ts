@@ -937,8 +937,12 @@ const _cleanEmptyLocalFolders = (dirPath: string) => {
  */
 const _cleanEmptyS3Folders = async (s3Client: S3Client, Bucket: string, prefix: string) => {
     try {
-        // Skip if prefix is empty
-        if (!prefix) return
+        // Defensive: ensure prefix is a string
+        if (Array.isArray(prefix)) {
+            // Use the first value or reject, depending on business logic
+            prefix = prefix[0];
+        }
+        if (typeof prefix !== 'string' || !prefix) return
 
         // List objects in this "folder"
         const listCmd = new ListObjectsV2Command({
