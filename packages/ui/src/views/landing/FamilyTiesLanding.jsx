@@ -100,7 +100,8 @@ const FamilyTiesLanding = () => {
                             Where every story, celebration, and connection finds its place
                         </Typography>
                         <Typography variant='h6' sx={{ color: 'rgba(255,255,255,0.88)', maxWidth: 620, fontWeight: 400 }}>
-                            Family Ties is the digital home built for modern families. Thoughtful design, meaningful rituals, and secure sharing keep your loved ones close—no matter the distance.
+                            Family Ties is the digital home built for modern families. Thoughtful design, meaningful rituals, and secure sharing keep
+                            your loved ones close—no matter the distance.
                         </Typography>
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'stretch', sm: 'center' }}>
                             <Button
@@ -160,7 +161,8 @@ const FamilyTiesLanding = () => {
                                 We blend warmth, technology, and tradition to keep every generation in sync
                             </Typography>
                             <Typography variant='body1' sx={{ color: brand.textSecondary, lineHeight: 1.7 }}>
-                                From weekly spotlights to interactive timelines, Family Ties helps you honor shared history while designing new memories together. Every feature is intentionally crafted to feel intuitive, inclusive, and meaningful.
+                                From weekly spotlights to interactive timelines, Family Ties helps you honor shared history while designing new
+                                memories together. Every feature is intentionally crafted to feel intuitive, inclusive, and meaningful.
                             </Typography>
                             <Stack spacing={2}>
                                 {values.map((value) => (
@@ -190,9 +192,7 @@ const FamilyTiesLanding = () => {
                                         }}
                                     >
                                         <CardContent sx={{ p: 3 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-                                                {feature.icon}
-                                            </Box>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>{feature.icon}</Box>
                                             <Typography variant='h6' sx={{ fontWeight: 700, mb: 1 }}>
                                                 {feature.title}
                                             </Typography>
@@ -220,7 +220,8 @@ const FamilyTiesLanding = () => {
                                     Rituals that bring everyone home
                                 </Typography>
                                 <Typography variant='body1' sx={{ color: brand.textSecondary, lineHeight: 1.7 }}>
-                                    Schedule reunion planning, collect updates, and celebrate achievements with guided rituals that nurture connection. Automated reminders and collaborative spaces make organizing family life effortless.
+                                    Schedule reunion planning, collect updates, and celebrate achievements with guided rituals that nurture connection.
+                                    Automated reminders and collaborative spaces make organizing family life effortless.
                                 </Typography>
                                 <Stack direction='row' spacing={1.5} alignItems='center'>
                                     <FavoriteRoundedIcon sx={{ color: brand.accent }} />
