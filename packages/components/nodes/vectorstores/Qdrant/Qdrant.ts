@@ -171,7 +171,8 @@ class Qdrant_VectorStores implements INode {
                 description: 'Only return points which satisfy the conditions',
                 type: 'json',
                 additionalParams: true,
-                optional: true
+                optional: true,
+                acceptVariable: true
             }
         ]
         this.outputs = [

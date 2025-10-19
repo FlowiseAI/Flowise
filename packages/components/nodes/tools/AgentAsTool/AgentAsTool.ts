@@ -69,7 +69,8 @@ class AgentAsTool_Tools implements INode {
                 description: 'Override the config passed to the Agentflow.',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Base URL',
@@ -362,10 +363,13 @@ try {
 
         const sandbox = createCodeExecutionSandbox('', [], {}, additionalSandbox)
 
-        const response = await executeJavaScriptCode(code, sandbox, {
-            useSandbox: false,
-            timeout: 10000
+        let response = await executeJavaScriptCode(code, sandbox, {
+            useSandbox: false
         })
+
+        if (typeof response === 'object') {
+            response = JSON.stringify(response)
+        }
 
         return response
     }

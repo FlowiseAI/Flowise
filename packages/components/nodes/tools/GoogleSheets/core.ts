@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
-import { TOOL_ARGS_PREFIX } from '../../../src/agents'
+import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Google Sheets API for managing spreadsheets and values`
 
@@ -183,33 +183,37 @@ class CreateSpreadsheetTool extends BaseGoogleSheetsTool {
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
 
-        const body: any = {
-            properties: {
-                title: params.title
+        try {
+            const body: any = {
+                properties: {
+                    title: params.title
+                }
             }
-        }
 
-        if (params.locale) body.properties.locale = params.locale
-        if (params.timeZone) body.properties.timeZone = params.timeZone
+            if (params.locale) body.properties.locale = params.locale
+            if (params.timeZone) body.properties.timeZone = params.timeZone
 
-        // Add sheets if specified
-        if (params.sheetCount && params.sheetCount > 1) {
-            body.sheets = []
-            for (let i = 0; i < params.sheetCount; i++) {
-                body.sheets.push({
-                    properties: {
-                        title: i === 0 ? 'Sheet1' : `Sheet${i + 1}`
-                    }
-                })
+            // Add sheets if specified
+            if (params.sheetCount && params.sheetCount > 1) {
+                body.sheets = []
+                for (let i = 0; i < params.sheetCount; i++) {
+                    body.sheets.push({
+                        properties: {
+                            title: i === 0 ? 'Sheet1' : `Sheet${i + 1}`
+                        }
+                    })
+                }
             }
-        }
 
-        return await this.makeGoogleSheetsRequest({
-            endpoint: 'spreadsheets',
-            method: 'POST',
-            body,
-            params
-        })
+            return await this.makeGoogleSheetsRequest({
+                endpoint: 'spreadsheets',
+                method: 'POST',
+                body,
+                params
+            })
+        } catch (error) {
+            return formatToolError(`Error creating spreadsheet: ${error}`, params)
+        }
     }
 }
 
@@ -234,23 +238,28 @@ class GetSpreadsheetTool extends BaseGoogleSheetsTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const queryParams = new URLSearchParams()
 
-        if (params.ranges) {
-            params.ranges.split(',').forEach((range: string) => {
-                queryParams.append('ranges', range.trim())
+        try {
+            const queryParams = new URLSearchParams()
+
+            if (params.ranges) {
+                params.ranges.split(',').forEach((range: string) => {
+                    queryParams.append('ranges', range.trim())
+                })
+            }
+            if (params.includeGridData) queryParams.append('includeGridData', 'true')
+
+            const queryString = queryParams.toString()
+            const endpoint = `spreadsheets/${params.spreadsheetId}${queryString ? `?${queryString}` : ''}`
+
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'GET',
+                params
             })
+        } catch (error) {
+            return formatToolError(`Error getting spreadsheet: ${error}`, params)
         }
-        if (params.includeGridData) queryParams.append('includeGridData', 'true')
-
-        const queryString = queryParams.toString()
-        const endpoint = `spreadsheets/${params.spreadsheetId}${queryString ? `?${queryString}` : ''}`
-
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'GET',
-            params
-        })
     }
 }
 
@@ -276,29 +285,33 @@ class UpdateSpreadsheetTool extends BaseGoogleSheetsTool {
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
 
-        const requests = []
-        if (params.title || params.locale || params.timeZone) {
-            const updateProperties: any = {}
-            if (params.title) updateProperties.title = params.title
-            if (params.locale) updateProperties.locale = params.locale
-            if (params.timeZone) updateProperties.timeZone = params.timeZone
+        try {
+            const requests = []
+            if (params.title || params.locale || params.timeZone) {
+                const updateProperties: any = {}
+                if (params.title) updateProperties.title = params.title
+                if (params.locale) updateProperties.locale = params.locale
+                if (params.timeZone) updateProperties.timeZone = params.timeZone
 
-            requests.push({
-                updateSpreadsheetProperties: {
-                    properties: updateProperties,
-                    fields: Object.keys(updateProperties).join(',')
-                }
+                requests.push({
+                    updateSpreadsheetProperties: {
+                        properties: updateProperties,
+                        fields: Object.keys(updateProperties).join(',')
+                    }
+                })
+            }
+
+            const body = { requests }
+
+            return await this.makeGoogleSheetsRequest({
+                endpoint: `spreadsheets/${params.spreadsheetId}:batchUpdate`,
+                method: 'POST',
+                body,
+                params
             })
+        } catch (error) {
+            return formatToolError(`Error updating spreadsheet: ${error}`, params)
         }
-
-        const body = { requests }
-
-        return await this.makeGoogleSheetsRequest({
-            endpoint: `spreadsheets/${params.spreadsheetId}:batchUpdate`,
-            method: 'POST',
-            body,
-            params
-        })
     }
 }
 
@@ -324,21 +337,26 @@ class GetValuesTool extends BaseGoogleSheetsTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const queryParams = new URLSearchParams()
 
-        if (params.valueRenderOption) queryParams.append('valueRenderOption', params.valueRenderOption)
-        if (params.dateTimeRenderOption) queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption)
-        if (params.majorDimension) queryParams.append('majorDimension', params.majorDimension)
+        try {
+            const queryParams = new URLSearchParams()
 
-        const queryString = queryParams.toString()
-        const encodedRange = encodeURIComponent(params.range)
-        const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}${queryString ? `?${queryString}` : ''}`
+            if (params.valueRenderOption) queryParams.append('valueRenderOption', params.valueRenderOption)
+            if (params.dateTimeRenderOption) queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption)
+            if (params.majorDimension) queryParams.append('majorDimension', params.majorDimension)
 
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'GET',
-            params
-        })
+            const queryString = queryParams.toString()
+            const encodedRange = encodeURIComponent(params.range)
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}${queryString ? `?${queryString}` : ''}`
+
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'GET',
+                params
+            })
+        } catch (error) {
+            return formatToolError(`Error getting values: ${error}`, params)
+        }
     }
 }
 
@@ -364,30 +382,34 @@ class UpdateValuesTool extends BaseGoogleSheetsTool {
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
 
-        let values
         try {
-            values = JSON.parse(params.values)
+            let values
+            try {
+                values = JSON.parse(params.values)
+            } catch (error) {
+                throw new Error('Values must be a valid JSON array')
+            }
+
+            const body = {
+                values,
+                majorDimension: params.majorDimension || 'ROWS'
+            }
+
+            const queryParams = new URLSearchParams()
+            queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED')
+
+            const encodedRange = encodeURIComponent(params.range)
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}?${queryParams.toString()}`
+
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'PUT',
+                body,
+                params
+            })
         } catch (error) {
-            throw new Error('Values must be a valid JSON array')
+            return formatToolError(`Error updating values: ${error}`, params)
         }
-
-        const body = {
-            values,
-            majorDimension: params.majorDimension || 'ROWS'
-        }
-
-        const queryParams = new URLSearchParams()
-        queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED')
-
-        const encodedRange = encodeURIComponent(params.range)
-        const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}?${queryParams.toString()}`
-
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'PUT',
-            body,
-            params
-        })
     }
 }
 
@@ -413,31 +435,35 @@ class AppendValuesTool extends BaseGoogleSheetsTool {
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
 
-        let values
         try {
-            values = JSON.parse(params.values)
+            let values
+            try {
+                values = JSON.parse(params.values)
+            } catch (error) {
+                throw new Error('Values must be a valid JSON array')
+            }
+
+            const body = {
+                values,
+                majorDimension: params.majorDimension || 'ROWS'
+            }
+
+            const queryParams = new URLSearchParams()
+            queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED')
+            queryParams.append('insertDataOption', params.insertDataOption || 'OVERWRITE')
+
+            const encodedRange = encodeURIComponent(params.range)
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:append?${queryParams.toString()}`
+
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'POST',
+                body,
+                params
+            })
         } catch (error) {
-            throw new Error('Values must be a valid JSON array')
+            return formatToolError(`Error appending values: ${error}`, params)
         }
-
-        const body = {
-            values,
-            majorDimension: params.majorDimension || 'ROWS'
-        }
-
-        const queryParams = new URLSearchParams()
-        queryParams.append('valueInputOption', params.valueInputOption || 'USER_ENTERED')
-        queryParams.append('insertDataOption', params.insertDataOption || 'OVERWRITE')
-
-        const encodedRange = encodeURIComponent(params.range)
-        const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:append?${queryParams.toString()}`
-
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'POST',
-            body,
-            params
-        })
     }
 }
 
@@ -463,15 +489,19 @@ class ClearValuesTool extends BaseGoogleSheetsTool {
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
 
-        const encodedRange = encodeURIComponent(params.range)
-        const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:clear`
+        try {
+            const encodedRange = encodeURIComponent(params.range)
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values/${encodedRange}:clear`
 
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'POST',
-            body: {},
-            params
-        })
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'POST',
+                body: {},
+                params
+            })
+        } catch (error) {
+            return formatToolError(`Error clearing values: ${error}`, params)
+        }
     }
 }
 
@@ -496,24 +526,29 @@ class BatchGetValuesTool extends BaseGoogleSheetsTool {
 
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
-        const queryParams = new URLSearchParams()
 
-        // Add ranges
-        params.ranges.split(',').forEach((range: string) => {
-            queryParams.append('ranges', range.trim())
-        })
+        try {
+            const queryParams = new URLSearchParams()
 
-        if (params.valueRenderOption) queryParams.append('valueRenderOption', params.valueRenderOption)
-        if (params.dateTimeRenderOption) queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption)
-        if (params.majorDimension) queryParams.append('majorDimension', params.majorDimension)
+            // Add ranges
+            params.ranges.split(',').forEach((range: string) => {
+                queryParams.append('ranges', range.trim())
+            })
 
-        const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchGet?${queryParams.toString()}`
+            if (params.valueRenderOption) queryParams.append('valueRenderOption', params.valueRenderOption)
+            if (params.dateTimeRenderOption) queryParams.append('dateTimeRenderOption', params.dateTimeRenderOption)
+            if (params.majorDimension) queryParams.append('majorDimension', params.majorDimension)
 
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'GET',
-            params
-        })
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchGet?${queryParams.toString()}`
+
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'GET',
+                params
+            })
+        } catch (error) {
+            return formatToolError(`Error batch getting values: ${error}`, params)
+        }
     }
 }
 
@@ -539,27 +574,31 @@ class BatchUpdateValuesTool extends BaseGoogleSheetsTool {
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
 
-        let valueRanges
         try {
-            valueRanges = JSON.parse(params.values)
+            let valueRanges
+            try {
+                valueRanges = JSON.parse(params.values)
+            } catch (error) {
+                throw new Error('Values must be a valid JSON array of value ranges')
+            }
+
+            const body = {
+                valueInputOption: params.valueInputOption || 'USER_ENTERED',
+                data: valueRanges,
+                includeValuesInResponse: params.includeValuesInResponse || false
+            }
+
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchUpdate`
+
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'POST',
+                body,
+                params
+            })
         } catch (error) {
-            throw new Error('Values must be a valid JSON array of value ranges')
+            return formatToolError(`Error batch updating values: ${error}`, params)
         }
-
-        const body = {
-            valueInputOption: params.valueInputOption || 'USER_ENTERED',
-            data: valueRanges,
-            includeValuesInResponse: params.includeValuesInResponse || false
-        }
-
-        const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchUpdate`
-
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'POST',
-            body,
-            params
-        })
     }
 }
 
@@ -585,17 +624,21 @@ class BatchClearValuesTool extends BaseGoogleSheetsTool {
     async _call(arg: any): Promise<string> {
         const params = { ...arg, ...this.defaultParams }
 
-        const ranges = params.ranges.split(',').map((range: string) => range.trim())
-        const body = { ranges }
+        try {
+            const ranges = params.ranges.split(',').map((range: string) => range.trim())
+            const body = { ranges }
 
-        const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchClear`
+            const endpoint = `spreadsheets/${params.spreadsheetId}/values:batchClear`
 
-        return await this.makeGoogleSheetsRequest({
-            endpoint,
-            method: 'POST',
-            body,
-            params
-        })
+            return await this.makeGoogleSheetsRequest({
+                endpoint,
+                method: 'POST',
+                body,
+                params
+            })
+        } catch (error) {
+            return formatToolError(`Error batch clearing values: ${error}`, params)
+        }
     }
 }
 

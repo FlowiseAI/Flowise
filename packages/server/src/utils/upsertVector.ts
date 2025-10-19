@@ -276,9 +276,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         const orgId = org.id
         const subscriptionId = org.subscriptionId as string
-
-        const subscriptionDetails = await appServer.usageCacheManager.getSubscriptionDataFromCache(subscriptionId)
-        const productId = subscriptionDetails?.productId || ''
+        const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
 
         const executeData: IExecuteFlowParams = {
             componentNodes: appServer.nodesPool.componentNodes,
