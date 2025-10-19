@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
 import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
+import TextToSpeech from '@/ui-component/extended/TextToSpeech'
 import Security from '@/ui-component/extended/Security'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
@@ -29,6 +30,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Speech to Text',
         id: 'speechToText'
+    },
+    {
+        label: 'Text to Speech',
+        id: 'textToSpeech'
     },
     {
         label: 'Chat Feedback',
@@ -125,18 +130,19 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                                 alignItems: 'center',
                                 mb: 1
                             }}
-                            key={index}
+                            key={item.id}
                             label={item.label}
                             {...a11yProps(index)}
                         ></Tab>
                     ))}
                 </Tabs>
                 {filteredTabs.map((item, index) => (
-                    <TabPanel key={index} value={tabValue} index={index}>
+                    <TabPanel key={item.id} value={tabValue} index={index}>
                         {item.id === 'security' && <Security dialogProps={dialogProps} />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
+                        {item.id === 'textToSpeech' ? <TextToSpeech dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}

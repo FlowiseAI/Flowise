@@ -219,3 +219,67 @@ export const validateArgsForLocalFileAccess = (args: string[]): void => {
         }
     }
 }
+
+export const validateCommandInjection = (args: string[]): void => {
+    const dangerousPatterns = [
+        // Shell metacharacters
+        /[;&|`$(){}[\]<>]/,
+        // Command chaining
+        /&&|\|\||;;/,
+        // Redirections
+        />>|<<|>/,
+        // Backticks and command substitution
+        /`|\$\(/,
+        // Process substitution
+        /<\(|>\(/
+    ]
+
+    for (const arg of args) {
+        if (typeof arg !== 'string') continue
+
+        for (const pattern of dangerousPatterns) {
+            if (pattern.test(arg)) {
+                throw new Error(`Argument contains potentially dangerous characters: "${arg}"`)
+            }
+        }
+    }
+}
+
+export const validateEnvironmentVariables = (env: Record<string, any>): void => {
+    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH']
+
+    for (const [key, value] of Object.entries(env)) {
+        if (dangerousEnvVars.includes(key)) {
+            throw new Error(`Environment variable '${key}' modification is not allowed`)
+        }
+
+        if (typeof value === 'string' && value.includes('\0')) {
+            throw new Error(`Environment variable '${key}' contains null byte`)
+        }
+    }
+}
+
+export const validateMCPServerConfig = (serverParams: any): void => {
+    // Validate the entire server configuration
+    if (!serverParams || typeof serverParams !== 'object') {
+        throw new Error('Invalid server configuration')
+    }
+
+    // Command allowlist - only allow specific safe commands
+    const allowedCommands = ['node', 'npx', 'python', 'python3', 'docker']
+
+    if (serverParams.command && !allowedCommands.includes(serverParams.command)) {
+        throw new Error(`Command '${serverParams.command}' is not allowed. Allowed commands: ${allowedCommands.join(', ')}`)
+    }
+
+    // Validate arguments if present
+    if (serverParams.args && Array.isArray(serverParams.args)) {
+        validateArgsForLocalFileAccess(serverParams.args)
+        validateCommandInjection(serverParams.args)
+    }
+
+    // Validate environment variables
+    if (serverParams.env) {
+        validateEnvironmentVariables(serverParams.env)
+    }
+}
