@@ -205,7 +205,7 @@ class MySQLRecordManager implements RecordManagerInterface {
     }
 
     async createSchema(): Promise<void> {
-        const dataSource = await this.getDataSource('createSchema')
+        const dataSource = await this.getDataSource()
         try {
             const queryRunner = dataSource.createQueryRunner()
             const tableName = this.sanitizeTableName(this.tableName)
