@@ -1,14 +1,14 @@
-import { omit } from 'lodash'
 import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Credential } from '../../database/entities/Credential'
-import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
+import { omit } from 'lodash'
 import { ICredentialReturnResponse } from '../../Interface'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
+import { Credential } from '../../database/entities/Credential'
 import { WorkspaceShared } from '../../enterprise/database/entities/EnterpriseEntities'
 import { WorkspaceService } from '../../enterprise/services/workspace.service'
+import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
+import { decryptCredentialData, transformToCredentialEntity } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const createCredential = async (requestBody: any) => {
     try {
@@ -128,7 +128,8 @@ const getCredentialById = async (credentialId: string, workspaceId: string): Pro
     try {
         const appServer = getRunningExpressApp()
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
+            id: credentialId,
+            workspaceId: workspaceId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
