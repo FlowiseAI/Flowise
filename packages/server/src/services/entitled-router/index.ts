@@ -1,9 +1,10 @@
 import { IRouter, RequestHandler, Router as ExpressRouter } from 'express'
+import { PathParams } from 'express-serve-static-core'
 import { Entitlement } from '../../enterprise/rbac/Entitlements'
 
 export interface RegisteredRoute {
     method: string
-    path: string | string[]
+    path: PathParams
     entitlements: Entitlement[]
 }
 
@@ -16,27 +17,27 @@ class EntitledRouter {
         this.router = ExpressRouter()
     }
 
-    public get(path: string | string[], entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
+    public get(path: PathParams, entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
         this.registeredRoutes.push({ method: 'get', path, entitlements })
         this.router.get(path, ...handlers)
     }
 
-    public post(path: string | string[], entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
+    public post(path: PathParams, entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
         this.registeredRoutes.push({ method: 'post', path, entitlements })
         this.router.post(path, ...handlers)
     }
 
-    public put(path: string | string[], entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
+    public put(path: PathParams, entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
         this.registeredRoutes.push({ method: 'put', path, entitlements })
         this.router.put(path, ...handlers)
     }
 
-    public delete(path: string | string[], entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
+    public delete(path: PathParams, entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
         this.registeredRoutes.push({ method: 'delete', path, entitlements })
         this.router.delete(path, ...handlers)
     }
 
-    public patch(path: string | string[], entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
+    public patch(path: PathParams, entitlements: Entitlement[], ...handlers: RequestHandler[]): void {
         this.registeredRoutes.push({ method: 'patch', path, entitlements })
         this.router.patch(path, ...handlers)
     }

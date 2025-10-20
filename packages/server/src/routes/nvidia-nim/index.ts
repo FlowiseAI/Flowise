@@ -1,16 +1,17 @@
-import express from 'express'
 import nimController from '../../controllers/nvidia-nim'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 const router = entitled.Router()
 
 // READ
-router.get('/preload', nimController.preload)
-router.get('/get-token', nimController.getToken)
-router.get('/download-installer', nimController.downloadInstaller)
-router.get('/list-running-containers', nimController.listRunningContainers)
-router.post('/pull-image', nimController.pullImage)
-router.post('/start-container', nimController.startContainer)
-router.post('/stop-container', nimController.stopContainer)
-router.post('/get-image', nimController.getImage)
-router.post('/get-container', nimController.getContainer)
+router.get('/preload', [Entitlements.unspecified], nimController.preload)
+router.get('/get-token', [Entitlements.unspecified], nimController.getToken)
+router.get('/download-installer', [Entitlements.unspecified], nimController.downloadInstaller)
+router.get('/list-running-containers', [Entitlements.unspecified], nimController.listRunningContainers)
+router.post('/pull-image', [Entitlements.unspecified], nimController.pullImage)
+router.post('/start-container', [Entitlements.unspecified], nimController.startContainer)
+router.post('/stop-container', [Entitlements.unspecified], nimController.stopContainer)
+router.post('/get-image', [Entitlements.unspecified], nimController.getImage)
+router.post('/get-container', [Entitlements.unspecified], nimController.getContainer)
 
 export default router

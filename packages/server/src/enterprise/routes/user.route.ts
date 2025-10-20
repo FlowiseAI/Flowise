@@ -1,14 +1,15 @@
-import express from 'express'
 import { UserController } from '../controllers/user.controller'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../rbac/Entitlements'
 
 const router = entitled.Router()
 const userController = new UserController()
 
-router.get('/', userController.read)
-router.get('/test', userController.test)
+router.get('/', [Entitlements.unspecified], userController.read)
+router.get('/test', [Entitlements.unspecified], userController.test)
 
-router.post('/', userController.create)
+router.post('/', [Entitlements.unspecified], userController.create)
 
-router.put('/', userController.update)
+router.put('/', [Entitlements.unspecified], userController.update)
 
 export default router

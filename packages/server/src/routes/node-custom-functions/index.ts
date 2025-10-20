@@ -1,11 +1,12 @@
-import express from 'express'
 import nodesRouter from '../../controllers/nodes'
+import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 const router = entitled.Router()
 
 // CREATE
 
 // READ
-router.post('/', nodesRouter.executeCustomFunction)
+router.post('/', [Entitlements.unspecified], nodesRouter.executeCustomFunction)
 
 // UPDATE
 

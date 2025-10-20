@@ -1,12 +1,12 @@
-import express from 'express'
 import filesController from '../../controllers/files'
 import { entitled } from '../../services/entitled-router'
+import { Entitlements } from '../../enterprise/rbac/Entitlements'
 const router = entitled.Router()
 
 // READ
-router.get('/', filesController.getAllFiles)
+router.get('/', [Entitlements.unspecified], filesController.getAllFiles)
 
 // DELETE
-router.delete('/', filesController.deleteFile)
+router.delete('/', [Entitlements.unspecified], filesController.deleteFile)
 
 export default router
