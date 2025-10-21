@@ -38,7 +38,7 @@ import useConfirm from '@/hooks/useConfirm'
 import { useAuth } from '@/hooks/useAuth'
 
 // icons
-import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
+import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
 
 // utils
 import {
@@ -98,6 +98,7 @@ const Canvas = () => {
     const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
     const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
+    const [isBackgroundEnabled, setIsBackgroundEnabled] = useState(true)
 
     const reactFlowWrapper = useRef(null)
 
@@ -621,8 +622,18 @@ const Canvas = () => {
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsBackgroundEnabled(!isBackgroundEnabled)
+                                        }}
+                                        title='toggle background'
+                                        aria-label='toggle background'
+                                    >
+                                        {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
+                                    </button>
                                 </Controls>
-                                <Background color='#aaa' gap={16} />
+                                {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
                                 <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                                 {isSyncNodesButtonEnabled && (
                                     <Fab
