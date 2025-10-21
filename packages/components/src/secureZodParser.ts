@@ -16,7 +16,8 @@ export class SecureZodSchemaParser {
         'optional',
         'max',
         'min',
-        'describe'
+        'describe',
+        'default'
     ]
 
     /**
@@ -137,7 +138,25 @@ export class SecureZodSchemaParser {
     private static parseZodType(typeStr: string): any {
         // Check if this is a nested object (not in an array)
         if (typeStr.startsWith('z.object(') && !typeStr.startsWith('z.array(')) {
-            // Extract object content
+            // Check if there are modifiers after the object
+            const objectWithModifiers = this.extractObjectWithModifiers(typeStr)
+            if (objectWithModifiers.hasModifiers) {
+                const objectMatch = objectWithModifiers.objectPart.match(/z\.object\(\s*\{([\s\S]*)\}\s*\)/)
+                if (!objectMatch) {
+                    throw new Error('Invalid object syntax')
+                }
+
+                const objectContent = objectMatch[1]
+                const objectProperties = this.parseObjectProperties(objectContent)
+
+                return {
+                    isNestedObject: true,
+                    objectSchema: objectProperties,
+                    modifiers: objectWithModifiers.modifiers
+                }
+            }
+
+            // Original code for objects without modifiers
             const objectMatch = typeStr.match(/z\.object\(\s*\{([\s\S]*)\}\s*\)/)
             if (!objectMatch) {
                 throw new Error('Invalid object syntax')
@@ -154,6 +173,16 @@ export class SecureZodSchemaParser {
 
         // Check if this is any kind of array
         if (typeStr.startsWith('z.array(')) {
+            // Check if there are modifiers after the array
+            const arrayWithModifiers = this.extractArrayWithModifiers(typeStr)
+            if (arrayWithModifiers.hasModifiers) {
+                const arrayResult = this.parseArray(arrayWithModifiers.arrayPart)
+                // Convert array result to have modifiers
+                return {
+                    ...arrayResult,
+                    modifiers: arrayWithModifiers.modifiers
+                }
+            }
             return this.parseArray(typeStr)
         }
 
@@ -329,6 +358,191 @@ export class SecureZodSchemaParser {
         return items
     }
 
+    private static extractArrayWithModifiers(typeStr: string): { arrayPart: string; modifiers: any[]; hasModifiers: boolean } {
+        // Find the matching closing parenthesis for z.array(
+        let depth = 0
+        let arrayEndIndex = -1
+        let startIndex = typeStr.indexOf('z.array(') + 7 // Position after "z.array"
+
+        for (let i = startIndex; i < typeStr.length; i++) {
+            if (typeStr[i] === '(') depth++
+            else if (typeStr[i] === ')') {
+                depth--
+                if (depth === 0) {
+                    arrayEndIndex = i + 1
+                    break
+                }
+            }
+        }
+
+        if (arrayEndIndex === -1) {
+            return { arrayPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        const arrayPart = typeStr.substring(0, arrayEndIndex)
+        const remainingPart = typeStr.substring(arrayEndIndex)
+
+        if (!remainingPart.startsWith('.')) {
+            return { arrayPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        // Parse modifiers
+        const modifiers: any[] = []
+        const modifierParts = remainingPart.substring(1).split('.')
+
+        for (const part of modifierParts) {
+            const modMatch = part.match(/^(\w+)(\(.*\))?$/)
+            if (!modMatch) {
+                throw new Error(`Invalid modifier: ${part}`)
+            }
+
+            const modName = modMatch[1]
+            const modArgs = modMatch[2] ? this.parseArguments(modMatch[2]) : []
+
+            if (!this.ALLOWED_TYPES.includes(modName)) {
+                throw new Error(`Unsupported modifier: ${modName}`)
+            }
+
+            modifiers.push({ name: modName, args: modArgs })
+        }
+
+        return { arrayPart, modifiers, hasModifiers: true }
+    }
+
+    private static extractObjectWithModifiers(typeStr: string): { objectPart: string; modifiers: any[]; hasModifiers: boolean } {
+        // Find the matching closing brace and parenthesis for z.object({...})
+        let braceDepth = 0
+        let parenDepth = 0
+        let objectEndIndex = -1
+        let startIndex = typeStr.indexOf('z.object(') + 8 // Position after "z.object"
+        let foundOpenBrace = false
+
+        for (let i = startIndex; i < typeStr.length; i++) {
+            if (typeStr[i] === '{') {
+                braceDepth++
+                foundOpenBrace = true
+            } else if (typeStr[i] === '}') {
+                braceDepth--
+            } else if (typeStr[i] === '(' && foundOpenBrace) {
+                parenDepth++
+            } else if (typeStr[i] === ')' && foundOpenBrace) {
+                if (braceDepth === 0 && parenDepth === 0) {
+                    objectEndIndex = i + 1
+                    break
+                }
+                parenDepth--
+            }
+        }
+
+        if (objectEndIndex === -1) {
+            return { objectPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        const objectPart = typeStr.substring(0, objectEndIndex)
+        const remainingPart = typeStr.substring(objectEndIndex)
+
+        if (!remainingPart.startsWith('.')) {
+            return { objectPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        // Parse modifiers (need special handling for .default() with object argument)
+        const modifiers: any[] = []
+        let i = 1 // Skip the initial dot
+
+        while (i < remainingPart.length) {
+            // Find modifier name
+            const modNameMatch = remainingPart.substring(i).match(/^(\w+)/)
+            if (!modNameMatch) break
+
+            const modName = modNameMatch[1]
+            i += modName.length
+
+            // Check for arguments
+            let modArgs: any[] = []
+            if (i < remainingPart.length && remainingPart[i] === '(') {
+                // Find matching closing paren, handling nested structures
+                let depth = 0
+                let argStart = i
+                for (let j = i; j < remainingPart.length; j++) {
+                    if (remainingPart[j] === '(') depth++
+                    else if (remainingPart[j] === ')') {
+                        depth--
+                        if (depth === 0) {
+                            const argsStr = remainingPart.substring(argStart, j + 1)
+                            modArgs = this.parseComplexArguments(argsStr)
+                            i = j + 1
+                            break
+                        }
+                    }
+                }
+            }
+
+            if (!this.ALLOWED_TYPES.includes(modName)) {
+                throw new Error(`Unsupported modifier: ${modName}`)
+            }
+
+            modifiers.push({ name: modName, args: modArgs })
+
+            // Skip dot if present
+            if (i < remainingPart.length && remainingPart[i] === '.') {
+                i++
+            }
+        }
+
+        return { objectPart, modifiers, hasModifiers: modifiers.length > 0 }
+    }
+
+    private static parseComplexArguments(argsStr: string): any[] {
+        // Remove outer parentheses
+        const inner = argsStr.slice(1, -1).trim()
+        if (!inner) return []
+
+        // Check if it's an object literal
+        if (inner.startsWith('{') && inner.endsWith('}')) {
+            // Parse object literal for .default()
+            return [this.parseObjectLiteral(inner)]
+        }
+
+        // Use existing parseArguments for simple cases
+        return this.parseArguments(argsStr)
+    }
+
+    private static parseObjectLiteral(objStr: string): any {
+        // Simple object literal parser for default values
+        const obj: any = {}
+        const content = objStr.slice(1, -1).trim() // Remove { }
+
+        if (!content) return obj
+
+        // Split by comma at depth 0
+        const props = this.splitProperties(content)
+
+        for (const prop of props) {
+            const colonIndex = prop.indexOf(':')
+            if (colonIndex === -1) continue
+
+            const key = prop.substring(0, colonIndex).trim().replace(/['"]/g, '')
+            const valueStr = prop.substring(colonIndex + 1).trim()
+
+            // Parse the value
+            if (valueStr.startsWith('[') && valueStr.endsWith(']')) {
+                // Array value
+                const arrayContent = valueStr.slice(1, -1)
+                obj[key] = this.parseArrayContent(arrayContent)
+            } else if (valueStr.startsWith('"') && valueStr.endsWith('"')) {
+                // String value
+                obj[key] = valueStr.slice(1, -1)
+            } else if (valueStr.match(/^\d+$/)) {
+                // Number value
+                obj[key] = parseInt(valueStr, 10)
+            } else {
+                obj[key] = valueStr
+            }
+        }
+
+        return obj
+    }
+
     private static buildZodSchema(parsed: Record<string, any>): z.ZodObject<any> {
         const schemaObj: Record<string, z.ZodTypeAny> = {}
 
@@ -342,19 +556,40 @@ export class SecureZodSchemaParser {
     private static buildZodType(typeInfo: any): z.ZodTypeAny {
         // Special case for nested objects
         if (typeInfo.isNestedObject) {
-            return this.buildZodSchema(typeInfo.objectSchema)
+            let zodType: z.ZodTypeAny = this.buildZodSchema(typeInfo.objectSchema)
+
+            // Apply modifiers if present
+            if (typeInfo.modifiers) {
+                zodType = this.applyModifiers(zodType, typeInfo.modifiers)
+            }
+
+            return zodType
         }
 
         // Special case for array of objects
         if (typeInfo.isArrayOfObjects) {
             const objectSchema = this.buildZodSchema(typeInfo.objectSchema)
-            return z.array(objectSchema)
+            let zodType: z.ZodTypeAny = z.array(objectSchema)
+
+            // Apply modifiers if present
+            if (typeInfo.modifiers) {
+                zodType = this.applyModifiers(zodType, typeInfo.modifiers)
+            }
+
+            return zodType
         }
 
         // Special case for simple arrays
         if (typeInfo.isSimpleArray) {
             const innerZodType = this.buildZodType(typeInfo.innerType)
-            return z.array(innerZodType)
+            let zodType: z.ZodTypeAny = z.array(innerZodType)
+
+            // Apply modifiers if present
+            if (typeInfo.modifiers) {
+                zodType = this.applyModifiers(zodType, typeInfo.modifiers)
+            }
+
+            return zodType
         }
 
         let zodType: z.ZodTypeAny
@@ -386,7 +621,13 @@ export class SecureZodSchemaParser {
         }
 
         // Apply modifiers
-        for (const modifier of typeInfo.modifiers || []) {
+        zodType = this.applyModifiers(zodType, typeInfo.modifiers || [])
+
+        return zodType
+    }
+
+    private static applyModifiers(zodType: z.ZodTypeAny, modifiers: any[]): z.ZodTypeAny {
+        for (const modifier of modifiers) {
             switch (modifier.name) {
                 case 'int':
                     if (zodType._def?.typeName === 'ZodNumber') {
@@ -422,12 +663,16 @@ export class SecureZodSchemaParser {
                         zodType = zodType.describe(modifier.args[0])
                     }
                     break
+                case 'default':
+                    if (modifier.args[0] !== undefined) {
+                        zodType = zodType.default(modifier.args[0])
+                    }
+                    break
                 default:
                     // Ignore unknown modifiers for compatibility
                     break
             }
         }
-
         return zodType
     }
 }

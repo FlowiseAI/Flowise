@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
@@ -18,7 +18,7 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const message = `Uploaded files will be parsed as strings and sent to the LLM. If file upload is enabled on the Vector Store as well, this will override and take precedence.
+const message = `The full contents of uploaded files will be converted to text and sent to the Agent.
 <br />
 Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank'>docs</a> for more details.`
 
@@ -41,6 +41,7 @@ const availableFileTypes = [
 
 const FileUpload = ({ dialogProps }) => {
     const dispatch = useDispatch()
+    const customization = useSelector((state) => state.customization)
 
     useNotifier()
 
@@ -234,14 +235,18 @@ const FileUpload = ({ dialogProps }) => {
                 <Box
                     sx={{
                         borderRadius: 2,
-                        border: '1px solid #e0e0e0',
-                        backgroundColor: '#fafafa',
+                        border: customization.isDarkMode ? '1px solid #424242' : '1px solid #e0e0e0',
+                        backgroundColor: customization.isDarkMode ? '#2d2d2d' : '#fafafa',
                         padding: 3,
                         marginBottom: 3,
                         marginTop: 2
                     }}
                 >
-                    <Typography sx={{ fontSize: 16, fontWeight: 600, marginBottom: 2, color: '#424242' }}>PDF Configuration</Typography>
+                    <Typography
+                        sx={{ fontSize: 16, fontWeight: 600, marginBottom: 2, color: customization.isDarkMode ? '#ffffff' : '#424242' }}
+                    >
+                        PDF Configuration
+                    </Typography>
 
                     <Box>
                         <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>

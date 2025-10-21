@@ -69,7 +69,8 @@ class Zep_VectorStores implements INode {
                 name: 'zepMetadataFilter',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Embedding Dimension',

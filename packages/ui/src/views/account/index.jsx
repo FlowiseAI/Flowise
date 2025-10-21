@@ -72,12 +72,10 @@ const AccountSettings = () => {
     const [isLoading, setLoading] = useState(true)
     const [profileName, setProfileName] = useState('')
     const [email, setEmail] = useState('')
-    const [migrateEmail, setMigrateEmail] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [usage, setUsage] = useState(null)
     const [isBillingLoading, setIsBillingLoading] = useState(false)
-    const [isMigrateLoading, setIsMigrateLoading] = useState(false)
     const [seatsQuantity, setSeatsQuantity] = useState(0)
     const [prorationInfo, setProrationInfo] = useState(null)
     const [isUpdatingSeats, setIsUpdatingSeats] = useState(false)
@@ -126,7 +124,6 @@ const AccountSettings = () => {
             if (getUserByIdApi.data) {
                 setProfileName(getUserByIdApi.data?.name || '')
                 setEmail(getUserByIdApi.data?.email || '')
-                setMigrateEmail(getUserByIdApi.data?.email || '')
             }
         } catch (e) {
             console.error(e)
@@ -172,45 +169,6 @@ const AccountSettings = () => {
         const currentPlan = getPricingPlansApi.data.find((plan) => plan.prodId === currentUser?.activeOrganizationProductId)
         return currentPlan?.title || ''
     }, [getPricingPlansApi.data, currentUser?.activeOrganizationProductId])
-
-    const handleMigrateEmail = async () => {
-        setIsMigrateLoading(true)
-        try {
-            const obj = {
-                email: migrateEmail
-            }
-            const resp = await accountApi.cancelSubscription(obj)
-            if (resp.status === 200) {
-                enqueueSnackbar({
-                    message: `Instruction to cancel subscription has been sent to ${migrateEmail}`,
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'success',
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-            }
-        } catch (error) {
-            enqueueSnackbar({
-                message: 'Failed to access billing portal',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'error',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        } finally {
-            setIsMigrateLoading(false)
-        }
-    }
 
     const handleBillingPortalClick = async () => {
         setIsBillingLoading(true)
@@ -817,70 +775,6 @@ const AccountSettings = () => {
                                     </Box>
                                 </SettingsSection>
                             )}
-                            <SettingsSection title='Cancel Previous Subscription'>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        display: 'grid',
-                                        gridTemplateColumns: 'repeat(3, 1fr)'
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            gridColumn: 'span 2 / span 2',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'start',
-                                            justifyContent: 'center',
-                                            gap: 1,
-                                            px: 2.5,
-                                            py: 2
-                                        }}
-                                    >
-                                        <Typography variant='body2'>Migrate from existing cloud subscription?</Typography>
-                                        <Typography variant='body2' color='text.secondary'>
-                                            {`If you have an existing cloud app like <your-app>.app.flowiseai.com, after finished migrating your work, you can cancel the previous subscription. We'll send you an email with a link to cancel your previous subscription.`}
-                                        </Typography>
-                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, width: '100%' }}>
-                                            <OutlinedInput
-                                                id='email'
-                                                type='string'
-                                                fullWidth
-                                                placeholder='Email Address'
-                                                name='email'
-                                                onChange={(e) => setMigrateEmail(e.target.value)}
-                                                value={migrateEmail}
-                                            />
-                                        </Box>
-                                    </Box>
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'end',
-                                            px: 2.5,
-                                            py: 2,
-                                            gap: 2
-                                        }}
-                                    >
-                                        <Button
-                                            variant='outlined'
-                                            disabled={!currentUser.isOrganizationAdmin || isMigrateLoading}
-                                            onClick={handleMigrateEmail}
-                                            sx={{ borderRadius: 2, height: 40 }}
-                                        >
-                                            {isMigrateLoading ? (
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                    <CircularProgress size={16} color='inherit' />
-                                                    Loading
-                                                </Box>
-                                            ) : (
-                                                'Send Instructions'
-                                            )}
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            </SettingsSection>
                         </>
                     )}
                 </Stack>
