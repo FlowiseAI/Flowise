@@ -43,18 +43,18 @@ export function getCorsOptions(): any {
     return (req: any, callback: (err: Error | null, options?: any) => void) => {
         const corsOptions = {
             origin: async (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) => {
-                const allowedOriginsString = getAllowedCorsOrigins()
-                const allowedOrigins = parseAllowedOrigins(allowedOriginsString)
+                const allowedOrigins = getAllowedCorsOrigins()
                 const isPredictionReq = isPredictionRequest(req.url)
 
-                // First check global CORS origins
-                if (!origin || allowedOrigins.includes('*')) {
-                    // Additional prediction-specific validation
-                    await checkRequestType(isPredictionReq, req, origin, originCallback)
-                } else if (origin && allowedOrigins.includes(origin)) {
+                if (!origin || allowedOrigins === '*') {
                     await checkRequestType(isPredictionReq, req, origin, originCallback)
                 } else {
-                    originCallback(null, false)
+                    const allowedOriginsList = parseAllowedOrigins(allowedOrigins)
+                    if (origin && allowedOriginsList.includes(origin)) {
+                        await checkRequestType(isPredictionReq, req, origin, originCallback)
+                    } else {
+                        originCallback(null, false)
+                    }
                 }
             }
         }
