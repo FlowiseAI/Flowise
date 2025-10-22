@@ -35,7 +35,7 @@ function parseAllowedOrigins(allowedOrigins: string): string[] {
     }
     return allowedOrigins
         .split(',')
-        .map((origin) => origin.trim())
+        .map((origin) => origin.trim().toLowerCase())
         .filter((origin) => origin.length > 0)
 }
 
@@ -48,26 +48,37 @@ export function getCorsOptions(): any {
                 const isPredictionReq = isPredictionRequest(req.url)
 
                 // First check global CORS origins
-                if (!origin || allowedOrigins.includes('*') || (origin && allowedOrigins.includes(origin))) {
+                if (!origin || allowedOrigins.includes('*')) {
                     // Additional prediction-specific validation
-                    if (isPredictionReq) {
-                        const chatflowId = extractChatflowId(req.url)
-                        if (chatflowId && origin) {
-                            const isAllowed = await validateChatflowDomain(chatflowId, origin, req.user?.activeWorkspaceId)
-
-                            originCallback(null, isAllowed)
-                        } else {
-                            originCallback(null, true)
-                        }
-                    } else {
-                        originCallback(null, true)
-                    }
+                    await checkRequestType(isPredictionReq, req, origin, originCallback)
+                } else if (origin && allowedOrigins.includes(origin)) {
+                    await checkRequestType(isPredictionReq, req, origin, originCallback)
                 } else {
                     originCallback(null, false)
                 }
             }
         }
         callback(null, corsOptions)
+    }
+}
+
+async function checkRequestType(
+    isPredictionReq: boolean,
+    req: any,
+    origin: string | undefined,
+    originCallback: (err: Error | null, allow?: boolean) => void
+) {
+    if (isPredictionReq) {
+        const chatflowId = extractChatflowId(req.url)
+        if (chatflowId && origin) {
+            const isAllowed = await validateChatflowDomain(chatflowId, origin, req.user?.activeWorkspaceId)
+
+            originCallback(null, isAllowed)
+        } else {
+            originCallback(null, true)
+        }
+    } else {
+        originCallback(null, true)
     }
 }
 
