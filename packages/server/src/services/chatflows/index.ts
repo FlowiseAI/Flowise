@@ -106,6 +106,8 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
     try {
         const appServer = getRunningExpressApp()
 
+        await getChatflowById(chatflowId, workspaceId)
+
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
 
         // Update document store usage
