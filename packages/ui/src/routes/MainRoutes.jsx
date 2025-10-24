@@ -5,6 +5,7 @@ import MainLayout from '@/layout/MainLayout'
 import Loadable from '@/ui-component/loading/Loadable'
 
 import { RequireAuth } from '@/routes/RequireAuth'
+import { DefaultRedirect } from '@/routes/DefaultRedirect'
 
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
@@ -78,11 +79,7 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: (
-                <RequireAuth permission={'chatflows:view'}>
-                    <Chatflows />
-                </RequireAuth>
-            )
+            element: <DefaultRedirect />
         },
         {
             path: '/chatflows',

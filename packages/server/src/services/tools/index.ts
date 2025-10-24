@@ -1,12 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
-import { Tool } from '../../database/entities/Tool'
-import { getAppVersion } from '../../utils'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
 import { validate } from 'uuid'
+import { Tool } from '../../database/entities/Tool'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
+import { getAppVersion } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const createTool = async (requestBody: any, orgId: string): Promise<any> => {
     try {
@@ -31,11 +31,12 @@ const createTool = async (requestBody: any, orgId: string): Promise<any> => {
     }
 }
 
-const deleteTool = async (toolId: string): Promise<any> => {
+const deleteTool = async (toolId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).delete({
-            id: toolId
+            id: toolId,
+            workspaceId: workspaceId
         })
         return dbResponse
     } catch (error) {
@@ -65,11 +66,12 @@ const getAllTools = async (workspaceId?: string, page: number = -1, limit: numbe
     }
 }
 
-const getToolById = async (toolId: string): Promise<any> => {
+const getToolById = async (toolId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).findOneBy({
-            id: toolId
+            id: toolId,
+            workspaceId: workspaceId
         })
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
@@ -80,11 +82,12 @@ const getToolById = async (toolId: string): Promise<any> => {
     }
 }
 
-const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
+const updateTool = async (toolId: string, toolBody: any, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const tool = await appServer.AppDataSource.getRepository(Tool).findOneBy({
-            id: toolId
+            id: toolId,
+            workspaceId: workspaceId
         })
         if (!tool) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Tool ${toolId} not found`)
