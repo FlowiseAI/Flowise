@@ -179,8 +179,8 @@ class SQLiteRecordManager implements RecordManagerInterface {
     }
 
     async createSchema(): Promise<void> {
+        const dataSource = await this.getDataSource()
         try {
-            const dataSource = await this.getDataSource()
             const queryRunner = dataSource.createQueryRunner()
             const tableName = this.sanitizeTableName(this.tableName)
 
@@ -208,6 +208,8 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${tableName}" (group_id);`)
                 return
             }
             throw e
+        } finally {
+            await dataSource.destroy()
         }
     }
 
