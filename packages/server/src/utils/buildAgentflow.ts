@@ -1434,8 +1434,37 @@ const executeNode = async ({
 
         return { result: results, agentFlowExecutedData, humanInput: updatedHumanInput }
     } catch (error) {
-        logger.error(`[server]: Error executing node ${nodeId}: ${getErrorMessage(error)}`)
-        throw error
+        const isAborted = getErrorMessage(error).includes('Aborted')
+        const isDocStoreError =
+            getErrorMessage(error).includes('document store') ||
+            getErrorMessage(error).includes('vector store') ||
+            getErrorMessage(error).includes('Knowledge base temporarily unavailable')
+
+        if (isDocStoreError && !isAborted) {
+            logger.warn(`Document store error in node ${nodeId}, continuing execution:`, getErrorMessage(error))
+            agentFlowExecutedData.push({
+                nodeId,
+                nodeLabel: reactFlowNode.data.label,
+                previousNodeIds: reversedGraph[nodeId] || [],
+                data: {
+                    id: nodeId,
+                    name: reactFlowNode.data.name,
+                    warning: `Document store temporarily unavailable: ${getErrorMessage(error)}`,
+                    output: { content: 'Continuing with reduced knowledge capabilities.' }
+                },
+                status: 'FINISHED'
+            })
+            const nodeResult = {
+                output: { content: 'Knowledge base temporarily unavailable. Proceeding with general knowledge.' },
+                warning: getErrorMessage(error)
+            }
+            return { result: nodeResult, shouldStop: false, agentFlowExecutedData }
+        } else {
+            const errorStatus = isAborted ? 'TERMINATED' : 'ERROR'
+            const errorMessage = isAborted ? 'Flow execution was cancelled' : getErrorMessage(error)
+            status = errorStatus
+            throw new Error(errorMessage, { cause: error })
+        }
     }
 }
 
@@ -2044,49 +2073,38 @@ export const executeAgentFlow = async ({
             }
         } catch (error) {
             const isAborted = getErrorMessage(error).includes('Aborted')
-            const errorStatus = isAborted ? 'TERMINATED' : 'ERROR'
-            const errorMessage = isAborted ? 'Flow execution was cancelled' : getErrorMessage(error)
-
-            status = errorStatus
-
-            // Add error info to execution data
-            agentFlowExecutedData.push({
-                nodeId: currentNode.nodeId,
-                nodeLabel: reactFlowNode.data.label,
-                previousNodeIds: reversedGraph[currentNode.nodeId] || [],
-                data: {
-                    id: currentNode.nodeId,
-                    name: reactFlowNode.data.name,
-                    error: errorMessage
-                },
-                status: errorStatus
-            })
-
-            // Stream events to client
-            sseStreamer?.streamNextAgentFlowEvent(chatId, {
-                nodeId: currentNode.nodeId,
-                nodeLabel: reactFlowNode.data.label,
-                status: errorStatus,
-                error: isAborted ? undefined : errorMessage
-            })
-
-            // Only update execution record if this is not a recursive call
-            if (!isRecursive) {
-                sseStreamer?.streamAgentFlowExecutedDataEvent(chatId, agentFlowExecutedData)
-
-                await updateExecution(appDataSource, newExecution.id, workspaceId, {
-                    executionData: JSON.stringify(agentFlowExecutedData),
-                    state: errorStatus
+            const isDocStoreError =
+                getErrorMessage(error).includes('document store') ||
+                getErrorMessage(error).includes('vector store') ||
+                getErrorMessage(error).includes('Knowledge base temporarily unavailable')
+            // Handle document store errors more gracefully
+            if (isDocStoreError && !isAborted) {
+                logger.warn(`Document store error in node ${currentNode.nodeId}, continuing execution:`, getErrorMessage(error))
+                // Add warning to execution data instead of error
+                agentFlowExecutedData.push({
+                    nodeId: currentNode.nodeId,
+                    nodeLabel: reactFlowNode.data.label,
+                    previousNodeIds: reversedGraph[currentNode.nodeId] || [],
+                    data: {
+                        id: currentNode.nodeId,
+                        name: reactFlowNode.data.name,
+                        warning: `Document store temporarily unavailable: ${getErrorMessage(error)}`,
+                        output: { content: 'Continuing with reduced knowledge capabilities.' }
+                    },
+                    status: 'FINISHED' // Mark as finished with warning instead of error
                 })
-
-                sseStreamer?.streamAgentFlowEvent(chatId, errorStatus)
+                // Continue execution instead of throwing
+                nodeResult = {
+                    output: { content: 'Knowledge base temporarily unavailable. Proceeding with general knowledge.' },
+                    warning: getErrorMessage(error)
+                }
+            } else {
+                const errorStatus = isAborted ? 'TERMINATED' : 'ERROR'
+                const errorMessage = isAborted ? 'Flow execution was cancelled' : getErrorMessage(error)
+                status = errorStatus
+                // ... existing error handling code
+                throw new Error(errorMessage, { cause: error })
             }
-
-            if (parentTraceIds && analyticHandlers) {
-                await analyticHandlers.onChainError(parentTraceIds, errorMessage, true)
-            }
-
-            throw new Error(errorMessage)
         }
 
         logger.debug(`/////////////////////////////////////////////////////////////////////////////`)
