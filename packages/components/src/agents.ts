@@ -24,6 +24,7 @@ import {
 } from 'langchain/agents'
 import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
+import { modelSupportsStop } from './utils'
 import { getErrorMessage } from './error'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
@@ -778,9 +779,11 @@ export const createReactAgent = async ({ llm, tools, prompt }: CreateReactAgentP
         tool_names: toolNames.join(', ')
     })
     // TODO: Add .bind to core runnable interface.
-    const llmWithStop = (llm as BaseLanguageModel).bind({
-        stop: ['\nObservation:']
-    })
+    // Bind stop only when the underlying model supports it (some models like gpt-5-nano reject `stop`)
+    const llmModelName = (llm as any)?.modelName ?? (llm as any)?.model ?? (llm as any)?.configuredModel
+    const llmWithStop = modelSupportsStop(llmModelName)
+        ? (llm as BaseLanguageModel).bind({ stop: ['\nObservation:'] })
+        : (llm as BaseLanguageModel)
     const agent = RunnableSequence.from([
         RunnablePassthrough.assign({
             //@ts-ignore
