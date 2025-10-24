@@ -63,12 +63,6 @@ export const init = async (): Promise<void> => {
             })
             break
         case 'postgres':
-            logger.info('Using Postgres as the database')
-            logger.info(`Database Host: ${process.env.DATABASE_HOST}`)
-            logger.info(`Database Port: ${process.env.DATABASE_PORT}`)
-            logger.info(`Database User: ${process.env.DATABASE_USER}`)
-            logger.info(`Database Name: ${process.env.DATABASE_NAME}`)
-            logger.info(`Database Schema: ${process.env.DATABASE_SCHEMA}`)
             const dbSchema = process.env.DATABASE_SCHEMA;
             const isCustomSchema = dbSchema && dbSchema !== 'public';
             appDataSource = new DataSource({
@@ -78,7 +72,7 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                ...(isCustomSchema && { schema: dbSchema }), // Only set if custom schema
+                ...(isCustomSchema && { schema: dbSchema }), // set custom schema if provided
                 ssl: getDatabaseSSLFromEnv(),
                 synchronize: false,
                 migrationsRun: false,
@@ -87,7 +81,7 @@ export const init = async (): Promise<void> => {
                 migrationsTableName: 'migrations',
                 extra: {
                     idleTimeoutMillis: 120000,
-                    // Add this to set the search_path
+                    // set the search_path for the migrations and queries to the desired schema
                     ...(isCustomSchema && { options: `-c search_path=${dbSchema},public` })
                 },
                 logging: ['error', 'warn', 'info', 'log'],
