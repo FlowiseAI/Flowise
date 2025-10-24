@@ -111,7 +111,6 @@ export function getDataSource(): DataSource {
     if (appDataSource === undefined) {
         init()
     }
-    console.debug('Data Source Type:', appDataSource)
     return appDataSource
 }
 
