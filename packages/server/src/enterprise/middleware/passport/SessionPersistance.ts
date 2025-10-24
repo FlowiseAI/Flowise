@@ -68,6 +68,7 @@ export const initializeDBClientAndStore: any = () => {
                 user: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
+                schema: process.env.DATABASE_SCHEMA,
                 ssl: getDatabaseSSLFromEnv()
             })
             return new pgSession({
