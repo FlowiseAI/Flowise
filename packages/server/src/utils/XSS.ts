@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import sanitizeHtml from 'sanitize-html'
+import { isPredictionRequest, extractChatflowId, validateChatflowDomain } from './domainValidation'
 
 export function sanitizeMiddleware(req: Request, res: Response, next: NextFunction): void {
     // decoding is necessary as the url is encoded by the browser
@@ -21,21 +22,64 @@ export function sanitizeMiddleware(req: Request, res: Response, next: NextFuncti
 
 export function getAllowedCorsOrigins(): string {
     // Expects FQDN separated by commas, otherwise nothing or * for all.
-    return process.env.CORS_ORIGINS ?? '*'
+    // return process.env.CORS_ORIGINS ?? '*'
+    return process.env.CORS_ORIGINS as string
+}
+
+function parseAllowedOrigins(allowedOrigins: string): string[] {
+    if (!allowedOrigins) {
+        return []
+    }
+    if (allowedOrigins === '*') {
+        return ['*']
+    }
+    return allowedOrigins
+        .split(',')
+        .map((origin) => origin.trim().toLowerCase())
+        .filter((origin) => origin.length > 0)
 }
 
 export function getCorsOptions(): any {
-    const corsOptions = {
-        origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
-            const allowedOrigins = getAllowedCorsOrigins()
-            if (!origin || allowedOrigins == '*' || allowedOrigins.indexOf(origin) !== -1) {
-                callback(null, true)
-            } else {
-                callback(null, false)
+    return (req: any, callback: (err: Error | null, options?: any) => void) => {
+        const corsOptions = {
+            origin: async (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) => {
+                const allowedOrigins = getAllowedCorsOrigins()
+                const isPredictionReq = isPredictionRequest(req.url)
+
+                if (!origin || allowedOrigins === '*') {
+                    await checkRequestType(isPredictionReq, req, origin, originCallback)
+                } else {
+                    const allowedOriginsList = parseAllowedOrigins(allowedOrigins)
+                    if (origin && allowedOriginsList.includes(origin)) {
+                        await checkRequestType(isPredictionReq, req, origin, originCallback)
+                    } else {
+                        originCallback(null, false)
+                    }
+                }
             }
         }
+        callback(null, corsOptions)
     }
-    return corsOptions
+}
+
+async function checkRequestType(
+    isPredictionReq: boolean,
+    req: any,
+    origin: string | undefined,
+    originCallback: (err: Error | null, allow?: boolean) => void
+) {
+    if (isPredictionReq) {
+        const chatflowId = extractChatflowId(req.url)
+        if (chatflowId && origin) {
+            const isAllowed = await validateChatflowDomain(chatflowId, origin, req.user?.activeWorkspaceId)
+
+            originCallback(null, isAllowed)
+        } else {
+            originCallback(null, true)
+        }
+    } else {
+        originCallback(null, true)
+    }
 }
 
 export function getAllowedIframeOrigins(): string {
