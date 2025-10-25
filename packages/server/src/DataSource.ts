@@ -63,8 +63,8 @@ export const init = async (): Promise<void> => {
             })
             break
         case 'postgres':
-            const dbSchema = process.env.DATABASE_SCHEMA;
-            const isCustomSchema = dbSchema && dbSchema !== 'public';
+            const dbSchema = process.env.DATABASE_SCHEMA
+            const isCustomSchema = dbSchema && dbSchema !== 'public'
             appDataSource = new DataSource({
                 type: 'postgres',
                 host: process.env.DATABASE_HOST,
