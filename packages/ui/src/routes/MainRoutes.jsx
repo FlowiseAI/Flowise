@@ -294,11 +294,7 @@ const MainRoutes = {
         },
         {
             path: '/account',
-            element: (
-                <RequireAuth display={'feat:account'}>
-                    <Account />
-                </RequireAuth>
-            )
+            element: <Account />
         },
         {
             path: '/users',
