@@ -305,10 +305,6 @@ const MainRoutes = {
             )
         },
         {
-            path: '/user-profile',
-            element: <UserProfile />
-        },
-        {
             path: '/roles',
             element: (
                 <RequireAuth permission={'roles:manage'} display={'feat:roles'}>
