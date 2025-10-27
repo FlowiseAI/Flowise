@@ -1,4 +1,4 @@
-// pages/showcase/index.jsx — FULL FILE (opens agent share URL in both views)
+// pages/showcase/index.jsx — FULL FILE (UI unchanged; opens public agent reliably)
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -19,7 +19,12 @@ import {
   Link as MuiLink,
   Menu,
   Checkbox,
-  Button
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField
 } from '@mui/material'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { useTheme } from '@mui/material/styles'
@@ -51,9 +56,74 @@ import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 // modal
 import ShowcaseCreateDialog from '@/ui-component/dialog/ShowcaseCreateDialog'
 
-/* ========= Local menu for Showcase LIST view only ========= */
+/* ---------------- Robust URL normalizer (keep pasted origin; force /public-agent/<uuid>; add cache-buster) ---------------- */
+const normalizeToPublicUrl = (url, id) => {
+  const cacheBust = `v=${Date.now()}`
+  const withQs = (href) => (href.includes('?') ? `${href}&${cacheBust}` : `${href}?${cacheBust}`)
+  const fallbackById = () => withQs(`${uiBaseURL}/public-agent/${id}`)
+
+  if (!url) return fallbackById()
+
+  try {
+    if (/^https?:\/\//i.test(url)) {
+      const u = new URL(url)
+      const m = u.pathname.match(/\/(chatbot|public-agent|agent)\/([0-9a-f-]{36})/i)
+      if (m) return withQs(`${u.origin}/public-agent/${m[2]}`)
+      if (/\/public-agent\/[0-9a-f-]{36}$/i.test(u.pathname)) return withQs(u.href)
+      return withQs(u.href)
+    }
+    const m2 = url.match(/\/(chatbot|public-agent|agent)\/([0-9a-f-]{36})/i)
+    if (m2) return withQs(`${uiBaseURL}/public-agent/${m2[2]}`)
+    return fallbackById()
+  } catch {
+    return fallbackById()
+  }
+}
+/* -------------------------------------------------------------------------------------------------------------------------- */
+
+/* ===== Rename Dialog (local) ===== */
+function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
+  const [name, setName] = useState(row?.name || '')
+  const [description, setDescription] = useState(row?.description || '')
+  const [url, setUrl] = useState(() => {
+    try {
+      const fd = JSON.parse(row?.flowData || '{}')
+      return fd?.metadata?.shareUrl || ''
+    } catch { return '' }
+  })
+
+  useEffect(() => {
+    setName(row?.name || '')
+    setDescription(row?.description || '')
+    try {
+      const fd = JSON.parse(row?.flowData || '{}')
+      setUrl(fd?.metadata?.shareUrl || '')
+    } catch { setUrl('') }
+  }, [row, open])
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Rename Agent</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <TextField label="Agent name" value={name} onChange={(e) => setName(e.target.value)} fullWidth autoFocus />
+          <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
+          <TextField label="Agent URL" value={url} onChange={(e) => setUrl(e.target.value)} fullWidth placeholder="https://…" />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="text" onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={() => onSave({ name, description, url })}>Rename</Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+/* ================================= */
+
+/* ========= Options menu (list view) ========= */
 function ShowcaseOptionsMenu({ row }) {
   const [anchorEl, setAnchorEl] = useState(null)
+  const [openRename, setOpenRename] = useState(false)
   const open = Boolean(anchorEl)
   const handleOpen = (e) => setAnchorEl(e.currentTarget)
   const handleClose = () => setAnchorEl(null)
@@ -77,14 +147,36 @@ function ShowcaseOptionsMenu({ row }) {
         metadata: { ...(current.metadata || {}), showInShowcase: !enabled }
       }
       await updateChatflowApi.request(row.id, { flowData: JSON.stringify(next) })
-      // optimistic update
       row.flowData = JSON.stringify(next)
-      // notify Showcase to refresh (so the row disappears when disabled)
       window.dispatchEvent(new CustomEvent('showcase:toggle', { detail: { id: row.id, enabled: !enabled } }))
       handleClose()
     } catch (err) {
       console.error(err)
       handleClose()
+    }
+  }
+
+  const openRenameDialog = (e) => {
+    e.stopPropagation()
+    setOpenRename(true)
+    handleClose()
+  }
+
+  // Save rename; normalize URL before storing so it’s always public and cache-fresh
+  const handleSaveRename = async ({ name, description, url }) => {
+    try {
+      const current = JSON.parse(row?.flowData || '{}')
+      const normalized = normalizeToPublicUrl(url, row.id)
+      const next = { ...current, metadata: { ...(current.metadata || {}), shareUrl: normalized } }
+      await updateChatflowApi.request(row.id, { name, description, flowData: JSON.stringify(next) })
+      row.name = name
+      row.description = description
+      row.flowData = JSON.stringify(next)
+      window.dispatchEvent(new CustomEvent('showcase:renamed', { detail: { id: row.id } }))
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setOpenRename(false)
     }
   }
 
@@ -106,26 +198,26 @@ function ShowcaseOptionsMenu({ row }) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {/* Only one item inside dropdown */}
-        <PermissionMenuItem
-          permissionId={'agentflows:update'}
-          onClick={handleToggleDisable}
-          dense
-          disableRipple
-        >
+        <PermissionMenuItem permissionId={'agentflows:update'} onClick={openRenameDialog} dense disableRipple>
+          Rename
+        </PermissionMenuItem>
+
+        <PermissionMenuItem permissionId={'agentflows:update'} onClick={handleToggleDisable} dense disableRipple>
           <Checkbox
             size="small"
-            checked={enabled}             // checked = currently visible in Showcase
+            checked={enabled}
             onClick={(e) => e.stopPropagation()}
             sx={{ p: 0, mr: 1.25 }}
           />
           Disable from Showcase
         </PermissionMenuItem>
       </Menu>
+
+      <ShowcaseRenameDialog open={openRename} row={row} onClose={() => setOpenRename(false)} onSave={handleSaveRename} />
     </>
   )
 }
-/* ========================================================== */
+/* ============================================ */
 
 const Showcase = () => {
   const navigate = useNavigate()
@@ -187,10 +279,11 @@ const Showcase = () => {
 
   const addNew = () => setOpenCreate(true)
 
-  // Open the agent URL in a new tab for a given row
+  // Always return a proper public URL (same origin if provided), with a cache-buster
   const getShareUrl = (rowOrId) => {
     const id = typeof rowOrId === 'string' ? rowOrId : rowOrId?.id
-    return shareUrls[id] || `${uiBaseURL}/chatbot/${id}`
+    const fromMeta = shareUrls[id]
+    return normalizeToPublicUrl(fromMeta, id)
   }
   const openShareUrl = (row) => {
     const url = getShareUrl(row)
@@ -204,7 +297,12 @@ const Showcase = () => {
 
   const createAgentflow = async ({ name, category, description, url }) => {
     try {
-      const flowData = { nodes: [], edges: [], viewport: { x: 0, y: 0, zoom: 1 }, metadata: { shareUrl: url || '' } }
+      const flowData = {
+        nodes: [],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 },
+        metadata: { shareUrl: normalizeToPublicUrl(url, 'TEMP') }
+      }
       const payload = { name, category, description, type: 'AGENTFLOW', flowData: JSON.stringify(flowData) }
       await createAgentflowApi.request(payload)
       setOpenCreate(false)
@@ -281,14 +379,18 @@ const Showcase = () => {
       }
     }) || []
 
-  // Listen for the toggle event and refresh immediately
+  // Refresh on toggle / renamed
   useEffect(() => {
     const onToggle = () => {
       const type = agentflowVersion === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT'
       getAllAgentflows.request(type, { page: 1, limit: pageLimit })
     }
     window.addEventListener('showcase:toggle', onToggle)
-    return () => window.removeEventListener('showcase:toggle', onToggle)
+    window.addEventListener('showcase:renamed', onToggle)
+    return () => {
+      window.removeEventListener('showcase:toggle', onToggle)
+      window.removeEventListener('showcase:renamed', onToggle)
+    }
   }, [agentflowVersion, pageLimit, getAllAgentflows])
 
   const groupedAgentflows = showcaseEnabledData
@@ -393,7 +495,7 @@ const Showcase = () => {
                     ))}
                 </Stack>
               ) : (
-                /* LIST VIEW: name opens share URL; Options dropdown present */
+                /* LIST VIEW */
                 <Box sx={{
                   borderRadius: 2,
                   overflow: 'hidden',
