@@ -575,9 +575,7 @@ const getReturnOutput = async (
         const sandbox = createCodeExecutionSandbox(input, variables, flow)
 
         try {
-            const response = await executeJavaScriptCode(updateStateMemoryCode, sandbox, {
-                timeout: 10000
-            })
+            const response = await executeJavaScriptCode(updateStateMemoryCode, sandbox)
 
             if (typeof response !== 'object') throw new Error('Return output must be an object')
             return response

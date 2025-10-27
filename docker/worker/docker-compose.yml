@@ -76,6 +76,7 @@ services:
             - PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS=${PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS}
             - PASSWORD_SALT_HASH_ROUNDS=${PASSWORD_SALT_HASH_ROUNDS}
             - TOKEN_HASH_SECRET=${TOKEN_HASH_SECRET}
+            - SECURE_COOKIES=${SECURE_COOKIES}
 
             # EMAIL
             - SMTP_HOST=${SMTP_HOST}
@@ -131,7 +132,7 @@ services:
             - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
-
+            - TRUST_PROXY=${TRUST_PROXY}
         ports:
             - '${WORKER_PORT}:${WORKER_PORT}'
         healthcheck:

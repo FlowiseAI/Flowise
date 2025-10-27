@@ -13,6 +13,7 @@ import {
     updateFlowState
 } from '../utils'
 import { processTemplateVariables } from '../../../src/utils'
+import { flatten } from 'lodash'
 
 class LLM_Agentflow implements INode {
     label: string
@@ -892,7 +893,12 @@ class LLM_Agentflow implements INode {
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
 
         if (response.tool_calls) {
-            sseStreamer.streamCalledToolsEvent(chatId, response.tool_calls)
+            const formattedToolCalls = response.tool_calls.map((toolCall: any) => ({
+                tool: toolCall.name || 'tool',
+                toolInput: toolCall.args,
+                toolOutput: ''
+            }))
+            sseStreamer.streamCalledToolsEvent(chatId, flatten(formattedToolCalls))
         }
 
         if (response.usage_metadata) {

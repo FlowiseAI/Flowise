@@ -91,6 +91,7 @@ services:
             - PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS=${PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS}
             - PASSWORD_SALT_HASH_ROUNDS=${PASSWORD_SALT_HASH_ROUNDS}
             - TOKEN_HASH_SECRET=${TOKEN_HASH_SECRET}
+            - SECURE_COOKIES=${SECURE_COOKIES}
 
             # EMAIL
             - SMTP_HOST=${SMTP_HOST}
@@ -142,10 +143,11 @@ services:
             - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
             - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
 
-              # SECURITY
+            # SECURITY
             - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
+            - TRUST_PROXY=${TRUST_PROXY}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
             interval: 10s
@@ -235,6 +237,7 @@ services:
             - PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS=${PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS}
             - PASSWORD_SALT_HASH_ROUNDS=${PASSWORD_SALT_HASH_ROUNDS}
             - TOKEN_HASH_SECRET=${TOKEN_HASH_SECRET}
+            - SECURE_COOKIES=${SECURE_COOKIES}
 
             # EMAIL
             - SMTP_HOST=${SMTP_HOST}
@@ -286,10 +289,11 @@ services:
             - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
             - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
 
-              # SECURITY
+            # SECURITY
             - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
+            - TRUST_PROXY=${TRUST_PROXY}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${WORKER_PORT:-5566}/healthz']
             interval: 10s
