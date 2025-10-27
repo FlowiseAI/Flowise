@@ -165,7 +165,7 @@ export class UserService {
                 }
                 // verify old password
                 if (!compareHash(newUserData.oldPassword, oldUserData.credential)) {
-                    throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.INVALID_USER_CREDENTIAL)
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_CREDENTIAL)
                 }
                 if (newUserData.newPassword !== newUserData.confirmPassword) {
                     throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.PASSWORDS_DO_NOT_MATCH)
