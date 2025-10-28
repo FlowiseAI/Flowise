@@ -74,7 +74,7 @@ export const initializeDBClientAndStore: any = () => {
             return new pgSession({
                 pool: pgPool, // Connection pool
                 tableName: 'login_sessions',
-                schemaName: 'public',
+                schemaName: process.env.DATABASE_SCHEMA || 'public',
                 createTableIfMissing: true
             })
         }

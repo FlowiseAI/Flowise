@@ -8,7 +8,7 @@ import { VectorStore } from '@langchain/core/vectorstores'
 import { VectorStoreDriver } from './driver/Base'
 import { TypeORMDriver } from './driver/TypeORM'
 // import { PGVectorDriver } from './driver/PGVector'
-import { getContentColumnName, getDatabase, getHost, getPort, getTableName } from './utils'
+import { getContentColumnName, getDatabase, getHost, getPort, getTableName, getSchema } from './utils'
 
 const serverCredentialsExists = !!process.env.POSTGRES_VECTORSTORE_USER && !!process.env.POSTGRES_VECTORSTORE_PASSWORD
 
@@ -116,6 +116,14 @@ class Postgres_VectorStores implements INode {
                 name: 'tableName',
                 type: 'string',
                 placeholder: getTableName(),
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Schema',
+                name: 'schema',
+                type: 'string',
+                placeholder: getSchema(),
                 additionalParams: true,
                 optional: true
             },

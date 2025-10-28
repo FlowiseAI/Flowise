@@ -131,6 +131,7 @@ class SingleStore_VectorStores implements INode {
                     database: nodeData.inputs?.database as string
                 },
                 ...(nodeData.inputs?.tableName ? { tableName: nodeData.inputs.tableName as string } : {}),
+                ...(nodeData.inputs?.schema ? { schema: nodeData.inputs.schema as string } : {}),
                 ...(nodeData.inputs?.contentColumnName ? { contentColumnName: nodeData.inputs.contentColumnName as string } : {}),
                 ...(nodeData.inputs?.vectorColumnName ? { vectorColumnName: nodeData.inputs.vectorColumnName as string } : {}),
                 ...(nodeData.inputs?.metadataColumnName ? { metadataColumnName: nodeData.inputs.metadataColumnName as string } : {})
@@ -171,6 +172,7 @@ class SingleStore_VectorStores implements INode {
                 database: nodeData.inputs?.database as string
             },
             ...(nodeData.inputs?.tableName ? { tableName: nodeData.inputs.tableName as string } : {}),
+            ...(nodeData.inputs?.schema ? { schema: nodeData.inputs.schema as string } : {}),
             ...(nodeData.inputs?.contentColumnName ? { contentColumnName: nodeData.inputs.contentColumnName as string } : {}),
             ...(nodeData.inputs?.vectorColumnName ? { vectorColumnName: nodeData.inputs.vectorColumnName as string } : {}),
             ...(nodeData.inputs?.metadataColumnName ? { metadataColumnName: nodeData.inputs.metadataColumnName as string } : {})

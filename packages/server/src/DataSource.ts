@@ -78,7 +78,6 @@ export const init = async (): Promise<void> => {
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: postgresMigrations,
-                migrationsTableName: 'migrations',
                 extra: {
                     idleTimeoutMillis: 120000,
                     // set the search_path for the migrations and queries to the desired schema
