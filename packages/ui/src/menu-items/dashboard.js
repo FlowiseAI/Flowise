@@ -87,6 +87,16 @@ const dashboard = {
                     permission: 'chatflows:view'
                 },
 
+                {
+                    id: 'showcase',
+                    title: 'Showcase',
+                    type: 'item',
+                    url: '/showcase',
+                    icon: icons.IconMicroscope, // or any other icon you prefer
+                    breadcrumbs: true,
+                    permission: 'showcase:view'
+                },
+
                 // ❌ Removed (per your request): agentflows, assistants
 
                 {
@@ -152,6 +162,7 @@ const dashboard = {
                     breadcrumbs: true,
                     permission: 'documentStores:view'
                 }
+                
             ]
         },
         {
