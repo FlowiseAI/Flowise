@@ -66,11 +66,12 @@ import { StatusCodes } from 'http-status-codes'
 import { generateSuccessPage, generateErrorPage } from './templates'
 import { entitled } from '../../services/entitled-router'
 import { Entitlements } from '../../enterprise/rbac/Entitlements'
+import { AuthenticationStrategy } from '../../enterprise/auth/AuthenticationStrategy'
 
 const router = entitled.Router()
 
 // Initiate OAuth2 authorization flow
-router.post('/authorize/:credentialId', [Entitlements.unspecified], async (req: Request, res: Response, next: NextFunction) => {
+router.post('/authorize/:credentialId', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { credentialId } = req.params
 
@@ -155,7 +156,7 @@ router.post('/authorize/:credentialId', [Entitlements.unspecified], async (req: 
 })
 
 // OAuth2 callback endpoint
-router.get('/callback', [Entitlements.unspecified], async (req: Request, res: Response) => {
+router.get('/callback', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], async (req: Request, res: Response) => {
     try {
         const { code, state, error, error_description } = req.query
 
@@ -305,7 +306,7 @@ router.get('/callback', [Entitlements.unspecified], async (req: Request, res: Re
 })
 
 // Refresh OAuth2 access token
-router.post('/refresh/:credentialId', [Entitlements.unspecified], async (req: Request, res: Response, next: NextFunction) => {
+router.post('/refresh/:credentialId', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { credentialId } = req.params
 

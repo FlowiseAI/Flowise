@@ -306,7 +306,7 @@ export class App {
             }
         }
 
-        this.app.use('/api/v1', flowiseApiV1Router.getRouter())
+        this.app.use('/api/v1', flowiseApiV1Router)
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment
