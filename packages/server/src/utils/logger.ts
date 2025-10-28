@@ -194,6 +194,7 @@ requestLogger = createLogger({
 })
 
 function getSensitiveBodyFields(): string[] {
+    if (!process.env.LOG_SANITIZE_BODY_FIELDS) return []
     return (process.env.LOG_SANITIZE_BODY_FIELDS as string)
         .toLowerCase()
         .split(',')
@@ -201,6 +202,7 @@ function getSensitiveBodyFields(): string[] {
 }
 
 function getSensitiveHeaderFields(): string[] {
+    if (!process.env.LOG_SANITIZE_HEADER_FIELDS) return []
     return (process.env.LOG_SANITIZE_HEADER_FIELDS as string)
         .toLowerCase()
         .split(',')
