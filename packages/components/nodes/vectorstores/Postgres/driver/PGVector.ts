@@ -1,7 +1,3 @@
-/*
-* Temporary disabled due to increasing open connections without releasing them
-* Use TypeORM instead
-
 import { VectorStoreDriver } from './Base'
 import { FLOWISE_CHATID } from '../../../../src'
 import { DistanceStrategy, PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
@@ -87,41 +83,50 @@ export class PGVectorDriver extends VectorStoreDriver {
                 instance.client = await instance.pool.connect()
             }
 
-            const whereClauseRegex = /WHERE ([^\n]+)/
-            let chatflowOr = ''
+            try {
+                const whereClauseRegex = /WHERE ([^\n]+)/
+                let chatflowOr = ''
 
-            // Match chatflow uploaded file and keep filtering on other files:
-            // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
-            if (chatId) {
-                parameters.push({ [FLOWISE_CHATID]: chatId })
+                // Match chatflow uploaded file and keep filtering on other files:
+                // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
+                if (chatId) {
+                    parameters.push({ [FLOWISE_CHATID]: chatId })
+                    chatflowOr = `OR metadata @> $${parameters.length}`
+                }
 
-                chatflowOr = `OR metadata @> $${parameters.length}`
-            }
-
-            if (queryString.match(whereClauseRegex)) {
-                queryString = queryString.replace(whereClauseRegex, `WHERE (($1) AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}`)
-            } else {
-                const orderByClauseRegex = /ORDER BY (.*)/
-                // Insert WHERE clause before ORDER BY
-                queryString = queryString.replace(
-                    orderByClauseRegex,
-                    `WHERE (metadata @> '{}' AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}
+                if (queryString.match(whereClauseRegex)) {
+                    queryString = queryString.replace(
+                        whereClauseRegex,
+                        `WHERE (($1) AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}`
+                    )
+                } else {
+                    const orderByClauseRegex = /ORDER BY (.*)/
+                    // Insert WHERE clause before ORDER BY
+                    queryString = queryString.replace(
+                        orderByClauseRegex,
+                        `WHERE (metadata @> '{}' AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}
                 ORDER BY $1
                 `
-                )
+                    )
+                }
+
+                // Run base function
+                const queryResult = await basePoolQueryFn(queryString, parameters)
+
+                // ensure connection is released
+                instance.client.release()
+                instance.client = undefined
+
+                return queryResult
+            } catch (e) {
+                console.error(e)
+                // ensure connection is released
+                instance.client?.release()
+                instance.client = undefined
+                throw e
             }
-
-            // Run base function
-            const queryResult = await basePoolQueryFn(queryString, parameters)
-
-            // ensure connection is released
-            instance.client.release()
-            instance.client = undefined
-
-            return queryResult
         }
 
         return instance
     }
 }
-*/
