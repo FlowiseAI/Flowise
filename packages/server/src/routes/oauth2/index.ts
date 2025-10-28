@@ -71,89 +71,94 @@ import { AuthenticationStrategy } from '../../enterprise/auth/AuthenticationStra
 const router = entitled.Router()
 
 // Initiate OAuth2 authorization flow
-router.post('/authorize/:credentialId', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { credentialId } = req.params
+router.post(
+    '/authorize/:credentialId',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { credentialId } = req.params
 
-        const appServer = getRunningExpressApp()
-        const credentialRepository = appServer.AppDataSource.getRepository(Credential)
+            const appServer = getRunningExpressApp()
+            const credentialRepository = appServer.AppDataSource.getRepository(Credential)
 
-        // Find credential by ID
-        const credential = await credentialRepository.findOneBy({
-            id: credentialId
-        })
-
-        if (!credential) {
-            return res.status(404).json({
-                success: false,
-                message: 'Credential not found'
+            // Find credential by ID
+            const credential = await credentialRepository.findOneBy({
+                id: credentialId
             })
-        }
 
-        // Decrypt the credential data to get OAuth configuration
-        const decryptedData = await decryptCredentialData(credential.encryptedData)
+            if (!credential) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Credential not found'
+                })
+            }
 
-        const {
-            clientId,
-            authorizationUrl,
-            redirect_uri,
-            scope,
-            response_type = 'code',
-            response_mode = 'query',
-            additionalParameters = ''
-        } = decryptedData
+            // Decrypt the credential data to get OAuth configuration
+            const decryptedData = await decryptCredentialData(credential.encryptedData)
 
-        if (!clientId) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing clientId in credential data'
+            const {
+                clientId,
+                authorizationUrl,
+                redirect_uri,
+                scope,
+                response_type = 'code',
+                response_mode = 'query',
+                additionalParameters = ''
+            } = decryptedData
+
+            if (!clientId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Missing clientId in credential data'
+                })
+            }
+
+            if (!authorizationUrl) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No authorizationUrl specified in credential data'
+                })
+            }
+
+            const defaultRedirectUri = `${req.protocol}://${req.get('host')}/api/v1/oauth2-credential/callback`
+            const finalRedirectUri = redirect_uri || defaultRedirectUri
+
+            const authParams = new URLSearchParams({
+                client_id: clientId,
+                response_type,
+                response_mode,
+                state: credentialId, // Use credential ID as state parameter
+                redirect_uri: finalRedirectUri
             })
-        }
 
-        if (!authorizationUrl) {
-            return res.status(400).json({
-                success: false,
-                message: 'No authorizationUrl specified in credential data'
+            if (scope) {
+                authParams.append('scope', scope)
+            }
+
+            let fullAuthorizationUrl = `${authorizationUrl}?${authParams.toString()}`
+
+            if (additionalParameters) {
+                fullAuthorizationUrl += `&${additionalParameters.toString()}`
+            }
+
+            res.json({
+                success: true,
+                message: 'Authorization URL generated successfully',
+                credentialId,
+                authorizationUrl: fullAuthorizationUrl,
+                redirectUri: finalRedirectUri
             })
-        }
-
-        const defaultRedirectUri = `${req.protocol}://${req.get('host')}/api/v1/oauth2-credential/callback`
-        const finalRedirectUri = redirect_uri || defaultRedirectUri
-
-        const authParams = new URLSearchParams({
-            client_id: clientId,
-            response_type,
-            response_mode,
-            state: credentialId, // Use credential ID as state parameter
-            redirect_uri: finalRedirectUri
-        })
-
-        if (scope) {
-            authParams.append('scope', scope)
-        }
-
-        let fullAuthorizationUrl = `${authorizationUrl}?${authParams.toString()}`
-
-        if (additionalParameters) {
-            fullAuthorizationUrl += `&${additionalParameters.toString()}`
-        }
-
-        res.json({
-            success: true,
-            message: 'Authorization URL generated successfully',
-            credentialId,
-            authorizationUrl: fullAuthorizationUrl,
-            redirectUri: finalRedirectUri
-        })
-    } catch (error) {
-        next(
-            new InternalFlowiseError(
-                StatusCodes.INTERNAL_SERVER_ERROR,
-                `OAuth2 authorization error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        } catch (error) {
+            next(
+                new InternalFlowiseError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    `OAuth2 authorization error: ${error instanceof Error ? error.message : 'Unknown error'}`
+                )
             )
-        )
+        }
     }
-})
+)
 
 // OAuth2 callback endpoint
 router.get('/callback', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], async (req: Request, res: Response) => {
@@ -306,119 +311,124 @@ router.get('/callback', [Entitlements.unspecified], [AuthenticationStrategy.PUBL
 })
 
 // Refresh OAuth2 access token
-router.post('/refresh/:credentialId', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { credentialId } = req.params
+router.post(
+    '/refresh/:credentialId',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { credentialId } = req.params
 
-        const appServer = getRunningExpressApp()
-        const credentialRepository = appServer.AppDataSource.getRepository(Credential)
+            const appServer = getRunningExpressApp()
+            const credentialRepository = appServer.AppDataSource.getRepository(Credential)
 
-        const credential = await credentialRepository.findOneBy({
-            id: credentialId
-        })
-
-        if (!credential) {
-            return res.status(404).json({
-                success: false,
-                message: 'Credential not found'
+            const credential = await credentialRepository.findOneBy({
+                id: credentialId
             })
-        }
 
-        const decryptedData = await decryptCredentialData(credential.encryptedData)
-
-        const { clientId, clientSecret, refresh_token, accessTokenUrl, scope } = decryptedData
-
-        if (!clientId || !clientSecret || !refresh_token) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required OAuth configuration: clientId, clientSecret, or refresh_token'
-            })
-        }
-
-        let tokenUrl = accessTokenUrl
-        if (!tokenUrl) {
-            return res.status(400).json({
-                success: false,
-                message: 'No Access Token URL specified in credential data'
-            })
-        }
-
-        const refreshRequestData: any = {
-            client_id: clientId,
-            client_secret: clientSecret,
-            grant_type: 'refresh_token',
-            refresh_token
-        }
-
-        if (scope) {
-            refreshRequestData.scope = scope
-        }
-
-        const tokenResponse = await axios.post(tokenUrl, new URLSearchParams(refreshRequestData).toString(), {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                Accept: 'application/json'
+            if (!credential) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Credential not found'
+                })
             }
-        })
 
-        // Extract token data from response
-        const tokenData = tokenResponse.data
+            const decryptedData = await decryptCredentialData(credential.encryptedData)
 
-        // Update the credential data with new token information
-        const updatedCredentialData: any = {
-            ...decryptedData,
-            ...tokenData,
-            token_received_at: new Date().toISOString()
-        }
+            const { clientId, clientSecret, refresh_token, accessTokenUrl, scope } = decryptedData
 
-        // Update refresh token if a new one was provided
-        if (tokenData.refresh_token) {
-            updatedCredentialData.refresh_token = tokenData.refresh_token
-        }
+            if (!clientId || !clientSecret || !refresh_token) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Missing required OAuth configuration: clientId, clientSecret, or refresh_token'
+                })
+            }
 
-        // Calculate token expiry time
-        if (tokenData.expires_in) {
-            const expiryTime = new Date(Date.now() + tokenData.expires_in * 1000)
-            updatedCredentialData.expires_at = expiryTime.toISOString()
-        }
+            let tokenUrl = accessTokenUrl
+            if (!tokenUrl) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No Access Token URL specified in credential data'
+                })
+            }
 
-        // Encrypt the updated credential data
-        const encryptedData = await encryptCredentialData(updatedCredentialData)
+            const refreshRequestData: any = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'refresh_token',
+                refresh_token
+            }
 
-        // Update the credential in the database
-        await credentialRepository.update(credential.id, {
-            encryptedData,
-            updatedDate: new Date()
-        })
+            if (scope) {
+                refreshRequestData.scope = scope
+            }
 
-        // Return success response
-        res.json({
-            success: true,
-            message: 'OAuth2 token refreshed successfully',
-            credentialId: credential.id,
-            tokenInfo: {
+            const tokenResponse = await axios.post(tokenUrl, new URLSearchParams(refreshRequestData).toString(), {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    Accept: 'application/json'
+                }
+            })
+
+            // Extract token data from response
+            const tokenData = tokenResponse.data
+
+            // Update the credential data with new token information
+            const updatedCredentialData: any = {
+                ...decryptedData,
                 ...tokenData,
-                has_new_refresh_token: !!tokenData.refresh_token,
-                expires_at: updatedCredentialData.expires_at
+                token_received_at: new Date().toISOString()
             }
-        })
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            const axiosError = error
-            return res.status(400).json({
-                success: false,
-                message: `Token refresh failed: ${axiosError.response?.data?.error_description || axiosError.message}`,
-                details: axiosError.response?.data
-            })
-        }
 
-        next(
-            new InternalFlowiseError(
-                StatusCodes.INTERNAL_SERVER_ERROR,
-                `OAuth2 token refresh error: ${error instanceof Error ? error.message : 'Unknown error'}`
+            // Update refresh token if a new one was provided
+            if (tokenData.refresh_token) {
+                updatedCredentialData.refresh_token = tokenData.refresh_token
+            }
+
+            // Calculate token expiry time
+            if (tokenData.expires_in) {
+                const expiryTime = new Date(Date.now() + tokenData.expires_in * 1000)
+                updatedCredentialData.expires_at = expiryTime.toISOString()
+            }
+
+            // Encrypt the updated credential data
+            const encryptedData = await encryptCredentialData(updatedCredentialData)
+
+            // Update the credential in the database
+            await credentialRepository.update(credential.id, {
+                encryptedData,
+                updatedDate: new Date()
+            })
+
+            // Return success response
+            res.json({
+                success: true,
+                message: 'OAuth2 token refreshed successfully',
+                credentialId: credential.id,
+                tokenInfo: {
+                    ...tokenData,
+                    has_new_refresh_token: !!tokenData.refresh_token,
+                    expires_at: updatedCredentialData.expires_at
+                }
+            })
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                const axiosError = error
+                return res.status(400).json({
+                    success: false,
+                    message: `Token refresh failed: ${axiosError.response?.data?.error_description || axiosError.message}`,
+                    details: axiosError.response?.data
+                })
+            }
+
+            next(
+                new InternalFlowiseError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    `OAuth2 token refresh error: ${error instanceof Error ? error.message : 'Unknown error'}`
+                )
             )
-        )
+        }
     }
-})
+)
 
 export default router.getRouter()

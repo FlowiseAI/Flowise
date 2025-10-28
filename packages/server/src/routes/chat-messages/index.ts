@@ -12,7 +12,12 @@ router.post(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.P
 router.get(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], chatMessageController.getAllChatMessages)
 
 // UPDATE
-router.put(['/abort/', '/abort/:chatflowid/:chatid'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], chatMessageController.abortChatMessage)
+router.put(
+    ['/abort/', '/abort/:chatflowid/:chatid'],
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    chatMessageController.abortChatMessage
+)
 
 // DELETE
 router.delete(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], chatMessageController.removeAllChatMessages)

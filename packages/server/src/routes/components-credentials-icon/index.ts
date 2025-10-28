@@ -8,7 +8,12 @@ const router = entitled.Router()
 // CREATE
 
 // READ
-router.get(['/', '/:name'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], componentsCredentialsController.getSingleComponentsCredentialIcon)
+router.get(
+    ['/', '/:name'],
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    componentsCredentialsController.getSingleComponentsCredentialIcon
+)
 
 // UPDATE
 

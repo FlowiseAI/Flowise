@@ -5,8 +5,18 @@ import { AuthenticationStrategy } from '../../enterprise/auth/AuthenticationStra
 
 const router = entitled.Router()
 
-router.post('/export', [Entitlements.workspace.export], [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY], exportImportController.exportData)
+router.post(
+    '/export',
+    [Entitlements.workspace.export],
+    [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY],
+    exportImportController.exportData
+)
 
-router.post('/import', [Entitlements.workspace.import], [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY], exportImportController.importData)
+router.post(
+    '/import',
+    [Entitlements.workspace.import],
+    [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY],
+    exportImportController.importData
+)
 
 export default router.getRouter()

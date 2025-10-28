@@ -6,6 +6,11 @@ import { AuthenticationStrategy } from '../../enterprise/auth/AuthenticationStra
 const router = entitled.Router()
 
 // CREATE
-router.post(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], internalPredictionsController.createInternalPrediction)
+router.post(
+    ['/', '/:id'],
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    internalPredictionsController.createInternalPrediction
+)
 
 export default router.getRouter()

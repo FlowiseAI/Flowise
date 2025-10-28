@@ -12,17 +12,42 @@ router.post('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], or
 
 router.put('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.update)
 
-router.get('/additional-seats-quantity', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.getAdditionalSeatsQuantity)
+router.get(
+    '/additional-seats-quantity',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    organizationController.getAdditionalSeatsQuantity
+)
 
-router.get('/customer-default-source', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.getCustomerWithDefaultSource)
+router.get(
+    '/customer-default-source',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    organizationController.getCustomerWithDefaultSource
+)
 
-router.get('/additional-seats-proration', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.getAdditionalSeatsProration)
+router.get(
+    '/additional-seats-proration',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    organizationController.getAdditionalSeatsProration
+)
 
-router.post('/update-additional-seats', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.updateAdditionalSeats)
+router.post(
+    '/update-additional-seats',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    organizationController.updateAdditionalSeats
+)
 
 router.get('/plan-proration', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.getPlanProration)
 
-router.post('/update-subscription-plan', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.updateSubscriptionPlan)
+router.post(
+    '/update-subscription-plan',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    organizationController.updateSubscriptionPlan
+)
 
 router.get('/get-current-usage', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.getCurrentUsage)
 

@@ -14,6 +14,11 @@ router.post('/', [Entitlements.sso.manage], [AuthenticationStrategy.JWT, Authent
 
 router.put('/', [Entitlements.sso.manage], [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY], loginMethodController.update)
 
-router.post('/test', [Entitlements.sso.manage], [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY], loginMethodController.testConfig)
+router.post(
+    '/test',
+    [Entitlements.sso.manage],
+    [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY],
+    loginMethodController.testConfig
+)
 
 export default router.getRouter()

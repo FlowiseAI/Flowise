@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from 'express'
+import { NextFunction, Response } from 'express'
 import { GeneralErrorMessage } from '../../../utils/constants'
 import { ErrorMessage } from '../../Interface.Enterprise'
 import { RegisteredRoute } from '../../../services/entitled-router'

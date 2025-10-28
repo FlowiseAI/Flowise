@@ -7,6 +7,12 @@ import { AuthenticationStrategy } from '../../enterprise/auth/AuthenticationStra
 const router = entitled.Router()
 
 router.post('/download/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], openaiAssistantsController.getFileFromAssistant)
-router.post('/upload/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], getMulterStorage().array('files'), openaiAssistantsController.uploadAssistantFiles)
+router.post(
+    '/upload/',
+    [Entitlements.unspecified],
+    [AuthenticationStrategy.PUBLIC],
+    getMulterStorage().array('files'),
+    openaiAssistantsController.uploadAssistantFiles
+)
 
 export default router.getRouter()
