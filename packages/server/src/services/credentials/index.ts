@@ -50,7 +50,7 @@ const deleteCredentials = async (credentialId: string): Promise<any> => {
 const getAllCredentials = async (paramCredentialName: any, workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
-        let dbResponse = []
+        let dbResponse: any[] = []
         if (paramCredentialName) {
             if (Array.isArray(paramCredentialName)) {
                 for (let i = 0; i < paramCredentialName.length; i += 1) {
@@ -83,14 +83,14 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
                                 if (sharedItem.credentialName === name) {
                                     // @ts-ignore
                                     sharedItem.shared = true
-                                    dbResponse.push(sharedItem)
+                                    dbResponse.push(omit(sharedItem, ['encryptedData']))
                                 }
                             }
                         } else {
                             if (sharedItem.credentialName === paramCredentialName) {
                                 // @ts-ignore
                                 sharedItem.shared = true
-                                dbResponse.push(sharedItem)
+                                dbResponse.push(omit(sharedItem, ['encryptedData']))
                             }
                         }
                     }
@@ -110,7 +110,7 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
                     for (const sharedItem of sharedItems) {
                         // @ts-ignore
                         sharedItem.shared = true
-                        dbResponse.push(sharedItem)
+                        dbResponse.push(omit(sharedItem, ['encryptedData']))
                     }
                 }
             }
