@@ -431,4 +431,4 @@ router.post(
     }
 )
 
-export default router.getRouter()
+export default router

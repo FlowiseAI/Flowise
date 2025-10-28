@@ -8,4 +8,4 @@ const router = entitled.Router()
 // READ
 router.get(['/apikey/', '/apikey/:apikey'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], apikeyController.verifyApiKey)
 
-export default router.getRouter()
+export default router

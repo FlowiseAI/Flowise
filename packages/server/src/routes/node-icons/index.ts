@@ -14,4 +14,4 @@ router.get(['/', '/:name'], [Entitlements.unspecified], [AuthenticationStrategy.
 
 // DELETE
 
-export default router.getRouter()
+export default router

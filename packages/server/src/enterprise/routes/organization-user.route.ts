@@ -33,4 +33,4 @@ router.delete(
     organizationUserController.delete
 )
 
-export default router.getRouter()
+export default router

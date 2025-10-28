@@ -36,4 +36,4 @@ router.delete(
     executionController.deleteExecutions
 )
 
-export default router.getRouter()
+export default router

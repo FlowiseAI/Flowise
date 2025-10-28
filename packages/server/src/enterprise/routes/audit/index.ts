@@ -18,4 +18,4 @@ router.post(
     auditController.deleteLoginActivity
 )
 
-export default router.getRouter()
+export default router

@@ -49,4 +49,4 @@ router.patch(
     evaluationsController.patchDeleteEvaluations
 )
 
-export default router.getRouter()
+export default router

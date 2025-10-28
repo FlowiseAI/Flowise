@@ -7,4 +7,4 @@ const router = entitled.Router()
 
 router.post(['/', '/:name'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], nodesRouter.getSingleNodeAsyncOptions)
 
-export default router.getRouter()
+export default router

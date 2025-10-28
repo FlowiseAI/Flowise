@@ -57,4 +57,4 @@ router.post(
     workspaceController.setSharedWorkspacesForItem
 )
 
-export default router.getRouter()
+export default router

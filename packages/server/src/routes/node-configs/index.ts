@@ -8,4 +8,4 @@ const router = entitled.Router()
 // CREATE
 router.post('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], nodeConfigsController.getAllNodeConfigs)
 
-export default router.getRouter()
+export default router

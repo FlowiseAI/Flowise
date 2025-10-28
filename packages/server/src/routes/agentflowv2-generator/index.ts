@@ -7,4 +7,4 @@ const router = entitled.Router()
 
 router.post('/generate', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], agentflowv2GeneratorController.generateAgentflowv2)
 
-export default router.getRouter()
+export default router

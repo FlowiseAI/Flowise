@@ -14,4 +14,4 @@ router.post('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], no
 
 // DELETE
 
-export default router.getRouter()
+export default router

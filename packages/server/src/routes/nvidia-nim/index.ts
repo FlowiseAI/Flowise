@@ -16,4 +16,4 @@ router.post('/stop-container', [Entitlements.unspecified], [AuthenticationStrate
 router.post('/get-image', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], nimController.getImage)
 router.post('/get-container', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], nimController.getContainer)
 
-export default router.getRouter()
+export default router

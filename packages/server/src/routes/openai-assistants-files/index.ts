@@ -15,4 +15,4 @@ router.post(
     openaiAssistantsController.uploadAssistantFiles
 )
 
-export default router.getRouter()
+export default router

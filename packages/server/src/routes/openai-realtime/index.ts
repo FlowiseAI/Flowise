@@ -11,4 +11,4 @@ router.get(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PU
 // EXECUTE
 router.post(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], openaiRealTimeController.executeAgentTool)
 
-export default router.getRouter()
+export default router

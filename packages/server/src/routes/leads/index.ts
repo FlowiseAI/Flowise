@@ -11,4 +11,4 @@ router.post('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], le
 // READ
 router.get(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], leadsController.getAllLeadsForChatflow)
 
-export default router.getRouter()
+export default router

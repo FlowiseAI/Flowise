@@ -19,4 +19,4 @@ router.get(
 
 // DELETE
 
-export default router.getRouter()
+export default router

@@ -9,4 +9,4 @@ const router = entitled.Router()
 router.get('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], componentsCredentialsController.getAllComponentsCredentials)
 router.get(['/', '/:name'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], componentsCredentialsController.getComponentByName)
 
-export default router.getRouter()
+export default router

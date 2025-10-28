@@ -51,4 +51,4 @@ router.post(
 
 router.get('/get-current-usage', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], organizationController.getCurrentUsage)
 
-export default router.getRouter()
+export default router

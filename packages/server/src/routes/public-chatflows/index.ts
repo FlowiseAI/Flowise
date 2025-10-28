@@ -8,4 +8,4 @@ const router = entitled.Router()
 // READ
 router.get(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], chatflowsController.getSinglePublicChatflow)
 
-export default router.getRouter()
+export default router

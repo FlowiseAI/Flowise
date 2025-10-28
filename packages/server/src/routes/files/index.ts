@@ -11,4 +11,4 @@ router.get('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], fil
 // DELETE
 router.delete('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], filesController.deleteFile)
 
-export default router.getRouter()
+export default router

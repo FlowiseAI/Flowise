@@ -55,4 +55,4 @@ router.post(
     assistantsController.generateAssistantInstruction
 )
 
-export default router.getRouter()
+export default router

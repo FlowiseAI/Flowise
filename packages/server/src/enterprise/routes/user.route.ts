@@ -13,4 +13,4 @@ router.post('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], us
 
 router.put('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], userController.update)
 
-export default router.getRouter()
+export default router

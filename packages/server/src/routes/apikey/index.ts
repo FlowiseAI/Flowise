@@ -33,4 +33,4 @@ router.delete(
     apikeyController.deleteApiKey
 )
 
-export default router.getRouter()
+export default router

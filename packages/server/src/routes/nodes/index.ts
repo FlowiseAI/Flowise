@@ -10,4 +10,4 @@ router.get('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], nod
 router.get(['/', '/:name'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], nodesController.getNodeByName)
 router.get('/category/:name', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], nodesController.getNodesByCategory)
 
-export default router.getRouter()
+export default router

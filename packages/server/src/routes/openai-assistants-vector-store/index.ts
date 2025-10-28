@@ -58,4 +58,4 @@ router.patch(
     openaiAssistantsVectorStoreController.deleteFilesFromAssistantVectorStore
 )
 
-export default router.getRouter()
+export default router

@@ -16,4 +16,4 @@ router.post(
     predictionsController.createPrediction
 )
 
-export default router.getRouter()
+export default router

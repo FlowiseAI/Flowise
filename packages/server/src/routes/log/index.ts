@@ -8,4 +8,4 @@ const router = entitled.Router()
 // READ
 router.get('/', [Entitlements.logs.view], [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY], logController.getLogs)
 
-export default router.getRouter()
+export default router

@@ -24,4 +24,4 @@ router.put(
     feedbackController.updateChatMessageFeedbackForChatflow
 )
 
-export default router.getRouter()
+export default router

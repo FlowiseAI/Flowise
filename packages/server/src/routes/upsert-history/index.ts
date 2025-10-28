@@ -11,4 +11,4 @@ router.get(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PU
 // PATCH
 router.patch('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], upsertHistoryController.patchDeleteUpsertHistory)
 
-export default router.getRouter()
+export default router

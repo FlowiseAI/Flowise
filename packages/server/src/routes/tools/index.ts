@@ -18,4 +18,4 @@ router.put('/:id', [Entitlements.tools.update], [AuthenticationStrategy.JWT, Aut
 // DELETE
 router.delete('/:id', [Entitlements.tools.delete], [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY], toolsController.deleteTool)
 
-export default router.getRouter()
+export default router

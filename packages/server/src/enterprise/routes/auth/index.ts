@@ -10,4 +10,4 @@ router.get(['/', '/permissions'], [Entitlements.unspecified], [AuthenticationStr
 
 router.get(['/sso-success'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], authController.ssoSuccess)
 
-export default router.getRouter()
+export default router

@@ -13,4 +13,4 @@ router.get(
     chatflowsController.checkIfChatflowIsValidForStreaming
 )
 
-export default router.getRouter()
+export default router

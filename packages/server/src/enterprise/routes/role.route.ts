@@ -14,4 +14,4 @@ router.put('/', [Entitlements.roles.manage], [AuthenticationStrategy.JWT, Authen
 
 router.delete('/', [Entitlements.roles.manage], [AuthenticationStrategy.JWT, AuthenticationStrategy.API_KEY], roleController.delete)
 
-export default router.getRouter()
+export default router

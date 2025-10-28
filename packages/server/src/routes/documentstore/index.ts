@@ -192,4 +192,4 @@ router.post(
     documentStoreController.generateDocStoreToolDesc
 )
 
-export default router.getRouter()
+export default router

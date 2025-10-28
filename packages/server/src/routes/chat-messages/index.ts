@@ -22,4 +22,4 @@ router.put(
 // DELETE
 router.delete(['/', '/:id'], [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], chatMessageController.removeAllChatMessages)
 
-export default router.getRouter()
+export default router

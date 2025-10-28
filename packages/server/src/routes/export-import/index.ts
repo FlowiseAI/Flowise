@@ -19,4 +19,4 @@ router.post(
     exportImportController.importData
 )
 
-export default router.getRouter()
+export default router

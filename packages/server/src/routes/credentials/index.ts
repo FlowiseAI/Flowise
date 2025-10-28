@@ -43,4 +43,4 @@ router.delete(
     credentialsController.deleteCredentials
 )
 
-export default router.getRouter()
+export default router

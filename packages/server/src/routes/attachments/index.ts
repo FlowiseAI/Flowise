@@ -15,4 +15,4 @@ router.post(
     attachmentsController.createAttachment
 )
 
-export default router.getRouter()
+export default router

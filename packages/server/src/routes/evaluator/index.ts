@@ -41,4 +41,4 @@ router.delete(
     evaluatorsController.deleteEvaluator
 )
 
-export default router.getRouter()
+export default router

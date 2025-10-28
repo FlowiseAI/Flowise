@@ -8,4 +8,4 @@ const router = entitled.Router()
 // GET
 router.get('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], pricingController.getPricing)
 
-export default router.getRouter()
+export default router

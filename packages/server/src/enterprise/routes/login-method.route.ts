@@ -21,4 +21,4 @@ router.post(
     loginMethodController.testConfig
 )
 
-export default router.getRouter()
+export default router

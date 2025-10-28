@@ -23,4 +23,4 @@ router.post(
     vectorsController.createInternalUpsert
 )
 
-export default router.getRouter()
+export default router

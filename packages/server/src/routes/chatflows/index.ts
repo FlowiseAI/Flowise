@@ -52,4 +52,4 @@ router.get(
     chatflowsController.checkIfChatflowHasChanged
 )
 
-export default router.getRouter()
+export default router

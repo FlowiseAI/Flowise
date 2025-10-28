@@ -15,7 +15,7 @@ import { AbortControllerPool } from './AbortControllerPool'
 import { RateLimiterManager } from './utils/rateLimit'
 import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
-import flowiseApiV1Router from './routes'
+import { createV1APIs, printRoutes } from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 import { WHITELIST_URLS } from './utils/constants'
 import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
@@ -305,8 +305,9 @@ export class App {
                 )
             }
         }
-
-        this.app.use('/api/v1', flowiseApiV1Router)
+        const router = createV1APIs()
+        this.app.use('/api/v1', router.getRouter())
+        printRoutes(router, logger)
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment

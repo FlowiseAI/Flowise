@@ -8,4 +8,4 @@ const router = entitled.Router()
 // CREATE
 router.post('/', [Entitlements.unspecified], [AuthenticationStrategy.PUBLIC], promptsListController.createPromptsList)
 
-export default router.getRouter()
+export default router

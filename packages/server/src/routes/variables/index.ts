@@ -37,4 +37,4 @@ router.delete(
     variablesController.deleteVariable
 )
 
-export default router.getRouter()
+export default router

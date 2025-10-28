@@ -78,4 +78,4 @@ router.post(
     datasetController.reorderDatasetRow
 )
 
-export default router.getRouter()
+export default router

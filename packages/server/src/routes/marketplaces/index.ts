@@ -36,4 +36,4 @@ router.delete(
     marketplacesController.deleteCustomTemplate
 )
 
-export default router.getRouter()
+export default router
