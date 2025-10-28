@@ -77,7 +77,8 @@ class Qdrant_VectorStores implements INode {
             {
                 label: 'Qdrant Collection Name',
                 name: 'qdrantCollection',
-                type: 'string'
+                type: 'string',
+                acceptVariable: true
             },
             {
                 label: 'File Upload',
