@@ -174,20 +174,3 @@ export type ExtractLeafStrings<T> = T extends string
 
 // Type union of all entitlement strings
 export type Entitlement = ExtractLeafStrings<typeof Entitlements>
-
-// // Type helper to extract the structure type
-// type EntitlementsType = typeof Entitlements
-//
-// // Middleware function to check entitlements
-// const requireEntitlement = (entitlement: string) => {
-//     return (req: any, res: any, next: any) => {
-//         // Check if user has the required entitlement
-//         const userEntitlements = req.user?.entitlements || []
-//
-//         if (userEntitlements.includes(entitlement)) {
-//             next()
-//         } else {
-//             res.status(403).json({ error: 'Insufficient permissions' })
-//         }
-//     }
-// }
