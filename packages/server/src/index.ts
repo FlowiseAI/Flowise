@@ -280,8 +280,7 @@ export class App {
                             activeOrganizationProductId: productId,
                             isOrganizationAdmin: true,
                             activeWorkspaceId: apiKeyWorkSpaceId!,
-                            activeWorkspace: workspace.name,
-                            isApiKeyValidated: true
+                            activeWorkspace: workspace.name
                         }
                         next()
                     }
