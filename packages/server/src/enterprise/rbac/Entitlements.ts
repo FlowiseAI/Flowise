@@ -36,10 +36,14 @@ const createEntitlements = <T extends EntitlementStructure>(structure: T): T => 
 const addUser = 'add-user'
 const addLoader = 'add-loader'
 const deleteLoader = 'delete-loader'
+const config = 'config'
 const create = 'create'
 const custom = 'custom'
 const customDelete = 'custom-delete'
+const customShare = 'custom-share'
 const del = 'delete' // 'delete' is a reserved word
+const domains = 'domains'
+const duplicate = 'duplicate'
 const exp = 'export' // 'export' is a reserved word
 const flowexport = 'flowexport'
 const imp = 'import' // 'import' is a reserved word
@@ -47,6 +51,7 @@ const manage = 'manage'
 const marketplace = 'marketplace'
 const previewProcess = 'preview-process'
 const run = 'run'
+const share = 'share'
 const toolexport = 'toolexport'
 const unlinkUser = 'unlink-user'
 const unspecified = 'unspecified'
@@ -56,6 +61,17 @@ const view = 'view'
 
 // The canonical list of entitlements
 const entitlements = {
+    agentflows: {
+        view,
+        create,
+        update,
+        duplicate,
+        delete: del,
+        export: exp,
+        import: imp,
+        config,
+        domains
+    },
     apikeys: {
         create,
         import: imp,
@@ -70,8 +86,13 @@ const entitlements = {
         view
     },
     chatflows: {
+        config,
         create,
         delete: del,
+        domains,
+        duplicate,
+        export: exp,
+        import: imp,
         update,
         view
     },
@@ -79,6 +100,7 @@ const entitlements = {
         create,
         delete: del,
         update,
+        share,
         view
     },
     datasets: {
@@ -101,6 +123,7 @@ const entitlements = {
         create,
         delete: del,
         run,
+        update,
         view
     },
     evaluators: {
@@ -132,11 +155,13 @@ const entitlements = {
         flowexport,
         toolexport,
         custom,
-        customDelete
+        customDelete,
+        customShare
     },
     tools: {
         create,
         delete: del,
+        export: exp,
         update,
         view
     },
