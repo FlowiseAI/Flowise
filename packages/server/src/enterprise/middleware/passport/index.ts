@@ -81,6 +81,11 @@ const _initializePassportMiddleware = async (app: express.Application) => {
     app.use(passport.initialize())
     app.use(passport.session())
 
+    if (options.store) {
+        const appServer = getRunningExpressApp()
+        appServer.sessionStore = options.store
+    }
+
     passport.serializeUser((user: any, done) => {
         done(null, user)
     })

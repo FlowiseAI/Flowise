@@ -73,6 +73,7 @@ export class App {
     queueManager: QueueManager
     redisSubscriber: RedisEventSubscriber
     usageCacheManager: UsageCacheManager
+    sessionStore: any
 
     constructor() {
         this.app = express()
