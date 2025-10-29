@@ -118,11 +118,13 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
 
     // Fuzzy search utility function that calculates similarity score
     const fuzzyScore = (searchTerm, text) => {
-        const search = searchTerm.toLowerCase()
-        const target = text.toLowerCase()
+        const search = ((searchTerm ?? '') + '').trim().toLowerCase()
+        if (!search) return 0
+        const target = ((text ?? '') + '').toLowerCase()
 
         let score = 0
         let searchIndex = 0
+        let firstMatchIndex = -1
         let lastMatchIndex = -1
         let consecutiveMatches = 0
 
@@ -169,6 +171,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                     score += 15
                 }
 
+                if (firstMatchIndex === -1) firstMatchIndex = i
                 lastMatchIndex = i
                 searchIndex++
             }
@@ -179,10 +182,12 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
             return 0
         }
 
-        // Penalty for length difference
-        score -= (target.length - search.length) * 2
-        // Penalty for gaps between matches
-        score -= (lastMatchIndex - search.length) * 3
+        // Penalty for length difference (favor shorter targets)
+        score -= Math.max(0, target.length - search.length) * 2
+        // Penalty for gaps between first/last matched span
+        const span = lastMatchIndex - firstMatchIndex + 1
+        const gaps = Math.max(0, span - search.length)
+        score -= gaps * 3
 
         return score
     }
