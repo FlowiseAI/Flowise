@@ -43,7 +43,7 @@ function joinPathParams(base: PathParams, sub: PathParams): string {
 export class EntitledRouter {
     readonly router: IRouter
     private childRouters: { path: PathParams; router: EntitledRouter }[] = []
-    private registeredRoutes: RegisteredRoute[] = []
+    protected registeredRoutes: RegisteredRoute[] = []
 
     constructor() {
         this.router = ExpressRouter()
@@ -52,13 +52,13 @@ export class EntitledRouter {
     public getRegisteredRoutes(): RegisteredRoute[] {
         const childRoutes = this.childRouters.flatMap(({ path: basePath, router: childRouter }) => {
             // Get the child's local routes and prepend the parent's base path.
-            const localChildRoutes = childRouter.getLocalRegisteredRoutes()
+            const localChildRoutes = childRouter.registeredRoutes
             return localChildRoutes.map((route) => ({
                 ...route,
                 path: joinPathParams(basePath, route.path)
             }))
         })
-        return [...this.getLocalRegisteredRoutes(), ...childRoutes]
+        return [...this.registeredRoutes, ...childRoutes]
     }
     /**
      * Creates a policy enforcement middleware for a specific route.
@@ -72,10 +72,6 @@ export class EntitledRouter {
             // The authorize function contains the logic to check the user against the policy.
             return authorize(req.user, policy, res, next)
         }
-    }
-
-    public getLocalRegisteredRoutes(): RegisteredRoute[] {
-        return this.registeredRoutes
     }
 
     public get(
