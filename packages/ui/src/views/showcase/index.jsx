@@ -1,4 +1,4 @@
-// pages/showcase/index.jsx — FULL FILE (UI unchanged; opens public agent reliably)
+// pages/showcase/index.jsx — Showcase-only flow (do not mirror Agentflows)
 
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -53,10 +53,7 @@ import { useError } from '@/store/context/ErrorContext'
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
-// modal
-import ShowcaseCreateDialog from '@/ui-component/dialog/ShowcaseCreateDialog'
-
-/* ---------------- Robust URL normalizer (keep pasted origin; force /public-agent/<uuid>; add cache-buster) ---------------- */
+/* ---------------- URL normalizer: ensures a public /public-agent/<uuid> and adds cache-buster ---------------- */
 const normalizeToPublicUrl = (url, id) => {
   const cacheBust = `v=${Date.now()}`
   const withQs = (href) => (href.includes('?') ? `${href}&${cacheBust}` : `${href}?${cacheBust}`)
@@ -79,9 +76,8 @@ const normalizeToPublicUrl = (url, id) => {
     return fallbackById()
   }
 }
-/* -------------------------------------------------------------------------------------------------------------------------- */
 
-/* ===== Rename Dialog (local) ===== */
+/* ===== Rename Dialog (local to Showcase) ===== */
 function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
   const [name, setName] = useState(row?.name || '')
   const [description, setDescription] = useState(row?.description || '')
@@ -118,7 +114,57 @@ function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
     </Dialog>
   )
 }
-/* ================================= */
+
+/* ===== Add Dialog (same look as Rename, plus Category & Tags) ===== */
+function ShowcaseAddDialog({ open, onClose, onSave }) {
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('')
+  const [tags, setTags] = useState('') // comma separated
+  const [url, setUrl] = useState('')
+
+  useEffect(() => {
+    if (!open) {
+      setName(''); setDescription(''); setCategory(''); setTags(''); setUrl('')
+    }
+  }, [open])
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Add to Showcase</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <TextField label="Agent name" value={name} onChange={(e) => setName(e.target.value)} fullWidth autoFocus />
+          <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
+          <TextField label="Category" value={category} onChange={(e) => setCategory(e.target.value)} fullWidth />
+          <TextField label="Tags (comma separated)" value={tags} onChange={(e) => setTags(e.target.value)} fullWidth />
+          <TextField label="Agent URL" value={url} onChange={(e) => setUrl(e.target.value)} fullWidth placeholder="https://…" />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button variant="text" onClick={onClose}>Cancel</Button>
+        <Button
+          variant="contained"
+          onClick={() =>
+            onSave({
+              name: name?.trim(),
+              description: description?.trim(),
+              category: category?.trim(),
+              tags: tags
+                ?.split(',')
+                .map((t) => t.trim())
+                .filter(Boolean)
+                .join(','),
+              url: url?.trim()
+            })
+          }
+        >
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
 /* ========= Options menu (list view) ========= */
 function ShowcaseOptionsMenu({ row }) {
@@ -162,7 +208,6 @@ function ShowcaseOptionsMenu({ row }) {
     handleClose()
   }
 
-  // Save rename; normalize URL before storing so it’s always public and cache-fresh
   const handleSaveRename = async ({ name, description, url }) => {
     try {
       const current = JSON.parse(row?.flowData || '{}')
@@ -203,12 +248,7 @@ function ShowcaseOptionsMenu({ row }) {
         </PermissionMenuItem>
 
         <PermissionMenuItem permissionId={'agentflows:update'} onClick={handleToggleDisable} dense disableRipple>
-          <Checkbox
-            size="small"
-            checked={enabled}
-            onClick={(e) => e.stopPropagation()}
-            sx={{ p: 0, mr: 1.25 }}
-          />
+          <Checkbox size="small" checked={enabled} onClick={(e) => e.stopPropagation()} sx={{ p: 0, mr: 1.25 }} />
           Disable from Showcase
         </PermissionMenuItem>
       </Menu>
@@ -217,7 +257,6 @@ function ShowcaseOptionsMenu({ row }) {
     </>
   )
 }
-/* ============================================ */
 
 const Showcase = () => {
   const navigate = useNavigate()
@@ -295,15 +334,28 @@ const Showcase = () => {
     else navigate(`/agentcanvas/${selectedAgentflow.id}`)
   }
 
-  const createAgentflow = async ({ name, category, description, url }) => {
+  // CREATE: Save directly to Showcase with category & tags
+  const createAgentflow = async ({ name, category, description, url, tags }) => {
     try {
       const flowData = {
         nodes: [],
         edges: [],
         viewport: { x: 0, y: 0, zoom: 1 },
-        metadata: { shareUrl: normalizeToPublicUrl(url, 'TEMP') }
+        metadata: {
+          shareUrl: normalizeToPublicUrl(url, 'TEMP'),
+          showInShowcase: true // <- ensure it appears in Showcase
+        }
       }
-      const payload = { name, category, description, type: 'AGENTFLOW', flowData: JSON.stringify(flowData) }
+
+      const payload = {
+        name,
+        category: category || '',
+        description: description || '',
+        type: 'AGENTFLOW',
+        tags: tags || '',
+        flowData: JSON.stringify(flowData)
+      }
+
       await createAgentflowApi.request(payload)
       setOpenCreate(false)
       refresh(1, pageLimit, agentflowVersion)
@@ -434,7 +486,7 @@ const Showcase = () => {
               </ToggleButton>
             </ToggleButtonGroup>
 
-            <StyledPermissionButton permissionId={'agentflows:create'} variant="contained" onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+            <StyledPermissionButton permissionId={'agentflows:create'} variant="contained" onClick={() => setOpenCreate(true)} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
               Add New
             </StyledPermissionButton>
           </ViewHeader>
@@ -495,7 +547,7 @@ const Showcase = () => {
                     ))}
                 </Stack>
               ) : (
-                /* LIST VIEW */
+                /* LIST VIEW — includes Tags column */
                 <Box sx={{
                   borderRadius: 2,
                   overflow: 'hidden',
@@ -528,6 +580,7 @@ const Showcase = () => {
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Tags</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Last Modified Date</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
                       </TableRow>
@@ -535,8 +588,13 @@ const Showcase = () => {
                     <TableBody>
                       {showcaseEnabledData.map((row) => {
                         const urlToOpen = getShareUrl(row.id)
+                        const tagList = Array.isArray(row.tags)
+                          ? row.tags
+                          : (row.tags ? row.tags.split(',').map((t) => t.trim()).filter(Boolean) : [])
+
                         return (
                           <TableRow key={row.id} hover>
+                            {/* Name */}
                             <TableCell>
                               <MuiLink
                                 component="button"
@@ -548,7 +606,20 @@ const Showcase = () => {
                                 {row.name}
                               </MuiLink>
                             </TableCell>
+
+                            {/* Tags */}
+                            <TableCell>
+                              <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>
+                                {tagList.length
+                                  ? tagList.map((t) => <Chip key={t} label={t} size="small" />)
+                                  : '—'}
+                              </Stack>
+                            </TableCell>
+
+                            {/* Last Modified */}
                             <TableCell>{row.updatedDate || row.updated || row.createdDate || '—'}</TableCell>
+
+                            {/* Actions */}
                             <TableCell>
                               <ShowcaseOptionsMenu row={row} />
                             </TableCell>
@@ -576,7 +647,8 @@ const Showcase = () => {
       )}
       <ConfirmDialog />
 
-      <ShowcaseCreateDialog open={openCreate} onClose={() => setOpenCreate(false)} onSave={createAgentflow} />
+      {/* Showcase Add dialog (same style as Rename) */}
+      <ShowcaseAddDialog open={openCreate} onClose={() => setOpenCreate(false)} onSave={createAgentflow} />
     </MainCard>
   )
 }
