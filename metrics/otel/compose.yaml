@@ -1,6 +1,7 @@
 version: "2"
 services:
   otel-collector:
+    read_only: true
     image: otel/opentelemetry-collector-contrib
     command: ["--config=/etc/otelcol-contrib/config.yaml", "--feature-gates=-exporter.datadogexporter.DisableAPMStats", "${OTELCOL_ARGS}"]
     volumes:
