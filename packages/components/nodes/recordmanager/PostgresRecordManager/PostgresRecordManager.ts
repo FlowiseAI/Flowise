@@ -75,7 +75,7 @@ class PostgresRecordManager_RecordManager implements INode {
                 optional: true
             },
             {
-                label: 'Schema Name',
+                label: 'Schema',
                 name: 'schema',
                 type: 'string',
                 placeholder: getSchema(),

@@ -5,6 +5,7 @@ import { DataSource } from 'typeorm'
 import { CheckpointTuple, SaverOptions, SerializerProtocol } from '../interface'
 import { IMessage, MemoryMethods } from '../../../../src/Interface'
 import { mapChatMessageToBaseMessage } from '../../../../src/utils'
+import { getSchema } from '../../../vectorstores/Postgres/utils'
 
 export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods {
     protected isSetup: boolean
@@ -17,6 +18,7 @@ export class PostgresSaver extends BaseCheckpointSaver implements MemoryMethods 
         this.config = config
         const { threadId } = config
         this.threadId = threadId
+        this.tableName = getSchema() != 'public' ? `${getSchema()}.checkpoints` : 'checkpoints'
     }
 
     sanitizeTableName(tableName: string): string {
@@ -154,6 +156,7 @@ CREATE TABLE IF NOT EXISTS ${tableName} (
         const queryRunner = dataSource.createQueryRunner()
         const thread_id = config.configurable?.thread_id || this.threadId
         const tableName = this.sanitizeTableName(this.tableName)
+
         let sql = `SELECT thread_id, checkpoint_id, parent_id, checkpoint, metadata FROM ${tableName} WHERE thread_id = $1`
         const args = [thread_id]
 

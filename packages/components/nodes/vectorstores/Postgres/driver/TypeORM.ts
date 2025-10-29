@@ -13,7 +13,7 @@ export class TypeORMDriver extends VectorStoreDriver {
         if (!this._postgresConnectionOptions) {
             const { user, password } = await this.getCredentials()
             const additionalConfig = this.nodeData.inputs?.additionalConfig as string
-            const schema = this.getSchema() || 'public'  // Get schema
+            const schema = this.getSchema()
 
             let additionalConfiguration = {}
 

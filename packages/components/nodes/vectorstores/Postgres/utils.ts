@@ -20,7 +20,7 @@ export function getTableName(nodeData?: INodeData) {
     return defaultChain(nodeData?.inputs?.tableName, process.env.POSTGRES_VECTORSTORE_TABLE_NAME, 'documents')
 }
 export function getSchema(nodeData?: INodeData) {
-  return defaultChain(nodeData?.inputs?.schema, process.env.DATABASE_SCHEMA, 'public')
+  return defaultChain(nodeData?.inputs?.schema, process.env.POSTGRES_VECTORSTORE_SCHEMA, 'public')
 }
 export function getContentColumnName(nodeData?: INodeData) {
     return defaultChain(nodeData?.inputs?.contentColumnName, process.env.POSTGRES_VECTORSTORE_CONTENT_COLUMN_NAME, 'pageContent')
