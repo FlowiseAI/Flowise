@@ -14,7 +14,6 @@ async function validateChatflowDomain(chatflowId: string, origin: string, worksp
         const chatflow = await chatflowsService.getChatflowById(chatflowId)
 
         if (!chatflow?.chatbotConfig) {
-            logger.info(`No chatbotConfig found for chatflow ${chatflowId}, allowing domain`)
             return true
         }
 
@@ -22,7 +21,6 @@ async function validateChatflowDomain(chatflowId: string, origin: string, worksp
 
         // If no allowed origins configured or first entry is empty, allow all
         if (!config.allowedOrigins?.length || config.allowedOrigins[0] === '') {
-            logger.info(`No domain restrictions configured for chatflow ${chatflowId}`)
             return true
         }
 
@@ -37,7 +35,6 @@ async function validateChatflowDomain(chatflowId: string, origin: string, worksp
             }
         })
 
-        logger.info(`Domain validation for ${origin} against chatflow ${chatflowId}: ${isAllowed}`)
         return isAllowed
     } catch (error) {
         logger.error(`Error validating domain for chatflow ${chatflowId}:`, error)
@@ -45,6 +42,8 @@ async function validateChatflowDomain(chatflowId: string, origin: string, worksp
     }
 }
 
+// NOTE: This function extracts the chatflow ID from a prediction URL.
+// It assumes the URL format is /prediction/{chatflowId}.
 /**
  * Extracts chatflow ID from prediction URL
  * @param url - The request URL

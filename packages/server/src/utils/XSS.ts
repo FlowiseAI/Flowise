@@ -21,9 +21,8 @@ export function sanitizeMiddleware(req: Request, res: Response, next: NextFuncti
 }
 
 export function getAllowedCorsOrigins(): string {
-    // Expects FQDN separated by commas, otherwise nothing or * for all.
-    // return process.env.CORS_ORIGINS ?? '*'
-    return process.env.CORS_ORIGINS as string
+    // Expects FQDN separated by commas, otherwise nothing.
+    return process.env.CORS_ORIGINS ?? ''
 }
 
 function parseAllowedOrigins(allowedOrigins: string): string[] {
