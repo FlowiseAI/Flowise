@@ -63,8 +63,6 @@ export const init = async (): Promise<void> => {
             })
             break
         case 'postgres':
-            const dbSchema = process.env.DATABASE_SCHEMA
-            const isCustomSchema = dbSchema && dbSchema !== 'public'
             appDataSource = new DataSource({
                 type: 'postgres',
                 host: process.env.DATABASE_HOST,
@@ -72,7 +70,7 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
-                ...(isCustomSchema && { schema: dbSchema }), // set custom schema if provided
+                schema: process.env.DATABASE_SCHEMA || 'public', // set custom schema if provided
                 ssl: getDatabaseSSLFromEnv(),
                 synchronize: false,
                 migrationsRun: false,
@@ -81,7 +79,7 @@ export const init = async (): Promise<void> => {
                 extra: {
                     idleTimeoutMillis: 120000,
                     // set the search_path for the migrations and queries to the desired schema
-                    ...(isCustomSchema && { options: `-c search_path=${dbSchema},public` })
+                    options: `-c search_path=${process.env.DATABASE_SCHEMA},public`
                 },
                 logging: ['error', 'warn', 'info', 'log'],
                 logger: 'advanced-console',
