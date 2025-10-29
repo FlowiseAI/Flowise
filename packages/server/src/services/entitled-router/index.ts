@@ -20,24 +20,28 @@ export interface RegisteredRoute {
  * @param sub The sub-path (e.g., from `router.get()`).
  * @returns A normalized string path.
  */
-function joinPathParams(base: PathParams, sub: PathParams): string {
+function joinPathParams(base: PathParams, sub: PathParams): string[] {
     const pathParamToString = (p: string | RegExp): string => (p instanceof RegExp ? `(regex: ${p.source})` : p)
-
     const baseParts = Array.isArray(base) ? base.map(pathParamToString) : [pathParamToString(base)]
     const subParts = Array.isArray(sub) ? sub.map(pathParamToString) : [pathParamToString(sub)]
 
-    // For display purposes, we'll just use the first path if multiple are provided.
-    const basePath = baseParts[0] || ''
-    const subPath = subParts[0] || ''
+    const combinedPaths: string[] = []
 
-    // Don't append the sub-path if it's just the root ('/').
-    if (subPath === '/') {
-        return basePath || '/'
+    for (const basePath of baseParts) {
+        for (const subPath of subParts) {
+            // Don't append the sub-path if it's just the root ('/').
+            if (subPath === '/') {
+                combinedPaths.push(basePath || '/')
+                continue
+            }
+
+            // Join and normalize slashes.
+            const combined = `${basePath}/${subPath}`
+            combinedPaths.push(combined.replace(/\/+/g, '/').replace(/\/$/, '') || '/')
+        }
     }
 
-    // Join and normalize slashes.
-    const combined = `${basePath}/${subPath}`
-    return combined.replace(/\/+/g, '/').replace(/\/$/, '') || '/'
+    return combinedPaths
 }
 
 export class EntitledRouter {
@@ -53,10 +57,11 @@ export class EntitledRouter {
         const childRoutes = this.childRouters.flatMap(({ path: basePath, router: childRouter }) => {
             // Get the child's local routes and prepend the parent's base path.
             const localChildRoutes = childRouter.registeredRoutes
-            return localChildRoutes.map((route) => ({
-                ...route,
-                path: joinPathParams(basePath, route.path)
-            }))
+            // Use flatMap to create a new route object for each path combination.
+            return localChildRoutes.flatMap((route) => {
+                const combinedPaths = joinPathParams(basePath, route.path)
+                return combinedPaths.map((p) => ({ ...route, path: p }))
+            })
         })
         return [...this.registeredRoutes, ...childRoutes]
     }
