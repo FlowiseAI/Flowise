@@ -42,12 +42,10 @@ function joinPathParams(base: PathParams, sub: PathParams): string {
 
 export class EntitledRouter {
     readonly router: IRouter
-    private logger?: Logger
     private childRouters: { path: PathParams; router: EntitledRouter }[] = []
     private registeredRoutes: RegisteredRoute[] = []
 
-    constructor(logger?: Logger) {
-        this.logger = logger
+    constructor() {
         this.router = ExpressRouter()
     }
 
@@ -156,8 +154,8 @@ export class EntitledRouter {
     }
 }
 
-function Router(logger?: Logger) {
-    return new EntitledRouter(logger)
+function Router() {
+    return new EntitledRouter()
 }
 
 export const entitled = { Router }
