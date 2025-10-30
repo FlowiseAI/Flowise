@@ -4,7 +4,7 @@ import { ZepVectorStore, IZepConfig } from '@langchain/community/vectorstores/ze
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class Zep_VectorStores implements INode {
@@ -159,7 +159,7 @@ class Zep_VectorStores implements INode {
         }
         if (apiKey) zepConfig.apiKey = apiKey
         if (zepMetadataFilter) {
-            const metadatafilter = typeof zepMetadataFilter === 'object' ? zepMetadataFilter : JSON.parse(zepMetadataFilter)
+            const metadatafilter = typeof zepMetadataFilter === 'object' ? zepMetadataFilter : parseJsonBody(zepMetadataFilter)
             zepConfig.filter = metadatafilter
         }
 
