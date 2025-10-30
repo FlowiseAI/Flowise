@@ -3,7 +3,8 @@ import chatMessageController from '../../controllers/chat-messages'
 const router = express.Router()
 
 // CREATE
-router.post(['/', '/:id'], chatMessageController.createChatMessage)
+// NOTE: Unused route
+// router.post(['/', '/:id'], chatMessageController.createChatMessage)
 
 // READ
 router.get(['/', '/:id'], chatMessageController.getAllChatMessages)

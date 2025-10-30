@@ -17,7 +17,6 @@ export class IUser {
     role: string
     lastLogin: Date
     activeWorkspaceId: string
-    isApiKeyValidated?: boolean
     loginMode?: string
     activeOrganizationId?: string
 }
@@ -73,7 +72,6 @@ export type LoggedInUser = {
     activeWorkspaceId: string
     activeWorkspace: string
     assignedWorkspaces: IAssignedWorkspace[]
-    isApiKeyValidated: boolean
     permissions?: string[]
     features?: Record<string, string>
     ssoRefreshToken?: string
