@@ -1422,6 +1422,51 @@ const ProfileSection = ({ handleLogout }) => {
                 payload[item.type] = collection.filter((entry) => entry.id !== item.importId)
             }
         })
+
+        const chatflowCollections = ['AgentFlow', 'AgentFlowV2', 'AssistantFlow', 'ChatFlow']
+        const chatflowIdsInPayload = new Set()
+        chatflowCollections.forEach((key) => {
+            const collection = payload[key]
+            if (!Array.isArray(collection)) return
+            collection.forEach((item) => {
+                if (item && item.id) {
+                    chatflowIdsInPayload.add(item.id)
+                }
+            })
+        })
+        if (Array.isArray(payload.ChatMessage)) {
+            payload.ChatMessage = payload.ChatMessage.filter((message) => {
+                if (!message || !message.chatflowid) return false
+                return chatflowIdsInPayload.has(message.chatflowid)
+            })
+        }
+        if (Array.isArray(payload.ChatMessageFeedback)) {
+            payload.ChatMessageFeedback = payload.ChatMessageFeedback.filter((feedback) => {
+                if (!feedback || !feedback.chatflowid) return false
+                return chatflowIdsInPayload.has(feedback.chatflowid)
+            })
+        }
+        if (Array.isArray(payload.Execution)) {
+            payload.Execution = payload.Execution.filter((execution) => {
+                if (!execution || !execution.agentflowId) return false
+                return chatflowIdsInPayload.has(execution.agentflowId)
+            })
+        }
+
+        const documentStoreIdsInPayload = new Set()
+        if (Array.isArray(payload.DocumentStore)) {
+            payload.DocumentStore.forEach((store) => {
+                if (store && store.id) {
+                    documentStoreIdsInPayload.add(store.id)
+                }
+            })
+        }
+        if (Array.isArray(payload.DocumentStoreFileChunk)) {
+            payload.DocumentStoreFileChunk = payload.DocumentStoreFileChunk.filter((chunk) => {
+                if (!chunk || !chunk.storeId) return false
+                return documentStoreIdsInPayload.has(chunk.storeId)
+            })
+        }
         setImportSummary({
             created: createdItems,
             duplicated: duplicateConflicts,
