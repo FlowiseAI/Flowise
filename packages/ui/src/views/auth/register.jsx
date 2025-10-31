@@ -201,7 +201,7 @@ const RegisterPage = () => {
     useEffect(() => {
         if (ssoLoginApi.data) {
             store.dispatch(loginSuccess(ssoLoginApi.data))
-            navigate(location.state?.path || '/chatflows')
+            navigate(location.state?.path || '/')
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

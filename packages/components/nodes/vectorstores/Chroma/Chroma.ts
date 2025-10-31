@@ -3,7 +3,7 @@ import { Chroma } from '@langchain/community/vectorstores/chroma'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { ChromaExtended } from './core'
 import { index } from '../../../src/indexing'
 
@@ -229,7 +229,7 @@ class Chroma_VectorStores implements INode {
         if (chromaTenant) obj.chromaTenant = chromaTenant
         if (chromaDatabase) obj.chromaDatabase = chromaDatabase
         if (chromaMetadataFilter) {
-            const metadatafilter = typeof chromaMetadataFilter === 'object' ? chromaMetadataFilter : JSON.parse(chromaMetadataFilter)
+            const metadatafilter = typeof chromaMetadataFilter === 'object' ? chromaMetadataFilter : parseJsonBody(chromaMetadataFilter)
             obj.filter = metadatafilter
         }
 
