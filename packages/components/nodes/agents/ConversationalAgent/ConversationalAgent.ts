@@ -263,10 +263,11 @@ const prepareAgent = async (
         }
     }
 
-    /** Bind a stop token to the model */
-    const modelWithStop = model.bind({
-        stop: ['\nObservation']
-    })
+    /** Bind a stop token to the model if supported */
+    // Avoid passing `stop` to models that reject it (e.g. gpt-5-nano)
+    const { modelSupportsStop } = await import('../../../src/utils')
+    const modelId = (model as any)?.modelName ?? (model as any)?.model ?? (model as any)?.configuredModel
+    const modelWithStop = modelSupportsStop(modelId) ? model.bind({ stop: ['\nObservation'] }) : model
 
     const runnableAgent = RunnableSequence.from([
         {
