@@ -13,6 +13,7 @@ export class TypeORMDriver extends VectorStoreDriver {
         if (!this._postgresConnectionOptions) {
             const { user, password } = await this.getCredentials()
             const additionalConfig = this.nodeData.inputs?.additionalConfig as string
+            const schema = this.getSchema()
 
             let additionalConfiguration = {}
 
@@ -33,7 +34,13 @@ export class TypeORMDriver extends VectorStoreDriver {
                 username: user, // Required by TypeORMVectorStore
                 user: user, // Required by Pool in similaritySearchVectorWithScore
                 password: password,
-                database: this.getDatabase()
+                // schema: this.getSchema(),
+                database: this.getDatabase(),
+                extra: {
+                    ...(additionalConfiguration as any)?.extra,
+                    // Force PostgreSQL to use your schema
+                    options: `-c search_path=${schema},public`
+                }
             } as DataSourceOptions
 
             // Prevent using default MySQL port, otherwise will throw uncaught error and crashing the app
