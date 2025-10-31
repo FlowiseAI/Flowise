@@ -414,7 +414,13 @@ export class SecureZodSchemaParser {
                 for (let j = i; j < remainingPart.length; j++) {
                     const ch = remainingPart[j]
                     if (inStr) {
-                        if (ch === strCh && remainingPart[j - 1] !== '\\') inStr = false
+                        // Count consecutive backslashes before the quote
+                        let backslashCount = 0
+                        for (let k = j - 1; k >= 0 && remainingPart[k] === '\\'; k--) {
+                            backslashCount++
+                        }
+                        // If even number of backslashes (including 0), the quote is not escaped
+                        if (ch === strCh && backslashCount % 2 === 0) inStr = false
                     } else if (ch === '"' || ch === "'") {
                         inStr = true
                         strCh = ch
@@ -531,7 +537,13 @@ export class SecureZodSchemaParser {
                 for (let j = i; j < remainingPart.length; j++) {
                     const ch = remainingPart[j]
                     if (inStr) {
-                        if (ch === strCh && remainingPart[j - 1] !== '\\') inStr = false
+                        // Count consecutive backslashes before the quote
+                        let backslashCount = 0
+                        for (let k = j - 1; k >= 0 && remainingPart[k] === '\\'; k--) {
+                            backslashCount++
+                        }
+                        // If even number of backslashes (including 0), the quote is not escaped
+                        if (ch === strCh && backslashCount % 2 === 0) inStr = false
                     } else if (ch === '"' || ch === "'") {
                         inStr = true
                         strCh = ch
