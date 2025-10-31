@@ -5,7 +5,7 @@ import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { VectorStore } from '@langchain/core/vectorstores'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { addMMRInputParams, howToUseFileUpload, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 
@@ -248,7 +248,8 @@ class Pinecone_VectorStores implements INode {
 
         if (pineconeNamespace) obj.namespace = pineconeNamespace
         if (pineconeMetadataFilter) {
-            const metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
+            const metadatafilter =
+                typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : parseJsonBody(pineconeMetadataFilter)
             obj.filter = metadatafilter
         }
         if (isFileUploadEnabled && options.chatId) {
