@@ -153,7 +153,7 @@ class Retriever_Agentflow implements INode {
         const knowledgeBases = nodeData.inputs?.retrieverKnowledgeDocumentStores as IKnowledgeBase[]
         if (knowledgeBases && knowledgeBases.length > 0) {
             for (const knowledgeBase of knowledgeBases) {
-                const [storeId, _] = knowledgeBase.documentStore.split(':')
+                const [storeId] = knowledgeBase.documentStore.split(':')
 
                 const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
                 const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)

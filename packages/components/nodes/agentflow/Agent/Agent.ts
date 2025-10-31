@@ -626,7 +626,28 @@ class Agent_Agentflow implements INode {
                     const nodeInstanceFilePath = options.componentNodes['retrieverTool'].filePath as string
                     const nodeModule = await import(nodeInstanceFilePath)
                     const newRetrieverToolNodeInstance = new nodeModule.nodeClass()
-                    const [storeId, storeName] = knowledgeBase.documentStore.split(':')
+
+                    // Handle both old format (id:name) and new format (id only)
+                    let storeId = knowledgeBase.documentStore
+                    let storeName = ''
+
+                    if (knowledgeBase.documentStore.includes(':')) {
+                        // Old format - split to get ID and name
+                        ;[storeId, storeName] = knowledgeBase.documentStore.split(':')
+                    } else {
+                        // New format - only ID is stored, need to look up current name
+                        storeId = knowledgeBase.documentStore
+                        const appDataSource = options.appDataSource as DataSource
+                        const databaseEntities = options.databaseEntities as IDatabaseEntity
+                        const store = await appDataSource.getRepository(databaseEntities['DocumentStore']).findOneBy({ id: storeId })
+                        storeName = store?.name || storeId // Fallback to ID if store not found
+                    }
+
+                    // Always fetch the current store name from database for referential integrity
+                    const appDataSource = options.appDataSource as DataSource
+                    const databaseEntities = options.databaseEntities as IDatabaseEntity
+                    const store = await appDataSource.getRepository(databaseEntities['DocumentStore']).findOneBy({ id: storeId })
+                    const currentStoreName = store?.name || storeId // Use current name from database
 
                     const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
                     const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
@@ -650,7 +671,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: storeName
+                            name: currentStoreName
                                 .toLowerCase()
                                 .replace(/ /g, '_')
                                 .replace(/[^a-z0-9_-]/g, ''),
@@ -670,7 +691,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: storeName
+                        name: currentStoreName
                             .toLowerCase()
                             .replace(/ /g, '_')
                             .replace(/[^a-z0-9_-]/g, ''),
