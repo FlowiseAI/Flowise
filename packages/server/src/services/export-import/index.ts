@@ -1305,6 +1305,11 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
         return acc
     }, {} as Record<ConflictEntityKey, Set<string>>)
 
+    const parentIdsMarkedForUpdate = {
+        chatflow: new Set<string>(),
+        documentStore: new Set<string>()
+    }
+
     const idRemap: Record<string, string> = {}
 
     for (const resolution of conflictResolutions) {
@@ -1312,6 +1317,19 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
         if (resolution.action === 'update') {
             idRemap[resolution.importId] = resolution.existingId
             idsToSkipMap[resolution.type].add(resolution.existingId)
+
+            if (
+                resolution.type === 'AgentFlow' ||
+                resolution.type === 'AgentFlowV2' ||
+                resolution.type === 'AssistantFlow' ||
+                resolution.type === 'ChatFlow'
+            ) {
+                parentIdsMarkedForUpdate.chatflow.add(resolution.existingId)
+            }
+
+            if (resolution.type === 'DocumentStore') {
+                parentIdsMarkedForUpdate.documentStore.add(resolution.existingId)
+            }
         }
     }
 
@@ -1351,6 +1369,80 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
         await queryRunner.connect()
 
         try {
+            if (parentIdsMarkedForUpdate.chatflow.size > 0 || parentIdsMarkedForUpdate.documentStore.size > 0) {
+                const chatflowIdsToSync = Array.from(parentIdsMarkedForUpdate.chatflow)
+                const documentStoreIdsToSync = Array.from(parentIdsMarkedForUpdate.documentStore)
+
+                if (chatflowIdsToSync.length > 0) {
+                    const chatMessagesToCheck = importData.ChatMessage.filter((message) =>
+                        message?.chatflowid ? parentIdsMarkedForUpdate.chatflow.has(message.chatflowid) : false
+                    )
+                    const chatMessageIdsToCheck = chatMessagesToCheck.map((message) => message.id)
+
+                    if (chatMessageIdsToCheck.length > 0) {
+                        const existingMessages = await queryRunner.manager.find(ChatMessage, {
+                            where: { id: In(chatMessageIdsToCheck) }
+                        })
+                        if (existingMessages.length > 0) {
+                            const existingMessageIds = new Set(existingMessages.map((record) => record.id))
+                            importData.ChatMessage = importData.ChatMessage.filter(
+                                (message) => !existingMessageIds.has(message.id)
+                            )
+                        }
+                    }
+
+                    const feedbackToCheck = importData.ChatMessageFeedback.filter((feedback) =>
+                        feedback?.chatflowid ? parentIdsMarkedForUpdate.chatflow.has(feedback.chatflowid) : false
+                    )
+                    const feedbackIdsToCheck = feedbackToCheck.map((feedback) => feedback.id)
+                    if (feedbackIdsToCheck.length > 0) {
+                        const existingFeedback = await queryRunner.manager.find(ChatMessageFeedback, {
+                            where: { id: In(feedbackIdsToCheck) }
+                        })
+                        if (existingFeedback.length > 0) {
+                            const existingFeedbackIds = new Set(existingFeedback.map((record) => record.id))
+                            importData.ChatMessageFeedback = importData.ChatMessageFeedback.filter(
+                                (feedback) => !existingFeedbackIds.has(feedback.id)
+                            )
+                        }
+                    }
+
+                    const executionsToCheck = importData.Execution.filter((execution) =>
+                        execution?.agentflowId ? parentIdsMarkedForUpdate.chatflow.has(execution.agentflowId) : false
+                    )
+                    const executionIdsToCheck = executionsToCheck.map((execution) => execution.id)
+                    if (executionIdsToCheck.length > 0) {
+                        const existingExecutions = await queryRunner.manager.find(Execution, {
+                            where: { id: In(executionIdsToCheck) }
+                        })
+                        if (existingExecutions.length > 0) {
+                            const existingExecutionIds = new Set(existingExecutions.map((record) => record.id))
+                            importData.Execution = importData.Execution.filter(
+                                (execution) => !existingExecutionIds.has(execution.id)
+                            )
+                        }
+                    }
+                }
+
+                if (documentStoreIdsToSync.length > 0) {
+                    const chunksToCheck = importData.DocumentStoreFileChunk.filter((chunk) =>
+                        chunk?.storeId ? parentIdsMarkedForUpdate.documentStore.has(chunk.storeId) : false
+                    )
+                    const chunkIdsToCheck = chunksToCheck.map((chunk) => chunk.id)
+                    if (chunkIdsToCheck.length > 0) {
+                        const existingChunks = await queryRunner.manager.find(DocumentStoreFileChunk, {
+                            where: { id: In(chunkIdsToCheck) }
+                        })
+                        if (existingChunks.length > 0) {
+                            const existingChunkIds = new Set(existingChunks.map((record) => record.id))
+                            importData.DocumentStoreFileChunk = importData.DocumentStoreFileChunk.filter(
+                                (chunk) => !existingChunkIds.has(chunk.id)
+                            )
+                        }
+                    }
+                }
+            }
+
             if (importData.AgentFlow.length > 0) {
                 importData.AgentFlow = reduceSpaceForChatflowFlowData(importData.AgentFlow)
                 importData.AgentFlow = insertWorkspaceId(importData.AgentFlow, activeWorkspaceId)
