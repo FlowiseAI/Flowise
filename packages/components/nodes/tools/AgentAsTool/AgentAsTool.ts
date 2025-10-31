@@ -4,7 +4,13 @@ import { RunnableConfig } from '@langchain/core/runnables'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { StructuredTool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
+import {
+    getCredentialData,
+    getCredentialParam,
+    executeJavaScriptCode,
+    createCodeExecutionSandbox,
+    parseWithTypeConversion
+} from '../../../src/utils'
 import { isValidUUID, isValidURL } from '../../../src/validator'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -273,7 +279,7 @@ class AgentflowTool extends StructuredTool {
         }
         let parsed
         try {
-            parsed = await this.schema.parseAsync(arg)
+            parsed = await parseWithTypeConversion(this.schema, arg)
         } catch (e) {
             throw new Error(`Received tool input did not match expected schema: ${JSON.stringify(arg)}`)
         }
