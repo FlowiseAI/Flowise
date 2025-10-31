@@ -1765,10 +1765,16 @@ export const parseJsonBody = (body: string): any => {
  * Parse a value against a Zod schema with automatic type conversion for common type mismatches
  * @param schema - The Zod schema to parse against
  * @param arg - The value to parse
+ * @param maxDepth - Maximum recursion depth to prevent infinite loops (default: 10)
  * @returns The parsed value
  * @throws Error if parsing fails after attempting type conversions
  */
-export async function parseWithTypeConversion<T extends z.ZodTypeAny>(schema: T, arg: unknown): Promise<z.infer<T>> {
+export async function parseWithTypeConversion<T extends z.ZodTypeAny>(schema: T, arg: unknown, maxDepth: number = 10): Promise<z.infer<T>> {
+    // Safety check: prevent infinite recursion
+    if (maxDepth <= 0) {
+        throw new Error('Maximum recursion depth reached in parseWithTypeConversion')
+    }
+
     try {
         return await schema.parseAsync(arg)
     } catch (e) {
@@ -1904,14 +1910,11 @@ export async function parseWithTypeConversion<T extends z.ZodTypeAny>(schema: T,
                 }
             }
 
-            // If we modified the arg, try parsing again
+            // If we modified the arg, recursively call parseWithTypeConversion
+            // This allows newly surfaced nested errors to also get conversion treatment
+            // Decrement maxDepth to prevent infinite recursion
             if (hasModification) {
-                try {
-                    return await schema.parseAsync(modifiedArg)
-                } catch (e2) {
-                    // Re-throw the original error after failed conversion attempt
-                    throw e
-                }
+                return await parseWithTypeConversion(schema, modifiedArg, maxDepth - 1)
             }
         }
         // Re-throw the original error if not a ZodError or no conversion possible
