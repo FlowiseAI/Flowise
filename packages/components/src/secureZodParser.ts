@@ -4,23 +4,10 @@ import { z } from 'zod'
  * This parser safely handles Zod schema strings without allowing arbitrary code execution
  */
 export class SecureZodSchemaParser {
-    private static readonly ALLOWED_TYPES = [
-        'string',
-        'number',
-        'int',
-        'boolean',
-        'date',
-        'object',
-        'array',
-        'enum',
-        'union',
-        'literal',
-        'optional',
-        'max',
-        'min',
-        'describe',
-        'default'
-    ]
+    // Base primitives this parser can build via the switch in buildZodType
+    private static readonly ALLOWED_BASE_TYPES = ['string', 'number', 'boolean', 'date', 'enum'] as const
+    // Safe method modifiers supported by applyModifiers
+    private static readonly ALLOWED_MODIFIERS = ['int', 'optional', 'max', 'min', 'describe', 'default', 'array'] as const
 
     /**
      * Safely parse a Zod schema string into a Zod schema object
@@ -410,24 +397,45 @@ export class SecureZodSchemaParser {
             return { literalPart: typeStr, modifiers: [], hasModifiers: false }
         }
 
-        // Parse modifiers
+        // Parse modifiers (handles nested args and quoted strings)
         const modifiers: any[] = []
-        const modifierParts = remainingPart.substring(1).split('.')
-
-        for (const part of modifierParts) {
-            const modMatch = part.match(/^(\w+)(\(.*\))?$/)
-            if (!modMatch) {
-                throw new Error(`Invalid modifier: ${part}`)
+        let i = 1 // skip leading '.'
+        while (i < remainingPart.length) {
+            const nameMatch = remainingPart.substring(i).match(/^(\w+)/)
+            if (!nameMatch) break
+            const modName = nameMatch[1]
+            i += modName.length
+            let modArgs: any[] = []
+            if (i < remainingPart.length && remainingPart[i] === '(') {
+                let depth = 0,
+                    inStr = false,
+                    strCh = '',
+                    start = i
+                for (let j = i; j < remainingPart.length; j++) {
+                    const ch = remainingPart[j]
+                    if (inStr) {
+                        if (ch === strCh && remainingPart[j - 1] !== '\\') inStr = false
+                    } else if (ch === '"' || ch === "'") {
+                        inStr = true
+                        strCh = ch
+                    } else if (ch === '(') depth++
+                    else if (ch === ')') {
+                        depth--
+                        if (depth === 0) {
+                            const argsStr = remainingPart.substring(start, j + 1)
+                            // Allow object defaults and complex args
+                            modArgs = this.parseComplexArguments(argsStr)
+                            i = j + 1
+                            break
+                        }
+                    }
+                }
             }
-
-            const modName = modMatch[1]
-            const modArgs = modMatch[2] ? this.parseArguments(modMatch[2]) : []
-
-            if (!this.ALLOWED_TYPES.includes(modName)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
                 throw new Error(`Unsupported modifier: ${modName}`)
             }
-
             modifiers.push({ name: modName, args: modArgs })
+            if (i < remainingPart.length && remainingPart[i] === '.') i++
         }
 
         return { literalPart, modifiers, hasModifiers: true }
@@ -506,24 +514,45 @@ export class SecureZodSchemaParser {
             return { unionPart: typeStr, modifiers: [], hasModifiers: false }
         }
 
-        // Parse modifiers
+        // Parse modifiers (handles nested args and quoted strings)
         const modifiers: any[] = []
-        const modifierParts = remainingPart.substring(1).split('.')
-
-        for (const part of modifierParts) {
-            const modMatch = part.match(/^(\w+)(\(.*\))?$/)
-            if (!modMatch) {
-                throw new Error(`Invalid modifier: ${part}`)
+        let i = 1 // skip leading '.'
+        while (i < remainingPart.length) {
+            const nameMatch = remainingPart.substring(i).match(/^(\w+)/)
+            if (!nameMatch) break
+            const modName = nameMatch[1]
+            i += modName.length
+            let modArgs: any[] = []
+            if (i < remainingPart.length && remainingPart[i] === '(') {
+                let depth = 0,
+                    inStr = false,
+                    strCh = '',
+                    start = i
+                for (let j = i; j < remainingPart.length; j++) {
+                    const ch = remainingPart[j]
+                    if (inStr) {
+                        if (ch === strCh && remainingPart[j - 1] !== '\\') inStr = false
+                    } else if (ch === '"' || ch === "'") {
+                        inStr = true
+                        strCh = ch
+                    } else if (ch === '(') depth++
+                    else if (ch === ')') {
+                        depth--
+                        if (depth === 0) {
+                            const argsStr = remainingPart.substring(start, j + 1)
+                            // Allow object defaults and complex args
+                            modArgs = this.parseComplexArguments(argsStr)
+                            i = j + 1
+                            break
+                        }
+                    }
+                }
             }
-
-            const modName = modMatch[1]
-            const modArgs = modMatch[2] ? this.parseArguments(modMatch[2]) : []
-
-            if (!this.ALLOWED_TYPES.includes(modName)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
                 throw new Error(`Unsupported modifier: ${modName}`)
             }
-
             modifiers.push({ name: modName, args: modArgs })
+            if (i < remainingPart.length && remainingPart[i] === '.') i++
         }
 
         return { unionPart, modifiers, hasModifiers: true }
@@ -558,13 +587,13 @@ export class SecureZodSchemaParser {
         }
 
         // Validate base type
-        if (!this.ALLOWED_TYPES.includes(typeInfo.base)) {
+        if (!this.ALLOWED_BASE_TYPES.includes(typeInfo.base)) {
             throw new Error(`Unsupported type: ${typeInfo.base}`)
         }
 
         // Validate modifiers
         for (const modifier of typeInfo.modifiers || []) {
-            if (!this.ALLOWED_TYPES.includes(modifier.name)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modifier.name)) {
                 throw new Error(`Unsupported modifier: ${modifier.name}`)
             }
         }
@@ -669,7 +698,7 @@ export class SecureZodSchemaParser {
             const modName = modMatch[1]
             const modArgs = modMatch[2] ? this.parseArguments(modMatch[2]) : []
 
-            if (!this.ALLOWED_TYPES.includes(modName)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
                 throw new Error(`Unsupported modifier: ${modName}`)
             }
 
@@ -747,7 +776,7 @@ export class SecureZodSchemaParser {
                 }
             }
 
-            if (!this.ALLOWED_TYPES.includes(modName)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
                 throw new Error(`Unsupported modifier: ${modName}`)
             }
 
