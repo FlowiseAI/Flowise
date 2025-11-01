@@ -99,6 +99,74 @@ const importTypeLabels = {
     Variable: 'Variable'
 }
 
+const childParentMappings = {
+    ChatMessage: {
+        parentIdField: 'chatflowid',
+        parentTypes: [
+            'AgentFlow',
+            'AgentFlowV2',
+            'AssistantCustom',
+            'AssistantFlow',
+            'AssistantOpenAI',
+            'AssistantAzure',
+            'ChatFlow'
+        ]
+    },
+    ChatMessageFeedback: {
+        parentIdField: 'chatflowid',
+        parentTypes: [
+            'AgentFlow',
+            'AgentFlowV2',
+            'AssistantCustom',
+            'AssistantFlow',
+            'AssistantOpenAI',
+            'AssistantAzure',
+            'ChatFlow'
+        ]
+    },
+    Execution: {
+        parentIdField: 'agentflowId',
+        parentTypes: ['AgentFlowV2']
+    },
+    DocumentStoreFileChunk: {
+        parentIdField: 'storeId',
+        parentTypes: ['DocumentStore']
+    }
+}
+
+const resolveParentDetails = (type, item, lookupById) => {
+    const mapping = childParentMappings[type]
+    if (!mapping || !item) return null
+
+    const parentId = item[mapping.parentIdField]
+    if (!parentId) return null
+
+    const parentInfo = lookupById.get(parentId)
+    if (parentInfo && (!mapping.parentTypes || mapping.parentTypes.includes(parentInfo.type))) {
+        return {
+            id: parentId,
+            type: parentInfo.type,
+            name: parentInfo.name,
+            label: importTypeLabels[parentInfo.type] || parentInfo.type,
+            isExisting: false
+        }
+    }
+
+    const fallbackType = parentInfo?.type && (!mapping.parentTypes || mapping.parentTypes.includes(parentInfo.type))
+        ? parentInfo.type
+        : mapping.parentTypes && mapping.parentTypes.length === 1
+        ? mapping.parentTypes[0]
+        : parentInfo?.type
+
+    return {
+        id: parentId,
+        type: fallbackType,
+        name: parentInfo?.name,
+        label: fallbackType ? importTypeLabels[fallbackType] || fallbackType : undefined,
+        isExisting: !parentInfo
+    }
+}
+
 const getConflictKey = (conflict = {}) => {
     const { type, existingId, importId, id, name } = conflict
     return [type, existingId, importId ?? id ?? name].filter(Boolean).join(':')
@@ -350,6 +418,8 @@ const ImportReviewDialog = ({
             ]),
         []
     )
+
+    const parentGroupingTypes = useMemo(() => new Set(Object.keys(childParentMappings)), [])
 
     useEffect(() => {
         if (!show) return
@@ -799,80 +869,163 @@ const ImportReviewDialog = ({
                                                 </Typography>
                                             </Stack>
                                         )
-                                        const renderItems = (
-                                            <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
-                                                {items.map((item) => {
-                                                    const key = getImportItemKey(item)
-                                                    const isSelected = newItemSelections[key] || false
-                                                    const inactiveBackground = lighten(
-                                                        sectionBackground || alpha(theme.palette.action.disabledBackground, 0.3),
-                                                        theme.palette.mode === 'dark' ? 0.08 : 0.24
-                                                    )
-                                                    const activeBackground = alpha(
-                                                        accentColor,
-                                                        theme.palette.mode === 'dark' ? 0.28 : 0.14
-                                                    )
-                                                    const activeBorder = alpha(
-                                                        accentColor,
-                                                        theme.palette.mode === 'dark' ? 0.7 : 0.5
-                                                    )
-                                                    const hoverBackground = lighten(
-                                                        inactiveBackground,
-                                                        theme.palette.mode === 'dark' ? 0.04 : 0.1
-                                                    )
+                                        const renderItems = (() => {
+                                            const renderNewItemRow = (item) => {
+                                                const key = getImportItemKey(item)
+                                                const isSelected = newItemSelections[key] || false
+                                                const inactiveBackground = lighten(
+                                                    sectionBackground || alpha(theme.palette.action.disabledBackground, 0.3),
+                                                    theme.palette.mode === 'dark' ? 0.08 : 0.24
+                                                )
+                                                const activeBackground = alpha(
+                                                    accentColor,
+                                                    theme.palette.mode === 'dark' ? 0.28 : 0.14
+                                                )
+                                                const activeBorder = alpha(
+                                                    accentColor,
+                                                    theme.palette.mode === 'dark' ? 0.7 : 0.5
+                                                )
+                                                const hoverBackground = lighten(
+                                                    inactiveBackground,
+                                                    theme.palette.mode === 'dark' ? 0.04 : 0.1
+                                                )
+                                                const detailParts = [`Import ID: ${item.importId}`]
+                                                if (parentGroupingTypes.has(type) && item.parent) {
+                                                    if (!item.parent.name && item.parent.id) {
+                                                        detailParts.push(`Parent ID: ${item.parent.id}`)
+                                                    }
+                                                    if (item.parent.isExisting) {
+                                                        detailParts.push('Parent in workspace')
+                                                    }
+                                                }
 
+                                                return (
+                                                    <Box
+                                                        key={key}
+                                                        sx={{
+                                                            display: 'flex',
+                                                            flexDirection: { xs: 'column', sm: 'row' },
+                                                            alignItems: { xs: 'flex-start', sm: 'center' },
+                                                            justifyContent: 'space-between',
+                                                            gap: 2,
+                                                            border: '1px solid',
+                                                            borderColor: isSelected
+                                                                ? activeBorder
+                                                                : alpha(theme.palette.divider, 0.4),
+                                                            borderRadius: 1.5,
+                                                            px: 2,
+                                                            py: 1.5,
+                                                            backgroundColor: isSelected
+                                                                ? activeBackground
+                                                                : inactiveBackground,
+                                                            transition: 'background-color 0.2s ease',
+                                                            '&:hover': {
+                                                                backgroundColor: isSelected
+                                                                    ? activeBackground
+                                                                    : hoverBackground
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Stack direction='row' spacing={1.5} alignItems='flex-start'>
+                                                            <Checkbox
+                                                                color='primary'
+                                                                checked={isSelected}
+                                                                onChange={(event) =>
+                                                                    onNewItemSelectionChange(
+                                                                        item,
+                                                                        event.target.checked
+                                                                    )
+                                                                }
+                                                            />
+                                                            <Stack spacing={0.5}>
+                                                                <Typography variant='subtitle2'>
+                                                                    {item.name}
+                                                                </Typography>
+                                                                <Typography variant='caption' color='textSecondary'>
+                                                                    {detailParts.join(' • ')}
+                                                                </Typography>
+                                                            </Stack>
+                                                        </Stack>
+                                                    </Box>
+                                                )
+                                            }
+
+                                            if (!parentGroupingTypes.has(type)) {
+                                                return (
+                                                    <Stack spacing={1.5} sx={{ px: 2, py: 1.5 }}>
+                                                        {items.map((item) => renderNewItemRow(item))}
+                                                    </Stack>
+                                                )
+                                            }
+
+                                            const parentGroups = new Map()
+                                            items.forEach((item) => {
+                                                const parent = item.parent || null
+                                                const parentKey = parent
+                                                    ? `${parent.type || 'unknown'}:${parent.id || 'no-id'}`
+                                                    : 'no-parent'
+                                                if (!parentGroups.has(parentKey)) {
+                                                    parentGroups.set(parentKey, { parent, items: [] })
+                                                }
+                                                parentGroups.get(parentKey).items.push(item)
+                                            })
+
+                                            const sortedParentGroups = Array.from(parentGroups.entries()).sort(([, groupA], [, groupB]) => {
+                                                const labelA = groupA.parent?.name
+                                                    || groupA.parent?.label
+                                                    || groupA.parent?.id
+                                                    || ''
+                                                const labelB = groupB.parent?.name
+                                                    || groupB.parent?.label
+                                                    || groupB.parent?.id
+                                                    || ''
+                                                return labelA.localeCompare(labelB)
+                                            })
+
+                                            const getParentDisplayName = (parent) => {
+                                                if (!parent) return 'Parent not found'
+                                                if (parent.name) return parent.name
+                                                if (parent.label && parent.id) return `${parent.label} (${parent.id})`
+                                                if (parent.label) return parent.label
+                                                if (parent.id) return `Parent ID: ${parent.id}`
+                                                return 'Parent not found'
+                                            }
+
+                                            const getParentCaption = (parent) => {
+                                                if (!parent) return 'No parent reference available'
+                                                const details = []
+                                                if (parent.label) details.push(parent.label)
+                                                if (parent.id) details.push(`ID: ${parent.id}`)
+                                                if (parent.isExisting) details.push('Existing workspace item')
+                                                return details.join(' • ')
+                                            }
+
+                                            return (
+                                                <Stack spacing={1.75} sx={{ px: 2, py: 1.5 }}>
+                                                    {sortedParentGroups.map(([parentKey, group]) => {
+                                                        const parent = group.parent
+                                                        const caption = getParentCaption(parent)
                                                         return (
-                                                            <Box
-                                                                key={key}
-                                                                sx={{
-                                                                    display: 'flex',
-                                                                    flexDirection: { xs: 'column', sm: 'row' },
-                                                                    alignItems: { xs: 'flex-start', sm: 'center' },
-                                                                    justifyContent: 'space-between',
-                                                                    gap: 2,
-                                                                    border: '1px solid',
-                                                                    borderColor: isSelected
-                                                                        ? activeBorder
-                                                                        : alpha(theme.palette.divider, 0.4),
-                                                                    borderRadius: 1.5,
-                                                                    px: 2,
-                                                                    py: 1.5,
-                                                                    backgroundColor: isSelected
-                                                                        ? activeBackground
-                                                                        : inactiveBackground,
-                                                                    transition: 'background-color 0.2s ease',
-                                                                    '&:hover': {
-                                                                        backgroundColor: isSelected
-                                                                            ? activeBackground
-                                                                            : hoverBackground
-                                                                    }
-                                                                }}
-                                                            >
-                                                                <Stack direction='row' spacing={1.5} alignItems='flex-start'>
-                                                                    <Checkbox
-                                                                        color='primary'
-                                                                        checked={isSelected}
-                                                                        onChange={(event) =>
-                                                                            onNewItemSelectionChange(
-                                                                                item,
-                                                                                event.target.checked
-                                                                            )
-                                                                        }
-                                                                    />
-                                                                    <Stack spacing={0.5}>
-                                                                        <Typography variant='subtitle2'>
-                                                                            {item.name}
-                                                                        </Typography>
+                                                            <Stack key={parentKey} spacing={1.25}>
+                                                                <Stack spacing={0.25}>
+                                                                    <Typography variant='subtitle2'>
+                                                                        {getParentDisplayName(parent)}
+                                                                    </Typography>
+                                                                    {caption && (
                                                                         <Typography variant='caption' color='textSecondary'>
-                                                                            Import ID: {item.importId}
+                                                                            {caption}
                                                                         </Typography>
-                                                                    </Stack>
+                                                                    )}
                                                                 </Stack>
-                                                            </Box>
+                                                                <Stack spacing={1.25}>
+                                                                    {group.items.map((item) => renderNewItemRow(item))}
+                                                                </Stack>
+                                                            </Stack>
                                                         )
                                                     })}
                                                 </Stack>
-                                        )
+                                            )
+                                        })()
 
                                         if (isCollapsible) {
                                             const expanded = expandedSections[type] ?? false
@@ -1552,6 +1705,15 @@ const ProfileSection = ({ handleLogout }) => {
         })
         setConflictDecisions(initialDecisions)
         setConflictSelections(initialSelections)
+        const importLookupById = new Map()
+        Object.entries(pendingImportPayload).forEach(([type, items]) => {
+            if (!Array.isArray(items)) return
+            items.forEach((item) => {
+                if (!item || !item.id) return
+                const name = getImportItemName(type, item)
+                importLookupById.set(item.id, { type, name })
+            })
+        })
         const conflictKeys = new Set(conflicts.map((conflict) => getImportItemKey(conflict)))
         const newItems = []
         Object.entries(pendingImportPayload).forEach(([type, items]) => {
@@ -1560,10 +1722,12 @@ const ProfileSection = ({ handleLogout }) => {
                 if (!item || !item.id) return
                 const key = getImportItemKey({ type, importId: item.id })
                 if (conflictKeys.has(key)) return
+                const lookup = importLookupById.get(item.id)
                 newItems.push({
                     type,
                     importId: item.id,
-                    name: getImportItemName(type, item)
+                    name: lookup?.name ?? getImportItemName(type, item),
+                    parent: resolveParentDetails(type, item, importLookupById)
                 })
             })
         })
