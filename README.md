@@ -181,6 +181,12 @@ Flowise has 3 different modules in a single mono repository.
 -   **Usage example:** In the **Review Import** dialog, open the **New Items** tab to see chat messages and other child records grouped by their parent flow or document store, including the parent name or ID when available.
 -   **Dependencies / breaking changes:** Works with existing export files; no API or configuration changes required.
 
+### Dependency-aware import summary
+
+-   **Purpose:** Ensure the import success dialog only reports items that were actually created or updated, moving dependent records to the skipped list when their parent flows or stores were not included.
+-   **Usage example:** After importing a file where chat messages were selected but their agent flow was not, the summary now lists those messages under **Skipped** with the parent reason instead of counting them as **New items created**.
+-   **Dependencies / breaking changes:** No additional setup needed; the improved summary applies automatically to all import runs.
+
 ## 🌱 Env Variables
 
 Flowise supports different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
