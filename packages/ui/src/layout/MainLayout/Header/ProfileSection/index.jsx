@@ -1005,17 +1005,49 @@ const ImportReviewDialog = ({
                                                     {sortedParentGroups.map(([parentKey, group]) => {
                                                         const parent = group.parent
                                                         const caption = getParentCaption(parent)
+                                                        const groupKeys = group.items.map((item) => getImportItemKey(item))
+                                                        const groupSelections = groupKeys.map((key) => newItemSelections[key] || false)
+                                                        const allGroupSelected = groupSelections.every((selected) => selected)
+                                                        const someGroupSelected = groupSelections.some((selected) => selected)
+                                                        const handleGroupToggle = (checked) => {
+                                                            group.items.forEach((item) => {
+                                                                const key = getImportItemKey(item)
+                                                                const current = newItemSelections[key] || false
+                                                                if (current !== checked) {
+                                                                    onNewItemSelectionChange(item, checked)
+                                                                }
+                                                            })
+                                                        }
+
                                                         return (
                                                             <Stack key={parentKey} spacing={1.25}>
-                                                                <Stack spacing={0.25}>
-                                                                    <Typography variant='subtitle2'>
-                                                                        {getParentDisplayName(parent)}
-                                                                    </Typography>
-                                                                    {caption && (
-                                                                        <Typography variant='caption' color='textSecondary'>
-                                                                            {caption}
+                                                                <Stack
+                                                                    direction={{ xs: 'column', sm: 'row' }}
+                                                                    spacing={{ xs: 0.5, sm: 1 }}
+                                                                    justifyContent='space-between'
+                                                                    alignItems={{ xs: 'flex-start', sm: 'center' }}
+                                                                >
+                                                                    <Stack spacing={0.25}>
+                                                                        <Typography variant='subtitle2'>
+                                                                            {getParentDisplayName(parent)}
                                                                         </Typography>
-                                                                    )}
+                                                                        {caption && (
+                                                                            <Typography variant='caption' color='textSecondary'>
+                                                                                {caption}
+                                                                            </Typography>
+                                                                        )}
+                                                                    </Stack>
+                                                                    <FormControlLabel
+                                                                        control={
+                                                                            <Checkbox
+                                                                                color='primary'
+                                                                                checked={allGroupSelected}
+                                                                                indeterminate={!allGroupSelected && someGroupSelected}
+                                                                                onChange={(event) => handleGroupToggle(event.target.checked)}
+                                                                            />
+                                                                        }
+                                                                        label='Select all'
+                                                                    />
                                                                 </Stack>
                                                                 <Stack spacing={1.25}>
                                                                     {group.items.map((item) => renderNewItemRow(item))}

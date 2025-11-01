@@ -169,6 +169,18 @@ Flowise has 3 different modules in a single mono repository.
 
 ## ✨ Features
 
+### Import child synchronization enhancements
+
+-   **Purpose:** Keep selected chat messages, feedback, executions, and document store chunks in sync with their parent flows when importing with **Update** or **Duplicate** actions, creating new child records only when needed.
+-   **Usage example:** In the import review dialog, choose **Update** for an Agentflow conflict and select its chat messages in Tab 2—Flowise now updates existing messages while creating any missing ones; choosing **Duplicate** creates a new Agentflow copy and re-creates the selected chat history for it.
+-   **Dependencies / breaking changes:** Works automatically with existing export files; no additional configuration or breaking changes required.
+
+### Parent group select-all shortcuts
+
+-   **Purpose:** Quickly include every child item attached to a specific Agentflow or document store during import review without manually toggling each checkbox.
+-   **Usage example:** Expand a parent group in Tab 2 of the import review dialog and click the new **Select all** control to toggle every chat message, feedback, execution, or chunk belonging to that parent in a single action.
+-   **Dependencies / breaking changes:** Available in the web UI; no server configuration changes required.
+
 ### Conflict-aware import filtering
 
 -   **Purpose:** Prevent duplicate chat messages, feedback, executions, and document store chunks from being recreated when importing data with the **Update** action for existing chatflows or document stores.

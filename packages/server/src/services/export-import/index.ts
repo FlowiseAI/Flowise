@@ -876,7 +876,8 @@ async function replaceDuplicateIdsForChatMessage(
     queryRunner: QueryRunner,
     originalData: ExportData,
     chatMessages: ChatMessage[],
-    activeWorkspaceId?: string
+    activeWorkspaceId?: string,
+    idsToSkip: Set<string> = new Set()
 ) {
     try {
         const chatmessageChatflowIds = chatMessages.map((chatMessage) => {
@@ -924,7 +925,7 @@ async function replaceDuplicateIdsForChatMessage(
         const idMap: { [key: string]: string } = {}
         const dbExistingIds = new Set(records.map((record) => record.id))
         originalData.ChatMessage = originalData.ChatMessage.map((item) => {
-            if (dbExistingIds.has(item.id)) {
+            if (dbExistingIds.has(item.id) && !idsToSkip.has(item.id)) {
                 const newId = uuidv4()
                 idMap[item.id] = newId
                 return { ...item, id: newId }
@@ -1006,7 +1007,8 @@ async function replaceDuplicateIdsForChatMessageFeedback(
     queryRunner: QueryRunner,
     originalData: ExportData,
     chatMessageFeedbacks: ChatMessageFeedback[],
-    activeWorkspaceId?: string
+    activeWorkspaceId?: string,
+    idsToSkip: Set<string> = new Set()
 ) {
     try {
         const feedbackChatflowIds = chatMessageFeedbacks.map((feedback) => {
@@ -1084,7 +1086,7 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         // replace duplicate ids found in db to new id
         const dbExistingIds = new Set(records.map((record) => record.id))
         originalData.ChatMessageFeedback = originalData.ChatMessageFeedback.map((item) => {
-            if (dbExistingIds.has(item.id)) {
+            if (dbExistingIds.has(item.id) && !idsToSkip.has(item.id)) {
                 const newId = uuidv4()
                 return { ...item, id: newId }
             }
@@ -1156,7 +1158,8 @@ async function replaceDuplicateIdsForDocumentStore(
 async function replaceDuplicateIdsForDocumentStoreFileChunk(
     queryRunner: QueryRunner,
     originalData: ExportData,
-    documentStoreFileChunks: DocumentStoreFileChunk[]
+    documentStoreFileChunks: DocumentStoreFileChunk[],
+    idsToSkip: Set<string> = new Set()
 ) {
     try {
         const ids = documentStoreFileChunks.map((documentStoreFileChunk) => documentStoreFileChunk.id)
@@ -1168,7 +1171,7 @@ async function replaceDuplicateIdsForDocumentStoreFileChunk(
         // replace duplicate ids found in db to new id
         const dbExistingIds = new Set(records.map((record) => record.id))
         originalData.DocumentStoreFileChunk = originalData.DocumentStoreFileChunk.map((item) => {
-            if (dbExistingIds.has(item.id)) {
+            if (dbExistingIds.has(item.id) && !idsToSkip.has(item.id)) {
                 return { ...item, id: uuidv4() }
             }
             return item
@@ -1238,7 +1241,12 @@ async function replaceDuplicateIdsForVariable(
     }
 }
 
-async function replaceDuplicateIdsForExecution(queryRunner: QueryRunner, originalData: ExportData, executions: Execution[]) {
+async function replaceDuplicateIdsForExecution(
+    queryRunner: QueryRunner,
+    originalData: ExportData,
+    executions: Execution[],
+    idsToSkip: Set<string> = new Set()
+) {
     try {
         const ids = executions.map((execution) => execution.id)
         const records = await queryRunner.manager.find(Execution, {
@@ -1246,6 +1254,7 @@ async function replaceDuplicateIdsForExecution(queryRunner: QueryRunner, origina
         })
         if (records.length < 0) return originalData
         for (let record of records) {
+            if (idsToSkip.has(record.id)) continue
             const oldId = record.id
             const newId = uuidv4()
             originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
@@ -1308,6 +1317,13 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
     const parentIdsMarkedForUpdate = {
         chatflow: new Set<string>(),
         documentStore: new Set<string>()
+    }
+
+    const childIdsMarkedForUpdate = {
+        chatMessage: new Set<string>(),
+        chatMessageFeedback: new Set<string>(),
+        execution: new Set<string>(),
+        documentStoreFileChunk: new Set<string>()
     }
 
     const idRemap: Record<string, string> = {}
@@ -1384,10 +1400,9 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(chatMessageIdsToCheck) }
                         })
                         if (existingMessages.length > 0) {
-                            const existingMessageIds = new Set(existingMessages.map((record) => record.id))
-                            importData.ChatMessage = importData.ChatMessage.filter(
-                                (message) => !existingMessageIds.has(message.id)
-                            )
+                            for (const message of existingMessages) {
+                                childIdsMarkedForUpdate.chatMessage.add(message.id)
+                            }
                         }
                     }
 
@@ -1400,10 +1415,9 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(feedbackIdsToCheck) }
                         })
                         if (existingFeedback.length > 0) {
-                            const existingFeedbackIds = new Set(existingFeedback.map((record) => record.id))
-                            importData.ChatMessageFeedback = importData.ChatMessageFeedback.filter(
-                                (feedback) => !existingFeedbackIds.has(feedback.id)
-                            )
+                            for (const feedback of existingFeedback) {
+                                childIdsMarkedForUpdate.chatMessageFeedback.add(feedback.id)
+                            }
                         }
                     }
 
@@ -1416,10 +1430,9 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(executionIdsToCheck) }
                         })
                         if (existingExecutions.length > 0) {
-                            const existingExecutionIds = new Set(existingExecutions.map((record) => record.id))
-                            importData.Execution = importData.Execution.filter(
-                                (execution) => !existingExecutionIds.has(execution.id)
-                            )
+                            for (const execution of existingExecutions) {
+                                childIdsMarkedForUpdate.execution.add(execution.id)
+                            }
                         }
                     }
                 }
@@ -1434,10 +1447,9 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(chunkIdsToCheck) }
                         })
                         if (existingChunks.length > 0) {
-                            const existingChunkIds = new Set(existingChunks.map((record) => record.id))
-                            importData.DocumentStoreFileChunk = importData.DocumentStoreFileChunk.filter(
-                                (chunk) => !existingChunkIds.has(chunk.id)
-                            )
+                            for (const chunk of existingChunks) {
+                                childIdsMarkedForUpdate.documentStoreFileChunk.add(chunk.id)
+                            }
                         }
                     }
                 }
@@ -1577,7 +1589,13 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                 )
             }
             if (importData.ChatMessage.length > 0) {
-                importData = await replaceDuplicateIdsForChatMessage(queryRunner, importData, importData.ChatMessage, activeWorkspaceId)
+                importData = await replaceDuplicateIdsForChatMessage(
+                    queryRunner,
+                    importData,
+                    importData.ChatMessage,
+                    activeWorkspaceId,
+                    childIdsMarkedForUpdate.chatMessage
+                )
                 importData = await replaceExecutionIdForChatMessage(queryRunner, importData, importData.ChatMessage, activeWorkspaceId)
             }
             if (importData.ChatMessageFeedback.length > 0)
@@ -1585,7 +1603,8 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                     queryRunner,
                     importData,
                     importData.ChatMessageFeedback,
-                    activeWorkspaceId
+                    activeWorkspaceId,
+                    childIdsMarkedForUpdate.chatMessageFeedback
                 )
             if (importData.CustomTemplate.length > 0) {
                 importData.CustomTemplate = insertWorkspaceId(importData.CustomTemplate, activeWorkspaceId)
@@ -1606,14 +1625,24 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                 )
             }
             if (importData.DocumentStoreFileChunk.length > 0)
-                importData = await replaceDuplicateIdsForDocumentStoreFileChunk(queryRunner, importData, importData.DocumentStoreFileChunk)
+                importData = await replaceDuplicateIdsForDocumentStoreFileChunk(
+                    queryRunner,
+                    importData,
+                    importData.DocumentStoreFileChunk,
+                    childIdsMarkedForUpdate.documentStoreFileChunk
+                )
             if (importData.Tool.length > 0) {
                 importData.Tool = insertWorkspaceId(importData.Tool, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForTool(queryRunner, importData, importData.Tool, idsToSkipMap.Tool)
             }
             if (importData.Execution.length > 0) {
                 importData.Execution = insertWorkspaceId(importData.Execution, activeWorkspaceId)
-                importData = await replaceDuplicateIdsForExecution(queryRunner, importData, importData.Execution)
+                importData = await replaceDuplicateIdsForExecution(
+                    queryRunner,
+                    importData,
+                    importData.Execution,
+                    childIdsMarkedForUpdate.execution
+                )
             }
             if (importData.Variable.length > 0) {
                 importData.Variable = insertWorkspaceId(importData.Variable, activeWorkspaceId)
