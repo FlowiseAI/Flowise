@@ -175,6 +175,12 @@ Flowise has 3 different modules in a single mono repository.
 -   **Usage example:** During an import review, select **Update** for conflicting parents before confirming the import; the upload payload automatically prunes existing child records so the server reuses what is already stored.
 -   **Dependencies / breaking changes:** No additional configuration required and no breaking changes for existing export/import workflows.
 
+### Parent-aware new item review
+
+-   **Purpose:** Highlight the owning flows or stores for imported chat messages, feedback, executions, and document store chunks so reviewers can confirm each child item is attached to the right parent.
+-   **Usage example:** In the **Review Import** dialog, open the **New Items** tab to see chat messages and other child records grouped by their parent flow or document store, including the parent name or ID when available.
+-   **Dependencies / breaking changes:** Works with existing export files; no API or configuration changes required.
+
 ## 🌱 Env Variables
 
 Flowise supports different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
