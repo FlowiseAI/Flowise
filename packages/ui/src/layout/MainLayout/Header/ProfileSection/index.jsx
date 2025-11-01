@@ -1233,6 +1233,17 @@ const ImportDialog = ({ show, status, summary, onClose }) => {
                                                     if (group.key === 'skipped') {
                                                         if (item.reason === 'conflict') details.push('Conflict not selected')
                                                         if (item.reason === 'new') details.push('New item not selected')
+                                                        if (item.reason === 'dependency') {
+                                                            const parentLabel =
+                                                                (item.parent && (item.parent.label || importTypeLabels[item.parent.type])) ||
+                                                                (item.parent && item.parent.type) ||
+                                                                'Parent'
+                                                            const parentName = item.parent?.name ? ` (${item.parent.name})` : ''
+                                                            details.push(`Parent not selected: ${parentLabel}${parentName}`)
+                                                            if (item.parent?.id) {
+                                                                details.push(`Parent ID: ${item.parent.id}`)
+                                                            }
+                                                        }
                                                     }
                                                     return (
                                                         <Box
@@ -1501,8 +1512,8 @@ const ProfileSection = ({ handleLogout }) => {
         )
         const selectedNewItems = importNewItems.filter((item) => newItemSelections[getImportItemKey(item)])
         const payload = JSON.parse(JSON.stringify(pendingImportPayload))
-        const duplicateConflicts = []
-        const updatedConflicts = []
+        let duplicateConflicts = []
+        let updatedConflicts = []
         selectedConflicts.forEach((conflict) => {
             const action = conflictDecisions[getConflictKey(conflict)] || 'update'
             const rawName = conflict.name ?? conflict.importId ?? conflict.type ?? ''
@@ -1533,7 +1544,7 @@ const ProfileSection = ({ handleLogout }) => {
             }
             updatedConflicts.push(baseInfo)
         })
-        const createdItems = selectedNewItems.map((item) => ({
+        let createdItems = selectedNewItems.map((item) => ({
             type: item.type,
             name: item.name,
             importId: item.importId
@@ -1555,7 +1566,7 @@ const ProfileSection = ({ handleLogout }) => {
                 importId: item.importId,
                 reason: 'new'
             }))
-        const conflictResolutions = selectedConflicts.map((conflict) => ({
+        let conflictResolutions = selectedConflicts.map((conflict) => ({
             type: conflict.type,
             importId: conflict.importId,
             existingId: conflict.existingId,
@@ -1576,6 +1587,55 @@ const ProfileSection = ({ handleLogout }) => {
             }
         })
 
+        const importLookupById = new Map()
+        Object.entries(pendingImportPayload).forEach(([type, items]) => {
+            if (!Array.isArray(items)) return
+            items.forEach((item) => {
+                if (!item || !item.id) return
+                const name = getImportItemName(type, item)
+                importLookupById.set(item.id, { type, name })
+            })
+        })
+
+        const newItemLookup = new Map()
+        importNewItems.forEach((item) => {
+            newItemLookup.set(getImportItemKey(item), item)
+        })
+
+        const conflictLookup = new Map()
+        importConflicts.forEach((conflict) => {
+            conflictLookup.set(getImportItemKey(conflict), conflict)
+        })
+
+        const dependencyRemoved = []
+        const dependencyRemovedKeys = new Set()
+
+        const registerDependencyRemoval = (type, item) => {
+            if (!item) return
+            const importId = item.id ?? item.importId
+            const key = getImportItemKey({ type, importId, name: item.name })
+            if (!key || dependencyRemovedKeys.has(key)) return
+            const sourceInfo = newItemLookup.get(key) || conflictLookup.get(key)
+            const parentDetails = resolveParentDetails(type, item, importLookupById)
+            dependencyRemoved.push({
+                type,
+                name: sourceInfo?.name ?? getImportItemName(type, item),
+                importId,
+                existingId: sourceInfo?.existingId,
+                reason: 'dependency',
+                parent: parentDetails
+                    ? {
+                          id: parentDetails.id,
+                          type: parentDetails.type,
+                          name: parentDetails.name,
+                          label: parentDetails.label,
+                          isExisting: parentDetails.isExisting
+                      }
+                    : undefined
+            })
+            dependencyRemovedKeys.add(key)
+        }
+
         const chatflowCollections = ['AgentFlow', 'AgentFlowV2', 'AssistantFlow', 'ChatFlow']
         const chatflowIdsInPayload = new Set()
         chatflowCollections.forEach((key) => {
@@ -1589,20 +1649,29 @@ const ProfileSection = ({ handleLogout }) => {
         })
         if (Array.isArray(payload.ChatMessage)) {
             payload.ChatMessage = payload.ChatMessage.filter((message) => {
-                if (!message || !message.chatflowid) return false
-                return chatflowIdsInPayload.has(message.chatflowid)
+                if (!message || !message.chatflowid || !chatflowIdsInPayload.has(message.chatflowid)) {
+                    registerDependencyRemoval('ChatMessage', message)
+                    return false
+                }
+                return true
             })
         }
         if (Array.isArray(payload.ChatMessageFeedback)) {
             payload.ChatMessageFeedback = payload.ChatMessageFeedback.filter((feedback) => {
-                if (!feedback || !feedback.chatflowid) return false
-                return chatflowIdsInPayload.has(feedback.chatflowid)
+                if (!feedback || !feedback.chatflowid || !chatflowIdsInPayload.has(feedback.chatflowid)) {
+                    registerDependencyRemoval('ChatMessageFeedback', feedback)
+                    return false
+                }
+                return true
             })
         }
         if (Array.isArray(payload.Execution)) {
             payload.Execution = payload.Execution.filter((execution) => {
-                if (!execution || !execution.agentflowId) return false
-                return chatflowIdsInPayload.has(execution.agentflowId)
+                if (!execution || !execution.agentflowId || !chatflowIdsInPayload.has(execution.agentflowId)) {
+                    registerDependencyRemoval('Execution', execution)
+                    return false
+                }
+                return true
             })
         }
 
@@ -1616,15 +1685,27 @@ const ProfileSection = ({ handleLogout }) => {
         }
         if (Array.isArray(payload.DocumentStoreFileChunk)) {
             payload.DocumentStoreFileChunk = payload.DocumentStoreFileChunk.filter((chunk) => {
-                if (!chunk || !chunk.storeId) return false
-                return documentStoreIdsInPayload.has(chunk.storeId)
+                if (!chunk || !chunk.storeId || !documentStoreIdsInPayload.has(chunk.storeId)) {
+                    registerDependencyRemoval('DocumentStoreFileChunk', chunk)
+                    return false
+                }
+                return true
             })
+        }
+        if (dependencyRemoved.length) {
+            const dependencyKeys = new Set(dependencyRemoved.map((item) => getImportItemKey(item)))
+            if (dependencyKeys.size) {
+                createdItems = createdItems.filter((item) => !dependencyKeys.has(getImportItemKey(item)))
+                duplicateConflicts = duplicateConflicts.filter((item) => !dependencyKeys.has(getImportItemKey(item)))
+                updatedConflicts = updatedConflicts.filter((item) => !dependencyKeys.has(getImportItemKey(item)))
+                conflictResolutions = conflictResolutions.filter((item) => !dependencyKeys.has(getImportItemKey(item)))
+            }
         }
         setImportSummary({
             created: createdItems,
             duplicated: duplicateConflicts,
             updated: updatedConflicts,
-            skipped: [...skippedConflicts, ...skippedNew]
+            skipped: [...skippedConflicts, ...skippedNew, ...dependencyRemoved]
         })
         const body = {
             ...payload,
