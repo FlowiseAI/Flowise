@@ -1,16 +1,17 @@
 import PropTypes from 'prop-types'
-import { useRef, useContext, useState } from 'react'
+import { useRef, useContext, useState, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { NodeToolbar } from 'reactflow'
+import { NodeToolbar, NodeResizer } from 'reactflow'
 
 // material-ui
 import { styled, useTheme, alpha, darken, lighten } from '@mui/material/styles'
 
 // project imports
-import { ButtonGroup, IconButton, Box } from '@mui/material'
-import { IconCopy, IconTrash } from '@tabler/icons-react'
+import { ButtonGroup, IconButton, Box, Popover, Stack } from '@mui/material'
+import { IconCopy, IconMarkdown, IconMarkdownOff, IconPalette, IconTrash } from '@tabler/icons-react'
 import { Input } from '@/ui-component/input/Input'
 import MainCard from '@/ui-component/cards/MainCard'
+import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
 
 // const
 import { flowContext } from '@/store/context/ReactFlowContext'
@@ -41,8 +42,15 @@ const StickyNote = ({ data }) => {
     const { reactFlowInstance, deleteNode, duplicateNode } = useContext(flowContext)
     const [inputParam] = data.inputParams
     const [isHovered, setIsHovered] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [anchorEl, setAnchorEl] = useState(null)
+    const colorOptions = useMemo(
+        () => ['#FFE770', '#B4F8C8', '#A0C4FF', '#FFADAD', '#FFD6A5'],
+        []
+    )
+    const [noteValue, setNoteValue] = useState(data.inputs?.[inputParam.name] ?? inputParam.default ?? '')
 
-    const defaultColor = '#666666' // fallback color if data.color is not present
+    const defaultColor = '#FFE770' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
 
     // Get different shades of the color based on state
@@ -54,15 +62,67 @@ const StickyNote = ({ data }) => {
 
     const getBackgroundColor = () => {
         if (customization.isDarkMode) {
-            return isHovered ? darken(nodeColor, 0.7) : darken(nodeColor, 0.8)
+            return isHovered ? darken(nodeColor, 0.4) : darken(nodeColor, 0.5)
         }
-        return isHovered ? lighten(nodeColor, 0.8) : lighten(nodeColor, 0.9)
+        return isHovered ? lighten(nodeColor, 0.1) : lighten(nodeColor, 0.2)
+    }
+
+    useEffect(() => {
+        if (!data.color) {
+            data.color = defaultColor
+        }
+    }, [data, defaultColor])
+
+    const currentNoteValue = data.inputs?.[inputParam.name]
+
+    useEffect(() => {
+        const latestValue = currentNoteValue ?? inputParam.default ?? ''
+        setNoteValue(latestValue)
+    }, [currentNoteValue, inputParam.default, inputParam.name])
+
+    const handleToggleEditing = () => {
+        setIsEditing((prev) => !prev)
+    }
+
+    const handleColorButtonClick = (event) => {
+        setAnchorEl(event.currentTarget)
+    }
+
+    const handleColorSelect = (color) => {
+        data.color = color
+        setAnchorEl(null)
     }
 
     return (
-        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} style={{ position: 'relative' }}>
             <StyledNodeToolbar>
                 <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
+                    <IconButton
+                        size={'small'}
+                        title='Change color'
+                        onClick={handleColorButtonClick}
+                        sx={{
+                            color: customization.isDarkMode ? 'white' : 'inherit',
+                            '&:hover': {
+                                color: theme.palette.primary.main
+                            }
+                        }}
+                    >
+                        <IconPalette size={20} />
+                    </IconButton>
+                    <IconButton
+                        size={'small'}
+                        title={isEditing ? 'Preview markdown' : 'Edit markdown'}
+                        onClick={handleToggleEditing}
+                        sx={{
+                            color: customization.isDarkMode ? 'white' : 'inherit',
+                            '&:hover': {
+                                color: theme.palette.primary.main
+                            }
+                        }}
+                    >
+                        {isEditing ? <IconMarkdown size={20} /> : <IconMarkdownOff size={20} />}
+                    </IconButton>
                     <IconButton
                         size={'small'}
                         title='Duplicate'
@@ -101,8 +161,9 @@ const StickyNote = ({ data }) => {
                     borderColor: getStateColor(),
                     borderWidth: '1px',
                     boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none',
-                    minHeight: 60,
-                    height: 'auto',
+                    minHeight: 160,
+                    height: '100%',
+                    width: '100%',
                     backgroundColor: getBackgroundColor(),
                     display: 'flex',
                     alignItems: 'center',
@@ -112,19 +173,51 @@ const StickyNote = ({ data }) => {
                 }}
                 border={false}
             >
-                <Box>
-                    <Input
-                        key={data.id}
-                        placeholder={inputParam.placeholder}
-                        inputParam={inputParam}
-                        onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                        value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                        nodes={reactFlowInstance ? reactFlowInstance.getNodes() : []}
-                        edges={reactFlowInstance ? reactFlowInstance.getEdges() : []}
-                        nodeId={data.id}
-                    />
+                <Box sx={{ p: 1, width: '100%', height: '100%', overflow: 'auto' }}>
+                    {isEditing ? (
+                        <Input
+                            key={data.id}
+                            placeholder={inputParam.placeholder}
+                            inputParam={inputParam}
+                            onChange={(newValue) => {
+                                data.inputs[inputParam.name] = newValue
+                                setNoteValue(newValue)
+                            }}
+                            value={noteValue}
+                            nodes={reactFlowInstance ? reactFlowInstance.getNodes() : []}
+                            edges={reactFlowInstance ? reactFlowInstance.getEdges() : []}
+                            nodeId={data.id}
+                        />
+                    ) : (
+                        <MemoizedReactMarkdown>{noteValue || '*Add your note here...*'}</MemoizedReactMarkdown>
+                    )}
                 </Box>
             </CardWrapper>
+            <NodeResizer minWidth={180} minHeight={140} isVisible={data.selected} />
+            <Popover
+                open={Boolean(anchorEl)}
+                anchorEl={anchorEl}
+                onClose={() => setAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Stack direction='row' spacing={1} sx={{ p: 1 }}>
+                    {colorOptions.map((color) => (
+                        <Box
+                            key={color}
+                            onClick={() => handleColorSelect(color)}
+                            sx={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '50%',
+                                backgroundColor: color,
+                                cursor: 'pointer',
+                                border: color === nodeColor ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent'
+                            }}
+                        />
+                    ))}
+                </Stack>
+            </Popover>
         </div>
     )
 }

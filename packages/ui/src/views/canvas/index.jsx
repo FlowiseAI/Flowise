@@ -58,6 +58,19 @@ import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: ButtonEdge }
 
+const applyStickyNoteStyling = (nodes = []) =>
+    nodes.map((node) =>
+        node.type === 'stickyNote'
+            ? {
+                  ...node,
+                  style: {
+                      ...node.style,
+                      zIndex: 0
+                  }
+              }
+            : node
+    )
+
 // ==============================|| CANVAS ||============================== //
 
 const Canvas = () => {
@@ -168,7 +181,7 @@ const Canvas = () => {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
 
-            setNodes(nodes)
+            setNodes(applyStickyNoteStyling(nodes))
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)
         } catch (e) {
@@ -295,12 +308,13 @@ const Canvas = () => {
                 id: newNodeId,
                 position,
                 type: nodeData.type !== 'StickyNote' ? 'customNode' : 'stickyNote',
-                data: initNode(nodeData, newNodeId)
+                data: initNode(nodeData, newNodeId),
+                style: nodeData.type === 'StickyNote' ? { zIndex: 0 } : undefined
             }
 
             setSelectedNode(newNode)
             setNodes((nds) =>
-                nds.concat(newNode).map((node) => {
+                applyStickyNoteStyling(nds.concat(newNode)).map((node) => {
                     if (node.id === newNode.id) {
                         node.data = {
                             ...node.data,
@@ -340,7 +354,7 @@ const Canvas = () => {
             }
         }
 
-        setNodes(cloneNodes)
+        setNodes(applyStickyNoteStyling(cloneNodes))
         setEdges(cloneEdges.filter((edge) => !toBeRemovedEdges.includes(edge)))
         setDirty()
         setIsSyncNodesButtonEnabled(false)
@@ -416,7 +430,7 @@ const Canvas = () => {
             }
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
             setLasUpdatedDateTime(chatflow.updatedDate)
-            setNodes(initialFlow.nodes || [])
+            setNodes(applyStickyNoteStyling(initialFlow.nodes || []))
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {

@@ -223,6 +223,10 @@ export const initNode = (nodeData, newNodeId, isAgentflow) => {
 
     nodeData.id = newNodeId
 
+    if (nodeData.type === 'StickyNote') {
+        nodeData.color = nodeData.color || '#FFE770'
+    }
+
     return nodeData
 }
 
