@@ -15,6 +15,7 @@ import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMark
 
 // const
 import { flowContext } from '@/store/context/ReactFlowContext'
+import { DEFAULT_STICKY_NOTE_COLOR } from '@/utils/genericHelper'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -50,7 +51,7 @@ const StickyNote = ({ data }) => {
     )
     const [noteValue, setNoteValue] = useState(data.inputs?.[inputParam.name] ?? inputParam.default ?? '')
 
-    const defaultColor = '#FFE770' // fallback color if data.color is not present
+    const defaultColor = DEFAULT_STICKY_NOTE_COLOR // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
 
     // Get different shades of the color based on state

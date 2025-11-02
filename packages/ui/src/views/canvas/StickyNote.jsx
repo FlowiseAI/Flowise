@@ -16,6 +16,7 @@ import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMark
 
 // const
 import { flowContext } from '@/store/context/ReactFlowContext'
+import { DEFAULT_STICKY_NOTE_COLOR } from '@/utils/genericHelper'
 
 const StickyNote = ({ data }) => {
     const theme = useTheme()
@@ -41,7 +42,7 @@ const StickyNote = ({ data }) => {
         setOpen(true)
     }
 
-    const defaultColor = '#FFE770' // fallback color if data.color is not present
+    const defaultColor = DEFAULT_STICKY_NOTE_COLOR // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
 
     useEffect(() => {

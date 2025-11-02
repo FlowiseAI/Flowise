@@ -1,6 +1,34 @@
 import { uniq, get, isEqual } from 'lodash'
 import moment from 'moment'
 
+export const DEFAULT_STICKY_NOTE_COLOR = '#FFE770'
+
+const isStickyNoteNode = (node) => {
+    if (!node) return false
+
+    const nodeName = node?.data?.name
+    return node.type === 'stickyNote' || nodeName === 'stickyNote' || nodeName === 'stickyNoteAgentflow'
+}
+
+export const normalizeStickyNoteNodes = (nodes = []) =>
+    nodes.map((node) => {
+        if (!isStickyNoteNode(node)) return node
+
+        const color = node?.data?.color || DEFAULT_STICKY_NOTE_COLOR
+
+        return {
+            ...node,
+            data: {
+                ...node.data,
+                color
+            },
+            style: {
+                ...node.style,
+                zIndex: node?.style?.zIndex ?? 0
+            }
+        }
+    })
+
 export const getUniqueNodeId = (nodeData, nodes) => {
     let suffix = 0
 
