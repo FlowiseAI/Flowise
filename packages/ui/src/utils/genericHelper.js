@@ -2,6 +2,8 @@ import { uniq, get, isEqual } from 'lodash'
 import moment from 'moment'
 
 export const DEFAULT_STICKY_NOTE_COLOR = '#FFE770'
+const DEFAULT_STICKY_NOTE_Z_INDEX = -1
+const DEFAULT_NODE_Z_INDEX = 1
 
 const isStickyNoteNode = (node) => {
     if (!node) return false
@@ -12,21 +14,47 @@ const isStickyNoteNode = (node) => {
 
 export const normalizeStickyNoteNodes = (nodes = []) =>
     nodes.map((node) => {
-        if (!isStickyNoteNode(node)) return node
+        if (!node) return node
 
-        const color = node?.data?.color || DEFAULT_STICKY_NOTE_COLOR
+        if (isStickyNoteNode(node)) {
+            const color = node?.data?.color || DEFAULT_STICKY_NOTE_COLOR
+            const currentZIndex = node?.style?.zIndex
 
-        return {
-            ...node,
-            data: {
-                ...node.data,
-                color
-            },
-            style: {
-                ...node.style,
-                zIndex: node?.style?.zIndex ?? 0
+            const needsColorUpdate = node?.data?.color !== color
+            const needsZIndexUpdate = currentZIndex !== DEFAULT_STICKY_NOTE_Z_INDEX
+
+            if (!needsColorUpdate && !needsZIndexUpdate) {
+                return node
+            }
+
+            return {
+                ...node,
+                data: needsColorUpdate
+                    ? {
+                          ...node.data,
+                          color
+                      }
+                    : node.data,
+                style: needsZIndexUpdate
+                    ? {
+                          ...node.style,
+                          zIndex: DEFAULT_STICKY_NOTE_Z_INDEX
+                      }
+                    : node.style
             }
         }
+
+        if (node?.style?.zIndex == null) {
+            return {
+                ...node,
+                style: {
+                    ...node.style,
+                    zIndex: DEFAULT_NODE_Z_INDEX
+                }
+            }
+        }
+
+        return node
     })
 
 export const getUniqueNodeId = (nodeData, nodes) => {
