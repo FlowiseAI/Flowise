@@ -199,7 +199,10 @@ class PostgresRecordManager implements RecordManagerInterface {
     namespace: string
 
     constructor(namespace: string, config: PostgresRecordManagerOptions) {
-        const { tableName, postgresConnectionOptions: { schema }} = config
+        const {
+            tableName,
+            postgresConnectionOptions: { schema }
+        } = config
         this.namespace = namespace
         this.tableName = tableName
         this.schema = schema

@@ -34,7 +34,7 @@ export abstract class VectorStoreDriver {
     getTableName() {
         return this.sanitizeTableName(getTableName(this.nodeData))
     }
-    getSchema(){
+    getSchema() {
         return this.sanitizeSchema(getSchema(this.nodeData))
     }
     getEmbeddings() {
