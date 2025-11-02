@@ -59,6 +59,19 @@ import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: ButtonEdge }
 
+const applyStickyNoteStyling = (nodes = []) =>
+    nodes.map((node) =>
+        node.type === 'stickyNote'
+            ? {
+                  ...node,
+                  style: {
+                      ...node.style,
+                      zIndex: 0
+                  }
+              }
+            : node
+    )
+
 // ==============================|| CANVAS ||============================== //
 
 const Canvas = () => {
@@ -169,7 +182,7 @@ const Canvas = () => {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
 
-            setNodes(normalizeStickyNoteNodes(nodes))
+            setNodes(applyStickyNoteStyling(nodes))
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)
         } catch (e) {
@@ -302,7 +315,7 @@ const Canvas = () => {
 
             setSelectedNode(newNode)
             setNodes((nds) =>
-                normalizeStickyNoteNodes(nds.concat(newNode)).map((node) => {
+                applyStickyNoteStyling(nds.concat(newNode)).map((node) => {
                     if (node.id === newNode.id) {
                         node.data = {
                             ...node.data,
@@ -342,7 +355,7 @@ const Canvas = () => {
             }
         }
 
-        setNodes(normalizeStickyNoteNodes(cloneNodes))
+        setNodes(applyStickyNoteStyling(cloneNodes))
         setEdges(cloneEdges.filter((edge) => !toBeRemovedEdges.includes(edge)))
         setDirty()
         setIsSyncNodesButtonEnabled(false)
@@ -418,7 +431,7 @@ const Canvas = () => {
             }
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
             setLasUpdatedDateTime(chatflow.updatedDate)
-            setNodes(normalizeStickyNoteNodes(initialFlow.nodes || []))
+            setNodes(applyStickyNoteStyling(initialFlow.nodes || []))
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {

@@ -51,7 +51,7 @@ const StickyNote = ({ data }) => {
     )
     const [noteValue, setNoteValue] = useState(data.inputs?.[inputParam.name] ?? inputParam.default ?? '')
 
-    const defaultColor = DEFAULT_STICKY_NOTE_COLOR // fallback color if data.color is not present
+    const defaultColor = '#FFE770' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
 
     // Get different shades of the color based on state
