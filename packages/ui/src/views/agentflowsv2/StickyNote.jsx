@@ -35,7 +35,7 @@ const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
     boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)'
 }))
 
-const StickyNote = ({ data }) => {
+const StickyNote = ({ data, selected }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
@@ -56,7 +56,7 @@ const StickyNote = ({ data }) => {
 
     // Get different shades of the color based on state
     const getStateColor = () => {
-        if (data.selected) return nodeColor
+        if (selected) return nodeColor
         if (isHovered) return alpha(nodeColor, 0.8)
         return alpha(nodeColor, 0.5)
     }
@@ -95,7 +95,12 @@ const StickyNote = ({ data }) => {
     }
 
     return (
-        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} style={{ position: 'relative' }}>
+        <div
+            ref={ref}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{ position: 'relative', width: '100%', height: '100%' }}
+        >
             <StyledNodeToolbar>
                 <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
                     <IconButton
@@ -161,20 +166,20 @@ const StickyNote = ({ data }) => {
                 sx={{
                     borderColor: getStateColor(),
                     borderWidth: '1px',
-                    boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none',
+                    boxShadow: selected ? `0 0 0 1px ${getStateColor()} !important` : 'none',
                     minHeight: 160,
                     height: '100%',
                     width: '100%',
                     backgroundColor: getBackgroundColor(),
                     display: 'flex',
-                    alignItems: 'center',
+                    flexDirection: 'column',
                     '&:hover': {
-                        boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none'
+                        boxShadow: selected ? `0 0 0 1px ${getStateColor()} !important` : 'none'
                     }
                 }}
                 border={false}
             >
-                <Box sx={{ p: 1, width: '100%', height: '100%', overflow: 'auto' }}>
+                <Box sx={{ p: 1, width: '100%', height: '100%', overflow: 'auto', flex: 1 }}>
                     {isEditing ? (
                         <Input
                             key={data.id}
@@ -194,7 +199,7 @@ const StickyNote = ({ data }) => {
                     )}
                 </Box>
             </CardWrapper>
-            <NodeResizer minWidth={180} minHeight={140} isVisible={data.selected} />
+            <NodeResizer minWidth={180} minHeight={140} isVisible={selected} />
             <Popover
                 open={Boolean(anchorEl)}
                 anchorEl={anchorEl}
@@ -224,7 +229,8 @@ const StickyNote = ({ data }) => {
 }
 
 StickyNote.propTypes = {
-    data: PropTypes.object
+    data: PropTypes.object,
+    selected: PropTypes.bool
 }
 
 export default StickyNote
