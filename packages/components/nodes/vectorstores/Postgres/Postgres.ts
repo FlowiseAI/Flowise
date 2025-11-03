@@ -1,7 +1,7 @@
 import { flatten } from 'lodash'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, parseJsonBody } from '../../../src/utils'
 import { index } from '../../../src/indexing'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 import { VectorStore } from '@langchain/core/vectorstores'
@@ -308,7 +308,7 @@ class Postgres_VectorStores implements INode {
 
         let pgMetadataFilter: any
         if (_pgMetadataFilter) {
-            pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : JSON.parse(_pgMetadataFilter)
+            pgMetadataFilter = typeof _pgMetadataFilter === 'object' ? _pgMetadataFilter : parseJsonBody(_pgMetadataFilter)
         }
         if (isFileUploadEnabled && options.chatId) {
             pgMetadataFilter = {

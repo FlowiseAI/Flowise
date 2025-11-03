@@ -26,6 +26,7 @@ import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
 import { sanitizeUser } from '../../utils/sanitize.util'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 
 type AccountDTO = {
     user: Partial<User>
@@ -576,6 +577,9 @@ export class AccountService {
             await queryRunner.startTransaction()
             data.user = await this.userService.saveUser(data.user, queryRunner)
             await queryRunner.commitTransaction()
+
+            // Invalidate all sessions for this user after password reset
+            await destroyAllSessionsForUser(user.id as string)
         } catch (error) {
             await queryRunner.rollbackTransaction()
             throw error
