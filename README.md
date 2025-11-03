@@ -169,35 +169,11 @@ Flowise has 3 different modules in a single mono repository.
 
 ## ✨ Features
 
-### Import child synchronization enhancements
-
--   **Purpose:** Keep selected chat messages, feedback, executions, and document store chunks in sync with their parent flows when importing with **Update** or **Duplicate** actions, creating new child records only when needed.
--   **Usage example:** In the import review dialog, choose **Update** for an Agentflow conflict and select its chat messages in Tab 2—Flowise now updates existing messages while creating any missing ones; choosing **Duplicate** creates a new Agentflow copy and re-creates the selected chat history for it.
--   **Dependencies / breaking changes:** Works automatically with existing export files; no additional configuration or breaking changes required.
-
-### Parent group select-all shortcuts
-
--   **Purpose:** Quickly include every child item attached to a specific Agentflow or document store during import review without manually toggling each checkbox.
--   **Usage example:** Expand a parent group in Tab 2 of the import review dialog and click the new **Select all** control to toggle every chat message, feedback, execution, or chunk belonging to that parent in a single action.
--   **Dependencies / breaking changes:** Available in the web UI; no server configuration changes required.
-
 ### Conflict-aware import filtering
 
 -   **Purpose:** Prevent duplicate chat messages, feedback, executions, and document store chunks from being recreated when importing data with the **Update** action for existing chatflows or document stores.
 -   **Usage example:** During an import review, select **Update** for conflicting parents before confirming the import; the upload payload automatically prunes existing child records so the server reuses what is already stored.
 -   **Dependencies / breaking changes:** No additional configuration required and no breaking changes for existing export/import workflows.
-
-### Parent-aware new item review
-
--   **Purpose:** Highlight the owning flows or stores for imported chat messages, feedback, executions, and document store chunks so reviewers can confirm each child item is attached to the right parent.
--   **Usage example:** In the **Review Import** dialog, open the **New Items** tab to see chat messages and other child records grouped by their parent flow or document store, including the parent name or ID when available.
--   **Dependencies / breaking changes:** Works with existing export files; no API or configuration changes required.
-
-### Dependency-aware import summary
-
--   **Purpose:** Ensure the import success dialog only reports items that were actually created or updated, moving dependent records to the skipped list when their parent flows or stores were not included.
--   **Usage example:** After importing a file where chat messages were selected but their agent flow was not, the summary now lists those messages under **Skipped** with the parent reason instead of counting them as **New items created**.
--   **Dependencies / breaking changes:** No additional setup needed; the improved summary applies automatically to all import runs.
 
 ## 🌱 Env Variables
 

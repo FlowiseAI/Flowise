@@ -1319,13 +1319,6 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
         documentStore: new Set<string>()
     }
 
-    const childIdsMarkedForUpdate = {
-        chatMessage: new Set<string>(),
-        chatMessageFeedback: new Set<string>(),
-        execution: new Set<string>(),
-        documentStoreFileChunk: new Set<string>()
-    }
-
     const idRemap: Record<string, string> = {}
 
     for (const resolution of conflictResolutions) {
@@ -1400,9 +1393,10 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(chatMessageIdsToCheck) }
                         })
                         if (existingMessages.length > 0) {
-                            for (const message of existingMessages) {
-                                childIdsMarkedForUpdate.chatMessage.add(message.id)
-                            }
+                            const existingMessageIds = new Set(existingMessages.map((record) => record.id))
+                            importData.ChatMessage = importData.ChatMessage.filter(
+                                (message) => !existingMessageIds.has(message.id)
+                            )
                         }
                     }
 
@@ -1415,9 +1409,10 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(feedbackIdsToCheck) }
                         })
                         if (existingFeedback.length > 0) {
-                            for (const feedback of existingFeedback) {
-                                childIdsMarkedForUpdate.chatMessageFeedback.add(feedback.id)
-                            }
+                            const existingFeedbackIds = new Set(existingFeedback.map((record) => record.id))
+                            importData.ChatMessageFeedback = importData.ChatMessageFeedback.filter(
+                                (feedback) => !existingFeedbackIds.has(feedback.id)
+                            )
                         }
                     }
 
@@ -1430,9 +1425,10 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(executionIdsToCheck) }
                         })
                         if (existingExecutions.length > 0) {
-                            for (const execution of existingExecutions) {
-                                childIdsMarkedForUpdate.execution.add(execution.id)
-                            }
+                            const existingExecutionIds = new Set(existingExecutions.map((record) => record.id))
+                            importData.Execution = importData.Execution.filter(
+                                (execution) => !existingExecutionIds.has(execution.id)
+                            )
                         }
                     }
                 }
@@ -1447,9 +1443,10 @@ const importData = async (importData: ImportPayload, orgId: string, activeWorksp
                             where: { id: In(chunkIdsToCheck) }
                         })
                         if (existingChunks.length > 0) {
-                            for (const chunk of existingChunks) {
-                                childIdsMarkedForUpdate.documentStoreFileChunk.add(chunk.id)
-                            }
+                            const existingChunkIds = new Set(existingChunks.map((record) => record.id))
+                            importData.DocumentStoreFileChunk = importData.DocumentStoreFileChunk.filter(
+                                (chunk) => !existingChunkIds.has(chunk.id)
+                            )
                         }
                     }
                 }
