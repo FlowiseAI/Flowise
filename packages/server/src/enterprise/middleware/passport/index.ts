@@ -81,6 +81,11 @@ const _initializePassportMiddleware = async (app: express.Application) => {
     app.use(passport.initialize())
     app.use(passport.session())
 
+    if (options.store) {
+        const appServer = getRunningExpressApp()
+        appServer.sessionStore = options.store
+    }
+
     passport.serializeUser((user: any, done) => {
         done(null, user)
     })
@@ -174,7 +179,6 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                         activeWorkspaceId: workspaceUser.workspaceId,
                         activeWorkspace: workspaceUser.workspace.name,
                         assignedWorkspaces,
-                        isApiKeyValidated: true,
                         permissions: [...JSON.parse(role.permissions)],
                         features
                     }

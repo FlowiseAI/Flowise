@@ -129,7 +129,6 @@ export class WorkspaceController {
                 activeWorkspaceId: workspace.id,
                 activeWorkspace: workspace.name,
                 assignedWorkspaces,
-                isApiKeyValidated: true,
                 isSSO: req.user.ssoProvider ? true : false,
                 permissions: [...JSON.parse(role.permissions)],
                 features,

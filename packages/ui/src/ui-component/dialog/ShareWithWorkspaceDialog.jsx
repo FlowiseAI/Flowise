@@ -70,44 +70,29 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
     )
 
     useEffect(() => {
-        if (getSharedWorkspacesForItemApi.data) {
-            const data = getSharedWorkspacesForItemApi.data
-            if (data && data.length > 0) {
-                outputSchema.map((row) => {
-                    data.map((ws) => {
-                        if (row.id === ws.workspaceId) {
-                            row.shared = true
-                        }
+        if (getWorkspacesByOrganizationIdUserIdApi.data && getSharedWorkspacesForItemApi.data) {
+            const workspaces = []
+            const sharedWorkspaces = getSharedWorkspacesForItemApi.data || []
+
+            getWorkspacesByOrganizationIdUserIdApi.data
+                .filter((ws) => ws.workspace.id !== user.activeWorkspaceId)
+                .map((ws) => {
+                    const isShared = sharedWorkspaces.some((sw) => sw.workspaceId === ws.workspace.id)
+                    workspaces.push({
+                        id: ws.workspace.id,
+                        workspaceName: ws.workspace.name,
+                        shared: isShared
                     })
                 })
-                setOutputSchema([...outputSchema])
-            }
+            setOutputSchema(workspaces)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSharedWorkspacesForItemApi.data])
+    }, [getWorkspacesByOrganizationIdUserIdApi.data, getSharedWorkspacesForItemApi.data, user.activeWorkspaceId])
 
     useEffect(() => {
         if (getSharedWorkspacesForItemApi.error && setError) {
             setError(getSharedWorkspacesForItemApi.error)
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSharedWorkspacesForItemApi.error])
-
-    useEffect(() => {
-        if (getWorkspacesByOrganizationIdUserIdApi.data) {
-            const workspaces = []
-            getWorkspacesByOrganizationIdUserIdApi.data
-                .filter((ws) => ws.workspace.id !== user.activeWorkspaceId)
-                .map((ws) => {
-                    workspaces.push({
-                        id: ws.workspace.id,
-                        workspaceName: ws.workspace.name,
-                        shared: false
-                    })
-                })
-            setOutputSchema([...workspaces])
-        }
-    }, [getWorkspacesByOrganizationIdUserIdApi.data, user.activeWorkspaceId])
+    }, [getSharedWorkspacesForItemApi.error, setError])
 
     useEffect(() => {
         if (getWorkspacesByOrganizationIdUserIdApi.error && setError) {

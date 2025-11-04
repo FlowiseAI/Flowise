@@ -6,6 +6,9 @@ export const ASSISTANT_PROMPT_GENERATOR = `Given a task description, produce a d
 
 # Guidelines
 
+- Language: CRITICAL! You MUST respond in the EXACT SAME LANGUAGE as the input task description.
+    - (e.g., if the task is in Japanese, respond entirely in Japanese; if the task is in English, respond in English. If multiple languages are present, use the primary or dominant one.)
+    - DO NOT translate the task language into English.
 - Understand the Task: Grasp the main objective, goals, requirements, constraints, and expected output.
 - Minimal Changes: If an existing prompt is provided, improve it only if it's simple. For complex prompts, enhance clarity and add missing elements without altering the original structure.
 - Reasoning Before Conclusions**: Encourage reasoning steps before any conclusions are reached. ATTENTION! If the user provides examples where the reasoning happens afterward, REVERSE the order! NEVER START EXAMPLES WITH CONCLUSIONS!

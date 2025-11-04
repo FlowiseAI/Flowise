@@ -3,7 +3,7 @@ import { AmazonKendraRetriever } from '@langchain/aws'
 import { KendraClient, BatchPutDocumentCommand, BatchDeleteDocumentCommand } from '@aws-sdk/client-kendra'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 import { MODEL_TYPE, getRegions } from '../../../src/modelLoader'
 
@@ -248,7 +248,7 @@ class Kendra_VectorStores implements INode {
 
         let filter = undefined
         if (attributeFilter) {
-            filter = typeof attributeFilter === 'object' ? attributeFilter : JSON.parse(attributeFilter)
+            filter = typeof attributeFilter === 'object' ? attributeFilter : parseJsonBody(attributeFilter)
         }
 
         // Add chat-specific filtering if file upload is enabled
