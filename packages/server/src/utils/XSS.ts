@@ -55,10 +55,17 @@ export function getCorsOptions(): any {
 
                 if (isPredictionReq) {
                     // Per-chatflow allowlist OR globally allowed
-                    const chatflowAllowed = await (async () => {
-                        const chatflowId = extractChatflowId(req.url)
-                        return chatflowId ? await validateChatflowDomain(chatflowId, originLc, req.user?.activeWorkspaceId) : true
-                    })()
+                    const chatflowId = extractChatflowId(req.url)
+                    let chatflowAllowed = false
+                    if (chatflowId) {
+                        try {
+                            chatflowAllowed = await validateChatflowDomain(chatflowId, originLc, req.user?.activeWorkspaceId)
+                        } catch (error) {
+                            // Log error and deny on failure
+                            console.error('Domain validation error:', error)
+                            chatflowAllowed = false
+                        }
+                    }
                     return originCallback(null, globallyAllowed || chatflowAllowed)
                 }
 
