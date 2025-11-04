@@ -48,6 +48,7 @@
         "html-react-parser": "^3.0.4",
         "lodash": "^4.17.21",
         "lowlight": "^3.3.0",
+        "mermaid": "^10.6.1",
         "moment": "^2.29.3",
         "notistack": "^2.0.4",
         "prop-types": "^15.7.2",

@@ -1,10 +1,11 @@
 import { IconClipboard, IconDownload } from '@tabler/icons-react'
-import { memo, useState } from 'react'
+import { memo, useState, useEffect, useRef } from 'react'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import PropTypes from 'prop-types'
 import { Box, IconButton, Popover, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import mermaid from 'mermaid'
 
 const programmingLanguages = {
     javascript: '.js',
@@ -29,13 +30,41 @@ const programmingLanguages = {
     shell: '.sh',
     sql: '.sql',
     html: '.html',
-    css: '.css'
+    css: '.css',
+    mermaid: '.mmd'
 }
 
 export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => {
     const theme = useTheme()
     const [anchorEl, setAnchorEl] = useState(null)
+    const [mermaidSvg, setMermaidSvg] = useState(null)
+    const [mermaidError, setMermaidError] = useState(null)
+    const diagramIdRef = useRef(`mermaid-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`)
     const openPopOver = Boolean(anchorEl)
+    const isMermaid = language?.toLowerCase() === 'mermaid'
+
+    useEffect(() => {
+        if (!isMermaid || !value) return
+
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: theme.palette.mode === 'dark' ? 'dark' : 'default',
+            securityLevel: 'strict'
+        })
+
+        const renderMermaid = async () => {
+            try {
+                setMermaidError(null)
+                const { svg } = await mermaid.render(diagramIdRef.current, value)
+                setMermaidSvg(svg)
+            } catch (error) {
+                setMermaidError(error.message)
+                setMermaidSvg(null)
+            }
+        }
+
+        renderMermaid()
+    }, [isMermaid, value, theme.palette.mode])
 
     const handleClosePopOver = () => {
         setAnchorEl(null)
@@ -107,9 +136,30 @@ export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => 
                 </div>
             </Box>
 
-            <SyntaxHighlighter language={language} style={oneDark} customStyle={{ margin: 0 }}>
-                {value}
-            </SyntaxHighlighter>
+            {isMermaid ? (
+                <Box sx={{ background: theme.palette?.common.dark, p: 2, borderBottomLeftRadius: 10, borderBottomRightRadius: 10 }}>
+                    {mermaidError ? (
+                        <Box>
+                            <Typography variant='body2' color='error' sx={{ mb: 1 }}>
+                                Mermaid rendering error: {mermaidError}
+                            </Typography>
+                            <SyntaxHighlighter language='text' style={oneDark} customStyle={{ margin: 0 }}>
+                                {value}
+                            </SyntaxHighlighter>
+                        </Box>
+                    ) : mermaidSvg ? (
+                        <div dangerouslySetInnerHTML={{ __html: mermaidSvg }} style={{ display: 'flex', justifyContent: 'center' }} />
+                    ) : (
+                        <Typography variant='body2' color='text.secondary'>
+                            Rendering diagram...
+                        </Typography>
+                    )}
+                </Box>
+            ) : (
+                <SyntaxHighlighter language={language} style={oneDark} customStyle={{ margin: 0 }}>
+                    {value}
+                </SyntaxHighlighter>
+            )}
         </div>
     )
 })
