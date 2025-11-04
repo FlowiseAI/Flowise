@@ -44,40 +44,29 @@ export function getCorsOptions(): any {
             origin: async (origin: string | undefined, originCallback: (err: Error | null, allow?: boolean) => void) => {
                 const allowedOrigins = getAllowedCorsOrigins()
                 const isPredictionReq = isPredictionRequest(req.url)
+                const allowedList = parseAllowedOrigins(allowedOrigins)
+                const originLc = origin?.toLowerCase()
 
-                if (!origin || allowedOrigins === '*') {
-                    await checkRequestType(isPredictionReq, req, origin, originCallback)
-                } else {
-                    const allowedOriginsList = parseAllowedOrigins(allowedOrigins)
-                    if (origin && allowedOriginsList.includes(origin)) {
-                        await checkRequestType(isPredictionReq, req, origin, originCallback)
-                    } else {
-                        originCallback(null, false)
-                    }
+                // Always allow no-Origin requests (same-origin, server-to-server)
+                if (!originLc) return originCallback(null, true)
+
+                // Global allow: '*' or exact match
+                const globallyAllowed = allowedOrigins === '*' || allowedList.includes(originLc)
+
+                if (isPredictionReq) {
+                    // Per-chatflow allowlist OR globally allowed
+                    const chatflowAllowed = await (async () => {
+                        const chatflowId = extractChatflowId(req.url)
+                        return chatflowId ? await validateChatflowDomain(chatflowId, originLc, req.user?.activeWorkspaceId) : true
+                    })()
+                    return originCallback(null, globallyAllowed || chatflowAllowed)
                 }
+
+                // Non-prediction: rely on global policy only
+                return originCallback(null, globallyAllowed)
             }
         }
         callback(null, corsOptions)
-    }
-}
-
-async function checkRequestType(
-    isPredictionReq: boolean,
-    req: any,
-    origin: string | undefined,
-    originCallback: (err: Error | null, allow?: boolean) => void
-) {
-    if (isPredictionReq) {
-        const chatflowId = extractChatflowId(req.url)
-        if (chatflowId && origin) {
-            const isAllowed = await validateChatflowDomain(chatflowId, origin, req.user?.activeWorkspaceId)
-
-            originCallback(null, isAllowed)
-        } else {
-            originCallback(null, true)
-        }
-    } else {
-        originCallback(null, true)
     }
 }
 
