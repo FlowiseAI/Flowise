@@ -91,7 +91,7 @@ class ChatAnthropic_ChatModels implements INode {
                 label: 'Extended Thinking',
                 name: 'extendedThinking',
                 type: 'boolean',
-                description: 'Enable extended thinking for reasoning model such as Claude Sonnet 3.7',
+                description: 'Enable extended thinking for reasoning model such as Claude Sonnet 3.7 and Claude 4',
                 optional: true,
                 additionalParams: true
             },
