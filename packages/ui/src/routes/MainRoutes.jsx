@@ -15,6 +15,10 @@ const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
 // agents routing
 const Agentflows = Loadable(lazy(() => import('@/views/agentflows')))
 
+// showcase routing
+const Showcase = Loadable(lazy(() => import('@/views/showcase')))
+
+
 // marketplaces routing
 const Marketplaces = Loadable(lazy(() => import('@/views/marketplaces')))
 
@@ -43,6 +47,9 @@ const ShowStoredChunks = Loadable(lazy(() => import('@/views/docstore/ShowStored
 const LoaderConfigPreviewChunks = Loadable(lazy(() => import('@/views/docstore/LoaderConfigPreviewChunks')))
 const VectorStoreConfigure = Loadable(lazy(() => import('@/views/docstore/VectorStoreConfigure')))
 const VectorStoreQuery = Loadable(lazy(() => import('@/views/docstore/VectorStoreQuery')))
+
+
+const DashboardSettings = Loadable(lazy(() => import('@/views/dashboardsettings/DashBoardSettings')))
 
 // Evaluations routing
 const EvalEvaluation = Loadable(lazy(() => import('@/views/evaluations/index')))
@@ -121,6 +128,16 @@ const MainRoutes = {
                 </RequireAuth>
             )
         },
+
+        {
+            path: '/showcase',
+            element: (
+              <RequireAuth permission={'agentflows:view'}>
+                <Showcase />
+              </RequireAuth>
+            )
+        },
+          
         {
             path: '/executions',
             element: (
@@ -254,6 +271,22 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'documentStores:view'}>
                     <VectorStoreQuery />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/settings',
+            element: (
+                <RequireAuth permission={'chatflows:view'}>
+                    <DashboardSettings />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/settings',
+            element: (
+                <RequireAuth permission={'chatflows:view'}>
+                    <DashboardSettings />
                 </RequireAuth>
             )
         },

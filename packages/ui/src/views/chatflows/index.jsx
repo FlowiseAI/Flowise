@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 // material-ui
 import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { StyledToggleButton } from '@/ui-component/button/StyledButton'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -151,37 +152,25 @@ const Chatflows = () => {
                         description='Build single-agent systems, chatbots and simple LLM flows'
                     >
                         <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={view}
-                            disabled={total === 0}
-                            exclusive
-                            onChange={handleChange}
-                        >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
-                            >
-                                <IconLayoutGrid sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })} />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='list'
-                                title='List View'
-                            >
-                                <IconList sx={(theme) => ({ color: theme?.customization?.isDarkMode ? 'white' : 'inherit' })} />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
+    sx={{ borderRadius: 2, maxHeight: 40 }}
+    value={view}
+    disabled={total === 0}
+    exclusive
+    onChange={handleChange}
+>
+    <StyledToggleButton
+        value="card"
+        title="Card View"
+    >
+        <IconLayoutGrid />
+    </StyledToggleButton>
+    <StyledToggleButton
+        value="list"
+        title="List View"
+    >
+        <IconList />
+    </StyledToggleButton>
+</ToggleButtonGroup>
                         <StyledPermissionButton
                             permissionId={'chatflows:create'}
                             variant='contained'

@@ -1,0 +1,37 @@
+.ps__rail-x {
+    display: none !important;
+}
+.ps__thumb-x {
+    display: none !important;
+}
+
+
+/* ===== SETTINGS LIST HOVER — FORCE WHITE TEXT & ICONS ===== */
+
+/* Background */
+.MuiListItemButton-root:hover {
+  background-color: #000 !important;
+}
+
+/* All text (primary + secondary) inside the hovered item */
+.MuiListItemButton-root:hover .MuiListItemText-root .MuiTypography-root {
+  color: #fff !important;                 /* override Typography color prop */
+  -webkit-text-fill-color: #fff !important;
+}
+
+/* Icons: make both color & strokes white (Tabler uses stroke=currentColor) */
+.MuiListItemButton-root:hover .MuiListItemIcon-root,
+.MuiListItemButton-root:hover .MuiListItemIcon-root > svg {
+  color: #fff !important;
+}
+
+.MuiListItemButton-root:hover .MuiListItemIcon-root > svg *,
+.MuiListItemButton-root:hover svg [stroke] {
+  stroke: #fff !important;
+  fill: #fff !important;                   /* covers any filled paths */
+}
+
+/* Smooth hover */
+.MuiListItemButton-root {
+  transition: all 0.25s ease-in-out;
+}

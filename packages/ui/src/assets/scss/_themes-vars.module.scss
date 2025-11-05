@@ -351,3 +351,148 @@ $darkTextSecondary: #bec5db;
     // transparent
     transparent: $transparent;
 }
+
+
+/* --------------------------------------------- */
+/* 🌈 FLOWISE SIDEBAR THEME COLORS (LIGHT MODE) */
+/* --------------------------------------------- */
+
+// $sidebar-bg: #FFFFFF;
+// $sidebar-border: #E7E5E4;
+// $sidebar-text: #44403C;
+// $sidebar-hover-bg: #F5F5F4;
+// $sidebar-active-bg-from: #44403C;
+// $sidebar-active-bg-to: #292524;
+// $sidebar-active-text: #FAFAF9;
+// $sidebar-border-active: #1C1917;
+// $sidebar-section-title: #78716C;
+
+// :global {
+//   :root {
+//     --sidebar-bg: #{$sidebar-bg};
+//     --sidebar-border: #{$sidebar-border};
+//     --sidebar-text: #{$sidebar-text};
+//     --sidebar-hover-bg: #{$sidebar-hover-bg};
+//     --sidebar-active-bg-from: #{$sidebar-active-bg-from};
+//     --sidebar-active-bg-to: #{$sidebar-active-bg-to};
+//     --sidebar-active-text: #{$sidebar-active-text};
+//     --sidebar-border-active: #{$sidebar-border-active};
+//     --sidebar-section-title: #{$sidebar-section-title};
+//   }
+
+//   /* Optional: future dark mode support */
+//   .dark {
+//     --sidebar-bg: #0C0A09;
+//     --sidebar-border: #292524;
+//     --sidebar-text: #E7E5E4;
+//     --sidebar-hover-bg: #1C1917;
+//     --sidebar-active-bg-from: #292524;
+//     --sidebar-active-bg-to: #1C1917;
+//     --sidebar-active-text: #FAFAF9;
+//     --sidebar-border-active: #0B0B0B;
+//     --sidebar-section-title: #A8A29E;
+//   }
+// }
+
+
+// _themes-vars.module.scss  (bottom of file)
+
+// ===============================
+// SIDEBAR COLOR TOKENS
+// ===============================
+/* ===============================
+   FLOWISE SIDEBAR THEME VARIABLES
+   =============================== */
+
+/* You already have these in your file, included here for clarity */
+// $itemActiveColor: #292524;  /* light-mode selected pill bg (dark) */
+// $itemInActiveColor: #44403C;/* light-mode inactive text         */
+// $hoverBackground: #F5F5F4;  /* light-mode hover bg              */
+
+/* Export runtime CSS variables used by the React sidebar */
+:global {
+  /* LIGHT MODE (no changes to your current visuals) */
+  /* === SIDEBAR THEME TOKENS === */
+
+/* LIGHT MODE (default) */
+/* ===========================
+   SIDEBAR — THEME VARIABLES ONLY
+   =========================== */
+
+/* ===== Sidebar theme tokens ===== */
+
+/* ==== SIDEBAR COLOR TOKENS ==== */
+
+/* LIGHT MODE (default) */
+:root {
+  /* Inactive / default */
+  --sidebar-item-inactive-text: #3a3a3a;
+
+  /* Hover */
+  --sidebar-item-hover-bg: #f5f5f4;      /* stone-100 */
+  --sidebar-item-hover-text: #3a3a3a;
+
+  /* Selected (active) pill */
+  --sidebar-item-active-bg: transparent;  /* we use gradient below */
+  --sidebar-item-gradient-from: #44403c;  /* stone-700 */
+  --sidebar-item-gradient-to:   #292524;  /* stone-800 */
+  --sidebar-item-active-text:   #ffffff;  /* white text + icons */
+  --sidebar-item-border:        #1c1917;  /* stone-900 (pill/rail) */
+}
+
+/* DARK MODE (applies when <html> or <body> has .dark) */
+.dark {
+  /* Default (inactive) = white text + icons */
+  --sidebar-item-inactive-text: #ffffff;
+
+  /* Hover = “light white” chip; text/icons turn black */
+  --sidebar-item-hover-bg: rgba(255,255,255,0.85);
+  --sidebar-item-hover-text: #000000;
+
+  /* Selected = white bg; black text + icons (flat white, no gradient) */
+  --sidebar-item-active-bg: #ffffff;
+  --sidebar-item-gradient-from: #ffffff;
+  --sidebar-item-gradient-to:   #ffffff;
+  --sidebar-item-active-text:   #000000;
+
+  /* Rail / divider (optional) */
+  /* --sidebar-item-border: rgba(255,255,255,0.20); */
+}
+/* ==== SIDEBAR COLOR TOKENS ==== */
+
+/* LIGHT MODE (default) */
+/* === Sidebar tokens (exported for JS) === */
+/* === Sidebar tokens (LIGHT + DARK) === */
+/* === Sidebar tokens (LIGHT + DARK) === */
+:export {
+  /* container backgrounds */
+  sidebarLightBg: #f5f5f4; /* stone-100 */
+  sidebarDarkBg:  #0f1115; /* deep dark */
+
+  /* LIGHT item tokens */
+  sidebarLightInactiveText: #3a3a3a;
+  sidebarLightHoverBg:      #f5f5f4;
+  sidebarLightHoverText:    #3a3a3a;
+  sidebarLightActiveBg:     transparent;
+  sidebarLightGradFrom:     #44403c;
+  sidebarLightGradTo:       #292524;
+  sidebarLightActiveText:   #fafafa;
+  sidebarLightBorder:       #1c1917;
+
+  /* DARK item tokens */
+  sidebarDarkInactiveText:  #ffffff;
+  sidebarDarkHoverBg:       rgba(255,255,255,0.85);
+  sidebarDarkHoverText:     #000000;
+  sidebarDarkActiveBg:      #ffffff;
+  sidebarDarkGradFrom:      transparent;
+  sidebarDarkGradTo:        transparent;
+  sidebarDarkActiveText:    #000000;
+  sidebarDarkBorder:        transparent;
+}
+
+
+
+
+}
+
+

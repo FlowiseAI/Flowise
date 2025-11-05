@@ -17,6 +17,11 @@ import PricingDialog from '@/ui-component/subscription/PricingDialog'
 // assets
 import { IconMenu2, IconX, IconSparkles } from '@tabler/icons-react'
 
+import React from 'react';
+import { IconButton } from '@mui/material';
+import Brightness4Icon from '@mui/icons-material/Brightness4'; // Moon icon for dark mode
+import Brightness7Icon from '@mui/icons-material/Brightness7'; // Sun icon for light mode
+
 // store
 import { store } from '@/store'
 import { SET_DARKMODE } from '@/store/actions'
@@ -33,52 +38,88 @@ import useNotifier from '@/utils/useNotifier'
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
-const MaterialUISwitch = styled(Switch)(({ theme }) => ({
-    width: 62,
-    height: 34,
-    padding: 7,
-    '& .MuiSwitch-switchBase': {
-        margin: 1,
-        padding: 0,
-        transform: 'translateX(6px)',
-        '&.Mui-checked': {
-            color: '#fff',
-            transform: 'translateX(22px)',
-            '& .MuiSwitch-thumb:before': {
-                backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-                    '#fff'
-                )}" d="M4.2 2.5l-.7 1.8-1.8.7 1.8.7.7 1.8.6-1.8L6.7 5l-1.9-.7-.6-1.8zm15 8.3a6.7 6.7 0 11-6.6-6.6 5.8 5.8 0 006.6 6.6z"/></svg>')`
-            },
-            '& + .MuiSwitch-track': {
-                opacity: 1,
-                backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be'
-            }
-        }
-    },
-    '& .MuiSwitch-thumb': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#003892' : '#001e3c',
-        width: 32,
-        height: 32,
-        '&:before': {
-            content: "''",
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            left: 0,
-            top: 0,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
-                '#fff'
-            )}" d="M9.305 1.667V3.75h1.389V1.667h-1.39zm-4.707 1.95l-.982.982L5.09 6.072l.982-.982-1.473-1.473zm10.802 0L13.927 5.09l.982.982 1.473-1.473-.982-.982zM10 5.139a4.872 4.872 0 00-4.862 4.86A4.872 4.872 0 0010 14.862 4.872 4.872 0 0014.86 10 4.872 4.872 0 0010 5.139zm0 1.389A3.462 3.462 0 0113.471 10a3.462 3.462 0 01-3.473 3.472A3.462 3.462 0 016.527 10 3.462 3.462 0 0110 6.528zM1.665 9.305v1.39h2.083v-1.39H1.666zm14.583 0v1.39h2.084v-1.39h-2.084zM5.09 13.928L3.616 15.4l.982.982 1.473-1.473-.982-.982zm9.82 0l-.982.982 1.473 1.473.982-.982-1.473-1.473zM9.305 16.25v2.083h1.389V16.25h-1.39z"/></svg>')`
-        }
-    },
-    '& .MuiSwitch-track': {
-        opacity: 1,
-        backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
-        borderRadius: 20 / 2
-    }
-}))
+// const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+//     width: 62,
+//     height: 34,
+//     padding: 7,
+//     '& .MuiSwitch-switchBase': {
+//         margin: 1,
+//         padding: 0,
+//         transform: 'translateX(6px)',
+//         '&.Mui-checked': {
+//             color: '#fff',
+//             transform: 'translateX(22px)',
+//             '& .MuiSwitch-thumb:before': {
+//                 backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
+//                     '#fff'
+//                 )}" d="M4.2 2.5l-.7 1.8-1.8.7 1.8.7.7 1.8.6-1.8L6.7 5l-1.9-.7-.6-1.8zm15 8.3a6.7 6.7 0 11-6.6-6.6 5.8 5.8 0 006.6 6.6z"/></svg>')`
+//             },
+//             '& + .MuiSwitch-track': {
+//                 opacity: 1,
+//                 backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be'
+//             }
+//         }
+//     },
+//     '& .MuiSwitch-thumb': {
+//         backgroundColor: theme.palette.mode === 'dark' ? '#003892' : '#001e3c',
+//         width: 32,
+//         height: 32,
+//         '&:before': {
+//             content: "''",
+//             position: 'absolute',
+//             width: '100%',
+//             height: '100%',
+//             left: 0,
+//             top: 0,
+//             backgroundRepeat: 'no-repeat',
+//             backgroundPosition: 'center',
+//             backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
+//                 '#fff'
+//             )}" d="M9.305 1.667V3.75h1.389V1.667h-1.39zm-4.707 1.95l-.982.982L5.09 6.072l.982-.982-1.473-1.473zm10.802 0L13.927 5.09l.982.982 1.473-1.473-.982-.982zM10 5.139a4.872 4.872 0 00-4.862 4.86A4.872 4.872 0 0010 14.862 4.872 4.872 0 0014.86 10 4.872 4.872 0 0010 5.139zm0 1.389A3.462 3.462 0 0113.471 10a3.462 3.462 0 01-3.473 3.472A3.462 3.462 0 016.527 10 3.462 3.462 0 0110 6.528zM1.665 9.305v1.39h2.083v-1.39H1.666zm14.583 0v1.39h2.084v-1.39h-2.084zM5.09 13.928L3.616 15.4l.982.982 1.473-1.473-.982-.982zm9.82 0l-.982.982 1.473 1.473.982-.982-1.473-1.473zM9.305 16.25v2.083h1.389V16.25h-1.39z"/></svg>')`
+//         }
+//     },
+//     '& .MuiSwitch-track': {
+//         opacity: 1,
+//         backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+//         borderRadius: 20 / 2
+//     }
+// }))
+
+// Removed the MaterialUISwitch styled component definition entirely.
+
+// NEW COMPONENT for the Theme Toggle Button
+const ThemeModeIconButton = ({ checked, onChange }) => {
+    const theme = useTheme();
+
+    return (
+        <IconButton 
+            onClick={onChange} // Use the onChange prop (which is changeDarkMode) as the click handler
+            color="inherit" 
+            sx={{
+                // Styling to make it look like the buttons in the image (circular, dark background)
+                background: theme.palette.mode === 'dark' ? 'white' : theme.palette.primary.dark,
+                color: theme.palette.mode === 'dark' ? theme.palette.primary.dark : 'white',
+                width: 40, // Adjust size to match the image's buttons
+                height: 40, // Adjust size to match the image's buttons
+                mr: 1 // Keep a margin for spacing from the next item
+            }}
+        >
+            {/* Conditional rendering based on the current mode (checked == isDark) */}
+            {checked ? (
+                // If checked (isDark=true)
+                <Brightness7Icon sx={{ fontSize: 20 }}/>
+            ) : (
+                // If not checked (isDark=false)
+                <Brightness4Icon sx={{ fontSize: 20 }}/>
+            )}
+        </IconButton>
+    );
+};
+
+ThemeModeIconButton.propTypes = {
+    checked: PropTypes.bool.isRequired,
+    onChange: PropTypes.func.isRequired
+};
 
 const GitHubStarButton = ({ starCount, isDark }) => {
     const theme = useTheme()
@@ -150,6 +191,13 @@ const Header = ({ handleLeftDrawerToggle }) => {
     const logoutApi = useApi(accountApi.logout)
 
     const [isDark, setIsDark] = useState(customization.isDarkMode)
+    // make the CSS .dark block take effect
+        useEffect(() => {
+            if (typeof document !== 'undefined') {
+            document.documentElement.classList.toggle('dark', !!isDark);
+            }
+        }, [isDark]);
+  
     const dispatch = useDispatch()
     const { isEnterpriseLicensed, isCloud, isOpenSource } = useConfig()
     const currentUser = useSelector((state) => state.auth.user)
@@ -227,7 +275,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 <Box component='span' sx={{ display: { xs: 'none', md: 'block' }, flexGrow: 1 }}>
                     <LogoSection />
                 </Box>
-                {isAuthenticated && (
+
+                {/* HAMBURGER MENU */}
+                {/* {isAuthenticated && (
                     <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
                         <Avatar
                             variant='rounded'
@@ -248,7 +298,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
                             <IconMenu2 stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                )}
+                )} */}
+
             </Box>
             {isCloud || isOpenSource ? (
                 <Box
@@ -268,7 +319,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             ) : (
                 <Box sx={{ flexGrow: 1 }} />
             )}
-            <OrgWorkspaceBreadcrumbs />
+            {/* <OrgWorkspaceBreadcrumbs />
             {isEnterpriseLicensed && isAuthenticated && <WorkspaceSwitcher />}
             {isCloud && isAuthenticated && <OrgWorkspaceBreadcrumbs />}
             {isCloud && currentUser?.isOrganizationAdmin && (
@@ -297,7 +348,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 >
                     Upgrade
                 </Button>
-            )}
+            )} */}
             {isPricingOpen && isCloud && (
                 <PricingDialog
                     open={isPricingOpen}
@@ -310,9 +361,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     }}
                 />
             )}
-            <MaterialUISwitch checked={isDark} onChange={changeDarkMode} />
-            <Box sx={{ ml: 2 }}></Box>
-            <ProfileSection handleLogout={signOutClicked} />
+            <ThemeModeIconButton checked={isDark} sx={{ ml: 2 }} onChange={changeDarkMode} />
+            {/* <Box sx={{ ml: 2 }}></Box>
+            <ProfileSection handleLogout={signOutClicked} /> */}
         </>
     )
 }

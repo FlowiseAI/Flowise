@@ -260,13 +260,23 @@ const SignInPage = () => {
                                 )}
                             </Box>
                             <LoadingButton
-                                loading={loading}
-                                variant='contained'
-                                style={{ borderRadius: 12, height: 40, marginRight: 5 }}
-                                type='submit'
-                            >
-                                Login
-                            </LoadingButton>
+    loading={loading}
+    variant='contained'
+    style={{
+        borderRadius: 12,
+        height: 40,
+        marginRight: 5,
+        backgroundColor: '#1c1917', // hardcoded color
+        color: '#fff', // white text
+        '&:hover': {
+            backgroundColor: '#1c1917' // keep same on hover
+        }
+    }}
+    type='submit'
+>
+    Login
+</LoadingButton>
+
                             {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
                             {configuredSsoProviders &&
                                 configuredSsoProviders.map(
