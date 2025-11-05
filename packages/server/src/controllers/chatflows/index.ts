@@ -72,7 +72,7 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
-        const search = req.query?.search as string
+        const search = typeof req.query.search === 'string' ? req.query.search : undefined
 
         const apiResponse = await chatflowsService.getAllChatflows(
             req.query?.type as ChatflowType,
