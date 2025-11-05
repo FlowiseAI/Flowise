@@ -55,7 +55,6 @@ export const FlowListTable = ({
     images = {},
     icons = {},
     isLoading,
-    filterFunction,
     updateFlowsApi,
     setError,
     isAgentCanvas,
@@ -186,7 +185,7 @@ export const FlowListTable = ({
                             </>
                         ) : (
                             <>
-                                {sortedData.filter(filterFunction).map((row, index) => (
+                                {sortedData.map((row, index) => (
                                     <StyledTableRow key={index}>
                                         <StyledTableCell key='0'>
                                             <Tooltip title={row.templateName || row.name}>
