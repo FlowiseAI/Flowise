@@ -68,7 +68,7 @@ export const suggestionOptions = (
             {
                 id: 'runtime_messages_length',
                 mentionLabel: 'runtime_messages_length',
-                description: 'Total messsages between LLM and Agent',
+                description: 'Total messages between LLM and Agent',
                 category: 'Chat Context'
             },
             {

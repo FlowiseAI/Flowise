@@ -79,7 +79,7 @@ class MeilisearchRetriever_node implements INode {
                 label: 'Semantic Ratio',
                 name: 'semanticRatio',
                 type: 'number',
-                description: 'percentage of sematic reasoning in meilisearch hybrid search, default is 0.75',
+                description: 'percentage of semantic reasoning in meilisearch hybrid search, default is 0.75',
                 additionalParams: true,
                 optional: true
             },
@@ -162,7 +162,7 @@ class MeilisearchRetriever_node implements INode {
                     }
                 } catch (error) {
                     console.error(error)
-                    console.warn('Error occured when deleting your index, if it did not exist, we will create one for you... ')
+                    console.warn('Error occurred when deleting your index, if it did not exist, we will create one for you... ')
                 }
             }
 
