@@ -160,8 +160,8 @@ export class SecureFileStore extends Serializable {
         return new SecureFileStore({
             workspacePath,
             enforceWorkspaceBoundaries: false,
-            maxFileSize: 50 * 1024 * 1024, // 50MB for unsecure mode
-            blockedExtensions: [] // No extension restrictions in unsecure mode
+            maxFileSize: 50 * 1024 * 1024, // 50MB for insecure mode
+            blockedExtensions: [] // No extension restrictions in insecure mode
         })
     }
 }
