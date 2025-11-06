@@ -37,7 +37,14 @@ const deleteVariable = async (req: Request, res: Response, next: NextFunction) =
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Error: variablesController.deleteVariable - id not provided!')
         }
-        const apiResponse = await variablesService.deleteVariable(req.params.id)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: variablesController.deleteVariable - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await variablesService.deleteVariable(req.params.id, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -47,7 +54,14 @@ const deleteVariable = async (req: Request, res: Response, next: NextFunction) =
 const getAllVariables = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { page, limit } = getPageAndLimitParams(req)
-        const apiResponse = await variablesService.getAllVariables(req.user?.activeWorkspaceId, page, limit)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: variablesController.getAllVariables - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await variablesService.getAllVariables(workspaceId, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -65,7 +79,14 @@ const updateVariable = async (req: Request, res: Response, next: NextFunction) =
                 'Error: variablesController.updateVariable - body not provided!'
             )
         }
-        const variable = await variablesService.getVariableById(req.params.id)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: variablesController.updateVariable - workspace ${workspaceId} not found!`
+            )
+        }
+        const variable = await variablesService.getVariableById(req.params.id, workspaceId)
         if (!variable) {
             return res.status(404).send(`Variable ${req.params.id} not found in the database`)
         }

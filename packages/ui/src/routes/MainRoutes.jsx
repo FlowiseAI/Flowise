@@ -5,6 +5,7 @@ import MainLayout from '@/layout/MainLayout'
 import Loadable from '@/ui-component/loading/Loadable'
 
 import { RequireAuth } from '@/routes/RequireAuth'
+import { DefaultRedirect } from '@/routes/DefaultRedirect'
 
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
@@ -50,7 +51,6 @@ const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
 
 // account routing
 const Account = Loadable(lazy(() => import('@/views/account')))
-const UserProfile = Loadable(lazy(() => import('@/views/account/UserProfile')))
 
 // files routing
 const Files = Loadable(lazy(() => import('@/views/files')))
@@ -78,11 +78,7 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: (
-                <RequireAuth permission={'chatflows:view'}>
-                    <Chatflows />
-                </RequireAuth>
-            )
+            element: <DefaultRedirect />
         },
         {
             path: '/chatflows',
@@ -294,11 +290,7 @@ const MainRoutes = {
         },
         {
             path: '/account',
-            element: (
-                <RequireAuth display={'feat:account'}>
-                    <Account />
-                </RequireAuth>
-            )
+            element: <Account />
         },
         {
             path: '/users',
@@ -307,10 +299,6 @@ const MainRoutes = {
                     <UsersPage />
                 </RequireAuth>
             )
-        },
-        {
-            path: '/user-profile',
-            element: <UserProfile />
         },
         {
             path: '/roles',

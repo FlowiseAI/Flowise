@@ -2,7 +2,7 @@ import { flatten } from 'lodash'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { MongoDBAtlasVectorSearch } from './core'
 
@@ -187,7 +187,7 @@ class MongoDBAtlas_VectorStores implements INode {
             })
 
             if (mongoMetadataFilter) {
-                const metadataFilter = typeof mongoMetadataFilter === 'object' ? mongoMetadataFilter : JSON.parse(mongoMetadataFilter)
+                const metadataFilter = typeof mongoMetadataFilter === 'object' ? mongoMetadataFilter : parseJsonBody(mongoMetadataFilter)
 
                 for (const key in metadataFilter) {
                     mongoDbFilter.preFilter = {

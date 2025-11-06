@@ -4,7 +4,7 @@ import { Document } from '@langchain/core/documents'
 import { CouchbaseVectorStore, CouchbaseVectorStoreArgs } from '@langchain/community/vectorstores/couchbase'
 import { Cluster } from 'couchbase'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 
 class Couchbase_VectorStores implements INode {
@@ -215,7 +215,8 @@ class Couchbase_VectorStores implements INode {
             if (!embeddingKey || embeddingKey === '') couchbaseConfig.embeddingKey = 'embedding'
 
             if (couchbaseMetadataFilter) {
-                metadatafilter = typeof couchbaseMetadataFilter === 'object' ? couchbaseMetadataFilter : JSON.parse(couchbaseMetadataFilter)
+                metadatafilter =
+                    typeof couchbaseMetadataFilter === 'object' ? couchbaseMetadataFilter : parseJsonBody(couchbaseMetadataFilter)
             }
 
             const vectorStore = await CouchbaseVectorStore.initialize(embeddings, couchbaseConfig)
