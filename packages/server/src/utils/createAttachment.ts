@@ -32,7 +32,7 @@ export const createFileAttachment = async (req: Request) => {
     if (!chatflowid || !isValidUUID(chatflowid)) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatflowId format - must be a valid UUID')
     }
-    if (isPathTraversal(chatflowid) || isPathTraversal(chatId)) {
+    if (isPathTraversal(chatflowid) || (chatId && isPathTraversal(chatId))) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid path characters detected')
     }
 
