@@ -492,9 +492,6 @@ importers:
             supergateway:
                 specifier: 3.0.1
                 version: 3.0.1(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-            teradatasql:
-                specifier: ^20.0.40
-                version: 20.0.44
             typeorm:
                 specifier: ^0.3.6
                 version: 0.3.20(ioredis@5.3.2)(mongodb@6.3.0(gcp-metadata@7.0.1)(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@22.5.4)(typescript@5.5.2))
@@ -12793,9 +12790,6 @@ packages:
         resolution: { integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA== }
         engines: { node: '>= 8' }
 
-    koffi@2.14.1:
-        resolution: { integrity: sha512-IMFL3IbRDXacSIjs7pPbPxgNlJ2hUtawQXU2QPdr6iw38jmv5AesAUG8HPX00xl0PPA2BbEa3noTw1YdHY+gHg== }
-
     kuler@2.0.0:
         resolution: { integrity: sha512-Xq9nH7KlWZmXAtodXDDRE7vs6DU1gTU8zYDHDiWLSip45Egwq3plLHzPn27NgvzL2r1LMPC1vdqh98sQxtqj4A== }
 
@@ -16947,11 +16941,6 @@ packages:
     tempy@0.6.0:
         resolution: { integrity: sha512-G13vtMYPT/J8A4X2SjdtBTphZlrp1gKv6hZiOjw14RCWg6GbHuQBGtjlx75xLbYV/wEc0D7G5K4rxKP/cXk8Bw== }
         engines: { node: '>=10' }
-
-    teradatasql@20.0.44:
-        resolution: { integrity: sha512-3OABwc9WdGwU0aM7CkgS9OLdiP0a1G5EgaE1XBgMQgXWWp9sr4hMoO7W2ygdLYMfVWHMkCj7P0xXXuH/rN52jw== }
-        engines: { node: '>=18.20.7' }
-        hasBin: true
 
     terminal-link@2.1.1:
         resolution: { integrity: sha512-un0FmiRUQNr5PJqy9kP7c40F5BOfpGlYTrxonDChEZB7pzZxRNp/bt+ymiy9/npwXya9KH99nJ/GXFIiUkYGFQ== }
@@ -34832,8 +34821,6 @@ snapshots:
 
     klona@2.0.6: {}
 
-    koffi@2.14.1: {}
-
     kuler@2.0.0: {}
 
     langchain@0.3.6(@langchain/anthropic@0.3.33(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(zod@3.22.4))(@langchain/aws@0.1.11(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(@langchain/cohere@0.0.7(encoding@0.1.13)(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(@langchain/google-genai@0.2.3(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(zod@3.22.4))(@langchain/google-vertexai@0.2.14(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(@langchain/groq@0.1.2(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)))(@langchain/mistralai@0.2.0(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(@langchain/ollama@0.2.0(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(axios@1.12.0)(cheerio@1.0.0-rc.12)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))(typeorm@0.3.20(ioredis@5.3.2)(mongodb@6.3.0(gcp-metadata@7.0.1)(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@22.5.4)(typescript@5.5.2)))(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)):
@@ -39981,11 +39968,6 @@ snapshots:
             temp-dir: 2.0.0
             type-fest: 0.16.0
             unique-string: 2.0.0
-
-    teradatasql@20.0.44:
-        dependencies:
-            koffi: 2.14.1
-            uuid: 9.0.1
 
     terminal-link@2.1.1:
         dependencies:
