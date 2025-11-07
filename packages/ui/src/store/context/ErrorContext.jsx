@@ -14,7 +14,10 @@ export const ErrorProvider = ({ children }) => {
 
     const handleError = async (err) => {
         console.error(err)
-        if (err?.response?.status === 403) {
+        if (err?.response?.status === 429) {
+            const retryAfter = parseInt(err?.response?.headers?.['retry-after']) || 60
+            navigate('/rate-limited', { state: { retryAfter } })
+        } else if (err?.response?.status === 403) {
             navigate('/unauthorized')
         } else if (err?.response?.status === 401) {
             if (ErrorMessage.INVALID_MISSING_TOKEN === err?.response?.data?.message) {
