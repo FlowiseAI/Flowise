@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
@@ -54,16 +54,23 @@ const Agentflows = () => {
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
 
+    const searchTimeoutRef = useRef(null)
+
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
         refresh(page, pageLimit, agentflowVersion)
     }
 
-    const refresh = (page, limit, nextView) => {
+    const refresh = (page, limit, nextView, searchValue) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
+        }
+        // Always include search parameter, even if empty (to clear server-side filter)
+        const currentSearch = searchValue !== undefined ? searchValue : search
+        if (currentSearch) {
+            params.search = currentSearch
         }
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
@@ -82,15 +89,19 @@ const Agentflows = () => {
     }
 
     const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
+        const newSearch = event.target.value
+        setSearch(newSearch)
+        setCurrentPage(1)
 
-    function filterFlows(data) {
-        return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
+        // Clear existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current)
+        }
+
+        // Debounce search - trigger refresh after user stops typing
+        searchTimeoutRef.current = setTimeout(() => {
+            refresh(1, pageLimit, agentflowVersion, newSearch)
+        }, 300)
     }
 
     const addNew = () => {
@@ -116,6 +127,12 @@ const Agentflows = () => {
     useEffect(() => {
         refresh(currentPage, pageLimit, agentflowVersion)
 
+        // Cleanup timeout on unmount
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current)
+            }
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -304,7 +321,7 @@ const Agentflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.data.map((data, index) => (
                                         <ItemCard
                                             key={index}
                                             onClick={() => goToCanvas(data)}
@@ -322,7 +339,6 @@ const Agentflows = () => {
                                     images={images}
                                     icons={icons}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
                                     updateFlowsApi={getAllAgentflows}
                                     setError={setError}
                                 />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
@@ -49,16 +49,23 @@ const Chatflows = () => {
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
 
+    const searchTimeoutRef = useRef(null)
+
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
         applyFilters(page, pageLimit)
     }
 
-    const applyFilters = (page, limit) => {
+    const applyFilters = (page, limit, searchValue) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
+        }
+        // Always include search parameter, even if empty (to clear server-side filter)
+        const currentSearch = searchValue !== undefined ? searchValue : search
+        if (currentSearch) {
+            params.search = currentSearch
         }
         getAllChatflowsApi.request(params)
     }
@@ -70,15 +77,19 @@ const Chatflows = () => {
     }
 
     const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
+        const newSearch = event.target.value
+        setSearch(newSearch)
+        setCurrentPage(1)
 
-    function filterFlows(data) {
-        return (
-            data?.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data?.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
+        // Clear existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current)
+        }
+
+        // Debounce search - trigger refresh after user stops typing
+        searchTimeoutRef.current = setTimeout(() => {
+            applyFilters(1, pageLimit, newSearch)
+        }, 300)
     }
 
     const addNew = () => {
@@ -91,6 +102,13 @@ const Chatflows = () => {
 
     useEffect(() => {
         applyFilters(currentPage, pageLimit)
+
+        // Cleanup timeout on unmount
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current)
+            }
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -196,7 +214,7 @@ const Chatflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
+                                    {getAllChatflowsApi.data?.data?.map((data, index) => (
                                         <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                     ))}
                                 </Box>
@@ -205,7 +223,6 @@ const Chatflows = () => {
                                     data={getAllChatflowsApi.data?.data}
                                     images={images}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
                                     updateFlowsApi={getAllChatflowsApi}
                                     setError={setError}
                                 />

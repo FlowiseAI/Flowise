@@ -50,17 +50,7 @@ const getLocalStorageKeyName = (name, isAgentCanvas) => {
     return (isAgentCanvas ? 'agentcanvas' : 'chatflowcanvas') + '_' + name
 }
 
-export const FlowListTable = ({
-    data,
-    images = {},
-    icons = {},
-    isLoading,
-    filterFunction,
-    updateFlowsApi,
-    setError,
-    isAgentCanvas,
-    isAgentflowV2
-}) => {
+export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, updateFlowsApi, setError, isAgentCanvas, isAgentflowV2 }) => {
     const { hasPermission } = useAuth()
     const isActionsAvailable = isAgentCanvas
         ? hasPermission('agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export')
@@ -186,7 +176,7 @@ export const FlowListTable = ({
                             </>
                         ) : (
                             <>
-                                {sortedData.filter(filterFunction).map((row, index) => (
+                                {sortedData.map((row, index) => (
                                     <StyledTableRow key={index}>
                                         <StyledTableCell key='0'>
                                             <Tooltip title={row.templateName || row.name}>
