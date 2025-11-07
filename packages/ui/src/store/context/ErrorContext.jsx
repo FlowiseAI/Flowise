@@ -15,7 +15,19 @@ export const ErrorProvider = ({ children }) => {
     const handleError = async (err) => {
         console.error(err)
         if (err?.response?.status === 429) {
-            const retryAfter = parseInt(err?.response?.headers?.['retry-after']) || 60
+            const retryAfterHeader = err?.response?.headers?.['retry-after']
+            let retryAfter = 60 // Default in seconds
+            if (retryAfterHeader) {
+                const parsedSeconds = parseInt(retryAfterHeader, 10)
+                if (Number.isNaN(parsedSeconds)) {
+                    const retryDate = new Date(retryAfterHeader)
+                    if (!Number.isNaN(retryDate.getTime())) {
+                        retryAfter = Math.max(0, Math.ceil((retryDate.getTime() - Date.now()) / 1000))
+                    }
+                } else {
+                    retryAfter = parsedSeconds
+                }
+            }
             navigate('/rate-limited', { state: { retryAfter } })
         } else if (err?.response?.status === 403) {
             navigate('/unauthorized')
