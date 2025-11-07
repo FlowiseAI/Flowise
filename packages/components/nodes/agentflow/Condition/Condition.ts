@@ -317,7 +317,7 @@ class Condition_Agentflow implements INode {
             }
         }
 
-        // If no condition is fullfilled, add isFulfilled to the ELSE condition
+        // If no condition is fulfilled, add isFulfilled to the ELSE condition
         const dummyElseConditionData = {
             type: 'string',
             value1: '',
