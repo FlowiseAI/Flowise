@@ -96,7 +96,7 @@ class AWSBedrockEmbedding_Embeddings implements INode {
             {
                 label: 'Max AWS API retries',
                 name: 'maxRetries',
-                description: 'This will limit the nubmer of AWS API for Titan model embeddings call retries. Used to avoid throttling.',
+                description: 'This will limit the number of AWS API for Titan model embeddings call retries. Used to avoid throttling.',
                 type: 'number',
                 optional: true,
                 default: 5,
