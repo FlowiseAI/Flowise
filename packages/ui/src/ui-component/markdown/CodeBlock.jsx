@@ -46,24 +46,28 @@ export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => 
     useEffect(() => {
         if (!isMermaid || !value) return
 
-        mermaid.initialize({
-            startOnLoad: false,
-            theme: theme.palette.mode === 'dark' ? 'dark' : 'default',
-            securityLevel: 'strict'
-        })
+        const timer = setTimeout(() => {
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: theme.palette.mode === 'dark' ? 'dark' : 'default',
+                securityLevel: 'strict'
+            })
 
-        const renderMermaid = async () => {
-            try {
-                setMermaidError(null)
-                const { svg } = await mermaid.render(diagramIdRef.current, value)
-                setMermaidSvg(svg)
-            } catch (error) {
-                setMermaidError(error.message)
-                setMermaidSvg(null)
+            const renderMermaid = async () => {
+                try {
+                    setMermaidError(null)
+                    const { svg } = await mermaid.render(diagramIdRef.current, value)
+                    setMermaidSvg(svg)
+                } catch (error) {
+                    setMermaidError(error.message)
+                    setMermaidSvg(null)
+                }
             }
-        }
 
-        renderMermaid()
+            renderMermaid()
+        }, 300)
+
+        return () => clearTimeout(timer)
     }, [isMermaid, value, theme.palette.mode])
 
     const handleClosePopOver = () => {
