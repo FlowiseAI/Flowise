@@ -7,7 +7,7 @@ RUN apk add --no-cache build-base cairo-dev pango-dev
 # Install Chromium and curl for container-level health checks
 RUN apk add --no-cache chromium curl
 
-#install PNPM globaly
+#install PNPM globally
 RUN npm install -g pnpm
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
