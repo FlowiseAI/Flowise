@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
 import dotenv from 'dotenv'
+import { resolve } from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig(async ({ mode }) => {
     let proxy = undefined
@@ -41,6 +41,8 @@ export default defineConfig(async ({ mode }) => {
         build: {
             outDir: './build'
         },
+        // Ensure built assets (css/js) are requested from the correct URL prefix
+        base: process.env.VITE_BASE_PATH || '/',
         server: {
             open: true,
             proxy,
