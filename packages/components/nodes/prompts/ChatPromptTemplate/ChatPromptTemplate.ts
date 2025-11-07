@@ -11,7 +11,7 @@ return [
         tool_calls: [
         {
             id: "12345",
-            name: "calulator",
+            name: "calculator",
             args: {
                 number1: 333382,
                 number2: 1932,
