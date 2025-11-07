@@ -92,8 +92,10 @@ class Zendesk_DocumentLoaders implements INode {
                 label: 'Locale',
                 name: 'locale',
                 type: 'string',
+                default: 'en-us',
+                optional: true,
                 placeholder: 'en-us',
-                description: 'Locale code for articles (e.g., en-us, en-gb)'
+                description: 'Locale code(s) for articles. Can be a single locale (e.g., en-us) or comma-separated list (e.g., en-us, en-gb, fr-fr). Defaults to en-us if not provided.'
             },
             {
                 label: 'Published Articles Only',
@@ -170,6 +172,10 @@ class Zendesk_DocumentLoaders implements INode {
 
         if (config.brandId && !/^\d+$/.test(config.brandId)) {
             errors.push('Brand ID must be a numeric string')
+        }
+
+        if (!config.locales || !config.locales.length || !config.locales[0]) {
+            errors.push('Locale is required')
         }
 
         if (errors.length > 0) {
@@ -349,19 +355,14 @@ class Zendesk_DocumentLoaders implements INode {
 
         // Process each locale
         for (const locale of config.locales) {
-            try {
-                const articles = await this.fetchAllArticles(locale, config.brandId || undefined, config, axiosHeaders)
-                // Transform each article to the required format
-                for (const article of articles) {
-                    const transformedChunks = this.transformArticle(article, config, locale)
-                    // Process each chunk (will be 1 chunk for small articles)
-                    for (const chunk of transformedChunks) {
-                        allTransformedArticles.push(chunk)
-                    }
+            const articles = await this.fetchAllArticles(locale, config.brandId || undefined, config, axiosHeaders)
+            // Transform each article to the required format
+            for (const article of articles) {
+                const transformedChunks = this.transformArticle(article, config, locale)
+                // Process each chunk (will be 1 chunk for small articles)
+                for (const chunk of transformedChunks) {
+                    allTransformedArticles.push(chunk)
                 }
-            } catch (error: any) {
-                // Continue with other locales if one fails
-                throw new Error(`Error processing locale ${locale}: ${error.message}`)
             }
         }
 
@@ -371,7 +372,8 @@ class Zendesk_DocumentLoaders implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const zendeskDomain = nodeData.inputs?.zendeskDomain as string
         const brandId = nodeData.inputs?.brandId as string
-        const locale = nodeData.inputs?.locale as string
+        const localeInputRaw = nodeData.inputs?.locale as string
+        const localeInput = (localeInputRaw && localeInputRaw.trim()) || 'en-us'
         const publishedArticlesOnly = (nodeData.inputs?.publishedArticlesOnly as boolean) ?? true
         const charsPerToken = (nodeData.inputs?.charsPerToken as number) ?? 4
         const metadata = nodeData.inputs?.metadata
@@ -381,6 +383,17 @@ class Zendesk_DocumentLoaders implements INode {
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
             omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
+
+        // Parse comma-separated locales
+        const locales = localeInput
+            .split(',')
+            .map((loc) => loc.trim())
+            .filter((loc) => loc.length > 0)
+        
+        // Ensure at least one locale
+        if (locales.length === 0) {
+            locales.push('en-us')
         }
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -394,7 +407,7 @@ class Zendesk_DocumentLoaders implements INode {
             token,
             brandId,
             publishedArticlesOnly,
-            locales: [locale],
+            locales,
             charsPerToken,
             api: {
                 protocol: 'https://',
@@ -417,37 +430,29 @@ class Zendesk_DocumentLoaders implements INode {
         let docs: IDocument[] = await this.extractAllArticles(config)
 
         // Apply metadata handling
+        let parsedMetadata = {}
+
         if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            docs = docs.map((doc) => ({
-                ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {
-                              ...parsedMetadata
-                          }
-                        : omit(
-                              {
-                                  ...doc.metadata,
-                                  ...parsedMetadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
-        } else {
-            docs = docs.map((doc) => ({
-                ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {}
-                        : omit(
-                              {
-                                  ...doc.metadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
+            try {
+                parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            } catch (error) {
+                throw new Error(`Error parsing Additional Metadata: ${error.message}`)
+            }
         }
+
+        docs = docs.map((doc) => ({
+            ...doc,
+            metadata:
+                _omitMetadataKeys === '*'
+                    ? { ...parsedMetadata }
+                    : omit(
+                          {
+                              ...doc.metadata,
+                              ...parsedMetadata
+                          },
+                          omitMetadataKeys
+                      )
+        }))
 
         if (output === 'document') {
             return docs

@@ -61,12 +61,31 @@ describe('Zendesk', () => {
             )
         })
 
-        it('should throw error when locale is not provided', async () => {
+        it('should use default locale (en-us) when locale is not provided', async () => {
+            const mockArticles = {
+                data: {
+                    articles: [
+                        {
+                            id: 1,
+                            name: 'Test Article',
+                            body: 'Test content'
+                        }
+                    ]
+                }
+            }
+
+            mockedAxios.get.mockResolvedValueOnce(mockArticles)
+
             const nodeData = createNodeData('test-2', {
                 zendeskDomain: 'example.zendesk.com'
             })
 
-            await expect(nodeClass.init(nodeData, '', {})).rejects.toThrow()
+            const result = await nodeClass.init(nodeData, '', {})
+            expect(result).toBeDefined()
+            expect(Array.isArray(result)).toBe(true)
+            // Verify the API was called with en-us locale
+            const callUrl = mockedAxios.get.mock.calls[0][0] as string
+            expect(callUrl).toContain('locale=en-us')
         })
 
         it('should throw error when zendeskDomain is invalid', async () => {
@@ -272,6 +291,49 @@ describe('Zendesk', () => {
             await nodeClass.init(nodeData, '', {})
             const callUrl = mockedAxios.get.mock.calls[0][0] as string
             expect(callUrl).toContain('brand_id=123456')
+        })
+
+        it('should handle comma-separated locales', async () => {
+            const mockArticlesEn = {
+                data: {
+                    articles: [
+                        {
+                            id: 1,
+                            name: 'English Article',
+                            body: 'English content'
+                        }
+                    ]
+                }
+            }
+
+            const mockArticlesFr = {
+                data: {
+                    articles: [
+                        {
+                            id: 2,
+                            name: 'French Article',
+                            body: 'French content'
+                        }
+                    ]
+                }
+            }
+
+            mockedAxios.get
+                .mockResolvedValueOnce(mockArticlesEn)
+                .mockResolvedValueOnce(mockArticlesFr)
+
+            const nodeData = createNodeData('test-11b', {
+                zendeskDomain: 'example.zendesk.com',
+                locale: 'en-us, fr-fr'
+            })
+
+            const result = await nodeClass.init(nodeData, '', {})
+            expect(result).toHaveLength(2)
+            expect(mockedAxios.get).toHaveBeenCalledTimes(2)
+            // Verify both locales were called
+            const callUrls = mockedAxios.get.mock.calls.map((call) => call[0] as string)
+            expect(callUrls[0]).toContain('locale=en-us')
+            expect(callUrls[1]).toContain('locale=fr-fr')
         })
     })
 
@@ -481,11 +543,12 @@ describe('Zendesk', () => {
 
     describe('Metadata Handling', () => {
         it('should include article URL in metadata', async () => {
+            const articleId = 123
             const mockArticles = {
                 data: {
                     articles: [
                         {
-                            id: 123,
+                            id: articleId,
                             name: 'Test Article',
                             body: 'Content'
                         }
@@ -501,7 +564,9 @@ describe('Zendesk', () => {
             })
 
             const result = await nodeClass.init(nodeData, '', {})
-            expect(result[0].metadata.url).toBe('https://example.zendesk.com/hc/en-us/articles/123')
+            expect(result[0].metadata.url).toBe(`https://example.zendesk.com/hc/en-us/articles/${articleId}`)
+            expect(result[0].metadata.id).toBe(String(articleId))
+            expect(result[0].pageContent).toBe('Content')
         })
 
         it('should handle additional metadata', async () => {
@@ -614,8 +679,11 @@ describe('Zendesk', () => {
 
             const result = await nodeClass.init(nodeData, '', {})
             expect(typeof result).toBe('string')
-            expect(result).toContain('Content 1')
-            expect(result).toContain('Content 2')
+            // Check that both article contents are present in the concatenated text
+            // The result should be "Content 1\nContent 2\n" (or similar with escape handling)
+            const normalizedResult = result.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
+            expect(normalizedResult).toContain('Content 1')
+            expect(normalizedResult).toContain('Content 2')
         })
     })
 
