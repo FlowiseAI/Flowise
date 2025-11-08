@@ -7,10 +7,10 @@ export class AWSTextractOCRProvider implements IOCRProvider {
     private accessKeyId: string
     private secretAccessKey: string
 
-    constructor(credentialData: any, nodeData: any) {
-        this.accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-        this.secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
-        this.region = getCredentialParam('region', credentialData, nodeData) || getCredentialParam('awsRegion', credentialData, nodeData) || 'us-east-1'
+    constructor(options: OCRProviderOptions) {
+        this.accessKeyId = getCredentialParam('awsKey', options.credentialData, options.nodeData)
+        this.secretAccessKey = getCredentialParam('awsSecret', options.credentialData, options.nodeData)
+        this.region = getCredentialParam('region', options.credentialData, options.nodeData) || getCredentialParam('awsRegion', options.credentialData, options.nodeData) || 'us-east-1'
 
         if (!this.accessKeyId || !this.secretAccessKey) {
             throw new Error('AWS credentials (accessKeyId and secretAccessKey) are required for AWS Textract')

@@ -5,8 +5,8 @@ export class GoogleVisionOCRProvider implements IOCRProvider {
     private apiKey: string
     private apiUrl: string
 
-    constructor(credentialData: any, nodeData: any) {
-        this.apiKey = getCredentialParam('googleApiKey', credentialData, nodeData)
+    constructor(options: OCRProviderOptions) {
+        this.apiKey = getCredentialParam('googleApiKey', options.credentialData, options.nodeData)
         
         if (!this.apiKey) {
             throw new Error('Google API Key is required for Google Vision OCR')

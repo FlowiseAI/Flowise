@@ -2,7 +2,7 @@ import { omit } from 'lodash'
 import { IDocument, ICommonObject, INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document } from '@langchain/core/documents'
-import { getFileFromStorage, handleEscapeCharacters, handleDocumentLoaderDocuments, handleDocumentLoaderMetadata, handleDocumentLoaderOutput, getCredentialData, getCredentialParam } from '../../../src'
+import { getFileFromStorage, handleDocumentLoaderMetadata, handleDocumentLoaderOutput, getCredentialData } from '../../../src'
 import { UnstructuredOCRProvider } from './providers/UnstructuredOCRProvider'
 import { AWSTextractOCRProvider } from './providers/AWSTextractOCRProvider'
 import { GoogleVisionOCRProvider } from './providers/GoogleVisionOCRProvider'
@@ -119,11 +119,6 @@ class Image_DocumentLoaders implements INode {
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
 
-        let omitMetadataKeys: string[] = []
-        if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
-        }
-
         let docs: IDocument[] = []
         let files: string[] = []
 
@@ -135,15 +130,20 @@ class Image_DocumentLoaders implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
+        const ocrProviderOptions = {
+            credentialData,
+            nodeData
+        }
+
         switch (ocrProvider) {
             case 'unstructured':
-                ocrProviderInstance = new UnstructuredOCRProvider(credentialData, nodeData)
+                ocrProviderInstance = new UnstructuredOCRProvider(ocrProviderOptions)
                 break
             case 'aws-textract':
-                ocrProviderInstance = new AWSTextractOCRProvider(credentialData, nodeData)
+                ocrProviderInstance = new AWSTextractOCRProvider(ocrProviderOptions)
                 break
             case 'google-vision':
-                ocrProviderInstance = new GoogleVisionOCRProvider(credentialData, nodeData)
+                ocrProviderInstance = new GoogleVisionOCRProvider(ocrProviderOptions)
                 break
             default:
                 throw new Error(`Unsupported OCR provider: ${ocrProvider}`)
@@ -215,23 +215,7 @@ class Image_DocumentLoaders implements INode {
             docs = await textSplitter.splitDocuments(docs)
         }
 
-        if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            docs = docs.map((doc) => {
-                const newMetadata = { ...doc.metadata, ...parsedMetadata }
-                return {
-                    ...doc,
-                    metadata: newMetadata
-                }
-            })
-        }
-
-        if (omitMetadataKeys.length) {
-            docs = docs.map((doc) => {
-                omit(doc.metadata, omitMetadataKeys)
-                return doc
-            })
-        }
+        docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, metadata)
 
         return handleDocumentLoaderOutput(docs, output)
     }

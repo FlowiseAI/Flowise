@@ -9,9 +9,9 @@ export class UnstructuredOCRProvider implements IOCRProvider {
     private strategy: UnstructuredLoaderStrategy
     private ocrLanguages: string[]
 
-    constructor(credentialData: any, nodeData: any) {
+    constructor(options: OCRProviderOptions) {
         this.apiUrl = process.env.UNSTRUCTURED_API_URL || 'https://api.unstructuredapp.io/general/v0/general'
-        this.apiKey = getCredentialParam('unstructuredAPIKey', credentialData, nodeData)
+        this.apiKey = getCredentialParam('unstructuredAPIKey', options.credentialData, options.nodeData)
         this.strategy = 'ocr_only'
         this.ocrLanguages = []
     }

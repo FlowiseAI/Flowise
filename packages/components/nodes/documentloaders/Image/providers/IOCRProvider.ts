@@ -9,3 +9,5 @@ export interface OCRProviderOptions {
     nodeData: INodeData
 }
 
+export type OCRProviderConstructor = new (options: OCRProviderOptions) => IOCRProvider
+
