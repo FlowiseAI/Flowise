@@ -78,6 +78,8 @@ export class HuggingFaceInference extends LLM implements HFInput {
     async _call(prompt: string, options: this['ParsedCallOptions']): Promise<string> {
         const { HfInference } = await HuggingFaceInference.imports()
         const hf = new HfInference(this.apiKey)
+        // v4 uses Inference Providers by default; only override if custom endpoint provided
+        const hfClient = this.endpoint ? hf.endpoint(this.endpoint) : hf
         const obj: any = {
             parameters: {
                 // make it behave similar to openai, returning only the generated text
@@ -90,12 +92,10 @@ export class HuggingFaceInference extends LLM implements HFInput {
             },
             inputs: prompt
         }
-        if (this.endpoint) {
-            hf.endpoint(this.endpoint)
-        } else {
+        if (!this.endpoint) {
             obj.model = this.model
         }
-        const res = await this.caller.callWithOptions({ signal: options.signal }, hf.textGeneration.bind(hf), obj)
+        const res = await this.caller.callWithOptions({ signal: options.signal }, hfClient.textGeneration.bind(hfClient), obj)
         return res.generated_text
     }
 
