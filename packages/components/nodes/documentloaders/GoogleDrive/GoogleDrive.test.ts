@@ -1,6 +1,5 @@
-import { GoogleDrive_DocumentLoaders } from './GoogleDrive'
-import { getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src'
-import { INodeData, ICommonObject } from '../../../src/Interface'
+const { nodeClass: GoogleDrive_DocumentLoaders } = require('./GoogleDrive')
+import { INodeData } from '../../../src/Interface'
 
 jest.mock('../../../src', () => ({
     getCredentialData: jest.fn(),
@@ -27,12 +26,18 @@ jest.mock('googleapis', () => ({
     }
 }))
 
+const { getCredentialData, getCredentialParam, refreshOAuth2Token } = require('../../../src')
+
 function createNodeData(id: string, inputs: any, credential?: string): INodeData {
     return {
         id,
         name: 'googleDrive',
         type: 'Document',
         label: 'Google Drive',
+        icon: 'google-drive.svg',
+        version: 1.0,
+        category: 'Document Loaders',
+        baseClasses: ['Document'],
         inputs,
         credential: credential || '',
         outputs: {
@@ -42,7 +47,7 @@ function createNodeData(id: string, inputs: any, credential?: string): INodeData
 }
 
 describe('GoogleDrive', () => {
-    let nodeClass: GoogleDrive_DocumentLoaders
+    let nodeClass: any
 
     beforeEach(() => {
         nodeClass = new GoogleDrive_DocumentLoaders()
@@ -61,7 +66,7 @@ describe('GoogleDrive', () => {
         })
 
         it('should have sharedDriveId input field', () => {
-            const sharedDriveIdInput = nodeClass.inputs.find((input) => input.name === 'sharedDriveId')
+            const sharedDriveIdInput = nodeClass.inputs.find((input: any) => input.name === 'sharedDriveId')
             expect(sharedDriveIdInput).toBeDefined()
             expect(sharedDriveIdInput?.label).toBe('Shared Drive ID')
         })

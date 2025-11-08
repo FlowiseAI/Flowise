@@ -75,12 +75,12 @@ class GoogleDrive_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Folder ID',
-                name: 'folderId',
-                type: 'string',
+                label: 'Include Shared Drives',
+                name: 'includeSharedDrives',
+                type: 'boolean',
                 description:
-                    'Google Drive folder ID to load all files from (alternative to selecting specific files). Required when using service account credentials.',
-                placeholder: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
+                    'Whether to include files from shared drives (Team Drives) that you have access to. Automatically enabled and required when using service account credentials.',
+                default: false,
                 optional: true
             },
             {
@@ -89,6 +89,18 @@ class GoogleDrive_DocumentLoaders implements INode {
                 type: 'string',
                 description: 'Google Drive shared drive (Team Drive) ID. Required when using service account credentials.',
                 placeholder: '0AKxxxxxxxxxxxxxxxxx',
+                optional: true,
+                show: {
+                    includeSharedDrives: true
+                }
+            },
+            {
+                label: 'Folder ID',
+                name: 'folderId',
+                type: 'string',
+                description:
+                    'Google Drive folder ID to load all files from (alternative to selecting specific files). Required when using service account credentials.',
+                placeholder: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
                 optional: true
             },
             {
@@ -147,14 +159,6 @@ class GoogleDrive_DocumentLoaders implements INode {
                 name: 'includeSubfolders',
                 type: 'boolean',
                 description: 'Whether to include files from subfolders when loading from a folder',
-                default: false,
-                optional: true
-            },
-            {
-                label: 'Include Shared Drives',
-                name: 'includeSharedDrives',
-                type: 'boolean',
-                description: 'Whether to include files from shared drives (Team Drives) that you have access to',
                 default: false,
                 optional: true
             },
@@ -384,7 +388,7 @@ class GoogleDrive_DocumentLoaders implements INode {
         const sharedDriveId = nodeData.inputs?.sharedDriveId as string
         const fileTypes = nodeData.inputs?.fileTypes as string[]
         const includeSubfolders = nodeData.inputs?.includeSubfolders as boolean
-        const includeSharedDrives = nodeData.inputs?.includeSharedDrives as boolean
+        let includeSharedDrives = nodeData.inputs?.includeSharedDrives as boolean
         const maxFiles = (nodeData.inputs?.maxFiles as number) || 50
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
@@ -399,6 +403,11 @@ class GoogleDrive_DocumentLoaders implements INode {
         // Get credential data and determine auth method
         let credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const authMethod = await this.getAuthMethod(credentialData)
+
+        // For service account, automatically enable includeSharedDrives if not already set
+        if (authMethod === 'serviceAccount') {
+            includeSharedDrives = true
+        }
 
         // Validate required fields based on auth method
         if (authMethod === 'serviceAccount') {
