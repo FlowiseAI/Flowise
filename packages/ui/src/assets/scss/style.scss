@@ -208,6 +208,10 @@
     }
 }
 
+.react-flow__node-stickyNote {
+    z-index: -1 !important;
+}
+
 .spin-animation {
     animation: spin 1s linear infinite;
 }

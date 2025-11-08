@@ -1,6 +1,62 @@
 import { uniq, get, isEqual } from 'lodash'
 import moment from 'moment'
 
+export const DEFAULT_STICKY_NOTE_COLOR = '#FFE770'
+const DEFAULT_STICKY_NOTE_Z_INDEX = -1
+const DEFAULT_NODE_Z_INDEX = 1
+
+const isStickyNoteNode = (node) => {
+    if (!node) return false
+
+    const nodeName = node?.data?.name
+    return node.type === 'stickyNote' || nodeName === 'stickyNote' || nodeName === 'stickyNoteAgentflow'
+}
+
+export const normalizeStickyNoteNodes = (nodes = []) =>
+    nodes.map((node) => {
+        if (!node) return node
+
+        if (isStickyNoteNode(node)) {
+            const color = node?.data?.color || DEFAULT_STICKY_NOTE_COLOR
+            const currentZIndex = node?.style?.zIndex
+
+            const needsColorUpdate = node?.data?.color !== color
+            const needsZIndexUpdate = currentZIndex !== DEFAULT_STICKY_NOTE_Z_INDEX
+
+            if (!needsColorUpdate && !needsZIndexUpdate) {
+                return node
+            }
+
+            return {
+                ...node,
+                data: needsColorUpdate
+                    ? {
+                          ...node.data,
+                          color
+                      }
+                    : node.data,
+                style: needsZIndexUpdate
+                    ? {
+                          ...node.style,
+                          zIndex: DEFAULT_STICKY_NOTE_Z_INDEX
+                      }
+                    : node.style
+            }
+        }
+
+        if (node?.style?.zIndex == null) {
+            return {
+                ...node,
+                style: {
+                    ...node.style,
+                    zIndex: DEFAULT_NODE_Z_INDEX
+                }
+            }
+        }
+
+        return node
+    })
+
 export const getUniqueNodeId = (nodeData, nodes) => {
     let suffix = 0
 
@@ -222,6 +278,10 @@ export const initNode = (nodeData, newNodeId, isAgentflow) => {
     if (nodeData.credential) nodeData.credential = ''
 
     nodeData.id = newNodeId
+
+    if (nodeData.type === 'StickyNote') {
+        nodeData.color = nodeData.color || '#FFE770'
+    }
 
     return nodeData
 }
