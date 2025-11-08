@@ -17,6 +17,8 @@ import * as path from 'path'
 import * as os from 'os'
 import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
+// @ts-ignore
+import { google, drive_v3 } from 'googleapis'
 
 // Helper function to get human-readable MIME type labels
 const getMimeTypeLabel = (mimeType: string): string | undefined => {
@@ -59,8 +61,8 @@ class GoogleDrive_DocumentLoaders implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            description: 'Google Drive OAuth2 Credential',
-            credentialNames: ['googleDriveOAuth2']
+            description: 'Google Drive OAuth2 or Service Account Credential',
+            credentialNames: ['googleDriveOAuth2', 'googleVertexAuth']
         }
         this.inputs = [
             {
@@ -76,8 +78,17 @@ class GoogleDrive_DocumentLoaders implements INode {
                 label: 'Folder ID',
                 name: 'folderId',
                 type: 'string',
-                description: 'Google Drive folder ID to load all files from (alternative to selecting specific files)',
+                description:
+                    'Google Drive folder ID to load all files from (alternative to selecting specific files). Required when using service account credentials.',
                 placeholder: '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms',
+                optional: true
+            },
+            {
+                label: 'Shared Drive ID',
+                name: 'sharedDriveId',
+                type: 'string',
+                description: 'Google Drive shared drive (Team Drive) ID. Required when using service account credentials.',
+                placeholder: '0AKxxxxxxxxxxxxxxxxx',
                 optional: true
             },
             {
@@ -197,6 +208,59 @@ class GoogleDrive_DocumentLoaders implements INode {
         ]
     }
 
+    private async getAuthMethod(credentialData: ICommonObject): Promise<'oauth2' | 'serviceAccount'> {
+        if (credentialData.access_token) {
+            return 'oauth2'
+        }
+        if (credentialData.googleApplicationCredential || credentialData.googleApplicationCredentialFilePath) {
+            return 'serviceAccount'
+        }
+        throw new Error(
+            'Unable to determine authentication method. Please ensure you have either OAuth2 credentials (access_token) or service account credentials (googleApplicationCredential or googleApplicationCredentialFilePath)'
+        )
+    }
+
+    private async getServiceAccountDriveClient(
+        credentialData: ICommonObject,
+        nodeData: INodeData | undefined = undefined
+    ): Promise<drive_v3.Drive> {
+        const googleApplicationCredentialFilePath = getCredentialParam(
+            'googleApplicationCredentialFilePath',
+            credentialData,
+            nodeData || ({} as INodeData)
+        )
+        const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData || ({} as INodeData))
+
+        if (!googleApplicationCredentialFilePath && !googleApplicationCredential) {
+            throw new Error('Please specify your Google Application Credential (either file path or JSON object)')
+        }
+
+        if (googleApplicationCredentialFilePath && googleApplicationCredential) {
+            throw new Error(
+                'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path or Google Credential JSON Object'
+            )
+        }
+
+        const authOptions: any = {}
+        if (googleApplicationCredentialFilePath && !googleApplicationCredential) {
+            authOptions.keyFile = googleApplicationCredentialFilePath
+        } else if (!googleApplicationCredentialFilePath && googleApplicationCredential) {
+            authOptions.credentials = JSON.parse(googleApplicationCredential)
+        }
+
+        const projectID = getCredentialParam('projectID', credentialData, nodeData || ({} as INodeData))
+        if (projectID) {
+            authOptions.projectId = projectID
+        }
+
+        const auth = new google.auth.GoogleAuth({
+            ...authOptions,
+            scopes: ['https://www.googleapis.com/auth/drive.readonly']
+        })
+
+        return google.drive({ version: 'v3', auth })
+    }
+
     //@ts-ignore
     loadMethods = {
         async listFiles(nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
@@ -204,17 +268,15 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             try {
                 let credentialData = await getCredentialData(nodeData.credential ?? '', options)
-                credentialData = await refreshOAuth2Token(nodeData.credential ?? '', credentialData, options)
-                const accessToken = getCredentialParam('access_token', credentialData, nodeData)
-
-                if (!accessToken) {
-                    return returnData
-                }
+                // @ts-ignore - accessing private method from loadMethods
+                const authMethod = await this.getAuthMethod(credentialData)
 
                 // Get file types from input to filter
                 const fileTypes = convertMultiOptionsToStringArray(nodeData.inputs?.fileTypes)
                 const includeSharedDrives = nodeData.inputs?.includeSharedDrives as boolean
                 const maxFiles = (nodeData.inputs?.maxFiles as number) || 100
+                const sharedDriveId = nodeData.inputs?.sharedDriveId as string
+                const folderId = nodeData.inputs?.folderId as string
 
                 let query = 'trashed = false'
 
@@ -224,33 +286,75 @@ class GoogleDrive_DocumentLoaders implements INode {
                     query += ` and (${mimeTypeQuery})`
                 }
 
-                const url = new URL('https://www.googleapis.com/drive/v3/files')
-                url.searchParams.append('q', query)
-                url.searchParams.append('pageSize', Math.min(maxFiles, 1000).toString())
-                url.searchParams.append('fields', 'files(id, name, mimeType, size, createdTime, modifiedTime, webViewLink, driveId)')
-                url.searchParams.append('orderBy', 'modifiedTime desc')
+                let files: any[] = []
 
-                // Add shared drives support if requested
-                if (includeSharedDrives) {
-                    url.searchParams.append('supportsAllDrives', 'true')
-                    url.searchParams.append('includeItemsFromAllDrives', 'true')
-                }
+                if (authMethod === 'oauth2') {
+                    // OAuth2 path
+                    credentialData = await refreshOAuth2Token(nodeData.credential ?? '', credentialData, options)
+                    const accessToken = getCredentialParam('access_token', credentialData, nodeData)
 
-                const response = await fetch(url.toString(), {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                        'Content-Type': 'application/json'
+                    if (!accessToken) {
+                        return returnData
                     }
-                })
 
-                if (!response.ok) {
-                    console.error(`Failed to list files: ${response.statusText}`)
-                    return returnData
+                    const url = new URL('https://www.googleapis.com/drive/v3/files')
+                    url.searchParams.append('q', query)
+                    url.searchParams.append('pageSize', Math.min(maxFiles, 1000).toString())
+                    url.searchParams.append('fields', 'files(id, name, mimeType, size, createdTime, modifiedTime, webViewLink, driveId)')
+                    url.searchParams.append('orderBy', 'modifiedTime desc')
+
+                    // Add shared drives support if requested
+                    if (includeSharedDrives) {
+                        url.searchParams.append('supportsAllDrives', 'true')
+                        url.searchParams.append('includeItemsFromAllDrives', 'true')
+                    }
+
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+
+                    if (!response.ok) {
+                        console.error(`Failed to list files: ${response.statusText}`)
+                        return returnData
+                    }
+
+                    const data = await response.json()
+                    files = data.files || []
+                } else {
+                    // Service account path
+                    if (!sharedDriveId || !folderId) {
+                        console.error('Shared Drive ID and Folder ID are required when using service account credentials')
+                        return returnData
+                    }
+
+                    // @ts-ignore - accessing private method from loadMethods
+                    const drive = await this.getServiceAccountDriveClient(credentialData, nodeData)
+
+                    // For service account, we list files from the specified folder in the shared drive
+                    query = `'${folderId}' in parents and trashed = false`
+                    if (fileTypes && fileTypes.length > 0) {
+                        const mimeTypeQuery = fileTypes.map((type) => `mimeType='${type}'`).join(' or ')
+                        query += ` and (${mimeTypeQuery})`
+                    }
+
+                    const response = await drive.files.list({
+                        corpora: 'drive',
+                        driveId: sharedDriveId,
+                        includeItemsFromAllDrives: true,
+                        supportsAllDrives: true,
+                        q: query,
+                        pageSize: Math.min(maxFiles, 1000),
+                        fields: 'files(id, name, mimeType, size, createdTime, modifiedTime, webViewLink, driveId)',
+                        orderBy: 'modifiedTime desc'
+                    })
+
+                    files = response.data.files || []
                 }
 
-                const data = await response.json()
-
-                for (const file of data.files) {
+                for (const file of files) {
                     const mimeTypeLabel = getMimeTypeLabel(file.mimeType)
                     if (!mimeTypeLabel) {
                         continue
@@ -277,6 +381,7 @@ class GoogleDrive_DocumentLoaders implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const selectedFiles = nodeData.inputs?.selectedFiles as string
         const folderId = nodeData.inputs?.folderId as string
+        const sharedDriveId = nodeData.inputs?.sharedDriveId as string
         const fileTypes = nodeData.inputs?.fileTypes as string[]
         const includeSubfolders = nodeData.inputs?.includeSubfolders as boolean
         const includeSharedDrives = nodeData.inputs?.includeSharedDrives as boolean
@@ -291,16 +396,37 @@ class GoogleDrive_DocumentLoaders implements INode {
             omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
         }
 
-        if (!selectedFiles && !folderId) {
-            throw new Error('Either selected files or Folder ID is required')
+        // Get credential data and determine auth method
+        let credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const authMethod = await this.getAuthMethod(credentialData)
+
+        // Validate required fields based on auth method
+        if (authMethod === 'serviceAccount') {
+            if (!sharedDriveId) {
+                throw new Error('Shared Drive ID is required when using service account credentials')
+            }
+            if (!folderId) {
+                throw new Error('Folder ID is required when using service account credentials')
+            }
+        } else {
+            // OAuth2 validation
+            if (!selectedFiles && !folderId) {
+                throw new Error('Either selected files or Folder ID is required')
+            }
         }
 
-        let credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        credentialData = await refreshOAuth2Token(nodeData.credential ?? '', credentialData, options)
-        const accessToken = getCredentialParam('access_token', credentialData, nodeData)
+        // Get authentication based on method
+        let accessToken: string | undefined
+        let driveClient: drive_v3.Drive | undefined
 
-        if (!accessToken) {
-            throw new Error('No access token found in credential')
+        if (authMethod === 'oauth2') {
+            credentialData = await refreshOAuth2Token(nodeData.credential ?? '', credentialData, options)
+            accessToken = getCredentialParam('access_token', credentialData, nodeData)
+            if (!accessToken) {
+                throw new Error('No access token found in credential')
+            }
+        } else {
+            driveClient = await this.getServiceAccountDriveClient(credentialData, nodeData)
         }
 
         let docs: IDocument[] = []
@@ -308,8 +434,8 @@ class GoogleDrive_DocumentLoaders implements INode {
         try {
             let filesToProcess: any[] = []
 
-            if (selectedFiles) {
-                // Load selected files (selectedFiles can be a single ID or comma-separated IDs)
+            if (selectedFiles && authMethod === 'oauth2') {
+                // Load selected files (OAuth2 only - selectedFiles not supported for service account)
                 let ids: string[] = []
                 if (typeof selectedFiles === 'string' && selectedFiles.startsWith('[') && selectedFiles.endsWith(']')) {
                     ids = convertMultiOptionsToStringArray(selectedFiles)
@@ -319,7 +445,7 @@ class GoogleDrive_DocumentLoaders implements INode {
                     ids = selectedFiles
                 }
                 for (const id of ids) {
-                    const fileInfo = await this.getFileInfo(id, accessToken, includeSharedDrives)
+                    const fileInfo = await this.getFileInfo(id, accessToken!, includeSharedDrives, authMethod, driveClient)
                     if (fileInfo && this.shouldProcessFile(fileInfo, fileTypes)) {
                         filesToProcess.push(fileInfo)
                     }
@@ -332,14 +458,17 @@ class GoogleDrive_DocumentLoaders implements INode {
                     fileTypes,
                     includeSubfolders,
                     includeSharedDrives,
-                    maxFiles
+                    maxFiles,
+                    authMethod,
+                    driveClient,
+                    sharedDriveId
                 )
             }
 
             // Process each file
             for (const fileInfo of filesToProcess) {
                 try {
-                    const doc = await this.processFile(fileInfo, accessToken)
+                    const doc = await this.processFile(fileInfo, accessToken, authMethod, driveClient)
                     if (doc.length > 0) {
                         docs.push(...doc)
                     }
@@ -400,44 +529,77 @@ class GoogleDrive_DocumentLoaders implements INode {
         }
     }
 
-    private async getFileInfo(fileId: string, accessToken: string, includeSharedDrives: boolean): Promise<any> {
-        const url = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`)
-        url.searchParams.append('fields', 'id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId')
+    private async getFileInfo(
+        fileId: string,
+        accessToken: string | undefined,
+        includeSharedDrives: boolean,
+        authMethod: 'oauth2' | 'serviceAccount',
+        driveClient?: drive_v3.Drive
+    ): Promise<any> {
+        if (authMethod === 'oauth2' && accessToken) {
+            const url = new URL(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`)
+            url.searchParams.append('fields', 'id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId')
 
-        // Add shared drives support if requested
-        if (includeSharedDrives) {
-            url.searchParams.append('supportsAllDrives', 'true')
-        }
-
-        const response = await fetch(url.toString(), {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json'
+            // Add shared drives support if requested
+            if (includeSharedDrives) {
+                url.searchParams.append('supportsAllDrives', 'true')
             }
-        })
 
-        if (!response.ok) {
-            throw new Error(`Failed to get file info: ${response.statusText}`)
-        }
+            const response = await fetch(url.toString(), {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            })
 
-        const fileInfo = await response.json()
+            if (!response.ok) {
+                throw new Error(`Failed to get file info: ${response.statusText}`)
+            }
 
-        // Add drive context to description
-        const driveContext = fileInfo.driveId ? ' (Shared Drive)' : ' (My Drive)'
+            const fileInfo = await response.json()
 
-        return {
-            ...fileInfo,
-            driveContext
+            // Add drive context to description
+            const driveContext = fileInfo.driveId ? ' (Shared Drive)' : ' (My Drive)'
+
+            return {
+                ...fileInfo,
+                driveContext
+            }
+        } else if (authMethod === 'serviceAccount' && driveClient) {
+            const response = await driveClient.files.get({
+                fileId: fileId,
+                supportsAllDrives: true,
+                fields: 'id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId'
+            })
+
+            if (!response.data) {
+                throw new Error('Failed to get file info: No data returned')
+            }
+
+            const fileInfo = response.data
+
+            // Add drive context to description
+            const driveContext = fileInfo.driveId ? ' (Shared Drive)' : ' (My Drive)'
+
+            return {
+                ...fileInfo,
+                driveContext
+            }
+        } else {
+            throw new Error('Invalid authentication method or missing credentials')
         }
     }
 
     private async getFilesFromFolder(
         folderId: string,
-        accessToken: string,
+        accessToken: string | undefined,
         fileTypes: string[] | undefined,
         includeSubfolders: boolean,
         includeSharedDrives: boolean,
-        maxFiles: number
+        maxFiles: number,
+        authMethod: 'oauth2' | 'serviceAccount',
+        driveClient?: drive_v3.Drive,
+        sharedDriveId?: string
     ): Promise<any[]> {
         const files: any[] = []
         let nextPageToken: string | undefined
@@ -451,39 +613,61 @@ class GoogleDrive_DocumentLoaders implements INode {
                 query += ` and (${mimeTypeQuery})`
             }
 
-            const url = new URL('https://www.googleapis.com/drive/v3/files')
-            url.searchParams.append('q', query)
-            url.searchParams.append('pageSize', Math.min(maxFiles - files.length, 1000).toString())
-            url.searchParams.append(
-                'fields',
-                'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId)'
-            )
+            let data: any
 
-            // Add shared drives support if requested
-            if (includeSharedDrives) {
-                url.searchParams.append('supportsAllDrives', 'true')
-                url.searchParams.append('includeItemsFromAllDrives', 'true')
-            }
+            if (authMethod === 'oauth2' && accessToken) {
+                const url = new URL('https://www.googleapis.com/drive/v3/files')
+                url.searchParams.append('q', query)
+                url.searchParams.append('pageSize', Math.min(maxFiles - files.length, 1000).toString())
+                url.searchParams.append(
+                    'fields',
+                    'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId)'
+                )
 
-            if (nextPageToken) {
-                url.searchParams.append('pageToken', nextPageToken)
-            }
-
-            const response = await fetch(url.toString(), {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
+                // Add shared drives support if requested
+                if (includeSharedDrives) {
+                    url.searchParams.append('supportsAllDrives', 'true')
+                    url.searchParams.append('includeItemsFromAllDrives', 'true')
                 }
-            })
 
-            if (!response.ok) {
-                throw new Error(`Failed to list files: ${response.statusText}`)
+                if (nextPageToken) {
+                    url.searchParams.append('pageToken', nextPageToken)
+                }
+
+                const response = await fetch(url.toString(), {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+
+                if (!response.ok) {
+                    throw new Error(`Failed to list files: ${response.statusText}`)
+                }
+
+                data = await response.json()
+            } else if (authMethod === 'serviceAccount' && driveClient && sharedDriveId) {
+                const response = await driveClient.files.list({
+                    corpora: 'drive',
+                    driveId: sharedDriveId,
+                    includeItemsFromAllDrives: true,
+                    supportsAllDrives: true,
+                    q: query,
+                    pageSize: Math.min(maxFiles - files.length, 1000),
+                    pageToken: nextPageToken,
+                    fields: 'nextPageToken, files(id, name, mimeType, size, createdTime, modifiedTime, parents, webViewLink, driveId)'
+                })
+
+                data = {
+                    files: response.data.files || [],
+                    nextPageToken: response.data.nextPageToken
+                }
+            } else {
+                throw new Error('Invalid authentication method or missing credentials')
             }
-
-            const data = await response.json()
 
             // Add drive context to each file
-            const filesWithContext = data.files.map((file: any) => ({
+            const filesWithContext = (data.files || []).map((file: any) => ({
                 ...file,
                 driveContext: file.driveId ? ' (Shared Drive)' : ' (My Drive)'
             }))
@@ -493,7 +677,7 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             // If includeSubfolders is true, also get files from subfolders
             if (includeSubfolders) {
-                for (const file of data.files) {
+                for (const file of data.files || []) {
                     if (file.mimeType === 'application/vnd.google-apps.folder') {
                         const subfolderFiles = await this.getFilesFromFolder(
                             file.id,
@@ -501,7 +685,10 @@ class GoogleDrive_DocumentLoaders implements INode {
                             fileTypes,
                             includeSubfolders,
                             includeSharedDrives,
-                            maxFiles - files.length
+                            maxFiles - files.length,
+                            authMethod,
+                            driveClient,
+                            sharedDriveId
                         )
                         files.push(...subfolderFiles)
                     }
@@ -519,14 +706,19 @@ class GoogleDrive_DocumentLoaders implements INode {
         return fileTypes.includes(fileInfo.mimeType)
     }
 
-    private async processFile(fileInfo: any, accessToken: string): Promise<IDocument[]> {
+    private async processFile(
+        fileInfo: any,
+        accessToken: string | undefined,
+        authMethod: 'oauth2' | 'serviceAccount',
+        driveClient?: drive_v3.Drive
+    ): Promise<IDocument[]> {
         let content = ''
 
         try {
             // Handle different file types
             if (this.isTextBasedFile(fileInfo.mimeType)) {
                 // Download regular text files
-                content = await this.downloadFile(fileInfo.id, accessToken)
+                content = await this.downloadFile(fileInfo.id, accessToken, authMethod, driveClient)
 
                 // Create document with metadata
                 return [
@@ -548,7 +740,7 @@ class GoogleDrive_DocumentLoaders implements INode {
                 ]
             } else if (this.isSupportedBinaryFile(fileInfo.mimeType) || this.isGoogleWorkspaceFile(fileInfo.mimeType)) {
                 // Process binary files and Google Workspace files using loaders
-                return await this.processBinaryFile(fileInfo, accessToken)
+                return await this.processBinaryFile(fileInfo, accessToken, authMethod, driveClient)
             } else {
                 console.warn(`Unsupported file type ${fileInfo.mimeType} for file ${fileInfo.name}`)
                 return []
@@ -571,7 +763,12 @@ class GoogleDrive_DocumentLoaders implements INode {
         return supportedBinaryTypes.includes(mimeType)
     }
 
-    private async processBinaryFile(fileInfo: any, accessToken: string): Promise<IDocument[]> {
+    private async processBinaryFile(
+        fileInfo: any,
+        accessToken: string | undefined,
+        authMethod: 'oauth2' | 'serviceAccount',
+        driveClient?: drive_v3.Drive
+    ): Promise<IDocument[]> {
         let tempFilePath: string | null = null
 
         try {
@@ -581,13 +778,19 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             if (this.isGoogleWorkspaceFile(fileInfo.mimeType)) {
                 // Handle Google Workspace files by exporting to appropriate format
-                const exportResult = await this.exportGoogleWorkspaceFileAsBuffer(fileInfo.id, fileInfo.mimeType, accessToken)
+                const exportResult = await this.exportGoogleWorkspaceFileAsBuffer(
+                    fileInfo.id,
+                    fileInfo.mimeType,
+                    accessToken,
+                    authMethod,
+                    driveClient
+                )
                 buffer = exportResult.buffer
                 processedMimeType = exportResult.mimeType
                 processedFileName = exportResult.fileName
             } else {
                 // Handle regular binary files
-                buffer = await this.downloadBinaryFile(fileInfo.id, accessToken)
+                buffer = await this.downloadBinaryFile(fileInfo.id, accessToken, authMethod, driveClient)
                 processedMimeType = fileInfo.mimeType
                 processedFileName = fileInfo.name
             }
@@ -699,47 +902,109 @@ class GoogleDrive_DocumentLoaders implements INode {
         const tempFileName = `gdrive_${Date.now()}_${Math.random().toString(36).substring(7)}${extension}`
         const tempFilePath = path.join(tempDir, tempFileName)
 
-        fs.writeFileSync(tempFilePath, buffer)
+        fs.writeFileSync(tempFilePath, buffer as any)
         return tempFilePath
     }
 
-    private async downloadBinaryFile(fileId: string, accessToken: string): Promise<Buffer> {
-        const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`
+    private async downloadBinaryFile(
+        fileId: string,
+        accessToken: string | undefined,
+        authMethod: 'oauth2' | 'serviceAccount',
+        driveClient?: drive_v3.Drive
+    ): Promise<Buffer> {
+        if (authMethod === 'oauth2' && accessToken) {
+            const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`
 
-        const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+
+            if (!response.ok) {
+                throw new Error(`Failed to download file: ${response.statusText}`)
             }
-        })
 
-        if (!response.ok) {
-            throw new Error(`Failed to download file: ${response.statusText}`)
+            const arrayBuffer = await response.arrayBuffer()
+            return Buffer.from(arrayBuffer)
+        } else if (authMethod === 'serviceAccount' && driveClient) {
+            const response = await driveClient.files.get(
+                {
+                    fileId: fileId,
+                    alt: 'media',
+                    supportsAllDrives: true
+                },
+                {
+                    responseType: 'stream'
+                }
+            )
+
+            return new Promise<Buffer>((resolve, reject) => {
+                const chunks: Buffer[] = []
+                response.data.on('data', (chunk: Buffer) => chunks.push(chunk))
+                response.data.on('end', () => resolve(Buffer.concat(chunks as any)))
+                response.data.on('error', reject)
+            })
+        } else {
+            throw new Error('Invalid authentication method or missing credentials')
         }
-
-        const arrayBuffer = await response.arrayBuffer()
-        return Buffer.from(arrayBuffer)
     }
 
-    private async downloadFile(fileId: string, accessToken: string): Promise<string> {
-        const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`
+    private async downloadFile(
+        fileId: string,
+        accessToken: string | undefined,
+        authMethod: 'oauth2' | 'serviceAccount',
+        driveClient?: drive_v3.Drive
+    ): Promise<string> {
+        if (authMethod === 'oauth2' && accessToken) {
+            const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`
 
-        const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+
+            if (!response.ok) {
+                throw new Error(`Failed to download file: ${response.statusText}`)
             }
-        })
 
-        if (!response.ok) {
-            throw new Error(`Failed to download file: ${response.statusText}`)
+            // Only call response.text() for text-based files
+            const contentType = response.headers.get('content-type') || ''
+            if (!contentType.startsWith('text/') && !contentType.includes('json') && !contentType.includes('xml')) {
+                throw new Error(`Cannot process binary file with content-type: ${contentType}`)
+            }
+
+            return await response.text()
+        } else if (authMethod === 'serviceAccount' && driveClient) {
+            const response = await driveClient.files.get(
+                {
+                    fileId: fileId,
+                    alt: 'media',
+                    supportsAllDrives: true
+                },
+                {
+                    responseType: 'stream'
+                }
+            )
+
+            return new Promise<string>((resolve, reject) => {
+                const chunks: Buffer[] = []
+                response.data.on('data', (chunk: Buffer) => chunks.push(chunk))
+                response.data.on('end', () => {
+                    const buffer = Buffer.concat(chunks as any)
+                    const contentType = response.headers['content-type'] || ''
+                    if (!contentType.startsWith('text/') && !contentType.includes('json') && !contentType.includes('xml')) {
+                        reject(new Error(`Cannot process binary file with content-type: ${contentType}`))
+                        return
+                    }
+                    resolve(buffer.toString('utf-8'))
+                })
+                response.data.on('error', reject)
+            })
+        } else {
+            throw new Error('Invalid authentication method or missing credentials')
         }
-
-        // Only call response.text() for text-based files
-        const contentType = response.headers.get('content-type') || ''
-        if (!contentType.startsWith('text/') && !contentType.includes('json') && !contentType.includes('xml')) {
-            throw new Error(`Cannot process binary file with content-type: ${contentType}`)
-        }
-
-        return await response.text()
     }
 
     private isGoogleWorkspaceFile(mimeType: string): boolean {
@@ -771,7 +1036,9 @@ class GoogleDrive_DocumentLoaders implements INode {
     private async exportGoogleWorkspaceFileAsBuffer(
         fileId: string,
         mimeType: string,
-        accessToken: string
+        accessToken: string | undefined,
+        authMethod: 'oauth2' | 'serviceAccount',
+        driveClient?: drive_v3.Drive
     ): Promise<{ buffer: Buffer; mimeType: string; fileName: string }> {
         // Automatic mapping of Google Workspace MIME types to export formats
         let exportMimeType: string
@@ -801,27 +1068,54 @@ class GoogleDrive_DocumentLoaders implements INode {
                 break
         }
 
-        const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/export?mimeType=${encodeURIComponent(
-            exportMimeType
-        )}`
+        if (authMethod === 'oauth2' && accessToken) {
+            const url = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}/export?mimeType=${encodeURIComponent(
+                exportMimeType
+            )}`
 
-        const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
+
+            if (!response.ok) {
+                throw new Error(`Failed to export file: ${response.statusText}`)
             }
-        })
 
-        if (!response.ok) {
-            throw new Error(`Failed to export file: ${response.statusText}`)
-        }
+            const arrayBuffer = await response.arrayBuffer()
+            const buffer = Buffer.from(arrayBuffer)
 
-        const arrayBuffer = await response.arrayBuffer()
-        const buffer = Buffer.from(arrayBuffer)
+            return {
+                buffer,
+                mimeType: exportMimeType,
+                fileName: `exported_file${fileExtension}`
+            }
+        } else if (authMethod === 'serviceAccount' && driveClient) {
+            const response = await driveClient.files.export(
+                {
+                    fileId: fileId,
+                    mimeType: exportMimeType
+                },
+                {
+                    responseType: 'stream'
+                }
+            )
 
-        return {
-            buffer,
-            mimeType: exportMimeType,
-            fileName: `exported_file${fileExtension}`
+            return new Promise<{ buffer: Buffer; mimeType: string; fileName: string }>((resolve, reject) => {
+                const chunks: Buffer[] = []
+                response.data.on('data', (chunk: Buffer) => chunks.push(chunk))
+                response.data.on('end', () => {
+                    resolve({
+                        buffer: Buffer.concat(chunks as any),
+                        mimeType: exportMimeType,
+                        fileName: `exported_file${fileExtension}`
+                    })
+                })
+                response.data.on('error', reject)
+            })
+        } else {
+            throw new Error('Invalid authentication method or missing credentials')
         }
     }
 }
