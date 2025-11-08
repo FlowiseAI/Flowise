@@ -272,6 +272,12 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             try {
                 let credentialData = await getCredentialData(nodeData.credential ?? '', options)
+
+                // If no credential is selected or credential data is empty, return empty list gracefully
+                if (!nodeData.credential || Object.keys(credentialData).length === 0) {
+                    return returnData
+                }
+
                 // @ts-ignore - accessing private method from loadMethods
                 const authMethod = await this.getAuthMethod(credentialData)
 
