@@ -10,6 +10,7 @@ const VerifyEmailPage = Loadable(lazy(() => import('@/views/auth/verify-email'))
 const ForgotPasswordPage = Loadable(lazy(() => import('@/views/auth/forgotPassword')))
 const ResetPasswordPage = Loadable(lazy(() => import('@/views/auth/resetPassword')))
 const UnauthorizedPage = Loadable(lazy(() => import('@/views/auth/unauthorized')))
+const RateLimitedPage = Loadable(lazy(() => import('@/views/auth/rateLimited')))
 const OrganizationSetupPage = Loadable(lazy(() => import('@/views/organization/index')))
 const LicenseExpiredPage = Loadable(lazy(() => import('@/views/auth/expired')))
 
@@ -44,6 +45,10 @@ const AuthRoutes = {
         {
             path: '/unauthorized',
             element: <UnauthorizedPage />
+        },
+        {
+            path: '/rate-limited',
+            element: <RateLimitedPage />
         },
         {
             path: '/organization-setup',
