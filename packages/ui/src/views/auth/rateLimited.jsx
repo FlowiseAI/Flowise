@@ -1,5 +1,5 @@
-import { Box, Stack, Typography } from '@mui/material'
-import { useLocation } from 'react-router-dom'
+import { Box, Button, Stack, Typography } from '@mui/material'
+import { Link, useLocation } from 'react-router-dom'
 import unauthorizedSVG from '@/assets/images/unauthorized.svg'
 import MainCard from '@/ui-component/cards/MainCard'
 
@@ -37,6 +37,11 @@ const RateLimitedPage = () => {
                     <Typography variant='body1' component='div' sx={{ mb: 2, textAlign: 'center' }}>
                         {`You have made too many requests in a short period of time. Please wait ${retryAfter}s before trying again.`}
                     </Typography>
+                    <Link to='/'>
+                        <Button variant='contained' color='primary'>
+                            Back to Home
+                        </Button>
+                    </Link>
                 </Stack>
             </Box>
         </MainCard>
