@@ -11,6 +11,13 @@
                     "output_cost": 0.000015
                 },
                 {
+                    "label": "anthropic.claude-haiku-4-5-20251001-v1:0",
+                    "name": "anthropic.claude-haiku-4-5-20251001-v1:0",
+                    "description": "Claude 4.5 Haiku",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000005
+                },
+                {
                     "label": "openai.gpt-oss-20b-1:0",
                     "name": "openai.gpt-oss-20b-1:0",
                     "description": "21B parameters model optimized for lower latency, local, and specialized use cases",
@@ -500,6 +507,13 @@
                     "output_cost": 0.000015
                 },
                 {
+                    "label": "claude-haiku-4-5",
+                    "name": "claude-haiku-4-5",
+                    "description": "Claude 4.5 Haiku",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000005
+                },
+                {
                     "label": "claude-sonnet-4-0",
                     "name": "claude-sonnet-4-0",
                     "description": "Claude 4 Sonnet",
@@ -743,6 +757,13 @@
                     "description": "Claude 4.5 Sonnet",
                     "input_cost": 0.000003,
                     "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-haiku-4-5@20251001",
+                    "name": "claude-haiku-4-5@20251001",
+                    "description": "Claude 4.5 Haiku",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000005
                 },
                 {
                     "label": "claude-opus-4-1@20250805",

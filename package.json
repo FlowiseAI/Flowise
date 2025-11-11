@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "3.0.7",
+    "version": "10",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [

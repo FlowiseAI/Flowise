@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "3.0.7",
+    "version": "3.0.10",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -43,7 +43,7 @@
         "@google-cloud/storage": "^7.15.2",
         "@google/generative-ai": "^0.24.0",
         "@huggingface/inference": "^2.6.1",
-        "@langchain/anthropic": "0.3.29",
+        "@langchain/anthropic": "0.3.33",
         "@langchain/aws": "^0.1.11",
         "@langchain/baidu-qianfan": "^0.1.0",
         "@langchain/cohere": "^0.0.7",
