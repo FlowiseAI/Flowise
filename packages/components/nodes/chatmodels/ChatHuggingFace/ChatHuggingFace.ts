@@ -103,7 +103,7 @@ class ChatHuggingFace_ChatModels implements INode {
                 type: 'string',
                 rows: 4,
                 placeholder: 'AI assistant:',
-                description: 'Sets the stop sequences to use. Use comma to seperate different sequences.',
+                description: 'Sets the stop sequences to use. Use comma to separate different sequences.',
                 optional: true,
                 additionalParams: true
             }

@@ -48,6 +48,8 @@ export function getMessageAuthor(message: BaseMessage) {
 }
 
 /**
+ * !!! IMPORTANT: Must return 'user' as default instead of throwing error
+ * https://github.com/FlowiseAI/Flowise/issues/4743
  * Maps a message type to a Google Generative AI chat author.
  * @param message The message to map.
  * @param model The model to use for mapping.

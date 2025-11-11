@@ -834,7 +834,8 @@ export const getGlobalVariable = async (
                     value: overrideConfig.vars[propertyName],
                     id: '',
                     updatedDate: new Date(),
-                    createdDate: new Date()
+                    createdDate: new Date(),
+                    workspaceId: ''
                 })
             }
         }
@@ -1016,7 +1017,7 @@ export const getVariableValue = async (
 }
 
 /**
- * Loop through each inputs and resolve variable if neccessary
+ * Loop through each inputs and resolve variable if necessary
  * @param {INodeData} reactFlowNodeData
  * @param {IReactFlowNode[]} reactFlowNodes
  * @param {string} question

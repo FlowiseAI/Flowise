@@ -489,6 +489,14 @@ export const resolveVariables = async (
                 return
             }
 
+            // Handle arrays of config objects
+            if (Array.isArray(configObj)) {
+                for (const item of configObj) {
+                    await processConfigParams(item, configParamWithAcceptVariables)
+                }
+                return
+            }
+
             for (const [key, value] of Object.entries(configObj)) {
                 // Only resolve variables for parameters that accept them
                 // Example: requestsGetHeaders is in configParamWithAcceptVariables, so resolve "Bearer {{ $vars.TOKEN }}"
@@ -528,12 +536,44 @@ export const resolveVariables = async (
                 // STEP 5: Look for the config object (paramName + "Config")
                 // Example: Look for "agentSelectedToolConfig" in the inputs
                 const configParamName = paramWithLoadConfig + 'Config'
-                const configValue = findParamValue(paramsObj, configParamName)
 
-                // STEP 6: Process config object to resolve variables
+                // Find all config values (handle arrays)
+                const findAllConfigValues = (obj: any, paramName: string): any[] => {
+                    const results: any[] = []
+
+                    if (typeof obj !== 'object' || obj === null) {
+                        return results
+                    }
+
+                    // Handle arrays (e.g., agentTools array)
+                    if (Array.isArray(obj)) {
+                        for (const item of obj) {
+                            results.push(...findAllConfigValues(item, paramName))
+                        }
+                        return results
+                    }
+
+                    // Direct property match
+                    if (Object.prototype.hasOwnProperty.call(obj, paramName)) {
+                        results.push(obj[paramName])
+                    }
+
+                    // Recursively search nested objects
+                    for (const value of Object.values(obj)) {
+                        results.push(...findAllConfigValues(value, paramName))
+                    }
+
+                    return results
+                }
+
+                const configValues = findAllConfigValues(paramsObj, configParamName)
+
+                // STEP 6: Process all config objects to resolve variables
                 // Example: Resolve "Bearer {{ $vars.TOKEN }}" in requestsGetHeaders
-                if (configValue && configParamWithAcceptVariables.length > 0) {
-                    await processConfigParams(configValue, configParamWithAcceptVariables)
+                if (configValues.length > 0 && configParamWithAcceptVariables.length > 0) {
+                    for (const configValue of configValues) {
+                        await processConfigParams(configValue, configParamWithAcceptVariables)
+                    }
                 }
             }
         }
@@ -1195,7 +1235,8 @@ const executeNode = async ({
                         index: i,
                         value: item,
                         isFirst: i === 0,
-                        isLast: i === results.input.iterationInput.length - 1
+                        isLast: i === results.input.iterationInput.length - 1,
+                        sessionId: sessionId
                     }
 
                     try {
@@ -1463,7 +1504,7 @@ export const executeAgentFlow = async ({
     const uploads = incomingInput.uploads
     const userMessageDateTime = new Date()
     const chatflowid = chatflow.id
-    const sessionId = overrideConfig.sessionId || chatId
+    const sessionId = iterationContext?.sessionId || overrideConfig.sessionId || chatId
     const humanInput: IHumanInput | undefined = incomingInput.humanInput
 
     // Validate history schema if provided
@@ -1615,7 +1656,8 @@ export const executeAgentFlow = async ({
     }
 
     // If it is human input, find the last checkpoint and resume
-    if (humanInput) {
+    // Skip human input resumption for recursive iteration calls - they should start fresh
+    if (humanInput && !(isRecursive && iterationContext)) {
         if (!previousExecution) {
             throw new Error(`No previous execution found for session ${sessionId}`)
         }
@@ -1726,7 +1768,7 @@ export const executeAgentFlow = async ({
         })
 
         if (parentExecution) {
-            logger.debug(`   📝 Using parent execution ID: ${parentExecutionId} for recursive call`)
+            logger.debug(`   📝 Using parent execution ID: ${parentExecutionId} for recursive call (iteration: ${!!iterationContext})`)
             newExecution = parentExecution
         } else {
             console.warn(`   ⚠️ Parent execution ID ${parentExecutionId} not found, will create new execution`)
@@ -1820,6 +1862,11 @@ export const executeAgentFlow = async ({
 
     let iterations = 0
     let currentHumanInput = humanInput
+
+    // For iteration calls, clear human input since they should start fresh
+    if (isRecursive && iterationContext && humanInput) {
+        currentHumanInput = undefined
+    }
 
     let analyticHandlers: AnalyticHandler | undefined
     let parentTraceIds: ICommonObject | undefined

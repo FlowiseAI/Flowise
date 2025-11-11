@@ -6,7 +6,7 @@ import { Document } from '@langchain/core/documents'
 import { QdrantVectorStore, QdrantLibArgs } from '@langchain/qdrant'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { index } from '../../../src/indexing'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 
@@ -77,7 +77,8 @@ class Qdrant_VectorStores implements INode {
             {
                 label: 'Qdrant Collection Name',
                 name: 'qdrantCollection',
-                type: 'string'
+                type: 'string',
+                acceptVariable: true
             },
             {
                 label: 'File Upload',
@@ -439,7 +440,7 @@ class Qdrant_VectorStores implements INode {
             qdrantCollectionConfiguration =
                 typeof qdrantCollectionConfiguration === 'object'
                     ? qdrantCollectionConfiguration
-                    : JSON.parse(qdrantCollectionConfiguration)
+                    : parseJsonBody(qdrantCollectionConfiguration)
             dbConfig.collectionConfig = {
                 ...qdrantCollectionConfiguration,
                 vectors: {
@@ -451,7 +452,7 @@ class Qdrant_VectorStores implements INode {
         }
 
         if (queryFilter) {
-            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter)
+            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : parseJsonBody(queryFilter)
         }
         if (isFileUploadEnabled && options.chatId) {
             retrieverConfig.filter = retrieverConfig.filter || {}
