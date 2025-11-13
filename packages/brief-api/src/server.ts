@@ -21,7 +21,7 @@ const ROOT = path.resolve(__dirname, '..', '..'); // Projektdach
 dotenv.config({ path: path.join(ROOT, '.env') });
 
 const app = express();
-const PORT = process.env.PORT ? Number(process.env.PORT) : 4000;
+const API_PORT = Number(process.env.BRIEF_API_PORT ?? 4000);
 
 // Middleware
 app.use(cors());
@@ -139,6 +139,8 @@ app.post('/api/interviews/:interviewId/answers', async (req, res) => {
 });
 
 // Server starten
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Brief-API läuft auf Port ${PORT}`);
+app.listen(API_PORT, () => {
+  console.log(
+    `Check: Brief-API läuft auf Port ${API_PORT} (BRIEF_API_PORT=${process.env.BRIEF_API_PORT})`
+  );
 });
