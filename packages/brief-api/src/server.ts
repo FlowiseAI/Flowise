@@ -4,10 +4,15 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
 
-// Unsere bestehenden Funktionen aus dem brief-parser-Paket:
-import { startInterviewsForUser } from '@datareus/brief-parser/src/start_interview_user';
-import { loadInterviewContext } from '@datareus/brief-parser/src/interview_context';
-import { saveAnswer } from '@datareus/brief-parser/src/save_answer';
+// Alte Variante (über Workspace-Package):
+// import { startInterviewsForUser } from '@datareus/brief-parser/src/start_interview_user';
+// import { loadInterviewContext } from '@datareus/brief-parser/src/interview_context';
+// import { saveAnswer } from '@datareus/brief-parser/src/save_answer';
+
+// Neue Variante: relative Pfade
+import { startInterviewsForUser } from '../../brief-parser/src/start_interview_user'
+import { loadInterviewContext } from '../../brief-parser/src/interview_context'
+import { saveAnswer } from '../../brief-parser/src/save_answer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..', '..'); // Projektdach
