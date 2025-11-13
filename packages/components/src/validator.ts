@@ -71,6 +71,32 @@ export const isUnsafeFilePath = (filePath: string): boolean => {
 }
 
 /**
+ * Validates if a resolved path accesses sensitive system directories
+ * Uses pattern-based detection to identify known sensitive system directories
+ * at root level or one level deep, while allowing legitimate paths like /usr/src
+ * @param {string} resolvedPath The resolved absolute path to validate
+ * @returns {boolean} True if path accesses sensitive system directory, false otherwise
+ */
+export const isSensitiveSystemPath = (resolvedPath: string): boolean => {
+    if (!resolvedPath || typeof resolvedPath !== 'string') {
+        return false
+    }
+
+    // Pattern-based detection for known sensitive system directories:
+    // Blocks obvious system directories while allowing legitimate paths like /usr/src, /usr/local, /opt, etc.
+    // 1. At root level (e.g., /etc, /sys, /sbin) - one segment after root
+    // 2. One level deep (e.g., /etc/passwd, /sys/kernel, /var/log) - two segments total
+    // 3. Specific sensitive subdirectories (e.g., /var/log, /var/run) - two segments with specific parent
+    const sensitiveSystemPatterns = [
+        /^[/\\](etc|sys|proc|dev|boot|root|sbin)([/\\]|$)/i, // Root level: /etc, /sys, /proc, /sbin, etc.
+        /^[/\\](etc|sys|proc|dev|boot|root|sbin)[/\\][^/\\]*$/i, // One level deep: /etc/passwd, /sys/kernel, etc.
+        /^[/\\]var[/\\](log|run|lib|spool|mail)([/\\]|$)/i // Sensitive /var subdirectories: /var/log, /var/run, etc.
+    ]
+
+    return sensitiveSystemPatterns.some((pattern) => pattern.test(resolvedPath))
+}
+
+/**
  * Validates if a file path is within the allowed workspace boundaries
  * @param {string} filePath The file path to validate
  * @param {string} workspacePath The workspace base path
