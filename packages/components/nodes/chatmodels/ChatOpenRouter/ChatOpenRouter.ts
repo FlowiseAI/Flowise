@@ -1,7 +1,8 @@
-import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
+import { ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ChatOpenRouter } from './FlowiseChatOpenRouter'
 
 class ChatOpenRouter_ChatModels implements INode {
     label: string
@@ -23,7 +24,7 @@ class ChatOpenRouter_ChatModels implements INode {
         this.icon = 'openRouter.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Open Router Inference API'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -114,6 +115,40 @@ class ChatOpenRouter_ChatModels implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Image Resolution',
+                description: 'This parameter controls the resolution in which the model views the image.',
+                name: 'imageResolution',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    },
+                    {
+                        label: 'Auto',
+                        name: 'auto'
+                    }
+                ],
+                default: 'low',
+                optional: false,
+                show: {
+                    allowImageUploads: true
+                }
             }
         ]
     }
@@ -130,6 +165,8 @@ class ChatOpenRouter_ChatModels implements INode {
         const basePath = (nodeData.inputs?.basepath as string) || 'https://openrouter.ai/api/v1'
         const baseOptions = nodeData.inputs?.baseOptions
         const cache = nodeData.inputs?.cache as BaseCache
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const imageResolution = nodeData.inputs?.imageResolution as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openRouterApiKey = getCredentialParam('openRouterApiKey', credentialData, nodeData)
@@ -155,7 +192,7 @@ class ChatOpenRouter_ChatModels implements INode {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
             } catch (exception) {
-                throw new Error("Invalid JSON in the ChatCerebras's BaseOptions: " + exception)
+                throw new Error("Invalid JSON in the ChatOpenRouter's BaseOptions: " + exception)
             }
         }
 
@@ -166,7 +203,15 @@ class ChatOpenRouter_ChatModels implements INode {
             }
         }
 
-        const model = new ChatOpenAI(obj)
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false,
+                imageResolution
+            }
+        }
+
+        const model = new ChatOpenRouter(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
         return model
     }
 }
