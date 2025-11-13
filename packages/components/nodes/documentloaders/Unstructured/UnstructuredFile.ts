@@ -10,7 +10,7 @@ import {
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { getFileFromStorage, INodeOutputsValue } from '../../../src'
 import { UnstructuredLoader } from './Unstructured'
-import { isPathTraversal } from '../../../src/validator'
+import { isPathTraversal, isUnsafeFilePath } from '../../../src/validator'
 import sanitize from 'sanitize-filename'
 import path from 'path'
 
@@ -565,7 +565,7 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 throw new Error('Invalid file path format')
             }
 
-            if (isPathTraversal(filePath)) {
+            if (isPathTraversal(filePath) || isUnsafeFilePath(filePath)) {
                 throw new Error('Invalid path characters detected in filePath - path traversal not allowed')
             }
 
