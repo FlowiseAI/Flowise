@@ -1500,8 +1500,22 @@ export const executeJavaScriptCode = async (
 
             const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs })
 
+            // Determine which libraries to install
+            const librariesToInstall = new Set<string>(libraries)
+
+            // Auto-detect required libraries from code
+            // Extract required modules from import/require statements
+            const importRegex = /(?:import\s+.*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
+            let match
+            while ((match = importRegex.exec(code)) !== null) {
+                const moduleName = match[1] || match[2]
+                // Extract base module name (e.g., 'typeorm' from 'typeorm/something')
+                const baseModuleName = moduleName.split('/')[0]
+                librariesToInstall.add(baseModuleName)
+            }
+
             // Install libraries
-            for (const library of libraries) {
+            for (const library of librariesToInstall) {
                 await sbx.commands.run(`npm install ${library}`)
             }
 
