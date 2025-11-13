@@ -5,6 +5,8 @@ const router = express.Router()
 
 router.post('/export', checkPermission('workspace:export'), exportImportController.exportData)
 
+router.post('/preview', checkPermission('workspace:import'), exportImportController.previewImportData)
+
 router.post('/import', checkPermission('workspace:import'), exportImportController.importData)
 
 export default router

@@ -26,6 +26,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 -   [⚡ Quick Start](#-quick-start)
 -   [🐳 Docker](#-docker)
 -   [👨‍💻 Developers](#-developers)
+-   [✨ Features](#-features)
 -   [🌱 Env Variables](#-env-variables)
 -   [📖 Documentation](#-documentation)
 -   [🌐 Self Host](#-self-host)
@@ -165,6 +166,14 @@ Flowise has 3 different modules in a single mono repository.
         ```
 
     Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
+
+## ✨ Features
+
+### Conflict-aware import filtering
+
+-   **Purpose:** Prevent duplicate chat messages, feedback, executions, and document store chunks from being recreated when importing data with the **Update** action for existing chatflows or document stores.
+-   **Usage example:** During an import review, select **Update** for conflicting parents before confirming the import; the upload payload automatically prunes existing child records so the server reuses what is already stored.
+-   **Dependencies / breaking changes:** No additional configuration required and no breaking changes for existing export/import workflows.
 
 ## 🌱 Env Variables
 
