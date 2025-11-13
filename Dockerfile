@@ -24,7 +24,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
-WORKDIR /usr/src
+WORKDIR /usr/src/flowise
 
 # Copy app source
 COPY . .
@@ -32,6 +32,20 @@ COPY . .
 RUN pnpm install
 
 RUN pnpm build
+
+# Create a non-root user and group
+RUN addgroup -g 1001 flowise && \
+    adduser -D -u 1001 -G flowise flowise
+
+# Change ownership of the application files to the non-root user (full access)
+RUN chown -R flowise:flowise /usr/src/flowise
+
+# Give flowise group read+execute access to chromium-browser
+RUN chgrp flowise /usr/bin/chromium-browser && \
+    chmod 750 /usr/bin/chromium-browser
+
+# Switch to non-root user
+USER flowise
 
 EXPOSE 3000
 

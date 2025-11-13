@@ -1,8 +1,8 @@
 import { Serializable } from '@langchain/core/load/serializable'
-import { NodeFileStore } from 'langchain/stores/file/node'
-import { isUnsafeFilePath, isWithinWorkspace } from './validator'
-import * as path from 'path'
 import * as fs from 'fs'
+import { NodeFileStore } from 'langchain/stores/file/node'
+import * as path from 'path'
+import { isUnsafeFilePath, isWithinWorkspace } from './validator'
 
 /**
  * Security configuration for file operations
@@ -113,7 +113,9 @@ export class SecureFileStore extends Serializable {
      * Reads a file with security validation
      */
     async readFile(filePath: string): Promise<string> {
-        this.validateFilePath(filePath)
+        // Resolve the full path first, then validate
+        const fullPath = path.resolve(this.config.workspacePath, filePath)
+        this.validateFilePath(fullPath)
 
         try {
             return await this.nodeFileStore.readFile(filePath)
@@ -127,12 +129,15 @@ export class SecureFileStore extends Serializable {
      * Writes a file with security validation
      */
     async writeFile(filePath: string, contents: string): Promise<void> {
-        this.validateFilePath(filePath)
         this.validateFileSize(contents)
+
+        // Resolve the full path first, then validate
+        const fullPath = path.resolve(this.config.workspacePath, filePath)
+        this.validateFilePath(fullPath)
 
         try {
             // Ensure the directory exists
-            const dir = path.dirname(path.resolve(this.config.workspacePath, filePath))
+            const dir = path.dirname(fullPath)
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir, { recursive: true })
             }
