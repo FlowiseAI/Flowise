@@ -1,0 +1,26 @@
+{
+  "name": "@datareus/brief-parser",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/parse_brief.ts",
+  "scripts": {
+    "parse": "tsx src/parse_brief.ts",
+    "parse-all": "tsx src/parse_all.ts",
+    "parse-brief-all": "tsx src/parse_brief_all_sheets.ts",
+    "interview-context": "tsx src/interview_context.ts",
+    "start-interview-user": "tsx src/start_interview_user.ts",
+    "save-answer": "tsx src/save_answer.ts",
+    "next-question": "tsx src/next_question.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "ajv": "^8.17.1",
+    "dotenv": "^16.4.5",
+    "openai": "^4.55.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.16.0",
+    "typescript": "^5.6.3"
+  }
+}

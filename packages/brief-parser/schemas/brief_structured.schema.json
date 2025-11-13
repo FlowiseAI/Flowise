@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["brief_id", "domain", "themes", "rubrics"],
+  "properties": {
+    "brief_id": { "type": "string" },
+    "domain": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "stakeholders": { "type": "array", "items": { "type": "string" } },
+        "process_refs": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "themes": { "type": "object" },
+    "rubrics": { "type": "object" },
+    "open_questions": { "type": "array", "items": { "type": "string" } },
+    "meta": { "type": "object" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "question_code",
+      "question",
+      "checkpoints",
+      "finding",
+      "evidence",
+      "open_questions"
+    ],
+    "properties": {
+      "question_code": { "type": "string" },
+      "question": { "type": "string" },
+      "checkpoints": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "finding": {
+        "type": "object",
+        "required": ["status", "score_1_5", "rationale"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["present", "partial", "absent", "unknown"]
+          },
+          "score_1_5": {
+            "anyOf": [
+              { "type": "integer", "minimum": 1, "maximum": 5 },
+              { "type": "null" }
+            ]
+          },
+          "rationale": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "evidence": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["quote", "section", "confidence"],
+          "properties": {
+            "quote": { "type": "string" },
+            "section": { "type": "string" },
+            "confidence": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "open_questions": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "extracted_structures": {
+        "type": "object"
+      }
+    },
+    "additionalProperties": true
+  }
+}
