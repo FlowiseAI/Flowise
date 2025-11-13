@@ -1,0 +1,15 @@
+{
+  "name": "@datareus/brief-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "start": "NODE_ENV=production tsx src/server.ts"   
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}
