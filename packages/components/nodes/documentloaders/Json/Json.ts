@@ -67,10 +67,10 @@ class Json_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'Separate by JSON Object',
+                label: 'Separate by JSON Object (JSON Array)',
                 name: 'separateByObject',
                 type: 'boolean',
-                description: 'If enabled and the JSON file contains an array, each object in the array will become a chunk',
+                description: 'If enabled and the file is a JSON Array, each JSON object will be extracted as a chunk',
                 optional: true,
                 additionalParams: true
             },
@@ -343,12 +343,14 @@ class JSONLoader extends TextLoader {
 
         for (const item of jsonArray) {
             if (this.separateByObject) {
-                const metadata = this.extractMetadata(item)
-                const pageContent = this.formatObjectAsKeyValue(item)
-                documents.push({
-                    pageContent,
-                    metadata
-                })
+                if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+                    const metadata = this.extractMetadata(item)
+                    const pageContent = this.formatObjectAsKeyValue(item)
+                    documents.push({
+                        pageContent,
+                        metadata
+                    })
+                }
             } else {
                 const content = this.extractContent(item)
                 const metadata = this.extractMetadata(item)
