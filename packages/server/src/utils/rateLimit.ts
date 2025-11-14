@@ -4,7 +4,7 @@ import { IChatFlow, MODE } from '../Interface'
 import { Mutex } from 'async-mutex'
 import { RedisStore } from 'rate-limit-redis'
 import Redis from 'ioredis'
-import { RedisConnector} from '../connectors/RedisConnector'
+import { RedisConnector } from '../connectors/RedisConnector'
 import { QueueEvents, QueueEventsListener, QueueEventsProducer } from 'bullmq'
 
 interface CustomListener extends QueueEventsListener {
@@ -23,12 +23,12 @@ export class RateLimiterManager {
     private queueEvents: QueueEvents
 
     constructor() {
-      let redisConnector = new RedisConnector();
-      this.redisClient = redisConnector.getRedisClient();
-      if (process.env.MODE === MODE.QUEUE) {
-          this.queueEventsProducer = new QueueEventsProducer(QUEUE_NAME, { connection: redisConnector.getRedisConnection() })
-          this.queueEvents = new QueueEvents(QUEUE_NAME, { connection: redisConnector.getRedisConnection() })
-      }
+        let redisConnector = new RedisConnector()
+        this.redisClient = redisConnector.getRedisClient()
+        if (process.env.MODE === MODE.QUEUE) {
+            this.queueEventsProducer = new QueueEventsProducer(QUEUE_NAME, { connection: redisConnector.getRedisConnection() })
+            this.queueEvents = new QueueEvents(QUEUE_NAME, { connection: redisConnector.getRedisConnection() })
+        }
     }
 
     public static getInstance(): RateLimiterManager {

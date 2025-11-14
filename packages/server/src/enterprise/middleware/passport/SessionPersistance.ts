@@ -1,5 +1,5 @@
 import Redis from 'ioredis'
-import { RedisConnector} from '../../../connectors/RedisConnector'
+import { RedisConnector } from '../../../connectors/RedisConnector'
 import { RedisStore } from 'connect-redis'
 import { getDatabaseSSLFromEnv } from '../../../DataSource'
 import path from 'path'
@@ -14,7 +14,7 @@ let dbStore: Store | null = null
 
 export const initializeRedisClientAndStore = (): RedisStore => {
     if (!redisClient) {
-      redisClient = new RedisConnector().getRedisClient();
+        redisClient = new RedisConnector().getRedisClient()
     }
     if (!redisStore) {
         redisStore = new RedisStore({ client: redisClient })
