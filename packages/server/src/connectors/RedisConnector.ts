@@ -1,24 +1,25 @@
-import InternalFlowiseError from './errors/internalFlowiseError'
-import logger from '../utils/logger'
-import MODE from './../Interface'
-import Redis from 'ioredis'
-import StatusCodes from 'http-status-codes'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import logger from "../utils/logger"
+import { MODE } from '../Interface'
+import { Redis } from 'ioredis'
+import { StatusCodes } from 'http-status-codes'
 
-class RedisConnector {
-  private redis: Redis = null;
+export class RedisConnector {
+  private redis: Redis;
+  private connection: Record<string, unknown>;
 
-  private constructor() {
-    let keepAlive = process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+  constructor() {
+    let keepAlive: number = process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
       ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-      : undefined
+      : 0
 
-    let tlsOptions = process.env.REDIS_TLS === 'true'
+    let tlsOptions: Record<string, unknown> = process.env.REDIS_TLS === 'true'
       ? {
             cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
             key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-            ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+            ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
         }
-      : undefined
+      : {}
 
     switch(process.env.MODE) {
       case MODE.QUEUE:
@@ -35,53 +36,72 @@ class RedisConnector {
   }
 
   /**
-  * Connect to Redis in Queue mode
+  * Connect to Redis in Queue mode.
   */
-  private initializeQueueMode(keepAlive, tlsOptions) {
+  private initializeQueueMode(keepAlive: number, tlsOptions: Record<string, unknown>) {
     if (process.env.REDIS_URL) {
-      logger.info("[server] Queue mode using REDIS_URL.")
-      this.redis = new Redis(process.env.REDIS_URL, {
+      logger.info("[server] Queue mode using REDIS_URL.");
+      // Disable `rejectUnauthorized` if `REDIS_URL` contains `rediss://` and TLS is not enforced
+      tlsOptions.rejectUnauthorized = !(process.env.REDIS_URL.startsWith('rediss://') && process.env.REDIS_TLS !== 'true')
+      this.connection = {
         keepAlive: keepAlive,
         tls: tlsOptions,
-        reconnectOnError: this.reconnectOnError(err)
-      })
+        enableReadyCheck: true,
+        reconnectOnError: this.connectOnError.bind(this)
+      };
+      this.redis = new Redis(process.env.REDIS_URL, this.connection);
 
     } else if (process.env.REDIS_HOST) {
-      logger.info("[server] Queue mode using REDIS_HOST.")
-      this.redis = new Redis({
-        host: process.env.REDIS_HOST
+      logger.info("[server] Queue mode using REDIS_HOST.");
+      this.connection = {
+        host: process.env.REDIS_HOST,
         port: parseInt(process.env.REDIS_PORT || '6379'),
         username: process.env.REDIS_USERNAME || undefined,
         password: process.env.REDIS_PASSWORD || undefined,
         keepAlive: keepAlive,
         tls: tlsOptions,
-        reconnectOnError: this.reconnectOnError(err)
-      })
+        enableReadyCheck: true,
+        reconnectOnError: this.connectOnError.bind(this)
+      };
+      this.redis = new Redis(this.connection);
 
     } else {
-      logger.info("[server] Queue mode using localhost.")
-      this.redis = new Redis({
-        host: 'localhost'
+      logger.info("[server] Queue mode using localhost.");
+      this.connection = {
+        host: 'localhost',
         port: parseInt(process.env.REDIS_PORT || '6379'),
         username: process.env.REDIS_USERNAME || undefined,
         password: process.env.REDIS_PASSWORD || undefined,
         keepAlive: keepAlive,
         tls: tlsOptions,
-        reconnectOnError: this.reconnectOnError(err)
-      })
+        enableReadyCheck: true,
+        reconnectOnError: this.connectOnError.bind(this)
+      };
+      this.redis = new Redis(this.connection);
     }
   }
 
   /**
-  * Always reconnect to Redis in case of errors (does not retry the failed command)
+  * Always reconnect to Redis in case of errors (does not retry the failed command), used as callback.
   * https://redis.github.io/ioredis/interfaces/CommonRedisOptions.html#reconnectOnError
   */
-  private connectOnError(err) : number {
+  private connectOnError(err: Error) : number {
     logger.error(`[server]: Redis connection error - ${err.message}`);
     return 1;
   }
 
-  public get() : Redis {
+  /**
+  * Returns the Redis `ioredis` object created.
+  */
+  public getRedisClient() : Redis {
     return this.redis;
   }
+
+  /**
+  * Returns the dictionary used to create the Redis `ioredis` object.
+  */
+  public getRedisConnection() {
+    return this.connection;
+  }
 }
+
