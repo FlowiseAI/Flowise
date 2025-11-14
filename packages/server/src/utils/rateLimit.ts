@@ -4,6 +4,7 @@ import { IChatFlow, MODE } from '../Interface'
 import { Mutex } from 'async-mutex'
 import { RedisStore } from 'rate-limit-redis'
 import Redis from 'ioredis'
+import { RedisConnector} from '../connectors/RedisConnector'
 import { QueueEvents, QueueEventsListener, QueueEventsProducer } from 'bullmq'
 
 interface CustomListener extends QueueEventsListener {
@@ -22,66 +23,12 @@ export class RateLimiterManager {
     private queueEvents: QueueEvents
 
     constructor() {
-        if (process.env.MODE === MODE.QUEUE) {
-            if (process.env.REDIS_URL) {
-                this.redisClient = new Redis(process.env.REDIS_URL, {
-                    keepAlive:
-                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                            : undefined
-                })
-            } else {
-                this.redisClient = new Redis({
-                    host: process.env.REDIS_HOST || 'localhost',
-                    port: parseInt(process.env.REDIS_PORT || '6379'),
-                    username: process.env.REDIS_USERNAME || undefined,
-                    password: process.env.REDIS_PASSWORD || undefined,
-                    tls:
-                        process.env.REDIS_TLS === 'true'
-                            ? {
-                                  cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
-                                  key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                                  ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
-                              }
-                            : undefined,
-                    keepAlive:
-                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                            : undefined
-                })
-            }
-            this.queueEventsProducer = new QueueEventsProducer(QUEUE_NAME, { connection: this.getConnection() })
-            this.queueEvents = new QueueEvents(QUEUE_NAME, { connection: this.getConnection() })
-        }
-    }
-
-    getConnection() {
-        let tlsOpts = undefined
-        if (process.env.REDIS_URL && process.env.REDIS_URL.startsWith('rediss://')) {
-            tlsOpts = {
-                rejectUnauthorized: false
-            }
-        } else if (process.env.REDIS_TLS === 'true') {
-            tlsOpts = {
-                cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
-                key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
-            }
-        }
-        return {
-            url: process.env.REDIS_URL || undefined,
-            host: process.env.REDIS_HOST || 'localhost',
-            port: parseInt(process.env.REDIS_PORT || '6379'),
-            username: process.env.REDIS_USERNAME || undefined,
-            password: process.env.REDIS_PASSWORD || undefined,
-            tls: tlsOpts,
-            maxRetriesPerRequest: null,
-            enableReadyCheck: true,
-            keepAlive:
-                process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                    ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                    : undefined
-        }
+      let redisConnector = new RedisConnector();
+      this.redisClient = redisConnector.getRedisClient();
+      if (process.env.MODE === MODE.QUEUE) {
+          this.queueEventsProducer = new QueueEventsProducer(QUEUE_NAME, { connection: redisConnector.getRedisConnection() })
+          this.queueEvents = new QueueEvents(QUEUE_NAME, { connection: redisConnector.getRedisConnection() })
+      }
     }
 
     public static getInstance(): RateLimiterManager {
