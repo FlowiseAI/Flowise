@@ -13,7 +13,7 @@ export class CachePool {
     ssoTokenCache: { [key: string]: any } = {}
 
     constructor() {
-      this.redisClient = new RedisConnector().getRedisClient();
+        this.redisClient = new RedisConnector().getRedisClient()
     }
 
     /**
