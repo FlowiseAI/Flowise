@@ -2,7 +2,7 @@ import { VectorStore } from '@langchain/core/vectorstores'
 import { getCredentialData, getCredentialParam, ICommonObject, INodeData } from '../../../../src'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { getDatabase, getHost, getPort, getSSL, getTableName } from '../utils'
+import { getDatabase, getHost, getPort, getSchema, getSSL, getTableName } from '../utils'
 
 export abstract class VectorStoreDriver {
     constructor(protected nodeData: INodeData, protected options: ICommonObject) {}
@@ -34,7 +34,9 @@ export abstract class VectorStoreDriver {
     getTableName() {
         return this.sanitizeTableName(getTableName(this.nodeData))
     }
-
+    getSchema() {
+        return this.sanitizeSchema(getSchema(this.nodeData))
+    }
     getEmbeddings() {
         return this.nodeData.inputs?.embeddings as Embeddings
     }
@@ -50,7 +52,17 @@ export abstract class VectorStoreDriver {
 
         return tableName
     }
+    sanitizeSchema(schema: string): string {
+        // Trim and normalize case, turn whitespace into underscores
+        schema = schema.trim().toLowerCase().replace(/\s+/g, '_')
 
+        // Validate using a regex (alphanumeric and underscores only)
+        if (!/^[a-zA-Z0-9_]+$/.test(schema)) {
+            throw new Error('Invalid schema name')
+        }
+
+        return schema
+    }
     async getCredentials() {
         const credentialData = await getCredentialData(this.nodeData.credential ?? '', this.options)
         const user = getCredentialParam('user', credentialData, this.nodeData, process.env.POSTGRES_VECTORSTORE_USER)
