@@ -1516,7 +1516,13 @@ export const executeJavaScriptCode = async (
 
             // Install libraries
             for (const library of librariesToInstall) {
-                await sbx.commands.run(`npm install ${library}`)
+                // Validate library name to prevent command injection.
+                const validPackageNameRegex = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
+                if (validPackageNameRegex.test(library)) {
+                    await sbx.commands.run(`npm install ${library}`)
+                } else {
+                    console.warn(`[Sandbox] Skipping installation of invalid module: ${library}`);
+                }
             }
 
             // Separate imports from the rest of the code for proper ES6 module structure
