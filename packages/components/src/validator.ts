@@ -83,14 +83,17 @@ export const isSensitiveSystemPath = (resolvedPath: string): boolean => {
     }
 
     // Pattern-based detection for known sensitive system directories:
-    // Blocks obvious system directories while allowing legitimate paths like /usr/src, /usr/local, /opt, etc.
-    // 1. At root level (e.g., /etc, /sys, /sbin) - one segment after root
+    // Blocks obvious system directories while allowing legitimate paths like /usr/src, /usr/local/src, /opt, etc.
+    // 1. At root level (e.g., /etc, /sys, /bin, /sbin) - one segment after root
     // 2. One level deep (e.g., /etc/passwd, /sys/kernel, /var/log) - two segments total
     // 3. Specific sensitive subdirectories (e.g., /var/log, /var/run) - two segments with specific parent
+    // 4. System binary directories (e.g., /usr/bin, /usr/sbin, /usr/local/bin) - prevents overwriting system executables
     const sensitiveSystemPatterns = [
-        /^[/\\](etc|sys|proc|dev|boot|root|sbin)([/\\]|$)/i, // Root level: /etc, /sys, /proc, /sbin, etc.
-        /^[/\\](etc|sys|proc|dev|boot|root|sbin)[/\\][^/\\]*$/i, // One level deep: /etc/passwd, /sys/kernel, etc.
-        /^[/\\]var[/\\](log|run|lib|spool|mail)([/\\]|$)/i // Sensitive /var subdirectories: /var/log, /var/run, etc.
+        /^[/\\](etc|sys|proc|dev|boot|root|bin|sbin)([/\\]|$)/i, // Root level: /etc, /sys, /proc, /bin, /sbin, etc.
+        /^[/\\](etc|sys|proc|dev|boot|root|bin|sbin)[/\\][^/\\]*$/i, // One level deep: /etc/passwd, /sys/kernel, /bin/sh, etc.
+        /^[/\\]var[/\\](log|run|lib|spool|mail)([/\\]|$)/i, // Sensitive /var subdirectories: /var/log, /var/run, etc.
+        /^[/\\]usr[/\\](bin|sbin)([/\\]|$)/i, // System binary directories: /usr/bin, /usr/sbin
+        /^[/\\]usr[/\\]local[/\\](bin|sbin)([/\\]|$)/i // Local system binaries: /usr/local/bin, /usr/local/sbin
     ]
 
     return sensitiveSystemPatterns.some((pattern) => pattern.test(resolvedPath))
