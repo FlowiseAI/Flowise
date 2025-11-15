@@ -1,8 +1,8 @@
 import { Serializable } from '@langchain/core/load/serializable'
-import { NodeFileStore } from 'langchain/stores/file/node'
-import { isUnsafeFilePath, isWithinWorkspace } from './validator'
-import * as path from 'path'
 import * as fs from 'fs'
+import { NodeFileStore } from 'langchain/stores/file/node'
+import * as path from 'path'
+import { isSensitiveSystemPath, isUnsafeFilePath, isWithinWorkspace } from './validator'
 
 /**
  * Security configuration for file operations
@@ -65,28 +65,50 @@ export class SecureFileStore extends Serializable {
             throw new Error(`Workspace directory does not exist: ${this.config.workspacePath}`)
         }
 
+        // Validate that workspace path is not a sensitive system directory
+        // This prevents setting workspace to /usr/bin, /etc, etc. which would allow access to system files
+        if (isSensitiveSystemPath(path.normalize(this.config.workspacePath))) {
+            throw new Error(`Workspace path cannot be set to sensitive system directory: ${this.config.workspacePath}`)
+        }
+
         // Initialize the underlying NodeFileStore with workspace path
         this.nodeFileStore = new NodeFileStore(this.config.workspacePath)
     }
 
     /**
      * Validates a file path against security policies
+     * @param filePath The raw user-provided file path (relative to workspace)
+     * @param resolvedPath The resolved absolute path (for extension validation)
      */
-    private validateFilePath(filePath: string): void {
-        // Check for unsafe path patterns
+    private validateFilePath(filePath: string, resolvedPath: string): void {
+        // Validate the raw user input for unsafe patterns (path traversal, absolute paths, etc.)
+        // This must be done on the raw input, not the resolved path, because isUnsafeFilePath
+        // is designed to detect absolute paths in user input
         if (isUnsafeFilePath(filePath)) {
             throw new Error(`Unsafe file path detected: ${filePath}`)
         }
 
-        // Enforce workspace boundaries if enabled
+        // Enforce workspace boundaries if enabled (this handles path resolution internally)
         if (this.config.enforceWorkspaceBoundaries) {
             if (!isWithinWorkspace(filePath, this.config.workspacePath)) {
                 throw new Error(`File path outside workspace boundaries: ${filePath}`)
             }
         }
 
-        // Check file extension
-        const ext = path.extname(filePath).toLowerCase()
+        // Prevent access to Flowise internal files (any path containing .flowise)
+        const normalizedResolved = path.normalize(resolvedPath)
+        if (normalizedResolved.includes('.flowise')) {
+            throw new Error(`Access to Flowise internal files denied: ${filePath}`)
+        }
+
+        // Validate that the resolved path does not access sensitive system directories
+        // This prevents access to system files even if workspace is set to a system directory
+        if (isSensitiveSystemPath(normalizedResolved)) {
+            throw new Error(`Access to sensitive system directory denied: ${filePath}`)
+        }
+
+        // Check file extension on the resolved path to get the actual extension
+        const ext = path.extname(resolvedPath).toLowerCase()
 
         // Check blocked extensions
         if (this.config.blockedExtensions.includes(ext)) {
@@ -113,7 +135,10 @@ export class SecureFileStore extends Serializable {
      * Reads a file with security validation
      */
     async readFile(filePath: string): Promise<string> {
-        this.validateFilePath(filePath)
+        // Resolve the full path for extension validation
+        const resolvedPath = path.resolve(this.config.workspacePath, filePath)
+        // Validate the raw user input (not the resolved path) to avoid false positives
+        this.validateFilePath(filePath, resolvedPath)
 
         try {
             return await this.nodeFileStore.readFile(filePath)
@@ -127,12 +152,16 @@ export class SecureFileStore extends Serializable {
      * Writes a file with security validation
      */
     async writeFile(filePath: string, contents: string): Promise<void> {
-        this.validateFilePath(filePath)
         this.validateFileSize(contents)
+
+        // Resolve the full path for extension validation and directory creation
+        const resolvedPath = path.resolve(this.config.workspacePath, filePath)
+        // Validate the raw user input (not the resolved path) to avoid false positives
+        this.validateFilePath(filePath, resolvedPath)
 
         try {
             // Ensure the directory exists
-            const dir = path.dirname(path.resolve(this.config.workspacePath, filePath))
+            const dir = path.dirname(resolvedPath)
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir, { recursive: true })
             }
