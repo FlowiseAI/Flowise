@@ -8,6 +8,9 @@ import {
     HiResModelName
 } from '@langchain/community/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
+import { isPathTraversal, isUnsafeFilePath } from '../../../src/validator'
+import sanitize from 'sanitize-filename'
+import path from 'path'
 
 class UnstructuredFolder_DocumentLoaders implements INode {
     label: string
@@ -440,6 +443,32 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
 
+        // Validate folder path
+        if (!folderPath || typeof folderPath !== 'string') {
+            throw new Error('Invalid folder path format')
+        }
+
+        if (isPathTraversal(folderPath) || isUnsafeFilePath(folderPath)) {
+            throw new Error('Invalid path characters detected in folderPath - path traversal not allowed')
+        }
+
+        const parsedPath = path.parse(folderPath)
+        const sanitizedFoldername = sanitize(parsedPath.base)
+
+        if (!sanitizedFoldername || sanitizedFoldername.trim() === '') {
+            throw new Error('Invalid folder name after sanitization')
+        }
+
+        const sanitizedFolderPath = path.join(parsedPath.dir, sanitizedFoldername)
+
+        if (!path.isAbsolute(sanitizedFolderPath)) {
+            throw new Error('Folder path must be absolute')
+        }
+
+        if (sanitizedFolderPath.includes('..')) {
+            throw new Error('Invalid folder path - directory traversal not allowed')
+        }
+
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
             omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
@@ -466,7 +495,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         const unstructuredAPIKey = getCredentialParam('unstructuredAPIKey', credentialData, nodeData)
         if (unstructuredAPIKey) obj.apiKey = unstructuredAPIKey
 
-        const loader = new UnstructuredDirectoryLoader(folderPath, obj)
+        const loader = new UnstructuredDirectoryLoader(sanitizedFolderPath, obj)
         let docs = await loader.load()
 
         if (metadata) {
