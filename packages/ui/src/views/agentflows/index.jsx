@@ -68,6 +68,10 @@ const Agentflows = () => {
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
 
+    const refreshAgentflows = () => {
+        refresh(currentPage, pageLimit, agentflowVersion)
+    }
+
     const handleChange = (event, nextView) => {
         if (nextView === null) return
         localStorage.setItem('flowDisplayStyle', nextView)
@@ -138,21 +142,27 @@ const Agentflows = () => {
                 setTotal(getAllAgentflows.data?.total)
                 const images = {}
                 const icons = {}
-                for (let i = 0; i < agentflows.length; i += 1) {
-                    const flowDataStr = agentflows[i].flowData
+                
+                // Safety check: handle both array and object response formats
+                const flowsArray = Array.isArray(getAllAgentflows.data) 
+                    ? getAllAgentflows.data 
+                    : (agentflows || [])
+                
+                for (let i = 0; i < flowsArray.length; i += 1) {
+                    const flowDataStr = flowsArray[i].flowData
                     const flowData = JSON.parse(flowDataStr)
                     const nodes = flowData.nodes || []
-                    images[agentflows[i].id] = []
-                    icons[agentflows[i].id] = []
+                    images[flowsArray[i].id] = []
+                    icons[flowsArray[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
                         if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
                         const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
                         if (foundIcon) {
-                            icons[agentflows[i].id].push(foundIcon)
+                            icons[flowsArray[i].id].push(foundIcon)
                         } else {
                             const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                            if (!images[agentflows[i].id].some((img) => img.imageSrc === imageSrc)) {
-                                images[agentflows[i].id].push({
+                            if (!images[flowsArray[i].id].some((img) => img.imageSrc === imageSrc)) {
+                                images[flowsArray[i].id].push({
                                     imageSrc,
                                     label: nodes[j].data.label
                                 })
@@ -163,7 +173,9 @@ const Agentflows = () => {
                 setImages(images)
                 setIcons(icons)
             } catch (e) {
-                console.error(e)
+                console.error('❌ Error processing agentflows data:', e)
+                console.error('Data that caused error:', getAllAgentflows.data)
+                console.error('Error stack:', e.stack)
             }
         }
     }, [getAllAgentflows.data])
@@ -324,6 +336,7 @@ const Agentflows = () => {
                                     isLoading={isLoading}
                                     filterFunction={filterFlows}
                                     updateFlowsApi={getAllAgentflows}
+                                    onRefresh={refreshAgentflows}
                                     setError={setError}
                                 />
                             )}

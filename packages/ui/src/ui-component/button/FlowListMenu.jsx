@@ -74,7 +74,7 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi }) {
+export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi, onRefresh }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -241,7 +241,10 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
         if (isConfirmed) {
             try {
                 await chatflowsApi.deleteChatflow(chatflow.id)
-                if (isAgentCanvas && isAgentflowV2) {
+                // Use onRefresh callback if available (for agentflows with pagination), otherwise fallback to updateFlowsApi
+                if (onRefresh) {
+                    onRefresh()
+                } else if (isAgentCanvas && isAgentflowV2) {
                     await updateFlowsApi.request('AGENTFLOW')
                 } else {
                     await updateFlowsApi.request(isAgentCanvas ? 'MULTIAGENT' : undefined)
@@ -454,5 +457,6 @@ FlowListMenu.propTypes = {
     isAgentCanvas: PropTypes.bool,
     isAgentflowV2: PropTypes.bool,
     setError: PropTypes.func,
-    updateFlowsApi: PropTypes.object
+    updateFlowsApi: PropTypes.object,
+    onRefresh: PropTypes.func
 }
