@@ -131,3 +131,87 @@ export const isWithinWorkspace = (filePath: string, workspacePath: string): bool
         return false
     }
 }
+
+/**
+ * Validates if a browser executable path is safe to use
+ * Prevents arbitrary code execution through environment variable manipulation
+ * @param {string} executablePath The browser executable path to validate
+ * @returns {boolean} True if path is safe, false otherwise
+ */
+export const isSafeBrowserExecutable = (executablePath: string | undefined): boolean => {
+    if (!executablePath) {
+        return true // If not specified, let browser library use its default
+    }
+
+    if (typeof executablePath !== 'string' || executablePath.trim() === '') {
+        return false
+    }
+
+    const path = require('path')
+    const fs = require('fs')
+
+    try {
+        // Normalize the path
+        const normalizedPath = path.normalize(executablePath)
+
+        // Must be an absolute path
+        if (!path.isAbsolute(normalizedPath)) {
+            return false
+        }
+
+        // Allowed browser executable locations (system-managed only)
+        const allowedPaths = [
+            // Linux/Unix Chromium/Chrome paths
+            '/usr/bin/chromium',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable',
+            '/usr/bin/chrome',
+            '/snap/bin/chromium',
+            // macOS Chrome/Chromium paths
+            '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+            '/Applications/Chromium.app/Contents/MacOS/Chromium',
+            // Windows Chrome/Chromium paths (normalized with forward slashes)
+            'C:/Program Files/Google/Chrome/Application/chrome.exe',
+            'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+            'C:/Program Files/Chromium/Application/chrome.exe',
+            // Firefox paths
+            '/usr/bin/firefox',
+            '/Applications/Firefox.app/Contents/MacOS/firefox',
+            'C:/Program Files/Mozilla Firefox/firefox.exe',
+            'C:/Program Files (x86)/Mozilla Firefox/firefox.exe'
+        ]
+
+        // Normalize allowed paths for comparison (handle Windows backslashes)
+        const normalizedAllowedPaths = allowedPaths.map((p) => path.normalize(p))
+
+        // Check if the path exactly matches one of the allowed paths
+        const isAllowedPath = normalizedAllowedPaths.some((allowedPath) => normalizedPath.toLowerCase() === allowedPath.toLowerCase())
+
+        if (!isAllowedPath) {
+            return false
+        }
+
+        // Additional security: Verify file exists and is executable (where applicable)
+        // This prevents using a path before malicious file is written
+        try {
+            if (fs.existsSync(normalizedPath)) {
+                const stats = fs.statSync(normalizedPath)
+                // On Unix-like systems, check if file is executable
+                if (process.platform !== 'win32') {
+                    // Check if file has execute permissions (using bitwise AND)
+                    // 0o111 checks for execute permission for user, group, or others
+                    return (stats.mode & 0o111) !== 0
+                }
+                return stats.isFile()
+            }
+            // If file doesn't exist, reject it (prevents race conditions)
+            return false
+        } catch {
+            return false
+        }
+    } catch (error) {
+        // If any error occurs during validation, deny access
+        return false
+    }
+}
