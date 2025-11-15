@@ -15,13 +15,6 @@ import { ExpressAdapter } from '@bull-board/express'
 
 const QUEUE_NAME = process.env.QUEUE_NAME || 'flowise-queue'
 
-// Redis resilience configuration with environment variable support
-const REDIS_CONNECT_TIMEOUT = process.env.REDIS_CONNECT_TIMEOUT ? parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10) : 10000
-const REDIS_COMMAND_TIMEOUT = process.env.REDIS_COMMAND_TIMEOUT ? parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10) : 30000
-const REDIS_MAX_RETRIES_PER_REQUEST = process.env.REDIS_MAX_RETRIES_PER_REQUEST ? parseInt(process.env.REDIS_MAX_RETRIES_PER_REQUEST, 10) : 3
-const REDIS_LAZY_CONNECT = process.env.REDIS_LAZY_CONNECT === 'false' ? false : true
-const REDIS_KEEPALIVE_INTERVAL = process.env.REDIS_KEEPALIVE_INTERVAL ? parseInt(process.env.REDIS_KEEPALIVE_INTERVAL, 10) : 30000
-
 type QUEUE_TYPE = 'prediction' | 'upsert'
 
 export class QueueManager {
@@ -49,15 +42,21 @@ export class QueueManager {
                 url: process.env.REDIS_URL,
                 tls: tlsOpts,
                 enableReadyCheck: true,
-                keepAlive:
-                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : REDIS_KEEPALIVE_INTERVAL,
-                // Enhanced resilience settings
-                connectTimeout: REDIS_CONNECT_TIMEOUT,
-                commandTimeout: REDIS_COMMAND_TIMEOUT,
-                maxRetriesPerRequest: REDIS_MAX_RETRIES_PER_REQUEST,
-                lazyConnect: REDIS_LAZY_CONNECT
+                ...(process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10)) && {
+                    keepAlive: parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                }),
+                ...(process.env.REDIS_CONNECT_TIMEOUT && !isNaN(parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10)) && {
+                    connectTimeout: parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10)
+                }),
+                ...(process.env.REDIS_COMMAND_TIMEOUT && !isNaN(parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10)) && {
+                    commandTimeout: parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10)
+                }),
+                ...(process.env.REDIS_MAX_RETRIES_PER_REQUEST && !isNaN(parseInt(process.env.REDIS_MAX_RETRIES_PER_REQUEST, 10)) && {
+                    maxRetriesPerRequest: parseInt(process.env.REDIS_MAX_RETRIES_PER_REQUEST, 10)
+                }),
+                ...(process.env.REDIS_LAZY_CONNECT !== undefined && {
+                    lazyConnect: process.env.REDIS_LAZY_CONNECT === 'true'
+                })
             }
         } else {
             let tlsOpts = undefined
@@ -75,15 +74,21 @@ export class QueueManager {
                 password: process.env.REDIS_PASSWORD || undefined,
                 tls: tlsOpts,
                 enableReadyCheck: true,
-                keepAlive:
-                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
-                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : REDIS_KEEPALIVE_INTERVAL,
-                // Enhanced resilience settings
-                connectTimeout: REDIS_CONNECT_TIMEOUT,
-                commandTimeout: REDIS_COMMAND_TIMEOUT,
-                maxRetriesPerRequest: REDIS_MAX_RETRIES_PER_REQUEST,
-                lazyConnect: REDIS_LAZY_CONNECT
+                ...(process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10)) && {
+                    keepAlive: parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                }),
+                ...(process.env.REDIS_CONNECT_TIMEOUT && !isNaN(parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10)) && {
+                    connectTimeout: parseInt(process.env.REDIS_CONNECT_TIMEOUT, 10)
+                }),
+                ...(process.env.REDIS_COMMAND_TIMEOUT && !isNaN(parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10)) && {
+                    commandTimeout: parseInt(process.env.REDIS_COMMAND_TIMEOUT, 10)
+                }),
+                ...(process.env.REDIS_MAX_RETRIES_PER_REQUEST && !isNaN(parseInt(process.env.REDIS_MAX_RETRIES_PER_REQUEST, 10)) && {
+                    maxRetriesPerRequest: parseInt(process.env.REDIS_MAX_RETRIES_PER_REQUEST, 10)
+                }),
+                ...(process.env.REDIS_LAZY_CONNECT !== undefined && {
+                    lazyConnect: process.env.REDIS_LAZY_CONNECT === 'true'
+                })
             }
         }
     }
