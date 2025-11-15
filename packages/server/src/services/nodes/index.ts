@@ -141,7 +141,8 @@ const executeCustomFunction = async (requestBody: any, workspaceId?: string, org
         logger.debug(`[server]: Execute Custom Function Job added to queue by ${orgId}: ${job.id}`)
 
         const queueEvents = predictionQueue.getQueueEvents()
-        const result = await job.waitUntilFinished(queueEvents)
+        const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+        const result = await job.waitUntilFinished(queueEvents, jobTimeout)
         if (!result) {
             throw new Error('Failed to execute custom function')
         }
