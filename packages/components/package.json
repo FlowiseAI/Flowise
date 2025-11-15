@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "3.0.10",
+    "version": "3.0.11",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
