@@ -10,6 +10,7 @@ import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
+import { isInvalidUUID } from '../../enterprise/utils/validation.util'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
@@ -21,7 +22,8 @@ import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
 
 export const enum ChatflowErrorMessage {
-    INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type'
+    INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type',
+    INVALID_CHATFLOW_ID = 'Invalid Chatflow ID'
 }
 
 export function validateChatflowType(type: ChatflowType | undefined) {
@@ -242,6 +244,11 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
 
 const getChatflowById = async (chatflowId: string, workspaceId?: string): Promise<any> => {
     try {
+        // Validate UUID format
+        if (isInvalidUUID(chatflowId)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_ID)
+        }
+
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
             where: {
@@ -254,6 +261,11 @@ const getChatflowById = async (chatflowId: string, workspaceId?: string): Promis
         }
         return dbResponse
     } catch (error) {
+        // Preserve InternalFlowiseError status codes (e.g., BAD_REQUEST, NOT_FOUND)
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
+        // Wrap unexpected errors as 500
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getChatflowById - ${getErrorMessage(error)}`
