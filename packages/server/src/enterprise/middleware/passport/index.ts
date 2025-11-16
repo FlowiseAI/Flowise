@@ -6,9 +6,11 @@ import { StatusCodes } from 'http-status-codes'
 import jwt, { JwtPayload, sign } from 'jsonwebtoken'
 import passport from 'passport'
 import { VerifiedCallback } from 'passport-jwt'
+import { v4 as uuidv4 } from 'uuid'
 import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
 import { IdentityManager } from '../../../IdentityManager'
 import { Platform } from '../../../Interface'
+import { generateRandomString32 } from '../../../utils/generate.util'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
 import { OrganizationUserStatus } from '../../database/entities/organization-user.entity'
 import { GeneralRole } from '../../database/entities/role.entity'
@@ -22,7 +24,6 @@ import { WorkspaceUserService } from '../../services/workspace-user.service'
 import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
 import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
-import { v4 as uuidv4 } from 'uuid'
 
 const localStrategy = require('passport-local').Strategy
 
@@ -50,9 +51,11 @@ const jwtOptions = {
 }
 
 const _initializePassportMiddleware = async (app: express.Application) => {
+    const sessionSecret = process.env.EXPRESS_SESSION_SECRET || generateRandomString32()
+
     // Configure session middleware
     let options: any = {
-        secret: process.env.EXPRESS_SESSION_SECRET || 'flowise',
+        secret: sessionSecret,
         resave: false,
         saveUninitialized: false,
         cookie: {
