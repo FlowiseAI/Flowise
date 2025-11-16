@@ -11,7 +11,7 @@ class GigaChatApi implements INodeCredential {
         this.label = 'GigaChat API'
         this.name = 'gigaChatApi'
         this.version = 1.0
-        this.description = 'Получить Credentials токен от GigaChatApi можно в Личном кабините'
+        this.description = 'You can get the Credentials token from GigaChatApi in Developer Console'
         this.inputs = [
             {
                 label: 'Access Token',
