@@ -1,9 +1,10 @@
 import { GigaChat as GigaChatLangchain } from 'langchain-gigachat'
 import { FlowiseGigaChat } from './FlowiseChatGigaChat'
 
-import { httpsAgent } from '../../../utilities/https-agent.util'
 import { getBaseClasses, getCredentialData } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+
+const defaultBaseUrl = 'https://gigachat.devices.sberbank.ru/api/v1/'
 
 class ChatGigaChat implements INode {
     label: string
@@ -98,7 +99,7 @@ class ChatGigaChat implements INode {
                     {
                         label: 'GIGACHAT_API_CORP',
                         name: 'GIGACHAT_API_CORP',
-                        description: 'access for sole proprietors and legal entities on a pay-as-you-go basis”**'
+                        description: 'access for sole proprietors and legal entities on a pay-as-you-go basis'
                     }
                 ],
                 default: 'GIGACHAT_API_PERS'
@@ -107,7 +108,7 @@ class ChatGigaChat implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'https://gigachat.devices.sberbank.ru/api/v1/',
+                default: defaultBaseUrl,
                 description: 'API URL',
                 optional: false
             },
@@ -135,7 +136,7 @@ class ChatGigaChat implements INode {
         const scope = String(nodeData.inputs?.scope || 'GIGACHAT_API_PERS')
         const modelName = nodeData.inputs?.modelName as string
         const timeout = Number(nodeData.inputs?.timeout || 60000)
-        const baseUrl = String(nodeData.inputs?.baseUrl || '')
+        const baseUrl = String(nodeData.inputs?.baseUrl || defaultBaseUrl)
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const credentials = credentialData?.accessToken
@@ -144,7 +145,6 @@ class ChatGigaChat implements INode {
             credentials,
             model: modelName,
             scope,
-            httpsAgent,
             profanityCheck: false,
             timeout,
             verbose: false,
