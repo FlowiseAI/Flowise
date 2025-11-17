@@ -1,9 +1,11 @@
+import https from 'node:https'
 import { GigaChatEmbeddings as GCEmbeddings } from 'langchain-gigachat'
 
-import { httpsAgent } from '../../../utilities/https-agent.util'
+
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData } from '../../../src/utils'
 
+const defaultBaseUrl = 'https://gigachat.devices.sberbank.ru/api/v1/'
 class GigaChatEmbedding implements INode {
     label: string
     name: string
@@ -20,7 +22,7 @@ class GigaChatEmbedding implements INode {
         this.label = 'GigaChatEmbedding'
         this.name = 'gigachatembedding'
         this.version = 2.0
-        this.type = 'ChatGigaEmbedding'
+        this.type = 'GigaChatEmbedding'
         this.icon = 'GigaChat.svg'
         this.category = 'Embeddings'
         this.description = 'Wrapper around GigaChat large language models'
@@ -83,7 +85,7 @@ class GigaChatEmbedding implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default:'https://gigachat.devices.sberbank.ru/api/v1/',
+                default:defaultBaseUrl,
                 description: 'API URL',
                 optional: false
             },
@@ -100,7 +102,7 @@ class GigaChatEmbedding implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const timeout = Number(nodeData.inputs?.timeout || 60000)
-        const baseUrl = String(nodeData.inputs?.baseUrl || '')
+        const baseUrl = String(nodeData.inputs?.baseUrl || defaultBaseUrl)
         const scope = String(nodeData.inputs?.scope || 'GIGACHAT_API_PERS')
         const modelName = nodeData.inputs?.modelName as string
 
@@ -110,7 +112,6 @@ class GigaChatEmbedding implements INode {
         const params: any = {
             credentials,
             scope,
-            httpsAgent,
             timeout,
             verbose: false,
             baseUrl,
