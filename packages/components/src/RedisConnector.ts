@@ -1,6 +1,6 @@
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
-import logger from '../utils/logger'
-import { MODE } from '../Interface'
+import { InternalFlowiseError } from '../../server/src/errors/internalFlowiseError'
+import logger from '../../server/src/utils/logger'
+import { MODE } from '../../server/src/Interface'
 import { Redis } from 'ioredis'
 import { StatusCodes } from 'http-status-codes'
 
@@ -98,7 +98,7 @@ export class RedisConnector {
     }
 
     /**
-     * Returns the dictionary used to create the Redis `ioredis` object.
+     * Returns the Record used to create the Redis `ioredis` object.
      */
     public getRedisConnection() {
         return this.connection
