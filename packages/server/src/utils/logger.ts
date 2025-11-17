@@ -1,6 +1,5 @@
 import * as path from 'path'
 import * as fs from 'fs'
-import { hostname } from 'node:os'
 import config from './config' // should be replaced by node-config or similar
 import { createLogger, transports, format } from 'winston'
 import { NextFunction, Request, Response } from 'express'
@@ -54,21 +53,21 @@ if (process.env.STORAGE_TYPE === 's3') {
     s3ServerStream = new S3StreamLogger({
         bucket: s3Bucket,
         folder: 'logs/server',
-        name_format: `server-%Y-%m-%d-%H-%M-%S-%L-${hostname()}.log`,
+        name_format: `server-%Y-%m-%d-%H-%M-%S-%L.log`,
         config: s3Config
     })
 
     s3ErrorStream = new S3StreamLogger({
         bucket: s3Bucket,
         folder: 'logs/error',
-        name_format: `server-error-%Y-%m-%d-%H-%M-%S-%L-${hostname()}.log`,
+        name_format: `server-error-%Y-%m-%d-%H-%M-%S-%L.log`,
         config: s3Config
     })
 
     s3ServerReqStream = new S3StreamLogger({
         bucket: s3Bucket,
         folder: 'logs/requests',
-        name_format: `server-requests-%Y-%m-%d-%H-%M-%S-%L-${hostname()}.log.jsonl`,
+        name_format: `server-requests-%Y-%m-%d-%H-%M-%S-%L.log.jsonl`,
         config: s3Config
     })
 }
