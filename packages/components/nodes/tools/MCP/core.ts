@@ -84,10 +84,15 @@ export class MCPToolkit extends BaseToolkit {
     }
 
     async initialize() {
-        if (this._tools === null) {
+        if (this. Tools_tools === null) {
             this.client = await this.createClient()
 
-            this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema)
+            // Check if we should reset timeout on progress (default: false to maintain existing behavior)
+            const resetTimeoutOnProgress = process.env.MCP_RESET_TIMEOUT_ON_PROGRESS === 'true'
+
+            this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema, {
+                resetTimeoutOnProgress
+            })
 
             this.tools = await this.get_tools()
 
@@ -138,8 +143,16 @@ export async function MCPTool({
             const client = await toolkit.createClient()
 
             try {
+                // Check if we should reset timeout on progress (default: false to maintain existing behavior)
+                const resetTimeoutOnProgress = process.env.MCP_RESET_TIMEOUT_ON_PROGRESS === 'true'
+
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
-                const res = await client.request(req, CallToolResultSchema)
+                const res = await client.request(req, CallToolResultSchema, {
+                    resetTimeoutOnProgress,
+                    // onprogress callback is required for the SDK to add progressToken to the request
+                    // Without it, the server won't know what token to use in progress notifications
+                    onprogress: resetTimeoutOnProgress ? () => {} : undefined
+                })
                 const content = res.content
                 const contentString = JSON.stringify(content)
                 return contentString
