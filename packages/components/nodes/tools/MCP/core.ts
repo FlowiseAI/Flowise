@@ -6,6 +6,9 @@ import { z } from 'zod'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 
+// Check if we should reset timeout on progress (default: false to maintain existing behavior)
+const RESET_TIMEOUT_ON_PROGRESS = process.env.MCP_RESET_TIMEOUT_ON_PROGRESS === 'true'
+
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
     _tools: ListToolsResult | null = null
@@ -87,11 +90,8 @@ export class MCPToolkit extends BaseToolkit {
         if (this._tools === null) {
             this.client = await this.createClient()
 
-            // Check if we should reset timeout on progress (default: false to maintain existing behavior)
-            const resetTimeoutOnProgress = process.env.MCP_RESET_TIMEOUT_ON_PROGRESS === 'true'
-
             this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema, {
-                resetTimeoutOnProgress
+                resetTimeoutOnProgress: RESET_TIMEOUT_ON_PROGRESS
             })
 
             this.tools = await this.get_tools()
@@ -143,15 +143,12 @@ export async function MCPTool({
             const client = await toolkit.createClient()
 
             try {
-                // Check if we should reset timeout on progress (default: false to maintain existing behavior)
-                const resetTimeoutOnProgress = process.env.MCP_RESET_TIMEOUT_ON_PROGRESS === 'true'
-
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
                 const res = await client.request(req, CallToolResultSchema, {
-                    resetTimeoutOnProgress,
+                    resetTimeoutOnProgress: RESET_TIMEOUT_ON_PROGRESS,
                     // onprogress callback is required for the SDK to add progressToken to the request
                     // Without it, the server won't know what token to use in progress notifications
-                    onprogress: resetTimeoutOnProgress ? () => {} : undefined
+                    onprogress: RESET_TIMEOUT_ON_PROGRESS ? () => {} : undefined
                 })
                 const content = res.content
                 const contentString = JSON.stringify(content)
