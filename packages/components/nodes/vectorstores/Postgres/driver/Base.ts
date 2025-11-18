@@ -50,7 +50,9 @@ export abstract class VectorStoreDriver {
 
         return tableName
     }
-
+    getSchema(): string {
+        return (this.nodeData.inputs?.schema as string) || 'public'
+    }
     async getCredentials() {
         const credentialData = await getCredentialData(this.nodeData.credential ?? '', this.options)
         const user = getCredentialParam('user', credentialData, this.nodeData, process.env.POSTGRES_VECTORSTORE_USER)

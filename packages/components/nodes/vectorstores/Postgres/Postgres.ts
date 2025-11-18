@@ -49,7 +49,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 7.0
+        this.version = 7.1
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -116,6 +116,14 @@ class Postgres_VectorStores implements INode {
                 name: 'tableName',
                 type: 'string',
                 placeholder: getTableName(),
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Schema',
+                name: 'schema',
+                type: 'string',
+                description: 'Schema to use for the table, defaults to "public" if not specified',
                 additionalParams: true,
                 optional: true
             },
