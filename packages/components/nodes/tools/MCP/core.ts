@@ -91,7 +91,8 @@ export class MCPToolkit extends BaseToolkit {
             this.client = await this.createClient()
 
             this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema, {
-                resetTimeoutOnProgress: RESET_TIMEOUT_ON_PROGRESS
+                resetTimeoutOnProgress: RESET_TIMEOUT_ON_PROGRESS,
+                onprogress: RESET_TIMEOUT_ON_PROGRESS ? () => {} : undefined
             })
 
             this.tools = await this.get_tools()
