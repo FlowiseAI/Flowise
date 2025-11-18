@@ -4,15 +4,46 @@ import { MODE } from '../../server/src/Interface'
 import { Redis } from 'ioredis'
 import { StatusCodes } from 'http-status-codes'
 
+/**
+ * Class used to initialize and connect to Redis instance.
+ *
+ * Sync usage:
+ *   const connector = new RedisConnector()
+ *   const redis = connector.getRedisClient()
+ *
+ * Async usage:
+ *   const connector = new RedisConnector()
+ *   await connector.ready() // fully waits for Redis init
+ *   const redis = connector.getRedisClient()
+ */
 export class RedisConnector {
+    /**
+     * @type {Redis}
+     */
     private redis!: Redis
+
+    /**
+     * @type {Record<string, unknown>}
+     */
     private connection!: Record<string, unknown>
+
+    /**
+     * @type {Promise<void>}
+     */
     private initPromise: Promise<void> | null = null
 
-    // Sync constructor
+    /**
+     * Sync constructor
+     * 
+     * @constructor
+     */
     constructor() {}
 
-    // Initializes Redis lazily (runs once).
+    /**
+     * Initializes Redis lazily (runs once).
+     *
+     * @returns {Promise<void>}
+     */
     private async init(): Promise<void> {
         if (this.initPromise) return this.initPromise
 
@@ -53,8 +84,11 @@ export class RedisConnector {
 
     /**
      * Queue mode initialization.
+     *
+     * @param {number} keepAlive - Keep alive in milliseconds (see https://redis.github.io/ioredis/index.html#RedisOptions)
+     * @param {Record<string, unknown>} tlsOptions - Record with key-value pairs (see https://redis.github.io/ioredis/index.html#RedisOptions)
      */
-    private async initializeQueueMode(keepAlive: number, tlsOptions: Record<string, unknown>) {
+    private async initializeQueueMode(keepAlive: number, tlsOptions: Record<string, unknown>): Promise<void> {
         if (process.env.REDIS_URL) {
             logger.info('[server] Queue mode using REDIS_URL.')
 
@@ -95,6 +129,13 @@ export class RedisConnector {
         }
     }
 
+    /**
+     * Function to handle Redis failure, used as callback.
+     * https://redis.github.io/ioredis/interfaces/CommonRedisOptions.html#reconnectOnError
+     * @param {Error} err
+     * @returns {number} 1 - Always reconnect to Redis in case of errors (does not retry the failed command)
+     * @see https://redis.github.io/ioredis/interfaces/CommonRedisOptions.html#reconnectOnError
+     */
     private connectOnError(err: Error): number {
         logger.error(`[server]: Redis connection error - ${err.message}`)
         return 1
@@ -104,6 +145,8 @@ export class RedisConnector {
      * Sync-safe access:
      *  - If Redis isn't initialized: triggers async initialization.
      *  - Always returns the Redis instance synchronously.
+     *
+     * @returns {Redis}
      */
     public getRedisClient(): Redis {
         // Trigger async init if not yet started
@@ -114,12 +157,19 @@ export class RedisConnector {
     /**
      * Fully async safe usage:
      *  await connector.ready()
+     *
+     * @returns {Promise<void>}
      */
     public async ready(): Promise<void> {
         await this.init()
     }
 
-    public getRedisConnection() {
+    /**
+     * Sync-safe access
+     *
+     * @returns {Record<string, unknown>}
+     */
+    public getRedisConnection(): Record<string, unknown> {
         // Trigger async init if not yet started
         void this.init()
         return this.connection
