@@ -17,9 +17,9 @@ class ChatNvdiaNIM_ChatModels implements INode {
 
     constructor() {
         this.label = 'Chat NVIDIA NIM'
-        this.name = 'Chat NVIDIA NIM'
+        this.name = 'chatNvidiaNIM'
         this.version = 1.1
-        this.type = 'Chat NVIDIA NIM'
+        this.type = 'ChatNvidiaNIM'
         this.icon = 'nvdia.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around NVIDIA NIM Inference API'
@@ -137,6 +137,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: nvidiaNIMApiKey ?? 'sk-',
+            apiKey: nvidiaNIMApiKey ?? 'sk-',
             streaming: streaming ?? true
         }
 

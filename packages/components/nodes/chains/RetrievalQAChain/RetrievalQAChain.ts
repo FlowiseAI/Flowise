@@ -17,6 +17,7 @@ class RetrievalQAChain_Chains implements INode {
     baseClasses: string[]
     description: string
     inputs: INodeParams[]
+    badge: string
 
     constructor() {
         this.label = 'Retrieval QA Chain'
@@ -24,6 +25,7 @@ class RetrievalQAChain_Chains implements INode {
         this.version = 2.0
         this.type = 'RetrievalQAChain'
         this.icon = 'qa.svg'
+        this.badge = 'DEPRECATING'
         this.category = 'Chains'
         this.description = 'QA chain to answer a question based on the retrieved documents'
         this.baseClasses = [this.type, ...getBaseClasses(RetrievalQAChain)]
@@ -53,7 +55,7 @@ class RetrievalQAChain_Chains implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
 
-        const chain = RetrievalQAChain.fromLLM(model, vectorStoreRetriever, { verbose: process.env.DEBUG === 'true' })
+        const chain = RetrievalQAChain.fromLLM(model, vectorStoreRetriever, { verbose: process.env.DEBUG === 'true' ? true : false })
         return chain
     }
 
@@ -80,7 +82,7 @@ class RetrievalQAChain_Chains implements INode {
         const obj = {
             query: input
         }
-        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         if (shouldStreamResponse) {

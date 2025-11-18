@@ -1,6 +1,6 @@
 {
     "description": "Simple chat engine to handle back and forth conversations using LlamaIndex",
-    "usecases": ["Chatbot"],
+    "usecases": ["Basic"],
     "framework": ["LlamaIndex"],
     "nodes": [
         {

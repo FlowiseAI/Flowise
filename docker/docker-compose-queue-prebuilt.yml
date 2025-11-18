@@ -1,0 +1,316 @@
+version: '3.1'
+
+services:
+    redis:
+        image: redis:alpine
+        container_name: flowise-redis
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis_data:/data
+        networks:
+            - flowise-net
+        restart: always
+
+    flowise:
+        image: flowiseai/flowise:latest
+        container_name: flowise-main
+        restart: always
+        ports:
+            - '${PORT:-3000}:${PORT:-3000}'
+        volumes:
+            - ~/.flowise:/root/.flowise
+        environment:
+            # --- Essential Flowise Vars ---
+            - PORT=${PORT:-3000}
+            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_TYPE=${DATABASE_TYPE}
+            - DATABASE_PORT=${DATABASE_PORT}
+            - DATABASE_HOST=${DATABASE_HOST}
+            - DATABASE_NAME=${DATABASE_NAME}
+            - DATABASE_USER=${DATABASE_USER}
+            - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+            - DATABASE_SSL=${DATABASE_SSL}
+            - DATABASE_SSL_KEY_BASE64=${DATABASE_SSL_KEY_BASE64}
+
+            # SECRET KEYS
+            - SECRETKEY_STORAGE_TYPE=${SECRETKEY_STORAGE_TYPE}
+            - SECRETKEY_PATH=${SECRETKEY_PATH}
+            - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
+            - SECRETKEY_AWS_ACCESS_KEY=${SECRETKEY_AWS_ACCESS_KEY}
+            - SECRETKEY_AWS_SECRET_KEY=${SECRETKEY_AWS_SECRET_KEY}
+            - SECRETKEY_AWS_REGION=${SECRETKEY_AWS_REGION}
+            - SECRETKEY_AWS_NAME=${SECRETKEY_AWS_NAME}
+
+            # LOGGING
+            - DEBUG=${DEBUG}
+            - LOG_PATH=${LOG_PATH}
+            - LOG_LEVEL=${LOG_LEVEL}
+            - LOG_SANITIZE_BODY_FIELDS=${LOG_SANITIZE_BODY_FIELDS}
+            - LOG_SANITIZE_HEADER_FIELDS=${LOG_SANITIZE_HEADER_FIELDS}
+
+            # CUSTOM TOOL/FUNCTION DEPENDENCIES
+            - TOOL_FUNCTION_BUILTIN_DEP=${TOOL_FUNCTION_BUILTIN_DEP}
+            - TOOL_FUNCTION_EXTERNAL_DEP=${TOOL_FUNCTION_EXTERNAL_DEP}
+            - ALLOW_BUILTIN_DEP=${ALLOW_BUILTIN_DEP}
+
+            # STORAGE
+            - STORAGE_TYPE=${STORAGE_TYPE}
+            - BLOB_STORAGE_PATH=${BLOB_STORAGE_PATH}
+            - S3_STORAGE_BUCKET_NAME=${S3_STORAGE_BUCKET_NAME}
+            - S3_STORAGE_ACCESS_KEY_ID=${S3_STORAGE_ACCESS_KEY_ID}
+            - S3_STORAGE_SECRET_ACCESS_KEY=${S3_STORAGE_SECRET_ACCESS_KEY}
+            - S3_STORAGE_REGION=${S3_STORAGE_REGION}
+            - S3_ENDPOINT_URL=${S3_ENDPOINT_URL}
+            - S3_FORCE_PATH_STYLE=${S3_FORCE_PATH_STYLE}
+            - GOOGLE_CLOUD_STORAGE_CREDENTIAL=${GOOGLE_CLOUD_STORAGE_CREDENTIAL}
+            - GOOGLE_CLOUD_STORAGE_PROJ_ID=${GOOGLE_CLOUD_STORAGE_PROJ_ID}
+            - GOOGLE_CLOUD_STORAGE_BUCKET_NAME=${GOOGLE_CLOUD_STORAGE_BUCKET_NAME}
+            - GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS=${GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS}
+
+            # SETTINGS
+            - NUMBER_OF_PROXIES=${NUMBER_OF_PROXIES}
+            - CORS_ORIGINS=${CORS_ORIGINS}
+            - IFRAME_ORIGINS=${IFRAME_ORIGINS}
+            - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT}
+            - SHOW_COMMUNITY_NODES=${SHOW_COMMUNITY_NODES}
+            - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
+            - DISABLED_NODES=${DISABLED_NODES}
+            - MODEL_LIST_CONFIG_JSON=${MODEL_LIST_CONFIG_JSON}
+
+            # AUTH PARAMETERS
+            - APP_URL=${APP_URL}
+            - JWT_AUTH_TOKEN_SECRET=${JWT_AUTH_TOKEN_SECRET}
+            - JWT_REFRESH_TOKEN_SECRET=${JWT_REFRESH_TOKEN_SECRET}
+            - JWT_ISSUER=${JWT_ISSUER}
+            - JWT_AUDIENCE=${JWT_AUDIENCE}
+            - JWT_TOKEN_EXPIRY_IN_MINUTES=${JWT_TOKEN_EXPIRY_IN_MINUTES}
+            - JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES=${JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES}
+            - EXPIRE_AUTH_TOKENS_ON_RESTART=${EXPIRE_AUTH_TOKENS_ON_RESTART}
+            - EXPRESS_SESSION_SECRET=${EXPRESS_SESSION_SECRET}
+            - PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS=${PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS}
+            - PASSWORD_SALT_HASH_ROUNDS=${PASSWORD_SALT_HASH_ROUNDS}
+            - TOKEN_HASH_SECRET=${TOKEN_HASH_SECRET}
+            - SECURE_COOKIES=${SECURE_COOKIES}
+
+            # EMAIL
+            - SMTP_HOST=${SMTP_HOST}
+            - SMTP_PORT=${SMTP_PORT}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - SMTP_SECURE=${SMTP_SECURE}
+            - ALLOW_UNAUTHORIZED_CERTS=${ALLOW_UNAUTHORIZED_CERTS}
+            - SENDER_EMAIL=${SENDER_EMAIL}
+
+            # ENTERPRISE
+            - LICENSE_URL=${LICENSE_URL}
+            - FLOWISE_EE_LICENSE_KEY=${FLOWISE_EE_LICENSE_KEY}
+            - OFFLINE=${OFFLINE}
+            - INVITE_TOKEN_EXPIRY_IN_HOURS=${INVITE_TOKEN_EXPIRY_IN_HOURS}
+            - WORKSPACE_INVITE_TEMPLATE_PATH=${WORKSPACE_INVITE_TEMPLATE_PATH}
+
+            # METRICS COLLECTION
+            - POSTHOG_PUBLIC_API_KEY=${POSTHOG_PUBLIC_API_KEY}
+            - ENABLE_METRICS=${ENABLE_METRICS}
+            - METRICS_PROVIDER=${METRICS_PROVIDER}
+            - METRICS_INCLUDE_NODE_METRICS=${METRICS_INCLUDE_NODE_METRICS}
+            - METRICS_SERVICE_NAME=${METRICS_SERVICE_NAME}
+            - METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT=${METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT}
+            - METRICS_OPEN_TELEMETRY_PROTOCOL=${METRICS_OPEN_TELEMETRY_PROTOCOL}
+            - METRICS_OPEN_TELEMETRY_DEBUG=${METRICS_OPEN_TELEMETRY_DEBUG}
+
+            # PROXY
+            - GLOBAL_AGENT_HTTP_PROXY=${GLOBAL_AGENT_HTTP_PROXY}
+            - GLOBAL_AGENT_HTTPS_PROXY=${GLOBAL_AGENT_HTTPS_PROXY}
+            - GLOBAL_AGENT_NO_PROXY=${GLOBAL_AGENT_NO_PROXY}
+
+            # --- Queue Configuration (Main Instance) ---
+            - MODE=${MODE:-queue}
+            - QUEUE_NAME=${QUEUE_NAME:-flowise-queue}
+            - QUEUE_REDIS_EVENT_STREAM_MAX_LEN=${QUEUE_REDIS_EVENT_STREAM_MAX_LEN}
+            - WORKER_CONCURRENCY=${WORKER_CONCURRENCY}
+            - REMOVE_ON_AGE=${REMOVE_ON_AGE}
+            - REMOVE_ON_COUNT=${REMOVE_ON_COUNT}
+            - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_USERNAME=${REDIS_USERNAME}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - REDIS_TLS=${REDIS_TLS}
+            - REDIS_CERT=${REDIS_CERT}
+            - REDIS_KEY=${REDIS_KEY}
+            - REDIS_CA=${REDIS_CA}
+            - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
+            - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
+
+            # SECURITY
+            - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
+            - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
+            - HTTP_DENY_LIST=${HTTP_DENY_LIST}
+            - TRUST_PROXY=${TRUST_PROXY}
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        entrypoint: /bin/sh -c "sleep 3; flowise start"
+        depends_on:
+            - redis
+        networks:
+            - flowise-net
+
+    flowise-worker:
+        image: flowiseai/flowise-worker:latest
+        container_name: flowise-worker
+        restart: always
+        volumes:
+            - ~/.flowise:/root/.flowise
+        environment:
+            # --- Essential Flowise Vars ---
+            - WORKER_PORT=${WORKER_PORT:-5566}
+            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_TYPE=${DATABASE_TYPE}
+            - DATABASE_PORT=${DATABASE_PORT}
+            - DATABASE_HOST=${DATABASE_HOST}
+            - DATABASE_NAME=${DATABASE_NAME}
+            - DATABASE_USER=${DATABASE_USER}
+            - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+            - DATABASE_SSL=${DATABASE_SSL}
+            - DATABASE_SSL_KEY_BASE64=${DATABASE_SSL_KEY_BASE64}
+
+            # SECRET KEYS
+            - SECRETKEY_STORAGE_TYPE=${SECRETKEY_STORAGE_TYPE}
+            - SECRETKEY_PATH=${SECRETKEY_PATH}
+            - FLOWISE_SECRETKEY_OVERWRITE=${FLOWISE_SECRETKEY_OVERWRITE}
+            - SECRETKEY_AWS_ACCESS_KEY=${SECRETKEY_AWS_ACCESS_KEY}
+            - SECRETKEY_AWS_SECRET_KEY=${SECRETKEY_AWS_SECRET_KEY}
+            - SECRETKEY_AWS_REGION=${SECRETKEY_AWS_REGION}
+            - SECRETKEY_AWS_NAME=${SECRETKEY_AWS_NAME}
+
+            # LOGGING
+            - DEBUG=${DEBUG}
+            - LOG_PATH=${LOG_PATH}
+            - LOG_LEVEL=${LOG_LEVEL}
+            - LOG_SANITIZE_BODY_FIELDS=${LOG_SANITIZE_BODY_FIELDS}
+            - LOG_SANITIZE_HEADER_FIELDS=${LOG_SANITIZE_HEADER_FIELDS}
+
+            # CUSTOM TOOL/FUNCTION DEPENDENCIES
+            - TOOL_FUNCTION_BUILTIN_DEP=${TOOL_FUNCTION_BUILTIN_DEP}
+            - TOOL_FUNCTION_EXTERNAL_DEP=${TOOL_FUNCTION_EXTERNAL_DEP}
+            - ALLOW_BUILTIN_DEP=${ALLOW_BUILTIN_DEP}
+
+            # STORAGE
+            - STORAGE_TYPE=${STORAGE_TYPE}
+            - BLOB_STORAGE_PATH=${BLOB_STORAGE_PATH}
+            - S3_STORAGE_BUCKET_NAME=${S3_STORAGE_BUCKET_NAME}
+            - S3_STORAGE_ACCESS_KEY_ID=${S3_STORAGE_ACCESS_KEY_ID}
+            - S3_STORAGE_SECRET_ACCESS_KEY=${S3_STORAGE_SECRET_ACCESS_KEY}
+            - S3_STORAGE_REGION=${S3_STORAGE_REGION}
+            - S3_ENDPOINT_URL=${S3_ENDPOINT_URL}
+            - S3_FORCE_PATH_STYLE=${S3_FORCE_PATH_STYLE}
+            - GOOGLE_CLOUD_STORAGE_CREDENTIAL=${GOOGLE_CLOUD_STORAGE_CREDENTIAL}
+            - GOOGLE_CLOUD_STORAGE_PROJ_ID=${GOOGLE_CLOUD_STORAGE_PROJ_ID}
+            - GOOGLE_CLOUD_STORAGE_BUCKET_NAME=${GOOGLE_CLOUD_STORAGE_BUCKET_NAME}
+            - GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS=${GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS}
+
+            # SETTINGS
+            - NUMBER_OF_PROXIES=${NUMBER_OF_PROXIES}
+            - CORS_ORIGINS=${CORS_ORIGINS}
+            - IFRAME_ORIGINS=${IFRAME_ORIGINS}
+            - FLOWISE_FILE_SIZE_LIMIT=${FLOWISE_FILE_SIZE_LIMIT}
+            - SHOW_COMMUNITY_NODES=${SHOW_COMMUNITY_NODES}
+            - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
+            - DISABLED_NODES=${DISABLED_NODES}
+            - MODEL_LIST_CONFIG_JSON=${MODEL_LIST_CONFIG_JSON}
+
+            # AUTH PARAMETERS
+            - APP_URL=${APP_URL}
+            - JWT_AUTH_TOKEN_SECRET=${JWT_AUTH_TOKEN_SECRET}
+            - JWT_REFRESH_TOKEN_SECRET=${JWT_REFRESH_TOKEN_SECRET}
+            - JWT_ISSUER=${JWT_ISSUER}
+            - JWT_AUDIENCE=${JWT_AUDIENCE}
+            - JWT_TOKEN_EXPIRY_IN_MINUTES=${JWT_TOKEN_EXPIRY_IN_MINUTES}
+            - JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES=${JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES}
+            - EXPIRE_AUTH_TOKENS_ON_RESTART=${EXPIRE_AUTH_TOKENS_ON_RESTART}
+            - EXPRESS_SESSION_SECRET=${EXPRESS_SESSION_SECRET}
+            - PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS=${PASSWORD_RESET_TOKEN_EXPIRY_IN_MINS}
+            - PASSWORD_SALT_HASH_ROUNDS=${PASSWORD_SALT_HASH_ROUNDS}
+            - TOKEN_HASH_SECRET=${TOKEN_HASH_SECRET}
+            - SECURE_COOKIES=${SECURE_COOKIES}
+
+            # EMAIL
+            - SMTP_HOST=${SMTP_HOST}
+            - SMTP_PORT=${SMTP_PORT}
+            - SMTP_USER=${SMTP_USER}
+            - SMTP_PASSWORD=${SMTP_PASSWORD}
+            - SMTP_SECURE=${SMTP_SECURE}
+            - ALLOW_UNAUTHORIZED_CERTS=${ALLOW_UNAUTHORIZED_CERTS}
+            - SENDER_EMAIL=${SENDER_EMAIL}
+
+            # ENTERPRISE
+            - LICENSE_URL=${LICENSE_URL}
+            - FLOWISE_EE_LICENSE_KEY=${FLOWISE_EE_LICENSE_KEY}
+            - OFFLINE=${OFFLINE}
+            - INVITE_TOKEN_EXPIRY_IN_HOURS=${INVITE_TOKEN_EXPIRY_IN_HOURS}
+            - WORKSPACE_INVITE_TEMPLATE_PATH=${WORKSPACE_INVITE_TEMPLATE_PATH}
+
+            # METRICS COLLECTION
+            - POSTHOG_PUBLIC_API_KEY=${POSTHOG_PUBLIC_API_KEY}
+            - ENABLE_METRICS=${ENABLE_METRICS}
+            - METRICS_PROVIDER=${METRICS_PROVIDER}
+            - METRICS_INCLUDE_NODE_METRICS=${METRICS_INCLUDE_NODE_METRICS}
+            - METRICS_SERVICE_NAME=${METRICS_SERVICE_NAME}
+            - METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT=${METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT}
+            - METRICS_OPEN_TELEMETRY_PROTOCOL=${METRICS_OPEN_TELEMETRY_PROTOCOL}
+            - METRICS_OPEN_TELEMETRY_DEBUG=${METRICS_OPEN_TELEMETRY_DEBUG}
+
+            # PROXY
+            - GLOBAL_AGENT_HTTP_PROXY=${GLOBAL_AGENT_HTTP_PROXY}
+            - GLOBAL_AGENT_HTTPS_PROXY=${GLOBAL_AGENT_HTTPS_PROXY}
+            - GLOBAL_AGENT_NO_PROXY=${GLOBAL_AGENT_NO_PROXY}
+
+            # --- Queue Configuration (Worker Instance) ---
+            - MODE=${MODE:-queue}
+            - QUEUE_NAME=${QUEUE_NAME:-flowise-queue}
+            - QUEUE_REDIS_EVENT_STREAM_MAX_LEN=${QUEUE_REDIS_EVENT_STREAM_MAX_LEN}
+            - WORKER_CONCURRENCY=${WORKER_CONCURRENCY}
+            - REMOVE_ON_AGE=${REMOVE_ON_AGE}
+            - REMOVE_ON_COUNT=${REMOVE_ON_COUNT}
+            - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+            - REDIS_HOST=${REDIS_HOST}
+            - REDIS_PORT=${REDIS_PORT}
+            - REDIS_USERNAME=${REDIS_USERNAME}
+            - REDIS_PASSWORD=${REDIS_PASSWORD}
+            - REDIS_TLS=${REDIS_TLS}
+            - REDIS_CERT=${REDIS_CERT}
+            - REDIS_KEY=${REDIS_KEY}
+            - REDIS_CA=${REDIS_CA}
+            - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
+            - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
+
+            # SECURITY
+            - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
+            - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
+            - HTTP_DENY_LIST=${HTTP_DENY_LIST}
+            - TRUST_PROXY=${TRUST_PROXY}
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost:${WORKER_PORT:-5566}/healthz']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+        entrypoint: /bin/sh -c "node /app/healthcheck/healthcheck.js & sleep 5 && pnpm run start-worker"
+        depends_on:
+            - redis
+            - flowise
+        networks:
+            - flowise-net
+
+volumes:
+    redis_data:
+        driver: local
+
+networks:
+    flowise-net:
+        driver: bridge

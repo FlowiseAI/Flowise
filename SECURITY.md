@@ -2,9 +2,7 @@
 
 At Flowise, we prioritize security and continuously work to safeguard our systems. However, vulnerabilities can still exist. If you identify a security issue, please report it to us so we can address it promptly. Your cooperation helps us better protect our platform and users.  
 
-### Vulnerabilities  
-
-The following types of issues are some of the most common vulnerabilities:
+### Out of scope vulnerabilities  
 
 - Clickjacking on pages without sensitive actions  
 - CSRF on unauthenticated/logout/login pages  

@@ -23,4 +23,7 @@ export class Credential implements ICredential {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column({ nullable: false, type: 'text' })
+    workspaceId: string
 }
