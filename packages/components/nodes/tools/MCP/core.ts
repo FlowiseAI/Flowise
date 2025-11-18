@@ -84,7 +84,7 @@ export class MCPToolkit extends BaseToolkit {
     }
 
     async initialize() {
-        if (this. Tools_tools === null) {
+        if (this._tools === null) {
             this.client = await this.createClient()
 
             // Check if we should reset timeout on progress (default: false to maintain existing behavior)
