@@ -70,13 +70,17 @@ export const init = async (): Promise<void> => {
                 username: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
+                schema: process.env.DATABASE_SCHEMA || 'public',
                 ssl: getDatabaseSSLFromEnv(),
                 synchronize: false,
                 migrationsRun: false,
                 entities: Object.values(entities),
                 migrations: postgresMigrations,
                 extra: {
-                    idleTimeoutMillis: 120000
+                    idleTimeoutMillis: 120000,
+                    ...(process.env.DATABASE_SCHEMA && {
+                        options: `-c search_path=${process.env.DATABASE_SCHEMA},public`
+                    })
                 },
                 logging: ['error', 'warn', 'info', 'log'],
                 logger: 'advanced-console',
