@@ -14,7 +14,7 @@ export const ErrorProvider = ({ children }) => {
 
     const handleError = async (err) => {
         console.error(err)
-        if (err?.response?.status === 429) {
+        if (err?.response?.status === 429 && err?.response?.data?.type !== 'authentication_rate_limit') {
             const retryAfterHeader = err?.response?.headers?.['retry-after']
             let retryAfter = 60 // Default in seconds
             if (retryAfterHeader) {
