@@ -14,7 +14,22 @@ export const ErrorProvider = ({ children }) => {
 
     const handleError = async (err) => {
         console.error(err)
-        if (err?.response?.status === 403) {
+        if (err?.response?.status === 429 && err?.response?.data?.type !== 'authentication_rate_limit') {
+            const retryAfterHeader = err?.response?.headers?.['retry-after']
+            let retryAfter = 60 // Default in seconds
+            if (retryAfterHeader) {
+                const parsedSeconds = parseInt(retryAfterHeader, 10)
+                if (Number.isNaN(parsedSeconds)) {
+                    const retryDate = new Date(retryAfterHeader)
+                    if (!Number.isNaN(retryDate.getTime())) {
+                        retryAfter = Math.max(0, Math.ceil((retryDate.getTime() - Date.now()) / 1000))
+                    }
+                } else {
+                    retryAfter = parsedSeconds
+                }
+            }
+            navigate('/rate-limited', { state: { retryAfter } })
+        } else if (err?.response?.status === 403) {
             navigate('/unauthorized')
         } else if (err?.response?.status === 401) {
             if (ErrorMessage.INVALID_MISSING_TOKEN === err?.response?.data?.message) {
