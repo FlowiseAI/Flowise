@@ -1,15 +1,15 @@
 import { useRoutes } from 'react-router-dom'
 
 // routes
-import MainRoutes from './MainRoutes'
+import AuthRoutes from '@/routes/AuthRoutes'
 import CanvasRoutes from './CanvasRoutes'
 import ChatbotRoutes from './ChatbotRoutes'
-import config from '@/config'
-import AuthRoutes from '@/routes/AuthRoutes'
 import ExecutionRoutes from './ExecutionRoutes'
+import MainRoutes from './MainRoutes'
 
 // ==============================|| ROUTING RENDER ||============================== //
 
 export default function ThemeRoutes() {
-    return useRoutes([MainRoutes, AuthRoutes, CanvasRoutes, ChatbotRoutes, ExecutionRoutes], config.basename)
+    // Note: basename is already set on BrowserRouter, don't pass it to useRoutes
+    return useRoutes([MainRoutes, AuthRoutes, CanvasRoutes, ChatbotRoutes, ExecutionRoutes])
 }

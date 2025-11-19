@@ -6,6 +6,7 @@ import { StatusCodes } from 'http-status-codes'
 import jwt, { JwtPayload, sign } from 'jsonwebtoken'
 import passport from 'passport'
 import { VerifiedCallback } from 'passport-jwt'
+import { v4 as uuidv4 } from 'uuid'
 import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
 import { IdentityManager } from '../../../IdentityManager'
 import { Platform } from '../../../Interface'
@@ -22,7 +23,6 @@ import { WorkspaceUserService } from '../../services/workspace-user.service'
 import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
 import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
-import { v4 as uuidv4 } from 'uuid'
 
 const localStrategy = require('passport-local').Strategy
 
@@ -83,6 +83,10 @@ const _initializePassportMiddleware = async (app: express.Application) => {
 
 export const initializeJwtCookieMiddleware = async (app: express.Application, identityManager: IdentityManager) => {
     await _initializePassportMiddleware(app)
+
+    // Calculate base path prefix for auth routes
+    const basePath = (process.env.BASE_PATH || '').trim().replace(/\/$/, '')
+    const prefix = basePath || ''
 
     const strategy = getAuthStrategy(jwtOptions)
     passport.use(strategy)
@@ -179,13 +183,13 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         )
     )
 
-    app.post('/api/v1/auth/resolve', async (req, res) => {
+    app.post(`${prefix}/api/v1/auth/resolve`, async (req, res) => {
         // check for the organization, if empty redirect to the organization setup page for OpenSource and Enterprise Versions
         // for Cloud (Horizontal) version, redirect to the signin page
         const expressApp = getRunningExpressApp()
         const platform = expressApp.identityManager.getPlatformType()
         if (platform === Platform.CLOUD) {
-            return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/signin' })
+            return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${prefix}/signin` })
         }
         const orgService = new OrganizationService()
         const queryRunner = expressApp.AppDataSource.createQueryRunner()
@@ -196,25 +200,25 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
             switch (platform) {
                 case Platform.ENTERPRISE:
                     if (!identityManager.isLicenseValid()) {
-                        return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/license-expired' })
+                        return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${prefix}/license-expired` })
                     }
-                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/organization-setup' })
+                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${prefix}/organization-setup` })
                 default:
-                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/organization-setup' })
+                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${prefix}/organization-setup` })
             }
         }
         switch (platform) {
             case Platform.ENTERPRISE:
                 if (!identityManager.isLicenseValid()) {
-                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/license-expired' })
+                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${prefix}/license-expired` })
                 }
-                return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/signin' })
+                return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${prefix}/signin` })
             default:
-                return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/signin' })
+                return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${prefix}/signin` })
         }
     })
 
-    app.post('/api/v1/auth/refreshToken', async (req, res) => {
+    app.post(`${prefix}/api/v1/auth/refreshToken`, async (req, res) => {
         const refreshToken = req.cookies.refreshToken
         if (!refreshToken) return res.sendStatus(401)
 
@@ -251,7 +255,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         })
     })
 
-    app.post('/api/v1/auth/login', (req, res, next?) => {
+    app.post(`${prefix}/api/v1/auth/login`, (req, res, next?) => {
         passport.authenticate('login', async (err: any, user: LoggedInUser) => {
             try {
                 if (err || !user) {

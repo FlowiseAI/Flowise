@@ -73,7 +73,8 @@ export abstract class BaseCommand extends Command {
         REDIS_KEY: Flags.string(),
         REDIS_CA: Flags.string(),
         REDIS_KEEP_ALIVE: Flags.string(),
-        ENABLE_BULLMQ_DASHBOARD: Flags.string()
+        ENABLE_BULLMQ_DASHBOARD: Flags.string(),
+        BASE_PATH: Flags.string()
     }
 
     protected async stopProcess() {
@@ -200,5 +201,6 @@ export abstract class BaseCommand extends Command {
         if (flags.REMOVE_ON_COUNT) process.env.REMOVE_ON_COUNT = flags.REMOVE_ON_COUNT
         if (flags.REDIS_KEEP_ALIVE) process.env.REDIS_KEEP_ALIVE = flags.REDIS_KEEP_ALIVE
         if (flags.ENABLE_BULLMQ_DASHBOARD) process.env.ENABLE_BULLMQ_DASHBOARD = flags.ENABLE_BULLMQ_DASHBOARD
+        if (flags.BASE_PATH) process.env.BASE_PATH = flags.BASE_PATH
     }
 }

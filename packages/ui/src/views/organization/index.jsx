@@ -233,7 +233,8 @@ const OrganizationSetupPage = () => {
     }, [loginApi.data])
 
     const signInWithSSO = (ssoProvider) => {
-        window.location.href = `/api/v1/${ssoProvider}/login`
+        const basePath = import.meta.env.VITE_BASE_PATH || ''
+        window.location.href = `${basePath}/api/v1/${ssoProvider}/login`
     }
 
     return (

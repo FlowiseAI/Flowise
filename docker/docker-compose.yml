@@ -59,6 +59,7 @@ services:
             - DISABLE_FLOWISE_TELEMETRY=${DISABLE_FLOWISE_TELEMETRY}
             - DISABLED_NODES=${DISABLED_NODES}
             - MODEL_LIST_CONFIG_JSON=${MODEL_LIST_CONFIG_JSON}
+            - BASE_PATH=${BASE_PATH}
 
             # AUTH PARAMETERS
             - APP_URL=${APP_URL}
@@ -126,7 +127,7 @@ services:
         ports:
             - '${PORT}:${PORT}'
         healthcheck:
-            test: ['CMD', 'curl', '-f', 'http://localhost:${PORT}/api/v1/ping']
+            test: ['CMD', 'curl', '-f', 'http://localhost:${PORT}${BASE_PATH}/api/v1/ping']
             interval: 10s
             timeout: 5s
             retries: 5

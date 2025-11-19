@@ -24,6 +24,7 @@ services:
             # --- Essential Flowise Vars ---
             - PORT=${PORT:-3000}
             - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - BASE_PATH=${BASE_PATH}
             - DATABASE_TYPE=${DATABASE_TYPE}
             - DATABASE_PORT=${DATABASE_PORT}
             - DATABASE_HOST=${DATABASE_HOST}
@@ -139,7 +140,7 @@ services:
             - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
             - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
         healthcheck:
-            test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
+            test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}${BASE_PATH}/api/v1/ping']
             interval: 10s
             timeout: 5s
             retries: 5

@@ -6,7 +6,7 @@ Starts Flowise from [DockerHub Image](https://hub.docker.com/r/flowiseai/flowise
 
 1. Create `.env` file and specify the `PORT` (refer to `.env.example`)
 2. `docker compose up -d`
-3. Open [http://localhost:3000](http://localhost:3000)
+3. Open [http://localhost:3000](http://localhost:3000) (or [http://localhost:3000/path](http://localhost:3000/path) if you set `BASE_PATH=/path`)
 4. You can bring the containers down by `docker compose stop`
 
 ## 🌱 Env Variables

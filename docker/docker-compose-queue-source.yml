@@ -25,6 +25,7 @@ services:
             # --- Essential Flowise Vars ---
             - PORT=${PORT:-3000}
             - DATABASE_PATH=/root/.flowise
+            - BASE_PATH=${BASE_PATH}
             - SECRETKEY_PATH=/root/.flowise
             - LOG_PATH=/root/.flowise/logs
             - BLOB_STORAGE_PATH=/root/.flowise/storage

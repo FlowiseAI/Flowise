@@ -3,9 +3,9 @@ import { useSelector } from 'react-redux'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Stack, useTheme, Typography, Box, Alert, Button, Divider, Icon } from '@mui/material'
-import { IconExclamationCircle } from '@tabler/icons-react'
 import { LoadingButton } from '@mui/lab'
+import { Alert, Box, Button, Divider, Icon, Stack, Typography, useTheme } from '@mui/material'
+import { IconExclamationCircle } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -16,8 +16,8 @@ import useApi from '@/hooks/useApi'
 import { useConfig } from '@/store/context/ConfigContext'
 
 // API
-import authApi from '@/api/auth'
 import accountApi from '@/api/account.api'
+import authApi from '@/api/auth'
 import loginMethodApi from '@/api/loginmethod'
 import ssoApi from '@/api/sso'
 
@@ -25,14 +25,14 @@ import ssoApi from '@/api/sso'
 import useNotifier from '@/utils/useNotifier'
 
 // store
-import { loginSuccess, logoutSuccess } from '@/store/reducers/authSlice'
 import { store } from '@/store'
+import { loginSuccess, logoutSuccess } from '@/store/reducers/authSlice'
 
 // icons
-import AzureSSOLoginIcon from '@/assets/images/microsoft-azure.svg'
-import GoogleSSOLoginIcon from '@/assets/images/google.svg'
 import Auth0SSOLoginIcon from '@/assets/images/auth0.svg'
 import GithubSSOLoginIcon from '@/assets/images/github.svg'
+import GoogleSSOLoginIcon from '@/assets/images/google.svg'
+import AzureSSOLoginIcon from '@/assets/images/microsoft-azure.svg'
 
 // ==============================|| SignInPage ||============================== //
 
@@ -156,7 +156,8 @@ const SignInPage = () => {
     }, [authError])
 
     const signInWithSSO = (ssoProvider) => {
-        window.location.href = `/api/v1/${ssoProvider}/login`
+        const basePath = import.meta.env.VITE_BASE_PATH || ''
+        window.location.href = `${basePath}/api/v1/${ssoProvider}/login`
     }
 
     const handleResendVerification = async () => {
