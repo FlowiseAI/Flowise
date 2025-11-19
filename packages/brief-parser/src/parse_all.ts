@@ -27,10 +27,24 @@ const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 async function runAll() {
   // 1) Alle aktiven Briefs holen
-  const { data: briefs, error: bErr } = await sb
+  const { data: allBriefs, error: bErr } = await sb
     .from('briefs')
-    .select('id, title, status')
-    .in('status', ['draft','active']);
+    .select('id, domain_id, title, status, version')
+    .in('status', ['draft', 'active']);
+
+  if (bErr) throw bErr;
+
+  // Neueste Version pro Domäne extrahieren (weil distinct nicht unterstützt wird)
+  const briefsByDomain = new Map<string, any>();
+
+for (const b of allBriefs ?? []) {
+  const existing = briefsByDomain.get(b.domain_id);
+  if (!existing || b.version > existing.version) {
+    briefsByDomain.set(b.domain_id, b);
+  }
+}
+
+const briefs = Array.from(briefsByDomain.values());
 
     //console.log('DEBUG Briefs-Query:', { error: bErr, count: briefs?.length, briefs });
 

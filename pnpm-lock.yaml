@@ -99,6 +99,9 @@ importers:
       run-script-os:
         specifier: ^1.1.6
         version: 1.1.6
+      tsx:
+        specifier: ^4.20.0
+        version: 4.20.6
       turbo:
         specifier: 1.10.16
         version: 1.10.16
@@ -133,6 +136,12 @@ importers:
       express:
         specifier: ^4.21.2
         version: 4.21.2
+      multer:
+        specifier: 1.4.5-lts.1
+        version: 1.4.5-lts.1
+      pdf-parse:
+        specifier: ^1.1.1
+        version: 1.1.1
 
   packages/brief-parser:
     dependencies:
