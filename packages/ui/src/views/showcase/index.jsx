@@ -90,7 +90,9 @@ function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
     try {
       const fd = JSON.parse(row?.flowData || '{}')
       return fd?.metadata?.shareUrl || ''
-    } catch { return '' }
+    } catch {
+      return ''
+    }
   })
 
   useEffect(() => {
@@ -99,7 +101,9 @@ function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
     try {
       const fd = JSON.parse(row?.flowData || '{}')
       setUrl(fd?.metadata?.shareUrl || '')
-    } catch { setUrl('') }
+    } catch {
+      setUrl('')
+    }
   }, [row, open])
 
   return (
@@ -113,8 +117,12 @@ function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button variant="text" onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={() => onSave({ name, description, url })}>Rename</Button>
+        <Button variant="text" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant="contained" onClick={() => onSave({ name, description, url })}>
+          Rename
+        </Button>
       </DialogActions>
     </Dialog>
   )
@@ -128,7 +136,12 @@ function ShowcaseAddDialog({ open, onClose, onSave }) {
   const [url, setUrl] = useState('')
 
   useEffect(() => {
-    if (!open) { setName(''); setDescription(''); setCategory(''); setUrl('') }
+    if (!open) {
+      setName('')
+      setDescription('')
+      setCategory('')
+      setUrl('')
+    }
   }, [open])
 
   return (
@@ -143,8 +156,20 @@ function ShowcaseAddDialog({ open, onClose, onSave }) {
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button variant="text" onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={() => onSave({ name: name?.trim(), description: description?.trim(), category: category?.trim(), url: url?.trim() })}>
+        <Button variant="text" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={() =>
+            onSave({
+              name: name?.trim(),
+              description: description?.trim(),
+              category: category?.trim(),
+              url: url?.trim()
+            })
+          }
+        >
           Save
         </Button>
       </DialogActions>
@@ -171,8 +196,12 @@ function ShowcaseUpdateTagsDialog({ open, initialTags, onClose, onSave }) {
         />
       </DialogContent>
       <DialogActions>
-        <Button variant="text" onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={() => onSave(tags)}>Save</Button>
+        <Button variant="text" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button variant="contained" onClick={() => onSave(tags)}>
+          Save
+        </Button>
       </DialogActions>
     </Dialog>
   )
@@ -193,7 +222,9 @@ function ShowcaseOptionsMenu({ row }) {
   try {
     const parsed = JSON.parse(row?.flowData || '{}')
     enabled = !!parsed?.metadata?.showInShowcase
-  } catch { enabled = false }
+  } catch {
+    enabled = false
+  }
 
   const handleToggleDisable = async (e) => {
     e.stopPropagation()
@@ -204,11 +235,22 @@ function ShowcaseOptionsMenu({ row }) {
       row.flowData = JSON.stringify(next)
       window.dispatchEvent(new CustomEvent('showcase:toggle', { detail: { id: row.id, enabled: !enabled } }))
       handleClose()
-    } catch (err) { console.error(err); handleClose() }
+    } catch (err) {
+      console.error(err)
+      handleClose()
+    }
   }
 
-  const openRenameDialog = (e) => { e.stopPropagation(); setOpenRename(true); handleClose() }
-  const openTagsDialog = (e) => { e.stopPropagation(); setOpenTags(true); handleClose() }
+  const openRenameDialog = (e) => {
+    e.stopPropagation()
+    setOpenRename(true)
+    handleClose()
+  }
+  const openTagsDialog = (e) => {
+    e.stopPropagation()
+    setOpenTags(true)
+    handleClose()
+  }
 
   const handleSaveRename = async ({ name, description, url }) => {
     try {
@@ -220,7 +262,11 @@ function ShowcaseOptionsMenu({ row }) {
       row.description = description
       row.flowData = JSON.stringify(next)
       window.dispatchEvent(new CustomEvent('showcase:renamed', { detail: { id: row.id } }))
-    } catch (e) { console.error(e) } finally { setOpenRename(false) }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setOpenRename(false)
+    }
   }
 
   const handleSaveTags = async (tags) => {
@@ -228,12 +274,22 @@ function ShowcaseOptionsMenu({ row }) {
       await updateChatflowApi.request(row.id, { tags })
       row.tags = tags
       window.dispatchEvent(new CustomEvent('showcase:tags', { detail: { id: row.id } }))
-    } catch (e) { console.error(e) } finally { setOpenTags(false) }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setOpenTags(false)
+    }
   }
 
   return (
     <>
-      <Button size="small" variant="text" onClick={handleOpen} endIcon={<KeyboardArrowDownIcon />} sx={{ borderRadius: 2, px: 1.25, py: 0.5 }}>
+      <Button
+        size="small"
+        variant="text"
+        onClick={handleOpen}
+        endIcon={<KeyboardArrowDownIcon />}
+        sx={{ borderRadius: 2, px: 1.25, py: 0.5 }}
+      >
         Options
       </Button>
       <Menu
@@ -304,12 +360,25 @@ const Showcase = () => {
 
   const onSearchChange = (e) => setSearch(e.target.value)
 
+  // ====== SEARCH: name + id + category + tags (same for card & list view) ======
   function filterFlows(data) {
-    return (
-      data.name.toLowerCase().includes(search.toLowerCase()) ||
-      (data.category && data.category.toLowerCase().includes(search.toLowerCase())) ||
-      data.id.toLowerCase().includes(search.toLowerCase())
-    )
+    const query = (search || '').toLowerCase()
+    if (!query) return true
+
+    const inName = data.name?.toLowerCase().includes(query)
+    const inCategory = data.category?.toLowerCase().includes(query)
+    const inId = data.id?.toLowerCase().includes(query)
+
+    // Normalize tags (string or array) into one searchable string
+    let tagsString = ''
+    if (Array.isArray(data.tags)) {
+      tagsString = data.tags.join(' ')
+    } else if (typeof data.tags === 'string') {
+      tagsString = data.tags
+    }
+    const inTags = tagsString.toLowerCase().includes(query)
+
+    return inName || inCategory || inId || inTags
   }
 
   const addNew = () => setOpenCreate(true)
@@ -322,7 +391,6 @@ const Showcase = () => {
   }
 
   const goToCanvas = (selectedAgentflow) => {
-    // Keep canvas navigation unchanged if needed elsewhere
     navigate(`/v2/agentcanvas/${selectedAgentflow.id}`)
   }
 
@@ -343,8 +411,8 @@ const Showcase = () => {
         name,
         category: category || '',
         description: description || '',
-        type: 'SHOWCASE',            // ← key change: showcase-only
-        tags: '',                    // no tags on create
+        type: 'SHOWCASE',
+        tags: '',
         flowData: JSON.stringify(flowData)
       }
 
@@ -357,8 +425,12 @@ const Showcase = () => {
     }
   }
 
-  useEffect(() => { refresh(currentPage, pageLimit) }, [])
-  useEffect(() => { if (getAllAgentflows.error) setError(getAllAgentflows.error) }, [getAllAgentflows.error])
+  useEffect(() => {
+    refresh(currentPage, pageLimit)
+  }, [])
+  useEffect(() => {
+    if (getAllAgentflows.error) setError(getAllAgentflows.error)
+  }, [getAllAgentflows.error])
   useEffect(() => setLoading(getAllAgentflows.loading), [getAllAgentflows.loading])
 
   useEffect(() => {
@@ -399,7 +471,9 @@ const Showcase = () => {
       setImages(nextImages)
       setIcons(nextIcons)
       setShareUrls(nextShareUrls)
-    } catch (e) { console.error(e) }
+    } catch (e) {
+      console.error(e)
+    }
   }, [getAllAgentflows.data])
 
   // Only show items explicitly enabled for Showcase
@@ -407,9 +481,39 @@ const Showcase = () => {
     getAllAgentflows.data?.data?.filter((row) => {
       try {
         const flowData = JSON.parse(row.flowData || '{}')
-        return flowData?.metadata?.showInShowcase === true
-      } catch { return false }
+        const flag = flowData?.metadata?.showInShowcase
+
+        // For dedicated SHOWCASE items, keep them visible unless explicitly turned off
+        if (row.type === 'SHOWCASE') {
+          return !(
+            flag === false ||
+            flag === 'false' ||
+            flag === 0 ||
+            flag === '0'
+          )
+        }
+
+        // For other types, treat various "true" forms as enabled
+        return (
+          flag === true ||
+          flag === 'true' ||
+          flag === 1 ||
+          flag === '1'
+        )
+      } catch {
+        return false
+      }
     }) || []
+
+  // Apply the same filter for both views (like Agentflows FlowListTable)
+  const filteredShowcaseData = showcaseEnabledData.filter(filterFlows)
+
+  // Reset to first page whenever search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [search])
+
+  const paginationTotal = filteredShowcaseData.length || total
 
   // Refresh on toggle / rename / tags update
   useEffect(() => {
@@ -424,14 +528,13 @@ const Showcase = () => {
     }
   }, [pageLimit, getAllAgentflows])
 
-  const groupedAgentflows = showcaseEnabledData
-    ?.filter(filterFlows)
-    .reduce((acc, item) => {
-      const tag = item.tags || 'Untagged'
-      if (!acc[tag]) acc[tag] = []
-      acc[tag].push(item)
-      return acc
-    }, {})
+  // Group by category for card view
+  const groupedAgentflows = filteredShowcaseData?.reduce((acc, item) => {
+    const category = item.category || 'Uncategorized'
+    if (!acc[category]) acc[category] = []
+    acc[category].push(item)
+    return acc
+  }, {})
 
   return (
     <MainCard>
@@ -446,7 +549,14 @@ const Showcase = () => {
             title="Showcase"
             description="Coworkers crafted for real lives, real needs"
           >
-            <ToggleButtonGroup sx={{ borderRadius: 2, maxHeight: 40 }} value={view} disabled={total === 0} color="primary" exclusive onChange={handleChange}>
+            <ToggleButtonGroup
+              sx={{ borderRadius: 2, maxHeight: 40 }}
+              value={view}
+              disabled={paginationTotal === 0}
+              color="primary"
+              exclusive
+              onChange={handleChange}
+            >
               <ToggleButton sx={{ borderRadius: 2 }} variant="contained" value="card" title="Card View">
                 <IconLayoutGrid />
               </ToggleButton>
@@ -455,19 +565,25 @@ const Showcase = () => {
               </ToggleButton>
             </ToggleButtonGroup>
 
-            <StyledPermissionButton permissionId={'agentflows:create'} variant="contained" onClick={() => setOpenCreate(true)} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+            <StyledPermissionButton
+              permissionId={'agentflows:create'}
+              variant="contained"
+              onClick={() => setOpenCreate(true)}
+              startIcon={<IconPlus />}
+              sx={{ borderRadius: 2, height: 40 }}
+            >
               Add New
             </StyledPermissionButton>
           </ViewHeader>
 
           {!isLoading && showcaseEnabledData.length > 0 && (
             <>
-              {/* CARD VIEW: entire card opens the /chatbot URL */}
+              {/* CARD VIEW */}
               {!view || view === 'card' ? (
                 <Stack spacing={4}>
                   {groupedAgentflows &&
-                    Object.entries(groupedAgentflows).map(([tag, items]) => (
-                      <Box key={tag}>
+                    Object.entries(groupedAgentflows).map(([category, items]) => (
+                      <Box key={category}>
                         <Box
                           sx={{
                             mb: 2,
@@ -475,14 +591,15 @@ const Showcase = () => {
                             py: 0.8,
                             display: 'inline-block',
                             borderRadius: '20px',
-                            backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
+                            backgroundColor:
+                              theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[200],
                             color: theme.palette.text.primary,
                             fontWeight: 600,
                             fontSize: '0.9rem',
                             boxShadow: theme.shadows[1]
                           }}
                         >
-                          {tag}
+                          {category}
                         </Box>
 
                         <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={gridSpacing}>
@@ -516,7 +633,7 @@ const Showcase = () => {
                     ))}
                 </Stack>
               ) : (
-                /* LIST VIEW — includes Tags column */
+                /* LIST VIEW */
                 <Box sx={{ borderRadius: 2, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
                   <Table size="medium">
                     <TableHead>
@@ -528,16 +645,27 @@ const Showcase = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {showcaseEnabledData.map((row) => {
+                      {filteredShowcaseData.map((row) => {
                         const urlToOpen = getShareUrl(row.id)
                         const tagList = Array.isArray(row.tags)
                           ? row.tags
-                          : (row.tags ? row.tags.split(',').map((t) => t.trim()).filter(Boolean) : [])
+                          : row.tags
+                          ? row.tags
+                              .split(',')
+                              .map((t) => t.trim())
+                              .filter(Boolean)
+                          : []
 
                         return (
                           <TableRow key={row.id} hover>
                             <TableCell>
-                              <MuiLink component="button" type="button" underline="hover" sx={{ fontWeight: 500 }} onClick={() => window.open(urlToOpen, '_blank', 'noopener,noreferrer')}>
+                              <MuiLink
+                                component="button"
+                                type="button"
+                                underline="hover"
+                                sx={{ fontWeight: 500 }}
+                                onClick={() => window.open(urlToOpen, '_blank', 'noopener,noreferrer')}
+                              >
                                 {row.name}
                               </MuiLink>
                             </TableCell>
@@ -547,7 +675,9 @@ const Showcase = () => {
                               </Stack>
                             </TableCell>
                             <TableCell>{row.updatedDate || row.updated || row.createdDate || '—'}</TableCell>
-                            <TableCell><ShowcaseOptionsMenu row={row} /></TableCell>
+                            <TableCell>
+                              <ShowcaseOptionsMenu row={row} />
+                            </TableCell>
                           </TableRow>
                         )
                       })}
@@ -556,14 +686,18 @@ const Showcase = () => {
                 </Box>
               )}
 
-              <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+              <TablePagination currentPage={currentPage} limit={pageLimit} total={paginationTotal} onChange={onChange} />
             </>
           )}
 
           {!isLoading && showcaseEnabledData.length === 0 && (
             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection="column">
               <Box sx={{ p: 2, height: 'auto' }}>
-                <img style={{ objectFit: 'cover', height: '12vh', width: 'auto' }} src={AgentsEmptySVG} alt="AgentsEmptySVG" />
+                <img
+                  style={{ objectFit: 'cover', height: '12vh', width: 'auto' }}
+                  src={AgentsEmptySVG}
+                  alt="AgentsEmptySVG"
+                />
               </Box>
               <div>No Agents in Showcase Yet</div>
             </Stack>
