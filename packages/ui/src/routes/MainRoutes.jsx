@@ -49,7 +49,7 @@ const VectorStoreConfigure = Loadable(lazy(() => import('@/views/docstore/Vector
 const VectorStoreQuery = Loadable(lazy(() => import('@/views/docstore/VectorStoreQuery')))
 
 
-const DashboardSettings = Loadable(lazy(() => import('@/views/dashboardsettings/DashBoardSettings')))
+const DashboardSettings = Loadable(lazy(() => import('@/views/dashboardsettings/DashboardSettings')))
 
 // Evaluations routing
 const EvalEvaluation = Loadable(lazy(() => import('@/views/evaluations/index')))
