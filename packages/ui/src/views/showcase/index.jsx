@@ -567,13 +567,22 @@ const Showcase = () => {
 
             {/* Add New is now a plain Button so everyone can see it */}
             <Button
-              variant="contained"
-              onClick={() => setOpenCreate(true)}
-              startIcon={<IconPlus />}
-              sx={{ borderRadius: 2, height: 40 }}
-            >
-              Add New
-            </Button>
+  variant="contained"
+  onClick={() => setOpenCreate(true)}
+  startIcon={<IconPlus />}
+  sx={{
+    borderRadius: 2,
+    height: 40,
+    backgroundColor: '#1c1917',
+    color: '#fff',
+    '&:hover': {
+      backgroundColor: '#1c1917'
+    }
+  }}
+>
+  Add New
+</Button>
+
           </ViewHeader>
 
           {!isLoading && showcaseEnabledData.length > 0 && (
