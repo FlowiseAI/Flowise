@@ -255,12 +255,23 @@ class ChatOllamaCloud_ChatModels implements INode {
             if (isChatCompletions) {
                 // Rewrite URL from /chat/completions to /chat for Ollama API
                 if (typeof originalUrl === 'string') {
-                    const targetUrl = new URL(originalUrl)
-                    targetUrl.pathname = targetUrl.pathname.replace(/\/chat\/completions$/, '/chat')
-                    finalInput = targetUrl.toString()
+                    try {
+                        const targetUrl = new URL(originalUrl)
+                        targetUrl.pathname = targetUrl.pathname.replace(/\/chat\/completions$/, '/chat')
+                        finalInput = targetUrl.toString()
+                    } catch (e) {
+                        // Fallback: simple string replacement if URL parsing fails
+                        finalInput = originalUrl.replace(/\/chat\/completions$/, '/chat')
+                    }
                 } else if (input instanceof URL) {
-                    input.pathname = input.pathname.replace(/\/chat\/completions$/, '/chat')
-                    finalInput = input
+                    try {
+                        input.pathname = input.pathname.replace(/\/chat\/completions$/, '/chat')
+                        finalInput = input
+                    } catch (e) {
+                        // If pathname is read-only, create new URL
+                        const urlStr = input.toString()
+                        finalInput = urlStr.replace(/\/chat\/completions$/, '/chat')
+                    }
                 }
                 
                 // Modify request body for Ollama compatibility
