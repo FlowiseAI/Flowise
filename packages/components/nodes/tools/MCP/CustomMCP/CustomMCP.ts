@@ -136,16 +136,16 @@ class Custom_MCP implements INode {
         }
 
         let sandbox: ICommonObject = {}
+        const workspaceId = options?.searchOptions?.workspaceId?._value || options?.workspaceId
 
         if (mcpServerConfig.includes('$vars')) {
             const appDataSource = options.appDataSource as DataSource
             const databaseEntities = options.databaseEntities as IDatabaseEntity
-
-            const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
+            // If workspaceId is already provided, use it, otherwise add the workspaceId as retrieved above.
+            const optionsWithWorkspaceId = options.workspaceId ? options : { ...options, workspaceId }
+            const variables = await getVars(appDataSource, databaseEntities, nodeData, optionsWithWorkspaceId)
             sandbox['$vars'] = prepareSandboxVars(variables)
         }
-
-        const workspaceId = options?.searchOptions?.workspaceId?._value || options?.workspaceId
 
         let canonicalConfig
         try {
