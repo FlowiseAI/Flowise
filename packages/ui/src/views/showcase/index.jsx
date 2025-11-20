@@ -18,6 +18,7 @@ import {
   TableRow,
   Link as MuiLink,
   Menu,
+  MenuItem,
   Checkbox,
   Button,
   Dialog,
@@ -37,7 +38,6 @@ import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
-import { PermissionMenuItem, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
@@ -177,7 +177,7 @@ function ShowcaseAddDialog({ open, onClose, onSave }) {
   )
 }
 
-/* ===== Update Tags Dialog (copied pattern from Agentflows) ===== */
+/* ===== Update Tags Dialog ===== */
 function ShowcaseUpdateTagsDialog({ open, initialTags, onClose, onSave }) {
   const [tags, setTags] = useState(initialTags || '')
   useEffect(() => setTags(initialTags || ''), [initialTags, open])
@@ -299,16 +299,16 @@ function ShowcaseOptionsMenu({ row }) {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <PermissionMenuItem permissionId={'agentflows:update'} onClick={openRenameDialog} dense disableRipple>
+        <MenuItem onClick={openRenameDialog} dense disableRipple>
           Rename
-        </PermissionMenuItem>
-        <PermissionMenuItem permissionId={'agentflows:update'} onClick={openTagsDialog} dense disableRipple>
+        </MenuItem>
+        <MenuItem onClick={openTagsDialog} dense disableRipple>
           Update Tags
-        </PermissionMenuItem>
-        <PermissionMenuItem permissionId={'agentflows:update'} onClick={handleToggleDisable} dense disableRipple>
+        </MenuItem>
+        <MenuItem onClick={handleToggleDisable} dense disableRipple>
           <Checkbox size="small" checked={enabled} onClick={(e) => e.stopPropagation()} sx={{ p: 0, mr: 1.25 }} />
           Disable from Showcase
-        </PermissionMenuItem>
+        </MenuItem>
       </Menu>
 
       <ShowcaseRenameDialog open={openRename} row={row} onClose={() => setOpenRename(false)} onSave={handleSaveRename} />
@@ -565,15 +565,15 @@ const Showcase = () => {
               </ToggleButton>
             </ToggleButtonGroup>
 
-            <StyledPermissionButton
-              permissionId={'agentflows:create'}
+            {/* Add New is now a plain Button so everyone can see it */}
+            <Button
               variant="contained"
               onClick={() => setOpenCreate(true)}
               startIcon={<IconPlus />}
               sx={{ borderRadius: 2, height: 40 }}
             >
               Add New
-            </StyledPermissionButton>
+            </Button>
           </ViewHeader>
 
           {!isLoading && showcaseEnabledData.length > 0 && (
