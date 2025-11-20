@@ -316,6 +316,12 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.1",
+                    "name": "gpt-5.1",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
+                },
+                {
                     "label": "gpt-5",
                     "name": "gpt-5",
                     "input_cost": 0.00000125,
@@ -622,6 +628,12 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
+                    "label": "gemini-3-pro-preview",
+                    "name": "gemini-3-pro-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
+                {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
                     "input_cost": 0.3e-6,
@@ -685,6 +697,12 @@
         {
             "name": "chatGoogleVertexAI",
             "models": [
+                {
+                    "label": "gemini-3-pro-preview",
+                    "name": "gemini-3-pro-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
                 {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
@@ -996,6 +1014,12 @@
         {
             "name": "chatOpenAI",
             "models": [
+                {
+                    "label": "gpt-5.1",
+                    "name": "gpt-5.1",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
+                },
                 {
                     "label": "gpt-5",
                     "name": "gpt-5",
