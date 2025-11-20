@@ -70,7 +70,23 @@ const TablePagination = ({ currentPage, limit, total, onChange }) => {
                     {activePage * itemsPerPage > totalItems ? totalItems : activePage * itemsPerPage} of {totalItems}
                 </Typography>
             )}
-            <Pagination count={Math.ceil(totalItems / itemsPerPage)} onChange={handlePageChange} page={activePage} color='primary' />
+            <Pagination
+    count={Math.ceil(totalItems / itemsPerPage)}
+    onChange={handlePageChange}
+    page={activePage}
+    sx={{
+        '& .MuiPaginationItem-root': {
+            color: '#1c1917'
+        },
+        '& .MuiPaginationItem-root.Mui-selected': {
+            backgroundColor: '#1c1917',
+            color: '#fff'
+        },
+        '& .MuiPaginationItem-root.Mui-selected:hover': {
+            backgroundColor: '#1c1917'
+        }
+    }}
+/>
         </Box>
     )
 }

@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { Chip, Box, Stack, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material'
+import { StyledToggleButton } from '@/ui-component/button/StyledButton'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -189,7 +190,7 @@ const Agentflows = () => {
                         description="Multi-agent systems, workflow orchestration"
                     >
                         {/* Version Toggle */}
-                        <ToggleButtonGroup
+                        {/* <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={agentflowVersion}
                             color="primary"
@@ -221,42 +222,28 @@ const Agentflows = () => {
                             >
                                 V1
                             </ToggleButton>
-                        </ToggleButtonGroup>
+                        </ToggleButtonGroup> */}
 
-                        {/* View Toggle */}
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={view}
-                            disabled={total === 0}
-                            color="primary"
-                            exclusive
-                            onChange={handleChange}
-                        >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: customization.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant="contained"
-                                value="card"
-                                title="Card View"
-                            >
-                                <IconLayoutGrid />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: customization.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant="contained"
-                                value="list"
-                                title="List View"
-                            >
-                                <IconList />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
+<ToggleButtonGroup
+    sx={{ borderRadius: 2, maxHeight: 40 }}
+    value={view}
+    disabled={total === 0}
+    exclusive
+    onChange={handleChange}
+>
+    <StyledToggleButton
+        value="card"
+        title="Card View"
+    >
+        <IconLayoutGrid />
+    </StyledToggleButton>
+    <StyledToggleButton
+        value="list"
+        title="List View"
+    >
+        <IconList />
+    </StyledToggleButton>
+</ToggleButtonGroup>
 
                         <StyledPermissionButton
                             permissionId={'agentflows:create'}

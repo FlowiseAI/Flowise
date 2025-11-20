@@ -1,5 +1,20 @@
 // color variants
-@import 'themes-vars.module.scss';
+// @import 'themes-vars.module.scss';
+
+/* style.scss */
+@use './_themes-vars.module' as *;
+/* or (old syntax, also fine) */
+/* @import './_themes-vars.module'; */
+/* ---- variables + safe fallback ---------------------------------- */
+// @use './themes-vars.module' as *; // ✅ Sass ignores the leading underscore
+
+// // Fallback if $grey500 isn't provided by the theme file
+// @if (variable-exists(grey500) == false) {
+//   $grey500: #9e9e9e; // Material Grey 500
+// }
+// /* ----------------------------------------------------------------- */
+
+
 
 // third-party
 @import 'react-perfect-scrollbar/dist/css/styles.css';
@@ -146,3 +161,28 @@
         transform: rotate(360deg);
     }
 }
+
+/* --- Sidebar icon color sync --- */
+/* Scope to the sidebar if you have a wrapper class:
+   .Sidebar .MuiListItemButton-root { ... } */
+   .MuiListItemButton-root {
+    /* Make every SVG icon follow the item's currentColor */
+    & svg {
+      color: currentColor !important;   /* for components that read color */
+      stroke: currentColor !important;  /* Tabler icons use stroke */
+      fill: none;                       /* Tabler default */
+    }
+  
+    /* Hover: use the same color the text switches to */
+    &:hover svg {
+      color: var(--sidebar-item-hover-text) !important;
+      stroke: var(--sidebar-item-hover-text) !important;
+    }
+  
+    /* Selected: use the active text color var */
+    &.Mui-selected svg {
+      color: var(--sidebar-item-active-text) !important;
+      stroke: var(--sidebar-item-active-text) !important;
+    }
+  }
+  

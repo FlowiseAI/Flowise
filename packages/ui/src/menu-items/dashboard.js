@@ -161,8 +161,17 @@ const dashboard = {
                     icon: icons.IconFiles,
                     breadcrumbs: true,
                     permission: 'documentStores:view'
-                }
-                
+                },
+                /* <--- SETTINGS ITEM HERE ---> */
+                {
+                    id: 'settings',
+                    title: 'Settings',
+                    type: 'item',
+                    url: '/settings',
+                    icon: icons.IconSettings,
+                    breadcrumbs: true,
+                    permission: 'chatflows:view'
+                }   
             ]
         },
         {

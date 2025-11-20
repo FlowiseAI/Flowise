@@ -4,55 +4,80 @@ import { Outlet } from 'react-router-dom'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'
-import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
+import { Box, CssBaseline, useMediaQuery } from '@mui/material'
 
 // project imports
-import Header from './Header'
 import Sidebar from './Sidebar'
-import { drawerWidth, headerHeight } from '@/store/constant'
+import { drawerWidth } from '@/store/constant' // Removed headerHeight dependency in MainLayout
+
 import { SET_MENU } from '@/store/actions'
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
+    // Reset standard styling
     ...theme.typography.mainContent,
+
+    // Remove fixed margin from base typography/mainContent
+    margin: 0, 
+
+    // Uniform padding around the content card area. This is the **padding outside** the white card.
+    // Setting this to a smaller value (e.g., 20px) reduces the white space between the sidebar and content.
+    padding: '20px', 
+
+    backgroundColor: '#efefee', // Ensure the background behind the content card is light gray
+    minHeight: '100vh',
+
+    // Calculate width and transition when drawer is CLOSED (or collapsed)
     ...(!open && {
-        backgroundColor: 'transparent',
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-        transition: theme.transitions.create('all', {
+        transition: theme.transitions.create('margin', {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen
         }),
-        marginRight: 0,
+        // 💥 PUSH CONTENT TO THE RIGHT BY MINIDRAWER WIDTH WHEN CLOSED (MATCHES SECOND IMAGE) 💥
         [theme.breakpoints.up('md')]: {
-            marginLeft: -drawerWidth,
-            width: `calc(100% - ${drawerWidth}px)`
+            marginLeft: 0, // Use miniDrawerWidth (72px)
+            width: `calc(100% - 72px)`
         },
         [theme.breakpoints.down('md')]: {
-            marginLeft: '20px',
-            width: `calc(100% - ${drawerWidth}px)`,
+            marginLeft: 0,
+            width: `100%`,
             padding: '16px'
-        },
-        [theme.breakpoints.down('sm')]: {
-            marginLeft: '10px',
-            width: `calc(100% - ${drawerWidth}px)`,
-            padding: '16px',
-            marginRight: '10px'
         }
     }),
+
+    // Calculate width and transition when drawer is OPEN
     ...(open && {
-        backgroundColor: 'transparent',
-        transition: theme.transitions.create('all', {
+        transition: theme.transitions.create('margin', {
             easing: theme.transitions.easing.easeOut,
             duration: theme.transitions.duration.enteringScreen
         }),
-        marginLeft: 0,
-        marginRight: 0,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-        width: `calc(100% - ${drawerWidth}px)`
-    })
+        // Push content over by full drawer width
+        marginLeft: 0, 
+        width: `calc(100% - ${drawerWidth}px)`,
+        
+        [theme.breakpoints.down('md')]: {
+            marginLeft: 0, 
+            width: `100%`
+        }
+    }),
+    
+    // INNER CONTENT WRAPPER STYLES (for the pure white card look with rounded corners)
+    '& > div': {
+        // This targets the first child inside Main (<Box> containing <Outlet />)
+        backgroundColor: '#FFFFFF', // Pure white background for the inner content card
+        // This padding controls the spacing *inside* the white card
+        padding: '8px', 
+        borderRadius: '12px', // Use consistent rounding for all corners as in the image
+        minHeight: 'calc(100vh - 40px)', // Height minus the 20px top/bottom padding of Main
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.05)',
+        
+        [theme.breakpoints.down('md')]: {
+            padding: '16px',
+            borderRadius: '8px',
+        }
+    }
 }))
+
 
 // ==============================|| MAIN LAYOUT ||============================== //
 
@@ -60,7 +85,6 @@ const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
 
-    // Handle left drawer
     const leftDrawerOpened = useSelector((state) => state.customization.opened)
     const dispatch = useDispatch()
     const handleLeftDrawerToggle = () => {
@@ -69,34 +93,24 @@ const MainLayout = () => {
 
     useEffect(() => {
         setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [matchDownMd])
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ 
+            display: 'flex', 
+            backgroundColor: '#efefee', // Light grayish background for the overall layout
+            minHeight: '100vh',
+            // Fixes the potential "weird padding" caused by `overflow: auto` on body/html
+            overflowX: 'hidden' 
+        }}>
             <CssBaseline />
-            {/* header */}
-            <AppBar
-                enableColorOnDark
-                position='fixed'
-                color='inherit'
-                elevation={0}
-                sx={{
-                    bgcolor: theme.palette.background.default,
-                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
-                }}
-            >
-                <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.grey[900] + 25 }}>
-                    <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
-                </Toolbar>
-            </AppBar>
+            
+            <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} handleLeftDrawerToggle={handleLeftDrawerToggle} />
 
-            {/* drawer */}
-            <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} />
-
-            {/* main content */}
             <Main theme={theme} open={leftDrawerOpened}>
-                <Outlet />
+                <Box> 
+                    <Outlet />
+                </Box>
             </Main>
         </Box>
     )

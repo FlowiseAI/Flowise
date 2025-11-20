@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles'
 import MainCard from '@/ui-component/cards/MainCard'
 
 // simple color palette
-const PALETTE = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f472b6']
+const PALETTE = ['#4A4A4A', '#7D7D7D', '#A9A9A9', '#D3D3D3', '#1A1A1A', '#606060', '#B0B0B0'];
 
 /* ---------- Mini charts (unchanged) ---------- */
 
@@ -116,8 +116,8 @@ const LineChart = ({
     const x = (i) => pad + (i * (w - 2 * pad)) / (labels.length - 1)
     const y = (v) => h - pad - (v / 100) * (h - 2 * pad)
     const toPath = (arr) => arr.map((v, i) => `${i ? 'L' : 'M'} ${x(i)} ${y(v)}`).join(' ')
-    const successColor = '#22c55e',
-        errorColor = '#ef4444'
+    const successColor = '#4A4A4A',
+        errorColor = '#A9A9A9';
     return (
         <svg width='100%' height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio='xMidYMid meet'>
             <line x1={pad} y1={h - pad} x2={w - pad} y2={h - pad} stroke='currentColor' strokeOpacity='0.15' />

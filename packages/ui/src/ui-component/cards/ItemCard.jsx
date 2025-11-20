@@ -7,7 +7,8 @@ import { Box, Grid, Tooltip, Typography, useTheme } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
+// Note: MoreItemsTooltip is not used directly here, but needed for styling logic in nodes visualization
+// import MoreItemsTooltip from '../tooltip/MoreItemsTooltip' 
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -28,17 +29,29 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     whiteSpace: 'pre-line'
 }))
 
-// ===========================|| CONTRACT CARD ||=========================== //
+// ===========================|| ITEM CARD ||=========================== //
 
-const ItemCard = ({ data, images, icons, onClick }) => {
+// 💥 Added tagsComponent prop 💥
+const ItemCard = ({ data, images, icons, onClick, tagsComponent }) => { 
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
     return (
         <CardWrapper content={false} onClick={onClick} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}>
             <Box sx={{ height: '100%', p: 2.25 }}>
-                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
+                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 1 }}> 
+                    
+                    {/* Top Content: Name, Description */}
                     <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
+                        
+                        {/* 💥 TAGS COMPONENT (Visible above name/icon) 💥 */}
+                        {tagsComponent && (
+                            <Box sx={{ mb: 0 }}>
+                                {tagsComponent}
+                            </Box>
+                        )}
+
+                        {/* Name Section */}
                         <div
                             style={{
                                 width: '100%',
@@ -48,6 +61,7 @@ const ItemCard = ({ data, images, icons, onClick }) => {
                                 overflow: 'hidden'
                             }}
                         >
+                            {/* Icon/Color logic for name prefix (kept for backward compatibility with older flow types) */}
                             {data.iconSrc && (
                                 <div
                                     style={{
@@ -91,22 +105,28 @@ const ItemCard = ({ data, images, icons, onClick }) => {
                                 {data.templateName || data.name}
                             </Typography>
                         </div>
+                        
+                        {/* Description Section */}
                         {data.description && (
                             <span
                                 style={{
                                     display: '-webkit-box',
-                                    marginTop: 10,
+                                    marginTop: 5, // Reduced margin for tighter spacing
                                     overflowWrap: 'break-word',
-                                    WebkitLineClamp: 3,
+                                    WebkitLineClamp: 2, // Changed to 2 lines for tighter card display
                                     WebkitBoxOrient: 'vertical',
                                     textOverflow: 'ellipsis',
-                                    overflow: 'hidden'
+                                    overflow: 'hidden',
+                                    fontSize: '0.9rem', // Smaller font size for description
+                                    color: theme.palette.text.secondary
                                 }}
                             >
                                 {data.description}
                             </span>
                         )}
                     </Box>
+                    
+                    {/* 💥 NODE ICON VISUALIZATION (At the bottom, max 2 icons) 💥 */}
                     {(images?.length > 0 || icons?.length > 0) && (
                         <Box
                             sx={{
@@ -120,7 +140,7 @@ const ItemCard = ({ data, images, icons, onClick }) => {
                                 ...(images || []).map((img) => ({ type: 'image', src: img.imageSrc, label: img.label })),
                                 ...(icons || []).map((ic) => ({ type: 'icon', icon: ic.icon, color: ic.color, label: ic.name }))
                             ]
-                                .slice(0, 3)
+                                .slice(0, 2) // 💥 Show only 2 icons 💥
                                 .map((item, index) => (
                                     <Tooltip key={item.src || index} title={item.label} placement='top'>
                                         {item.type === 'image' ? (
@@ -150,31 +170,12 @@ const ItemCard = ({ data, images, icons, onClick }) => {
                                                     justifyContent: 'center'
                                                 }}
                                             >
-                                                <item.icon size={25} color={item.color} />
+                                                {/* Assuming item.icon is a React component */}
+                                                <item.icon size={25} color={item.color} /> 
                                             </div>
                                         )}
                                     </Tooltip>
                                 ))}
-
-                            {(images?.length || 0) + (icons?.length || 0) > 3 && (
-                                <MoreItemsTooltip
-                                    images={[
-                                        ...(images?.slice(3) || []),
-                                        ...(icons?.slice(Math.max(0, 3 - (images?.length || 0))) || []).map((ic) => ({ label: ic.name }))
-                                    ]}
-                                >
-                                    <Typography
-                                        sx={{
-                                            alignItems: 'center',
-                                            display: 'flex',
-                                            fontSize: '.9rem',
-                                            fontWeight: 200
-                                        }}
-                                    >
-                                        + {(images?.length || 0) + (icons?.length || 0) - 3} More
-                                    </Typography>
-                                </MoreItemsTooltip>
-                            )}
                         </Box>
                     )}
                 </Grid>
@@ -185,9 +186,11 @@ const ItemCard = ({ data, images, icons, onClick }) => {
 
 ItemCard.propTypes = {
     data: PropTypes.object,
-    images: PropTypes.array,
-    icons: PropTypes.array,
-    onClick: PropTypes.func
+    images: PropTypes.arrayOf(PropTypes.object), 
+    icons: PropTypes.arrayOf(PropTypes.object), 
+    onClick: PropTypes.func,
+    // 💥 New prop for custom tags component 💥
+    tagsComponent: PropTypes.node 
 }
 
 export default ItemCard

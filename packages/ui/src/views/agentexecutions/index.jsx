@@ -328,14 +328,22 @@ const AgentExecutions = () => {
                             </Grid>
                             <Grid item xs={12} md={4}>
                                 <Stack direction='row' spacing={1}>
-                                    <Button
-                                        variant='contained'
-                                        color='primary'
-                                        onClick={() => applyFilters(currentPage, pageLimit)}
-                                        size='small'
-                                    >
-                                        Apply
-                                    </Button>
+                                <Button
+                                    variant='contained'
+                                    onClick={() => applyFilters(currentPage, pageLimit)}
+                                    size='small'
+                                    sx={{
+                                        backgroundColor: '#1c1917',
+                                        color: '#fff',
+                                        boxShadow: 'none',
+                                        '&:hover': {
+                                            backgroundColor: '#000'
+                                        }
+                                    }}
+                                >
+                                    Apply
+                                </Button>
+
                                     <Button
                                         variant='outlined'
                                         onClick={resetFilters}
