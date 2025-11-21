@@ -25,8 +25,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+   
 } from '@mui/material'
+import { StyledToggleButton } from '@/ui-component/button/StyledButton'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { useTheme } from '@mui/material/styles'
 
@@ -86,6 +88,7 @@ const normalizeToChatbotUrl = normalizeToPublicUrl
 function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
   const [name, setName] = useState(row?.name || '')
   const [description, setDescription] = useState(row?.description || '')
+  const [category, setCategory] = useState(row?.category || '')
   const [url, setUrl] = useState(() => {
     try {
       const fd = JSON.parse(row?.flowData || '{}')
@@ -98,6 +101,7 @@ function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
   useEffect(() => {
     setName(row?.name || '')
     setDescription(row?.description || '')
+    setCategory(row?.category || '')
     try {
       const fd = JSON.parse(row?.flowData || '{}')
       setUrl(fd?.metadata?.shareUrl || '')
@@ -111,18 +115,52 @@ function ShowcaseRenameDialog({ open, row, onClose, onSave }) {
       <DialogTitle>Rename Agent</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <TextField label="Agent name" value={name} onChange={(e) => setName(e.target.value)} fullWidth autoFocus />
-          <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
-          <TextField label="Agent URL" value={url} onChange={(e) => setUrl(e.target.value)} fullWidth placeholder="https://…" />
+          <TextField
+            label="Agent name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            fullWidth
+            autoFocus
+          />
+          <TextField
+            label="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            fullWidth
+            multiline
+            minRows={2}
+          />
+          <TextField
+            label="Category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Agent URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            fullWidth
+            placeholder="https://…"
+          />
         </Stack>
       </DialogContent>
       <DialogActions>
         <Button variant="text" onClick={onClose}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={() => onSave({ name, description, url })}>
-          Rename
-        </Button>
+        <Button
+  variant="contained"
+  onClick={() => onSave({ name, description, category, url })}
+  sx={{
+    backgroundColor: '#1c1917',
+    color: '#ffffff',
+    '&:hover': { backgroundColor: '#1c1917' }
+  }}
+>
+  Rename
+</Button>
+
       </DialogActions>
     </Dialog>
   )
@@ -169,6 +207,11 @@ function ShowcaseAddDialog({ open, onClose, onSave }) {
               url: url?.trim()
             })
           }
+          sx={{
+            backgroundColor: '#1c1917',
+            color: '#ffffff',
+            '&:hover': { backgroundColor: '#1c1917' }
+          }}
         >
           Save
         </Button>
@@ -252,14 +295,15 @@ function ShowcaseOptionsMenu({ row }) {
     handleClose()
   }
 
-  const handleSaveRename = async ({ name, description, url }) => {
+  const handleSaveRename = async ({ name, description, category, url }) => {
     try {
       const current = JSON.parse(row?.flowData || '{}')
       const normalized = normalizeToChatbotUrl(url, row.id)
       const next = { ...current, metadata: { ...(current.metadata || {}), shareUrl: normalized } }
-      await updateChatflowApi.request(row.id, { name, description, flowData: JSON.stringify(next) })
+      await updateChatflowApi.request(row.id, { name, description, category, flowData: JSON.stringify(next) })
       row.name = name
       row.description = description
+      row.category = category
       row.flowData = JSON.stringify(next)
       window.dispatchEvent(new CustomEvent('showcase:renamed', { detail: { id: row.id } }))
     } catch (e) {
@@ -528,7 +572,7 @@ const Showcase = () => {
     }
   }, [pageLimit, getAllAgentflows])
 
-  // Group by category for card view
+  // Group by category for card view (CATEGORY, not tags)
   const groupedAgentflows = filteredShowcaseData?.reduce((acc, item) => {
     const category = item.category || 'Uncategorized'
     if (!acc[category]) acc[category] = []
@@ -550,39 +594,43 @@ const Showcase = () => {
             description="Coworkers crafted for real lives, real needs"
           >
             <ToggleButtonGroup
-              sx={{ borderRadius: 2, maxHeight: 40 }}
-              value={view}
-              disabled={paginationTotal === 0}
-              color="primary"
-              exclusive
-              onChange={handleChange}
-            >
-              <ToggleButton sx={{ borderRadius: 2 }} variant="contained" value="card" title="Card View">
-                <IconLayoutGrid />
-              </ToggleButton>
-              <ToggleButton sx={{ borderRadius: 2 }} variant="contained" value="list" title="List View">
-                <IconList />
-              </ToggleButton>
-            </ToggleButtonGroup>
+    sx={{ borderRadius: 2, maxHeight: 40 }}
+    value={view}
+    disabled={total === 0}
+    exclusive
+    onChange={handleChange}
+>
+    <StyledToggleButton
+        value="card"
+        title="Card View"
+    >
+        <IconLayoutGrid />
+    </StyledToggleButton>
+    <StyledToggleButton
+        value="list"
+        title="List View"
+    >
+        <IconList />
+    </StyledToggleButton>
+</ToggleButtonGroup>
 
             {/* Add New is now a plain Button so everyone can see it */}
             <Button
-  variant="contained"
-  onClick={() => setOpenCreate(true)}
-  startIcon={<IconPlus />}
-  sx={{
-    borderRadius: 2,
-    height: 40,
-    backgroundColor: '#1c1917',
-    color: '#fff',
-    '&:hover': {
-      backgroundColor: '#1c1917'
-    }
-  }}
->
-  Add New
-</Button>
-
+              variant="contained"
+              onClick={() => setOpenCreate(true)}
+              startIcon={<IconPlus />}
+              sx={{
+                borderRadius: 2,
+                height: 40,
+                backgroundColor: '#1c1917',
+                color: '#fff',
+                '&:hover': {
+                  backgroundColor: '#1c1917'
+                }
+              }}
+            >
+              Add New
+            </Button>
           </ViewHeader>
 
           {!isLoading && showcaseEnabledData.length > 0 && (
