@@ -141,7 +141,7 @@ class Custom_MCP implements INode {
         if (mcpServerConfig.includes('$vars')) {
             const appDataSource = options.appDataSource as DataSource
             const databaseEntities = options.databaseEntities as IDatabaseEntity
-            // If workspaceId is already provided, use it, otherwise add the workspaceId as retrieved above.
+            // If options.workspaceId is not set, create a new options object with the workspaceId for getVars.
             const optionsWithWorkspaceId = options.workspaceId ? options : { ...options, workspaceId }
             const variables = await getVars(appDataSource, databaseEntities, nodeData, optionsWithWorkspaceId)
             sandbox['$vars'] = prepareSandboxVars(variables)
