@@ -4,7 +4,7 @@ import { getFileFromStorage } from '../../src/storageUtils'
 import { ICommonObject, IFileUpload } from '../../src/Interface'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { IFlowState } from './Interface.Agentflow'
-import { mapMimeTypeToInputField } from '../../src/utils'
+import { handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
 
 export const addImagesToMessages = async (
     options: ICommonObject,
@@ -18,7 +18,7 @@ export const addImagesToMessages = async (
         for (const upload of imageUploads) {
             let bf = upload.data
             if (upload.type == 'stored-file') {
-                const contents = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+                const contents = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
                 // as the image is stored in the server, read the file and convert it to base64
                 bf = 'data:' + upload.mime + ';base64,' + contents.toString('base64')
 
@@ -90,7 +90,7 @@ export const processMessagesWithImages = async (
                     hasImageReferences = true
                     try {
                         // Get file contents from storage
-                        const contents = await getFileFromStorage(item.name, options.chatflowid, options.chatId)
+                        const contents = await getFileFromStorage(item.name, options.orgId, options.chatflowid, options.chatId)
 
                         // Create base64 data URL
                         const base64Data = 'data:' + item.mime + ';base64,' + contents.toString('base64')
@@ -140,7 +140,12 @@ export const replaceBase64ImagesWithFileReferences = (
 ): BaseMessageLike[] => {
     // Create a deep copy to avoid mutating the original
     const updatedMessages = JSON.parse(JSON.stringify(messages))
-    let imageMessagesIndex = 0
+
+    // Track positions in replacement arrays
+    let pastMessageIndex = 0
+    let pastContentIndex = 0
+    let uniqueMessageIndex = 0
+    let uniqueContentIndex = 0
 
     for (let i = 0; i < updatedMessages.length; i++) {
         const message = updatedMessages[i]
@@ -148,17 +153,77 @@ export const replaceBase64ImagesWithFileReferences = (
             for (let j = 0; j < message.content.length; j++) {
                 const item = message.content[j]
                 if (item.type === 'image_url') {
-                    // Look for matching file reference in uniqueImageMessages or pastImageMessages
-                    const imageMessage =
-                        (uniqueImageMessages[imageMessagesIndex] as BaseMessage | undefined) ||
-                        (pastImageMessages[imageMessagesIndex] as BaseMessage | undefined)
+                    // Try past images first
+                    let replacement = null
 
-                    if (imageMessage && Array.isArray(imageMessage.content) && imageMessage.content[j]) {
-                        const replaceContent = imageMessage.content[j]
-                        message.content[j] = {
-                            ...replaceContent
+                    if (pastMessageIndex < pastImageMessages.length) {
+                        const pastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
+                        if (pastMessage && Array.isArray(pastMessage.content)) {
+                            if (pastContentIndex < pastMessage.content.length) {
+                                replacement = pastMessage.content[pastContentIndex]
+                                pastContentIndex++
+
+                                // Move to next message if we've used all content in current one
+                                if (pastContentIndex >= pastMessage.content.length) {
+                                    pastMessageIndex++
+                                    pastContentIndex = 0
+                                }
+                            } else {
+                                // Current message has no more content, move to next
+                                pastMessageIndex++
+                                pastContentIndex = 0
+
+                                // Try again with the next message
+                                if (pastMessageIndex < pastImageMessages.length) {
+                                    const nextPastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
+                                    if (nextPastMessage && Array.isArray(nextPastMessage.content) && nextPastMessage.content.length > 0) {
+                                        replacement = nextPastMessage.content[0]
+                                        pastContentIndex = 1
+                                    }
+                                }
+                            }
                         }
-                        imageMessagesIndex++
+                    }
+
+                    // Try unique images if no past image replacement found
+                    if (!replacement && uniqueMessageIndex < uniqueImageMessages.length) {
+                        const uniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
+                        if (uniqueMessage && Array.isArray(uniqueMessage.content)) {
+                            if (uniqueContentIndex < uniqueMessage.content.length) {
+                                replacement = uniqueMessage.content[uniqueContentIndex]
+                                uniqueContentIndex++
+
+                                // Move to next message if we've used all content in current one
+                                if (uniqueContentIndex >= uniqueMessage.content.length) {
+                                    uniqueMessageIndex++
+                                    uniqueContentIndex = 0
+                                }
+                            } else {
+                                // Current message has no more content, move to next
+                                uniqueMessageIndex++
+                                uniqueContentIndex = 0
+
+                                // Try again with the next message
+                                if (uniqueMessageIndex < uniqueImageMessages.length) {
+                                    const nextUniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
+                                    if (
+                                        nextUniqueMessage &&
+                                        Array.isArray(nextUniqueMessage.content) &&
+                                        nextUniqueMessage.content.length > 0
+                                    ) {
+                                        replacement = nextUniqueMessage.content[0]
+                                        uniqueContentIndex = 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Apply replacement if found
+                    if (replacement) {
+                        message.content[j] = {
+                            ...replacement
+                        }
                     }
                 }
             }
@@ -248,13 +313,16 @@ export const getPastChatHistoryImageMessages = async (
         if (message.additional_kwargs && message.additional_kwargs.fileUploads) {
             // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
             const fileUploads = message.additional_kwargs.fileUploads
+            const artifacts = message.additional_kwargs.artifacts
+            const fileAnnotations = message.additional_kwargs.fileAnnotations
+            const usedTools = message.additional_kwargs.usedTools
             try {
                 let messageWithFileUploads = ''
                 const uploads: IFileUpload[] = typeof fileUploads === 'string' ? JSON.parse(fileUploads) : fileUploads
                 const imageContents: MessageContentImageUrl[] = []
                 for (const upload of uploads) {
                     if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
-                        const fileData = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+                        const fileData = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
                         // as the image is stored in the server, read the file and convert it to base64
                         const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
 
@@ -278,7 +346,8 @@ export const getPastChatHistoryImageMessages = async (
                         const nodeOptions = {
                             retrieveAttachmentChatId: true,
                             chatflowid: options.chatflowid,
-                            chatId: options.chatId
+                            chatId: options.chatId,
+                            orgId: options.orgId
                         }
                         let fileInputFieldFromMimeType = 'txtFile'
                         fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
@@ -288,26 +357,87 @@ export const getPastChatHistoryImageMessages = async (
                             }
                         }
                         const documents: string = await fileLoaderNodeInstance.init(nodeData, '', nodeOptions)
-                        messageWithFileUploads += `<doc name='${upload.name}'>${documents}</doc>\n\n`
+                        messageWithFileUploads += `<doc name='${upload.name}'>${handleEscapeCharacters(documents, true)}</doc>\n\n`
                     }
                 }
                 const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
+                const hasArtifacts = artifacts && Array.isArray(artifacts) && artifacts.length > 0
+                const hasFileAnnotations = fileAnnotations && Array.isArray(fileAnnotations) && fileAnnotations.length > 0
+                const hasUsedTools = usedTools && Array.isArray(usedTools) && usedTools.length > 0
+
                 if (imageContents.length > 0) {
-                    chatHistory.push({
+                    const imageMessage: any = {
                         role: messageRole,
                         content: imageContents
-                    })
+                    }
+                    if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                        imageMessage.additional_kwargs = {}
+                        if (hasArtifacts) imageMessage.additional_kwargs.artifacts = artifacts
+                        if (hasFileAnnotations) imageMessage.additional_kwargs.fileAnnotations = fileAnnotations
+                        if (hasUsedTools) imageMessage.additional_kwargs.usedTools = usedTools
+                    }
+                    chatHistory.push(imageMessage)
                     transformedPastMessages.push({
                         role: messageRole,
                         content: [...JSON.parse((pastChatHistory[i] as any).additional_kwargs.fileUploads)]
                     })
                 }
-                chatHistory.push({
+
+                const contentMessage: any = {
                     role: messageRole,
                     content: messageContent
-                })
+                }
+                if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                    contentMessage.additional_kwargs = {}
+                    if (hasArtifacts) contentMessage.additional_kwargs.artifacts = artifacts
+                    if (hasFileAnnotations) contentMessage.additional_kwargs.fileAnnotations = fileAnnotations
+                    if (hasUsedTools) contentMessage.additional_kwargs.usedTools = usedTools
+                }
+                chatHistory.push(contentMessage)
             } catch (e) {
                 // failed to parse fileUploads, continue with text only
+                const hasArtifacts = artifacts && Array.isArray(artifacts) && artifacts.length > 0
+                const hasFileAnnotations = fileAnnotations && Array.isArray(fileAnnotations) && fileAnnotations.length > 0
+                const hasUsedTools = usedTools && Array.isArray(usedTools) && usedTools.length > 0
+
+                const errorMessage: any = {
+                    role: messageRole,
+                    content: message.content
+                }
+                if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                    errorMessage.additional_kwargs = {}
+                    if (hasArtifacts) errorMessage.additional_kwargs.artifacts = artifacts
+                    if (hasFileAnnotations) errorMessage.additional_kwargs.fileAnnotations = fileAnnotations
+                    if (hasUsedTools) errorMessage.additional_kwargs.usedTools = usedTools
+                }
+                chatHistory.push(errorMessage)
+            }
+        } else if (message.additional_kwargs) {
+            const hasArtifacts =
+                message.additional_kwargs.artifacts &&
+                Array.isArray(message.additional_kwargs.artifacts) &&
+                message.additional_kwargs.artifacts.length > 0
+            const hasFileAnnotations =
+                message.additional_kwargs.fileAnnotations &&
+                Array.isArray(message.additional_kwargs.fileAnnotations) &&
+                message.additional_kwargs.fileAnnotations.length > 0
+            const hasUsedTools =
+                message.additional_kwargs.usedTools &&
+                Array.isArray(message.additional_kwargs.usedTools) &&
+                message.additional_kwargs.usedTools.length > 0
+
+            if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                const messageAdditionalKwargs: any = {}
+                if (hasArtifacts) messageAdditionalKwargs.artifacts = message.additional_kwargs.artifacts
+                if (hasFileAnnotations) messageAdditionalKwargs.fileAnnotations = message.additional_kwargs.fileAnnotations
+                if (hasUsedTools) messageAdditionalKwargs.usedTools = message.additional_kwargs.usedTools
+
+                chatHistory.push({
+                    role: messageRole,
+                    content: message.content,
+                    additional_kwargs: messageAdditionalKwargs
+                })
+            } else {
                 chatHistory.push({
                     role: messageRole,
                     content: message.content
@@ -329,9 +459,9 @@ export const getPastChatHistoryImageMessages = async (
 /**
  * Updates the flow state with new values
  */
-export const updateFlowState = (state: ICommonObject, llmUpdateState: IFlowState[]): ICommonObject => {
+export const updateFlowState = (state: ICommonObject, updateState: IFlowState[]): ICommonObject => {
     let newFlowState: Record<string, any> = {}
-    for (const state of llmUpdateState) {
+    for (const state of updateState) {
         newFlowState[state.key] = state.value
     }
 

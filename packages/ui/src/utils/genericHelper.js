@@ -244,6 +244,63 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
             }
         }
     }
+
+    // Handle loadConfig parameters - preserve configuration objects
+    if (existingComponentNodeData.inputs && initNewComponentNodeData.inputParams) {
+        // Find parameters with loadConfig: true
+        const loadConfigParams = initNewComponentNodeData.inputParams.filter((param) => param.loadConfig === true)
+
+        for (const param of loadConfigParams) {
+            const configKey = `${param.name}Config`
+
+            // Preserve top-level config objects (e.g., agentModelConfig)
+            if (existingComponentNodeData.inputs[configKey]) {
+                initNewComponentNodeData.inputs[configKey] = existingComponentNodeData.inputs[configKey]
+            }
+        }
+
+        // Handle array parameters that might contain loadConfig items
+        const arrayParams = initNewComponentNodeData.inputParams.filter((param) => param.type === 'array' && param.array)
+
+        for (const arrayParam of arrayParams) {
+            if (existingComponentNodeData.inputs[arrayParam.name] && Array.isArray(existingComponentNodeData.inputs[arrayParam.name])) {
+                const existingArray = existingComponentNodeData.inputs[arrayParam.name]
+
+                // Find loadConfig parameters within the array definition
+                const arrayLoadConfigParams = arrayParam.array.filter((subParam) => subParam.loadConfig === true)
+
+                if (arrayLoadConfigParams.length > 0) {
+                    // Process each array item to preserve config objects
+                    const updatedArray = existingArray.map((existingItem) => {
+                        if (typeof existingItem === 'object' && existingItem !== null) {
+                            const updatedItem = { ...existingItem }
+
+                            // Preserve config objects for each loadConfig parameter in the array
+                            for (const loadConfigParam of arrayLoadConfigParams) {
+                                const configKey = `${loadConfigParam.name}Config`
+                                if (existingItem[configKey]) {
+                                    updatedItem[configKey] = existingItem[configKey]
+                                }
+                            }
+
+                            return updatedItem
+                        }
+                        return existingItem
+                    })
+
+                    initNewComponentNodeData.inputs[arrayParam.name] = updatedArray
+                }
+            }
+        }
+
+        // Also preserve any config keys that exist in the existing data but might not be explicitly handled above
+        // This catches edge cases where config keys exist but don't follow the expected pattern
+        for (const key in existingComponentNodeData.inputs) {
+            if (key.endsWith('Config') && !initNewComponentNodeData.inputs[key]) {
+                initNewComponentNodeData.inputs[key] = existingComponentNodeData.inputs[key]
+            }
+        }
+    }
     // Check for tabs
     const inputParamsWithTabIdentifiers = initNewComponentNodeData.inputParams.filter((param) => param.tabIdentifier) || []
 
@@ -268,7 +325,7 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
         initNewComponentNodeData.label = existingComponentNodeData.label
     }
 
-    // Special case for Condition node to update outputAnchors
+    // Special case for Sequential Condition node to update outputAnchors
     if (initNewComponentNodeData.name.includes('seqCondition')) {
         const options = existingComponentNodeData.outputAnchors[0].options || []
 
@@ -294,6 +351,22 @@ export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
 
     const isAgentFlowV2 = newComponentNodeData.category === 'Agent Flows'
 
+    // Helper to compare handle/anchor IDs while ignoring trailing base-class/type suffixes
+    // Example:
+    //   azureChatOpenAI_0-output-azureChatOpenAI-A|B|C  vs  azureChatOpenAI_0-output-azureChatOpenAI-A|B
+    // We compare by stripping the last "-..." segment if it contains pipes.
+    const handlesEqual = (a, b) => {
+        if (a === b) return true
+        const stripPipeSuffix = (s) => {
+            if (!s) return s
+            const lastDash = s.lastIndexOf('-')
+            if (lastDash === -1) return s
+            const suffix = s.substring(lastDash + 1)
+            return suffix.includes('|') ? s.substring(0, lastDash) : s
+        }
+        return stripPipeSuffix(a) === stripPipeSuffix(b)
+    }
+
     for (const edge of edges) {
         const targetNodeId = edge.targetHandle.split('-')[0]
         const sourceNodeId = edge.sourceHandle.split('-')[0]
@@ -305,8 +378,8 @@ export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
                 }
             } else {
                 // Check if targetHandle is in inputParams or inputAnchors
-                const inputParam = newComponentNodeData.inputParams.find((param) => param.id === edge.targetHandle)
-                const inputAnchor = newComponentNodeData.inputAnchors.find((param) => param.id === edge.targetHandle)
+                const inputParam = newComponentNodeData.inputParams.find((param) => handlesEqual(param.id, edge.targetHandle))
+                const inputAnchor = newComponentNodeData.inputAnchors.find((param) => handlesEqual(param.id, edge.targetHandle))
 
                 if (!inputParam && !inputAnchor) {
                     removedEdges.push(edge)
@@ -322,11 +395,11 @@ export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
                 for (const outputAnchor of newComponentNodeData.outputAnchors) {
                     const outputAnchorType = outputAnchor.type
                     if (outputAnchorType === 'options') {
-                        if (!outputAnchor.options.find((outputOption) => outputOption.id === edge.sourceHandle)) {
+                        if (!outputAnchor.options.find((outputOption) => handlesEqual(outputOption.id, edge.sourceHandle))) {
                             removedEdges.push(edge)
                         }
                     } else {
-                        if (outputAnchor.id !== edge.sourceHandle) {
+                        if (!handlesEqual(outputAnchor.id, edge.sourceHandle)) {
                             removedEdges.push(edge)
                         }
                     }
@@ -982,6 +1055,18 @@ export const kFormatter = (num) => {
     return item ? (num / item.value).toFixed(1).replace(regexp, '').concat(item.symbol) : '0'
 }
 
+export const redirectWhenUnauthorized = ({ error, redirectTo }) => {
+    if (error === 'unauthorized') {
+        window.location.href = redirectTo
+    } else if (error === 'subscription_canceled') {
+        window.location.href = `${redirectTo}?error=${error}`
+    }
+}
+
+export const truncateString = (str, maxLength) => {
+    return str.length > maxLength ? `${str.slice(0, maxLength - 3)}...` : str
+}
+
 const toCamelCase = (str) => {
     return str
         .split(' ') // Split by space to process each word
@@ -1106,42 +1191,87 @@ const _showHideOperation = (nodeData, inputParam, displayType, index) => {
         if (path.includes('$index')) {
             path = path.replace('$index', index)
         }
-        const groundValue = get(nodeData.inputs, path, '')
+        let groundValue = get(nodeData.inputs, path, '')
+        if (groundValue && typeof groundValue === 'string' && groundValue.startsWith('[') && groundValue.endsWith(']')) {
+            groundValue = JSON.parse(groundValue)
+        }
 
-        if (Array.isArray(comparisonValue)) {
-            if (displayType === 'show' && !comparisonValue.includes(groundValue)) {
-                inputParam.display = false
+        // Handle case where groundValue is an array
+        if (Array.isArray(groundValue)) {
+            if (Array.isArray(comparisonValue)) {
+                // Both are arrays - check if there's any intersection
+                const hasIntersection = comparisonValue.some((val) => groundValue.includes(val))
+                if (displayType === 'show' && !hasIntersection) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && hasIntersection) {
+                    inputParam.display = false
+                }
+            } else if (typeof comparisonValue === 'string') {
+                // comparisonValue is string, groundValue is array - check if array contains the string
+                const matchFound = groundValue.some((val) => comparisonValue === val || new RegExp(comparisonValue).test(val))
+                if (displayType === 'show' && !matchFound) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && matchFound) {
+                    inputParam.display = false
+                }
+            } else if (typeof comparisonValue === 'boolean' || typeof comparisonValue === 'number') {
+                // For boolean/number comparison with array, check if array contains the value
+                const matchFound = groundValue.includes(comparisonValue)
+                if (displayType === 'show' && !matchFound) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && matchFound) {
+                    inputParam.display = false
+                }
+            } else if (typeof comparisonValue === 'object') {
+                // For object comparison with array, use deep equality check
+                const matchFound = groundValue.some((val) => isEqual(comparisonValue, val))
+                if (displayType === 'show' && !matchFound) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && matchFound) {
+                    inputParam.display = false
+                }
             }
-            if (displayType === 'hide' && comparisonValue.includes(groundValue)) {
-                inputParam.display = false
-            }
-        } else if (typeof comparisonValue === 'string') {
-            if (displayType === 'show' && !(comparisonValue === groundValue || new RegExp(comparisonValue).test(groundValue))) {
-                inputParam.display = false
-            }
-            if (displayType === 'hide' && (comparisonValue === groundValue || new RegExp(comparisonValue).test(groundValue))) {
-                inputParam.display = false
-            }
-        } else if (typeof comparisonValue === 'boolean') {
-            if (displayType === 'show' && comparisonValue !== groundValue) {
-                inputParam.display = false
-            }
-            if (displayType === 'hide' && comparisonValue === groundValue) {
-                inputParam.display = false
-            }
-        } else if (typeof comparisonValue === 'object') {
-            if (displayType === 'show' && !isEqual(comparisonValue, groundValue)) {
-                inputParam.display = false
-            }
-            if (displayType === 'hide' && isEqual(comparisonValue, groundValue)) {
-                inputParam.display = false
-            }
-        } else if (typeof comparisonValue === 'number') {
-            if (displayType === 'show' && comparisonValue !== groundValue) {
-                inputParam.display = false
-            }
-            if (displayType === 'hide' && comparisonValue === groundValue) {
-                inputParam.display = false
+        } else {
+            // Original logic for non-array groundValue
+            if (Array.isArray(comparisonValue)) {
+                if (displayType === 'show' && !comparisonValue.includes(groundValue)) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && comparisonValue.includes(groundValue)) {
+                    inputParam.display = false
+                }
+            } else if (typeof comparisonValue === 'string') {
+                if (displayType === 'show' && !(comparisonValue === groundValue || new RegExp(comparisonValue).test(groundValue))) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && (comparisonValue === groundValue || new RegExp(comparisonValue).test(groundValue))) {
+                    inputParam.display = false
+                }
+            } else if (typeof comparisonValue === 'boolean') {
+                if (displayType === 'show' && comparisonValue !== groundValue) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && comparisonValue === groundValue) {
+                    inputParam.display = false
+                }
+            } else if (typeof comparisonValue === 'object') {
+                if (displayType === 'show' && !isEqual(comparisonValue, groundValue)) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && isEqual(comparisonValue, groundValue)) {
+                    inputParam.display = false
+                }
+            } else if (typeof comparisonValue === 'number') {
+                if (displayType === 'show' && comparisonValue !== groundValue) {
+                    inputParam.display = false
+                }
+                if (displayType === 'hide' && comparisonValue === groundValue) {
+                    inputParam.display = false
+                }
             }
         }
     })

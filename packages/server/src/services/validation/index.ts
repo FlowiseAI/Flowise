@@ -13,16 +13,18 @@ interface IValidationResult {
     issues: string[]
 }
 
-const checkFlowValidation = async (flowId: string): Promise<IValidationResult[]> => {
+const checkFlowValidation = async (flowId: string, workspaceId?: string): Promise<IValidationResult[]> => {
     try {
         const appServer = getRunningExpressApp()
 
         const componentNodes = appServer.nodesPool.componentNodes
 
+        // Create query conditions with workspace filtering if provided
+        const whereCondition: any = { id: flowId }
+        if (workspaceId) whereCondition.workspaceId = workspaceId
+
         const flow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: {
-                id: flowId
-            }
+            where: whereCondition
         })
 
         if (!flow) {

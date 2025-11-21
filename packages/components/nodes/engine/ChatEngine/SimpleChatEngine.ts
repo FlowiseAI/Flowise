@@ -9,6 +9,7 @@ import {
     IServerSideEventStreamer
 } from '../../../src/Interface'
 import { LLM, ChatMessage, SimpleChatEngine } from 'llamaindex'
+import { EvaluationRunTracerLlama } from '../../../evaluation/EvaluationRunTracerLlama'
 
 class SimpleChatEngine_LlamaIndex implements INode {
     label: string
@@ -77,6 +78,9 @@ class SimpleChatEngine_LlamaIndex implements INode {
         }
 
         const chatEngine = new SimpleChatEngine({ llm: model })
+
+        // these are needed for evaluation runs
+        await EvaluationRunTracerLlama.injectEvaluationMetadata(nodeData, options, chatEngine)
 
         const msgs = (await memory.getChatMessages(this.sessionId, false, prependMessages)) as IMessage[]
         for (const message of msgs) {

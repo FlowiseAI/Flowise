@@ -3,6 +3,7 @@ import { convertSchemaToZod, getBaseClasses, getVars } from '../../../src/utils'
 import { DynamicStructuredTool } from './core'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
+import { SecureZodSchemaParser } from '../../../src/secureZodParser'
 
 class CustomTool_Tools implements INode {
     label: string
@@ -77,7 +78,8 @@ class CustomTool_Tools implements INode {
                 return returnData
             }
 
-            const tools = await appDataSource.getRepository(databaseEntities['Tool']).find()
+            const searchOptions = options.searchOptions || {}
+            const tools = await appDataSource.getRepository(databaseEntities['Tool']).findBy(searchOptions)
 
             for (let i = 0; i < tools.length; i += 1) {
                 const data = {
@@ -118,11 +120,10 @@ class CustomTool_Tools implements INode {
             if (customToolName) obj.name = customToolName
             if (customToolDesc) obj.description = customToolDesc
             if (customToolSchema) {
-                const zodSchemaFunction = new Function('z', `return ${customToolSchema}`)
-                obj.schema = zodSchemaFunction(z)
+                obj.schema = SecureZodSchemaParser.parseZodSchema(customToolSchema) as z.ZodObject<ICommonObject, 'strip', z.ZodTypeAny>
             }
 
-            const variables = await getVars(appDataSource, databaseEntities, nodeData)
+            const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
 
             const flow = { chatflowId: options.chatflowid }
 

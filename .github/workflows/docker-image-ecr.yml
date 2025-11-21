@@ -1,0 +1,73 @@
+name: Docker Image CI - AWS ECR
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Environment to push the image to.'
+                required: true
+                default: 'dev'
+                type: choice
+                options:
+                    - dev
+                    - prod
+            node_version:
+                description: 'Node.js version to build this image with.'
+                type: choice
+                required: true
+                default: '20'
+                options:
+                    - '20'
+            tag_version:
+                description: 'Tag version of the image to be pushed.'
+                type: string
+                required: true
+                default: 'latest'
+
+jobs:
+    docker:
+        runs-on: ubuntu-latest
+        environment: ${{ github.event.inputs.environment }}
+        steps:
+            - name: Set default values
+              id: defaults
+              run: |
+                  echo "node_version=${{ github.event.inputs.node_version || '20' }}" >> $GITHUB_OUTPUT
+                  echo "tag_version=${{ github.event.inputs.tag_version || 'latest' }}" >> $GITHUB_OUTPUT
+
+            - name: Checkout
+              uses: actions/checkout@v4.1.1
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@v3.0.0
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3.0.0
+
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v3
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Login to Amazon ECR
+              uses: aws-actions/amazon-ecr-login@v1
+
+            # -------------------------
+            # Build and push main image
+            # -------------------------
+            - name: Build and push main image
+              uses: docker/build-push-action@v5.3.0
+              with:
+                  context: .
+                  file: Dockerfile
+                  build-args: |
+                      NODE_VERSION=${{ steps.defaults.outputs.node_version }}
+                  platforms: linux/amd64,linux/arm64
+                  push: true
+                  tags: |
+                      ${{ format('{0}.dkr.ecr.{1}.amazonaws.com/flowise:{2}', 
+                          secrets.AWS_ACCOUNT_ID, 
+                          secrets.AWS_REGION, 
+                          steps.defaults.outputs.tag_version) }}

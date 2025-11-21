@@ -1,8 +1,10 @@
-import { Request, Response, NextFunction } from 'express'
-import assistantsService from '../../services/assistants'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { AssistantType } from '../../Interface'
+import assistantsService from '../../services/assistants'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { checkUsageLimit } from '../../utils/quotaUsage'
 
 const createAssistant = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -12,7 +14,30 @@ const createAssistant = async (req: Request, res: Response, next: NextFunction) 
                 `Error: assistantsController.createAssistant - body not provided!`
             )
         }
-        const apiResponse = await assistantsService.createAssistant(req.body)
+        const body = req.body
+        const orgId = req.user?.activeOrganizationId
+        if (!orgId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: assistantsController.createAssistant - organization ${orgId} not found!`
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: assistantsController.createAssistant - workspace ${workspaceId} not found!`
+            )
+        }
+        const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
+
+        const existingAssistantCount = await assistantsService.getAssistantsCountByOrganization(body.type, orgId)
+        const newAssistantCount = 1
+        await checkUsageLimit('flows', subscriptionId, getRunningExpressApp().usageCacheManager, existingAssistantCount + newAssistantCount)
+
+        body.workspaceId = workspaceId
+        const apiResponse = await assistantsService.createAssistant(body, orgId)
+
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -27,7 +52,14 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
                 `Error: assistantsController.deleteAssistant - id not provided!`
             )
         }
-        const apiResponse = await assistantsService.deleteAssistant(req.params.id, req.query.isDeleteBoth)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: assistantsController.deleteAssistant - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await assistantsService.deleteAssistant(req.params.id, req.query.isDeleteBoth, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -37,7 +69,14 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
 const getAllAssistants = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const type = req.query.type as AssistantType
-        const apiResponse = await assistantsService.getAllAssistants(type)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: assistantsController.getAllAssistants - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await assistantsService.getAllAssistants(workspaceId, type)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -52,7 +91,14 @@ const getAssistantById = async (req: Request, res: Response, next: NextFunction)
                 `Error: assistantsController.getAssistantById - id not provided!`
             )
         }
-        const apiResponse = await assistantsService.getAssistantById(req.params.id)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: assistantsController.getAssistantById - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await assistantsService.getAssistantById(req.params.id, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -73,7 +119,14 @@ const updateAssistant = async (req: Request, res: Response, next: NextFunction) 
                 `Error: assistantsController.updateAssistant - body not provided!`
             )
         }
-        const apiResponse = await assistantsService.updateAssistant(req.params.id, req.body)
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: assistantsController.updateAssistant - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await assistantsService.updateAssistant(req.params.id, req.body, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -91,7 +144,14 @@ const getChatModels = async (req: Request, res: Response, next: NextFunction) =>
 
 const getDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await assistantsService.getDocumentStores()
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: assistantsController.getDocumentStores - workspace ${workspaceId} not found!`
+            )
+        }
+        const apiResponse = await assistantsService.getDocumentStores(workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

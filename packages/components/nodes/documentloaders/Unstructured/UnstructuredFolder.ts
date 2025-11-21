@@ -1,3 +1,6 @@
+/*
+* Uncomment this if you want to use the UnstructuredFolder to load a folder from the file system
+
 import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import {
@@ -516,3 +519,4 @@ class UnstructuredFolder_DocumentLoaders implements INode {
 }
 
 module.exports = { nodeClass: UnstructuredFolder_DocumentLoaders }
+*/

@@ -1,4 +1,5 @@
 import { CommonType, ICommonObject, ICondition, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import removeMarkdown from 'remove-markdown'
 
 class Condition_Agentflow implements INode {
     label: string
@@ -300,8 +301,8 @@ class Condition_Agentflow implements INode {
                     value2 = parseFloat(_value2 as string) || 0
                     break
                 default: // string
-                    value1 = _value1 as string
-                    value2 = _value2 as string
+                    value1 = removeMarkdown((_value1 as string) || '')
+                    value2 = removeMarkdown((_value2 as string) || '')
             }
 
             const compareOperationResult = compareOperationFunctions[operation](value1, value2)
@@ -316,7 +317,7 @@ class Condition_Agentflow implements INode {
             }
         }
 
-        // If no condition is fullfilled, add isFulfilled to the ELSE condition
+        // If no condition is fulfilled, add isFulfilled to the ELSE condition
         const dummyElseConditionData = {
             type: 'string',
             value1: '',
