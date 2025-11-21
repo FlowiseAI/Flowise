@@ -94,7 +94,7 @@ const dashboard = {
                     url: '/showcase',
                     icon: icons.IconMicroscope, // or any other icon you prefer
                     breadcrumbs: true,
-                    permission: 'showcase:view'
+                    permission: 'chatflows:view'
                 },
 
                 // ❌ Removed (per your request): agentflows, assistants
