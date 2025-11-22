@@ -7,6 +7,9 @@ export function getHost(nodeData?: INodeData) {
 export function getDatabase(nodeData?: INodeData) {
     return defaultChain(nodeData?.inputs?.database, process.env.POSTGRES_RECORDMANAGER_DATABASE)
 }
+export function getSchema(nodeData?: INodeData) {
+    return defaultChain(nodeData?.inputs?.schema, process.env.POSTGRES_RECORDMANAGER_SCHEMA, 'public')
+}
 
 export function getPort(nodeData?: INodeData) {
     return defaultChain(nodeData?.inputs?.port, process.env.POSTGRES_RECORDMANAGER_PORT, '5432')
