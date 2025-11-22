@@ -39,6 +39,14 @@ class AWSApi implements INodeCredential {
                 placeholder: '<AWS_SESSION_TOKEN>',
                 description: 'The session key for your AWS account. This is only needed when you are using temporary credentials.',
                 optional: true
+            },
+            {
+                label: 'AWS Region',
+                name: 'region',
+                type: 'string',
+                placeholder: 'us-east-1',
+                description: 'The AWS region where your services are located (e.g., us-east-1, eu-west-1). Required for AWS Textract.',
+                optional: true
             }
         ]
     }
