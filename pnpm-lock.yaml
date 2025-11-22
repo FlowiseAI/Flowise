@@ -186,6 +186,9 @@ importers:
             '@google/generative-ai':
                 specifier: ^0.24.0
                 version: 0.24.0
+            '@grpc/grpc-js':
+                specifier: ^1.10.10
+                version: 1.10.10
             '@huggingface/inference':
                 specifier: ^2.6.1
                 version: 2.6.4
@@ -279,6 +282,48 @@ importers:
             '@opensearch-project/opensearch':
                 specifier: ^1.2.0
                 version: 1.2.0
+            '@opentelemetry/api':
+                specifier: 1.9.0
+                version: 1.9.0
+            '@opentelemetry/auto-instrumentations-node':
+                specifier: ^0.52.0
+                version: 0.52.1(@opentelemetry/api@1.9.0)(encoding@0.1.13)
+            '@opentelemetry/core':
+                specifier: 1.27.0
+                version: 1.27.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/exporter-metrics-otlp-grpc':
+                specifier: 0.54.0
+                version: 0.54.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/exporter-metrics-otlp-http':
+                specifier: 0.54.0
+                version: 0.54.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/exporter-metrics-otlp-proto':
+                specifier: 0.54.0
+                version: 0.54.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/exporter-trace-otlp-grpc':
+                specifier: 0.54.0
+                version: 0.54.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/exporter-trace-otlp-http':
+                specifier: 0.54.0
+                version: 0.54.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/exporter-trace-otlp-proto':
+                specifier: 0.54.0
+                version: 0.54.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/resources':
+                specifier: 1.27.0
+                version: 1.27.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/sdk-metrics':
+                specifier: 1.27.0
+                version: 1.27.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/sdk-node':
+                specifier: ^0.54.0
+                version: 0.54.2(@opentelemetry/api@1.9.0)
+            '@opentelemetry/sdk-trace-base':
+                specifier: 1.27.0
+                version: 1.27.0(@opentelemetry/api@1.9.0)
+            '@opentelemetry/semantic-conventions':
+                specifier: 1.27.0
+                version: 1.27.0
             '@pinecone-database/pinecone':
                 specifier: 4.0.0
                 version: 4.0.0
@@ -587,7 +632,7 @@ importers:
                 specifier: 4.0.7
                 version: 4.0.7
             '@opentelemetry/api':
-                specifier: ^1.3.0
+                specifier: 1.9.0
                 version: 1.9.0
             '@opentelemetry/auto-instrumentations-node':
                 specifier: ^0.52.0
@@ -23506,7 +23551,7 @@ snapshots:
             '@jest/test-result': 27.5.1
             '@jest/transform': 27.5.1
             '@jest/types': 27.5.1
-            '@types/node': 22.5.4
+            '@types/node': 22.16.3
             ansi-escapes: 4.3.2
             chalk: 4.1.2
             emittery: 0.8.1
@@ -23789,7 +23834,7 @@ snapshots:
         dependencies:
             '@types/istanbul-lib-coverage': 2.0.6
             '@types/istanbul-reports': 3.0.4
-            '@types/node': 22.5.4
+            '@types/node': 22.16.3
             '@types/yargs': 16.0.9
             chalk: 4.1.2
 
