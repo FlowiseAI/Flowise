@@ -1,5 +1,6 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { DataSource } from 'typeorm'
+import { DocumentStoreError, getErrorMessage } from '../../../src/error'
 
 class DocStore_VectorStores implements INode {
     label: string
@@ -73,45 +74,56 @@ class DocStore_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const selectedStore = nodeData.inputs?.selectedStore as string
-        const appDataSource = options.appDataSource as DataSource
-        const databaseEntities = options.databaseEntities as IDatabaseEntity
-        const output = nodeData.outputs?.output as string
+        try {
+            const selectedStore = nodeData.inputs?.selectedStore as string
+            const appDataSource = options.appDataSource as DataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+            const output = nodeData.outputs?.output as string
 
-        const entity = await appDataSource.getRepository(databaseEntities['DocumentStore']).findOneBy({ id: selectedStore })
-        if (!entity) {
-            return { error: 'Store not found' }
+            const entity = await appDataSource.getRepository(databaseEntities['DocumentStore']).findOneBy({ id: selectedStore })
+            if (!entity) {
+                throw new DocumentStoreError('Store not found', selectedStore)
+            }
+            const data: ICommonObject = {}
+            data.output = output
+
+            // Prepare Embeddings Instance
+            const embeddingConfig = JSON.parse(entity.embeddingConfig)
+            data.embeddingName = embeddingConfig.name
+            data.embeddingConfig = embeddingConfig.config
+            let embeddingObj = await _createEmbeddingsObject(options.componentNodes, data, options)
+            if (!embeddingObj) {
+                throw new DocumentStoreError('Failed to create EmbeddingObj', selectedStore)
+            }
+
+            // Prepare Vector Store Instance
+            const vsConfig = JSON.parse(entity.vectorStoreConfig)
+            data.vectorStoreName = vsConfig.name
+            data.vectorStoreConfig = vsConfig.config
+            if (data.inputs) {
+                data.vectorStoreConfig = { ...vsConfig.config, ...data.inputs }
+            }
+
+            // Prepare Vector Store Node Data
+            const vStoreNodeData = _createVectorStoreNodeData(options.componentNodes, data, embeddingObj)
+
+            // Finally create the Vector Store or Retriever object (data.output)
+            const vectorStoreObj = await _createVectorStoreObject(options.componentNodes, data)
+            const retrieverOrVectorStore = await vectorStoreObj.init(vStoreNodeData, '', options)
+            if (!retrieverOrVectorStore) {
+                throw new DocumentStoreError('Failed to create vectorStore', selectedStore)
+            }
+            return retrieverOrVectorStore
+        } catch (error) {
+            if (error instanceof DocumentStoreError) {
+                throw error
+            }
+            throw new DocumentStoreError(
+                getErrorMessage(error),
+                nodeData.inputs?.selectedStore,
+                error instanceof Error ? { cause: error.cause } : undefined
+            )
         }
-        const data: ICommonObject = {}
-        data.output = output
-
-        // Prepare Embeddings Instance
-        const embeddingConfig = JSON.parse(entity.embeddingConfig)
-        data.embeddingName = embeddingConfig.name
-        data.embeddingConfig = embeddingConfig.config
-        let embeddingObj = await _createEmbeddingsObject(options.componentNodes, data, options)
-        if (!embeddingObj) {
-            return { error: 'Failed to create EmbeddingObj' }
-        }
-
-        // Prepare Vector Store Instance
-        const vsConfig = JSON.parse(entity.vectorStoreConfig)
-        data.vectorStoreName = vsConfig.name
-        data.vectorStoreConfig = vsConfig.config
-        if (data.inputs) {
-            data.vectorStoreConfig = { ...vsConfig.config, ...data.inputs }
-        }
-
-        // Prepare Vector Store Node Data
-        const vStoreNodeData = _createVectorStoreNodeData(options.componentNodes, data, embeddingObj)
-
-        // Finally create the Vector Store or Retriever object (data.output)
-        const vectorStoreObj = await _createVectorStoreObject(options.componentNodes, data)
-        const retrieverOrVectorStore = await vectorStoreObj.init(vStoreNodeData, '', options)
-        if (!retrieverOrVectorStore) {
-            return { error: 'Failed to create vectorStore' }
-        }
-        return retrieverOrVectorStore
     }
 }
 
