@@ -49,7 +49,33 @@ const importData = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
+const previewImportData = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: exportImportController.previewImportData - workspace ${workspaceId} not found!`
+            )
+        }
+
+        const importData = req.body
+        if (!importData) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                'Error: exportImportController.previewImportData - importData is required!'
+            )
+        }
+
+        const preview = await exportImportService.previewImportData(importData, workspaceId)
+        return res.status(StatusCodes.OK).json(preview)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     exportData,
-    importData
+    importData,
+    previewImportData
 }

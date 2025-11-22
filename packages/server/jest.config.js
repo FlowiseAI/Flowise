@@ -3,6 +3,11 @@ module.exports = {
     preset: 'ts-jest',
     // Set the test environment to Node.js
     testEnvironment: 'node',
+    globals: {
+        'ts-jest': {
+            diagnostics: false
+        }
+    },
 
     // Define the root directory for tests and modules
     roots: ['<rootDir>/test'],
@@ -17,6 +22,9 @@ module.exports = {
 
     // File extensions to recognize in module resolution
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+    moduleNameMapper: {
+        '^flowise-components$': '<rootDir>/test/__mocks__/flowise-components.ts'
+    },
 
     // Display individual test results with the test suite hierarchy.
     verbose: true
