@@ -21,7 +21,8 @@ import {
     useTheme,
     Typography,
     Button,
-    Drawer
+    Drawer,
+    TableSortLabel
 } from '@mui/material'
 
 // project imports
@@ -185,6 +186,8 @@ function ShowRoleRow(props) {
     const [openViewPermissionsDrawer, setOpenViewPermissionsDrawer] = useState(false)
     const [selectedRoleId, setSelectedRoleId] = useState('')
     const [assignedUsers, setAssignedUsers] = useState([])
+    const [order, setOrder] = useState('asc')
+    const [orderBy, setOrderBy] = useState('workspace')
 
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -196,6 +199,38 @@ function ShowRoleRow(props) {
         setSelectedRoleId(roleId)
     }
 
+    const handleRequestSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc'
+        setOrder(isAsc ? 'desc' : 'asc')
+        setOrderBy(property)
+    }
+
+    const sortedAssignedUsers = [...assignedUsers].sort((a, b) => {
+        let comparison = 0
+
+        if (orderBy === 'workspace') {
+            const workspaceA = (a.workspace?.name || '').toLowerCase()
+            const workspaceB = (b.workspace?.name || '').toLowerCase()
+            comparison = workspaceA.localeCompare(workspaceB)
+            if (comparison === 0) {
+                const userA = (a.user?.name || a.user?.email || '').toLowerCase()
+                const userB = (b.user?.name || b.user?.email || '').toLowerCase()
+                comparison = userA.localeCompare(userB)
+            }
+        } else if (orderBy === 'user') {
+            const userA = (a.user?.name || a.user?.email || '').toLowerCase()
+            const userB = (b.user?.name || b.user?.email || '').toLowerCase()
+            comparison = userA.localeCompare(userB)
+            if (comparison === 0) {
+                const workspaceA = (a.workspace?.name || '').toLowerCase()
+                const workspaceB = (b.workspace?.name || '').toLowerCase()
+                comparison = workspaceA.localeCompare(workspaceB)
+            }
+        }
+
+        return order === 'asc' ? comparison : -comparison
+    })
+
     useEffect(() => {
         if (getAllUsersByRoleIdApi.data) {
             setAssignedUsers(getAllUsersByRoleIdApi.data)
@@ -203,12 +238,14 @@ function ShowRoleRow(props) {
     }, [getAllUsersByRoleIdApi.data])
 
     useEffect(() => {
-        if (open && selectedRoleId) {
+        if (openAssignedUsersDrawer && selectedRoleId) {
             getAllUsersByRoleIdApi.request(selectedRoleId)
         } else {
             setOpenAssignedUsersDrawer(false)
             setSelectedRoleId('')
             setAssignedUsers([])
+            setOrder('asc')
+            setOrderBy('workspace')
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [openAssignedUsersDrawer])
@@ -301,12 +338,28 @@ function ShowRoleRow(props) {
                                 }}
                             >
                                 <TableRow>
-                                    <StyledTableCell sx={{ width: '50%' }}>User</StyledTableCell>
-                                    <StyledTableCell sx={{ width: '50%' }}>Workspace</StyledTableCell>
+                                    <StyledTableCell sx={{ width: '50%' }}>
+                                        <TableSortLabel
+                                            active={orderBy === 'user'}
+                                            direction={orderBy === 'user' ? order : 'asc'}
+                                            onClick={() => handleRequestSort('user')}
+                                        >
+                                            User
+                                        </TableSortLabel>
+                                    </StyledTableCell>
+                                    <StyledTableCell sx={{ width: '50%' }}>
+                                        <TableSortLabel
+                                            active={orderBy === 'workspace'}
+                                            direction={orderBy === 'workspace' ? order : 'asc'}
+                                            onClick={() => handleRequestSort('workspace')}
+                                        >
+                                            Workspace
+                                        </TableSortLabel>
+                                    </StyledTableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {assignedUsers.map((item, index) => (
+                                {sortedAssignedUsers.map((item, index) => (
                                     <TableRow key={index}>
                                         <StyledTableCell>{item.user.name || item.user.email}</StyledTableCell>
                                         <StyledTableCell>{item.workspace.name}</StyledTableCell>
