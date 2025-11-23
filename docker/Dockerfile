@@ -1,8 +1,6 @@
 # Stage 1: Build stage
 FROM node:20-alpine AS build
 
-USER root
-
 # Skip downloading Chrome for Puppeteer (saves build time)
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
@@ -21,5 +19,9 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 # Copy Flowise from the build stage
 COPY --from=build /usr/local/lib/node_modules /usr/local/lib/node_modules
 COPY --from=build /usr/local/bin /usr/local/bin
+
+RUN chown -R node:node /usr/local/lib/node_modules/flowise
+
+USER node
 
 ENTRYPOINT ["flowise", "start"]
