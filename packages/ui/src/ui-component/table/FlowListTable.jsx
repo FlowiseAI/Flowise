@@ -57,7 +57,6 @@ export const FlowListTable = ({
     isLoading,
     filterFunction,
     updateFlowsApi,
-    onRefresh,
     setError,
     isAgentCanvas,
     isAgentflowV2
@@ -332,7 +331,6 @@ export const FlowListTable = ({
                                                         chatflow={row}
                                                         setError={setError}
                                                         updateFlowsApi={updateFlowsApi}
-                                                        onRefresh={onRefresh}
                                                     />
                                                 </Stack>
                                             </StyledTableCell>
@@ -355,7 +353,6 @@ FlowListTable.propTypes = {
     isLoading: PropTypes.bool,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,
-    onRefresh: PropTypes.func,
     setError: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
     isAgentflowV2: PropTypes.bool
