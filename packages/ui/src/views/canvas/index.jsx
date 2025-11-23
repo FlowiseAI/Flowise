@@ -47,7 +47,8 @@ import {
     rearrangeToolsOrdering,
     getUpsertDetails,
     updateOutdatedNodeData,
-    updateOutdatedNodeEdge
+    updateOutdatedNodeEdge,
+    normalizeStickyNoteNodes
 } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import { usePrompt } from '@/utils/usePrompt'
@@ -168,7 +169,7 @@ const Canvas = () => {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
 
-            setNodes(nodes)
+            setNodes(normalizeStickyNoteNodes(nodes))
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)
         } catch (e) {
@@ -210,7 +211,7 @@ const Canvas = () => {
 
     const handleSaveFlow = async (chatflowName) => {
         if (reactFlowInstance) {
-            const nodes = reactFlowInstance.getNodes().map((node) => {
+            const nodes = normalizeStickyNoteNodes(reactFlowInstance.getNodes()).map((node) => {
                 const nodeData = cloneDeep(node.data)
                 if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
                     nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
@@ -295,12 +296,13 @@ const Canvas = () => {
                 id: newNodeId,
                 position,
                 type: nodeData.type !== 'StickyNote' ? 'customNode' : 'stickyNote',
-                data: initNode(nodeData, newNodeId)
+                data: initNode(nodeData, newNodeId),
+                style: nodeData.type === 'StickyNote' ? { zIndex: 0 } : undefined
             }
 
             setSelectedNode(newNode)
             setNodes((nds) =>
-                nds.concat(newNode).map((node) => {
+                normalizeStickyNoteNodes(nds.concat(newNode)).map((node) => {
                     if (node.id === newNode.id) {
                         node.data = {
                             ...node.data,
@@ -340,7 +342,7 @@ const Canvas = () => {
             }
         }
 
-        setNodes(cloneNodes)
+        setNodes(normalizeStickyNoteNodes(cloneNodes))
         setEdges(cloneEdges.filter((edge) => !toBeRemovedEdges.includes(edge)))
         setDirty()
         setIsSyncNodesButtonEnabled(false)
@@ -416,7 +418,7 @@ const Canvas = () => {
             }
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
             setLasUpdatedDateTime(chatflow.updatedDate)
-            setNodes(initialFlow.nodes || [])
+            setNodes(normalizeStickyNoteNodes(initialFlow.nodes || []))
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
