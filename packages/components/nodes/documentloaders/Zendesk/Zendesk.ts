@@ -2,6 +2,7 @@ import { omit } from 'lodash'
 import axios from 'axios'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
+import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 
 interface ZendeskConfig {
     zendeskDomain: string
@@ -148,6 +149,111 @@ class Zendesk_DocumentLoaders implements INode {
                 baseClasses: ['string', 'json']
             }
         ]
+    }
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const zendeskDomain = nodeData.inputs?.zendeskDomain as string
+        const brandId = nodeData.inputs?.brandId as string
+        const localeInputRaw = nodeData.inputs?.locale as string
+        const localeInput = (localeInputRaw && localeInputRaw.trim()) || 'en-us'
+        const publishedArticlesOnly = (nodeData.inputs?.publishedArticlesOnly as boolean) ?? true
+        const charsPerToken = (nodeData.inputs?.charsPerToken as number) ?? 4
+        const metadata = nodeData.inputs?.metadata
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
+
+        let omitMetadataKeys: string[] = []
+        if (_omitMetadataKeys) {
+            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+        }
+
+        // Parse comma-separated locales
+        const locales = localeInput
+            .split(',')
+            .map((loc) => loc.trim())
+            .filter((loc) => loc.length > 0)
+
+        // Ensure at least one locale
+        if (locales.length === 0) {
+            locales.push('en-us')
+        }
+
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const user = getCredentialParam('user', credentialData, nodeData)
+        const token = getCredentialParam('token', credentialData, nodeData)
+
+        // Build configuration
+        const config: ZendeskConfig = {
+            zendeskDomain,
+            user,
+            token,
+            brandId,
+            publishedArticlesOnly,
+            locales,
+            charsPerToken,
+            api: {
+                protocol: 'https://',
+                helpCenterPath: '/api/v2/help_center/',
+                articlesEndpoint: 'articles.json',
+                publicPath: '/hc/'
+            },
+            defaultTitle: 'Untitled',
+            chunking: {
+                maxTokens: 3000,
+                chunkSize: 1000,
+                overlap: 200
+            }
+        }
+
+        const loader = new ZendeskLoader(config)
+
+        // Extract articles
+        let docs: IDocument[] = await loader.load()
+
+        // Apply metadata handling
+        let parsedMetadata = {}
+
+        if (metadata) {
+            try {
+                parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+            } catch (error) {
+                throw new Error(`Error parsing Additional Metadata: ${error.message}`)
+            }
+        }
+
+        docs = docs.map((doc) => ({
+            ...doc,
+            metadata:
+                _omitMetadataKeys === '*'
+                    ? { ...parsedMetadata }
+                    : omit(
+                          {
+                              ...doc.metadata,
+                              ...parsedMetadata
+                          },
+                          omitMetadataKeys
+                      )
+        }))
+
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
+    }
+}
+
+class ZendeskLoader extends BaseDocumentLoader {
+    private config: ZendeskConfig
+
+    constructor(config: ZendeskConfig) {
+        super()
+        this.config = config
+        this.validateConfig(this.config)
     }
 
     /**
@@ -369,100 +475,8 @@ class Zendesk_DocumentLoaders implements INode {
         return allTransformedArticles
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const zendeskDomain = nodeData.inputs?.zendeskDomain as string
-        const brandId = nodeData.inputs?.brandId as string
-        const localeInputRaw = nodeData.inputs?.locale as string
-        const localeInput = (localeInputRaw && localeInputRaw.trim()) || 'en-us'
-        const publishedArticlesOnly = (nodeData.inputs?.publishedArticlesOnly as boolean) ?? true
-        const charsPerToken = (nodeData.inputs?.charsPerToken as number) ?? 4
-        const metadata = nodeData.inputs?.metadata
-        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
-        const output = nodeData.outputs?.output as string
-
-        let omitMetadataKeys: string[] = []
-        if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
-        }
-
-        // Parse comma-separated locales
-        const locales = localeInput
-            .split(',')
-            .map((loc) => loc.trim())
-            .filter((loc) => loc.length > 0)
-        
-        // Ensure at least one locale
-        if (locales.length === 0) {
-            locales.push('en-us')
-        }
-
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const user = getCredentialParam('user', credentialData, nodeData)
-        const token = getCredentialParam('token', credentialData, nodeData)
-
-        // Build configuration
-        const config: ZendeskConfig = {
-            zendeskDomain,
-            user,
-            token,
-            brandId,
-            publishedArticlesOnly,
-            locales,
-            charsPerToken,
-            api: {
-                protocol: 'https://',
-                helpCenterPath: '/api/v2/help_center/',
-                articlesEndpoint: 'articles.json',
-                publicPath: '/hc/'
-            },
-            defaultTitle: 'Untitled',
-            chunking: {
-                maxTokens: 3000,
-                chunkSize: 1000,
-                overlap: 200
-            }
-        }
-
-        // Validate configuration
-        this.validateConfig(config)
-
-        // Extract articles
-        let docs: IDocument[] = await this.extractAllArticles(config)
-
-        // Apply metadata handling
-        let parsedMetadata = {}
-
-        if (metadata) {
-            try {
-                parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            } catch (error) {
-                throw new Error(`Error parsing Additional Metadata: ${error.message}`)
-            }
-        }
-
-        docs = docs.map((doc) => ({
-            ...doc,
-            metadata:
-                _omitMetadataKeys === '*'
-                    ? { ...parsedMetadata }
-                    : omit(
-                          {
-                              ...doc.metadata,
-                              ...parsedMetadata
-                          },
-                          omitMetadataKeys
-                      )
-        }))
-
-        if (output === 'document') {
-            return docs
-        } else {
-            let finaltext = ''
-            for (const doc of docs) {
-                finaltext += `${doc.pageContent}\n`
-            }
-            return handleEscapeCharacters(finaltext, false)
-        }
+    async load(): Promise<IDocument[]> {
+        return await this.extractAllArticles(this.config)
     }
 }
 
