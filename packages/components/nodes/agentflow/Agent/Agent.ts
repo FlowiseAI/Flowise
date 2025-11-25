@@ -19,8 +19,6 @@ import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { z } from 'zod'
-import { IStructuredOutput } from '../Interface.Agentflow'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import {
@@ -30,7 +28,13 @@ import {
     replaceBase64ImagesWithFileReferences,
     updateFlowState
 } from '../utils'
-import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, processTemplateVariables } from '../../../src/utils'
+import {
+    convertMultiOptionsToStringArray,
+    getCredentialData,
+    getCredentialParam,
+    processTemplateVariables,
+    configureStructuredOutput
+} from '../../../src/utils'
 import { addSingleFileToStorage } from '../../../src/storageUtils'
 import fetch from 'node-fetch'
 
@@ -900,11 +904,7 @@ class Agent_Agentflow implements INode {
             const llmWithoutToolsBind = (await newLLMNodeInstance.init(newNodeData, '', options)) as BaseChatModel
             let llmNodeInstance = llmWithoutToolsBind
 
-            // Configure structured output if specified (must be done before binding tools)
             const isStructuredOutput = _agentStructuredOutput && Array.isArray(_agentStructuredOutput) && _agentStructuredOutput.length > 0
-            if (isStructuredOutput) {
-                llmNodeInstance = this.configureStructuredOutput(llmNodeInstance, _agentStructuredOutput)
-            }
 
             const agentToolsBuiltInOpenAI = convertMultiOptionsToStringArray(nodeData.inputs?.agentToolsBuiltInOpenAI)
             if (agentToolsBuiltInOpenAI && agentToolsBuiltInOpenAI.length > 0) {
@@ -1113,7 +1113,8 @@ class Agent_Agentflow implements INode {
                     llmWithoutToolsBind,
                     isStreamable,
                     isLastNode,
-                    iterationContext
+                    iterationContext,
+                    isStructuredOutput
                 })
 
                 response = result.response
@@ -1142,7 +1143,14 @@ class Agent_Agentflow implements INode {
                 }
             } else {
                 if (isStreamable) {
-                    response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+                    response = await this.handleStreamingResponse(
+                        sseStreamer,
+                        llmNodeInstance,
+                        messages,
+                        chatId,
+                        abortController,
+                        isStructuredOutput
+                    )
                 } else {
                     response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
                 }
@@ -1164,7 +1172,8 @@ class Agent_Agentflow implements INode {
                     llmNodeInstance,
                     isStreamable,
                     isLastNode,
-                    iterationContext
+                    iterationContext,
+                    isStructuredOutput
                 })
 
                 response = result.response
@@ -1191,8 +1200,9 @@ class Agent_Agentflow implements INode {
                         sseStreamer.streamArtifactsEvent(chatId, flatten(artifacts))
                     }
                 }
-            } else if (!humanInput && !isStreamable && isLastNode && sseStreamer) {
+            } else if (!humanInput && !isStreamable && isLastNode && sseStreamer && !isStructuredOutput) {
                 // Stream whole response back to UI if not streaming and no tool calls
+                // Skip this if structured output is enabled - it will be streamed after conversion
                 let finalResponse = ''
                 if (response.content && Array.isArray(response.content)) {
                     finalResponse = response.content.map((item: any) => item.text).join('\n')
@@ -1268,6 +1278,23 @@ class Agent_Agentflow implements INode {
             // Replace sandbox links with proper download URLs. Example: [Download the script](sandbox:/mnt/data/dummy_bar_graph.py)
             if (finalResponse.includes('sandbox:/')) {
                 finalResponse = await this.processSandboxLinks(finalResponse, options.baseURL, options.chatflowid, chatId)
+            }
+
+            // If is structured output, then invoke LLM again with structured output at the very end after all tool calls
+            if (isStructuredOutput) {
+                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _agentStructuredOutput)
+                const prompt = 'Convert the following response to the structured output format: ' + finalResponse
+                response = await llmNodeInstance.invoke(prompt, { signal: abortController?.signal })
+
+                if (typeof response === 'object') {
+                    finalResponse = '```json\n' + JSON.stringify(response, null, 2) + '\n```'
+                } else {
+                    finalResponse = response
+                }
+
+                if (isLastNode && sseStreamer) {
+                    sseStreamer.streamTokenEvent(chatId, finalResponse)
+                }
             }
 
             const output = this.prepareOutputObject(
@@ -1666,160 +1693,6 @@ class Agent_Agentflow implements INode {
     }
 
     /**
-     * Configures structured output for the LLM
-     */
-    private configureStructuredOutput(llmNodeInstance: BaseChatModel, agentStructuredOutput: IStructuredOutput[]): BaseChatModel {
-        try {
-            const zodObj: ICommonObject = {}
-            for (const sch of agentStructuredOutput) {
-                if (sch.type === 'string') {
-                    zodObj[sch.key] = z.string().describe(sch.description || '')
-                } else if (sch.type === 'stringArray') {
-                    zodObj[sch.key] = z.array(z.string()).describe(sch.description || '')
-                } else if (sch.type === 'number') {
-                    zodObj[sch.key] = z.number().describe(sch.description || '')
-                } else if (sch.type === 'boolean') {
-                    zodObj[sch.key] = z.boolean().describe(sch.description || '')
-                } else if (sch.type === 'enum') {
-                    const enumValues = sch.enumValues?.split(',').map((item: string) => item.trim()) || []
-                    zodObj[sch.key] = z
-                        .enum(enumValues.length ? (enumValues as [string, ...string[]]) : ['default'])
-                        .describe(sch.description || '')
-                } else if (sch.type === 'jsonArray') {
-                    const jsonSchema = sch.jsonSchema
-                    if (jsonSchema) {
-                        try {
-                            // Parse the JSON schema
-                            const schemaObj = JSON.parse(jsonSchema)
-
-                            // Create a Zod schema from the JSON schema
-                            const itemSchema = this.createZodSchemaFromJSON(schemaObj)
-
-                            // Create an array schema of the item schema
-                            zodObj[sch.key] = z.array(itemSchema).describe(sch.description || '')
-                        } catch (err) {
-                            console.error(`Error parsing JSON schema for ${sch.key}:`, err)
-                            // Fallback to generic array of records
-                            zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
-                        }
-                    } else {
-                        // If no schema provided, use generic array of records
-                        zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
-                    }
-                }
-            }
-            const structuredOutput = z.object(zodObj)
-
-            // @ts-ignore
-            return llmNodeInstance.withStructuredOutput(structuredOutput)
-        } catch (exception) {
-            console.error(exception)
-            return llmNodeInstance
-        }
-    }
-
-    /**
-     * Creates a Zod schema from a JSON schema object
-     * @param jsonSchema The JSON schema object
-     * @returns A Zod schema
-     */
-    private createZodSchemaFromJSON(jsonSchema: any): z.ZodTypeAny {
-        // If the schema is an object with properties, create an object schema
-        if (typeof jsonSchema === 'object' && jsonSchema !== null) {
-            const schemaObj: Record<string, z.ZodTypeAny> = {}
-
-            // Process each property in the schema
-            for (const [key, value] of Object.entries(jsonSchema)) {
-                if (value === null) {
-                    // Handle null values
-                    schemaObj[key] = z.null()
-                } else if (typeof value === 'object' && !Array.isArray(value)) {
-                    // Check if the property has a type definition
-                    if ('type' in value) {
-                        const type = value.type as string
-                        const description = ('description' in value ? (value.description as string) : '') || ''
-
-                        // Create the appropriate Zod type based on the type property
-                        if (type === 'string') {
-                            schemaObj[key] = z.string().describe(description)
-                        } else if (type === 'number') {
-                            schemaObj[key] = z.number().describe(description)
-                        } else if (type === 'boolean') {
-                            schemaObj[key] = z.boolean().describe(description)
-                        } else if (type === 'array') {
-                            // If it's an array type, check if items is defined
-                            if ('items' in value && value.items) {
-                                const itemSchema = this.createZodSchemaFromJSON(value.items)
-                                schemaObj[key] = z.array(itemSchema).describe(description)
-                            } else {
-                                // Default to array of any if items not specified
-                                schemaObj[key] = z.array(z.any()).describe(description)
-                            }
-                        } else if (type === 'object') {
-                            // If it's an object type, check if properties is defined
-                            if ('properties' in value && value.properties) {
-                                const nestedSchema = this.createZodSchemaFromJSON(value.properties)
-                                schemaObj[key] = nestedSchema.describe(description)
-                            } else {
-                                // Default to record of any if properties not specified
-                                schemaObj[key] = z.record(z.any()).describe(description)
-                            }
-                        } else {
-                            // Default to any for unknown types
-                            schemaObj[key] = z.any().describe(description)
-                        }
-
-                        // Check if the property is optional
-                        if ('optional' in value && value.optional === true) {
-                            schemaObj[key] = schemaObj[key].optional()
-                        }
-                    } else if (Array.isArray(value)) {
-                        // Array values without a type property
-                        if (value.length > 0) {
-                            // If the array has items, recursively create a schema for the first item
-                            const itemSchema = this.createZodSchemaFromJSON(value[0])
-                            schemaObj[key] = z.array(itemSchema)
-                        } else {
-                            // Empty array, allow any array
-                            schemaObj[key] = z.array(z.any())
-                        }
-                    } else {
-                        // It's a nested object without a type property, recursively create schema
-                        schemaObj[key] = this.createZodSchemaFromJSON(value)
-                    }
-                } else if (Array.isArray(value)) {
-                    // Array values
-                    if (value.length > 0) {
-                        // If the array has items, recursively create a schema for the first item
-                        const itemSchema = this.createZodSchemaFromJSON(value[0])
-                        schemaObj[key] = z.array(itemSchema)
-                    } else {
-                        // Empty array, allow any array
-                        schemaObj[key] = z.array(z.any())
-                    }
-                } else {
-                    // For primitive values (which shouldn't be in the schema directly)
-                    // Use the corresponding Zod type
-                    if (typeof value === 'string') {
-                        schemaObj[key] = z.string()
-                    } else if (typeof value === 'number') {
-                        schemaObj[key] = z.number()
-                    } else if (typeof value === 'boolean') {
-                        schemaObj[key] = z.boolean()
-                    } else {
-                        schemaObj[key] = z.any()
-                    }
-                }
-            }
-
-            return z.object(schemaObj)
-        }
-
-        // Fallback to any for unknown types
-        return z.any()
-    }
-
-    /**
      * Handles streaming response from the LLM
      */
     private async handleStreamingResponse(
@@ -1827,13 +1700,14 @@ class Agent_Agentflow implements INode {
         llmNodeInstance: BaseChatModel,
         messages: BaseMessageLike[],
         chatId: string,
-        abortController: AbortController
+        abortController: AbortController,
+        isStructuredOutput: boolean = false
     ): Promise<AIMessageChunk> {
         let response = new AIMessageChunk('')
 
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
-                if (sseStreamer) {
+                if (sseStreamer && !isStructuredOutput) {
                     let content = ''
 
                     if (typeof chunk === 'string') {
@@ -1986,7 +1860,8 @@ class Agent_Agentflow implements INode {
         llmNodeInstance,
         isStreamable,
         isLastNode,
-        iterationContext
+        iterationContext,
+        isStructuredOutput = false
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -2000,6 +1875,7 @@ class Agent_Agentflow implements INode {
         isStreamable: boolean
         isLastNode: boolean
         iterationContext: ICommonObject
+        isStructuredOutput?: boolean
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -2079,7 +1955,9 @@ class Agent_Agentflow implements INode {
                     const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
                     const responseContent = response.content + `\nAttempting to use tool:\n${toolCallDetails}`
                     response.content = responseContent
-                    sseStreamer?.streamTokenEvent(chatId, responseContent)
+                    if (!isStructuredOutput) {
+                        sseStreamer?.streamTokenEvent(chatId, responseContent)
+                    }
                     return { response, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput: true }
                 }
 
@@ -2185,7 +2063,7 @@ class Agent_Agentflow implements INode {
                 const lastToolOutput = usedTools[0]?.toolOutput || ''
                 const lastToolOutputString = typeof lastToolOutput === 'string' ? lastToolOutput : JSON.stringify(lastToolOutput, null, 2)
 
-                if (sseStreamer) {
+                if (sseStreamer && !isStructuredOutput) {
                     sseStreamer.streamTokenEvent(chatId, lastToolOutputString)
                 }
 
@@ -2214,12 +2092,19 @@ class Agent_Agentflow implements INode {
         let newResponse: AIMessageChunk
 
         if (isStreamable) {
-            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+            newResponse = await this.handleStreamingResponse(
+                sseStreamer,
+                llmNodeInstance,
+                messages,
+                chatId,
+                abortController,
+                isStructuredOutput
+            )
         } else {
             newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
-            if (isLastNode && sseStreamer) {
+            if (isLastNode && sseStreamer && !isStructuredOutput) {
                 let responseContent = JSON.stringify(newResponse, null, 2)
                 if (typeof newResponse.content === 'string') {
                     responseContent = newResponse.content
@@ -2254,7 +2139,8 @@ class Agent_Agentflow implements INode {
                 llmNodeInstance,
                 isStreamable,
                 isLastNode,
-                iterationContext
+                iterationContext,
+                isStructuredOutput
             })
 
             // Merge results from recursive tool calls
@@ -2285,7 +2171,8 @@ class Agent_Agentflow implements INode {
         llmWithoutToolsBind,
         isStreamable,
         isLastNode,
-        iterationContext
+        iterationContext,
+        isStructuredOutput = false
     }: {
         humanInput: IHumanInput
         humanInputAction: Record<string, any> | undefined
@@ -2300,6 +2187,7 @@ class Agent_Agentflow implements INode {
         isStreamable: boolean
         isLastNode: boolean
         iterationContext: ICommonObject
+        isStructuredOutput?: boolean
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -2502,7 +2390,7 @@ class Agent_Agentflow implements INode {
                 const lastToolOutput = usedTools[0]?.toolOutput || ''
                 const lastToolOutputString = typeof lastToolOutput === 'string' ? lastToolOutput : JSON.stringify(lastToolOutput, null, 2)
 
-                if (sseStreamer) {
+                if (sseStreamer && !isStructuredOutput) {
                     sseStreamer.streamTokenEvent(chatId, lastToolOutputString)
                 }
 
@@ -2533,12 +2421,19 @@ class Agent_Agentflow implements INode {
         }
 
         if (isStreamable) {
-            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+            newResponse = await this.handleStreamingResponse(
+                sseStreamer,
+                llmNodeInstance,
+                messages,
+                chatId,
+                abortController,
+                isStructuredOutput
+            )
         } else {
             newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
-            if (isLastNode && sseStreamer) {
+            if (isLastNode && sseStreamer && !isStructuredOutput) {
                 let responseContent = JSON.stringify(newResponse, null, 2)
                 if (typeof newResponse.content === 'string') {
                     responseContent = newResponse.content
@@ -2573,7 +2468,8 @@ class Agent_Agentflow implements INode {
                 llmNodeInstance,
                 isStreamable,
                 isLastNode,
-                iterationContext
+                iterationContext,
+                isStructuredOutput
             })
 
             // Merge results from recursive tool calls
