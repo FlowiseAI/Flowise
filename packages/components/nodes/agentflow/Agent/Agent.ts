@@ -20,7 +20,7 @@ import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../
 import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { z } from 'zod'
-import {IStructuredOutput} from '../Interface.Agentflow'
+import { IStructuredOutput } from '../Interface.Agentflow'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import {
