@@ -1569,16 +1569,20 @@ class Agent_Agentflow implements INode {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
                 if (sseStreamer) {
                     let content = ''
-                    if (Array.isArray(chunk.content) && chunk.content.length > 0) {
+
+                    if (typeof chunk === 'string') {
+                        content = chunk
+                    } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
                         const contents = chunk.content as MessageContentText[]
                         content = contents.map((item) => item.text).join('')
-                    } else {
+                    } else if (chunk.content) {
                         content = chunk.content.toString()
                     }
                     sseStreamer.streamTokenEvent(chatId, content)
                 }
 
-                response = response.concat(chunk)
+                const messageChunk = typeof chunk === 'string' ? new AIMessageChunk(chunk) : chunk
+                response = response.concat(messageChunk)
             }
         } catch (error) {
             console.error('Error during streaming:', error)

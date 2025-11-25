@@ -43,7 +43,7 @@
         "@google-cloud/storage": "^7.15.2",
         "@google/generative-ai": "^0.24.0",
         "@grpc/grpc-js": "^1.10.10",
-        "@huggingface/inference": "^2.6.1",
+        "@huggingface/inference": "^4.13.2",
         "@langchain/anthropic": "0.3.33",
         "@langchain/aws": "^0.1.11",
         "@langchain/baidu-qianfan": "^0.1.0",

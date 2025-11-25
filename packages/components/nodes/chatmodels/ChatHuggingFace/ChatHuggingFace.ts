@@ -41,15 +41,17 @@ class ChatHuggingFace_ChatModels implements INode {
                 label: 'Model',
                 name: 'model',
                 type: 'string',
-                description: 'If using own inference endpoint, leave this blank',
-                placeholder: 'gpt2'
+                description:
+                    'Model name (e.g., deepseek-ai/DeepSeek-V3.2-Exp:novita). If model includes provider (:) or using router endpoint, leave Endpoint blank.',
+                placeholder: 'deepseek-ai/DeepSeek-V3.2-Exp:novita'
             },
             {
                 label: 'Endpoint',
                 name: 'endpoint',
                 type: 'string',
                 placeholder: 'https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2',
-                description: 'Using your own inference endpoint',
+                description:
+                    'Custom inference endpoint (optional). Not needed for models with providers (:) or router endpoints. Leave blank to use Inference Providers.',
                 optional: true
             },
             {
@@ -123,6 +125,15 @@ class ChatHuggingFace_ChatModels implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const huggingFaceApiKey = getCredentialParam('huggingFaceApiKey', credentialData, nodeData)
+
+        if (!huggingFaceApiKey) {
+            console.error('[ChatHuggingFace] API key validation failed: No API key found')
+            throw new Error('HuggingFace API key is required. Please configure it in the credential settings.')
+        }
+
+        if (!huggingFaceApiKey.startsWith('hf_')) {
+            console.warn('[ChatHuggingFace] API key format warning: Key does not start with "hf_"')
+        }
 
         const obj: Partial<HFInput> = {
             model,
