@@ -40,6 +40,7 @@ import { AddTextToSpeechToChatFlow1754986457485 } from './1754986457485-AddTextT
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 import { AddTextToSpeechToChatFlow1759419231100 } from './1759419231100-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424809984 } from './1759424809984-AddChatFlowNameIndex'
+import { FixDocumentStoreFileChunkLongText1765000000000 } from './1765000000000-FixDocumentStoreFileChunkLongText'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mariadb/1720230151482-AddAuthTables'
 import { AddWorkspace1725437498242 } from '../../../enterprise/database/migrations/mariadb/1725437498242-AddWorkspace'
@@ -106,5 +107,6 @@ export const mariadbMigrations = [
     AddTextToSpeechToChatFlow1754986457485,
     ModifyChatflowType1755066758601,
     AddTextToSpeechToChatFlow1759419231100,
-    AddChatFlowNameIndex1759424809984
+    AddChatFlowNameIndex1759424809984,
+    FixDocumentStoreFileChunkLongText1765000000000
 ]
