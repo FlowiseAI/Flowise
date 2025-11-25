@@ -92,7 +92,6 @@ export class HuggingFaceInference extends LLM implements HFInput {
     ): AsyncGenerator<GenerationChunk> {
         try {
             const client = await this._prepareHFInference()
-            // Use chatCompletionStream for chat models (v4 supports streaming via Inference Providers)
             const stream = await this.caller.call(async () =>
                 client.chatCompletionStream({
                     model: this.model,
@@ -116,9 +115,12 @@ export class HuggingFaceInference extends LLM implements HFInput {
                 }
             }
         } catch (error: any) {
+            console.error('[ChatHuggingFace] Error in _streamResponseChunks:', error)
             // Provide more helpful error messages
             if (error?.message?.includes('endpointUrl') || error?.message?.includes('third-party provider')) {
-                throw new Error(`Cannot use custom endpoint with model "${this.model}" that includes a provider. Please leave the Endpoint field blank in the UI. Original error: ${error.message}`)
+                throw new Error(
+                    `Cannot use custom endpoint with model "${this.model}" that includes a provider. Please leave the Endpoint field blank in the UI. Original error: ${error.message}`
+                )
             }
             throw error
         }
@@ -145,10 +147,14 @@ export class HuggingFaceInference extends LLM implements HFInput {
             console.error('[ChatHuggingFace] Error in _call:', error.message)
             // Provide more helpful error messages
             if (error?.message?.includes('endpointUrl') || error?.message?.includes('third-party provider')) {
-                throw new Error(`Cannot use custom endpoint with model "${this.model}" that includes a provider. Please leave the Endpoint field blank in the UI. Original error: ${error.message}`)
+                throw new Error(
+                    `Cannot use custom endpoint with model "${this.model}" that includes a provider. Please leave the Endpoint field blank in the UI. Original error: ${error.message}`
+                )
             }
             if (error?.message?.includes('Invalid username or password') || error?.message?.includes('authentication')) {
-                throw new Error(`HuggingFace API authentication failed. Please verify your API key is correct and starts with "hf_". Original error: ${error.message}`)
+                throw new Error(
+                    `HuggingFace API authentication failed. Please verify your API key is correct and starts with "hf_". Original error: ${error.message}`
+                )
             }
             throw error
         }
@@ -160,17 +166,22 @@ export class HuggingFaceInference extends LLM implements HFInput {
             console.error('[ChatHuggingFace] API key validation failed: Empty or undefined')
             throw new Error('HuggingFace API key is required. Please configure it in the credential settings.')
         }
-        
+
         const { InferenceClient } = await HuggingFaceInference.imports()
         // Use InferenceClient for chat models (works better with Inference Providers)
         const client = new InferenceClient(this.apiKey)
-        
+
         // Don't override endpoint if model uses a provider (contains ':') or if endpoint is router-based
         // When using Inference Providers, endpoint should be left blank - InferenceClient handles routing automatically
-        if (this.endpointUrl && !this.model.includes(':') && !this.endpointUrl.includes('/v1/chat/completions') && !this.endpointUrl.includes('router.huggingface.co')) {
+        if (
+            this.endpointUrl &&
+            !this.model.includes(':') &&
+            !this.endpointUrl.includes('/v1/chat/completions') &&
+            !this.endpointUrl.includes('router.huggingface.co')
+        ) {
             return client.endpoint(this.endpointUrl)
         }
-        
+
         // Return client without endpoint override - InferenceClient will use Inference Providers automatically
         return client
     }

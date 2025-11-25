@@ -41,7 +41,8 @@ class ChatHuggingFace_ChatModels implements INode {
                 label: 'Model',
                 name: 'model',
                 type: 'string',
-                description: 'Model name (e.g., deepseek-ai/DeepSeek-V3.2-Exp:novita). If model includes provider (:) or using router endpoint, leave Endpoint blank.',
+                description:
+                    'Model name (e.g., deepseek-ai/DeepSeek-V3.2-Exp:novita). If model includes provider (:) or using router endpoint, leave Endpoint blank.',
                 placeholder: 'deepseek-ai/DeepSeek-V3.2-Exp:novita'
             },
             {
@@ -49,7 +50,8 @@ class ChatHuggingFace_ChatModels implements INode {
                 name: 'endpoint',
                 type: 'string',
                 placeholder: 'https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/gpt2',
-                description: 'Custom inference endpoint (optional). Not needed for models with providers (:) or router endpoints. Leave blank to use Inference Providers.',
+                description:
+                    'Custom inference endpoint (optional). Not needed for models with providers (:) or router endpoints. Leave blank to use Inference Providers.',
                 optional: true
             },
             {
@@ -128,7 +130,7 @@ class ChatHuggingFace_ChatModels implements INode {
             console.error('[ChatHuggingFace] API key validation failed: No API key found')
             throw new Error('HuggingFace API key is required. Please configure it in the credential settings.')
         }
-        
+
         if (!huggingFaceApiKey.startsWith('hf_')) {
             console.warn('[ChatHuggingFace] API key format warning: Key does not start with "hf_"')
         }
