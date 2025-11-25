@@ -5,7 +5,7 @@ import { RunnableSequence } from '@langchain/core/runnables'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
-import { getBaseClasses, transformBracesWithColon } from '../../../src/utils'
+import { getBaseClasses, transformBracesWithColon, convertChatHistoryToText, convertBaseMessagetoIMessage } from '../../../src/utils'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
 import {
     FlowiseMemory,
@@ -180,13 +180,14 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
                     const inputTool = inputTools.find((inputTool: Tool) => inputTool.name === tool.tool)
                     if (inputTool && (inputTool as any).returnDirect && shouldStreamResponse) {
                         sseStreamer.streamTokenEvent(chatId, tool.toolOutput)
+                        // Prevent CustomChainHandler from streaming the same output again
+                        if (res.output === tool.toolOutput) {
+                            res.output = ''
+                        }
                     }
                 }
             }
-
-            if (sseStreamer) {
-                sseStreamer.streamEndEvent(chatId)
-            }
+            // The CustomChainHandler will send the stream end event
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
             if (res.sourceDocuments) {
@@ -316,10 +317,8 @@ const prepareAgent = async (
 
         // Get chat history (use empty string if none)
         const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
-        const chatHistoryString =
-            messages && messages.length > 0
-                ? messages.map((message) => `${message._getType()}: ${message.content}`).join('\n')
-                : ''
+        const iMessages = convertBaseMessagetoIMessage(messages)
+        const chatHistoryString = convertChatHistoryToText(iMessages)
 
         // Always rephrase to normalize/expand user queries for better retrieval
         try {
