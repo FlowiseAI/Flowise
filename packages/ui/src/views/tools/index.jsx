@@ -245,7 +245,7 @@ const Tools = () => {
                                         ))}
                                     </Box>
                                 ) : (
-                                    <ToolsTable data={getAllToolsApi.data.data.filter(filterTools)} isLoading={isLoading} onSelect={edit} />
+                                    <ToolsTable data={getAllToolsApi.data?.data?.filter(filterTools) || []} isLoading={isLoading} onSelect={edit} />
                                 )}
                                 {/* Pagination and Page Size Controls */}
                                 <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
