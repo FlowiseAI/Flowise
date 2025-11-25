@@ -96,7 +96,8 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
                 label: 'Rephrase Model',
                 name: 'rephraseModel',
                 type: 'BaseChatModel',
-                description: 'Optional: Use a different (faster/cheaper) model for rephrasing. If not specified, uses the main Tool Calling Chat Model.',
+                description:
+                    'Optional: Use a different (faster/cheaper) model for rephrasing. If not specified, uses the main Tool Calling Chat Model.',
                 optional: true,
                 additionalParams: true
             },
@@ -125,7 +126,7 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
     }
 
     // The agent will be prepared in run() with the correct user message - it needs the actual runtime input for rephrasing
-    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+    async init(_nodeData: INodeData, _input: string, _options: ICommonObject): Promise<any> {
         return null
     }
 
@@ -248,7 +249,7 @@ const prepareAgent = async (
     flowObj: { sessionId?: string; chatId?: string; input?: string }
 ) => {
     const model = nodeData.inputs?.model as BaseChatModel
-    const rephraseModel = (nodeData.inputs?.rephraseModel as BaseChatModel) || model  // Use main model if not specified
+    const rephraseModel = (nodeData.inputs?.rephraseModel as BaseChatModel) || model // Use main model if not specified
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
     let systemMessage = nodeData.inputs?.systemMessage as string
@@ -315,9 +316,10 @@ const prepareAgent = async (
 
         // Get chat history (use empty string if none)
         const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
-        const chatHistoryString = messages && messages.length > 0 
-            ? messages.map((message) => `${message._getType()}: ${message.content}`).join('\n')
-            : ''
+        const chatHistoryString =
+            messages && messages.length > 0
+                ? messages.map((message) => `${message._getType()}: ${message.content}`).join('\n')
+                : ''
 
         // Always rephrase to normalize/expand user queries for better retrieval
         try {
@@ -372,4 +374,6 @@ const prepareAgent = async (
     return executor
 }
 
-module.exports = { nodeClass: ConversationalRetrievalToolAgent_Agents }
+module.exports = {
+    nodeClass: ConversationalRetrievalToolAgent_Agents
+}
