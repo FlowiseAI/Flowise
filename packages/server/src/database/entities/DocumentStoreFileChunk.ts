@@ -17,9 +17,9 @@ export class DocumentStoreFileChunk implements IDocumentStoreFileChunk {
     @Column()
     chunkNo: number
 
-    @Column({ nullable: false, type: 'longtext' })
+    @Column({ nullable: false, type: 'text' })
     pageContent: string
 
-    @Column({ nullable: true, type: 'longtext' })
+    @Column({ nullable: true, type: 'text' })
     metadata: string
 }
