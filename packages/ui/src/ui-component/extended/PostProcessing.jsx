@@ -21,7 +21,11 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const sampleFunction = `return $flow.rawOutput + " This is a post processed response!";`
+const sampleFunction = `// Access chat history as a string
+const chatHistory = JSON.stringify($flow.chatHistory, null, 2); 
+
+// Return a modified response
+return $flow.rawOutput + " This is a post processed response!";`
 
 const PostProcessing = ({ dialogProps }) => {
     const dispatch = useDispatch()
@@ -181,7 +185,7 @@ const PostProcessing = ({ dialogProps }) => {
                     flexDirection: 'column',
                     borderRadius: 10,
                     background: '#d8f3dc',
-                    padding: 10,
+                    padding: 15,
                     marginTop: 10
                 }}
             >
@@ -189,15 +193,27 @@ const PostProcessing = ({ dialogProps }) => {
                     style={{
                         display: 'flex',
                         flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingTop: 10
+                        alignItems: 'flex-start',
+                        gap: 10
                     }}
                 >
-                    <IconBulb size={30} color='#2d6a4f' />
-                    <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                        The following variables are available to use in the custom function:{' '}
-                        <pre>$flow.rawOutput, $flow.input, $flow.chatflowId, $flow.sessionId, $flow.chatId</pre>
-                    </span>
+                    <IconBulb size={25} color='#2d6a4f' style={{ marginTop: 3, flexShrink: 0 }} />
+                    <div style={{ color: '#2d6a4f', flex: 1 }}>
+                        <div style={{ fontWeight: 600, marginBottom: 8 }}>Available Variables:</div>
+                        <div style={{ fontSize: '0.9em', lineHeight: 1.6 }}>
+                            <div>
+                                <strong>Messages:</strong> <code>$flow.rawOutput</code>, <code>$flow.input</code>,{' '}
+                                <code>$flow.chatHistory</code>
+                            </div>
+                            <div>
+                                <strong>IDs:</strong> <code>$flow.chatflowId</code>, <code>$flow.sessionId</code>, <code>$flow.chatId</code>
+                            </div>
+                            <div>
+                                <strong>Advanced:</strong> <code>$flow.sourceDocuments</code>, <code>$flow.usedTools</code>,{' '}
+                                <code>$flow.artifacts</code>, <code>$flow.fileAnnotations</code>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <StyledButton

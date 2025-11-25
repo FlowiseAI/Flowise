@@ -88,6 +88,11 @@ class CustomFunction_Utilities implements INode {
             sessionId: options.sessionId,
             chatId: options.chatId,
             rawOutput: options.rawOutput || '',
+            chatHistory: options.chatHistory || [],
+            sourceDocuments: options.sourceDocuments,
+            usedTools: options.usedTools,
+            artifacts: options.artifacts,
+            fileAnnotations: options.fileAnnotations,
             input
         }
 
