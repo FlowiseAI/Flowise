@@ -12,4 +12,3 @@ export class FixDocumentStoreFileChunkLongText1765000000000 implements Migration
         await queryRunner.query(`ALTER TABLE \`document_store_file_chunk\` MODIFY \`metadata\` TEXT NULL;`)
     }
 }
-
