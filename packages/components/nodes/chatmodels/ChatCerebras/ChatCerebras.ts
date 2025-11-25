@@ -186,23 +186,16 @@ class ChatCerebras_ChatModels implements INode {
             }
         }
 
-        // Add integration tracking header
+        // Add integration tracking header and configure endpoint
         const integrationHeader = {
             'X-Cerebras-3rd-Party-Integration': 'flowise'
         }
 
-        if (basePath || parsedBaseOptions) {
-            obj.configuration = {
-                baseURL: basePath,
-                defaultHeaders: {
-                    ...integrationHeader,
-                    ...(parsedBaseOptions || {})
-                }
-            }
-        } else {
-            obj.configuration = {
-                baseURL: 'https://api.cerebras.ai/v1',
-                defaultHeaders: integrationHeader
+        obj.configuration = {
+            baseURL: basePath || 'https://api.cerebras.ai/v1',
+            defaultHeaders: {
+                ...integrationHeader,
+                ...(parsedBaseOptions || {})
             }
         }
 
