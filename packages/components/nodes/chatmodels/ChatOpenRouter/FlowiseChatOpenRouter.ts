@@ -27,4 +27,3 @@ export class ChatOpenRouter extends LangchainChatOpenAI implements IVisionChatMo
         // pass - OpenRouter models don't need model switching
     }
 }
-
