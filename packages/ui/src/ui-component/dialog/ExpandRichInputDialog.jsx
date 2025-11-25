@@ -14,7 +14,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 // TipTap
 import { useEditor, EditorContent } from '@tiptap/react'
 import Placeholder from '@tiptap/extension-placeholder'
-import { mergeAttributes, PasteRule } from '@tiptap/core'
+import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import Mention from '@tiptap/extension-mention'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -26,30 +26,7 @@ const lowlight = createLowlight(common)
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-
-const CustomMention = Mention.extend({
-    renderText({ node }) {
-        return `{{${node.attrs.label ?? node.attrs.id}}}`
-    },
-    addPasteRules() {
-        return [
-            new PasteRule({
-                find: /\{\{([^{}]+)\}\}/g,
-                handler: ({ match, chain, range }) => {
-                    const label = match[1].trim()
-                    if (label) {
-                        chain()
-                            .deleteRange(range)
-                            .insertContentAt(range.from, {
-                                type: this.name,
-                                attrs: { id: label, label: label }
-                            })
-                    }
-                }
-            })
-        ]
-    }
-})
+import { CustomMention } from '@/utils/CustomMention'
 
 // Add styled component for editor wrapper
 const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDarkMode }) => ({
