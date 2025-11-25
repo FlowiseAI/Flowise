@@ -2,7 +2,7 @@ import { Request } from 'express'
 import * as path from 'path'
 import { DataSource } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
-import { omit } from 'lodash'
+import { omit, cloneDeep } from 'lodash'
 import {
     IFileUpload,
     convertSpeechToText,
@@ -818,11 +818,11 @@ export const executeFlow = async ({
                         chatId,
                         input: question,
                         rawOutput: resultText,
-                        chatHistory,
-                        sourceDocuments: result?.sourceDocuments,
-                        usedTools: result?.usedTools,
-                        artifacts: result?.artifacts,
-                        fileAnnotations: result?.fileAnnotations,
+                        chatHistory: cloneDeep(chatHistory),
+                        sourceDocuments: result?.sourceDocuments ? cloneDeep(result.sourceDocuments) : undefined,
+                        usedTools: result?.usedTools ? cloneDeep(result.usedTools) : undefined,
+                        artifacts: result?.artifacts ? cloneDeep(result.artifacts) : undefined,
+                        fileAnnotations: result?.fileAnnotations ? cloneDeep(result.fileAnnotations) : undefined,
                         appDataSource,
                         databaseEntities,
                         workspaceId,
