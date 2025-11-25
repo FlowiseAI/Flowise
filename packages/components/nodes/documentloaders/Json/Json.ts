@@ -47,7 +47,7 @@ class Json_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Json File'
         this.name = 'jsonFile'
-        this.version = 3.0
+        this.version = 3.1
         this.type = 'Document'
         this.icon = 'json.svg'
         this.category = 'Document Loaders'
@@ -67,13 +67,24 @@ class Json_DocumentLoaders implements INode {
                 optional: true
             },
             {
+                label: 'Separate by JSON Object (JSON Array)',
+                name: 'separateByObject',
+                type: 'boolean',
+                description: 'If enabled and the file is a JSON Array, each JSON object will be extracted as a chunk',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Pointers Extraction (separated by commas)',
                 name: 'pointersName',
                 type: 'string',
                 description:
                     'Ex: { "key": "value" }, Pointer Extraction = "key", "value" will be extracted as pageContent of the chunk. Use comma to separate multiple pointers',
                 placeholder: 'key1, key2',
-                optional: true
+                optional: true,
+                hide: {
+                    separateByObject: true
+                }
             },
             {
                 label: 'Additional Metadata',
@@ -122,6 +133,7 @@ class Json_DocumentLoaders implements INode {
         const pointersName = nodeData.inputs?.pointersName as string
         const metadata = nodeData.inputs?.metadata
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const separateByObject = nodeData.inputs?.separateByObject as boolean
         const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
@@ -153,7 +165,7 @@ class Json_DocumentLoaders implements INode {
                 if (!file) continue
                 const fileData = await getFileFromStorage(file, orgId, chatflowid)
                 const blob = new Blob([fileData])
-                const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined, metadata)
+                const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined, metadata, separateByObject)
 
                 if (textSplitter) {
                     let splittedDocs = await loader.load()
@@ -176,7 +188,7 @@ class Json_DocumentLoaders implements INode {
                 splitDataURI.pop()
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                 const blob = new Blob([bf])
-                const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined, metadata)
+                const loader = new JSONLoader(blob, pointers.length != 0 ? pointers : undefined, metadata, separateByObject)
 
                 if (textSplitter) {
                     let splittedDocs = await loader.load()
@@ -306,13 +318,20 @@ class TextLoader extends BaseDocumentLoader {
 class JSONLoader extends TextLoader {
     public pointers: string[]
     private metadataMapping: Record<string, string>
+    private separateByObject: boolean
 
-    constructor(filePathOrBlob: string | Blob, pointers: string | string[] = [], metadataMapping: Record<string, string> = {}) {
+    constructor(
+        filePathOrBlob: string | Blob,
+        pointers: string | string[] = [],
+        metadataMapping: Record<string, string> = {},
+        separateByObject: boolean = false
+    ) {
         super(filePathOrBlob)
         this.pointers = Array.isArray(pointers) ? pointers : [pointers]
         if (metadataMapping) {
             this.metadataMapping = typeof metadataMapping === 'object' ? metadataMapping : JSON.parse(metadataMapping)
         }
+        this.separateByObject = separateByObject
     }
 
     protected async parse(raw: string): Promise<Document[]> {
@@ -323,14 +342,24 @@ class JSONLoader extends TextLoader {
         const jsonArray = Array.isArray(json) ? json : [json]
 
         for (const item of jsonArray) {
-            const content = this.extractContent(item)
-            const metadata = this.extractMetadata(item)
-
-            for (const pageContent of content) {
-                documents.push({
-                    pageContent,
-                    metadata
-                })
+            if (this.separateByObject) {
+                if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
+                    const metadata = this.extractMetadata(item)
+                    const pageContent = this.formatObjectAsKeyValue(item)
+                    documents.push({
+                        pageContent,
+                        metadata
+                    })
+                }
+            } else {
+                const content = this.extractContent(item)
+                const metadata = this.extractMetadata(item)
+                for (const pageContent of content) {
+                    documents.push({
+                        pageContent,
+                        metadata
+                    })
+                }
             }
         }
 
@@ -368,6 +397,30 @@ class JSONLoader extends TextLoader {
         }
 
         return metadata
+    }
+
+    /**
+     * Formats a JSON object as readable key-value pairs
+     */
+    private formatObjectAsKeyValue(obj: any, prefix: string = ''): string {
+        const lines: string[] = []
+
+        for (const [key, value] of Object.entries(obj)) {
+            const fullKey = prefix ? `${prefix}.${key}` : key
+
+            if (value === null || value === undefined) {
+                lines.push(`${fullKey}: ${value}`)
+            } else if (Array.isArray(value)) {
+                lines.push(`${fullKey}: ${JSON.stringify(value)}`)
+            } else if (typeof value === 'object') {
+                // Recursively format nested objects
+                lines.push(this.formatObjectAsKeyValue(value, fullKey))
+            } else {
+                lines.push(`${fullKey}: ${value}`)
+            }
+        }
+
+        return lines.join('\n')
     }
 
     /**
