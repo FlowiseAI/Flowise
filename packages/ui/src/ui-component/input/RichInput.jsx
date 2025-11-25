@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { useEditor, EditorContent } from '@tiptap/react'
 import Placeholder from '@tiptap/extension-placeholder'
-import { mergeAttributes } from '@tiptap/core'
+import { mergeAttributes, PasteRule } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { styled } from '@mui/material/styles'
 import { Box } from '@mui/material'
@@ -15,12 +15,37 @@ import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
 const lowlight = createLowlight(common)
 
+const CustomMention = Mention.extend({
+    renderText({ node }) {
+        return `{{${node.attrs.label ?? node.attrs.id}}}`
+    },
+    addPasteRules() {
+        return [
+            new PasteRule({
+                find: /\{\{([^{}]+)\}\}/g,
+                handler: ({ match, chain, range }) => {
+                    const label = match[1].trim()
+                    if (label) {
+                        chain()
+                            .deleteRange(range)
+                            .insertContentAt(range.from, {
+                                type: this.name,
+                                attrs: { id: label, label: label }
+                            })
+                    }
+                }
+
+            })
+        ]
+    }
+})
+
 // define your extension array
 const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
     StarterKit.configure({
         codeBlock: false
     }),
-    Mention.configure({
+    CustomMention.configure({
         HTMLAttributes: {
             class: 'variable'
         },
