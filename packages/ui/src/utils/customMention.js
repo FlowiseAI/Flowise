@@ -1,4 +1,4 @@
-import Mention from "@tiptap/extension-mention";
+import Mention from '@tiptap/extension-mention';
 import { PasteRule } from '@tiptap/core'
 
 export const CustomMention = Mention.extend({
