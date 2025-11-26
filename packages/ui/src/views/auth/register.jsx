@@ -18,6 +18,7 @@ import ssoApi from '@/api/sso'
 // Hooks
 import useApi from '@/hooks/useApi'
 import { useConfig } from '@/store/context/ConfigContext'
+import { useError } from '@/store/context/ErrorContext'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
@@ -111,7 +112,9 @@ const RegisterPage = () => {
 
     const [loading, setLoading] = useState(false)
     const [authError, setAuthError] = useState('')
-    const [successMsg, setSuccessMsg] = useState(undefined)
+    const [successMsg, setSuccessMsg] = useState('')
+
+    const { authRateLimitError, setAuthRateLimitError } = useError()
 
     const registerApi = useApi(accountApi.registerAccount)
     const ssoLoginApi = useApi(ssoApi.ssoLogin)
@@ -120,6 +123,7 @@ const RegisterPage = () => {
 
     const register = async (event) => {
         event.preventDefault()
+        setAuthRateLimitError(null)
         if (isEnterpriseLicensed) {
             const result = RegisterEnterpriseUserSchema.safeParse({
                 username,
@@ -192,6 +196,7 @@ const RegisterPage = () => {
     }, [registerApi.error])
 
     useEffect(() => {
+        setAuthRateLimitError(null)
         if (!isOpenSource) {
             getDefaultProvidersApi.request()
         }
@@ -272,6 +277,11 @@ const RegisterPage = () => {
                             ) : (
                                 authError
                             )}
+                        </Alert>
+                    )}
+                    {authRateLimitError && (
+                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                            {authRateLimitError}
                         </Alert>
                     )}
                     {successMsg && (

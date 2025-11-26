@@ -10,11 +10,14 @@ const ErrorContext = createContext()
 
 export const ErrorProvider = ({ children }) => {
     const [error, setError] = useState(null)
+    const [authRateLimitError, setAuthRateLimitError] = useState(null)
     const navigate = useNavigate()
 
     const handleError = async (err) => {
         console.error(err)
-        if (err?.response?.status === 429 && err?.response?.data?.type !== 'authentication_rate_limit') {
+        if (err?.response?.status === 429 && err?.response?.data?.type === 'authentication_rate_limit') {
+            setAuthRateLimitError("You're making a lot of requests. Please wait and try again later.")
+        } else if (err?.response?.status === 429 && err?.response?.data?.type !== 'authentication_rate_limit') {
             const retryAfterHeader = err?.response?.headers?.['retry-after']
             let retryAfter = 60 // Default in seconds
             if (retryAfterHeader) {
@@ -59,7 +62,9 @@ export const ErrorProvider = ({ children }) => {
             value={{
                 error,
                 setError,
-                handleError
+                handleError,
+                authRateLimitError,
+                setAuthRateLimitError
             }}
         >
             {children}
