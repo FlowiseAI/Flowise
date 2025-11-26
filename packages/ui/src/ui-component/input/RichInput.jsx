@@ -12,7 +12,7 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from './suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
-import { CustomMention } from '@/utils/CustomMention'
+import { CustomMention } from '@/utils/customMention'
 
 const lowlight = createLowlight(common)
 
