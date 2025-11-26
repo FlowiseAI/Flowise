@@ -4,7 +4,7 @@ import { IChatFlow, MODE } from '../Interface'
 import { Mutex } from 'async-mutex'
 import { RedisStore } from 'rate-limit-redis'
 import Redis from 'ioredis'
-import { RedisConnector } from '../../../components/src/RedisConnector'
+import { RedisConnector } from '../RedisConnector'
 import { QueueEvents, QueueEventsListener, QueueEventsProducer } from 'bullmq'
 
 interface CustomListener extends QueueEventsListener {

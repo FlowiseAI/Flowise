@@ -1,5 +1,5 @@
 import Redis from 'ioredis'
-import { RedisConnector } from '../../../../../components/src/RedisConnector'
+import { RedisConnector } from '../../../RedisConnector'
 import { RedisStore } from 'connect-redis'
 import { getDatabaseSSLFromEnv } from '../../../DataSource'
 import path from 'path'

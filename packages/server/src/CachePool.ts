@@ -1,6 +1,6 @@
 import { IActiveCache, MODE } from './Interface'
 import { Redis } from 'ioredis'
-import { RedisConnector } from '../../components/src/RedisConnector'
+import { RedisConnector } from './RedisConnector'
 
 /**
  * This pool is to keep track of in-memory cache used for LLM and Embeddings
