@@ -26,7 +26,7 @@ const lowlight = createLowlight(common)
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-import { CustomMention } from '@/utils/CustomMention'
+import { CustomMention } from '@/utils/customMention'
 
 // Add styled component for editor wrapper
 const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDarkMode }) => ({
