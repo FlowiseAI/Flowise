@@ -16,17 +16,16 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import Placeholder from '@tiptap/extension-placeholder'
 import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
-import Mention from '@tiptap/extension-mention'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from '@/ui-component/input/suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
+import { CustomMention } from '@/utils/customMention'
 
 const lowlight = createLowlight(common)
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-import { CustomMention } from '@/utils/customMention'
 
 // Add styled component for editor wrapper
 const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDarkMode }) => ({
