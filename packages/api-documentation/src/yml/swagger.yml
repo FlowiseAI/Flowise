@@ -1216,15 +1216,18 @@ paths:
             security:
                 - bearerAuth: []
             operationId: createPrediction
-            summary: Create a new prediction
-            description: Create a new prediction
+            summary: Send message to flow and get AI response
+            description: |
+                Send a message to your flow and receive an AI-generated response. This is the primary endpoint for interacting with your flows and assistants.
+                **Authentication**: API key may be required depending on flow settings.
             parameters:
                 - in: path
                   name: id
                   required: true
                   schema:
                       type: string
-                  description: Chatflow ID
+                  description: Flow ID - the unique identifier of your flow
+                  example: 'your-flow-id'
             requestBody:
                 content:
                     application/json:
@@ -1236,24 +1239,36 @@ paths:
                             properties:
                                 question:
                                     type: string
-                                    description: Question to ask during the prediction process
+                                    description: Question/message to send to the flow
+                                    example: 'Analyze this uploaded file and summarize its contents'
                                 files:
                                     type: array
                                     items:
                                         type: string
                                         format: binary
-                                    description: Files to be uploaded
-                                modelName:
+                                    description: Files to be uploaded (images, audio, documents, etc.)
+                                streaming:
+                                    type: boolean
+                                    description: Enable streaming responses
+                                    default: false
+                                overrideConfig:
                                     type: string
-                                    nullable: true
-                                    example: ''
-                                    description: Other override configurations
+                                    description: JSON string of configuration overrides
+                                    example: '{"sessionId":"user-123","temperature":0.7}'
+                                history:
+                                    type: string
+                                    description: JSON string of conversation history
+                                    example: '[{"role":"userMessage","content":"Hello"},{"role":"apiMessage","content":"Hi there!"}]'
+                                humanInput:
+                                    type: string
+                                    description: JSON string of human input for resuming execution
+                                    example: '{"type":"proceed","feedback":"Continue with the plan"}'
                             required:
                                 - question
                 required: true
             responses:
                 '200':
-                    description: Prediction created successfully
+                    description: Successful prediction response
                     content:
                         application/json:
                             schema:
@@ -1261,45 +1276,106 @@ paths:
                                 properties:
                                     text:
                                         type: string
-                                        description: The result of the prediction
+                                        description: The AI-generated response text
+                                        example: 'Artificial intelligence (AI) is a branch of computer science that focuses on creating systems capable of performing tasks that typically require human intelligence.'
                                     json:
                                         type: object
-                                        description: The result of the prediction in JSON format if available
+                                        description: The result in JSON format if available (for structured outputs)
+                                        nullable: true
                                     question:
                                         type: string
-                                        description: The question asked during the prediction process
+                                        description: The original question/message sent to the flow
+                                        example: 'What is artificial intelligence?'
                                     chatId:
                                         type: string
-                                        description: The chat ID associated with the prediction
+                                        description: Unique identifier for the chat session
+                                        example: 'chat-12345'
                                     chatMessageId:
                                         type: string
-                                        description: The chat message ID associated with the prediction
+                                        description: Unique identifier for this specific message
+                                        example: 'msg-67890'
                                     sessionId:
                                         type: string
-                                        description: The session ID associated with the prediction
+                                        description: Session identifier for conversation continuity
+                                        example: 'user-session-123'
+                                        nullable: true
                                     memoryType:
                                         type: string
-                                        description: The memory type associated with the prediction
+                                        description: Type of memory used for conversation context
+                                        example: 'Buffer Memory'
+                                        nullable: true
                                     sourceDocuments:
                                         type: array
+                                        description: Documents retrieved from vector store (if RAG is enabled)
                                         items:
                                             $ref: '#/components/schemas/Document'
+                                        nullable: true
                                     usedTools:
                                         type: array
+                                        description: Tools that were invoked during the response generation
                                         items:
                                             $ref: '#/components/schemas/UsedTool'
-                                    fileAnnotations:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/FileAnnotation'
+                                        nullable: true
                 '400':
-                    description: Invalid input provided
+                    description: Bad Request - Invalid input provided or request format is incorrect
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                        example: 'Invalid request format. Check required fields and parameter types.'
+                '401':
+                    description: Unauthorized - API key required or invalid
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                        example: 'Unauthorized access. Please verify your API key.'
                 '404':
-                    description: Chatflow not found
+                    description: Not Found - Chatflow with specified ID does not exist
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                        example: 'Chatflow not found. Please verify the chatflow ID.'
+                '413':
+                    description: Payload Too Large - Request payload exceeds size limits
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                        example: 'Request payload too large. Please reduce file sizes or split large requests.'
                 '422':
-                    description: Validation error
+                    description: Validation Error - Request validation failed
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                        example: 'Validation failed. Check parameter requirements and data types.'
                 '500':
-                    description: Internal server error
+                    description: Internal Server Error - Flow configuration or execution error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    error:
+                                        type: string
+                                        example: 'Internal server error. Check flow configuration and node settings.'
     /tools:
         post:
             tags:
@@ -2011,13 +2087,33 @@ components:
             properties:
                 question:
                     type: string
-                    description: The question being asked
+                    description: The question/message to send to the flow
+                    example: 'What is artificial intelligence?'
+                form:
+                    type: object
+                    description: The form object to send to the flow (alternative to question for Agentflow V2)
+                    additionalProperties: true
+                    example:
+                        title: 'Example'
+                        count: 1
+                streaming:
+                    type: boolean
+                    description: Enable streaming responses for real-time output
+                    default: false
+                    example: false
                 overrideConfig:
                     type: object
-                    description: The configuration to override the default prediction settings (optional)
+                    description: Override flow configuration and pass variables at runtime
+                    additionalProperties: true
+                    example:
+                        sessionId: 'user-session-123'
+                        temperature: 0.7
+                        maxTokens: 500
+                        vars:
+                            user_name: 'Alice'
                 history:
                     type: array
-                    description: The history messages to be prepended (optional)
+                    description: Previous conversation messages for context
                     items:
                         type: object
                         properties:
@@ -2030,8 +2126,14 @@ components:
                                 type: string
                                 description: The content of the message
                                 example: 'Hello, how can I help you?'
+                    example:
+                        - role: 'apiMessage'
+                          content: "Hello! I'm an AI assistant. How can I help you today?"
+                        - role: 'userMessage'
+                          content: "Hi, my name is Sarah and I'm learning about AI"
                 uploads:
                     type: array
+                    description: Files to upload (images, audio, documents, etc.)
                     items:
                         type: object
                         properties:
@@ -2051,7 +2153,42 @@ components:
                             mime:
                                 type: string
                                 description: The MIME type of the file or resource
+                                enum:
+                                    [
+                                        'image/png',
+                                        'image/jpeg',
+                                        'image/jpg',
+                                        'image/gif',
+                                        'image/webp',
+                                        'audio/mp4',
+                                        'audio/webm',
+                                        'audio/wav',
+                                        'audio/mpeg',
+                                        'audio/ogg',
+                                        'audio/aac'
+                                    ]
                                 example: 'image/png'
+                    example:
+                        - type: 'file'
+                          name: 'example.png'
+                          data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG'
+                          mime: 'image/png'
+                humanInput:
+                    type: object
+                    description: Return human feedback and resume execution from a stopped checkpoint
+                    properties:
+                        type:
+                            type: string
+                            enum: [proceed, reject]
+                            description: Type of human input response
+                            example: 'reject'
+                        feedback:
+                            type: string
+                            description: Feedback to the last output
+                            example: 'Include more emoji'
+                    example:
+                        type: 'reject'
+                        feedback: 'Include more emoji'
 
         Tool:
             type: object

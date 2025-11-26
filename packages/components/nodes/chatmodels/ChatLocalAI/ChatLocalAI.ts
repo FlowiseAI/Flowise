@@ -111,6 +111,7 @@ class ChatLocalAI_ChatModels implements INode {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: 'sk-',
+            apiKey: 'sk-',
             streaming: streaming ?? true
         }
 
@@ -118,7 +119,10 @@ class ChatLocalAI_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
-        if (localAIApiKey) obj.openAIApiKey = localAIApiKey
+        if (localAIApiKey) {
+            obj.openAIApiKey = localAIApiKey
+            obj.apiKey = localAIApiKey
+        }
         if (basePath) obj.configuration = { baseURL: basePath }
 
         const model = new ChatOpenAI(obj)

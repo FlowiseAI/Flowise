@@ -80,7 +80,8 @@ class Upstash_VectorStores implements INode {
                 name: 'upstashMetadataFilter',
                 type: 'string',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Top K',

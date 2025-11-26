@@ -18,7 +18,11 @@ Here’s an overview of the process:
 
 ## Setting up Worker:
 
-1. Copy paste the same `.env` file used to setup main server. Change the `PORT` to other available port numbers. Ex: 5566
-2. `docker compose up -d`
-3. Open [http://localhost:5566](http://localhost:5566)
+1. Navigate to `docker/worker` folder
+2. In the `.env.example`, setup all the necessary env variables for `QUEUE CONFIGURATION`. Env variables for worker must match the one for main server. Change the `WORKER_PORT` to other available port numbers to listen for healthcheck. Ex: 5566
+3. `docker compose up -d`
 4. You can bring the worker container down by `docker compose stop`
+
+## Entrypoint:
+
+Different from main server image which is using `flowise start`, entrypoint for worker is `pnpm run start-worker`. This is because the worker's [Dockerfile](./Dockerfile) build the image from source files via `pnpm build` instead of npm registry via `RUN npm install -g flowise`.

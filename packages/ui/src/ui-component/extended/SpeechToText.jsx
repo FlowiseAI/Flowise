@@ -379,7 +379,11 @@ const SpeechToText = ({ dialogProps }) => {
                                     width: 50,
                                     height: 50,
                                     borderRadius: '50%',
-                                    backgroundColor: 'white'
+                                    backgroundColor: 'white',
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
                                 }}
                             >
                                 <img
@@ -398,7 +402,15 @@ const SpeechToText = ({ dialogProps }) => {
                             sx={{ ml: 1 }}
                             primary={speechToTextProviders[selectedProvider].label}
                             secondary={
-                                <a target='_blank' rel='noreferrer' href={speechToTextProviders[selectedProvider].url}>
+                                <a
+                                    target='_blank'
+                                    rel='noreferrer'
+                                    href={speechToTextProviders[selectedProvider].url}
+                                    style={{
+                                        color: theme?.customization?.isDarkMode ? '#90caf9' : '#1976d2',
+                                        textDecoration: 'underline'
+                                    }}
+                                >
                                     {speechToTextProviders[selectedProvider].url}
                                 </a>
                             }

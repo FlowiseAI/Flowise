@@ -15,7 +15,7 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { useTheme } from '@mui/material/styles'
 import assistantsApi from '@/api/assistants'
 import { baseURL } from '@/store/constant'
-import { initNode } from '@/utils/genericHelper'
+import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import useApi from '@/hooks/useApi'
 
@@ -54,6 +54,15 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
+    const handleChatModelDataChange = ({ inputParam, newValue }) => {
+        setSelectedChatModel((prevData) => {
+            const updatedData = { ...prevData }
+            updatedData.inputs[inputParam.name] = newValue
+            updatedData.inputParams = showHideInputParams(updatedData)
+            return updatedData
+        })
+    }
 
     useEffect(() => {
         if (getChatModelsApi.data) {
@@ -122,7 +131,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
-                        persist: true,
+                        persist: false,
                         action: (key) => (
                             <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
                                 <IconX />
@@ -137,7 +146,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
-                    persist: true,
+                    persist: false,
                     action: (key) => (
                         <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
                             <IconX />
@@ -303,10 +312,15 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         borderRadius: 2
                                     }}
                                 >
-                                    {(selectedChatModel.inputParams ?? [])
-                                        .filter((inputParam) => !inputParam.hidden)
+                                    {showHideInputParams(selectedChatModel)
+                                        .filter((inputParam) => !inputParam.hidden && inputParam.display !== false)
                                         .map((inputParam, index) => (
-                                            <DocStoreInputHandler key={index} inputParam={inputParam} data={selectedChatModel} />
+                                            <DocStoreInputHandler
+                                                key={index}
+                                                inputParam={inputParam}
+                                                data={selectedChatModel}
+                                                onNodeDataChange={handleChatModelDataChange}
+                                            />
                                         ))}
                                 </Box>
                             )}

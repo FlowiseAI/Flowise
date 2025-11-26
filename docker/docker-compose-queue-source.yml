@@ -1,0 +1,71 @@
+version: '3.1'
+
+services:
+    redis:
+        image: redis:alpine
+        container_name: flowise-redis
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis_data:/data
+        networks:
+            - flowise-net
+
+    flowise:
+        container_name: flowise-main
+        build:
+            context: .. # Build using the Dockerfile in the root directory
+            dockerfile: docker/Dockerfile
+        ports:
+            - '${PORT}:${PORT}'
+        volumes:
+            # Mount local .flowise to container's default location
+            - ../.flowise:/root/.flowise
+        environment:
+            # --- Essential Flowise Vars ---
+            - PORT=${PORT:-3000}
+            - DATABASE_PATH=/root/.flowise
+            - SECRETKEY_PATH=/root/.flowise
+            - LOG_PATH=/root/.flowise/logs
+            - BLOB_STORAGE_PATH=/root/.flowise/storage
+            # --- Queue Vars (Main Instance) ---
+            - MODE=queue
+            - QUEUE_NAME=flowise-queue # Ensure this matches worker
+            - REDIS_URL=redis://redis:6379 # Use service name 'redis'
+        depends_on:
+            - redis
+        networks:
+            - flowise-net
+
+    flowise-worker:
+        container_name: flowise-worker
+        build:
+            context: .. # Build context is still the root
+            dockerfile: docker/worker/Dockerfile # Ensure this path is correct
+        volumes:
+            # Mount same local .flowise to worker
+            - ../.flowise:/root/.flowise
+        environment:
+            # --- Essential Flowise Vars ---
+            - WORKER_PORT=${WORKER_PORT:-5566} # Port for worker healthcheck
+            - DATABASE_PATH=/root/.flowise
+            - SECRETKEY_PATH=/root/.flowise
+            - LOG_PATH=/root/.flowise/logs
+            - BLOB_STORAGE_PATH=/root/.flowise/storage
+            # --- Queue Vars (Main Instance) ---
+            - MODE=queue
+            - QUEUE_NAME=flowise-queue # Ensure this matches worker
+            - REDIS_URL=redis://redis:6379 # Use service name 'redis'
+        depends_on:
+            - redis
+            - flowise
+        networks:
+            - flowise-net
+
+volumes:
+    redis_data:
+        driver: local
+
+networks:
+    flowise-net:
+        driver: bridge

@@ -5,16 +5,18 @@ import { Chip, Box, Button, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconTrash, IconPlus } from '@tabler/icons-react'
 import NodeInputHandler from '@/views/canvas/NodeInputHandler'
+import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import { showHideInputs } from '@/utils/genericHelper'
 import { cloneDeep } from 'lodash'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
-export const ArrayRenderer = ({ inputParam, data, disabled }) => {
+export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }) => {
     const [arrayItems, setArrayItems] = useState([]) // these are the actual values. Ex: [{name: 'John', age: 30}, {name: 'Jane', age: 25}]
     const [itemParameters, setItemParameters] = useState([]) // these are the input parameters for each array item. Ex: [{label: 'Name', type: 'string', display: true}, {label: 'age', type: 'number', display: false}]
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
-    const { reactFlowInstance } = useContext(flowContext)
+    const flowContextValue = useContext(flowContext)
+    const { reactFlowInstance } = flowContextValue || {}
 
     // Handler for when input values change within array items
     const handleItemInputChange = ({ inputParam: changedParam, newValue }, itemIndex) => {
@@ -70,6 +72,9 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
     }, [data, inputParam])
 
     const updateOutputAnchors = (items, type, indexToDelete) => {
+        // Skip output anchor updates for DocStore context
+        if (isDocStore || !reactFlowInstance) return
+
         if (data.name !== 'conditionAgentflow' && data.name !== 'conditionAgentAgentflow') return
 
         const updatedOutputs = items.map((_, i) => ({
@@ -221,20 +226,35 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
                         {/* Render input fields for array item */}
                         {itemParameters[index]
                             .filter((param) => param.display !== false)
-                            .map((param, _index) => (
-                                <NodeInputHandler
-                                    disabled={disabled}
-                                    key={_index}
-                                    inputParam={param}
-                                    data={itemData}
-                                    isAdditionalParams={true}
-                                    parentParamForArray={inputParam}
-                                    arrayIndex={index}
-                                    onCustomDataChange={({ inputParam, newValue }) => {
-                                        handleItemInputChange({ inputParam, newValue }, index)
-                                    }}
-                                />
-                            ))}
+                            .map((param, _index) => {
+                                if (isDocStore) {
+                                    return (
+                                        <DocStoreInputHandler
+                                            disabled={disabled}
+                                            key={_index}
+                                            inputParam={param}
+                                            data={itemData}
+                                            onNodeDataChange={({ inputParam, newValue }) => {
+                                                handleItemInputChange({ inputParam, newValue }, index)
+                                            }}
+                                        />
+                                    )
+                                }
+                                return (
+                                    <NodeInputHandler
+                                        disabled={disabled}
+                                        key={_index}
+                                        inputParam={param}
+                                        data={itemData}
+                                        isAdditionalParams={true}
+                                        parentParamForArray={inputParam}
+                                        arrayIndex={index}
+                                        onCustomDataChange={({ inputParam, newValue }) => {
+                                            handleItemInputChange({ inputParam, newValue }, index)
+                                        }}
+                                    />
+                                )
+                            })}
                     </Box>
                 )
             })}
@@ -257,5 +277,6 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
 ArrayRenderer.propTypes = {
     inputParam: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    isDocStore: PropTypes.bool
 }

@@ -47,3 +47,42 @@
     cursor: crosshair;
     background: #5dba62 !important;
 }
+
+/* Dark mode controls styling */
+.dark-mode-controls {
+    --xy-controls-button-background-color-default: #2d2d2d;
+    --xy-controls-button-background-color-hover-default: #404040;
+    --xy-controls-button-border-color-default: #525252;
+    --xy-controls-box-shadow-default: 0 0 2px 1px rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode-controls .react-flow__controls-button {
+    background-color: #2d2d2d;
+    border-color: #525252;
+    color: #ffffff;
+    border: 1px solid #525252;
+}
+
+.dark-mode-controls .react-flow__controls-button:hover {
+    background-color: #404040;
+}
+
+.dark-mode-controls .react-flow__controls-button.react-flow__controls-interactive {
+    background-color: #2d2d2d;
+    border-color: #525252;
+    color: #ffffff;
+}
+
+.dark-mode-controls .react-flow__controls-button.react-flow__controls-interactive:hover {
+    background-color: #404040;
+}
+
+.dark-mode-controls .react-flow__controls-button svg {
+    color: #ffffff;
+    fill: #ffffff;
+}
+
+.dark-mode-controls .react-flow__controls-button:hover svg {
+    color: #ffffff;
+    fill: #ffffff;
+}

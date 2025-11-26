@@ -8,13 +8,12 @@ on:
     pull_request:
         branches:
             - '*'
-
+    workflow_dispatch:
 jobs:
     build:
         runs-on: ubuntu-latest
         env:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
-            - uses: actions/checkout@v3
-
+            - uses: actions/checkout@v4
             - run: docker build --no-cache -t flowise .

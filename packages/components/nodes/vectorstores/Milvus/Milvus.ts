@@ -100,7 +100,8 @@ class Milvus_VectorStores implements INode {
                 description:
                     'Filter data with a simple string query. Refer Milvus <a target="_blank" href="https://milvus.io/blog/2022-08-08-How-to-use-string-data-to-empower-your-similarity-search-applications.md#Hybrid-search">docs</a> for more details.',
                 placeholder: 'doc=="a"',
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Top K',
@@ -395,7 +396,18 @@ const similaritySearchVectorWithScore = async (query: number[], k: number, vecto
                 }
             }
         })
-        results.push([new Document(fields), result.score])
+        let normalizedScore = result.score
+        switch (vectorStore.indexCreateParams.metric_type) {
+            case MetricType.L2:
+                normalizedScore = 1 / (1 + result.score)
+                break
+            case MetricType.IP:
+            case MetricType.COSINE:
+                normalizedScore = (result.score + 1) / 2
+                break
+        }
+
+        results.push([new Document(fields), normalizedScore])
     })
     return results
 }

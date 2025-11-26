@@ -1,6 +1,5 @@
 {
     "description": "Tool agent that can retrieve answers from multiple sources using relevant Retriever Tools",
-    "badge": "POPULAR",
     "usecases": ["Documents QnA"],
     "framework": ["Langchain"],
     "nodes": [

@@ -32,6 +32,11 @@ export const enqueueSnackbar = (notification) => {
         type: ENQUEUE_SNACKBAR,
         notification: {
             ...notification,
+            options: {
+                ...notification.options,
+                persist: notification.options?.persist ?? false, // Default: auto-close enabled
+                autoHideDuration: notification.options?.autoHideDuration ?? 5000 // Default auto-close duration: 5 seconds
+            },
             key: key || new Date().getTime() + Math.random()
         }
     }

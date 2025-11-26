@@ -9,11 +9,15 @@ import { IComponentNodes } from '../Interface'
 export const executeCustomNodeFunction = async ({
     appDataSource,
     componentNodes,
-    data
+    data,
+    workspaceId,
+    orgId
 }: {
     appDataSource: DataSource
     componentNodes: IComponentNodes
     data: any
+    workspaceId?: string
+    orgId?: string
 }) => {
     try {
         const body = data
@@ -37,7 +41,9 @@ export const executeCustomNodeFunction = async ({
 
                 const options: ICommonObject = {
                     appDataSource,
-                    databaseEntities
+                    databaseEntities,
+                    workspaceId,
+                    orgId
                 }
 
                 const returnData = await newNodeInstance.init(nodeData, '', options)

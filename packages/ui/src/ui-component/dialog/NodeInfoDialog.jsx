@@ -81,7 +81,11 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                     height: 50,
                                     marginRight: 10,
                                     borderRadius: '50%',
-                                    backgroundColor: 'white'
+                                    backgroundColor: 'white',
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
                                 }}
                             >
                                 <img

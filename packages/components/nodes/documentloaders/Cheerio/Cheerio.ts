@@ -123,6 +123,7 @@ class Cheerio_DocumentLoaders implements INode {
         const selectedLinks = nodeData.inputs?.selectedLinks as string[]
         let limit = parseInt(nodeData.inputs?.limit as string)
         const output = nodeData.outputs?.output as string
+        const orgId = options.orgId
 
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
 
@@ -149,7 +150,8 @@ class Cheerio_DocumentLoaders implements INode {
             try {
                 let docs: IDocument[] = []
                 if (url.endsWith('.pdf')) {
-                    if (process.env.DEBUG === 'true') options.logger.info(`CheerioWebBaseLoader does not support PDF files: ${url}`)
+                    if (process.env.DEBUG === 'true')
+                        options.logger.info(`[${orgId}]: CheerioWebBaseLoader does not support PDF files: ${url}`)
                     return docs
                 }
                 const loader = new CheerioWebBaseLoader(url, params)
@@ -161,7 +163,8 @@ class Cheerio_DocumentLoaders implements INode {
                 }
                 return docs
             } catch (err) {
-                if (process.env.DEBUG === 'true') options.logger.error(`error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
+                if (process.env.DEBUG === 'true')
+                    options.logger.error(`[${orgId}]: Error in CheerioWebBaseLoader: ${err.message}, on page: ${url}`)
                 return []
             }
         }
@@ -169,7 +172,7 @@ class Cheerio_DocumentLoaders implements INode {
         let docs: IDocument[] = []
 
         if (relativeLinksMethod) {
-            if (process.env.DEBUG === 'true') options.logger.info(`Start ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`[${orgId}]: Start CheerioWebBaseLoader ${relativeLinksMethod}`)
             // if limit is 0 we don't want it to default to 10 so we check explicitly for null or undefined
             // so when limit is 0 we can fetch all the links
             if (limit === null || limit === undefined) limit = 10
@@ -180,15 +183,18 @@ class Cheerio_DocumentLoaders implements INode {
                     : relativeLinksMethod === 'webCrawl'
                     ? await webCrawl(url, limit)
                     : await xmlScrape(url, limit)
-            if (process.env.DEBUG === 'true') options.logger.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
+            if (process.env.DEBUG === 'true')
+                options.logger.info(`[${orgId}]: CheerioWebBaseLoader pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
                 docs.push(...(await cheerioLoader(page)))
             }
-            if (process.env.DEBUG === 'true') options.logger.info(`Finish ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`[${orgId}]: Finish CheerioWebBaseLoader ${relativeLinksMethod}`)
         } else if (selectedLinks && selectedLinks.length > 0) {
             if (process.env.DEBUG === 'true')
-                options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
+                options.logger.info(
+                    `[${orgId}]: CheerioWebBaseLoader pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`
+                )
             for (const page of selectedLinks.slice(0, limit)) {
                 docs.push(...(await cheerioLoader(page)))
             }

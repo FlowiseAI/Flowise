@@ -1,0 +1,67 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for Flowise
+labels: ['enhancement']
+assignees: []
+body:
+    - type: markdown
+      attributes:
+          value: |
+              Thanks for suggesting a new feature! Please provide as much detail as possible to help us understand your request.
+
+    - type: textarea
+      id: feature-description
+      attributes:
+          label: Feature Description
+          description: A clear and concise description of the feature you'd like to see in Flowise.
+          placeholder: Describe what you want to be added or improved...
+      validations:
+          required: true
+
+    - type: dropdown
+      id: feature-category
+      attributes:
+          label: Feature Category
+          description: What category does this feature belong to?
+          options:
+              - UI/UX Improvement
+              - New Node/Component
+              - Integration
+              - Performance
+              - Security
+              - Documentation
+              - API Enhancement
+              - Workflow/Flow Management
+              - Authentication/Authorization
+              - Database/Storage
+              - Deployment/DevOps
+              - Other
+      validations:
+          required: true
+
+    - type: textarea
+      id: problem-statement
+      attributes:
+          label: Problem Statement
+          description: What problem does this feature solve? What's the current pain point?
+          placeholder: Describe the problem or limitation you're facing...
+
+    - type: textarea
+      id: proposed-solution
+      attributes:
+          label: Proposed Solution
+          description: How would you like this feature to work? Be as specific as possible.
+          placeholder: Describe your ideal solution in detail...
+
+    - type: textarea
+      id: mockups-references
+      attributes:
+          label: Mockups or References
+          description: Any mockups, screenshots, or references to similar features in other tools?
+          placeholder: Upload images or provide links to examples...
+
+    - type: textarea
+      id: additional-context
+      attributes:
+          label: Additional Context
+          description: Any other information, context, or examples that would help us understand this request.
+          placeholder: Add any other relevant information...

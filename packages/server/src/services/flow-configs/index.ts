@@ -6,10 +6,10 @@ import chatflowsService from '../chatflows'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 
-const getSingleFlowConfig = async (chatflowId: string): Promise<any> => {
+const getSingleFlowConfig = async (chatflowId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const chatflow = await chatflowsService.getChatflowById(chatflowId)
+        const chatflow = await chatflowsService.getChatflowById(chatflowId, workspaceId)
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }

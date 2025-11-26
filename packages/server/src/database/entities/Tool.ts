@@ -32,4 +32,7 @@ export class Tool implements ITool {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column({ nullable: false, type: 'text' })
+    workspaceId: string
 }

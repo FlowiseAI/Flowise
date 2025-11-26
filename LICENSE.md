@@ -1,6 +1,14 @@
-                                Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+Copyright (c) 2023-present FlowiseAI, Inc.
+
+Portions of this software are licensed as follows:
+
+-   All content that resides under https://github.com/FlowiseAI/Flowise/tree/main/packages/server/src/enterprise directory and files with explicit copyright notice such as [IdentityManager.ts](https://github.com/FlowiseAI/Flowise/tree/main/packages/server/src/IdentityManager.ts) are licensed under [Commercial License](https://github.com/FlowiseAI/Flowise/tree/main/packages/server/src/enterprise/LICENSE.md).
+-   All third party components incorporated into the FlowiseAI Software are licensed under the original license provided by the owner of the applicable component.
+-   Content outside of the above mentioned directories or restrictions above is available under the "Apache 2.0" license as defined below.
+
+                                  Apache License
+                             Version 2.0, January 2004
+                          http://www.apache.org/licenses/
 
 TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 

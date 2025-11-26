@@ -27,7 +27,7 @@ class ConditionAgent_Agentflow implements INode {
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'conditionAgentAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'ConditionAgent'
         this.category = 'Agent Flows'
         this.description = `Utilize an agent to split flows based on dynamic conditions`
@@ -80,6 +80,26 @@ class ConditionAgent_Agentflow implements INode {
                         scenario: ''
                     }
                 ]
+            },
+            {
+                label: 'Override System Prompt',
+                name: 'conditionAgentOverrideSystemPrompt',
+                type: 'boolean',
+                description: 'Override initial system prompt for Condition Agent',
+                optional: true
+            },
+            {
+                label: 'Node System Prompt',
+                name: 'conditionAgentSystemPrompt',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                acceptVariable: true,
+                default: CONDITION_AGENT_SYSTEM_PROMPT,
+                description: 'Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure',
+                show: {
+                    conditionAgentOverrideSystemPrompt: true
+                }
             }
             /*{
                 label: 'Enable Memory',
@@ -242,6 +262,12 @@ class ConditionAgent_Agentflow implements INode {
             const conditionAgentInput = nodeData.inputs?.conditionAgentInput as string
             let input = conditionAgentInput || question
             const conditionAgentInstructions = nodeData.inputs?.conditionAgentInstructions as string
+            const conditionAgentSystemPrompt = nodeData.inputs?.conditionAgentSystemPrompt as string
+            const conditionAgentOverrideSystemPrompt = nodeData.inputs?.conditionAgentOverrideSystemPrompt as boolean
+            let systemPrompt = CONDITION_AGENT_SYSTEM_PROMPT
+            if (conditionAgentSystemPrompt && conditionAgentOverrideSystemPrompt) {
+                systemPrompt = conditionAgentSystemPrompt
+            }
 
             // Extract memory and configuration options
             const enableMemory = nodeData.inputs?.conditionAgentEnableMemory as boolean
@@ -277,31 +303,15 @@ class ConditionAgent_Agentflow implements INode {
             const messages: BaseMessageLike[] = [
                 {
                     role: 'system',
-                    content: CONDITION_AGENT_SYSTEM_PROMPT
+                    content: systemPrompt
                 },
                 {
                     role: 'user',
-                    content: `{"input": "Hello", "scenarios": ["user is asking about AI", "default"], "instruction": "Your task is to check and see if user is asking topic about AI"}`
+                    content: `{"input": "Hello", "scenarios": ["user is asking about AI", "user is not asking about AI"], "instruction": "Your task is to check if the user is asking about AI."}`
                 },
                 {
                     role: 'assistant',
-                    content: `\`\`\`json\n{"output": "default"}\n\`\`\``
-                },
-                {
-                    role: 'user',
-                    content: `{"input": "What is AIGC?", "scenarios": ["user is asking about AI", "default"], "instruction": "Your task is to check and see if user is asking topic about AI"}`
-                },
-                {
-                    role: 'assistant',
-                    content: `\`\`\`json\n{"output": "user is asking about AI"}\n\`\`\``
-                },
-                {
-                    role: 'user',
-                    content: `{"input": "Can you explain deep learning?", "scenarios": ["user is interested in AI topics", "default"], "instruction": "Determine if the user is interested in learning about AI"}`
-                },
-                {
-                    role: 'assistant',
-                    content: `\`\`\`json\n{"output": "user is interested in AI topics"}\n\`\`\``
+                    content: `\`\`\`json\n{"output": "user is not asking about AI"}\n\`\`\``
                 }
             ]
             // Use to store messages with image file references as we do not want to store the base64 data into database
@@ -374,15 +384,19 @@ class ConditionAgent_Agentflow implements INode {
                 )
             }
 
-            let calledOutputName = 'default'
+            let calledOutputName: string
             try {
                 const parsedResponse = this.parseJsonMarkdown(response.content as string)
-                if (!parsedResponse.output) {
-                    throw new Error('Missing "output" key in response')
+                if (!parsedResponse.output || typeof parsedResponse.output !== 'string') {
+                    throw new Error('LLM response is missing the "output" key or it is not a string.')
                 }
                 calledOutputName = parsedResponse.output
             } catch (error) {
-                console.warn(`Failed to parse LLM response: ${error}. Using default output.`)
+                throw new Error(
+                    `Failed to parse a valid scenario from the LLM's response. Please check if the model is capable of following JSON output instructions. Raw LLM Response: "${
+                        response.content as string
+                    }"`
+                )
             }
 
             // Clean up empty inputs

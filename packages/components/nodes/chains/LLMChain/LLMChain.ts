@@ -167,7 +167,7 @@ const runPrediction = async (
     nodeData: INodeData,
     disableStreaming?: boolean
 ) => {
-    const loggerHandler = new ConsoleCallbackHandler(options.logger)
+    const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
     const callbacks = await additionalCallbacks(nodeData, options)
 
     const moderations = nodeData.inputs?.inputModeration as Moderation[]

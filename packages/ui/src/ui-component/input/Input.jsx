@@ -32,6 +32,8 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                 return 'password'
             case 'number':
                 return 'number'
+            case 'email':
+                return 'email'
             default:
                 return 'text'
         }

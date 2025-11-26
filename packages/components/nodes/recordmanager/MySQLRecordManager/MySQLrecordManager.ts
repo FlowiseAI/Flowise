@@ -205,8 +205,8 @@ class MySQLRecordManager implements RecordManagerInterface {
     }
 
     async createSchema(): Promise<void> {
+        const dataSource = await this.getDataSource()
         try {
-            const dataSource = await this.getDataSource()
             const queryRunner = dataSource.createQueryRunner()
             const tableName = this.sanitizeTableName(this.tableName)
 
@@ -241,6 +241,8 @@ class MySQLRecordManager implements RecordManagerInterface {
                 return
             }
             throw e
+        } finally {
+            await dataSource.destroy()
         }
     }
 

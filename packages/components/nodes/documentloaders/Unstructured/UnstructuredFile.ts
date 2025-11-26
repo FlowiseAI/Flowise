@@ -4,8 +4,7 @@ import {
     UnstructuredLoaderOptions,
     UnstructuredLoaderStrategy,
     SkipInferTableTypes,
-    HiResModelName,
-    UnstructuredLoader as LCUnstructuredLoader
+    HiResModelName
 } from '@langchain/community/document_loaders/fs/unstructured'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { getFileFromStorage, INodeOutputsValue } from '../../../src'
@@ -41,17 +40,6 @@ class UnstructuredFile_DocumentLoaders implements INode {
             optional: true
         }
         this.inputs = [
-            /** Deprecated
-            {
-                label: 'File Path',
-                name: 'filePath',
-                type: 'string',
-                placeholder: '',
-                optional: true,
-                warning:
-                    'Use the File Upload instead of File path. If file is uploaded, this path is ignored. Path will be deprecated in future releases.'
-            },
-             */
             {
                 label: 'Files Upload',
                 name: 'fileObject',
@@ -452,7 +440,6 @@ class UnstructuredFile_DocumentLoaders implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const filePath = nodeData.inputs?.filePath as string
         const unstructuredAPIUrl = nodeData.inputs?.unstructuredAPIUrl as string
         const strategy = nodeData.inputs?.strategy as UnstructuredLoaderStrategy
         const encoding = nodeData.inputs?.encoding as string
@@ -532,11 +519,12 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 } else {
                     files = [fileName]
                 }
+                const orgId = options.orgId
                 const chatflowid = options.chatflowid
 
                 for (const file of files) {
                     if (!file) continue
-                    const fileData = await getFileFromStorage(file, chatflowid)
+                    const fileData = await getFileFromStorage(file, orgId, chatflowid)
                     const loaderDocs = await loader.loadAndSplitBuffer(fileData, file)
                     docs.push(...loaderDocs)
                 }
@@ -556,12 +544,8 @@ class UnstructuredFile_DocumentLoaders implements INode {
                     docs.push(...loaderDocs)
                 }
             }
-        } else if (filePath) {
-            const loader = new LCUnstructuredLoader(filePath, obj)
-            const loaderDocs = await loader.load()
-            docs.push(...loaderDocs)
         } else {
-            throw new Error('File path or File upload is required')
+            throw new Error('File upload is required')
         }
 
         if (metadata) {

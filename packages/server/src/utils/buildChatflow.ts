@@ -6,6 +6,7 @@ import { omit } from 'lodash'
 import {
     IFileUpload,
     convertSpeechToText,
+    convertTextToSpeechStream,
     ICommonObject,
     addSingleFileToStorage,
     generateFollowUpPrompts,
@@ -15,15 +16,17 @@ import {
     mapExtToInputField,
     getFileFromUpload,
     removeSpecificFileFromUpload,
-    handleEscapeCharacters
+    EvaluationRunner,
+    handleEscapeCharacters,
+    IServerSideEventStreamer
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
     IncomingInput,
     IMessage,
     INodeData,
-    IReactFlowObject,
     IReactFlowNode,
+    IReactFlowObject,
     IDepthQueue,
     ChatType,
     IChatMessage,
@@ -56,18 +59,87 @@ import {
     constructGraphs,
     getAPIOverrideConfig
 } from '../utils'
-import { validateChatflowAPIKey } from './validateKey'
+import { validateFlowAPIKey } from './validateKey'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
+import { checkPredictions, checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
+import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
 import { executeAgentFlow } from './buildAgentflow'
+import { Workspace } from '../enterprise/database/entities/workspace.entity'
+import { Organization } from '../enterprise/database/entities/organization.entity'
 
-/*
- * Initialize the ending node to be executed
- */
+const shouldAutoPlayTTS = (textToSpeechConfig: string | undefined | null): boolean => {
+    if (!textToSpeechConfig) return false
+    try {
+        const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
+        for (const providerKey in config) {
+            const provider = config[providerKey]
+            if (provider && provider.status === true && provider.autoPlay === true) {
+                return true
+            }
+        }
+        return false
+    } catch (error) {
+        logger.error(`Error parsing textToSpeechConfig: ${getErrorMessage(error)}`)
+        return false
+    }
+}
+
+const generateTTSForResponseStream = async (
+    responseText: string,
+    textToSpeechConfig: string | undefined,
+    options: ICommonObject,
+    chatId: string,
+    chatMessageId: string,
+    sseStreamer: IServerSideEventStreamer,
+    abortController?: AbortController
+): Promise<void> => {
+    try {
+        if (!textToSpeechConfig) return
+        const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
+
+        let activeProviderConfig = null
+        for (const providerKey in config) {
+            const provider = config[providerKey]
+            if (provider && provider.status === true) {
+                activeProviderConfig = {
+                    name: providerKey,
+                    credentialId: provider.credentialId,
+                    voice: provider.voice,
+                    model: provider.model
+                }
+                break
+            }
+        }
+
+        if (!activeProviderConfig) return
+
+        await convertTextToSpeechStream(
+            responseText,
+            activeProviderConfig,
+            options,
+            abortController || new AbortController(),
+            (format: string) => {
+                sseStreamer.streamTTSStartEvent(chatId, chatMessageId, format)
+            },
+            (chunk: Buffer) => {
+                const audioBase64 = chunk.toString('base64')
+                sseStreamer.streamTTSDataEvent(chatId, chatMessageId, audioBase64)
+            },
+            () => {
+                sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
+            }
+        )
+    } catch (error) {
+        logger.error(`[server]: TTS streaming failed: ${getErrorMessage(error)}`)
+        sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
+    }
+}
+
 const initEndingNode = async ({
     endingNodeIds,
     componentNodes,
@@ -230,15 +302,22 @@ export const executeFlow = async ({
     incomingInput,
     chatflow,
     chatId,
+    isEvaluation,
+    evaluationRunId,
     appDataSource,
     telemetry,
     cachePool,
+    usageCacheManager,
     sseStreamer,
     baseURL,
     isInternal,
     files,
     signal,
-    isTool
+    isTool,
+    orgId,
+    workspaceId,
+    subscriptionId,
+    productId
 }: IExecuteFlowParams) => {
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
@@ -265,6 +344,8 @@ export const executeFlow = async ({
     if (uploads) {
         fileUploads = uploads
         for (let i = 0; i < fileUploads.length; i += 1) {
+            await checkStorage(orgId, subscriptionId, usageCacheManager)
+
             const upload = fileUploads[i]
 
             // if upload in an image, a rag file, or audio
@@ -273,7 +354,8 @@ export const executeFlow = async ({
                 const splitDataURI = upload.data.split(',')
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                 const mime = splitDataURI[0].split(':')[1].split(';')[0]
-                await addSingleFileToStorage(mime, bf, filename, chatflowid, chatId)
+                const { totalSize } = await addSingleFileToStorage(mime, bf, filename, orgId, chatflowid, chatId)
+                await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
                 upload.type = 'stored-file'
                 // Omit upload.data since we don't store the content in database
                 fileUploads[i] = omit(upload, ['data'])
@@ -287,7 +369,7 @@ export const executeFlow = async ({
 
             // Run Speech to Text conversion
             if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
-                logger.debug(`Attempting a speech to text conversion...`)
+                logger.debug(`[server]: [${orgId}]: Attempting a speech to text conversion...`)
                 let speechToTextConfig: ICommonObject = {}
                 if (chatflow.speechToText) {
                     const speechToTextProviders = JSON.parse(chatflow.speechToText)
@@ -302,13 +384,14 @@ export const executeFlow = async ({
                 }
                 if (speechToTextConfig) {
                     const options: ICommonObject = {
+                        orgId,
                         chatId,
                         chatflowid,
                         appDataSource,
                         databaseEntities: databaseEntities
                     }
                     const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
-                    logger.debug(`Speech to text result: ${speechToTextResult}`)
+                    logger.debug(`[server]: [${orgId}]: Speech to text result: ${speechToTextResult}`)
                     if (speechToTextResult) {
                         incomingInput.question = speechToTextResult
                         question = speechToTextResult
@@ -329,11 +412,21 @@ export const executeFlow = async ({
     if (files?.length) {
         overrideConfig = { ...incomingInput }
         for (const file of files) {
+            await checkStorage(orgId, subscriptionId, usageCacheManager)
+
             const fileNames: string[] = []
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
-            const storagePath = await addArrayFilesToStorage(file.mimetype, fileBuffer, file.originalname, fileNames, chatflowid)
+            const { path: storagePath, totalSize } = await addArrayFilesToStorage(
+                file.mimetype,
+                fileBuffer,
+                file.originalname,
+                fileNames,
+                orgId,
+                chatflowid
+            )
+            await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
 
             const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
 
@@ -382,16 +475,22 @@ export const executeFlow = async ({
             incomingInput,
             chatflow,
             chatId,
+            evaluationRunId,
             appDataSource,
             telemetry,
             cachePool,
+            usageCacheManager,
             sseStreamer,
             baseURL,
             isInternal,
             uploadedFilesContent,
             fileUploads,
             signal,
-            isTool
+            isTool,
+            orgId,
+            workspaceId,
+            subscriptionId,
+            productId
         })
     }
 
@@ -443,11 +542,12 @@ export const executeFlow = async ({
     })
 
     /*** Get API Config ***/
-    const availableVariables = await appDataSource.getRepository(Variable).find()
+    const availableVariables = await appDataSource.getRepository(Variable).findBy(getWorkspaceSearchOptions(workspaceId))
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
     const flowConfig: IFlowConfig = {
         chatflowid,
+        chatflowId: chatflow.id,
         chatId,
         sessionId,
         chatHistory,
@@ -455,7 +555,7 @@ export const executeFlow = async ({
         ...incomingInput.overrideConfig
     }
 
-    logger.debug(`[server]: Start building flow ${chatflowid}`)
+    logger.debug(`[server]: [${orgId}]: Start building flow ${chatflowid}`)
 
     /*** BFS to traverse from Starting Nodes to Ending Node ***/
     const reactFlowNodes = await buildFlow({
@@ -479,9 +579,15 @@ export const executeFlow = async ({
         availableVariables,
         variableOverrides,
         cachePool,
+        usageCacheManager,
         isUpsert: false,
         uploads,
-        baseURL
+        baseURL,
+        orgId,
+        workspaceId,
+        subscriptionId,
+        updateStorageUsage,
+        checkStorage
     })
 
     const setVariableNodesOutput = getSetVariableNodesOutput(reactFlowNodes)
@@ -506,7 +612,9 @@ export const executeFlow = async ({
             shouldStreamResponse: true, // agentflow is always streamed
             cachePool,
             baseURL,
-            signal
+            signal,
+            orgId,
+            workspaceId
         })
 
         if (streamResults) {
@@ -515,7 +623,7 @@ export const executeFlow = async ({
                 role: 'userMessage',
                 content: incomingInput.question,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId,
@@ -530,7 +638,7 @@ export const executeFlow = async ({
                 role: 'apiMessage',
                 content: finalResult,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId
@@ -556,13 +664,17 @@ export const executeFlow = async ({
             }
             const chatMessage = await utilAddChatMessage(apiMessage, appDataSource)
 
-            await telemetry.sendTelemetry('agentflow_prediction_sent', {
-                version: await getAppVersion(),
-                agentflowId: agentflow.id,
-                chatId,
-                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-                flowGraph: getTelemetryFlowObj(nodes, edges)
-            })
+            await telemetry.sendTelemetry(
+                'agentflow_prediction_sent',
+                {
+                    version: await getAppVersion(),
+                    agentflowId: agentflow.id,
+                    chatId,
+                    type: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                    flowGraph: getTelemetryFlowObj(nodes, edges)
+                },
+                orgId
+            )
 
             // Find the previous chat message with the same action id and remove the action
             if (incomingInput.action && Object.keys(incomingInput.action).length) {
@@ -596,6 +708,7 @@ export const executeFlow = async ({
             // Prepare response
             let result: ICommonObject = {}
             result.text = finalResult
+
             result.question = incomingInput.question
             result.chatId = chatId
             result.chatMessageId = chatMessage?.id
@@ -605,7 +718,6 @@ export const executeFlow = async ({
             if (finalAction && Object.keys(finalAction).length) result.action = finalAction
             if (Object.keys(setVariableNodesOutput).length) result.flowVariables = setVariableNodesOutput
             result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
-
             return result
         }
         return undefined
@@ -643,16 +755,23 @@ export const executeFlow = async ({
 
         /*** Prepare run params ***/
         const runParams = {
+            orgId,
+            workspaceId,
+            subscriptionId,
             chatId,
             chatflowid,
             apiMessageId,
             logger,
             appDataSource,
             databaseEntities,
+            usageCacheManager,
             analytic: chatflow.analytic,
             uploads,
             prependMessages,
-            ...(isStreamValid && { sseStreamer, shouldStreamResponse: isStreamValid })
+            ...(isStreamValid && { sseStreamer, shouldStreamResponse: isStreamValid }),
+            evaluationRunId,
+            updateStorageUsage,
+            checkStorage
         }
 
         /*** Run the ending node ***/
@@ -669,7 +788,7 @@ export const executeFlow = async ({
             role: 'userMessage',
             content: question,
             chatflowid,
-            chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             chatId,
             memoryType,
             sessionId,
@@ -701,6 +820,8 @@ export const executeFlow = async ({
                         rawOutput: resultText,
                         appDataSource,
                         databaseEntities,
+                        workspaceId,
+                        orgId,
                         logger
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()
@@ -725,7 +846,7 @@ export const executeFlow = async ({
             role: 'apiMessage',
             content: resultText,
             chatflowid,
-            chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             chatId,
             memoryType,
             sessionId
@@ -749,15 +870,24 @@ export const executeFlow = async ({
 
         const chatMessage = await utilAddChatMessage(apiMessage, appDataSource)
 
-        logger.debug(`[server]: Finished running ${endingNodeData.label} (${endingNodeData.id})`)
-
-        await telemetry.sendTelemetry('prediction_sent', {
-            version: await getAppVersion(),
-            chatflowId: chatflowid,
-            chatId,
-            type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-            flowGraph: getTelemetryFlowObj(nodes, edges)
-        })
+        logger.debug(`[server]: [${orgId}]: Finished running ${endingNodeData.label} (${endingNodeData.id})`)
+        if (evaluationRunId) {
+            const metrics = await EvaluationRunner.getAndDeleteMetrics(evaluationRunId)
+            result.metrics = metrics
+        }
+        await telemetry.sendTelemetry(
+            'prediction_sent',
+            {
+                version: await getAppVersion(),
+                chatflowId: chatflowid,
+                chatId,
+                type: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                flowGraph: getTelemetryFlowObj(nodes, edges),
+                productId,
+                subscriptionId
+            },
+            orgId
+        )
 
         /*** Prepare response ***/
         result.question = incomingInput.question // return the question in the response, this is used when input text is empty but question is in audio format
@@ -769,6 +899,17 @@ export const executeFlow = async ({
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
         if (Object.keys(setVariableNodesOutput).length) result.flowVariables = setVariableNodesOutput
+
+        if (shouldAutoPlayTTS(chatflow.textToSpeech) && result.text) {
+            const options = {
+                orgId,
+                chatflowid,
+                chatId,
+                appDataSource,
+                databaseEntities
+            }
+            await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, chatMessage?.id, sseStreamer, signal)
+        }
 
         return result
     }
@@ -824,12 +965,13 @@ const checkIfStreamValid = async (
 }
 
 /**
- * Build/Data Preperation for execute function
+ * Build/Data Preparation for execute function
  * @param {Request} req
  * @param {boolean} isInternal
  */
 export const utilBuildChatflow = async (req: Request, isInternal: boolean = false): Promise<any> => {
     const appServer = getRunningExpressApp()
+
     const chatflowid = req.params.id
 
     // Check if chatflow exists
@@ -841,7 +983,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     }
 
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
-
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
     const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
@@ -849,15 +990,55 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const files = (req.files as Express.Multer.File[]) || []
     const abortControllerId = `${chatflow.id}_${chatId}`
     const isTool = req.get('flowise-tool') === 'true'
+    const isEvaluation: boolean = req.headers['X-Flowise-Evaluation'] || req.body.evaluation
+    let evaluationRunId = ''
+    evaluationRunId = req.body.evaluationRunId
+    if (isEvaluation && chatflow.type !== 'AGENTFLOW' && req.body.evaluationRunId) {
+        // this is needed for the collection of token metrics for non-agent flows,
+        // for agentflows the execution trace has the info needed
+        const newEval = {
+            evaluation: {
+                status: true,
+                evaluationRunId
+            }
+        }
+        chatflow.analytic = JSON.stringify(newEval)
+    }
+
+    let organizationId = ''
 
     try {
         // Validate API Key if its external API request
         if (!isInternal) {
-            const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
+            const isKeyValidated = await validateFlowAPIKey(req, chatflow)
             if (!isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
         }
+
+        // This can be public API, so we can only get orgId from the chatflow
+        const chatflowWorkspaceId = chatflow.workspaceId
+        const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
+            id: chatflowWorkspaceId
+        })
+        if (!workspace) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
+        }
+        const workspaceId = workspace.id
+
+        const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
+            id: workspace.organizationId
+        })
+        if (!org) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Organization ${workspace.organizationId} not found`)
+        }
+
+        const orgId = org.id
+        organizationId = orgId
+        const subscriptionId = org.subscriptionId as string
+        const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
+
+        await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
 
         const executeData: IExecuteFlowParams = {
             incomingInput, // Use the defensively created incomingInput variable
@@ -866,18 +1047,25 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             baseURL,
             isInternal,
             files,
+            isEvaluation,
+            evaluationRunId,
             appDataSource: appServer.AppDataSource,
             sseStreamer: appServer.sseStreamer,
             telemetry: appServer.telemetry,
             cachePool: appServer.cachePool,
             componentNodes: appServer.nodesPool.componentNodes,
-            isTool // used to disable streaming if incoming request its from ChatflowTool
+            isTool, // used to disable streaming if incoming request its from ChatflowTool
+            usageCacheManager: appServer.usageCacheManager,
+            orgId,
+            workspaceId,
+            subscriptionId,
+            productId
         }
 
         if (process.env.MODE === MODE.QUEUE) {
             const predictionQueue = appServer.queueManager.getQueue('prediction')
             const job = await predictionQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
-            logger.debug(`[server]: Job added to queue: ${job.id}`)
+            logger.debug(`[server]: [${orgId}/${chatflow.id}/${chatId}]: Job added to queue: ${job.id}`)
 
             const queueEvents = predictionQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -885,7 +1073,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             if (!result) {
                 throw new Error('Job execution failed')
             }
-
+            await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
         } else {
@@ -893,14 +1081,16 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const signal = new AbortController()
             appServer.abortControllerPool.add(abortControllerId, signal)
             executeData.signal = signal
+
             const result = await executeFlow(executeData)
 
             appServer.abortControllerPool.remove(abortControllerId)
+            await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
         }
     } catch (e) {
-        logger.error('[server]: Error:', e)
+        logger.error(`[server]:${organizationId}/${chatflow.id}/${chatId} Error:`, e)
         appServer.abortControllerPool.remove(`${chatflow.id}_${chatId}`)
         incrementFailedMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
         if (e instanceof InternalFlowiseError && e.statusCode === StatusCodes.UNAUTHORIZED) {
@@ -950,3 +1140,5 @@ const incrementFailedMetricCounter = (metricsProvider: IMetricsProvider, isInter
         )
     }
 }
+
+export { shouldAutoPlayTTS, generateTTSForResponseStream }

@@ -8,6 +8,8 @@ export class CachePool {
     private redisClient: Redis | null = null
     activeLLMCache: IActiveCache = {}
     activeEmbeddingCache: IActiveCache = {}
+    activeMCPCache: { [key: string]: any } = {}
+    ssoTokenCache: { [key: string]: any } = {}
 
     constructor() {
         if (process.env.MODE === MODE.QUEUE) {
@@ -42,6 +44,46 @@ export class CachePool {
     }
 
     /**
+     * Add to the sso token cache pool
+     * @param {string} ssoToken
+     * @param {any} value
+     */
+    async addSSOTokenCache(ssoToken: string, value: any) {
+        if (process.env.MODE === MODE.QUEUE) {
+            if (this.redisClient) {
+                const serializedValue = JSON.stringify(value)
+                await this.redisClient.set(`ssoTokenCache:${ssoToken}`, serializedValue, 'EX', 120)
+            }
+        } else {
+            this.ssoTokenCache[ssoToken] = value
+        }
+    }
+
+    async getSSOTokenCache(ssoToken: string): Promise<any | undefined> {
+        if (process.env.MODE === MODE.QUEUE) {
+            if (this.redisClient) {
+                const serializedValue = await this.redisClient.get(`ssoTokenCache:${ssoToken}`)
+                if (serializedValue) {
+                    return JSON.parse(serializedValue)
+                }
+            }
+        } else {
+            return this.ssoTokenCache[ssoToken]
+        }
+        return undefined
+    }
+
+    async deleteSSOTokenCache(ssoToken: string) {
+        if (process.env.MODE === MODE.QUEUE) {
+            if (this.redisClient) {
+                await this.redisClient.del(`ssoTokenCache:${ssoToken}`)
+            }
+        } else {
+            delete this.ssoTokenCache[ssoToken]
+        }
+    }
+
+    /**
      * Add to the llm cache pool
      * @param {string} chatflowid
      * @param {Map<any, any>} value
@@ -71,6 +113,29 @@ export class CachePool {
         } else {
             this.activeEmbeddingCache[chatflowid] = value
         }
+    }
+
+    /**
+     * Add to the mcp toolkit cache pool
+     * @param {string} cacheKey
+     * @param {any} value
+     */
+    async addMCPCache(cacheKey: string, value: any) {
+        // Only add to cache for non-queue mode, because we are storing the toolkit instances in memory, and we can't store them in redis
+        if (process.env.MODE !== MODE.QUEUE) {
+            this.activeMCPCache[`mcpCache:${cacheKey}`] = value
+        }
+    }
+
+    /**
+     * Get item from mcp toolkit cache pool
+     * @param {string} cacheKey
+     */
+    async getMCPCache(cacheKey: string): Promise<any | undefined> {
+        if (process.env.MODE !== MODE.QUEUE) {
+            return this.activeMCPCache[`mcpCache:${cacheKey}`]
+        }
+        return undefined
     }
 
     /**

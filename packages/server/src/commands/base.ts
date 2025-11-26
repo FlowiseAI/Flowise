@@ -1,6 +1,6 @@
 import { Command, Flags } from '@oclif/core'
-import path from 'path'
 import dotenv from 'dotenv'
+import path from 'path'
 import logger from '../utils/logger'
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
@@ -12,20 +12,17 @@ enum EXIT_CODE {
 
 export abstract class BaseCommand extends Command {
     static flags = {
-        FLOWISE_USERNAME: Flags.string(),
-        FLOWISE_PASSWORD: Flags.string(),
         FLOWISE_FILE_SIZE_LIMIT: Flags.string(),
         PORT: Flags.string(),
         CORS_ORIGINS: Flags.string(),
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         BLOB_STORAGE_PATH: Flags.string(),
-        APIKEY_STORAGE_TYPE: Flags.string(),
-        APIKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
         TOOL_FUNCTION_EXTERNAL_DEP: Flags.string(),
+        ALLOW_BUILTIN_DEP: Flags.string(),
         NUMBER_OF_PROXIES: Flags.string(),
         DATABASE_TYPE: Flags.string(),
         DATABASE_PATH: Flags.string(),
@@ -59,6 +56,7 @@ export abstract class BaseCommand extends Command {
         SECRETKEY_AWS_ACCESS_KEY: Flags.string(),
         SECRETKEY_AWS_SECRET_KEY: Flags.string(),
         SECRETKEY_AWS_REGION: Flags.string(),
+        SECRETKEY_AWS_NAME: Flags.string(),
         DISABLED_NODES: Flags.string(),
         MODE: Flags.string(),
         WORKER_CONCURRENCY: Flags.string(),
@@ -76,7 +74,11 @@ export abstract class BaseCommand extends Command {
         REDIS_KEY: Flags.string(),
         REDIS_CA: Flags.string(),
         REDIS_KEEP_ALIVE: Flags.string(),
-        ENABLE_BULLMQ_DASHBOARD: Flags.string()
+        ENABLE_BULLMQ_DASHBOARD: Flags.string(),
+        CUSTOM_MCP_SECURITY_CHECK: Flags.string(),
+        CUSTOM_MCP_PROTOCOL: Flags.string(),
+        HTTP_DENY_LIST: Flags.string(),
+        TRUST_PROXY: Flags.string()
     }
 
     protected async stopProcess() {
@@ -123,7 +125,7 @@ export abstract class BaseCommand extends Command {
             logger.error('unhandledRejection: ', err)
         })
 
-        const { flags } = await this.parse(BaseCommand)
+        const { flags } = await this.parse(this.constructor as any)
         if (flags.PORT) process.env.PORT = flags.PORT
         if (flags.CORS_ORIGINS) process.env.CORS_ORIGINS = flags.CORS_ORIGINS
         if (flags.IFRAME_ORIGINS) process.env.IFRAME_ORIGINS = flags.IFRAME_ORIGINS
@@ -131,14 +133,6 @@ export abstract class BaseCommand extends Command {
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
         if (flags.SHOW_COMMUNITY_NODES) process.env.SHOW_COMMUNITY_NODES = flags.SHOW_COMMUNITY_NODES
         if (flags.DISABLED_NODES) process.env.DISABLED_NODES = flags.DISABLED_NODES
-
-        // Authorization
-        if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
-        if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
-        if (flags.APIKEY_STORAGE_TYPE) process.env.APIKEY_STORAGE_TYPE = flags.APIKEY_STORAGE_TYPE
-        if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
-
-        // API Configuration
         if (flags.FLOWISE_FILE_SIZE_LIMIT) process.env.FLOWISE_FILE_SIZE_LIMIT = flags.FLOWISE_FILE_SIZE_LIMIT
 
         // Credentials
@@ -148,14 +142,16 @@ export abstract class BaseCommand extends Command {
         if (flags.SECRETKEY_AWS_ACCESS_KEY) process.env.SECRETKEY_AWS_ACCESS_KEY = flags.SECRETKEY_AWS_ACCESS_KEY
         if (flags.SECRETKEY_AWS_SECRET_KEY) process.env.SECRETKEY_AWS_SECRET_KEY = flags.SECRETKEY_AWS_SECRET_KEY
         if (flags.SECRETKEY_AWS_REGION) process.env.SECRETKEY_AWS_REGION = flags.SECRETKEY_AWS_REGION
+        if (flags.SECRETKEY_AWS_NAME) process.env.SECRETKEY_AWS_NAME = flags.SECRETKEY_AWS_NAME
 
         // Logs
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
         if (flags.LOG_LEVEL) process.env.LOG_LEVEL = flags.LOG_LEVEL
 
-        // Tool functions
+        // Custom tool/function dependencies
         if (flags.TOOL_FUNCTION_BUILTIN_DEP) process.env.TOOL_FUNCTION_BUILTIN_DEP = flags.TOOL_FUNCTION_BUILTIN_DEP
         if (flags.TOOL_FUNCTION_EXTERNAL_DEP) process.env.TOOL_FUNCTION_EXTERNAL_DEP = flags.TOOL_FUNCTION_EXTERNAL_DEP
+        if (flags.ALLOW_BUILTIN_DEP) process.env.ALLOW_BUILTIN_DEP = flags.ALLOW_BUILTIN_DEP
 
         // Database config
         if (flags.DATABASE_TYPE) process.env.DATABASE_TYPE = flags.DATABASE_TYPE
@@ -210,5 +206,11 @@ export abstract class BaseCommand extends Command {
         if (flags.REMOVE_ON_COUNT) process.env.REMOVE_ON_COUNT = flags.REMOVE_ON_COUNT
         if (flags.REDIS_KEEP_ALIVE) process.env.REDIS_KEEP_ALIVE = flags.REDIS_KEEP_ALIVE
         if (flags.ENABLE_BULLMQ_DASHBOARD) process.env.ENABLE_BULLMQ_DASHBOARD = flags.ENABLE_BULLMQ_DASHBOARD
+
+        // Security
+        if (flags.CUSTOM_MCP_SECURITY_CHECK) process.env.CUSTOM_MCP_SECURITY_CHECK = flags.CUSTOM_MCP_SECURITY_CHECK
+        if (flags.CUSTOM_MCP_PROTOCOL) process.env.CUSTOM_MCP_PROTOCOL = flags.CUSTOM_MCP_PROTOCOL
+        if (flags.HTTP_DENY_LIST) process.env.HTTP_DENY_LIST = flags.HTTP_DENY_LIST
+        if (flags.TRUST_PROXY) process.env.TRUST_PROXY = flags.TRUST_PROXY
     }
 }

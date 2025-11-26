@@ -1,6 +1,5 @@
 {
     "description": "QnA chain using Ollama local LLM, LocalAI embedding model, and Faiss local vector store",
-    "badge": "POPULAR",
     "usecases": ["Documents QnA"],
     "framework": ["Langchain"],
     "nodes": [

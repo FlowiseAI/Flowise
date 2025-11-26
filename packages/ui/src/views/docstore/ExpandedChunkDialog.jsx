@@ -11,6 +11,7 @@ import { IconEdit, IconTrash, IconX, IconLanguage } from '@tabler/icons-react'
 
 // Project imports
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { PermissionButton, PermissionIconButton } from '@/ui-component/button/RBACButtons'
 
 const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDeleteChunk, isReadOnly }) => {
     const portalElement = document.getElementById('portal')
@@ -87,9 +88,16 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                             #{selectedChunkNumber}. {selectedChunk.id}
                         </Typography>
                         {!isEdit && !isReadOnly && (
-                            <IconButton onClick={() => setIsEdit(true)} size='small' color='primary' title='Edit Chunk' sx={{ ml: 2 }}>
+                            <PermissionIconButton
+                                permissionId={'documentStores:preview-process'}
+                                onClick={() => setIsEdit(true)}
+                                size='small'
+                                color='primary'
+                                title='Edit Chunk'
+                                sx={{ ml: 2 }}
+                            >
                                 <IconEdit />
-                            </IconButton>
+                            </PermissionIconButton>
                         )}
                         {isEdit && !isReadOnly && (
                             <Button onClick={() => onEditCancel()} color='primary' title='Cancel' sx={{ ml: 2 }}>
@@ -97,7 +105,8 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                             </Button>
                         )}
                         {isEdit && !isReadOnly && (
-                            <Button
+                            <PermissionButton
+                                permissionId={'documentStores:preview-process'}
                                 onClick={() => onEditSaved(true)}
                                 color='primary'
                                 title='Save'
@@ -105,10 +114,11 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 sx={{ ml: 2, mr: 1 }}
                             >
                                 Save
-                            </Button>
+                            </PermissionButton>
                         )}
                         {!isEdit && !isReadOnly && (
-                            <IconButton
+                            <PermissionIconButton
+                                permissionId={'documentStores:delete-loader'}
                                 onClick={() => onDeleteChunk(selectedChunk)}
                                 size='small'
                                 color='error'
@@ -116,7 +126,7 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 sx={{ ml: 1 }}
                             >
                                 <IconTrash />
-                            </IconButton>
+                            </PermissionIconButton>
                         )}
                         <IconButton onClick={onCancel} size='small' color='inherit' title='Close' sx={{ ml: 1 }}>
                             <IconX />

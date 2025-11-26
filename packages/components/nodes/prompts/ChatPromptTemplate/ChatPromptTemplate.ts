@@ -1,7 +1,6 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, transformBracesWithColon } from '../../../src/utils'
+import { getBaseClasses, transformBracesWithColon, getVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 import { ChatPromptTemplate, SystemMessagePromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
-import { getVM } from '../../sequentialagents/commonUtils'
 import { DataSource } from 'typeorm'
 const defaultFunc = `const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');
 
@@ -12,7 +11,7 @@ return [
         tool_calls: [
         {
             id: "12345",
-            name: "calulator",
+            name: "calculator",
             args: {
                 number1: 333382,
                 number2: 1932,
@@ -120,13 +119,28 @@ class ChatPromptTemplate_Prompts implements INode {
         ) {
             const appDataSource = options.appDataSource as DataSource
             const databaseEntities = options.databaseEntities as IDatabaseEntity
-            const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
+            const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
+            const flow = {
+                chatflowId: options.chatflowid,
+                sessionId: options.sessionId,
+                chatId: options.chatId
+            }
+
+            const sandbox = createCodeExecutionSandbox('', variables, flow)
+
             try {
-                const response = await vm.run(`module.exports = async function() {${messageHistoryCode}}()`, __dirname)
-                if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
+                const response = await executeJavaScriptCode(messageHistoryCode, sandbox, {
+                    libraries: ['axios', '@langchain/core']
+                })
+
+                const parsedResponse = JSON.parse(response)
+
+                if (!Array.isArray(parsedResponse)) {
+                    throw new Error('Returned message history must be an array')
+                }
                 prompt = ChatPromptTemplate.fromMessages([
                     SystemMessagePromptTemplate.fromTemplate(systemMessagePrompt),
-                    ...response,
+                    ...parsedResponse,
                     HumanMessagePromptTemplate.fromTemplate(humanMessagePrompt)
                 ])
             } catch (e) {

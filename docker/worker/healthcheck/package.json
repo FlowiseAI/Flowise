@@ -1,0 +1,13 @@
+{
+    "name": "flowise-worker-healthcheck",
+    "version": "1.0.0",
+    "description": "Simple healthcheck server for Flowise worker",
+    "main": "healthcheck.js",
+    "private": true,
+    "scripts": {
+        "start": "node healthcheck.js"
+    },
+    "dependencies": {
+        "express": "^4.19.2"
+    }
+}

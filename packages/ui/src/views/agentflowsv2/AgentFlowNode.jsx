@@ -20,7 +20,13 @@ import {
     IconCopy,
     IconTrash,
     IconInfoCircle,
-    IconLoader
+    IconLoader,
+    IconAlertCircleFilled,
+    IconCode,
+    IconWorldWww,
+    IconPhoto,
+    IconBrandGoogle,
+    IconBrowserCheck
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -51,11 +57,13 @@ const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
 const AgentFlowNode = ({ data }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const canvas = useSelector((state) => state.canvas)
     const ref = useRef(null)
     const updateNodeInternals = useUpdateNodeInternals()
     // eslint-disable-next-line
     const [position, setPosition] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
+    const [warningMessage, setWarningMessage] = useState('')
     const { deleteNode, duplicateNode } = useContext(flowContext)
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
@@ -123,6 +131,41 @@ const AgentFlowNode = ({ data }) => {
         return <foundIcon.icon size={24} color={'white'} />
     }
 
+    const getBuiltInOpenAIToolIcon = (toolName) => {
+        switch (toolName) {
+            case 'web_search_preview':
+                return <IconWorldWww size={14} color={'white'} />
+            case 'code_interpreter':
+                return <IconCode size={14} color={'white'} />
+            case 'image_generation':
+                return <IconPhoto size={14} color={'white'} />
+            default:
+                return null
+        }
+    }
+
+    const getBuiltInGeminiToolIcon = (toolName) => {
+        switch (toolName) {
+            case 'urlContext':
+                return <IconWorldWww size={14} color={'white'} />
+            case 'googleSearch':
+                return <IconBrandGoogle size={14} color={'white'} />
+            default:
+                return null
+        }
+    }
+
+    const getBuiltInAnthropicToolIcon = (toolName) => {
+        switch (toolName) {
+            case 'web_search_20250305':
+                return <IconWorldWww size={14} color={'white'} />
+            case 'web_fetch_20250910':
+                return <IconBrowserCheck size={14} color={'white'} />
+            default:
+                return null
+        }
+    }
+
     useEffect(() => {
         if (ref.current) {
             setTimeout(() => {
@@ -131,6 +174,30 @@ const AgentFlowNode = ({ data }) => {
             }, 10)
         }
     }, [data, ref, updateNodeInternals])
+
+    useEffect(() => {
+        const nodeOutdatedMessage = (oldVersion, newVersion) =>
+            `Node version ${oldVersion} outdated\nUpdate to latest version ${newVersion}`
+        const nodeVersionEmptyMessage = (newVersion) => `Node outdated\nUpdate to latest version ${newVersion}`
+
+        const componentNode = canvas.componentNodes.find((nd) => nd.name === data.name)
+        if (componentNode) {
+            if (!data.version) {
+                setWarningMessage(nodeVersionEmptyMessage(componentNode.version))
+            } else if (data.version && componentNode.version > data.version) {
+                setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version))
+            } else if (componentNode.badge === 'DEPRECATING') {
+                setWarningMessage(
+                    componentNode?.deprecateMessage ??
+                        'This node will be deprecated in the next release. Change to a new node tagged with NEW'
+                )
+            } else if (componentNode.warning) {
+                setWarningMessage(componentNode.warning)
+            } else {
+                setWarningMessage('')
+            }
+        }
+    }, [canvas.componentNodes, data.name, data.version])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
@@ -232,6 +299,24 @@ const AgentFlowNode = ({ data }) => {
                             ) : (
                                 <IconCheck />
                             )}
+                        </Avatar>
+                    </Tooltip>
+                )}
+
+                {warningMessage && (
+                    <Tooltip placement='right-start' title={<span style={{ whiteSpace: 'pre-line' }}>{warningMessage}</span>}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.smallAvatar,
+                                borderRadius: '50%',
+                                background: 'white',
+                                position: 'absolute',
+                                top: -10,
+                                left: -10
+                            }}
+                        >
+                            <IconAlertCircleFilled color='orange' />
                         </Avatar>
                     </Tooltip>
                 )}
@@ -358,10 +443,43 @@ const AgentFlowNode = ({ data }) => {
                                     { tools: data.inputs?.llmTools, toolProperty: 'llmSelectedTool' },
                                     { tools: data.inputs?.agentTools, toolProperty: 'agentSelectedTool' },
                                     {
-                                        tools: data.inputs?.selectedTool ? [{ selectedTool: data.inputs?.selectedTool }] : [],
-                                        toolProperty: 'selectedTool'
+                                        tools:
+                                            data.inputs?.selectedTool ?? data.inputs?.toolAgentflowSelectedTool
+                                                ? [{ selectedTool: data.inputs?.selectedTool ?? data.inputs?.toolAgentflowSelectedTool }]
+                                                : [],
+                                        toolProperty: ['selectedTool', 'toolAgentflowSelectedTool']
                                     },
-                                    { tools: data.inputs?.agentKnowledgeVSEmbeddings, toolProperty: ['vectorStore', 'embeddingModel'] }
+                                    { tools: data.inputs?.agentKnowledgeVSEmbeddings, toolProperty: ['vectorStore', 'embeddingModel'] },
+                                    {
+                                        tools: data.inputs?.agentToolsBuiltInOpenAI
+                                            ? (typeof data.inputs.agentToolsBuiltInOpenAI === 'string'
+                                                  ? JSON.parse(data.inputs.agentToolsBuiltInOpenAI)
+                                                  : data.inputs.agentToolsBuiltInOpenAI
+                                              ).map((tool) => ({ builtInTool: tool }))
+                                            : [],
+                                        toolProperty: 'builtInTool',
+                                        isBuiltInOpenAI: true
+                                    },
+                                    {
+                                        tools: data.inputs?.agentToolsBuiltInGemini
+                                            ? (typeof data.inputs.agentToolsBuiltInGemini === 'string'
+                                                  ? JSON.parse(data.inputs.agentToolsBuiltInGemini)
+                                                  : data.inputs.agentToolsBuiltInGemini
+                                              ).map((tool) => ({ builtInTool: tool }))
+                                            : [],
+                                        toolProperty: 'builtInTool',
+                                        isBuiltInGemini: true
+                                    },
+                                    {
+                                        tools: data.inputs?.agentToolsBuiltInAnthropic
+                                            ? (typeof data.inputs.agentToolsBuiltInAnthropic === 'string'
+                                                  ? JSON.parse(data.inputs.agentToolsBuiltInAnthropic)
+                                                  : data.inputs.agentToolsBuiltInAnthropic
+                                              ).map((tool) => ({ builtInTool: tool }))
+                                            : [],
+                                        toolProperty: 'builtInTool',
+                                        isBuiltInAnthropic: true
+                                    }
                                 ]
 
                                 // Filter out undefined tools and render each valid collection
@@ -378,49 +496,115 @@ const AgentFlowNode = ({ data }) => {
                                                             return (
                                                                 <Box
                                                                     key={`tool-${configIndex}-${toolIndex}-${propIndex}`}
+                                                                    component='img'
+                                                                    src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                                    alt={toolName}
                                                                     sx={{
-                                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                        width: 20,
+                                                                        height: 20,
                                                                         borderRadius: '50%',
-                                                                        width: 24,
-                                                                        height: 24,
-                                                                        display: 'flex',
-                                                                        justifyContent: 'center',
-                                                                        alignItems: 'center',
-                                                                        padding: '4px'
+                                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                        padding: 0.3
                                                                     }}
-                                                                >
-                                                                    <img
-                                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                                        src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                                        alt={toolName}
-                                                                    />
-                                                                </Box>
+                                                                />
                                                             )
                                                         })
                                                 } else {
                                                     const toolName = tool[config.toolProperty]
                                                     if (!toolName) return []
 
+                                                    // Handle built-in OpenAI tools with icons
+                                                    if (config.isBuiltInOpenAI) {
+                                                        const icon = getBuiltInOpenAIToolIcon(toolName)
+                                                        if (!icon) return []
+
+                                                        return [
+                                                            <Box
+                                                                key={`tool-${configIndex}-${toolIndex}`}
+                                                                sx={{
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: customization.isDarkMode
+                                                                        ? darken(data.color, 0.5)
+                                                                        : darken(data.color, 0.2),
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    padding: 0.2
+                                                                }}
+                                                            >
+                                                                {icon}
+                                                            </Box>
+                                                        ]
+                                                    }
+
+                                                    // Handle built-in Gemini tools with icons
+                                                    if (config.isBuiltInGemini) {
+                                                        const icon = getBuiltInGeminiToolIcon(toolName)
+                                                        if (!icon) return []
+
+                                                        return [
+                                                            <Box
+                                                                key={`tool-${configIndex}-${toolIndex}`}
+                                                                sx={{
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: customization.isDarkMode
+                                                                        ? darken(data.color, 0.5)
+                                                                        : darken(data.color, 0.2),
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    padding: 0.2
+                                                                }}
+                                                            >
+                                                                {icon}
+                                                            </Box>
+                                                        ]
+                                                    }
+
+                                                    // Handle built-in Anthropic tools with icons
+                                                    if (config.isBuiltInAnthropic) {
+                                                        const icon = getBuiltInAnthropicToolIcon(toolName)
+                                                        if (!icon) return []
+
+                                                        return [
+                                                            <Box
+                                                                key={`tool-${configIndex}-${toolIndex}`}
+                                                                sx={{
+                                                                    width: 20,
+                                                                    height: 20,
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: customization.isDarkMode
+                                                                        ? darken(data.color, 0.5)
+                                                                        : darken(data.color, 0.2),
+                                                                    display: 'flex',
+                                                                    justifyContent: 'center',
+                                                                    alignItems: 'center',
+                                                                    padding: 0.2
+                                                                }}
+                                                            >
+                                                                {icon}
+                                                            </Box>
+                                                        ]
+                                                    }
+
                                                     return [
                                                         <Box
                                                             key={`tool-${configIndex}-${toolIndex}`}
+                                                            component='img'
+                                                            src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                            alt={toolName}
                                                             sx={{
-                                                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                width: 20,
+                                                                height: 20,
                                                                 borderRadius: '50%',
-                                                                width: 24,
-                                                                height: 24,
-                                                                display: 'flex',
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                                padding: '4px'
+                                                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                padding: 0.3
                                                             }}
-                                                        >
-                                                            <img
-                                                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                                src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                                alt={toolName}
-                                                            />
-                                                        </Box>
+                                                        />
                                                     ]
                                                 }
                                             })}

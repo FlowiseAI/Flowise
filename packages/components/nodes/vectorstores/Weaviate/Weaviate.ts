@@ -4,7 +4,7 @@ import { WeaviateLibArgs, WeaviateStore } from '@langchain/weaviate'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRecursively, parseJsonBody } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 import { VectorStore } from '@langchain/core/vectorstores'
@@ -120,7 +120,8 @@ class Weaviate_VectorStores implements INode {
                 name: 'weaviateFilter',
                 type: 'json',
                 additionalParams: true,
-                optional: true
+                optional: true,
+                acceptVariable: true
             }
         ]
         addMMRInputParams(this.inputs)
@@ -175,7 +176,11 @@ class Weaviate_VectorStores implements INode {
             const finalDocs = []
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    finalDocs.push(new Document(flattenDocs[i]))
+                    const doc = { ...flattenDocs[i] }
+                    if (doc.metadata) {
+                        doc.metadata = normalizeKeysRecursively(doc.metadata)
+                    }
+                    finalDocs.push(new Document(doc))
                 }
             }
 
@@ -289,7 +294,7 @@ class Weaviate_VectorStores implements INode {
         if (weaviateTextKey) obj.textKey = weaviateTextKey
         if (weaviateMetadataKeys) obj.metadataKeys = JSON.parse(weaviateMetadataKeys.replace(/\s/g, ''))
         if (weaviateFilter) {
-            weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : JSON.parse(weaviateFilter)
+            weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : parseJsonBody(weaviateFilter)
         }
 
         const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore

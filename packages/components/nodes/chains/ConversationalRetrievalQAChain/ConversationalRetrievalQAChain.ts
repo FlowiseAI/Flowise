@@ -185,6 +185,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const shouldStreamResponse = options.shouldStreamResponse
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
         const chatId = options.chatId
+        const orgId = options.orgId
 
         let customResponsePrompt = responsePrompt
         // If the deprecated systemMessagePrompt is still exists
@@ -200,7 +201,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 memoryKey: 'chat_history',
                 appDataSource,
                 databaseEntities,
-                chatflowid
+                chatflowid,
+                orgId
             })
         }
 
@@ -220,7 +222,7 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
         const history = ((await memory.getChatMessages(this.sessionId, false, prependMessages)) as IMessage[]) ?? []
 
-        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
         const additionalCallback = await additionalCallbacks(nodeData, options)
 
         let callbacks = [loggerHandler, ...additionalCallback]
@@ -407,18 +409,21 @@ interface BufferMemoryExtendedInput {
     appDataSource: DataSource
     databaseEntities: IDatabaseEntity
     chatflowid: string
+    orgId: string
 }
 
 class BufferMemory extends FlowiseMemory implements MemoryMethods {
     appDataSource: DataSource
     databaseEntities: IDatabaseEntity
     chatflowid: string
+    orgId: string
 
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
         this.appDataSource = fields.appDataSource
         this.databaseEntities = fields.databaseEntities
         this.chatflowid = fields.chatflowid
+        this.orgId = fields.orgId
     }
 
     async getChatMessages(
@@ -443,7 +448,7 @@ class BufferMemory extends FlowiseMemory implements MemoryMethods {
         }
 
         if (returnBaseMessages) {
-            return await mapChatMessageToBaseMessage(chatMessage)
+            return await mapChatMessageToBaseMessage(chatMessage, this.orgId)
         }
 
         let returnIMessages: IMessage[] = []

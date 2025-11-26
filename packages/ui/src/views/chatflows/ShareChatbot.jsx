@@ -8,8 +8,9 @@ import { Card, Box, Typography, Button, Switch, OutlinedInput, Popover, Stack, I
 import { useTheme } from '@mui/material/styles'
 
 // Project import
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
+import { Available } from '@/ui-component/rbac/available'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // Icons
 import { IconX, IconCopy, IconArrowUpRightCircle } from '@tabler/icons-react'
@@ -444,20 +445,22 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                     <IconArrowUpRightCircle />
                 </IconButton>
                 <div style={{ flex: 1 }} />
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <Switch
-                        checked={isPublicChatflow}
-                        onChange={(event) => {
-                            setChatflowIsPublic(event.target.checked)
-                            onSwitchChange(event.target.checked)
-                        }}
-                    />
-                    <Typography>Make Public</Typography>
-                    <TooltipWithParser
-                        style={{ marginLeft: 10 }}
-                        title={'Making public will allow anyone to access the chatbot without username & password'}
-                    />
-                </div>
+                <Available permission={'chatflows:update,agentflows:update'}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Switch
+                            checked={isPublicChatflow}
+                            onChange={(event) => {
+                                setChatflowIsPublic(event.target.checked)
+                                onSwitchChange(event.target.checked)
+                            }}
+                        />
+                        <Typography>Make Public</Typography>
+                        <TooltipWithParser
+                            style={{ marginLeft: 10 }}
+                            title={'Making public will allow anyone to access the chatbot without authentication'}
+                        />
+                    </div>
+                </Available>
             </Stack>
 
             <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 3, mt: 2 }} variant='outlined'>
@@ -533,7 +536,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 {colorField(textInputSendButtonColor, 'textInputSendButtonColor', 'TextIntput Send Button Color')}
             </Card>
 
-            <StyledButton
+            <StyledPermissionButton
+                permissionId={'chatflows:update,agentflows:update'}
                 fullWidth
                 style={{
                     borderRadius: 20,
@@ -545,7 +549,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 onClick={() => onSave()}
             >
                 Save Changes
-            </StyledButton>
+            </StyledPermissionButton>
             <Popover
                 open={openColorPopOver}
                 anchorEl={colorAnchorEl}

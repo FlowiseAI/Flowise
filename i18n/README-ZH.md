@@ -31,12 +31,6 @@
     npx flowise start
     ```
 
-    使用用户名和密码
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
-
 3. 打开 [http://localhost:3000](http://localhost:3000)
 
 ## 🐳 Docker
@@ -127,15 +121,6 @@ Flowise 在一个单一的代码库中有 3 个不同的模块。
 
     任何代码更改都会自动重新加载应用程序，访问 [http://localhost:8080](http://localhost:8080)
 
-## 🔒 认证
-
-要启用应用程序级身份验证，在 `packages/server` 的 `.env` 文件中添加 `FLOWISE_USERNAME` 和 `FLOWISE_PASSWORD`：
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
-
 ## 🌱 环境变量
 
 Flowise 支持不同的环境变量来配置您的实例。您可以在 `packages/server` 文件夹中的 `.env` 文件中指定以下变量。了解更多信息，请阅读[文档](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
@@ -197,8 +182,8 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-参见[贡献指南](CONTRIBUTING.md)。如果您有任何问题或问题，请在[Discord](https://discord.gg/jbaHfsRVBW)上与我们联系。
+参见[贡献指南](CONTRIBUTING-ZH.md)。如果您有任何问题或问题，请在[Discord](https://discord.gg/jbaHfsRVBW)上与我们联系。
 
 ## 📄 许可证
 
-此代码库中的源代码在[Apache License Version 2.0 许可证](LICENSE.md)下提供。
+此代码库中的源代码在[Apache License Version 2.0 许可证](../LICENSE.md)下提供。
