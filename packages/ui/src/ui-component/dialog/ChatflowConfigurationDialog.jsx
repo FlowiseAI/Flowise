@@ -53,8 +53,7 @@ const CHATFLOW_CONFIGURATION_TABS = [
     },
     {
         label: 'Post Processing',
-        id: 'postProcessing',
-        hideInAgentFlow: true
+        id: 'postProcessing'
     }
 ]
 
