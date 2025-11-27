@@ -791,8 +791,8 @@ importers:
                 specifier: ^0.5.34
                 version: 0.5.45
             multer:
-                specifier: ^1.4.5-lts.1
-                version: 1.4.5-lts.1
+                specifier: ^2.0.2
+                version: 2.0.2
             multer-cloud-storage:
                 specifier: ^4.0.0
                 version: 4.0.0(encoding@0.1.13)
@@ -13829,6 +13829,10 @@ packages:
         resolution: { integrity: sha512-ywPWvcDMeH+z9gQq5qYHCCy+ethsk4goepZ45GLD63fOu0YcNecQxi64nDs3qluZB+murG3/D4dJ7+dGctcCQQ== }
         engines: { node: '>= 6.0.0' }
         deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
+
+    multer@2.0.2:
+        resolution: { integrity: sha512-u7f2xaZ/UG8oLXHvtF/oWTRvT44p9ecwBBqTwgJVq0+4BW1g8OW01TyMEGWBHbyMOYVHXslaut7qEQ1meATXgw== }
+        engines: { node: '>= 10.16.0' }
 
     multicast-dns@7.2.5:
         resolution: { integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg== }
@@ -36150,6 +36154,16 @@ snapshots:
             append-field: 1.0.0
             busboy: 1.6.0
             concat-stream: 1.6.2
+            mkdirp: 0.5.6
+            object-assign: 4.1.1
+            type-is: 1.6.18
+            xtend: 4.0.2
+
+    multer@2.0.2:
+        dependencies:
+            append-field: 1.0.0
+            busboy: 1.6.0
+            concat-stream: 2.0.0
             mkdirp: 0.5.6
             object-assign: 4.1.1
             type-is: 1.6.18
