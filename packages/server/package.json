@@ -124,7 +124,7 @@
         "multer-s3": "^3.0.1",
         "mysql2": "^3.11.3",
         "nanoid": "3",
-        "nodemailer": "^6.9.14",
+        "nodemailer": "^7.0.7",
         "openai": "^4.96.0",
         "passport": "^0.7.0",
         "passport-auth0": "^1.4.4",
