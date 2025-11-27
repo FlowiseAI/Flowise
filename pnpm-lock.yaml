@@ -78,7 +78,7 @@ importers:
                 specifier: ^8.0.1
                 version: 8.0.3
             kill-port:
-                specifier: ^2.0.1
+                specifier: 2.0.1
                 version: 2.0.1
             lint-staged:
                 specifier: ^13.0.3
