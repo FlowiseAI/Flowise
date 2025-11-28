@@ -22,21 +22,16 @@ import zodToJsonSchema from 'zod-to-json-schema'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import {
+    addImageArtifactsToMessages,
+    extractArtifactsFromResponse,
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
     replaceBase64ImagesWithFileReferences,
+    replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import {
-    convertMultiOptionsToStringArray,
-    getCredentialData,
-    getCredentialParam,
-    processTemplateVariables,
-    configureStructuredOutput
-} from '../../../src/utils'
-import { addSingleFileToStorage } from '../../../src/storageUtils'
-import fetch from 'node-fetch'
+import { convertMultiOptionsToStringArray, processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
 
 interface ITool {
     agentSelectedTool: string
@@ -87,7 +82,7 @@ class Agent_Agentflow implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'agentAgentflow'
-        this.version = 2.2
+        this.version = 3.0
         this.type = 'Agent'
         this.category = 'Agent Flows'
         this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
@@ -1072,12 +1067,6 @@ class Agent_Agentflow implements INode {
                 llmIds = await analyticHandlers.onLLMStart(llmLabel, messages, options.parentTraceIds)
             }
 
-            // Track execution time
-            const startTime = Date.now()
-
-            // Get initial response from LLM
-            const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
-
             // Handle tool calls with support for recursion
             let usedTools: IUsedTool[] = []
             let sourceDocuments: Array<any> = []
@@ -1090,11 +1079,23 @@ class Agent_Agentflow implements INode {
             const messagesBeforeToolCalls = [...messages]
             let _toolCallMessages: BaseMessageLike[] = []
 
+            /**
+             * Add image artifacts from previous assistant responses as user messages
+             * Images are converted from FILE-STORAGE::<image_path> to base 64 image_url format
+             */
+            await addImageArtifactsToMessages(messages, options)
+
             // Check if this is hummanInput for tool calls
             const _humanInput = nodeData.inputs?.humanInput
             const humanInput: IHumanInput = typeof _humanInput === 'string' ? JSON.parse(_humanInput) : _humanInput
             const humanInputAction = options.humanInputAction
             const iterationContext = options.iterationContext
+
+            // Track execution time
+            const startTime = Date.now()
+
+            // Get initial response from LLM
+            const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
             if (humanInput) {
                 if (humanInput.type !== 'proceed' && humanInput.type !== 'reject') {
@@ -1234,9 +1235,15 @@ class Agent_Agentflow implements INode {
             // Prepare final response and output object
             let finalResponse = ''
             if (response.content && Array.isArray(response.content)) {
-                finalResponse = response.content.map((item: any) => item.text).join('\n')
+                finalResponse = response.content
+                    .filter((item: any) => item.text)
+                    .map((item: any) => item.text)
+                    .join('\n')
             } else if (response.content && typeof response.content === 'string') {
                 finalResponse = response.content
+            } else if (response.content === '') {
+                // Empty response content, this could happen when there is only image data
+                finalResponse = ''
             } else {
                 finalResponse = JSON.stringify(response, null, 2)
             }
@@ -1252,10 +1259,13 @@ class Agent_Agentflow implements INode {
                 }
             }
 
-            // Extract artifacts from annotations in response metadata
+            // Extract artifacts from annotations in response metadata and replace inline data
             if (response.response_metadata) {
-                const { artifacts: extractedArtifacts, fileAnnotations: extractedFileAnnotations } =
-                    await this.extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
+                const {
+                    artifacts: extractedArtifacts,
+                    fileAnnotations: extractedFileAnnotations,
+                    savedInlineImages
+                } = await extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
                 if (extractedArtifacts.length > 0) {
                     artifacts = [...artifacts, ...extractedArtifacts]
 
@@ -1272,6 +1282,11 @@ class Agent_Agentflow implements INode {
                     if (isLastNode && sseStreamer) {
                         sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
                     }
+                }
+
+                // Replace inlineData base64 with file references in the response
+                if (savedInlineImages && savedInlineImages.length > 0) {
+                    replaceInlineDataWithFileReferences(response, savedInlineImages)
                 }
             }
 
@@ -1331,9 +1346,15 @@ class Agent_Agentflow implements INode {
             // Process template variables in state
             newState = processTemplateVariables(newState, finalResponse)
 
+            /**
+             * Remove the temporarily added image artifact messages before storing
+             * This is to avoid storing the actual base64 data into database
+             */
+            const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
+
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messages,
+                messagesToStore,
                 runtimeImageMessagesWithFileRef,
                 pastImageMessagesWithFileRef
             )
@@ -1498,44 +1519,6 @@ class Agent_Agentflow implements INode {
         }
 
         return builtInUsedTools
-    }
-
-    /**
-     * Saves base64 image data to storage and returns file information
-     */
-    private async saveBase64Image(
-        outputItem: any,
-        options: ICommonObject
-    ): Promise<{ filePath: string; fileName: string; totalSize: number } | null> {
-        try {
-            if (!outputItem.result) {
-                return null
-            }
-
-            // Extract base64 data and create buffer
-            const base64Data = outputItem.result
-            const imageBuffer = Buffer.from(base64Data, 'base64')
-
-            // Determine file extension and MIME type
-            const outputFormat = outputItem.output_format || 'png'
-            const fileName = `generated_image_${outputItem.id || Date.now()}.${outputFormat}`
-            const mimeType = outputFormat === 'png' ? 'image/png' : 'image/jpeg'
-
-            // Save the image using the existing storage utility
-            const { path, totalSize } = await addSingleFileToStorage(
-                mimeType,
-                imageBuffer,
-                fileName,
-                options.orgId,
-                options.chatflowid,
-                options.chatId
-            )
-
-            return { filePath: path, fileName, totalSize }
-        } catch (error) {
-            console.error('Error saving base64 image:', error)
-            return null
-        }
     }
 
     /**
@@ -2482,190 +2465,6 @@ class Agent_Agentflow implements INode {
         }
 
         return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput }
-    }
-
-    /**
-     * Extracts artifacts from response metadata (both annotations and built-in tools)
-     */
-    private async extractArtifactsFromResponse(
-        responseMetadata: any,
-        modelNodeData: INodeData,
-        options: ICommonObject
-    ): Promise<{ artifacts: any[]; fileAnnotations: any[] }> {
-        const artifacts: any[] = []
-        const fileAnnotations: any[] = []
-
-        if (!responseMetadata?.output || !Array.isArray(responseMetadata.output)) {
-            return { artifacts, fileAnnotations }
-        }
-
-        for (const outputItem of responseMetadata.output) {
-            // Handle container file citations from annotations
-            if (outputItem.type === 'message' && outputItem.content && Array.isArray(outputItem.content)) {
-                for (const contentItem of outputItem.content) {
-                    if (contentItem.annotations && Array.isArray(contentItem.annotations)) {
-                        for (const annotation of contentItem.annotations) {
-                            if (annotation.type === 'container_file_citation' && annotation.file_id && annotation.filename) {
-                                try {
-                                    // Download and store the file content
-                                    const downloadResult = await this.downloadContainerFile(
-                                        annotation.container_id,
-                                        annotation.file_id,
-                                        annotation.filename,
-                                        modelNodeData,
-                                        options
-                                    )
-
-                                    if (downloadResult) {
-                                        const fileType = this.getArtifactTypeFromFilename(annotation.filename)
-
-                                        if (fileType === 'png' || fileType === 'jpeg' || fileType === 'jpg') {
-                                            const artifact = {
-                                                type: fileType,
-                                                data: downloadResult.filePath
-                                            }
-
-                                            artifacts.push(artifact)
-                                        } else {
-                                            fileAnnotations.push({
-                                                filePath: downloadResult.filePath,
-                                                fileName: annotation.filename
-                                            })
-                                        }
-                                    }
-                                } catch (error) {
-                                    console.error('Error processing annotation:', error)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Handle built-in tool artifacts (like image generation)
-            if (outputItem.type === 'image_generation_call' && outputItem.result) {
-                try {
-                    const savedImageResult = await this.saveBase64Image(outputItem, options)
-                    if (savedImageResult) {
-                        // Replace the base64 result with the file path in the response metadata
-                        outputItem.result = savedImageResult.filePath
-
-                        // Create artifact in the same format as other image artifacts
-                        const fileType = this.getArtifactTypeFromFilename(savedImageResult.fileName)
-                        artifacts.push({
-                            type: fileType,
-                            data: savedImageResult.filePath
-                        })
-                    }
-                } catch (error) {
-                    console.error('Error processing image generation artifact:', error)
-                }
-            }
-        }
-
-        return { artifacts, fileAnnotations }
-    }
-
-    /**
-     * Downloads file content from container file citation
-     */
-    private async downloadContainerFile(
-        containerId: string,
-        fileId: string,
-        filename: string,
-        modelNodeData: INodeData,
-        options: ICommonObject
-    ): Promise<{ filePath: string; totalSize: number } | null> {
-        try {
-            const credentialData = await getCredentialData(modelNodeData.credential ?? '', options)
-            const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, modelNodeData)
-
-            if (!openAIApiKey) {
-                console.warn('No OpenAI API key available for downloading container file')
-                return null
-            }
-
-            // Download the file using OpenAI Container API
-            const response = await fetch(`https://api.openai.com/v1/containers/${containerId}/files/${fileId}/content`, {
-                method: 'GET',
-                headers: {
-                    Accept: '*/*',
-                    Authorization: `Bearer ${openAIApiKey}`
-                }
-            })
-
-            if (!response.ok) {
-                console.warn(
-                    `Failed to download container file ${fileId} from container ${containerId}: ${response.status} ${response.statusText}`
-                )
-                return null
-            }
-
-            // Extract the binary data from the Response object
-            const data = await response.arrayBuffer()
-            const dataBuffer = Buffer.from(data)
-            const mimeType = this.getMimeTypeFromFilename(filename)
-
-            // Store the file using the same storage utility as OpenAIAssistant
-            const { path, totalSize } = await addSingleFileToStorage(
-                mimeType,
-                dataBuffer,
-                filename,
-                options.orgId,
-                options.chatflowid,
-                options.chatId
-            )
-
-            return { filePath: path, totalSize }
-        } catch (error) {
-            console.error('Error downloading container file:', error)
-            return null
-        }
-    }
-
-    /**
-     * Gets MIME type from filename extension
-     */
-    private getMimeTypeFromFilename(filename: string): string {
-        const extension = filename.toLowerCase().split('.').pop()
-        const mimeTypes: { [key: string]: string } = {
-            png: 'image/png',
-            jpg: 'image/jpeg',
-            jpeg: 'image/jpeg',
-            gif: 'image/gif',
-            pdf: 'application/pdf',
-            txt: 'text/plain',
-            csv: 'text/csv',
-            json: 'application/json',
-            html: 'text/html',
-            xml: 'application/xml'
-        }
-        return mimeTypes[extension || ''] || 'application/octet-stream'
-    }
-
-    /**
-     * Gets artifact type from filename extension for UI rendering
-     */
-    private getArtifactTypeFromFilename(filename: string): string {
-        const extension = filename.toLowerCase().split('.').pop()
-        const artifactTypes: { [key: string]: string } = {
-            png: 'png',
-            jpg: 'jpeg',
-            jpeg: 'jpeg',
-            html: 'html',
-            htm: 'html',
-            md: 'markdown',
-            markdown: 'markdown',
-            json: 'json',
-            js: 'javascript',
-            javascript: 'javascript',
-            tex: 'latex',
-            latex: 'latex',
-            txt: 'text',
-            csv: 'text',
-            pdf: 'text'
-        }
-        return artifactTypes[extension || ''] || 'text'
     }
 
     /**
