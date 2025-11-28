@@ -82,7 +82,7 @@ class Agent_Agentflow implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'agentAgentflow'
-        this.version = 3.0
+        this.version = 3.1
         this.type = 'Agent'
         this.category = 'Agent Flows'
         this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
@@ -509,8 +509,7 @@ class Agent_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',

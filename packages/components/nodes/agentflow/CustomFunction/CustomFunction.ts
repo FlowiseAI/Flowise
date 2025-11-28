@@ -60,7 +60,7 @@ class CustomFunction_Agentflow implements INode {
     constructor() {
         this.label = 'Custom Function'
         this.name = 'customFunctionAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'CustomFunction'
         this.category = 'Agent Flows'
         this.description = 'Execute custom function'
@@ -107,8 +107,7 @@ class CustomFunction_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
