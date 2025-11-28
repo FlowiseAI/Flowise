@@ -82,7 +82,7 @@ class Agent_Agentflow implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'agentAgentflow'
-        this.version = 3.1
+        this.version = 3.2
         this.type = 'Agent'
         this.category = 'Agent Flows'
         this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
@@ -177,6 +177,11 @@ class Agent_Agentflow implements INode {
                         label: 'Google Search',
                         name: 'googleSearch',
                         description: 'Search real-time web content'
+                    },
+                    {
+                        label: 'Code Execution',
+                        name: 'codeExecution',
+                        description: 'Write and run Python code in a sandboxed environment'
                     }
                 ],
                 show: {
@@ -1205,7 +1210,15 @@ class Agent_Agentflow implements INode {
                 // Skip this if structured output is enabled - it will be streamed after conversion
                 let finalResponse = ''
                 if (response.content && Array.isArray(response.content)) {
-                    finalResponse = response.content.map((item: any) => item.text).join('\n')
+                    finalResponse = response.content
+                        .map((item: any) => {
+                            if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                                return item.text
+                            }
+                            return ''
+                        })
+                        .filter((text: string) => text)
+                        .join('\n')
                 } else if (response.content && typeof response.content === 'string') {
                     finalResponse = response.content
                 } else {
@@ -1234,10 +1247,48 @@ class Agent_Agentflow implements INode {
             // Prepare final response and output object
             let finalResponse = ''
             if (response.content && Array.isArray(response.content)) {
-                finalResponse = response.content
-                    .filter((item: any) => item.text)
-                    .map((item: any) => item.text)
-                    .join('\n')
+                // Process items and concatenate consecutive text items
+                const processedParts: string[] = []
+                let currentTextBuffer = ''
+
+                for (const item of response.content) {
+                    const itemAny = item as any
+                    const isTextItem = (itemAny.text && !itemAny.type) || (itemAny.type === 'text' && itemAny.text)
+
+                    if (isTextItem) {
+                        // Accumulate consecutive text items
+                        currentTextBuffer += itemAny.text
+                    } else {
+                        // Flush accumulated text before processing other types
+                        if (currentTextBuffer) {
+                            processedParts.push(currentTextBuffer)
+                            currentTextBuffer = ''
+                        }
+
+                        // Process non-text items
+                        if (itemAny.type === 'executableCode' && itemAny.executableCode) {
+                            // Format executable code as a code block
+                            const language = itemAny.executableCode.language?.toLowerCase() || 'python'
+                            processedParts.push(`\n\`\`\`${language}\n${itemAny.executableCode.code}\n\`\`\`\n`)
+                        } else if (itemAny.type === 'codeExecutionResult' && itemAny.codeExecutionResult) {
+                            // Format code execution result
+                            const outcome = itemAny.codeExecutionResult.outcome || 'OUTCOME_OK'
+                            const output = itemAny.codeExecutionResult.output || ''
+                            if (outcome === 'OUTCOME_OK' && output) {
+                                processedParts.push(`**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`)
+                            } else if (outcome !== 'OUTCOME_OK') {
+                                processedParts.push(`**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`)
+                            }
+                        }
+                    }
+                }
+
+                // Flush any remaining text
+                if (currentTextBuffer) {
+                    processedParts.push(currentTextBuffer)
+                }
+
+                finalResponse = processedParts.filter((text) => text).join('\n')
             } else if (response.content && typeof response.content === 'string') {
                 finalResponse = response.content
             } else if (response.content === '') {
@@ -1492,7 +1543,12 @@ class Agent_Agentflow implements INode {
         // Handle Gemini googleSearch tool
         if (groundingMetadata && groundingMetadata.webSearchQueries && Array.isArray(groundingMetadata.webSearchQueries)) {
             // Check for duplicates
-            if (!builtInUsedTools.find((tool) => tool.tool === 'googleSearch')) {
+            const isDuplicate = builtInUsedTools.find(
+                (tool) =>
+                    tool.tool === 'googleSearch' &&
+                    JSON.stringify((tool.toolInput as any)?.queries) === JSON.stringify(groundingMetadata.webSearchQueries)
+            )
+            if (!isDuplicate) {
                 builtInUsedTools.push({
                     tool: 'googleSearch',
                     toolInput: {
@@ -1506,7 +1562,12 @@ class Agent_Agentflow implements INode {
         // Handle Gemini urlContext tool
         if (urlContextMetadata && urlContextMetadata.urlMetadata && Array.isArray(urlContextMetadata.urlMetadata)) {
             // Check for duplicates
-            if (!builtInUsedTools.find((tool) => tool.tool === 'urlContext')) {
+            const isDuplicate = builtInUsedTools.find(
+                (tool) =>
+                    tool.tool === 'urlContext' &&
+                    JSON.stringify((tool.toolInput as any)?.urlMetadata) === JSON.stringify(urlContextMetadata.urlMetadata)
+            )
+            if (!isDuplicate) {
                 builtInUsedTools.push({
                     tool: 'urlContext',
                     toolInput: {
@@ -1514,6 +1575,52 @@ class Agent_Agentflow implements INode {
                     },
                     toolOutput: `Processed ${urlContextMetadata.urlMetadata.length} URL(s)`
                 })
+            }
+        }
+
+        // Handle Gemini codeExecution tool
+        if (response.content && Array.isArray(response.content)) {
+            for (let i = 0; i < response.content.length; i++) {
+                const item = response.content[i]
+
+                if (item.type === 'executableCode' && item.executableCode) {
+                    const language = item.executableCode.language || 'PYTHON'
+                    const code = item.executableCode.code || ''
+                    let toolOutput = ''
+
+                    // Check for duplicates
+                    const isDuplicate = builtInUsedTools.find(
+                        (tool) =>
+                            tool.tool === 'codeExecution' &&
+                            (tool.toolInput as any)?.language === language &&
+                            (tool.toolInput as any)?.code === code
+                    )
+                    if (isDuplicate) {
+                        continue
+                    }
+
+                    // Check the next item for the output
+                    const nextItem = i + 1 < response.content.length ? response.content[i + 1] : null
+
+                    if (nextItem) {
+                        if (nextItem.type === 'codeExecutionResult' && nextItem.codeExecutionResult) {
+                            const outcome = nextItem.codeExecutionResult.outcome
+                            const output = nextItem.codeExecutionResult.output || ''
+                            toolOutput = outcome === 'OUTCOME_OK' ? output : `Error: ${output}`
+                        } else if (nextItem.type === 'inlineData') {
+                            toolOutput = 'Generated image data'
+                        }
+                    }
+
+                    builtInUsedTools.push({
+                        tool: 'codeExecution',
+                        toolInput: {
+                            language,
+                            code
+                        },
+                        toolOutput
+                    })
+                }
             }
         }
 
@@ -1695,8 +1802,26 @@ class Agent_Agentflow implements INode {
                     if (typeof chunk === 'string') {
                         content = chunk
                     } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
-                        const contents = chunk.content as MessageContentText[]
-                        content = contents.map((item) => item.text).join('')
+                        content = chunk.content
+                            .map((item: any) => {
+                                if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                                    return item.text
+                                } else if (item.type === 'executableCode' && item.executableCode) {
+                                    const language = item.executableCode.language?.toLowerCase() || 'python'
+                                    return `\n\`\`\`${language}\n${item.executableCode.code}\n\`\`\`\n`
+                                } else if (item.type === 'codeExecutionResult' && item.codeExecutionResult) {
+                                    const outcome = item.codeExecutionResult.outcome || 'OUTCOME_OK'
+                                    const output = item.codeExecutionResult.output || ''
+                                    if (outcome === 'OUTCOME_OK' && output) {
+                                        return `**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`
+                                    } else if (outcome !== 'OUTCOME_OK') {
+                                        return `**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`
+                                    }
+                                }
+                                return ''
+                            })
+                            .filter((text: string) => text)
+                            .join('')
                     } else if (chunk.content) {
                         content = chunk.content.toString()
                     }
@@ -1710,9 +1835,16 @@ class Agent_Agentflow implements INode {
             console.error('Error during streaming:', error)
             throw error
         }
+
+        // Only convert to string if all content items are text (no inlineData or other special types)
         if (Array.isArray(response.content) && response.content.length > 0) {
-            const responseContents = response.content as MessageContentText[]
-            response.content = responseContents.map((item) => item.text).join('')
+            const hasNonTextContent = response.content.some(
+                (item: any) => item.type === 'inlineData' || item.type === 'executableCode' || item.type === 'codeExecutionResult'
+            )
+            if (!hasNonTextContent) {
+                const responseContents = response.content as MessageContentText[]
+                response.content = responseContents.map((item) => item.text).join('')
+            }
         }
         return response
     }
