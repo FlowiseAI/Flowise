@@ -29,6 +29,7 @@ export abstract class BaseCommand extends Command {
         DATABASE_PORT: Flags.string(),
         DATABASE_HOST: Flags.string(),
         DATABASE_NAME: Flags.string(),
+        DATABASE_SCHEMA: Flags.string(),
         DATABASE_USER: Flags.string(),
         DATABASE_PASSWORD: Flags.string(),
         DATABASE_SSL: Flags.string(),
@@ -159,6 +160,7 @@ export abstract class BaseCommand extends Command {
         if (flags.DATABASE_PORT) process.env.DATABASE_PORT = flags.DATABASE_PORT
         if (flags.DATABASE_HOST) process.env.DATABASE_HOST = flags.DATABASE_HOST
         if (flags.DATABASE_NAME) process.env.DATABASE_NAME = flags.DATABASE_NAME
+        if (flags.DATABASE_SCHEMA) process.env.DATABASE_SCHEMA = flags.DATABASE_SCHEMA
         if (flags.DATABASE_USER) process.env.DATABASE_USER = flags.DATABASE_USER
         if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
         if (flags.DATABASE_SSL) process.env.DATABASE_SSL = flags.DATABASE_SSL

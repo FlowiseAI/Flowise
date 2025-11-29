@@ -75,12 +75,13 @@ export const initializeDBClientAndStore: any = () => {
                 user: process.env.DATABASE_USER,
                 password: process.env.DATABASE_PASSWORD,
                 database: process.env.DATABASE_NAME,
+                schema: process.env.DATABASE_SCHEMA,
                 ssl: getDatabaseSSLFromEnv()
             })
             dbStore = new pgSession({
                 pool: pgPool, // Connection pool
                 tableName: 'login_sessions',
-                schemaName: 'public',
+                schemaName: process.env.DATABASE_SCHEMA || 'public',
                 createTableIfMissing: true
             })
             return dbStore
