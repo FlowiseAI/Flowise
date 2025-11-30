@@ -100,43 +100,6 @@ class Chroma_VectorStores implements INode {
         ]
     }
 
-    private _buildChromaConfig(
-        collectionName: string,
-        chromaURL: string | undefined,
-        chromaApiKey: string | undefined,
-        chromaTenant: string | undefined,
-        chromaDatabase: string | undefined
-    ): ICommonObject {
-        const obj: {
-            collectionName: string
-            url?: string
-            chromaCloudAPIKey?: string
-            clientParams?: {
-                host?: string
-                port?: number
-                ssl?: boolean
-                tenant?: string
-                database?: string
-            }
-        } = { collectionName }
-
-        if (chromaURL) obj.url = chromaURL
-        if (chromaApiKey) obj.chromaCloudAPIKey = chromaApiKey
-
-        if (chromaTenant || chromaDatabase) {
-            obj.clientParams = {}
-            if (chromaTenant) obj.clientParams.tenant = chromaTenant
-            if (chromaDatabase) obj.clientParams.database = chromaDatabase
-            if (chromaApiKey) {
-                obj.clientParams.host = 'api.trychroma.com'
-                obj.clientParams.port = 8000
-                obj.clientParams.ssl = true
-            }
-        }
-
-        return obj
-    }
-
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
@@ -159,7 +122,7 @@ class Chroma_VectorStores implements INode {
                 }
             }
 
-            const obj = this._buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
+            const obj = _buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
 
             try {
                 if (recordManager) {
@@ -195,7 +158,7 @@ class Chroma_VectorStores implements INode {
             const chromaTenant = getCredentialParam('chromaTenant', credentialData, nodeData)
             const chromaDatabase = getCredentialParam('chromaDatabase', credentialData, nodeData)
 
-            const obj = this._buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
+            const obj = _buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
 
             try {
                 if (recordManager) {
@@ -236,7 +199,7 @@ class Chroma_VectorStores implements INode {
         const chromaDatabase = getCredentialParam('chromaDatabase', credentialData, nodeData)
         const chromaMetadataFilter = nodeData.inputs?.chromaMetadataFilter
 
-        const obj: ICommonObject = this._buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
+        const obj: ICommonObject = _buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
 
         if (chromaMetadataFilter) {
             const metadatafilter = typeof chromaMetadataFilter === 'object' ? chromaMetadataFilter : parseJsonBody(chromaMetadataFilter)
@@ -257,6 +220,43 @@ class Chroma_VectorStores implements INode {
         }
         return vectorStore
     }
+}
+
+const _buildChromaConfig = (
+    collectionName: string,
+    chromaURL: string | undefined,
+    chromaApiKey: string | undefined,
+    chromaTenant: string | undefined,
+    chromaDatabase: string | undefined
+): ICommonObject => {
+    const obj: {
+        collectionName: string
+        url?: string
+        chromaCloudAPIKey?: string
+        clientParams?: {
+            host?: string
+            port?: number
+            ssl?: boolean
+            tenant?: string
+            database?: string
+        }
+    } = { collectionName }
+
+    if (chromaURL) obj.url = chromaURL
+    if (chromaApiKey) obj.chromaCloudAPIKey = chromaApiKey
+
+    if (chromaTenant || chromaDatabase) {
+        obj.clientParams = {}
+        if (chromaTenant) obj.clientParams.tenant = chromaTenant
+        if (chromaDatabase) obj.clientParams.database = chromaDatabase
+        if (chromaApiKey) {
+            obj.clientParams.host = 'api.trychroma.com'
+            obj.clientParams.port = 8000
+            obj.clientParams.ssl = true
+        }
+    }
+
+    return obj
 }
 
 module.exports = { nodeClass: Chroma_VectorStores }
