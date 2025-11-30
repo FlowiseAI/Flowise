@@ -186,7 +186,11 @@ class Chroma_VectorStores implements INode {
                     const vectorStoreName = collectionName
                     await recordManager.createSchema()
                     ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
-                    const keys: string[] = await recordManager.listKeys({})
+                    const filterKeys: ICommonObject = {}
+                    if (options.docId) {
+                        filterKeys.docId = options.docId
+                    }
+                    const keys: string[] = await recordManager.listKeys(filterKeys)
 
                     const chromaStore = new ChromaExtended(embeddings, obj)
 
