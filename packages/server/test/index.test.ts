@@ -3,6 +3,7 @@ import { getRunningExpressApp } from '../src/utils/getRunningExpressApp'
 import { organizationUserRouteTest } from './routes/v1/organization-user.route.test'
 import { userRouteTest } from './routes/v1/user.route.test'
 import { apiKeyTest } from './utils/api-key.util.test'
+import { exportImportServiceTest } from './services/export-import.service.test'
 
 // ⏱️ Extend test timeout to 6 minutes for long setups (increase as tests grow)
 jest.setTimeout(360000)
@@ -25,4 +26,8 @@ describe('Routes Test', () => {
 
 describe('Utils Test', () => {
     apiKeyTest()
+})
+
+describe('Services Test', () => {
+    exportImportServiceTest()
 })
