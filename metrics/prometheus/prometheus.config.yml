@@ -7,3 +7,7 @@ scrape_configs:
 
     metrics_path: /api/v1/metrics/
     scheme: http
+    
+    authorization:
+      type: Bearer
+      credentials: 'your-api-key-here'
