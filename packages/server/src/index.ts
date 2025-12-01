@@ -3,6 +3,7 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import cookieParser from 'cookie-parser'
+import basicAuth from 'express-basic-auth'
 import { DataSource, IsNull } from 'typeorm'
 import { MODE, Platform } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
@@ -35,6 +36,8 @@ import { Organization } from './enterprise/database/entities/organization.entity
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
+import { InternalFlowiseError } from './errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
 
 declare global {
     namespace Express {
@@ -331,7 +334,17 @@ export class App {
         })
 
         if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && !this.identityManager.isCloud()) {
-            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+            if (!process.env.BULLMQ_DASHBOARD_PASS) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    'BULLMQ_DASHBOARD_PASS is required when enabling the BullMQ dashboard. Set it in your env file.'
+                )
+            }
+            const auth = basicAuth({
+                challenge: true,
+                users: { admin: process.env.BULLMQ_DASHBOARD_PASS as string }
+            })
+            this.app.use('/admin/queues', auth, this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
