@@ -113,6 +113,14 @@ class ChatOpenAICustom_ChatModels implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Disable Authorization Header',
+                name: 'disableAuth',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -132,6 +140,7 @@ class ChatOpenAICustom_ChatModels implements INode {
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+        const disableAuth = (nodeData.inputs?.disableAuth as boolean) ?? !openAIApiKey
 
         const obj: ChatOpenAIFields = {
             temperature: parseFloat(temperature),
@@ -158,11 +167,37 @@ class ChatOpenAICustom_ChatModels implements INode {
             }
         }
 
-        if (basePath || parsedBaseOptions) {
-            obj.configuration = {
-                baseURL: basePath,
-                defaultHeaders: parsedBaseOptions
+        const configuration: any = {}
+
+        if (basePath) configuration.baseURL = basePath
+
+        if (parsedBaseOptions) {
+            const { headers: nestedHeaders, ...rest } = parsedBaseOptions
+
+            if (nestedHeaders && typeof nestedHeaders === 'object' && !Array.isArray(nestedHeaders)) {
+                configuration.defaultHeaders = { ...nestedHeaders }
+            } else {
+                configuration.defaultHeaders = parsedBaseOptions
             }
+
+            Object.assign(configuration, rest)
+        }
+
+        if (disableAuth) {
+            const stripAuthFetch = async (input: any, init: any = {}) => {
+                const headers = new Headers(init?.headers || {})
+                headers.delete('authorization')
+                headers.delete('Authorization')
+                return fetch(input, { ...init, headers })
+            }
+            configuration.apiKey = openAIApiKey ?? ''
+            configuration.fetch = stripAuthFetch
+            obj.apiKey = openAIApiKey ?? ''
+            obj.openAIApiKey = openAIApiKey ?? ''
+        }
+
+        if (Object.keys(configuration).length) {
+            obj.configuration = configuration
         }
 
         const model = new ChatOpenAI(obj)
