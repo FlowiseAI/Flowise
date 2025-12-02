@@ -821,8 +821,7 @@ async function processNodeOutputs({
     if (ignoreNodeIds.length) {
         logger.debug(`  ⏭️  Skipping nodes: [${ignoreNodeIds.join(', ')}]`)
 
-        // Propagar la señal de "salto" a los nodos que dependen de los nodos ignorados
-        // para evitar que se queden esperando indefinidamente.
+        // Propagate a skip signal on downstream nodes
         const nodesToIgnoreQueue = [...ignoreNodeIds]
         const processedIgnoredNodes = new Set<string>()
 
