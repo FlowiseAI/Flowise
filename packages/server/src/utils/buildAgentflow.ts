@@ -820,6 +820,60 @@ async function processNodeOutputs({
     const ignoreNodeIds = await determineNodesToIgnore(currentNode, result, edges, nodeId)
     if (ignoreNodeIds.length) {
         logger.debug(`  ⏭️  Skipping nodes: [${ignoreNodeIds.join(', ')}]`)
+
+        // Propagar la señal de "salto" a los nodos que dependen de los nodos ignorados
+        // para evitar que se queden esperando indefinidamente.
+        const nodesToIgnoreQueue = [...ignoreNodeIds]
+        const processedIgnoredNodes = new Set<string>()
+
+        while (nodesToIgnoreQueue.length > 0) {
+            const ignoredId = nodesToIgnoreQueue.shift()!
+            if (processedIgnoredNodes.has(ignoredId)) continue
+            processedIgnoredNodes.add(ignoredId)
+
+            // Buscar bordes que salgan del nodo ignorado hacia otros nodos
+            const downstreamEdges = edges.filter((edge) => edge.source === ignoredId)
+
+            for (const edge of downstreamEdges) {
+                const targetId = edge.target
+
+                // Obtener o inicializar el nodo que está esperando
+                let waitingNode = waitingNodes.get(targetId)
+                if (!waitingNode) {
+                    waitingNode = setupNodeDependencies(targetId, edges, nodes)
+                    waitingNodes.set(targetId, waitingNode)
+                }
+
+                // Marcar el input del nodo ignorado como recibido (con valor null)
+                // Esto satisface la dependencia sin aportar datos corruptos
+                if (!waitingNode.receivedInputs.has(ignoredId)) {
+                    waitingNode.receivedInputs.set(ignoredId, null)
+                }
+
+                // Verificar si el nodo objetivo ya está listo para ejecutarse ahora que
+                // hemos "satisfecho" la dependencia muerta
+                if (hasReceivedRequiredInputs(waitingNode)) {
+                    logger.debug(`  ✅ Node ${targetId} ready (dependency skipped)!`)
+                    waitingNodes.delete(targetId)
+
+                    const combinedInputs = combineNodeInputs(waitingNode.receivedInputs)
+
+                    // Si todos los inputs son null (o no hay inputs válidos),
+                    // entonces este nodo también debe ser ignorado.
+                    if (combinedInputs === null) {
+                        logger.debug(`  ⏭️  Node ${targetId} also ignored (all inputs null)`)
+                        nodesToIgnoreQueue.push(targetId)
+                    } else {
+                        // Si hay al menos un input válido (convergencia), se ejecuta.
+                        nodeExecutionQueue.push({
+                            nodeId: targetId,
+                            data: combinedInputs,
+                            inputs: Object.fromEntries(waitingNode.receivedInputs)
+                        })
+                    }
+                }
+            }
+        }
     }
 
     for (const childId of childNodeIds) {
