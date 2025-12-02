@@ -10,6 +10,7 @@ import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 import { handleEscapeCharacters } from '../../../src/utils'
+import { isPathTraversal } from '../../../src/validator'
 
 class Folder_DocumentLoaders implements INode {
     label: string
@@ -124,6 +125,14 @@ class Folder_DocumentLoaders implements INode {
         const pointerName = nodeData.inputs?.pointerName as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
+
+        if (!folderPath) {
+            throw new Error('Folder path is required')
+        }
+
+        if (isPathTraversal(folderPath)) {
+            throw new Error('Invalid folder path: Path traversal detected. Please provide a safe folder path.')
+        }
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {

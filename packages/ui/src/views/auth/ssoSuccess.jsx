@@ -19,7 +19,7 @@ const SSOSuccess = () => {
                     if (user) {
                         if (user.status === 200) {
                             store.dispatch(loginSuccess(user.data))
-                            navigate('/chatflows')
+                            navigate('/')
                         } else {
                             navigate('/login')
                         }

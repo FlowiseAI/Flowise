@@ -4,7 +4,13 @@ import { RunnableConfig } from '@langchain/core/runnables'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { StructuredTool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
+import {
+    getCredentialData,
+    getCredentialParam,
+    executeJavaScriptCode,
+    createCodeExecutionSandbox,
+    parseWithTypeConversion
+} from '../../../src/utils'
 import { isValidUUID, isValidURL } from '../../../src/validator'
 import { v4 as uuidv4 } from 'uuid'
 
@@ -69,7 +75,8 @@ class ChatflowTool_Tools implements INode {
                 description: 'Override the config passed to the Chatflow.',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Base URL',
@@ -280,7 +287,7 @@ class ChatflowTool extends StructuredTool {
         }
         let parsed
         try {
-            parsed = await this.schema.parseAsync(arg)
+            parsed = await parseWithTypeConversion(this.schema, arg)
         } catch (e) {
             throw new Error(`Received tool input did not match expected schema: ${JSON.stringify(arg)}`)
         }
@@ -370,10 +377,13 @@ try {
 
         const sandbox = createCodeExecutionSandbox('', [], {}, additionalSandbox)
 
-        const response = await executeJavaScriptCode(code, sandbox, {
-            useSandbox: false,
-            timeout: 10000
+        let response = await executeJavaScriptCode(code, sandbox, {
+            useSandbox: false
         })
+
+        if (typeof response === 'object') {
+            response = JSON.stringify(response)
+        }
 
         return response
     }

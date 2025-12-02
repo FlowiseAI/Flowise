@@ -114,7 +114,7 @@ export class MCPToolkit extends BaseToolkit {
         const res = await Promise.allSettled(toolsPromises)
         const errors = res.filter((r) => r.status === 'rejected')
         if (errors.length !== 0) {
-            console.error('MCP Tools falied to be resolved', errors)
+            console.error('MCP Tools failed to be resolved', errors)
         }
         const successes = res.filter((r) => r.status === 'fulfilled').map((r) => r.value)
         return successes
@@ -217,5 +217,69 @@ export const validateArgsForLocalFileAccess = (args: string[]): void => {
         if (arg.length > 1000) {
             throw new Error(`Argument is suspiciously long (${arg.length} characters): "${arg.substring(0, 100)}..."`)
         }
+    }
+}
+
+export const validateCommandInjection = (args: string[]): void => {
+    const dangerousPatterns = [
+        // Shell metacharacters
+        /[;&|`$(){}[\]<>]/,
+        // Command chaining
+        /&&|\|\||;;/,
+        // Redirections
+        />>|<<|>/,
+        // Backticks and command substitution
+        /`|\$\(/,
+        // Process substitution
+        /<\(|>\(/
+    ]
+
+    for (const arg of args) {
+        if (typeof arg !== 'string') continue
+
+        for (const pattern of dangerousPatterns) {
+            if (pattern.test(arg)) {
+                throw new Error(`Argument contains potentially dangerous characters: "${arg}"`)
+            }
+        }
+    }
+}
+
+export const validateEnvironmentVariables = (env: Record<string, any>): void => {
+    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH']
+
+    for (const [key, value] of Object.entries(env)) {
+        if (dangerousEnvVars.includes(key)) {
+            throw new Error(`Environment variable '${key}' modification is not allowed`)
+        }
+
+        if (typeof value === 'string' && value.includes('\0')) {
+            throw new Error(`Environment variable '${key}' contains null byte`)
+        }
+    }
+}
+
+export const validateMCPServerConfig = (serverParams: any): void => {
+    // Validate the entire server configuration
+    if (!serverParams || typeof serverParams !== 'object') {
+        throw new Error('Invalid server configuration')
+    }
+
+    // Command allowlist - only allow specific safe commands
+    const allowedCommands = ['node', 'npx', 'python', 'python3', 'docker']
+
+    if (serverParams.command && !allowedCommands.includes(serverParams.command)) {
+        throw new Error(`Command '${serverParams.command}' is not allowed. Allowed commands: ${allowedCommands.join(', ')}`)
+    }
+
+    // Validate arguments if present
+    if (serverParams.args && Array.isArray(serverParams.args)) {
+        validateArgsForLocalFileAccess(serverParams.args)
+        validateCommandInjection(serverParams.args)
+    }
+
+    // Validate environment variables
+    if (serverParams.env) {
+        validateEnvironmentVariables(serverParams.env)
     }
 }

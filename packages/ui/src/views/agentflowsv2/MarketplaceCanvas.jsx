@@ -20,7 +20,7 @@ import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
 // icons
-import { IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
+import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
 
 const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
@@ -42,6 +42,7 @@ const MarketplaceCanvasV2 = () => {
     const [editNodeDialogOpen, setEditNodeDialogOpen] = useState(false)
     const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
     const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
+    const [isBackgroundEnabled, setIsBackgroundEnabled] = useState(true)
 
     const reactFlowWrapper = useRef(null)
     const { setReactFlowInstance } = useContext(flowContext)
@@ -136,8 +137,18 @@ const MarketplaceCanvasV2 = () => {
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsBackgroundEnabled(!isBackgroundEnabled)
+                                        }}
+                                        title='toggle background'
+                                        aria-label='toggle background'
+                                    >
+                                        {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
+                                    </button>
                                 </Controls>
-                                <Background color='#aaa' gap={16} />
+                                {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
                                 <EditNodeDialog
                                     show={editNodeDialogOpen}
                                     dialogProps={editNodeDialogProps}

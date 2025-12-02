@@ -1,6 +1,7 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
+import { AWS_REGIONS, DEFAULT_AWS_REGION, getAWSCredentials } from '../../../src/awsToolsUtils'
 import { SNSClient, ListTopicsCommand, PublishCommand } from '@aws-sdk/client-sns'
 
 class AWSSNSTool extends Tool {
@@ -62,30 +63,8 @@ class AWSSNS_Tools implements INode {
                 label: 'AWS Region',
                 name: 'region',
                 type: 'options',
-                options: [
-                    { label: 'US East (N. Virginia) - us-east-1', name: 'us-east-1' },
-                    { label: 'US East (Ohio) - us-east-2', name: 'us-east-2' },
-                    { label: 'US West (N. California) - us-west-1', name: 'us-west-1' },
-                    { label: 'US West (Oregon) - us-west-2', name: 'us-west-2' },
-                    { label: 'Africa (Cape Town) - af-south-1', name: 'af-south-1' },
-                    { label: 'Asia Pacific (Hong Kong) - ap-east-1', name: 'ap-east-1' },
-                    { label: 'Asia Pacific (Mumbai) - ap-south-1', name: 'ap-south-1' },
-                    { label: 'Asia Pacific (Osaka) - ap-northeast-3', name: 'ap-northeast-3' },
-                    { label: 'Asia Pacific (Seoul) - ap-northeast-2', name: 'ap-northeast-2' },
-                    { label: 'Asia Pacific (Singapore) - ap-southeast-1', name: 'ap-southeast-1' },
-                    { label: 'Asia Pacific (Sydney) - ap-southeast-2', name: 'ap-southeast-2' },
-                    { label: 'Asia Pacific (Tokyo) - ap-northeast-1', name: 'ap-northeast-1' },
-                    { label: 'Canada (Central) - ca-central-1', name: 'ca-central-1' },
-                    { label: 'Europe (Frankfurt) - eu-central-1', name: 'eu-central-1' },
-                    { label: 'Europe (Ireland) - eu-west-1', name: 'eu-west-1' },
-                    { label: 'Europe (London) - eu-west-2', name: 'eu-west-2' },
-                    { label: 'Europe (Milan) - eu-south-1', name: 'eu-south-1' },
-                    { label: 'Europe (Paris) - eu-west-3', name: 'eu-west-3' },
-                    { label: 'Europe (Stockholm) - eu-north-1', name: 'eu-north-1' },
-                    { label: 'Middle East (Bahrain) - me-south-1', name: 'me-south-1' },
-                    { label: 'South America (São Paulo) - sa-east-1', name: 'sa-east-1' }
-                ],
-                default: 'us-east-1',
+                options: AWS_REGIONS,
+                default: DEFAULT_AWS_REGION,
                 description: 'AWS Region where your SNS topics are located'
             },
             {
@@ -103,32 +82,8 @@ class AWSSNS_Tools implements INode {
     loadMethods = {
         listTopics: async (nodeData: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> => {
             try {
-                const credentialData = await getCredentialData(nodeData.credential ?? '', options ?? {})
-
-                const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-                const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
-                const sessionToken = getCredentialParam('awsSession', credentialData, nodeData)
-
-                const region = (nodeData.inputs?.region as string) || 'us-east-1'
-
-                if (!accessKeyId || !secretAccessKey) {
-                    return [
-                        {
-                            label: 'AWS Credentials Required',
-                            name: 'placeholder',
-                            description: 'Enter AWS Access Key ID and Secret Access Key'
-                        }
-                    ]
-                }
-
-                const credentials: any = {
-                    accessKeyId: accessKeyId,
-                    secretAccessKey: secretAccessKey
-                }
-
-                if (sessionToken) {
-                    credentials.sessionToken = sessionToken
-                }
+                const credentials = await getAWSCredentials(nodeData, options ?? {})
+                const region = (nodeData.inputs?.region as string) || DEFAULT_AWS_REGION
 
                 const snsClient = new SNSClient({
                     region: region,
@@ -161,9 +116,9 @@ class AWSSNS_Tools implements INode {
                 console.error('Error loading SNS topics:', error)
                 return [
                     {
-                        label: 'Error Loading Topics',
-                        name: 'error',
-                        description: `Failed to load topics: ${error}`
+                        label: 'AWS Credentials Required',
+                        name: 'placeholder',
+                        description: 'Enter AWS Access Key ID and Secret Access Key'
                     }
                 ]
             }
@@ -171,30 +126,12 @@ class AWSSNS_Tools implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-
-        const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-        const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
-        const sessionToken = getCredentialParam('awsSession', credentialData, nodeData)
-
-        const region = (nodeData.inputs?.region as string) || 'us-east-1'
+        const credentials = await getAWSCredentials(nodeData, options)
+        const region = (nodeData.inputs?.region as string) || DEFAULT_AWS_REGION
         const topicArn = nodeData.inputs?.topicArn as string
-
-        if (!accessKeyId || !secretAccessKey) {
-            throw new Error('AWS Access Key ID and Secret Access Key are required')
-        }
 
         if (!topicArn) {
             throw new Error('SNS Topic ARN is required')
-        }
-
-        const credentials: any = {
-            accessKeyId: accessKeyId,
-            secretAccessKey: secretAccessKey
-        }
-
-        if (sessionToken) {
-            credentials.sessionToken = sessionToken
         }
 
         const snsClient = new SNSClient({

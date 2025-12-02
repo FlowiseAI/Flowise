@@ -257,4 +257,50 @@ export class SSEStreamer implements IServerSideEventStreamer {
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
     }
+
+    streamTTSStartEvent(chatId: string, chatMessageId: string, format: string): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'tts_start',
+                data: { chatMessageId, format }
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+
+    streamTTSDataEvent(chatId: string, chatMessageId: string, audioChunk: string): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'tts_data',
+                data: { chatMessageId, audioChunk }
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+
+    streamTTSEndEvent(chatId: string, chatMessageId: string): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'tts_end',
+                data: { chatMessageId }
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+
+    streamTTSAbortEvent(chatId: string, chatMessageId: string): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'tts_abort',
+                data: { chatMessageId }
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+            client.response.end()
+            delete this.clients[chatId]
+        }
+    }
 }

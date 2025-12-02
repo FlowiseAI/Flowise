@@ -33,7 +33,16 @@ const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 
 const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET || 'auth_token'
 const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_AUTH_TOKEN_SECRET || 'refresh_token'
 
-const secureCookie = process.env.APP_URL?.startsWith('https') ? true : false
+// Allow explicit override of cookie security settings
+// This is useful when running behind a reverse proxy/load balancer that terminates SSL
+const secureCookie =
+    process.env.SECURE_COOKIES === 'false'
+        ? false
+        : process.env.SECURE_COOKIES === 'true'
+        ? true
+        : process.env.APP_URL?.startsWith('https')
+        ? true
+        : false
 const jwtOptions = {
     secretOrKey: jwtAuthTokenSecret,
     audience: jwtAudience,
@@ -71,6 +80,11 @@ const _initializePassportMiddleware = async (app: express.Application) => {
     app.use(session(options))
     app.use(passport.initialize())
     app.use(passport.session())
+
+    if (options.store) {
+        const appServer = getRunningExpressApp()
+        appServer.sessionStore = options.store
+    }
 
     passport.serializeUser((user: any, done) => {
         done(null, user)
@@ -165,7 +179,6 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                         activeWorkspaceId: workspaceUser.workspaceId,
                         activeWorkspace: workspaceUser.workspace.name,
                         assignedWorkspaces,
-                        isApiKeyValidated: true,
                         permissions: [...JSON.parse(role.permissions)],
                         features
                     }

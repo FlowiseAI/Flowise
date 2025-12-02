@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
-import { TOOL_ARGS_PREFIX } from '../../../src/agents'
+import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Google Drive API for managing files and folders`
 
@@ -202,7 +202,7 @@ class ListFilesTool extends BaseGoogleDriveTool {
             const response = await this.makeGoogleDriveRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error listing files: ${error}`
+            return formatToolError(`Error listing files: ${error}`, params)
         }
     }
 }
@@ -240,7 +240,7 @@ class GetFileTool extends BaseGoogleDriveTool {
             const response = await this.makeGoogleDriveRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error getting file: ${error}`
+            return formatToolError(`Error getting file: ${error}`, params)
         }
     }
 }
@@ -323,7 +323,7 @@ class CreateFileTool extends BaseGoogleDriveTool {
                 }
             }
         } catch (error) {
-            return `Error creating file: ${error}`
+            return formatToolError(`Error creating file: ${error}`, params)
         }
     }
 
@@ -452,7 +452,7 @@ class UpdateFileTool extends BaseGoogleDriveTool {
             })
             return response
         } catch (error) {
-            return `Error updating file: ${error}`
+            return formatToolError(`Error updating file: ${error}`, params)
         }
     }
 }
@@ -492,7 +492,7 @@ class DeleteFileTool extends BaseGoogleDriveTool {
             })
             return `File deleted successfully`
         } catch (error) {
-            return `Error deleting file: ${error}`
+            return formatToolError(`Error deleting file: ${error}`, params)
         }
     }
 }
@@ -541,7 +541,7 @@ class CopyFileTool extends BaseGoogleDriveTool {
             })
             return response
         } catch (error) {
-            return `Error copying file: ${error}`
+            return formatToolError(`Error copying file: ${error}`, params)
         }
     }
 }
@@ -579,7 +579,7 @@ class DownloadFileTool extends BaseGoogleDriveTool {
             const response = await this.makeGoogleDriveRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error downloading file: ${error}`
+            return formatToolError(`Error downloading file: ${error}`, params)
         }
     }
 }
@@ -630,7 +630,7 @@ class CreateFolderTool extends BaseGoogleDriveTool {
             })
             return response
         } catch (error) {
-            return `Error creating folder: ${error}`
+            return formatToolError(`Error creating folder: ${error}`, params)
         }
     }
 }
@@ -671,7 +671,7 @@ class SearchFilesTool extends BaseGoogleDriveTool {
             const response = await this.makeGoogleDriveRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error searching files: ${error}`
+            return formatToolError(`Error searching files: ${error}`, params)
         }
     }
 }
@@ -724,7 +724,7 @@ class ShareFileTool extends BaseGoogleDriveTool {
             })
             return response
         } catch (error) {
-            return `Error sharing file: ${error}`
+            return formatToolError(`Error sharing file: ${error}`, params)
         }
     }
 }
@@ -774,7 +774,7 @@ class ListFolderContentsTool extends BaseGoogleDriveTool {
             const response = await this.makeGoogleDriveRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error listing folder contents: ${error}`
+            return formatToolError(`Error listing folder contents: ${error}`, params)
         }
     }
 }
@@ -820,7 +820,7 @@ class DeleteFolderTool extends BaseGoogleDriveTool {
             })
             return `Folder deleted successfully`
         } catch (error) {
-            return `Error deleting folder: ${error}`
+            return formatToolError(`Error deleting folder: ${error}`, params)
         }
     }
 }
@@ -862,7 +862,7 @@ class GetPermissionsTool extends BaseGoogleDriveTool {
             const response = await this.makeGoogleDriveRequest({ endpoint, params })
             return response
         } catch (error) {
-            return `Error getting permissions: ${error}`
+            return formatToolError(`Error getting permissions: ${error}`, params)
         }
     }
 }
@@ -911,7 +911,7 @@ class RemovePermissionTool extends BaseGoogleDriveTool {
             })
             return `Permission removed successfully`
         } catch (error) {
-            return `Error removing permission: ${error}`
+            return formatToolError(`Error removing permission: ${error}`, params)
         }
     }
 }

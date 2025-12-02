@@ -132,7 +132,6 @@ abstract class SSOBase {
                 activeWorkspaceId: workspaceUser.workspaceId,
                 activeWorkspace: workspaceUser.workspace.name,
                 assignedWorkspaces,
-                isApiKeyValidated: true,
                 ssoToken: accessToken as string,
                 ssoRefreshToken: refreshToken,
                 ssoProvider: ssoProviderName,

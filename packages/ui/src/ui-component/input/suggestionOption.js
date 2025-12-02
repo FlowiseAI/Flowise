@@ -68,7 +68,13 @@ export const suggestionOptions = (
             {
                 id: 'runtime_messages_length',
                 mentionLabel: 'runtime_messages_length',
-                description: 'Total messsages between LLM and Agent',
+                description: 'Total messages between LLM and Agent',
+                category: 'Chat Context'
+            },
+            {
+                id: 'loop_count',
+                mentionLabel: 'loop_count',
+                description: 'Current loop count',
                 category: 'Chat Context'
             },
             {
@@ -106,7 +112,7 @@ export const suggestionOptions = (
                 category: 'Node Outputs'
             })
 
-            const structuredOutputs = nodeData?.inputs?.llmStructuredOutput ?? []
+            const structuredOutputs = nodeData?.inputs?.llmStructuredOutput ?? nodeData?.inputs?.agentStructuredOutput ?? []
             if (structuredOutputs && structuredOutputs.length > 0) {
                 structuredOutputs.forEach((item) => {
                     defaultItems.unshift({

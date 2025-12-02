@@ -58,7 +58,7 @@ const NavGroup = ({ item }) => {
 
     const renderNonPrimaryGroups = () => {
         let nonprimaryGroups = item.children.filter((child) => child.id !== 'primary')
-        // Display chilren based on permission and display
+        // Display children based on permission and display
         nonprimaryGroups = nonprimaryGroups.map((group) => {
             const children = group.children.filter((menu) => shouldDisplayMenu(menu))
             return { ...group, children }

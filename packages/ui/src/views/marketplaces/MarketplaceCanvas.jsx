@@ -16,7 +16,7 @@ import MarketplaceCanvasHeader from './MarketplaceCanvasHeader'
 import StickyNote from '../canvas/StickyNote'
 
 // icons
-import { IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
+import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
 
 const nodeTypes = { customNode: MarketplaceCanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: '' }
@@ -36,6 +36,7 @@ const MarketplaceCanvas = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState()
     const [edges, setEdges, onEdgesChange] = useEdgesState()
     const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
+    const [isBackgroundEnabled, setIsBackgroundEnabled] = useState(true)
 
     const reactFlowWrapper = useRef(null)
 
@@ -114,8 +115,18 @@ const MarketplaceCanvas = () => {
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsBackgroundEnabled(!isBackgroundEnabled)
+                                        }}
+                                        title='toggle background'
+                                        aria-label='toggle background'
+                                    >
+                                        {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
+                                    </button>
                                 </Controls>
-                                <Background color='#aaa' gap={16} />
+                                {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
                             </ReactFlow>
                         </div>
                     </div>

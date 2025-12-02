@@ -225,7 +225,7 @@ const OrganizationSetupPage = () => {
             setLoading(false)
             store.dispatch(loginSuccess(loginApi.data))
             localStorage.setItem('username', loginApi.data.name)
-            navigate(location.state?.path || '/chatflows')
+            navigate(location.state?.path || '/')
             //navigate(0)
         }
 

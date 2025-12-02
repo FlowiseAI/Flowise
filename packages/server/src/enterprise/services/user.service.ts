@@ -1,14 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
-import bcrypt from 'bcryptjs'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
 import { User, UserStatus } from '../database/entities/user.entity'
 import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
-import { DataSource, QueryRunner } from 'typeorm'
+import { DataSource, ILike, QueryRunner } from 'typeorm'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
-import { getHash } from '../utils/encryption.util'
+import { compareHash, getHash } from '../utils/encryption.util'
+import { sanitizeUser } from '../../utils/sanitize.util'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 
 export const enum UserErrorMessage {
     EXPIRED_TEMP_TOKEN = 'Expired Temporary Token',
@@ -23,7 +24,8 @@ export const enum UserErrorMessage {
     USER_EMAIL_UNVERIFIED = 'User Email Unverified',
     USER_NOT_FOUND = 'User Not Found',
     USER_FOUND_MULTIPLE = 'User Found Multiple',
-    INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password'
+    INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password',
+    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match'
 }
 export class UserService {
     private telemetry: Telemetry
@@ -53,8 +55,9 @@ export class UserService {
     }
 
     public async readUserByEmail(email: string | undefined, queryRunner: QueryRunner) {
+        if (!email) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_EMAIL)
         this.validateUserEmail(email)
-        return await queryRunner.manager.findOneBy(User, { email })
+        return await queryRunner.manager.findOneBy(User, { email: ILike(email) })
     }
 
     public async readUserByToken(token: string | undefined, queryRunner: QueryRunner) {
@@ -95,7 +98,18 @@ export class UserService {
             data.updatedBy = data.id
         }
 
-        return queryRunner.manager.create(User, data)
+        const userObj = queryRunner.manager.create(User, data)
+
+        this.telemetry.sendTelemetry(
+            TelemetryEventType.USER_CREATED,
+            {
+                userId: userObj.id,
+                createdBy: userObj.createdBy
+            },
+            userObj.id
+        )
+
+        return userObj
     }
 
     public async saveUser(data: Partial<User>, queryRunner: QueryRunner) {
@@ -118,19 +132,10 @@ export class UserService {
             await queryRunner.release()
         }
 
-        this.telemetry.sendTelemetry(
-            TelemetryEventType.USER_CREATED,
-            {
-                userId: newUser.id,
-                createdBy: newUser.createdBy
-            },
-            newUser.id
-        )
-
         return newUser
     }
 
-    public async updateUser(newUserData: Partial<User> & { password?: string }) {
+    public async updateUser(newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string }) {
         let queryRunner: QueryRunner | undefined
         let updatedUser: Partial<User>
         try {
@@ -154,10 +159,18 @@ export class UserService {
                 this.validateUserStatus(newUserData.status)
             }
 
-            if (newUserData.password) {
-                const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
-                // @ts-ignore
-                const hash = bcrypt.hashSync(newUserData.password, salt)
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
+                if (!oldUserData.credential) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_CREDENTIAL)
+                }
+                // verify old password
+                if (!compareHash(newUserData.oldPassword, oldUserData.credential)) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_CREDENTIAL)
+                }
+                if (newUserData.newPassword !== newUserData.confirmPassword) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.PASSWORDS_DO_NOT_MATCH)
+                }
+                const hash = getHash(newUserData.newPassword)
                 newUserData.credential = hash
                 newUserData.tempToken = ''
                 newUserData.tokenExpiry = undefined
@@ -167,6 +180,11 @@ export class UserService {
             await queryRunner.startTransaction()
             await this.saveUser(updatedUser, queryRunner)
             await queryRunner.commitTransaction()
+
+            // Invalidate all sessions for this user if password was changed
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
+                await destroyAllSessionsForUser(updatedUser.id as string)
+            }
         } catch (error) {
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             throw error
@@ -174,6 +192,6 @@ export class UserService {
             if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
 
-        return updatedUser
+        return sanitizeUser(updatedUser)
     }
 }

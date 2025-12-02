@@ -578,7 +578,7 @@ class OpenAIAssistant_Agents implements INode {
                                         toolOutput
                                     })
                                 } catch (e) {
-                                    await analyticHandlers.onToolEnd(toolIds, e)
+                                    await analyticHandlers.onToolError(toolIds, e)
                                     console.error('Error executing tool', e)
                                     throw new Error(
                                         `Error executing tool. Tool: ${tool.name}. Thread ID: ${threadId}. Run ID: ${runThreadId}`
@@ -703,7 +703,7 @@ class OpenAIAssistant_Agents implements INode {
                                                 toolOutput
                                             })
                                         } catch (e) {
-                                            await analyticHandlers.onToolEnd(toolIds, e)
+                                            await analyticHandlers.onToolError(toolIds, e)
                                             console.error('Error executing tool', e)
                                             clearInterval(timeout)
                                             reject(
@@ -1096,7 +1096,7 @@ async function handleToolSubmission(params: ToolSubmissionParams): Promise<ToolS
                                 toolOutput
                             })
                         } catch (e) {
-                            await analyticHandlers.onToolEnd(toolIds, e)
+                            await analyticHandlers.onToolError(toolIds, e)
                             console.error('Error executing tool', e)
                             throw new Error(`Error executing tool. Tool: ${tool.name}. Thread ID: ${threadId}. Run ID: ${runThreadId}`)
                         }

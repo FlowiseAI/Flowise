@@ -193,26 +193,71 @@ requestLogger = createLogger({
     ]
 })
 
+function getSensitiveBodyFields(): string[] {
+    if (!process.env.LOG_SANITIZE_BODY_FIELDS) return []
+    return (process.env.LOG_SANITIZE_BODY_FIELDS as string)
+        .toLowerCase()
+        .split(',')
+        .map((f) => f.trim())
+}
+
+function getSensitiveHeaderFields(): string[] {
+    if (!process.env.LOG_SANITIZE_HEADER_FIELDS) return []
+    return (process.env.LOG_SANITIZE_HEADER_FIELDS as string)
+        .toLowerCase()
+        .split(',')
+        .map((f) => f.trim())
+}
+
+function sanitizeObject(obj: any): any {
+    if (!obj || typeof obj !== 'object') return obj
+
+    const sensitiveFields = getSensitiveBodyFields()
+    const sanitized = Array.isArray(obj) ? [...obj] : { ...obj }
+    Object.keys(sanitized).forEach((key) => {
+        const lowerKey = key.toLowerCase()
+        if (sensitiveFields.includes(lowerKey)) {
+            sanitized[key] = '********'
+        } else if (typeof sanitized[key] === 'string') {
+            if (sanitized[key].includes('@') && sanitized[key].includes('.')) {
+                sanitized[key] = sanitized[key].replace(/([^@\s]+)@([^@\s]+)/g, '**********')
+            }
+        }
+    })
+
+    return sanitized
+}
+
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
     const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
 
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
-        // Create a sanitized copy of the request body
-        const sanitizedBody = { ...req.body }
-        if (sanitizedBody.password) {
-            sanitizedBody.password = '********'
-        }
+        const isDebugLevel = logger.level === 'debug' || process.env.DEBUG === 'true'
 
-        // Use the shared requestLogger with request-specific metadata
-        const requestMetadata = {
+        const requestMetadata: any = {
             request: {
                 method: req.method,
                 url: req.url,
-                body: sanitizedBody, // Use sanitized body instead of raw body
-                query: req.query,
-                params: req.params,
-                headers: req.headers
+                params: req.params
             }
+        }
+
+        // Only include headers, body, and query if log level is debug
+        if (isDebugLevel) {
+            const sanitizedBody = sanitizeObject(req.body)
+            const sanitizedQuery = sanitizeObject(req.query)
+            const sanitizedHeaders = { ...req.headers }
+
+            const sensitiveHeaders = getSensitiveHeaderFields()
+            sensitiveHeaders.forEach((header) => {
+                if (sanitizedHeaders[header]) {
+                    sanitizedHeaders[header] = '********'
+                }
+            })
+
+            requestMetadata.request.body = sanitizedBody
+            requestMetadata.request.query = sanitizedQuery
+            requestMetadata.request.headers = sanitizedHeaders
         }
 
         const getRequestEmoji = (method: string) => {

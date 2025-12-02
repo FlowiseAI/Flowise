@@ -276,6 +276,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
 
         const orgId = org.id
         const subscriptionId = org.subscriptionId as string
+        const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
 
         const executeData: IExecuteFlowParams = {
             componentNodes: appServer.nodesPool.componentNodes,
@@ -293,7 +294,8 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             isUpsert: true,
             orgId,
             workspaceId,
-            subscriptionId
+            subscriptionId,
+            productId
         }
 
         if (process.env.MODE === MODE.QUEUE) {

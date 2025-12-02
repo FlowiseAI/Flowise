@@ -4,8 +4,25 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { IconButton, Button, Box, Typography } from '@mui/material'
-import { IconArrowsMaximize, IconBulb, IconX } from '@tabler/icons-react'
+import {
+    IconButton,
+    Button,
+    Box,
+    Typography,
+    TableContainer,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
+    Paper,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Card
+} from '@mui/material'
+import { IconArrowsMaximize, IconX } from '@tabler/icons-react'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useTheme } from '@mui/material/styles'
 
 // Project import
@@ -21,7 +38,11 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const sampleFunction = `return $flow.rawOutput + " This is a post processed response!";`
+const sampleFunction = `// Access chat history as a string
+const chatHistory = JSON.stringify($flow.chatHistory, null, 2); 
+
+// Return a modified response
+return $flow.rawOutput + " This is a post processed response!";`
 
 const PostProcessing = ({ dialogProps }) => {
     const dispatch = useDispatch()
@@ -175,31 +196,105 @@ const PostProcessing = ({ dialogProps }) => {
                     />
                 </div>
             </Box>
-            <div
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    borderRadius: 10,
-                    background: '#d8f3dc',
-                    padding: 10,
-                    marginTop: 10
-                }}
-            >
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        paddingTop: 10
+            <Card sx={{ borderColor: theme.palette.primary[200] + 75, mt: 2, mb: 2 }} variant='outlined'>
+                <Accordion
+                    disableGutters
+                    sx={{
+                        '&:before': {
+                            display: 'none'
+                        }
                     }}
                 >
-                    <IconBulb size={30} color='#2d6a4f' />
-                    <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                        The following variables are available to use in the custom function:{' '}
-                        <pre>$flow.rawOutput, $flow.input, $flow.chatflowId, $flow.sessionId, $flow.chatId</pre>
-                    </span>
-                </div>
-            </div>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Typography>Available Variables</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ p: 0 }}>
+                        <TableContainer component={Paper}>
+                            <Table aria-label='available variables table'>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell sx={{ width: '30%' }}>Variable</TableCell>
+                                        <TableCell sx={{ width: '15%' }}>Type</TableCell>
+                                        <TableCell sx={{ width: '55%' }}>Description</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.rawOutput</code>
+                                        </TableCell>
+                                        <TableCell>string</TableCell>
+                                        <TableCell>The raw output response from the flow</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.input</code>
+                                        </TableCell>
+                                        <TableCell>string</TableCell>
+                                        <TableCell>The user input message</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.chatHistory</code>
+                                        </TableCell>
+                                        <TableCell>array</TableCell>
+                                        <TableCell>Array of previous messages in the conversation</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.chatflowId</code>
+                                        </TableCell>
+                                        <TableCell>string</TableCell>
+                                        <TableCell>Unique identifier for the chatflow</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.sessionId</code>
+                                        </TableCell>
+                                        <TableCell>string</TableCell>
+                                        <TableCell>Current session identifier</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.chatId</code>
+                                        </TableCell>
+                                        <TableCell>string</TableCell>
+                                        <TableCell>Current chat identifier</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.sourceDocuments</code>
+                                        </TableCell>
+                                        <TableCell>array</TableCell>
+                                        <TableCell>Source documents used in retrieval (if applicable)</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.usedTools</code>
+                                        </TableCell>
+                                        <TableCell>array</TableCell>
+                                        <TableCell>List of tools used during execution</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell>
+                                            <code>$flow.artifacts</code>
+                                        </TableCell>
+                                        <TableCell>array</TableCell>
+                                        <TableCell>List of artifacts generated during execution</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell sx={{ borderBottom: 'none' }}>
+                                            <code>$flow.fileAnnotations</code>
+                                        </TableCell>
+                                        <TableCell sx={{ borderBottom: 'none' }}>array</TableCell>
+                                        <TableCell sx={{ borderBottom: 'none' }}>File annotations associated with the response</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </AccordionDetails>
+                </Accordion>
+            </Card>
             <StyledButton
                 style={{ marginBottom: 10, marginTop: 10 }}
                 variant='contained'

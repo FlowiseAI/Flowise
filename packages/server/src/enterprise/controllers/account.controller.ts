@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { AccountService } from '../services/account.service'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import axios from 'axios'
 
 export class AccountController {
     public async register(req: Request, res: Response, next: NextFunction) {
@@ -79,30 +78,6 @@ export class AccountController {
         try {
             const { url: portalSessionUrl } = await getRunningExpressApp().identityManager.createStripeCustomerPortalSession(req)
             return res.status(StatusCodes.OK).json({ url: portalSessionUrl })
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    public async cancelPreviousCloudSubscrption(req: Request, res: Response, next: NextFunction) {
-        try {
-            const { email } = req.body
-            if (!email) {
-                return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Email is required' })
-            }
-
-            const headers = {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            }
-
-            const response = await axios.post(`${process.env.ENGINE_URL}/cancel-subscription`, { email }, { headers })
-
-            if (response.status === 200) {
-                return res.status(StatusCodes.OK).json(response.data)
-            } else {
-                return res.status(response.status).json(response.data)
-            }
         } catch (error) {
             next(error)
         }

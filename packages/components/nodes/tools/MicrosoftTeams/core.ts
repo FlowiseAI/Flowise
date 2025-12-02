@@ -119,7 +119,7 @@ class ListChannelsTool extends BaseTeamsTool {
 
             return this.formatResponse(responseData, params)
         } catch (error) {
-            return `Error listing channels: ${error}`
+            return this.formatResponse(`Error listing channels: ${error}`, params)
         }
     }
 }
@@ -1519,236 +1519,149 @@ export function createTeamsTools(options: TeamsToolOptions): DynamicStructuredTo
 
     // Channel tools
     if (actions.includes('listChannels')) {
-        const listTool = new ListChannelsTool({
-            accessToken,
-            defaultParams: defaultParams.listChannels
-        })
+        const listTool = new ListChannelsTool({ accessToken, defaultParams })
         tools.push(listTool)
     }
 
     if (actions.includes('getChannel')) {
-        const getTool = new GetChannelTool({
-            accessToken,
-            defaultParams: defaultParams.getChannel
-        })
+        const getTool = new GetChannelTool({ accessToken, defaultParams })
         tools.push(getTool)
     }
 
     if (actions.includes('createChannel')) {
-        const createTool = new CreateChannelTool({
-            accessToken,
-            defaultParams: defaultParams.createChannel
-        })
+        const createTool = new CreateChannelTool({ accessToken, defaultParams })
         tools.push(createTool)
     }
 
     if (actions.includes('updateChannel')) {
-        const updateTool = new UpdateChannelTool({
-            accessToken,
-            defaultParams: defaultParams.updateChannel
-        })
+        const updateTool = new UpdateChannelTool({ accessToken, defaultParams })
         tools.push(updateTool)
     }
 
     if (actions.includes('deleteChannel')) {
-        const deleteTool = new DeleteChannelTool({
-            accessToken,
-            defaultParams: defaultParams.deleteChannel
-        })
+        const deleteTool = new DeleteChannelTool({ accessToken, defaultParams })
         tools.push(deleteTool)
     }
 
     if (actions.includes('archiveChannel')) {
-        const archiveTool = new ArchiveChannelTool({
-            accessToken,
-            defaultParams: defaultParams.archiveChannel
-        })
+        const archiveTool = new ArchiveChannelTool({ accessToken, defaultParams })
         tools.push(archiveTool)
     }
 
     if (actions.includes('unarchiveChannel')) {
-        const unarchiveTool = new UnarchiveChannelTool({
-            accessToken,
-            defaultParams: defaultParams.unarchiveChannel
-        })
+        const unarchiveTool = new UnarchiveChannelTool({ accessToken, defaultParams })
         tools.push(unarchiveTool)
     }
 
     if (actions.includes('listChannelMembers')) {
-        const listMembersTool = new ListChannelMembersTool({
-            accessToken,
-            defaultParams: defaultParams.listChannelMembers
-        })
+        const listMembersTool = new ListChannelMembersTool({ accessToken, defaultParams })
         tools.push(listMembersTool)
     }
 
     if (actions.includes('addChannelMember')) {
-        const addMemberTool = new AddChannelMemberTool({
-            accessToken,
-            defaultParams: defaultParams.addChannelMember
-        })
+        const addMemberTool = new AddChannelMemberTool({ accessToken, defaultParams })
         tools.push(addMemberTool)
     }
 
     if (actions.includes('removeChannelMember')) {
-        const removeMemberTool = new RemoveChannelMemberTool({
-            accessToken,
-            defaultParams: defaultParams.removeChannelMember
-        })
+        const removeMemberTool = new RemoveChannelMemberTool({ accessToken, defaultParams })
         tools.push(removeMemberTool)
     }
 
     // Chat tools
     if (actions.includes('listChats')) {
-        const listTool = new ListChatsTool({
-            accessToken,
-            defaultParams: defaultParams.listChats
-        })
+        const listTool = new ListChatsTool({ accessToken, defaultParams })
         tools.push(listTool)
     }
 
     if (actions.includes('getChat')) {
-        const getTool = new GetChatTool({
-            accessToken,
-            defaultParams: defaultParams.getChat
-        })
+        const getTool = new GetChatTool({ accessToken, defaultParams })
         tools.push(getTool)
     }
 
     if (actions.includes('createChat')) {
-        const createTool = new CreateChatTool({
-            accessToken,
-            defaultParams: defaultParams.createChat
-        })
+        const createTool = new CreateChatTool({ accessToken, defaultParams })
         tools.push(createTool)
     }
 
     if (actions.includes('updateChat')) {
-        const updateTool = new UpdateChatTool({
-            accessToken,
-            defaultParams: defaultParams.updateChat
-        })
+        const updateTool = new UpdateChatTool({ accessToken, defaultParams })
         tools.push(updateTool)
     }
 
     if (actions.includes('deleteChat')) {
-        const deleteTool = new DeleteChatTool({
-            accessToken,
-            defaultParams: defaultParams.deleteChat
-        })
+        const deleteTool = new DeleteChatTool({ accessToken, defaultParams })
         tools.push(deleteTool)
     }
 
     if (actions.includes('listChatMembers')) {
-        const listMembersTool = new ListChatMembersTool({
-            accessToken,
-            defaultParams: defaultParams.listChatMembers
-        })
+        const listMembersTool = new ListChatMembersTool({ accessToken, defaultParams })
         tools.push(listMembersTool)
     }
 
     if (actions.includes('addChatMember')) {
-        const addMemberTool = new AddChatMemberTool({
-            accessToken,
-            defaultParams: defaultParams.addChatMember
-        })
+        const addMemberTool = new AddChatMemberTool({ accessToken, defaultParams })
         tools.push(addMemberTool)
     }
 
     if (actions.includes('removeChatMember')) {
-        const removeMemberTool = new RemoveChatMemberTool({
-            accessToken,
-            defaultParams: defaultParams.removeChatMember
-        })
+        const removeMemberTool = new RemoveChatMemberTool({ accessToken, defaultParams })
         tools.push(removeMemberTool)
     }
 
     if (actions.includes('pinMessage')) {
-        const pinTool = new PinMessageTool({
-            accessToken,
-            defaultParams: defaultParams.pinMessage
-        })
+        const pinTool = new PinMessageTool({ accessToken, defaultParams })
         tools.push(pinTool)
     }
 
     if (actions.includes('unpinMessage')) {
-        const unpinTool = new UnpinMessageTool({
-            accessToken,
-            defaultParams: defaultParams.unpinMessage
-        })
+        const unpinTool = new UnpinMessageTool({ accessToken, defaultParams })
         tools.push(unpinTool)
     }
 
     // Chat message tools
     if (actions.includes('listMessages')) {
-        const listTool = new ListMessagesTool({
-            accessToken,
-            defaultParams: defaultParams.listMessages
-        })
+        const listTool = new ListMessagesTool({ accessToken, defaultParams })
         tools.push(listTool)
     }
 
     if (actions.includes('getMessage')) {
-        const getTool = new GetMessageTool({
-            accessToken,
-            defaultParams: defaultParams.getMessage
-        })
+        const getTool = new GetMessageTool({ accessToken, defaultParams })
         tools.push(getTool)
     }
 
     if (actions.includes('sendMessage')) {
-        const sendTool = new SendMessageTool({
-            accessToken,
-            defaultParams: defaultParams.sendMessage
-        })
+        const sendTool = new SendMessageTool({ accessToken, defaultParams })
         tools.push(sendTool)
     }
 
     if (actions.includes('updateMessage')) {
-        const updateTool = new UpdateMessageTool({
-            accessToken,
-            defaultParams: defaultParams.updateMessage
-        })
+        const updateTool = new UpdateMessageTool({ accessToken, defaultParams })
         tools.push(updateTool)
     }
 
     if (actions.includes('deleteMessage')) {
-        const deleteTool = new DeleteMessageTool({
-            accessToken,
-            defaultParams: defaultParams.deleteMessage
-        })
+        const deleteTool = new DeleteMessageTool({ accessToken, defaultParams })
         tools.push(deleteTool)
     }
 
     if (actions.includes('replyToMessage')) {
-        const replyTool = new ReplyToMessageTool({
-            accessToken,
-            defaultParams: defaultParams.replyToMessage
-        })
+        const replyTool = new ReplyToMessageTool({ accessToken, defaultParams })
         tools.push(replyTool)
     }
 
     if (actions.includes('setReaction')) {
-        const reactionTool = new SetReactionTool({
-            accessToken,
-            defaultParams: defaultParams.setReaction
-        })
+        const reactionTool = new SetReactionTool({ accessToken, defaultParams })
         tools.push(reactionTool)
     }
 
     if (actions.includes('unsetReaction')) {
-        const unsetReactionTool = new UnsetReactionTool({
-            accessToken,
-            defaultParams: defaultParams.unsetReaction
-        })
+        const unsetReactionTool = new UnsetReactionTool({ accessToken, defaultParams })
         tools.push(unsetReactionTool)
     }
 
     if (actions.includes('getAllMessages')) {
-        const getAllTool = new GetAllMessagesTool({
-            accessToken,
-            defaultParams: defaultParams.getAllMessages
-        })
+        const getAllTool = new GetAllMessagesTool({ accessToken, defaultParams })
         tools.push(getAllTool)
     }
 
