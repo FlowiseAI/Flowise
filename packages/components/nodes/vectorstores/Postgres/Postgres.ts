@@ -49,7 +49,7 @@ class Postgres_VectorStores implements INode {
     constructor() {
         this.label = 'Postgres'
         this.name = 'postgres'
-        this.version = 7.0
+        this.version = 7.1
         this.type = 'Postgres'
         this.icon = 'postgres.svg'
         this.category = 'Vector Stores'
@@ -174,6 +174,15 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'Upsert Batch Size',
+                name: 'batchSize',
+                type: 'number',
+                step: 1,
+                description: 'Upsert in batches of size N',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Additional Configuration',
                 name: 'additionalConfig',
                 type: 'json',
@@ -232,6 +241,7 @@ class Postgres_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const recordManager = nodeData.inputs?.recordManager
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
+            const _batchSize = nodeData.inputs?.batchSize
             const vectorStoreDriver: VectorStoreDriver = Postgres_VectorStores.getDriverFromConfig(nodeData, options)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
@@ -265,7 +275,15 @@ class Postgres_VectorStores implements INode {
 
                     return res
                 } else {
-                    await vectorStoreDriver.fromDocuments(finalDocs)
+                    if (_batchSize) {
+                        const batchSize = parseInt(_batchSize, 10)
+                        for (let i = 0; i < finalDocs.length; i += batchSize) {
+                            const batch = finalDocs.slice(i, i + batchSize)
+                            await vectorStoreDriver.fromDocuments(batch)
+                        }
+                    } else {
+                        await vectorStoreDriver.fromDocuments(finalDocs)
+                    }
 
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
@@ -285,7 +303,11 @@ class Postgres_VectorStores implements INode {
                     const vectorStoreName = tableName
                     await recordManager.createSchema()
                     ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
-                    const keys: string[] = await recordManager.listKeys({})
+                    const filterKeys: ICommonObject = {}
+                    if (options.docId) {
+                        filterKeys.docId = options.docId
+                    }
+                    const keys: string[] = await recordManager.listKeys(filterKeys)
 
                     await vectorStore.delete({ ids: keys })
                     await recordManager.deleteKeys(keys)
