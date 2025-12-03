@@ -57,11 +57,12 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 // API
 import chatmessageApi from '@/api/chatmessage'
 import feedbackApi from '@/api/feedback'
+import exportImportApi from '@/api/exportimport'
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // Utils
-import { getOS, isValidURL, removeDuplicateURL } from '@/utils/genericHelper'
+import { isValidURL, removeDuplicateURL } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import { baseURL } from '@/store/constant'
 
@@ -204,8 +205,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const getChatmessageApi = useApi(chatmessageApi.getAllChatmessageFromChatflow)
     const getChatmessageFromPKApi = useApi(chatmessageApi.getChatmessageFromPK)
     const getStatsApi = useApi(feedbackApi.getStatsFromChatflow)
-    const getStoragePathFromServer = useApi(chatmessageApi.getStoragePath)
-    let storagePath = ''
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -352,94 +351,55 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const exportMessages = async () => {
-        if (!storagePath && getStoragePathFromServer.data) {
-            storagePath = getStoragePathFromServer.data.storagePath
-        }
-        const obj = {}
-        let fileSeparator = '/'
-        if ('windows' === getOS()) {
-            fileSeparator = '\\'
-        }
+        try {
+            const response = await exportImportApi.exportChatflowMessages({
+                chatflowId: dialogProps.chatflow.id,
+                chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+                feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined,
+                startDate: startDate,
+                endDate: endDate
+            })
 
-        const resp = await chatmessageApi.getAllChatmessageFromChatflow(dialogProps.chatflow.id, {
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined,
-            startDate: startDate,
-            endDate: endDate,
-            order: 'DESC'
-        })
+            const exportMessages = response.data
+            const dataStr = JSON.stringify(exportMessages, null, 2)
+            const blob = new Blob([dataStr], { type: 'application/json' })
+            const dataUri = URL.createObjectURL(blob)
 
-        const allChatlogs = resp.data ?? []
-        for (let i = 0; i < allChatlogs.length; i += 1) {
-            const chatmsg = allChatlogs[i]
-            const chatPK = getChatPK(chatmsg)
-            let filePaths = []
-            if (chatmsg.fileUploads && Array.isArray(chatmsg.fileUploads)) {
-                chatmsg.fileUploads.forEach((file) => {
-                    if (file.type === 'stored-file') {
-                        filePaths.push(
-                            `${storagePath}${fileSeparator}${chatmsg.chatflowid}${fileSeparator}${chatmsg.chatId}${fileSeparator}${file.name}`
-                        )
-                    }
-                })
-            }
-            const msg = {
-                content: chatmsg.content,
-                role: chatmsg.role === 'apiMessage' ? 'bot' : 'user',
-                time: chatmsg.createdDate
-            }
-            if (filePaths.length) msg.filePaths = filePaths
-            if (chatmsg.sourceDocuments) msg.sourceDocuments = chatmsg.sourceDocuments
-            if (chatmsg.usedTools) msg.usedTools = chatmsg.usedTools
-            if (chatmsg.fileAnnotations) msg.fileAnnotations = chatmsg.fileAnnotations
-            if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
-            if (chatmsg.agentReasoning) msg.agentReasoning = chatmsg.agentReasoning
-            if (chatmsg.artifacts) {
-                msg.artifacts = chatmsg.artifacts
-                msg.artifacts.forEach((artifact) => {
-                    if (artifact.type === 'png' || artifact.type === 'jpeg') {
-                        artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
-                            chatmsg.chatId
-                        }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
-                    }
-                })
-            }
-            if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
-                obj[chatPK] = {
-                    id: chatmsg.chatId,
-                    source: getChatType(chatmsg.chatType),
-                    sessionId: chatmsg.sessionId ?? null,
-                    memoryType: chatmsg.memoryType ?? null,
-                    email: chatmsg.leadEmail ?? null,
-                    messages: [msg]
+            const exportFileDefaultName = `${dialogProps.chatflow.id}-Message.json`
+
+            let linkElement = document.createElement('a')
+            linkElement.setAttribute('href', dataUri)
+            linkElement.setAttribute('download', exportFileDefaultName)
+            linkElement.click()
+
+            enqueueSnackbar({
+                message: 'Messages exported successfully',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
                 }
-            } else if (Object.prototype.hasOwnProperty.call(obj, chatPK)) {
-                obj[chatPK].messages = [...obj[chatPK].messages, msg]
-            }
-        }
-
-        const exportMessages = []
-        for (const key in obj) {
-            exportMessages.push({
-                ...obj[key]
+            })
+        } catch (error) {
+            console.error('Error exporting messages:', error)
+            enqueueSnackbar({
+                message: 'Failed to export messages',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
             })
         }
-
-        for (let i = 0; i < exportMessages.length; i += 1) {
-            exportMessages[i].messages = exportMessages[i].messages.reverse()
-        }
-
-        const dataStr = JSON.stringify(exportMessages, null, 2)
-        //const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
-        const blob = new Blob([dataStr], { type: 'application/json' })
-        const dataUri = URL.createObjectURL(blob)
-
-        const exportFileDefaultName = `${dialogProps.chatflow.id}-Message.json`
-
-        let linkElement = document.createElement('a')
-        linkElement.setAttribute('href', dataUri)
-        linkElement.setAttribute('download', exportFileDefaultName)
-        linkElement.click()
     }
 
     const clearChat = async (chatmsg) => {
@@ -755,8 +715,6 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     useEffect(() => {
         if (getChatmessageApi.data) {
-            getStoragePathFromServer.request()
-
             const chatPK = processChatLogs(getChatmessageApi.data)
             setSelectedMessageIndex(0)
             if (chatPK) {
