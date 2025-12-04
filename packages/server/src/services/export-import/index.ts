@@ -13,10 +13,12 @@ import { Tool } from '../../database/entities/Tool'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { Platform } from '../../Interface'
 import assistantsService from '../../services/assistants'
 import chatflowsService from '../../services/chatflows'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { checkUsageLimit } from '../../utils/quotaUsage'
+import { sanitizeNullBytes } from '../../utils/sanitize.util'
 import assistantService from '../assistants'
 import chatMessagesService from '../chat-messages'
 import chatflowService from '../chatflows'
@@ -25,8 +27,6 @@ import executionService, { ExecutionFilters } from '../executions'
 import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
 import variableService from '../variables'
-import { Platform } from '../../Interface'
-import { sanitizeNullBytes } from '../../utils/sanitize.util'
 
 type ExportInput = {
     agentflow: boolean
@@ -596,6 +596,15 @@ function reduceSpaceForChatflowFlowData(chatflows: ChatFlow[]) {
 function insertWorkspaceId(importedData: any, activeWorkspaceId?: string) {
     if (!activeWorkspaceId) return importedData
     importedData.forEach((item: any) => {
+        if (item.type === 'Tool') {
+            // TODO: This is a temporary fix where export data for CustomTemplate type Tool need to be changed in the future.
+            // Also handles backward compatibility for previously exported data where CustomTemplate type Tool does not have flowData field.
+            item.flowData = JSON.stringify({
+                iconSrc: item.iconSrc,
+                schema: item.schema,
+                func: item.func
+            })
+        }
         item.workspaceId = activeWorkspaceId
     })
     return importedData

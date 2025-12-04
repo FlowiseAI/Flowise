@@ -20,7 +20,7 @@ class Loop_Agentflow implements INode {
     constructor() {
         this.label = 'Loop'
         this.name = 'loopAgentflow'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'Loop'
         this.category = 'Agent Flows'
         this.description = 'Loop back to a previous node'
@@ -64,8 +64,7 @@ class Loop_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
