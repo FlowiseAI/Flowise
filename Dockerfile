@@ -1,12 +1,11 @@
 FROM flowiseai/flowise:latest
 ENV PORT=10000
 ENV NODE_OPTIONS="--max-old-space-size=450"
-EXPOSE 10000
 # Build local monorepo image
 # docker build --no-cache -t  flowise .
 
 # Run image
-# docker run -d -p 3000:3000 flowise
+# docker run -d -p 10000:10000 flowise
 
 FROM node:20-alpine
 
@@ -44,6 +43,6 @@ RUN chown -R node:node .
 # Switch to non-root user (node user already exists in node:20-alpine)
 USER node
 
-EXPOSE 3000
+EXPOSE 10000
 
 CMD [ "pnpm", "start" ]
