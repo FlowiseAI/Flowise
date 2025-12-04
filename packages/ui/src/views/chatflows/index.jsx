@@ -208,6 +208,8 @@ const Chatflows = () => {
                                     filterFunction={filterFlows}
                                     updateFlowsApi={getAllChatflowsApi}
                                     setError={setError}
+                                    currentPage={currentPage}
+                                    pageLimit={pageLimit}
                                 />
                             )}
                             {/* Pagination and Page Size Controls */}

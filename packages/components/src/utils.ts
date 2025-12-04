@@ -8,6 +8,7 @@ import { cloneDeep, omit, get } from 'lodash'
 import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AES, enc } from 'crypto-js'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { Document } from '@langchain/core/documents'
@@ -1500,9 +1501,29 @@ export const executeJavaScriptCode = async (
 
             const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs })
 
+            // Determine which libraries to install
+            const librariesToInstall = new Set<string>(libraries)
+
+            // Auto-detect required libraries from code
+            // Extract required modules from import/require statements
+            const importRegex = /(?:import\s+.*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
+            let match
+            while ((match = importRegex.exec(code)) !== null) {
+                const moduleName = match[1] || match[2]
+                // Extract base module name (e.g., 'typeorm' from 'typeorm/something')
+                const baseModuleName = moduleName.split('/')[0]
+                librariesToInstall.add(baseModuleName)
+            }
+
             // Install libraries
-            for (const library of libraries) {
-                await sbx.commands.run(`npm install ${library}`)
+            for (const library of librariesToInstall) {
+                // Validate library name to prevent command injection.
+                const validPackageNameRegex = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
+                if (validPackageNameRegex.test(library)) {
+                    await sbx.commands.run(`npm install ${library}`)
+                } else {
+                    console.warn(`[Sandbox] Skipping installation of invalid module: ${library}`)
+                }
             }
 
             // Separate imports from the rest of the code for proper ES6 module structure
@@ -1920,4 +1941,161 @@ export async function parseWithTypeConversion<T extends z.ZodTypeAny>(schema: T,
         // Re-throw the original error if not a ZodError or no conversion possible
         throw e
     }
+}
+
+/**
+ * Configures structured output for the LLM using Zod schema
+ * @param {BaseChatModel} llmNodeInstance - The LLM instance to configure
+ * @param {any[]} structuredOutput - Array of structured output schema definitions
+ * @returns {BaseChatModel} - The configured LLM instance
+ */
+export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, structuredOutput: any[]): BaseChatModel => {
+    try {
+        const zodObj: ICommonObject = {}
+        for (const sch of structuredOutput) {
+            if (sch.type === 'string') {
+                zodObj[sch.key] = z.string().describe(sch.description || '')
+            } else if (sch.type === 'stringArray') {
+                zodObj[sch.key] = z.array(z.string()).describe(sch.description || '')
+            } else if (sch.type === 'number') {
+                zodObj[sch.key] = z.number().describe(sch.description || '')
+            } else if (sch.type === 'boolean') {
+                zodObj[sch.key] = z.boolean().describe(sch.description || '')
+            } else if (sch.type === 'enum') {
+                const enumValues = sch.enumValues?.split(',').map((item: string) => item.trim()) || []
+                zodObj[sch.key] = z
+                    .enum(enumValues.length ? (enumValues as [string, ...string[]]) : ['default'])
+                    .describe(sch.description || '')
+            } else if (sch.type === 'jsonArray') {
+                const jsonSchema = sch.jsonSchema
+                if (jsonSchema) {
+                    try {
+                        // Parse the JSON schema
+                        const schemaObj = JSON.parse(jsonSchema)
+
+                        // Create a Zod schema from the JSON schema
+                        const itemSchema = createZodSchemaFromJSON(schemaObj)
+
+                        // Create an array schema of the item schema
+                        zodObj[sch.key] = z.array(itemSchema).describe(sch.description || '')
+                    } catch (err) {
+                        console.error(`Error parsing JSON schema for ${sch.key}:`, err)
+                        // Fallback to generic array of records
+                        zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
+                    }
+                } else {
+                    // If no schema provided, use generic array of records
+                    zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
+                }
+            }
+        }
+        const structuredOutputSchema = z.object(zodObj)
+
+        // @ts-ignore
+        return llmNodeInstance.withStructuredOutput(structuredOutputSchema)
+    } catch (exception) {
+        console.error(exception)
+        return llmNodeInstance
+    }
+}
+
+/**
+ * Creates a Zod schema from a JSON schema object
+ * @param {any} jsonSchema - The JSON schema object
+ * @returns {z.ZodTypeAny} - A Zod schema
+ */
+export const createZodSchemaFromJSON = (jsonSchema: any): z.ZodTypeAny => {
+    // If the schema is an object with properties, create an object schema
+    if (typeof jsonSchema === 'object' && jsonSchema !== null) {
+        const schemaObj: Record<string, z.ZodTypeAny> = {}
+
+        // Process each property in the schema
+        for (const [key, value] of Object.entries(jsonSchema)) {
+            if (value === null) {
+                // Handle null values
+                schemaObj[key] = z.null()
+            } else if (typeof value === 'object' && !Array.isArray(value)) {
+                // Check if the property has a type definition
+                if ('type' in value) {
+                    const type = value.type as string
+                    const description = ('description' in value ? (value.description as string) : '') || ''
+
+                    // Create the appropriate Zod type based on the type property
+                    if (type === 'string') {
+                        schemaObj[key] = z.string().describe(description)
+                    } else if (type === 'number') {
+                        schemaObj[key] = z.number().describe(description)
+                    } else if (type === 'boolean') {
+                        schemaObj[key] = z.boolean().describe(description)
+                    } else if (type === 'array') {
+                        // If it's an array type, check if items is defined
+                        if ('items' in value && value.items) {
+                            const itemSchema = createZodSchemaFromJSON(value.items)
+                            schemaObj[key] = z.array(itemSchema).describe(description)
+                        } else {
+                            // Default to array of any if items not specified
+                            schemaObj[key] = z.array(z.any()).describe(description)
+                        }
+                    } else if (type === 'object') {
+                        // If it's an object type, check if properties is defined
+                        if ('properties' in value && value.properties) {
+                            const nestedSchema = createZodSchemaFromJSON(value.properties)
+                            schemaObj[key] = nestedSchema.describe(description)
+                        } else {
+                            // Default to record of any if properties not specified
+                            schemaObj[key] = z.record(z.any()).describe(description)
+                        }
+                    } else {
+                        // Default to any for unknown types
+                        schemaObj[key] = z.any().describe(description)
+                    }
+
+                    // Check if the property is optional
+                    if ('optional' in value && value.optional === true) {
+                        schemaObj[key] = schemaObj[key].optional()
+                    }
+                } else if (Array.isArray(value)) {
+                    // Array values without a type property
+                    if (value.length > 0) {
+                        // If the array has items, recursively create a schema for the first item
+                        const itemSchema = createZodSchemaFromJSON(value[0])
+                        schemaObj[key] = z.array(itemSchema)
+                    } else {
+                        // Empty array, allow any array
+                        schemaObj[key] = z.array(z.any())
+                    }
+                } else {
+                    // It's a nested object without a type property, recursively create schema
+                    schemaObj[key] = createZodSchemaFromJSON(value)
+                }
+            } else if (Array.isArray(value)) {
+                // Array values
+                if (value.length > 0) {
+                    // If the array has items, recursively create a schema for the first item
+                    const itemSchema = createZodSchemaFromJSON(value[0])
+                    schemaObj[key] = z.array(itemSchema)
+                } else {
+                    // Empty array, allow any array
+                    schemaObj[key] = z.array(z.any())
+                }
+            } else {
+                // For primitive values (which shouldn't be in the schema directly)
+                // Use the corresponding Zod type
+                if (typeof value === 'string') {
+                    schemaObj[key] = z.string()
+                } else if (typeof value === 'number') {
+                    schemaObj[key] = z.number()
+                } else if (typeof value === 'boolean') {
+                    schemaObj[key] = z.boolean()
+                } else {
+                    schemaObj[key] = z.any()
+                }
+            }
+        }
+
+        return z.object(schemaObj)
+    }
+
+    // Fallback to any for unknown types
+    return z.any()
 }

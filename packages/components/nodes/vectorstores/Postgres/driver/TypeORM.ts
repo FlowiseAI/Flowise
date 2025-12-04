@@ -5,6 +5,11 @@ import { TypeORMVectorStore, TypeORMVectorStoreArgs, TypeORMVectorStoreDocument 
 import { VectorStore } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
 import { Pool } from 'pg'
+import { v4 as uuid } from 'uuid'
+
+type TypeORMAddDocumentOptions = {
+    ids?: string[]
+}
 
 export class TypeORMDriver extends VectorStoreDriver {
     protected _postgresConnectionOptions: DataSourceOptions
@@ -95,15 +100,45 @@ export class TypeORMDriver extends VectorStoreDriver {
                 try {
                     instance.appDataSource.getRepository(instance.documentEntity).delete(ids)
                 } catch (e) {
-                    console.error('Failed to delete')
+                    console.error('Failed to delete', e)
                 }
             }
         }
 
-        const baseAddVectorsFn = instance.addVectors.bind(instance)
+        instance.addVectors = async (
+            vectors: number[][],
+            documents: Document[],
+            documentOptions?: TypeORMAddDocumentOptions
+        ): Promise<void> => {
+            const rows = vectors.map((embedding, idx) => {
+                const embeddingString = `[${embedding.join(',')}]`
+                const documentRow = {
+                    id: documentOptions?.ids?.length ? documentOptions.ids[idx] : uuid(),
+                    pageContent: documents[idx].pageContent,
+                    embedding: embeddingString,
+                    metadata: documents[idx].metadata
+                }
+                return documentRow
+            })
 
-        instance.addVectors = async (vectors, documents) => {
-            return baseAddVectorsFn(vectors, this.sanitizeDocuments(documents))
+            const documentRepository = instance.appDataSource.getRepository(instance.documentEntity)
+            const _batchSize = this.nodeData.inputs?.batchSize
+            const chunkSize = _batchSize ? parseInt(_batchSize, 10) : 500
+
+            for (let i = 0; i < rows.length; i += chunkSize) {
+                const chunk = rows.slice(i, i + chunkSize)
+                try {
+                    await documentRepository.save(chunk)
+                } catch (e) {
+                    console.error(e)
+                    throw new Error(`Error inserting: ${chunk[0].pageContent}`)
+                }
+            }
+        }
+
+        instance.addDocuments = async (documents: Document[], options?: { ids?: string[] }): Promise<void> => {
+            const texts = documents.map(({ pageContent }) => pageContent)
+            return (instance.addVectors as any)(await this.getEmbeddings().embedDocuments(texts), documents, options)
         }
 
         return instance
