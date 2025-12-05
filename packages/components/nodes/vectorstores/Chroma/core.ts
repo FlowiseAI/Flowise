@@ -5,6 +5,7 @@ import type {
     Collection,
     CollectionConfiguration,
     CollectionMetadata,
+    Metadata,
     Where
 } from 'chromadb'
 
@@ -145,7 +146,7 @@ export class Chroma extends VectorStore {
         const documentIds = options?.ids ?? Array.from({ length: vectors.length }, () => uuid.v1())
         const collection = await this.ensureCollection()
 
-        const mappedMetadatas = documents.map(({ metadata }) => {
+        const mappedMetadatas: Metadata[] = documents.map(({ metadata }) => {
             let locFrom
             let locTo
 
@@ -162,7 +163,7 @@ export class Chroma extends VectorStore {
 
             if (newMetadata.loc) delete newMetadata.loc
 
-            return newMetadata
+            return sanitizeMetadata(newMetadata)
         })
 
         await collection.upsert({
@@ -342,4 +343,27 @@ function ensureCollectionName(collectionName?: string) {
         return `langchain-${uuid.v4()}`
     }
     return collectionName
+}
+
+/**
+ * Sanitizes metadata to only include Chroma-compatible primitive values.
+ * Chroma metadata only supports boolean, number, string, and null values.
+ * Arrays and objects are JSON stringified to preserve the data.
+ */
+function sanitizeMetadata(metadata: Document['metadata']): Metadata {
+    const sanitized: Metadata = {}
+    for (const [key, value] of Object.entries(metadata)) {
+        if (value === undefined) {
+            continue
+        } else if (value === null || typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
+            sanitized[key] = value
+        } else {
+            try {
+                sanitized[key] = JSON.stringify(value)
+            } catch {
+                // Skip arrays, objects, undefined, and other non-primitive types
+            }
+        }
+    }
+    return sanitized
 }
