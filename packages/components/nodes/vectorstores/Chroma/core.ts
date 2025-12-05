@@ -353,15 +353,16 @@ function ensureCollectionName(collectionName?: string) {
 function sanitizeMetadata(metadata: Document['metadata']): Metadata {
     const sanitized: Metadata = {}
     for (const [key, value] of Object.entries(metadata)) {
-        if (value === undefined) {
-            continue
-        } else if (value === null || typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
+        if (value === null || typeof value === 'boolean' || typeof value === 'number' || typeof value === 'string') {
             sanitized[key] = value
-        } else {
+        } else if (value !== undefined) {
             try {
-                sanitized[key] = JSON.stringify(value)
+                const stringified = JSON.stringify(value)
+                if (stringified !== undefined) {
+                    sanitized[key] = stringified
+                }
             } catch {
-                // Skip arrays, objects, undefined, and other non-primitive types
+                // Skip values that cannot be stringified (e.g. circular references)
             }
         }
     }
