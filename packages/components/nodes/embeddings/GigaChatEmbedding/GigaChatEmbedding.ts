@@ -1,7 +1,6 @@
 import https from 'node:https'
 import { GigaChatEmbeddings as GCEmbeddings } from 'langchain-gigachat'
 
-
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData } from '../../../src/utils'
 
@@ -85,7 +84,7 @@ class GigaChatEmbedding implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default:defaultBaseUrl,
+                default: defaultBaseUrl,
                 description: 'API URL',
                 optional: false
             },

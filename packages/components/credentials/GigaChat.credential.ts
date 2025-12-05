@@ -1,4 +1,4 @@
-import { INodeCredential, INodeParams } from "../src/Interface"
+import { INodeCredential, INodeParams } from '../src/Interface'
 
 class GigaChatApi implements INodeCredential {
     label: string

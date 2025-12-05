@@ -68,8 +68,7 @@ class ChatGigaChat implements INode {
                     {
                         label: 'GigaChat Plus',
                         name: 'GigaChat-Plus',
-                        description:
-                            'Ideally suited for tasks that require sending a large amount of information in a single request.'
+                        description: 'Ideally suited for tasks that require sending a large amount of information in a single request.'
                     },
                     {
                         label: 'GigaChat',
