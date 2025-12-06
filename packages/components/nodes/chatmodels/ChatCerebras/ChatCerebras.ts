@@ -3,6 +3,12 @@ import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
+interface CerebrasModelOption {
+    label: string
+    name: string
+    description: string
+}
+
 class ChatCerebras_ChatModels implements INode {
     label: string
     name: string
@@ -15,10 +21,38 @@ class ChatCerebras_ChatModels implements INode {
     credential: INodeParams
     inputs: INodeParams[]
 
+    private static readonly CEREBRAS_MODELS: CerebrasModelOption[] = [
+        {
+            label: 'llama-3.3-70b',
+            name: 'llama-3.3-70b',
+            description: 'Best for complex reasoning and long-form content'
+        },
+        {
+            label: 'qwen-3-32b',
+            name: 'qwen-3-32b',
+            description: 'Balanced performance for general-purpose tasks'
+        },
+        {
+            label: 'llama3.1-8b',
+            name: 'llama3.1-8b',
+            description: 'Fastest model, ideal for simple tasks and high throughput'
+        },
+        {
+            label: 'gpt-oss-120b',
+            name: 'gpt-oss-120b',
+            description: 'Largest model for demanding tasks'
+        },
+        {
+            label: 'zai-glm-4.6',
+            name: 'zai-glm-4.6',
+            description: 'Advanced reasoning and complex problem-solving'
+        }
+    ]
+
     constructor() {
         this.label = 'ChatCerebras'
         this.name = 'chatCerebras'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatCerebras'
         this.icon = 'cerebras.png'
         this.category = 'Chat Models'
@@ -41,8 +75,9 @@ class ChatCerebras_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'string',
-                placeholder: 'llama3.1-8b'
+                type: 'options',
+                options: ChatCerebras_ChatModels.CEREBRAS_MODELS,
+                default: 'llama3.1-8b'
             },
             {
                 label: 'Temperature',
@@ -159,10 +194,16 @@ class ChatCerebras_ChatModels implements INode {
             }
         }
 
-        if (basePath || parsedBaseOptions) {
-            obj.configuration = {
-                baseURL: basePath,
-                defaultHeaders: parsedBaseOptions
+        // Add integration tracking header and configure endpoint
+        const integrationHeader = {
+            'X-Cerebras-3rd-Party-Integration': 'flowise'
+        }
+
+        obj.configuration = {
+            baseURL: basePath || 'https://api.cerebras.ai/v1',
+            defaultHeaders: {
+                ...integrationHeader,
+                ...(parsedBaseOptions || {})
             }
         }
 
