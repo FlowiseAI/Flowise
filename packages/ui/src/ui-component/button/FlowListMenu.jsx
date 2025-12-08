@@ -102,6 +102,24 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
+    const refreshFlows = async () => {
+        try {
+            const params = {
+                page: currentPage,
+                limit: pageLimit
+            }
+            if (isAgentCanvas && isAgentflowV2) {
+                await updateFlowsApi.request('AGENTFLOW', params)
+            } else if (isAgentCanvas) {
+                await updateFlowsApi.request('MULTIAGENT', params)
+            } else {
+                await updateFlowsApi.request(params)
+            }
+        } catch (error) {
+            if (setError) setError(error)
+        }
+    }
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
     }
@@ -442,21 +460,25 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}
                 onCancel={() => setConversationStartersDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             <ChatFeedbackDialog
                 show={chatFeedbackDialogOpen}
                 dialogProps={chatFeedbackDialogProps}
                 onCancel={() => setChatFeedbackDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             <AllowedDomainsDialog
                 show={allowedDomainsDialogOpen}
                 dialogProps={allowedDomainsDialogProps}
                 onCancel={() => setAllowedDomainsDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             <SpeechToTextDialog
                 show={speechToTextDialogOpen}
                 dialogProps={speechToTextDialogProps}
                 onCancel={() => setSpeechToTextDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             {exportTemplateDialogOpen && (
                 <ExportAsTemplateDialog
