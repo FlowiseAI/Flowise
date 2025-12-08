@@ -371,13 +371,30 @@ export class SecureZodSchemaParser {
 
     private static extractLiteralWithModifiers(typeStr: string): { literalPart: string; modifiers: any[]; hasModifiers: boolean } {
         // Find the matching closing parenthesis for z.literal(...)
-        let depth = 0
+        let depth = 1
         let literalEndIndex = -1
-        let startIndex = typeStr.indexOf('z.literal(') + 9 // Position after "z.literal"
+        const literalStartIndex = typeStr.indexOf('z.literal(')
+        if (literalStartIndex === -1) {
+            return { literalPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+        let startIndex = literalStartIndex + 'z.literal('.length
+
+        let inString = false
+        let stringChar = ''
 
         for (let i = startIndex; i < typeStr.length; i++) {
-            if (typeStr[i] === '(') depth++
-            else if (typeStr[i] === ')') {
+            const char = typeStr[i]
+
+            if (inString) {
+                if (char === stringChar && typeStr[i - 1] !== '\\') {
+                    inString = false
+                }
+            } else if (char === '"' || char === "'") {
+                inString = true
+                stringChar = char
+            } else if (char === '(') {
+                depth++
+            } else if (char === ')') {
                 depth--
                 if (depth === 0) {
                     literalEndIndex = i + 1
@@ -486,26 +503,35 @@ export class SecureZodSchemaParser {
 
     private static extractUnionWithModifiers(typeStr: string): { unionPart: string; modifiers: any[]; hasModifiers: boolean } {
         // Find the matching closing bracket and parenthesis for z.union([...])
-        let bracketDepth = 0
-        let parenDepth = 0
+        let depth = 1
         let unionEndIndex = -1
-        let startIndex = typeStr.indexOf('z.union(') + 7 // Position after "z.union"
-        let foundOpenBracket = false
+        const unionStartIndex = typeStr.indexOf('z.union(')
+        if (unionStartIndex === -1) {
+            return { unionPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+        let startIndex = unionStartIndex + 'z.union('.length
+
+        let inString = false
+        let stringChar = ''
 
         for (let i = startIndex; i < typeStr.length; i++) {
-            if (typeStr[i] === '[') {
-                bracketDepth++
-                foundOpenBracket = true
-            } else if (typeStr[i] === ']') {
-                bracketDepth--
-            } else if (typeStr[i] === '(' && foundOpenBracket) {
-                parenDepth++
-            } else if (typeStr[i] === ')' && foundOpenBracket) {
-                if (bracketDepth === 0 && parenDepth === 0) {
+            const char = typeStr[i]
+
+            if (inString) {
+                if (char === stringChar && typeStr[i - 1] !== '\\') {
+                    inString = false
+                }
+            } else if (char === '"' || char === "'") {
+                inString = true
+                stringChar = char
+            } else if (char === '(' || char === '[') {
+                depth++
+            } else if (char === ')' || char === ']') {
+                depth--
+                if (depth === 0) {
                     unionEndIndex = i + 1
                     break
                 }
-                parenDepth--
             }
         }
 
