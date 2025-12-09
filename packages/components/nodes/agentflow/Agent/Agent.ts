@@ -1394,7 +1394,9 @@ class Agent_Agentflow implements INode {
             }
 
             // Process template variables in state
-            newState = processTemplateVariables(newState, finalResponse)
+            const outputForStateProcessing =
+                isStructuredOutput && typeof response === 'object' ? JSON.stringify(response, null, 2) : finalResponse
+            newState = processTemplateVariables(newState, outputForStateProcessing)
 
             /**
              * Remove the temporarily added image artifact messages before storing
