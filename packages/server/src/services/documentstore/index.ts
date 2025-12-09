@@ -561,7 +561,12 @@ const _saveFileToStorage = async (
     }
 }
 
-const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComponentNodes, data: IDocumentStoreLoaderForPreview, workspaceId?: string) => {
+const _splitIntoChunks = async (
+    appDataSource: DataSource,
+    componentNodes: IComponentNodes,
+    data: IDocumentStoreLoaderForPreview,
+    workspaceId?: string
+) => {
     try {
         let splitterInstance = null
         if (data.splitterId && data.splitterConfig && Object.keys(data.splitterConfig).length > 0) {
