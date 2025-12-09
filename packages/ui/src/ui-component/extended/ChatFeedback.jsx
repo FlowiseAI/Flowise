@@ -17,7 +17,7 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const ChatFeedback = ({ dialogProps }) => {
+const ChatFeedback = ({ dialogProps, onConfirm }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -57,6 +57,7 @@ const ChatFeedback = ({ dialogProps }) => {
                     }
                 })
                 dispatch({ type: SET_CHATFLOW, chatflow: saveResp.data })
+                onConfirm?.()
             }
         } catch (error) {
             enqueueSnackbar({
@@ -102,7 +103,8 @@ const ChatFeedback = ({ dialogProps }) => {
 }
 
 ChatFeedback.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    onConfirm: PropTypes.func
 }
 
 export default ChatFeedback
