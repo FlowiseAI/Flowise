@@ -514,11 +514,7 @@ const deleteVectorStoreFromStore = async (req: Request, res: Response, next: Nex
                 `Error: documentStoreController.deleteVectorStoreFromStore - workspaceId not provided!`
             )
         }
-        const apiResponse = await documentStoreService.deleteVectorStoreFromStore(
-            req.params.storeId,
-            workspaceId,
-            (req.query.docId as string) || undefined
-        )
+        const apiResponse = await documentStoreService.deleteVectorStoreFromStore(req.params.storeId, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
