@@ -18,7 +18,7 @@ class ChatOllamaCloud_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOllama Cloud'
         this.name = 'chatOllamaCloud'
-        this.version = 1.0
+        this.version = 1.2
         this.type = 'ChatOllamaCloud'
         this.icon = 'Ollama.svg'
         this.category = 'Chat Models'
@@ -78,6 +78,41 @@ class ChatOllamaCloud_ChatModels implements INode {
                         description: 'Vision-language model with 235B parameters'
                     },
                     {
+                        label: 'Qwen3 Next 80B Cloud',
+                        name: 'qwen3-next:80b-cloud',
+                        description: 'Advanced Qwen3 model with 80B parameters, cloud version'
+                    },
+                    {
+                        label: 'Mistral Large 3 675B Cloud',
+                        name: 'mistral-large-3:675b-cloud',
+                        description: 'Large Mistral model with 675B parameters, cloud version'
+                    },
+                    {
+                        label: 'MiniStral 3 3B Cloud',
+                        name: 'ministral-3:3b-cloud',
+                        description: 'Efficient MiniStral model with 3B parameters, cloud version'
+                    },
+                    {
+                        label: 'MiniStral 3 8B Cloud',
+                        name: 'ministral-3:8b-cloud',
+                        description: 'Balanced MiniStral model with 8B parameters, cloud version'
+                    },
+                    {
+                        label: 'MiniStral 3 14B Cloud',
+                        name: 'ministral-3:14b-cloud',
+                        description: 'Advanced MiniStral model with 14B parameters, cloud version'
+                    },
+                    {
+                        label: 'Cogito 2.1 671B Cloud',
+                        name: 'cogito-2.1:671b-cloud',
+                        description: 'Reasoning model with 671B parameters, cloud version'
+                    },
+                    {
+                        label: 'Kimi K2 Thinking Cloud',
+                        name: 'kimi-k2-thinking:cloud',
+                        description: 'Advanced thinking model, cloud version'
+                    },
+                    {
                         label: 'MiniMax M2',
                         name: 'minimax-m2',
                         description: 'Efficient multi-modal model'
@@ -89,6 +124,14 @@ class ChatOllamaCloud_ChatModels implements INode {
                     }
                 ],
                 default: 'gpt-oss:120b'
+            },
+            {
+                label: 'Custom Model Name',
+                name: 'customModelName',
+                type: 'string',
+                placeholder: 'e.g. llama3:70b',
+                description: 'Custom model name to use. If provided, it will override the model selected above.',
+                optional: true
             },
             {
                 label: 'Temperature',
@@ -150,6 +193,7 @@ class ChatOllamaCloud_ChatModels implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const customModelName = nodeData.inputs?.customModelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
         const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
@@ -163,7 +207,7 @@ class ChatOllamaCloud_ChatModels implements INode {
 
         const obj: any = {
             temperature: parseFloat(temperature),
-            model: modelName
+            model: customModelName || modelName
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
