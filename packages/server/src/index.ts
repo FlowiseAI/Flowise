@@ -19,7 +19,7 @@ import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
 import { WHITELIST_URLS } from './utils/constants'
-import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
+import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
 import { IdentityManager } from './IdentityManager'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { validateAPIKey } from './utils/validateKey'
@@ -334,17 +334,7 @@ export class App {
         })
 
         if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && !this.identityManager.isCloud()) {
-            if (!process.env.BULLMQ_DASHBOARD_PASS) {
-                throw new InternalFlowiseError(
-                    StatusCodes.BAD_REQUEST,
-                    'BULLMQ_DASHBOARD_PASS is required when enabling the BullMQ dashboard. Set it in your env file.'
-                )
-            }
-            const auth = basicAuth({
-                challenge: true,
-                users: { admin: process.env.BULLMQ_DASHBOARD_PASS as string }
-            })
-            this.app.use('/admin/queues', auth, this.queueManager.getBullBoardRouter())
+            this.app.use('/admin/queues', verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
