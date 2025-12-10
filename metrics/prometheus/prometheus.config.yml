@@ -10,4 +10,4 @@ scrape_configs:
     
     authorization:
       type: Bearer
-      credentials: 'your-api-key-here'
+      credentials_file: '/etc/prometheus/api_key.txt'
