@@ -340,12 +340,8 @@ export class App {
                 process.env.ADMIN_RATE_LIMIT_MESSAGE || 'Too many requests to admin dashboard, please try again later.'
             )
 
-            this.app.use(
-                '/admin/queues',
-                this.rateLimiterManager.getRateLimiterById(id),
-                verifyTokenForBullMQDashboard,
-                this.queueManager.getBullBoardRouter()
-            )
+            const rateLimiter = this.rateLimiterManager.getRateLimiterById(id)
+            this.app.use('/admin/queues', rateLimiter, verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
