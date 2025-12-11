@@ -561,7 +561,12 @@ const _saveFileToStorage = async (
     }
 }
 
-const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComponentNodes, data: IDocumentStoreLoaderForPreview) => {
+const _splitIntoChunks = async (
+    appDataSource: DataSource,
+    componentNodes: IComponentNodes,
+    data: IDocumentStoreLoaderForPreview,
+    workspaceId?: string
+) => {
     try {
         let splitterInstance = null
         if (data.splitterId && data.splitterConfig && Object.keys(data.splitterConfig).length > 0) {
@@ -588,7 +593,8 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
             appDataSource,
             databaseEntities,
             logger,
-            processRaw: true
+            processRaw: true,
+            workspaceId
         }
         const docNodeInstance = new nodeModule.nodeClass()
         let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
@@ -700,7 +706,7 @@ const previewChunksMiddleware = async (
     }
 }
 
-export const previewChunks = async ({ appDataSource, componentNodes, data, orgId }: IExecutePreviewLoader) => {
+export const previewChunks = async ({ appDataSource, componentNodes, data, orgId, workspaceId }: IExecutePreviewLoader) => {
     try {
         if (data.preview) {
             if (
@@ -714,7 +720,7 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
         if (!data.rehydrated) {
             await _normalizeFilePaths(appDataSource, data, null, orgId)
         }
-        let docs = await _splitIntoChunks(appDataSource, componentNodes, data)
+        let docs = await _splitIntoChunks(appDataSource, componentNodes, data, workspaceId)
         const totalChunks = docs.length
         // if -1, return all chunks
         if (data.previewChunkCount === -1) data.previewChunkCount = totalChunks
