@@ -63,6 +63,22 @@ type ExportData = {
     Variable: Variable[]
 }
 
+/**
+ * Safely parses a JSON string, returning the original value if parsing fails
+ * @param value - The value to parse (can be string or any other type)
+ * @returns Parsed JSON object if value is a valid JSON string, otherwise returns the original value
+ */
+const safeJsonParse = (value: any): any => {
+    if (typeof value === 'string') {
+        try {
+            return JSON.parse(value)
+        } catch (e) {
+            // Not a valid JSON string, return original value
+        }
+    }
+    return value
+}
+
 const convertExportInput = (body: any): ExportInput => {
     try {
         if (!body || typeof body !== 'object') throw new Error('Invalid ExportInput object in request body')
@@ -636,7 +652,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
     importData.Tool = importData.Tool || []
     importData.Variable = importData.Variable || []
 
-    let queryRunner
+    let queryRunner: QueryRunner
     try {
         queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
         await queryRunner.connect()
@@ -815,11 +831,8 @@ const exportChatflowMessages = async (
         let parsedChatTypes: ChatType[] | undefined
         if (chatType) {
             if (typeof chatType === 'string') {
-                try {
-                    parsedChatTypes = JSON.parse(chatType)
-                } catch (e) {
-                    parsedChatTypes = [chatType as ChatType]
-                }
+                const parsed = safeJsonParse(chatType)
+                parsedChatTypes = Array.isArray(parsed) ? parsed : [chatType as ChatType]
             } else if (Array.isArray(chatType)) {
                 parsedChatTypes = chatType
             }
@@ -829,11 +842,8 @@ const exportChatflowMessages = async (
         let parsedFeedbackTypes: ChatMessageRatingType[] | undefined
         if (feedbackType) {
             if (typeof feedbackType === 'string') {
-                try {
-                    parsedFeedbackTypes = JSON.parse(feedbackType)
-                } catch (e) {
-                    parsedFeedbackTypes = [feedbackType as ChatMessageRatingType]
-                }
+                const parsed = safeJsonParse(feedbackType)
+                parsedFeedbackTypes = Array.isArray(parsed) ? parsed : [feedbackType as ChatMessageRatingType]
             } else if (Array.isArray(feedbackType)) {
                 parsedFeedbackTypes = feedbackType
             }
@@ -860,18 +870,14 @@ const exportChatflowMessages = async (
             const filePaths: string[] = []
 
             // Handle file uploads
-            if (chatmsg.fileUploads && typeof chatmsg.fileUploads === 'string') {
-                try {
-                    const uploads = JSON.parse(chatmsg.fileUploads)
-                    if (Array.isArray(uploads)) {
-                        uploads.forEach((file: any) => {
-                            if (file.type === 'stored-file') {
-                                filePaths.push(path.join(storagePath, chatmsg.chatflowid, chatmsg.chatId, file.name))
-                            }
-                        })
-                    }
-                } catch (e) {
-                    // Handle parsing errors silently
+            if (chatmsg.fileUploads) {
+                const uploads = safeJsonParse(chatmsg.fileUploads)
+                if (Array.isArray(uploads)) {
+                    uploads.forEach((file: any) => {
+                        if (file.type === 'stored-file') {
+                            filePaths.push(path.join(storagePath, chatmsg.chatflowid, chatmsg.chatId, file.name))
+                        }
+                    })
                 }
             }
 
@@ -884,56 +890,25 @@ const exportChatflowMessages = async (
 
             // Add optional properties
             if (filePaths.length) msg.filePaths = filePaths
-            if (chatmsg.sourceDocuments) {
-                try {
-                    msg.sourceDocuments =
-                        typeof chatmsg.sourceDocuments === 'string' ? JSON.parse(chatmsg.sourceDocuments) : chatmsg.sourceDocuments
-                } catch (e) {
-                    msg.sourceDocuments = chatmsg.sourceDocuments
-                }
-            }
-            if (chatmsg.usedTools) {
-                try {
-                    msg.usedTools = typeof chatmsg.usedTools === 'string' ? JSON.parse(chatmsg.usedTools) : chatmsg.usedTools
-                } catch (e) {
-                    msg.usedTools = chatmsg.usedTools
-                }
-            }
-            if (chatmsg.fileAnnotations) {
-                try {
-                    msg.fileAnnotations =
-                        typeof chatmsg.fileAnnotations === 'string' ? JSON.parse(chatmsg.fileAnnotations) : chatmsg.fileAnnotations
-                } catch (e) {
-                    msg.fileAnnotations = chatmsg.fileAnnotations
-                }
-            }
+            if (chatmsg.sourceDocuments) msg.sourceDocuments = safeJsonParse(chatmsg.sourceDocuments)
+            if (chatmsg.usedTools) msg.usedTools = safeJsonParse(chatmsg.usedTools)
+            if (chatmsg.fileAnnotations) msg.fileAnnotations = safeJsonParse(chatmsg.fileAnnotations)
             if ((chatmsg as any).feedback) msg.feedback = (chatmsg as any).feedback.content
-            if (chatmsg.agentReasoning) {
-                try {
-                    msg.agentReasoning =
-                        typeof chatmsg.agentReasoning === 'string' ? JSON.parse(chatmsg.agentReasoning) : chatmsg.agentReasoning
-                } catch (e) {
-                    msg.agentReasoning = chatmsg.agentReasoning
-                }
-            }
+            if (chatmsg.agentReasoning) msg.agentReasoning = safeJsonParse(chatmsg.agentReasoning)
 
             // Handle artifacts
             if (chatmsg.artifacts) {
-                try {
-                    const artifacts = typeof chatmsg.artifacts === 'string' ? JSON.parse(chatmsg.artifacts) : chatmsg.artifacts
-                    msg.artifacts = artifacts
-                    if (Array.isArray(artifacts)) {
-                        artifacts.forEach((artifact: any) => {
-                            if (artifact.type === 'png' || artifact.type === 'jpeg') {
-                                const baseURL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`
-                                artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
-                                    chatmsg.chatId
-                                }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
-                            }
-                        })
-                    }
-                } catch (e) {
-                    msg.artifacts = chatmsg.artifacts
+                const artifacts = safeJsonParse(chatmsg.artifacts)
+                msg.artifacts = artifacts
+                if (Array.isArray(artifacts)) {
+                    artifacts.forEach((artifact: any) => {
+                        if (artifact.type === 'png' || artifact.type === 'jpeg') {
+                            const baseURL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`
+                            artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
+                                chatmsg.chatId
+                            }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
+                        }
+                    })
                 }
             }
 
