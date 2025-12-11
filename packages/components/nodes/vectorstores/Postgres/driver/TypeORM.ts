@@ -110,13 +110,16 @@ export class TypeORMDriver extends VectorStoreDriver {
             documents: Document[],
             documentOptions?: TypeORMAddDocumentOptions
         ): Promise<void> => {
+            // Sanitize documents to remove NULL characters that cause Postgres errors
+            const sanitizedDocs = this.sanitizeDocuments(documents)
+
             const rows = vectors.map((embedding, idx) => {
                 const embeddingString = `[${embedding.join(',')}]`
                 const documentRow = {
                     id: documentOptions?.ids?.length ? documentOptions.ids[idx] : uuid(),
-                    pageContent: documents[idx].pageContent,
+                    pageContent: sanitizedDocs[idx].pageContent,
                     embedding: embeddingString,
-                    metadata: documents[idx].metadata
+                    metadata: sanitizedDocs[idx].metadata
                 }
                 return documentRow
             })
