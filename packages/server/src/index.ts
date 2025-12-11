@@ -3,7 +3,6 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import cookieParser from 'cookie-parser'
-import basicAuth from 'express-basic-auth'
 import { DataSource, IsNull } from 'typeorm'
 import { MODE, Platform } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
@@ -36,8 +35,6 @@ import { Organization } from './enterprise/database/entities/organization.entity
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
-import { InternalFlowiseError } from './errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
 
 declare global {
     namespace Express {
