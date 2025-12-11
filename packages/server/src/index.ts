@@ -331,7 +331,21 @@ export class App {
         })
 
         if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && !this.identityManager.isCloud()) {
-            this.app.use('/admin/queues', verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
+            // Initialize admin queues rate limiter
+            const id = 'bullmq_admin_dashboard'
+            await this.rateLimiterManager.addRateLimiter(
+                id,
+                60,
+                100,
+                process.env.ADMIN_RATE_LIMIT_MESSAGE || 'Too many requests to admin dashboard, please try again later.'
+            )
+
+            this.app.use(
+                '/admin/queues',
+                this.rateLimiterManager.getRateLimiterById(id),
+                verifyTokenForBullMQDashboard,
+                this.queueManager.getBullBoardRouter()
+            )
         }
 
         // ----------------------------------------
