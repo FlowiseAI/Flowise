@@ -2,17 +2,19 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ICommonObject, IMessage, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
-import { z } from 'zod'
 import { AnalyticHandler } from '../../../src/handler'
-import { ILLMMessage, IStructuredOutput } from '../Interface.Agentflow'
+import { ILLMMessage } from '../Interface.Agentflow'
 import {
+    addImageArtifactsToMessages,
+    extractArtifactsFromResponse,
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
     replaceBase64ImagesWithFileReferences,
+    replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import { processTemplateVariables } from '../../../src/utils'
+import { processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
 import { flatten } from 'lodash'
 
 class LLM_Agentflow implements INode {
@@ -32,7 +34,7 @@ class LLM_Agentflow implements INode {
     constructor() {
         this.label = 'LLM'
         this.name = 'llmAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'LLM'
         this.category = 'Agent Flows'
         this.description = 'Large language models to analyze user-provided inputs and generate responses'
@@ -288,8 +290,7 @@ class LLM_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
@@ -449,10 +450,16 @@ class LLM_Agentflow implements INode {
             }
             delete nodeData.inputs?.llmMessages
 
+            /**
+             * Add image artifacts from previous assistant responses as user messages
+             * Images are converted from FILE-STORAGE::<image_path> to base 64 image_url format
+             */
+            await addImageArtifactsToMessages(messages, options)
+
             // Configure structured output if specified
             const isStructuredOutput = _llmStructuredOutput && Array.isArray(_llmStructuredOutput) && _llmStructuredOutput.length > 0
             if (isStructuredOutput) {
-                llmNodeInstance = this.configureStructuredOutput(llmNodeInstance, _llmStructuredOutput)
+                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _llmStructuredOutput)
             }
 
             // Initialize response and determine if streaming is possible
@@ -468,9 +475,11 @@ class LLM_Agentflow implements INode {
 
             // Track execution time
             const startTime = Date.now()
-
             const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
+            /*
+             * Invoke LLM
+             */
             if (isStreamable) {
                 response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
             } else {
@@ -495,6 +504,40 @@ class LLM_Agentflow implements INode {
             const endTime = Date.now()
             const timeDelta = endTime - startTime
 
+            // Extract artifacts and file annotations from response metadata
+            let artifacts: any[] = []
+            let fileAnnotations: any[] = []
+            if (response.response_metadata) {
+                const {
+                    artifacts: extractedArtifacts,
+                    fileAnnotations: extractedFileAnnotations,
+                    savedInlineImages
+                } = await extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
+
+                if (extractedArtifacts.length > 0) {
+                    artifacts = extractedArtifacts
+
+                    // Stream artifacts if this is the last node
+                    if (isLastNode && sseStreamer) {
+                        sseStreamer.streamArtifactsEvent(chatId, artifacts)
+                    }
+                }
+
+                if (extractedFileAnnotations.length > 0) {
+                    fileAnnotations = extractedFileAnnotations
+
+                    // Stream file annotations if this is the last node
+                    if (isLastNode && sseStreamer) {
+                        sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
+                    }
+                }
+
+                // Replace inlineData base64 with file references in the response
+                if (savedInlineImages && savedInlineImages.length > 0) {
+                    replaceInlineDataWithFileReferences(response, savedInlineImages)
+                }
+            }
+
             // Update flow state if needed
             let newState = { ...state }
             if (_llmUpdateState && Array.isArray(_llmUpdateState) && _llmUpdateState.length > 0) {
@@ -514,10 +557,22 @@ class LLM_Agentflow implements INode {
                 finalResponse = response.content.map((item: any) => item.text).join('\n')
             } else if (response.content && typeof response.content === 'string') {
                 finalResponse = response.content
+            } else if (response.content === '') {
+                // Empty response content, this could happen when there is only image data
+                finalResponse = ''
             } else {
                 finalResponse = JSON.stringify(response, null, 2)
             }
-            const output = this.prepareOutputObject(response, finalResponse, startTime, endTime, timeDelta, isStructuredOutput)
+            const output = this.prepareOutputObject(
+                response,
+                finalResponse,
+                startTime,
+                endTime,
+                timeDelta,
+                isStructuredOutput,
+                artifacts,
+                fileAnnotations
+            )
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
@@ -529,12 +584,23 @@ class LLM_Agentflow implements INode {
                 this.sendStreamingEvents(options, chatId, response)
             }
 
+            // Stream file annotations if any were extracted
+            if (fileAnnotations.length > 0 && isLastNode && sseStreamer) {
+                sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
+            }
+
             // Process template variables in state
             newState = processTemplateVariables(newState, finalResponse)
 
+            /**
+             * Remove the temporarily added image artifact messages before storing
+             * This is to avoid storing the actual base64 data into database
+             */
+            const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
+
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messages,
+                messagesToStore,
                 runtimeImageMessagesWithFileRef,
                 pastImageMessagesWithFileRef
             )
@@ -585,7 +651,13 @@ class LLM_Agentflow implements INode {
                     {
                         role: returnRole,
                         content: finalResponse,
-                        name: nodeData?.label ? nodeData?.label.toLowerCase().replace(/\s/g, '_').trim() : nodeData?.id
+                        name: nodeData?.label ? nodeData?.label.toLowerCase().replace(/\s/g, '_').trim() : nodeData?.id,
+                        ...(((artifacts && artifacts.length > 0) || (fileAnnotations && fileAnnotations.length > 0)) && {
+                            additional_kwargs: {
+                                ...(artifacts && artifacts.length > 0 && { artifacts }),
+                                ...(fileAnnotations && fileAnnotations.length > 0 && { fileAnnotations })
+                            }
+                        })
                     }
                 ]
             }
@@ -756,59 +828,6 @@ class LLM_Agentflow implements INode {
     }
 
     /**
-     * Configures structured output for the LLM
-     */
-    private configureStructuredOutput(llmNodeInstance: BaseChatModel, llmStructuredOutput: IStructuredOutput[]): BaseChatModel {
-        try {
-            const zodObj: ICommonObject = {}
-            for (const sch of llmStructuredOutput) {
-                if (sch.type === 'string') {
-                    zodObj[sch.key] = z.string().describe(sch.description || '')
-                } else if (sch.type === 'stringArray') {
-                    zodObj[sch.key] = z.array(z.string()).describe(sch.description || '')
-                } else if (sch.type === 'number') {
-                    zodObj[sch.key] = z.number().describe(sch.description || '')
-                } else if (sch.type === 'boolean') {
-                    zodObj[sch.key] = z.boolean().describe(sch.description || '')
-                } else if (sch.type === 'enum') {
-                    const enumValues = sch.enumValues?.split(',').map((item: string) => item.trim()) || []
-                    zodObj[sch.key] = z
-                        .enum(enumValues.length ? (enumValues as [string, ...string[]]) : ['default'])
-                        .describe(sch.description || '')
-                } else if (sch.type === 'jsonArray') {
-                    const jsonSchema = sch.jsonSchema
-                    if (jsonSchema) {
-                        try {
-                            // Parse the JSON schema
-                            const schemaObj = JSON.parse(jsonSchema)
-
-                            // Create a Zod schema from the JSON schema
-                            const itemSchema = this.createZodSchemaFromJSON(schemaObj)
-
-                            // Create an array schema of the item schema
-                            zodObj[sch.key] = z.array(itemSchema).describe(sch.description || '')
-                        } catch (err) {
-                            console.error(`Error parsing JSON schema for ${sch.key}:`, err)
-                            // Fallback to generic array of records
-                            zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
-                        }
-                    } else {
-                        // If no schema provided, use generic array of records
-                        zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
-                    }
-                }
-            }
-            const structuredOutput = z.object(zodObj)
-
-            // @ts-ignore
-            return llmNodeInstance.withStructuredOutput(structuredOutput)
-        } catch (exception) {
-            console.error(exception)
-            return llmNodeInstance
-        }
-    }
-
-    /**
      * Handles streaming response from the LLM
      */
     private async handleStreamingResponse(
@@ -824,16 +843,20 @@ class LLM_Agentflow implements INode {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
                 if (sseStreamer) {
                     let content = ''
-                    if (Array.isArray(chunk.content) && chunk.content.length > 0) {
+
+                    if (typeof chunk === 'string') {
+                        content = chunk
+                    } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
                         const contents = chunk.content as MessageContentText[]
                         content = contents.map((item) => item.text).join('')
-                    } else {
+                    } else if (chunk.content) {
                         content = chunk.content.toString()
                     }
                     sseStreamer.streamTokenEvent(chatId, content)
                 }
 
-                response = response.concat(chunk)
+                const messageChunk = typeof chunk === 'string' ? new AIMessageChunk(chunk) : chunk
+                response = response.concat(messageChunk)
             }
         } catch (error) {
             console.error('Error during streaming:', error)
@@ -855,7 +878,9 @@ class LLM_Agentflow implements INode {
         startTime: number,
         endTime: number,
         timeDelta: number,
-        isStructuredOutput: boolean
+        isStructuredOutput: boolean,
+        artifacts: any[] = [],
+        fileAnnotations: any[] = []
     ): any {
         const output: any = {
             content: finalResponse,
@@ -874,6 +899,10 @@ class LLM_Agentflow implements INode {
             output.usageMetadata = response.usage_metadata
         }
 
+        if (response.response_metadata) {
+            output.responseMetadata = response.response_metadata
+        }
+
         if (isStructuredOutput && typeof response === 'object') {
             const structuredOutput = response as Record<string, any>
             for (const key in structuredOutput) {
@@ -881,6 +910,14 @@ class LLM_Agentflow implements INode {
                     output[key] = structuredOutput[key]
                 }
             }
+        }
+
+        if (artifacts && artifacts.length > 0) {
+            output.artifacts = flatten(artifacts)
+        }
+
+        if (fileAnnotations && fileAnnotations.length > 0) {
+            output.fileAnnotations = fileAnnotations
         }
 
         return output
@@ -906,107 +943,6 @@ class LLM_Agentflow implements INode {
         }
 
         sseStreamer.streamEndEvent(chatId)
-    }
-
-    /**
-     * Creates a Zod schema from a JSON schema object
-     * @param jsonSchema The JSON schema object
-     * @returns A Zod schema
-     */
-    private createZodSchemaFromJSON(jsonSchema: any): z.ZodTypeAny {
-        // If the schema is an object with properties, create an object schema
-        if (typeof jsonSchema === 'object' && jsonSchema !== null) {
-            const schemaObj: Record<string, z.ZodTypeAny> = {}
-
-            // Process each property in the schema
-            for (const [key, value] of Object.entries(jsonSchema)) {
-                if (value === null) {
-                    // Handle null values
-                    schemaObj[key] = z.null()
-                } else if (typeof value === 'object' && !Array.isArray(value)) {
-                    // Check if the property has a type definition
-                    if ('type' in value) {
-                        const type = value.type as string
-                        const description = ('description' in value ? (value.description as string) : '') || ''
-
-                        // Create the appropriate Zod type based on the type property
-                        if (type === 'string') {
-                            schemaObj[key] = z.string().describe(description)
-                        } else if (type === 'number') {
-                            schemaObj[key] = z.number().describe(description)
-                        } else if (type === 'boolean') {
-                            schemaObj[key] = z.boolean().describe(description)
-                        } else if (type === 'array') {
-                            // If it's an array type, check if items is defined
-                            if ('items' in value && value.items) {
-                                const itemSchema = this.createZodSchemaFromJSON(value.items)
-                                schemaObj[key] = z.array(itemSchema).describe(description)
-                            } else {
-                                // Default to array of any if items not specified
-                                schemaObj[key] = z.array(z.any()).describe(description)
-                            }
-                        } else if (type === 'object') {
-                            // If it's an object type, check if properties is defined
-                            if ('properties' in value && value.properties) {
-                                const nestedSchema = this.createZodSchemaFromJSON(value.properties)
-                                schemaObj[key] = nestedSchema.describe(description)
-                            } else {
-                                // Default to record of any if properties not specified
-                                schemaObj[key] = z.record(z.any()).describe(description)
-                            }
-                        } else {
-                            // Default to any for unknown types
-                            schemaObj[key] = z.any().describe(description)
-                        }
-
-                        // Check if the property is optional
-                        if ('optional' in value && value.optional === true) {
-                            schemaObj[key] = schemaObj[key].optional()
-                        }
-                    } else if (Array.isArray(value)) {
-                        // Array values without a type property
-                        if (value.length > 0) {
-                            // If the array has items, recursively create a schema for the first item
-                            const itemSchema = this.createZodSchemaFromJSON(value[0])
-                            schemaObj[key] = z.array(itemSchema)
-                        } else {
-                            // Empty array, allow any array
-                            schemaObj[key] = z.array(z.any())
-                        }
-                    } else {
-                        // It's a nested object without a type property, recursively create schema
-                        schemaObj[key] = this.createZodSchemaFromJSON(value)
-                    }
-                } else if (Array.isArray(value)) {
-                    // Array values
-                    if (value.length > 0) {
-                        // If the array has items, recursively create a schema for the first item
-                        const itemSchema = this.createZodSchemaFromJSON(value[0])
-                        schemaObj[key] = z.array(itemSchema)
-                    } else {
-                        // Empty array, allow any array
-                        schemaObj[key] = z.array(z.any())
-                    }
-                } else {
-                    // For primitive values (which shouldn't be in the schema directly)
-                    // Use the corresponding Zod type
-                    if (typeof value === 'string') {
-                        schemaObj[key] = z.string()
-                    } else if (typeof value === 'number') {
-                        schemaObj[key] = z.number()
-                    } else if (typeof value === 'boolean') {
-                        schemaObj[key] = z.boolean()
-                    } else {
-                        schemaObj[key] = z.any()
-                    }
-                }
-            }
-
-            return z.object(schemaObj)
-        }
-
-        // Fallback to any for unknown types
-        return z.any()
     }
 }
 

@@ -186,19 +186,19 @@ const DocumentStoreDetails = () => {
         setShowDocumentLoaderListDialog(true)
     }
 
-    const deleteVectorStoreDataFromStore = async (storeId) => {
+    const deleteVectorStoreDataFromStore = async (storeId, docId) => {
         try {
-            await documentsApi.deleteVectorStoreDataFromStore(storeId)
+            await documentsApi.deleteVectorStoreDataFromStore(storeId, docId)
         } catch (error) {
             console.error(error)
         }
     }
 
-    const onDocStoreDelete = async (type, file, removeFromVectorStore) => {
+    const onDocStoreDelete = async (type, file) => {
         setBackdropLoading(true)
         setShowDeleteDocStoreDialog(false)
         if (type === 'STORE') {
-            if (removeFromVectorStore) {
+            if (documentStore.recordManagerConfig) {
                 await deleteVectorStoreDataFromStore(storeId)
             }
             try {
@@ -239,6 +239,9 @@ const DocumentStoreDetails = () => {
                 })
             }
         } else if (type === 'LOADER') {
+            if (documentStore.recordManagerConfig) {
+                await deleteVectorStoreDataFromStore(storeId, file.id)
+            }
             try {
                 const deleteResp = await documentsApi.deleteLoaderFromStore(storeId, file.id)
                 setBackdropLoading(false)
@@ -280,9 +283,40 @@ const DocumentStoreDetails = () => {
     }
 
     const onLoaderDelete = (file, vectorStoreConfig, recordManagerConfig) => {
+        // Get the display name in the format "LoaderName (sourceName)"
+        const loaderName = file.loaderName || 'Unknown'
+        let sourceName = ''
+
+        // Prefer files.name when files array exists and has items
+        if (file.files && Array.isArray(file.files) && file.files.length > 0) {
+            sourceName = file.files.map((f) => f.name).join(', ')
+        } else if (file.source) {
+            // Fallback to source logic
+            if (typeof file.source === 'string' && file.source.includes('base64')) {
+                sourceName = getFileName(file.source)
+            } else if (typeof file.source === 'string' && file.source.startsWith('[') && file.source.endsWith(']')) {
+                sourceName = JSON.parse(file.source).join(', ')
+            } else if (typeof file.source === 'string') {
+                sourceName = file.source
+            }
+        }
+
+        const displayName = sourceName ? `${loaderName} (${sourceName})` : loaderName
+
+        let description = `Delete "${displayName}"? This will delete all the associated document chunks from the document store.`
+
+        if (
+            recordManagerConfig &&
+            vectorStoreConfig &&
+            Object.keys(recordManagerConfig).length > 0 &&
+            Object.keys(vectorStoreConfig).length > 0
+        ) {
+            description = `Delete "${displayName}"? This will delete all the associated document chunks from the document store and remove the actual data from the vector store database.`
+        }
+
         const props = {
             title: `Delete`,
-            description: `Delete Loader ${file.loaderName} ? This will delete all the associated document chunks.`,
+            description,
             vectorStoreConfig,
             recordManagerConfig,
             type: 'LOADER',
@@ -294,9 +328,20 @@ const DocumentStoreDetails = () => {
     }
 
     const onStoreDelete = (vectorStoreConfig, recordManagerConfig) => {
+        let description = `Delete Store ${getSpecificDocumentStore.data?.name}? This will delete all the associated loaders and document chunks from the document store.`
+
+        if (
+            recordManagerConfig &&
+            vectorStoreConfig &&
+            Object.keys(recordManagerConfig).length > 0 &&
+            Object.keys(vectorStoreConfig).length > 0
+        ) {
+            description = `Delete Store ${getSpecificDocumentStore.data?.name}? This will delete all the associated loaders and document chunks from the document store, and remove the actual data from the vector store database.`
+        }
+
         const props = {
             title: `Delete`,
-            description: `Delete Store ${getSpecificDocumentStore.data?.name} ? This will delete all the associated loaders and document chunks.`,
+            description,
             vectorStoreConfig,
             recordManagerConfig,
             type: 'STORE'
@@ -481,7 +526,10 @@ const DocumentStoreDetails = () => {
                             >
                                 <MenuItem
                                     disabled={documentStore?.totalChunks <= 0 || documentStore?.status === 'UPSERTING'}
-                                    onClick={() => showStoredChunks('all')}
+                                    onClick={() => {
+                                        handleClose()
+                                        showStoredChunks('all')
+                                    }}
                                     disableRipple
                                 >
                                     <FileChunksIcon />
@@ -490,7 +538,10 @@ const DocumentStoreDetails = () => {
                                 <Available permission={'documentStores:upsert-config'}>
                                     <MenuItem
                                         disabled={documentStore?.totalChunks <= 0 || documentStore?.status === 'UPSERTING'}
-                                        onClick={() => showVectorStore(documentStore.id)}
+                                        onClick={() => {
+                                            handleClose()
+                                            showVectorStore(documentStore.id)
+                                        }}
                                         disableRipple
                                     >
                                         <NoteAddIcon />
@@ -499,7 +550,10 @@ const DocumentStoreDetails = () => {
                                 </Available>
                                 <MenuItem
                                     disabled={documentStore?.totalChunks <= 0 || documentStore?.status !== 'UPSERTED'}
-                                    onClick={() => showVectorStoreQuery(documentStore.id)}
+                                    onClick={() => {
+                                        handleClose()
+                                        showVectorStoreQuery(documentStore.id)
+                                    }}
                                     disableRipple
                                 >
                                     <SearchIcon />
@@ -518,7 +572,10 @@ const DocumentStoreDetails = () => {
                                 </Available>
                                 <Divider sx={{ my: 0.5 }} />
                                 <MenuItem
-                                    onClick={() => onStoreDelete(documentStore.vectorStoreConfig, documentStore.recordManagerConfig)}
+                                    onClick={() => {
+                                        handleClose()
+                                        onStoreDelete(documentStore.vectorStoreConfig, documentStore.recordManagerConfig)
+                                    }}
                                     disableRipple
                                 >
                                     <FileDeleteIcon />
@@ -756,20 +813,26 @@ function LoaderRow(props) {
         setAnchorEl(null)
     }
 
-    const formatSources = (files, source) => {
+    const formatSources = (files, source, loaderName) => {
+        let sourceName = ''
+
         // Prefer files.name when files array exists and has items
         if (files && Array.isArray(files) && files.length > 0) {
-            return files.map((file) => file.name).join(', ')
+            sourceName = files.map((file) => file.name).join(', ')
+        } else if (source && typeof source === 'string' && source.includes('base64')) {
+            // Fallback to original source logic
+            sourceName = getFileName(source)
+        } else if (source && typeof source === 'string' && source.startsWith('[') && source.endsWith(']')) {
+            sourceName = JSON.parse(source).join(', ')
+        } else if (source) {
+            sourceName = source
         }
 
-        // Fallback to original source logic
-        if (source && typeof source === 'string' && source.includes('base64')) {
-            return getFileName(source)
+        // Return format: "LoaderName (sourceName)" or just "LoaderName" if no source
+        if (!sourceName) {
+            return loaderName || 'No source'
         }
-        if (source && typeof source === 'string' && source.startsWith('[') && source.endsWith(']')) {
-            return JSON.parse(source).join(', ')
-        }
-        return source || 'No source'
+        return loaderName ? `${loaderName} (${sourceName})` : sourceName
     }
 
     return (
@@ -823,32 +886,62 @@ function LoaderRow(props) {
                                 onClose={handleClose}
                             >
                                 <Available permission={'documentStores:preview-process'}>
-                                    <MenuItem onClick={props.onEditClick} disableRipple>
+                                    <MenuItem
+                                        onClick={() => {
+                                            handleClose()
+                                            props.onEditClick()
+                                        }}
+                                        disableRipple
+                                    >
                                         <FileEditIcon />
                                         Preview & Process
                                     </MenuItem>
                                 </Available>
                                 <Available permission={'documentStores:preview-process'}>
-                                    <MenuItem onClick={props.onViewChunksClick} disableRipple>
+                                    <MenuItem
+                                        onClick={() => {
+                                            handleClose()
+                                            props.onViewChunksClick()
+                                        }}
+                                        disableRipple
+                                    >
                                         <FileChunksIcon />
                                         View & Edit Chunks
                                     </MenuItem>
                                 </Available>
                                 <Available permission={'documentStores:preview-process'}>
-                                    <MenuItem onClick={props.onChunkUpsert} disableRipple>
+                                    <MenuItem
+                                        onClick={() => {
+                                            handleClose()
+                                            props.onChunkUpsert()
+                                        }}
+                                        disableRipple
+                                    >
                                         <NoteAddIcon />
                                         Upsert Chunks
                                     </MenuItem>
                                 </Available>
                                 <Available permission={'documentStores:preview-process'}>
-                                    <MenuItem onClick={props.onViewUpsertAPI} disableRipple>
+                                    <MenuItem
+                                        onClick={() => {
+                                            handleClose()
+                                            props.onViewUpsertAPI()
+                                        }}
+                                        disableRipple
+                                    >
                                         <CodeIcon />
                                         View API
                                     </MenuItem>
                                 </Available>
                                 <Divider sx={{ my: 0.5 }} />
                                 <Available permission={'documentStores:delete-loader'}>
-                                    <MenuItem onClick={props.onDeleteClick} disableRipple>
+                                    <MenuItem
+                                        onClick={() => {
+                                            handleClose()
+                                            props.onDeleteClick()
+                                        }}
+                                        disableRipple
+                                    >
                                         <FileDeleteIcon />
                                         Delete
                                     </MenuItem>

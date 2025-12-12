@@ -60,7 +60,7 @@ class CustomFunction_Agentflow implements INode {
     constructor() {
         this.label = 'Custom Function'
         this.name = 'customFunctionAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'CustomFunction'
         this.category = 'Agent Flows'
         this.description = 'Execute custom function'
@@ -107,8 +107,7 @@ class CustomFunction_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
@@ -134,7 +133,7 @@ class CustomFunction_Agentflow implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const javascriptFunction = nodeData.inputs?.customFunctionJavascriptFunction as string
-        const functionInputVariables = nodeData.inputs?.customFunctionInputVariables as ICustomFunctionInputVariables[]
+        const functionInputVariables = (nodeData.inputs?.customFunctionInputVariables as ICustomFunctionInputVariables[]) ?? []
         const _customFunctionUpdateState = nodeData.inputs?.customFunctionUpdateState
 
         const state = options.agentflowRuntime?.state as ICommonObject
@@ -147,11 +146,17 @@ class CustomFunction_Agentflow implements INode {
 
         const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
         const flow = {
+            input,
+            state,
             chatflowId: options.chatflowid,
             sessionId: options.sessionId,
             chatId: options.chatId,
-            input,
-            state
+            rawOutput: options.postProcessing?.rawOutput || '',
+            chatHistory: options.postProcessing?.chatHistory || [],
+            sourceDocuments: options.postProcessing?.sourceDocuments,
+            usedTools: options.postProcessing?.usedTools,
+            artifacts: options.postProcessing?.artifacts,
+            fileAnnotations: options.postProcessing?.fileAnnotations
         }
 
         // Create additional sandbox variables for custom function inputs

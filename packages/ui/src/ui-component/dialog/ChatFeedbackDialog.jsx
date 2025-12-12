@@ -13,7 +13,7 @@ import useNotifier from '@/utils/useNotifier'
 // Project imports
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 
-const ChatFeedbackDialog = ({ show, dialogProps, onCancel }) => {
+const ChatFeedbackDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -38,7 +38,7 @@ const ChatFeedbackDialog = ({ show, dialogProps, onCancel }) => {
                 {dialogProps.title || 'Allowed Domains'}
             </DialogTitle>
             <DialogContent>
-                <ChatFeedback dialogProps={dialogProps} />
+                <ChatFeedback dialogProps={dialogProps} onConfirm={onConfirm} />
             </DialogContent>
         </Dialog>
     ) : null

@@ -4,6 +4,13 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-opus-4-5-20251101-v1:0",
+                    "name": "anthropic.claude-opus-4-5-20251101-v1:0",
+                    "description": "Claude 4.5 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "anthropic.claude-sonnet-4-5-20250929-v1:0",
                     "name": "anthropic.claude-sonnet-4-5-20250929-v1:0",
                     "description": "Claude 4.5 Sonnet",
@@ -506,6 +513,13 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-opus-4-5",
+                    "name": "claude-opus-4-5",
+                    "description": "Claude 4.5 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "claude-sonnet-4-5",
                     "name": "claude-sonnet-4-5",
                     "description": "Claude 4.5 Sonnet",
@@ -634,6 +648,12 @@
                     "output_cost": 0.00012
                 },
                 {
+                    "label": "gemini-3-pro-image-preview",
+                    "name": "gemini-3-pro-image-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
+                {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
                     "input_cost": 0.3e-6,
@@ -642,6 +662,12 @@
                 {
                     "label": "gemini-2.5-flash",
                     "name": "gemini-2.5-flash",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gemini-2.5-flash-image",
+                    "name": "gemini-2.5-flash-image",
                     "input_cost": 1.25e-6,
                     "output_cost": 0.00001
                 },
@@ -768,6 +794,13 @@
                     "name": "gemini-1.0-pro-vision",
                     "input_cost": 1.25e-7,
                     "output_cost": 3.75e-7
+                },
+                {
+                    "label": "claude-opus-4-5@20251101",
+                    "name": "claude-opus-4-5@20251101",
+                    "description": "Claude 4.5 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
                 },
                 {
                     "label": "claude-sonnet-4-5@20250929",
