@@ -1,180 +1,228 @@
 <!-- markdownlint-disable MD030 -->
 
-# Contributing to Flowise
+# Flowise मध्ये योगदान देणे
 
 English | [中文](./i18n/CONTRIBUTING-ZH.md)
 
-We appreciate any form of contributions.
+आम्ही कोणत्याही स्वरूपातील योगदानांचे स्वागत करतो.
 
-## ⭐ Star
+## ⭐ स्टार द्या
 
-Star and share the [Github Repo](https://github.com/FlowiseAI/Flowise).
+GitHub वरील Flowise रिपॉझिटरीला स्टार द्या आणि शेअर करा:  
+https://github.com/FlowiseAI/Flowise
 
-## 🙋 Q&A
+## 🙋 प्रश्न व उत्तरे
 
-Search up for any questions in [Q&A section](https://github.com/FlowiseAI/Flowise/discussions/categories/q-a), if you can't find one, don't hesitate to create one. It might helps others that have similar question.
+प्रश्न असल्यास सर्वप्रथम येथे शोधा:  
+https://github.com/FlowiseAI/Flowise/discussions/categories/q-a
 
-## 🙌 Share Chatflow
+उत्तर न मिळाल्यास नवीन प्रश्न तयार करा — यामुळे इतरांनाही मदत होऊ शकते.
 
-Yes! Sharing how you use Flowise is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/FlowiseAI/Flowise/discussions/categories/show-and-tell).
+## 🙌 तुमचा Chatflow शेअर करा
 
-## 💡 Ideas
+होय! Flowise वापरण्याचा तुमचा मार्ग शेअर करणे म्हणजे एक महत्त्वाचे योगदान आहे.
 
-Ideas are welcome such as new feature, apps integration, and blockchain networks. Submit in [Ideas section](https://github.com/FlowiseAI/Flowise/discussions/categories/ideas).
+- तुमचा Chatflow JSON म्हणून एक्सपोर्ट करा  
+- स्क्रीनशॉट जोडा  
+- “Show and Tell” मध्ये शेअर करा  
 
-## 🐞 Report Bugs
+👉 https://github.com/FlowiseAI/Flowise/discussions/categories/show-and-tell
 
-Found an issue? [Report it](https://github.com/FlowiseAI/Flowise/issues/new/choose).
+## 💡 नवीन कल्पना
 
-## 👨‍💻 Contribute to Code
+नवीन फीचर्स, ऍप इंटिग्रेशन, ब्लॉकचेन नेटवर्क इत्यादी सर्व कल्पना स्वागतार्ह आहेत.
 
-Not sure what to contribute? Some ideas:
+कल्पना सबमिट करा:  
+👉 https://github.com/FlowiseAI/Flowise/discussions/categories/ideas
 
--   Create new components from `packages/components`
--   Update existing components such as extending functionality, fixing bugs
--   Add new chatflow ideas
+## 🐞 बग रिपोर्ट करा
 
-### Developers
+एखादी समस्या आढळली? येथे रिपोर्ट करा:  
+👉 https://github.com/FlowiseAI/Flowise/issues/new/choose
 
-Flowise has 3 different modules in a single mono repository.
+## 👨‍💻 कोडमध्ये योगदान
 
--   `server`: Node backend to serve API logics
--   `ui`: React frontend
--   `components`: Third-party nodes integrations
+कशात योगदान द्यावे हे ठरत नसेल तर काही कल्पना:
 
-#### Prerequisite
+- `packages/components` मध्ये नवीन कॉम्पोनंट्स तयार करा  
+- विद्यमान कॉम्पोनंट्स अपडेट करा / फीचर्स वाढवा / बग दुरुस्त करा  
+- नवीन chatflow templates जोडा  
 
--   Install [PNPM](https://pnpm.io/installation). The project is configured to use pnpm v9.
-    ```bash
-    npm i -g pnpm
-    ```
+---
 
-#### Step by step
+## 👨‍💻 डेव्हलपर्स
 
-1. Fork the official [Flowise Github Repository](https://github.com/FlowiseAI/Flowise).
+Flowise एक Mono-Repo आहे ज्यामध्ये तीन मुख्य मॉड्यूल्स आहेत:
 
-2. Clone your forked repository.
+- `server`: API लॉजिकसाठी Node backend  
+- `ui`: React फ्रंटएंड  
+- `components`: तृतीय-पक्ष इंटिग्रेशन नोड्स  
 
-3. Create a new branch, see [guide](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository). Naming conventions:
+### पूर्वअट
 
-    - For feature branch: `feature/<Your New Feature>`
-    - For bug fix branch: `bugfix/<Your New Bugfix>`.
+PNPM इन्स्टॉल करा (प्रकल्प PNPM v9 वापरतो)
 
-4. Switch to the newly created branch.
+```bash
+npm i -g pnpm
+```
 
-5. Go into repository folder
+---
 
-    ```bash
-    cd Flowise
-    ```
+## 🔧 Step-by-Step योगदान प्रक्रिया
 
-6. Install all dependencies of all modules:
+### 1. Flowise ची अधिकृत GitHub रिपॉझिटरी Fork करा  
+👉 https://github.com/FlowiseAI/Flowise
 
-    ```bash
-    pnpm install
-    ```
+### 2. तुमची Fork केलेली रिपॉझिटरी Clone करा
 
-7. Build all the code:
+### 3. नवीन Branch तयार करा  
+नाव देण्याचे नियम:
 
-    ```bash
-    pnpm build
-    ```
+- फीचर साठी: `feature/<feature-name>`
+- बग फिक्ससाठी: `bugfix/<bug-name>`
 
-8. Start the app on [http://localhost:3000](http://localhost:3000)
+### 4. नवीन branch वर स्विच करा
 
-    ```bash
-    pnpm start
-    ```
+### 5. प्रोजेक्ट फोल्डरमध्ये जा:
 
-9. For development:
+```bash
+cd Flowise
+```
 
-    - Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    - Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    - Run
+### 6. सर्व dependencies इन्स्टॉल करा:
 
-    ```bash
-    pnpm dev
-    ```
+```bash
+pnpm install
+```
 
-    Any changes made in `packages/ui` or `packages/server` will be reflected on [http://localhost:8080](http://localhost:8080)
+### 7. प्रोजेक्ट build करा:
 
-    For changes made in `packages/components`, run `pnpm build` again to pickup the changes.
+```bash
+pnpm build
+```
 
-10. After making all the changes, run
+### 8. अॅप सुरू करा (production मोड)
 
-    ```bash
-    pnpm build
-    ```
+```bash
+pnpm start
+```
 
-    and
+भेट द्या: http://localhost:3000
 
-    ```bash
-    pnpm start
-    ```
+---
 
-    to make sure everything works fine in production.
+## 🧑‍💻 Development चालवणे
 
-11. Commit code and submit Pull Request from forked branch pointing to [Flowise main](https://github.com/FlowiseAI/Flowise/tree/main).
+- `packages/ui` मध्ये `.env` तयार करा आणि `VITE_PORT` सेट करा  
+- `packages/server` मध्ये `.env` तयार करा आणि `PORT` सेट करा  
 
-## 🌱 Env Variables
+डेव्ह मोड:
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
+```bash
+pnpm dev
+```
 
-| Variable                           | Description                                                                                                                                                                                                                                                                       | Type                                             | Default                             |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
-| PORT                               | The HTTP port Flowise runs on                                                                                                                                                                                                                                                     | Number                                           | 3000                                |
-| CORS_ORIGINS                       | The allowed origins for all cross-origin HTTP calls                                                                                                                                                                                                                               | String                                           |                                     |
-| IFRAME_ORIGINS                     | The allowed origins for iframe src embedding                                                                                                                                                                                                                                      | String                                           |                                     |
-| FLOWISE_FILE_SIZE_LIMIT            | Upload File Size Limit                                                                                                                                                                                                                                                            | String                                           | 50mb                                |
-| DEBUG                              | Print logs from components                                                                                                                                                                                                                                                        | Boolean                                          |                                     |
-| LOG_PATH                           | Location where log files are stored                                                                                                                                                                                                                                               | String                                           | `your-path/Flowise/logs`            |
-| LOG_LEVEL                          | Different levels of logs                                                                                                                                                                                                                                                          | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
-| LOG_JSON_SPACES                    | Spaces to beautify JSON logs                                                                                                                                                                                                                                                      |                                                  | 2                                   |
-| TOOL_FUNCTION_BUILTIN_DEP          | NodeJS built-in modules to be used for Custom Tool or Function                                                                                                                                                                                                                    | String                                           |                                     |
-| TOOL_FUNCTION_EXTERNAL_DEP         | External modules to be used for Custom Tool or Function                                                                                                                                                                                                                           | String                                           |                                     |
-| ALLOW_BUILTIN_DEP                  | Allow project dependencies to be used for Custom Tool or Function                                                                                                                                                                                                                 | Boolean                                          | false                               |
-| DATABASE_TYPE                      | Type of database to store the flowise data                                                                                                                                                                                                                                        | Enum String: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |
-| DATABASE_PATH                      | Location where database is saved (When DATABASE_TYPE is sqlite)                                                                                                                                                                                                                   | String                                           | `your-home-dir/.flowise`            |
-| DATABASE_HOST                      | Host URL or IP address (When DATABASE_TYPE is not sqlite)                                                                                                                                                                                                                         | String                                           |                                     |
-| DATABASE_PORT                      | Database port (When DATABASE_TYPE is not sqlite)                                                                                                                                                                                                                                  | String                                           |                                     |
-| DATABASE_USER                      | Database username (When DATABASE_TYPE is not sqlite)                                                                                                                                                                                                                              | String                                           |                                     |
-| DATABASE_PASSWORD                  | Database password (When DATABASE_TYPE is not sqlite)                                                                                                                                                                                                                              | String                                           |                                     |
-| DATABASE_NAME                      | Database name (When DATABASE_TYPE is not sqlite)                                                                                                                                                                                                                                  | String                                           |                                     |
-| DATABASE_SSL_KEY_BASE64            | Database SSL client cert in base64 (takes priority over DATABASE_SSL)                                                                                                                                                                                                             | Boolean                                          | false                               |
-| DATABASE_SSL                       | Database connection overssl (When DATABASE_TYPE is postgre)                                                                                                                                                                                                                       | Boolean                                          | false                               |
-| SECRETKEY_PATH                     | Location where encryption key (used to encrypt/decrypt credentials) is saved                                                                                                                                                                                                      | String                                           | `your-path/Flowise/packages/server` |
-| FLOWISE_SECRETKEY_OVERWRITE        | Encryption key to be used instead of the key stored in SECRETKEY_PATH                                                                                                                                                                                                             | String                                           |                                     |
-| MODEL_LIST_CONFIG_JSON             | File path to load list of models from your local config file                                                                                                                                                                                                                      | String                                           | `/your_model_list_config_file_path` |
-| STORAGE_TYPE                       | Type of storage for uploaded files. default is `local`                                                                                                                                                                                                                            | Enum String: `s3`, `local`, `gcs`                | `local`                             |
-| BLOB_STORAGE_PATH                  | Local folder path where uploaded files are stored when `STORAGE_TYPE` is `local`                                                                                                                                                                                                  | String                                           | `your-home-dir/.flowise/storage`    |
-| S3_STORAGE_BUCKET_NAME             | Bucket name to hold the uploaded files when `STORAGE_TYPE` is `s3`                                                                                                                                                                                                                | String                                           |                                     |
-| S3_STORAGE_ACCESS_KEY_ID           | AWS Access Key                                                                                                                                                                                                                                                                    | String                                           |                                     |
-| S3_STORAGE_SECRET_ACCESS_KEY       | AWS Secret Key                                                                                                                                                                                                                                                                    | String                                           |                                     |
-| S3_STORAGE_REGION                  | Region for S3 bucket                                                                                                                                                                                                                                                              | String                                           |                                     |
-| S3_ENDPOINT_URL                    | Custom Endpoint for S3                                                                                                                                                                                                                                                            | String                                           |                                     |
-| S3_FORCE_PATH_STYLE                | Set this to true to force the request to use path-style addressing                                                                                                                                                                                                                | Boolean                                          | false                               |
-| GOOGLE_CLOUD_STORAGE_PROJ_ID       | The GCP project id for cloud storage & logging when `STORAGE_TYPE` is `gcs`                                                                                                                                                                                                       | String                                           |                                     |
-| GOOGLE_CLOUD_STORAGE_CREDENTIAL    | The credential key file path when `STORAGE_TYPE` is `gcs`                                                                                                                                                                                                                         | String                                           |                                     |
-| GOOGLE_CLOUD_STORAGE_BUCKET_NAME   | Bucket name to hold the uploaded files when `STORAGE_TYPE` is `gcs`                                                                                                                                                                                                               | String                                           |                                     |
-| GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS | Enable uniform bucket level access when `STORAGE_TYPE` is `gcs`                                                                                                                                                                                                                   | Boolean                                          | true                                |
-| SHOW_COMMUNITY_NODES               | Show nodes created by community                                                                                                                                                                                                                                                   | Boolean                                          |                                     |
-| DISABLED_NODES                     | Hide nodes from UI (comma separated list of node names)                                                                                                                                                                                                                           | String                                           |                                     |
-| TRUST_PROXY                        | Configure proxy trust settings for proper IP detection. Values: 'true' (trust all), 'false' (disable), number (hop count), or Express proxy values (e.g., 'loopback', 'linklocal', 'uniquelocal', IP addresses). [Learn More](https://expressjs.com/en/guide/behind-proxies.html) | Boolean/String/Number                            | true                                |
+UI किंवा Server मधील बदल येथे दिसतील:  
+👉 http://localhost:8080
 
-You can also specify the env variables when using `npx`. For example:
+Components मधील बदल लागू करण्यासाठी:
+
+```bash
+pnpm build
+```
+
+---
+
+## 🧪 बदल केल्यानंतर तपासा
+
+```bash
+pnpm build
+pnpm start
+```
+
+हे production मध्ये सर्व काही योग्य चालते याची खात्री करते.
+
+---
+
+## 🔁 Pull Request सबमिट करा
+
+तुमच्या Fork मधून PR तयार करा आणि Flowise मुख्य शाखेकडे पाठवा:  
+👉 https://github.com/FlowiseAI/Flowise/tree/main
+
+Flowise टीममधील एखाद्या सदस्याला आपोआप Assign केले जाईल.  
+मदतीसाठी Discord वर संपर्क करा:  
+👉 https://discord.gg/jbaHfsRVBW
+
+---
+
+# 🌱 Env Variables
+
+Flowise इंस्टन्स कॉन्फिगर करण्यासाठी `.env` फाइल वापरली जाते  
+(स्थान: `packages/server`)
+
+अधिक माहिती: https://docs.flowiseai.com/environment-variables
+
+| Variable | Description | Type | Default |
+|---------|-------------|-------|---------|
+| PORT | Flowise HTTP पोर्ट | Number | 3000 |
+| CORS_ORIGINS | Cross-origin विनंत्यांसाठी परवानगी दिलेले Origins | String | — |
+| IFRAME_ORIGINS | iframe embedding origins | String | — |
+| FLOWISE_FILE_SIZE_LIMIT | File upload size limit | String | 50mb |
+| DEBUG | Components चे log print करा | Boolean | — |
+| LOG_PATH | Logs ज्या ठिकाणी सेव्ह होतात | String | `your-path/Flowise/logs` |
+| LOG_LEVEL | Log level (`error`/`info`/`verbose`/`debug`) | String | `info` |
+| TOOL_FUNCTION_BUILTIN_DEP | Custom tool/function साठी NodeJS built-ins | String | — |
+| TOOL_FUNCTION_EXTERNAL_DEP | Custom tool/function साठी बाह्य modules | String | — |
+| ALLOW_BUILTIN_DEP | Project dependencies वापरण्यास परवानगी द्या | Boolean | false |
+| DATABASE_TYPE | Database प्रकार (`sqlite`, `mysql`, `postgres`) | String | sqlite |
+| DATABASE_PATH | SQLite database location | String | `~/.flowise` |
+| DATABASE_HOST | Host (sqlite नसल्यास) | String | — |
+| DATABASE_PORT | Database पोर्ट | String | — |
+| DATABASE_USER | DB User | String | — |
+| DATABASE_PASSWORD | DB Password | String | — |
+| DATABASE_NAME | DB Name | String | — |
+| DATABASE_SSL | PostgreSQL SSL | Boolean | false |
+| SECRETKEY_PATH | Encryption key जतन केलेली जागा | String | Flowise/server |
+| FLOWISE_SECRETKEY_OVERWRITE | Custom encryption key | String | — |
+| MODEL_LIST_CONFIG_JSON | Local model list config JSON | String | /path/to/file |
+| STORAGE_TYPE | Storage प्रकार (`local`, `s3`, `gcs`) | String | local |
+| BLOB_STORAGE_PATH | Local uploads path | String | ~/.flowise/storage |
+| S3_STORAGE_BUCKET_NAME | S3 bucket name | String | — |
+| S3_STORAGE_ACCESS_KEY_ID | Access key | String | — |
+| S3_STORAGE_SECRET_ACCESS_KEY | Secret key | String | — |
+| S3_STORAGE_REGION | AWS region | String | — |
+| S3_ENDPOINT_URL | Custom S3 endpoint | String | — |
+| GOOGLE_CLOUD_STORAGE_PROJ_ID | Google project ID | String | — |
+| GOOGLE_CLOUD_STORAGE_CREDENTIAL | Credentials path | String | — |
+| GOOGLE_CLOUD_STORAGE_BUCKET_NAME | GCS bucket name | String | — |
+
+### npx वापरताना variables सेट करू शकता:
 
 ```
 npx flowise start --PORT=3000 --DEBUG=true
 ```
 
-## 📖 Contribute to Docs
+---
 
-[Flowise Docs](https://github.com/FlowiseAI/FlowiseDocs)
+## 📖 Docs मध्ये योगदान
 
-## 🏷️ Pull Request process
+Docs रिपॉझिटरी:  
+👉 https://github.com/FlowiseAI/FlowiseDocs
 
-A member of the FlowiseAI team will automatically be notified/assigned when you open a pull request. You can also reach out to us on [Discord](https://discord.gg/jbaHfsRVBW).
+---
+
+## 🏷️ Pull Request प्रक्रिया
+
+PR उघडताच Flowise टीममधील सदस्य आपोआप Assign होईल.  
+प्रश्न असल्यास Discord वर संपर्क साधा.
+
+---
 
 ## 📜 Code of Conduct
 
-This project and everyone participating in it are governed by the Code of Conduct which can be found in the [file](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to hello@flowiseai.com.
+सर्व contributors यांनी Code of Conduct पाळणे गरजेचे आहे.
+
+हे येथे उपलब्ध आहे:  
+👉 CODE_OF_CONDUCT.md
+
+अस्वीकार्य वर्तनाबद्दल रिपोर्ट करण्यासाठी: **hello@flowiseai.com**
