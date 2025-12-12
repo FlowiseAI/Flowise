@@ -23,10 +23,16 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
         if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.createApiKey - keyName not provided!`)
         }
+        if (!req.body.permissions || typeof req.body.permissions !== 'string') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: apikeyController.createApiKey - permissions not provided!`
+            )
+        }
         if (!req.user?.activeWorkspaceId) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
         }
-        const apiResponse = await apikeyService.createApiKey(req.body.keyName, req.user?.activeWorkspaceId)
+        const apiResponse = await apikeyService.createApiKey(req.body.keyName, req.body.permissions, req.user?.activeWorkspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -42,10 +48,21 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
         if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.updateApiKey - keyName not provided!`)
         }
+        if (!req.body.permissions || typeof req.body.permissions !== 'string') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: apikeyController.updateApiKey - permissions not provided!`
+            )
+        }
         if (!req.user?.activeWorkspaceId) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
         }
-        const apiResponse = await apikeyService.updateApiKey(req.params.id, req.body.keyName, req.user?.activeWorkspaceId)
+        const apiResponse = await apikeyService.updateApiKey(
+            req.params.id,
+            req.body.keyName,
+            req.body.permissions,
+            req.user?.activeWorkspaceId
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)

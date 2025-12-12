@@ -66,7 +66,7 @@ const getApiKeyById = async (apiKeyId: string) => {
     }
 }
 
-const createApiKey = async (keyName: string, workspaceId: string) => {
+const createApiKey = async (keyName: string, permissions: string, workspaceId: string) => {
     try {
         const apiKey = generateAPIKey()
         const apiSecret = generateSecretHash(apiKey)
@@ -76,6 +76,7 @@ const createApiKey = async (keyName: string, workspaceId: string) => {
         newKey.apiKey = apiKey
         newKey.apiSecret = apiSecret
         newKey.keyName = keyName
+        newKey.permissions = permissions
         newKey.workspaceId = workspaceId
         const key = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
         await appServer.AppDataSource.getRepository(ApiKey).save(key)
@@ -86,7 +87,7 @@ const createApiKey = async (keyName: string, workspaceId: string) => {
 }
 
 // Update api key
-const updateApiKey = async (id: string, keyName: string, workspaceId: string) => {
+const updateApiKey = async (id: string, keyName: string, permissions: string, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
@@ -97,6 +98,7 @@ const updateApiKey = async (id: string, keyName: string, workspaceId: string) =>
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${currentKey} not found`)
         }
         currentKey.keyName = keyName
+        currentKey.permissions = permissions
         await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
         return await getAllApiKeysFromDB(workspaceId)
     } catch (error) {
@@ -135,6 +137,7 @@ const importKeys = async (body: any) => {
         }
 
         const requiredFields = ['keyName', 'apiKey', 'apiSecret', 'createdAt', 'id']
+        const optionalFields = ['permissions']
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i]
             if (typeof key !== 'object' || key === null) {
@@ -158,6 +161,16 @@ const importKeys = async (body: any) => {
                     throw new InternalFlowiseError(
                         StatusCodes.BAD_REQUEST,
                         `Invalid format: Key at index ${i} field '${field}' cannot be empty`
+                    )
+                }
+            }
+
+            // Validate optional fields if present
+            for (const field of optionalFields) {
+                if (field in key && typeof key[field] !== 'string') {
+                    throw new InternalFlowiseError(
+                        StatusCodes.BAD_REQUEST,
+                        `Invalid format: Key at index ${i} field '${field}' must be a string`
                     )
                 }
             }
@@ -192,6 +205,7 @@ const importKeys = async (body: any) => {
                         currentKey.id = uuidv4()
                         currentKey.apiKey = key.apiKey
                         currentKey.apiSecret = key.apiSecret
+                        currentKey.permissions = key.permissions || '[]'
                         currentKey.workspaceId = workspaceId
                         await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
                         break
@@ -214,6 +228,7 @@ const importKeys = async (body: any) => {
                 newKey.apiKey = key.apiKey
                 newKey.apiSecret = key.apiSecret
                 newKey.keyName = key.keyName
+                newKey.permissions = key.permissions || '[]'
                 newKey.workspaceId = workspaceId
                 const newKeyEntity = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
                 await appServer.AppDataSource.getRepository(ApiKey).save(newKeyEntity)
