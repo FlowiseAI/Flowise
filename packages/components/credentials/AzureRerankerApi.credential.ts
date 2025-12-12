@@ -11,7 +11,8 @@ class AzureRerankerApi implements INodeCredential {
         this.label = 'Azure Foundry API'
         this.name = 'azureFoundryApi'
         this.version = 1.0
-        this.description = 'Refer to <a target="_blank" href="https://docs.microsoft.com/en-us/azure/ai-foundry/">Azure AI Foundry documentation</a> for setup instructions'
+        this.description = 
+            'Refer to <a target="_blank" href="https://docs.microsoft.com/en-us/azure/ai-foundry/">Azure AI Foundry documentation</a> for setup instructions'
         this.inputs = [
             {
                 label: 'Azure Foundry API Key',
