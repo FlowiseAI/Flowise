@@ -3,6 +3,7 @@ import moment from 'moment/moment'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+import React from 'react'
 
 // material-ui
 import {
@@ -94,7 +95,7 @@ function APIKeyRow(props) {
                 <StyledTableCell scope='row' style={{ width: '15%' }}>
                     {props.apiKey.keyName}
                 </StyledTableCell>
-                <StyledTableCell style={{ width: '40%' }}>
+                <StyledTableCell style={{ width: '25%' }}>
                     {props.showApiKeys.includes(props.apiKey.apiKey)
                         ? props.apiKey.apiKey
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
@@ -124,6 +125,29 @@ function APIKeyRow(props) {
                         </Typography>
                     </Popover>
                 </StyledTableCell>
+                <StyledTableCell sx={{ width: '25%' }}>
+                    <Stack sx={{ flexDirection: 'row' }}>
+                        <Typography
+                            variant='subtitle2'
+                            color='textPrimary'
+                            sx={{
+                                width: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: '2',
+                                WebkitBoxOrient: 'vertical'
+                            }}
+                        >
+                            {JSON.parse(props.apiKey.permissions || '[]').map((d, key) => (
+                                <React.Fragment key={key}>
+                                    {d}
+                                    {', '}
+                                </React.Fragment>
+                            ))}
+                        </Typography>
+                    </Stack>
+                </StyledTableCell>
                 <StyledTableCell>
                     {props.apiKey.chatFlows.length}{' '}
                     {props.apiKey.chatFlows.length > 0 && (
@@ -150,7 +174,7 @@ function APIKeyRow(props) {
             </TableRow>
             {open && (
                 <TableRow sx={{ '& td': { border: 0 } }}>
-                    <StyledTableCell sx={{ p: 2 }} colSpan={6}>
+                    <StyledTableCell sx={{ p: 2 }} colSpan={7}>
                         <Collapse in={open} timeout='auto' unmountOnExit>
                             <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
                                 <Table aria-label='chatflow table'>
@@ -445,6 +469,7 @@ const APIKey = () => {
                                             <TableRow>
                                                 <StyledTableCell>Key Name</StyledTableCell>
                                                 <StyledTableCell>API Key</StyledTableCell>
+                                                <StyledTableCell>Permissions</StyledTableCell>
                                                 <StyledTableCell>Usage</StyledTableCell>
                                                 <StyledTableCell>Updated</StyledTableCell>
                                                 <Available permission={'apikeys:update,apikeys:create'}>
@@ -471,6 +496,9 @@ const APIKey = () => {
                                                         <StyledTableCell>
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
                                                         <Available permission={'apikeys:update,apikeys:create'}>
                                                             <StyledTableCell> </StyledTableCell>
                                                         </Available>
@@ -479,6 +507,9 @@ const APIKey = () => {
                                                         </Available>
                                                     </StyledTableRow>
                                                     <StyledTableRow>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
                                                         <StyledTableCell>
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
