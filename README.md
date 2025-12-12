@@ -218,4 +218,3 @@ Discord: https://discord.gg/jbaHfsRVBW
 ## 📄 परवाना
 
 Flowise हा **Apache License 2.0** अंतर्गत उपलब्ध आहे.
-
