@@ -1,9 +1,8 @@
-import { ChatOllamaInput } from '@langchain/ollama'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { BaseCache } from '@langchain/core/caches'
 import { IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { ChatOllama } from './FlowiseChatOllama'
+import { ChatOllama, FlowiseChatOllamaInput } from './FlowiseChatOllama'
 
 class ChatOllama_ChatModels implements INode {
     label: string
@@ -20,7 +19,7 @@ class ChatOllama_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOllama'
         this.name = 'chatOllama'
-        this.version = 5.0
+        this.version = 5.1
         this.type = 'ChatOllama'
         this.icon = 'Ollama.svg'
         this.category = 'Chat Models'
@@ -210,6 +209,29 @@ class ChatOllama_ChatModels implements INode {
                 step: 0.1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Reasoning Effort',
+                name: 'reasoningEffort',
+                type: 'options',
+                description:
+                    'Controls the thinking/reasoning depth for reasoning models (e.g., GPT-OSS, DeepSeek-R1, Qwen3). Higher effort = more thorough reasoning but slower responses.',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'Medium',
+                        name: 'medium'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    }
+                ],
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -230,13 +252,14 @@ class ChatOllama_ChatModels implements INode {
         const repeatLastN = nodeData.inputs?.repeatLastN as string
         const repeatPenalty = nodeData.inputs?.repeatPenalty as string
         const tfsZ = nodeData.inputs?.tfsZ as string
+        const reasoningEffort = nodeData.inputs?.reasoningEffort as string
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const jsonMode = nodeData.inputs?.jsonMode as boolean
         const streaming = nodeData.inputs?.streaming as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: ChatOllamaInput & BaseChatModelParams = {
+        const obj: FlowiseChatOllamaInput & BaseChatModelParams = {
             baseUrl,
             temperature: parseFloat(temperature),
             model: modelName,
@@ -257,6 +280,7 @@ class ChatOllama_ChatModels implements INode {
         if (keepAlive) obj.keepAlive = keepAlive
         if (cache) obj.cache = cache
         if (jsonMode) obj.format = 'json'
+        if (reasoningEffort) obj.reasoningEffort = reasoningEffort as 'low' | 'medium' | 'high'
 
         const multiModalOption: IMultiModalOption = {
             image: {
