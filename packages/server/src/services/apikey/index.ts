@@ -27,7 +27,7 @@ const getAllApiKeysFromDB = async (workspaceId: string, page: number = -1, limit
     }
 }
 
-const getAllApiKeys = async (workspaceId: string, autoCreateNewKey?: boolean, page: number = -1, limit: number = -1) => {
+const getAllApiKeys = async (workspaceId: string, page: number = -1, limit: number = -1) => {
     try {
         let keys = await getAllApiKeysFromDB(workspaceId, page, limit)
         return keys

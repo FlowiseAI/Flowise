@@ -7,12 +7,11 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 // Get api keys
 const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const autoCreateNewKey = true
         const { page, limit } = getPageAndLimitParams(req)
         if (!req.user?.activeWorkspaceId) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
         }
-        const apiResponse = await apikeyService.getAllApiKeys(req.user?.activeWorkspaceId, autoCreateNewKey, page, limit)
+        const apiResponse = await apikeyService.getAllApiKeys(req.user?.activeWorkspaceId, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
