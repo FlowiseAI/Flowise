@@ -4,7 +4,7 @@ import { hasColumn } from '../../../utils/database.util'
 export class AddApiKeyPermission1765360298674 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         const tableName = 'apikey'
-        const columnName = 'permission'
+        const columnName = 'permissions'
 
         const columnExists = await hasColumn(queryRunner, tableName, columnName)
         if (!columnExists) {
