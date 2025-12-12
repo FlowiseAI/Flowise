@@ -56,7 +56,7 @@ class AzureRerankRetriever_Retrievers implements INode {
                     {
                         label: 'rerank-multilingual-v3.0',
                         name: 'rerank-multilingual-v3.0'
-                    },               
+                    },
                     {
                         label: 'Cohere-rerank-v4.0-fast',
                         name: 'Cohere-rerank-v4.0-fast'
@@ -65,7 +65,6 @@ class AzureRerankRetriever_Retrievers implements INode {
                         label: 'Cohere-rerank-v4.0-pro',
                         name: 'Cohere-rerank-v4.0-pro'
                     }
-                  
                 ],
                 default: 'Cohere-rerank-v4.0-fast',
                 optional: true
