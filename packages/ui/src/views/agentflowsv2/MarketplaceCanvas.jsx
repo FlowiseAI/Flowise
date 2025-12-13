@@ -18,6 +18,7 @@ import MarketplaceCanvasHeader from '@/views/marketplaces/MarketplaceCanvasHeade
 import StickyNote from './StickyNote'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import { flowContext } from '@/store/context/ReactFlowContext'
+import { normalizeStickyNoteNodes } from '@/utils/genericHelper'
 
 // icons
 import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
@@ -52,7 +53,7 @@ const MarketplaceCanvasV2 = () => {
     useEffect(() => {
         if (flowData) {
             const initialFlow = JSON.parse(flowData)
-            setNodes(initialFlow.nodes || [])
+            setNodes(normalizeStickyNoteNodes(initialFlow.nodes || []))
             setEdges(initialFlow.edges || [])
         }
 
