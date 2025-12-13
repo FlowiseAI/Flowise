@@ -111,7 +111,7 @@
         "dotenv": "^16.0.0",
         "epub2": "^3.0.2",
         "exa-js": "^1.0.12",
-        "express": "^4.17.3",
+        "express": "^4.22.0",
         "faiss-node": "^0.5.1",
         "fast-json-patch": "^3.1.1",
         "form-data": "^4.0.4",
