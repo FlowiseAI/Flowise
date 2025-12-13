@@ -1439,7 +1439,58 @@ const executeNode = async ({
     }
 }
 
-const checkForMultipleStartNodes = (startingNodeIds: string[], isRecursive: boolean, nodes: IReactFlowNode[]) => {
+const getReachableNodesFromStart = (graph: INodeDirectedGraph, startNodeId: string) => {
+    const visited = new Set<string>()
+    const stack = [startNodeId]
+
+    while (stack.length) {
+        const currentNodeId = stack.pop() as string
+        if (visited.has(currentNodeId)) {
+            continue
+        }
+
+        visited.add(currentNodeId)
+
+        const neighbours = graph[currentNodeId] ?? []
+        for (const neighbour of neighbours) {
+            if (!visited.has(neighbour)) {
+                stack.push(neighbour)
+            }
+        }
+    }
+
+    return visited
+}
+
+const filterDisconnectedStartingNodes = (
+    startingNodeIds: string[],
+    graph: INodeDirectedGraph,
+    nodes: IReactFlowNode[]
+) => {
+    if (!startingNodeIds.length) {
+        return startingNodeIds
+    }
+
+    const startAgentflowNode = nodes.find((node) => node.data.name === 'startAgentflow')
+    if (!startAgentflowNode) {
+        return startingNodeIds
+    }
+
+    const reachableNodes = getReachableNodesFromStart(graph, startAgentflowNode.id)
+    if (!reachableNodes.size) {
+        return startingNodeIds
+    }
+
+    const filteredStartingNodes = startingNodeIds.filter((nodeId) => reachableNodes.has(nodeId))
+
+    return filteredStartingNodes.length ? filteredStartingNodes : startingNodeIds
+}
+
+const checkForMultipleStartNodes = (
+    startingNodeIds: string[],
+    isRecursive: boolean,
+    nodes: IReactFlowNode[]
+) => {
     // For non-recursive, loop through and check if each starting node is inside an iteration node, if yes, delete it
     const clonedStartingNodeIds = [...startingNodeIds]
     for (const nodeId of clonedStartingNodeIds) {
@@ -1758,7 +1809,8 @@ export const executeAgentFlow = async ({
         humanInput.startNodeId = startNodeId
     } else if (isRecursive && parentExecutionId) {
         const { startingNodeIds: startingNodeIdsFromFlow } = getStartingNode(nodeDependencies)
-        startingNodeIds.push(...startingNodeIdsFromFlow)
+        const filteredStartingNodeIds = filterDisconnectedStartingNodes(startingNodeIdsFromFlow, graph, nodes)
+        startingNodeIds.push(...filteredStartingNodeIds)
         checkForMultipleStartNodes(startingNodeIds, isRecursive, nodes)
 
         // For recursive calls with a valid parent execution ID, don't create a new execution
@@ -1777,7 +1829,8 @@ export const executeAgentFlow = async ({
         }
     } else {
         const { startingNodeIds: startingNodeIdsFromFlow } = getStartingNode(nodeDependencies)
-        startingNodeIds.push(...startingNodeIdsFromFlow)
+        const filteredStartingNodeIds = filterDisconnectedStartingNodes(startingNodeIdsFromFlow, graph, nodes)
+        startingNodeIds.push(...filteredStartingNodeIds)
         checkForMultipleStartNodes(startingNodeIds, isRecursive, nodes)
 
         // Only create a new execution if this is not a recursive call
@@ -2334,4 +2387,8 @@ export const executeAgentFlow = async ({
     }
 
     return result
+}
+
+export const __test__ = {
+    filterDisconnectedStartingNodes
 }
