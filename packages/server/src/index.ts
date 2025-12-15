@@ -3,7 +3,7 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import cookieParser from 'cookie-parser'
-import { DataSource, IsNull } from 'typeorm'
+import { DataSource } from 'typeorm'
 import { MODE, Platform } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
@@ -32,7 +32,6 @@ import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
 import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { Organization } from './enterprise/database/entities/organization.entity'
-import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
 
@@ -236,24 +235,16 @@ export class App {
                             }
                         }
 
-                        const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
-                        if (!isValid) {
+                        const { isValid, apiKey } = await validateAPIKey(req)
+                        if (!isValid || !apiKey) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
                         // Find workspace
                         const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
-                            where: { id: apiKeyWorkSpaceId }
+                            where: { id: apiKey.workspaceId }
                         })
                         if (!workspace) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
-
-                        // Find owner role
-                        const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
-                            where: { name: GeneralRole.OWNER, organizationId: IsNull() }
-                        })
-                        if (!ownerRole) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
@@ -272,14 +263,14 @@ export class App {
 
                         // @ts-ignore
                         req.user = {
-                            permissions: [...JSON.parse(ownerRole.permissions)],
+                            permissions: [...JSON.parse(apiKey.permissions)],
                             features,
                             activeOrganizationId: activeOrganizationId,
                             activeOrganizationSubscriptionId: subscriptionId,
                             activeOrganizationCustomerId: customerId,
                             activeOrganizationProductId: productId,
-                            isOrganizationAdmin: true,
-                            activeWorkspaceId: apiKeyWorkSpaceId!,
+                            isOrganizationAdmin: false,
+                            activeWorkspaceId: workspace.id,
                             activeWorkspace: workspace.name
                         }
                         next()
