@@ -99,7 +99,9 @@ class SemanticTextSplitter extends RecursiveCharacterTextSplitter {
         abbreviations.forEach((abbr, idx) => {
             const placeholder = `__ABBR${idx}__`
             abbrevMap[placeholder] = abbr
-            processedText = processedText.replace(new RegExp(abbr.replace('.', '\\.'), 'g'), placeholder)
+            // Escape regex special characters
+            const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            processedText = processedText.replace(new RegExp(escapedAbbr, 'g'), placeholder)
         })
         
         // Split on sentence boundaries: .!? followed by space and capital letter, or end of text
@@ -185,9 +187,9 @@ class SemanticTextSplitter extends RecursiveCharacterTextSplitter {
                 // Lower percentile = more aggressive splitting (more breakpoints)
                 // Higher percentile = less aggressive splitting (fewer breakpoints)
                 const sorted = [...similarities].sort((a, b) => a - b)
-                const percentile = this.breakpointThresholdAmount / 100
+                const percentile = Math.max(0, Math.min(100, this.breakpointThresholdAmount)) / 100
                 const index = Math.floor(percentile * sorted.length)
-                // Handle edge case: ensure we have a valid index
+                // Handle edge cases: ensure we have a valid index
                 const safeIndex = Math.max(0, Math.min(index, sorted.length - 1))
                 return sorted[safeIndex]
             }
@@ -199,8 +201,12 @@ class SemanticTextSplitter extends RecursiveCharacterTextSplitter {
             }
             case 'interquartile': {
                 const sorted = [...similarities].sort((a, b) => a - b)
-                const q1Index = Math.floor(0.25 * sorted.length)
-                const q3Index = Math.floor(0.75 * sorted.length)
+                if (sorted.length < 4) {
+                    // For very small arrays, fall back to simple threshold
+                    return sorted[0]
+                }
+                const q1Index = Math.max(0, Math.min(Math.floor(0.25 * sorted.length), sorted.length - 1))
+                const q3Index = Math.max(0, Math.min(Math.floor(0.75 * sorted.length), sorted.length - 1))
                 const q1 = sorted[q1Index]
                 const q3 = sorted[q3Index]
                 const iqr = q3 - q1
@@ -306,8 +312,14 @@ class SemanticChunker_TextSplitters implements INode {
 
         if (breakpointThresholdAmount) {
             const parsed = parseFloat(breakpointThresholdAmount)
-            if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
-                params.breakpointThresholdAmount = parsed
+            if (!isNaN(parsed)) {
+                // For percentile, validate 0-100 range
+                if (breakpointThresholdType === 'percentile' && (parsed < 0 || parsed > 100)) {
+                    // Use default if out of range
+                    params.breakpointThresholdAmount = 50
+                } else {
+                    params.breakpointThresholdAmount = parsed
+                }
             }
         }
 
