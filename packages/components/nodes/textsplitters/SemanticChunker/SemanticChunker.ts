@@ -187,7 +187,9 @@ class SemanticTextSplitter extends RecursiveCharacterTextSplitter {
                 const sorted = [...similarities].sort((a, b) => a - b)
                 const percentile = this.breakpointThresholdAmount / 100
                 const index = Math.floor(percentile * sorted.length)
-                return sorted[Math.min(index, sorted.length - 1)]
+                // Handle edge case: ensure we have a valid index
+                const safeIndex = Math.max(0, Math.min(index, sorted.length - 1))
+                return sorted[safeIndex]
             }
             case 'standard_deviation': {
                 const mean = similarities.reduce((a, b) => a + b, 0) / similarities.length
@@ -303,11 +305,17 @@ class SemanticChunker_TextSplitters implements INode {
         }
 
         if (breakpointThresholdAmount) {
-            params.breakpointThresholdAmount = parseFloat(breakpointThresholdAmount)
+            const parsed = parseFloat(breakpointThresholdAmount)
+            if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+                params.breakpointThresholdAmount = parsed
+            }
         }
 
         if (bufferSize) {
-            params.bufferSize = parseInt(bufferSize, 10)
+            const parsed = parseInt(bufferSize, 10)
+            if (!isNaN(parsed) && parsed >= 0) {
+                params.bufferSize = parsed
+            }
         }
 
         const splitter = new SemanticTextSplitter(params)
