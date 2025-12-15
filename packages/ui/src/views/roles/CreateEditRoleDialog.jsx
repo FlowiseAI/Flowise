@@ -131,7 +131,7 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
         if ((dialogProps.type === 'EDIT' || dialogProps.type === 'VIEW') && dialogProps.data) {
             setDialogData(dialogProps.data)
         }
-        getAllPermissionsApi.request()
+        getAllPermissionsApi.request('ROLE')
         return () => {
             setRoleName('')
             setRoleDescription('')

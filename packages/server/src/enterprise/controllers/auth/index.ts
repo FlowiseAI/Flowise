@@ -1,10 +1,34 @@
 import { NextFunction, Request, Response } from 'express'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
+import { LoggedInUser } from '../../Interface.Enterprise'
 
 const getAllPermissions = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const appServer = getRunningExpressApp()
-        return res.json(appServer.identityManager.getPermissions())
+        const type = req.params.type as string
+        const allPermissions = appServer.identityManager.getPermissions().toJSON()
+        const user = req.user as LoggedInUser
+
+        let permissions: { [key: string]: { key: string; value: string }[] } = allPermissions
+
+        if (type !== 'ROLE' && user.isOrganizationAdmin === false) {
+            const userPermissions = user.permissions as string[]
+            const filteredPermissions: { [key: string]: { key: string; value: string }[] } = {}
+
+            for (const [category, categoryPermissions] of Object.entries(allPermissions)) {
+                const filteredCategoryPermissions = (categoryPermissions as any[]).filter((permission) =>
+                    userPermissions?.includes(permission.key)
+                )
+
+                if (filteredCategoryPermissions.length > 0) {
+                    filteredPermissions[category] = filteredCategoryPermissions
+                }
+            }
+
+            permissions = filteredPermissions
+        }
+
+        return res.json(permissions)
     } catch (error) {
         next(error)
     }

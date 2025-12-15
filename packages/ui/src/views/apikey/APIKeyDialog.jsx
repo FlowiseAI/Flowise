@@ -66,7 +66,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
         } else if (dialogProps.type === 'ADD') {
             setKeyName('')
         }
-        getAllPermissionsApi.request()
+        getAllPermissionsApi.request('API_KEY')
         return () => {
             setSelectedPermissions({})
         }
