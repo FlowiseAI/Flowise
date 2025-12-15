@@ -1,8 +1,7 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { Document } from '@langchain/core/documents'
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { Embeddings } from '@langchain/core/embeddings'
-import { TextSplitter } from '@langchain/textsplitters'
 
 interface SemanticChunkerParams {
     embeddings: Embeddings
@@ -15,7 +14,7 @@ interface SemanticChunkerParams {
  * Custom Semantic Chunker implementation
  * Splits text based on semantic meaning using embeddings
  */
-class SemanticTextSplitter extends TextSplitter {
+class SemanticTextSplitter extends RecursiveCharacterTextSplitter {
     embeddings: Embeddings
     breakpointThresholdType: 'percentile' | 'standard_deviation' | 'interquartile'
     breakpointThresholdAmount: number
@@ -25,7 +24,7 @@ class SemanticTextSplitter extends TextSplitter {
         super({ chunkSize: 1000, chunkOverlap: 0 })
         this.embeddings = params.embeddings
         this.breakpointThresholdType = params.breakpointThresholdType || 'percentile'
-        this.breakpointThresholdAmount = params.breakpointThresholdAmount || 95
+        this.breakpointThresholdAmount = params.breakpointThresholdAmount || 50
         this.bufferSize = params.bufferSize || 1
     }
 
@@ -87,14 +86,67 @@ class SemanticTextSplitter extends TextSplitter {
     }
 
     private splitIntoSentences(text: string): string[] {
-        // Simple sentence splitter using common punctuation
-        const sentences = text
-            .replace(/([.!?])\s+/g, '$1|')
-            .split('|')
-            .map((s) => s.trim())
-            .filter((s) => s.length > 0)
+        // More robust sentence splitter that handles common edge cases
+        // Split on sentence-ending punctuation followed by whitespace and uppercase letter
+        // or end of string, while avoiding common abbreviations
+        const sentences: string[] = []
+        
+        // Replace common abbreviations temporarily to avoid false splits
+        const abbreviations = ['Mr.', 'Mrs.', 'Ms.', 'Dr.', 'Prof.', 'Sr.', 'Jr.', 'etc.', 'e.g.', 'i.e.', 'vs.', 'Inc.', 'Ltd.', 'Co.']
+        let processedText = text
+        const abbrevMap: { [key: string]: string } = {}
+        
+        abbreviations.forEach((abbr, idx) => {
+            const placeholder = `__ABBR${idx}__`
+            abbrevMap[placeholder] = abbr
+            processedText = processedText.replace(new RegExp(abbr.replace('.', '\\.'), 'g'), placeholder)
+        })
+        
+        // Split on sentence boundaries: .!? followed by space and capital letter, or end of text
+        const parts = processedText.split(/([.!?]+)(\s+|$)/)
+        
+        let currentSentence = ''
+        for (let i = 0; i < parts.length; i += 3) {
+            const text = parts[i] || ''
+            const punct = parts[i + 1] || ''
+            const space = parts[i + 2] || ''
+            
+            currentSentence += text + punct
+            
+            // Check if next part starts with uppercase (indicates new sentence)
+            const nextPart = parts[i + 3] || ''
+            if (punct && (space.trim() === '' || /^[A-Z]/.test(nextPart) || i + 3 >= parts.length)) {
+                // Restore abbreviations
+                Object.keys(abbrevMap).forEach((placeholder) => {
+                    currentSentence = currentSentence.replace(new RegExp(placeholder, 'g'), abbrevMap[placeholder])
+                })
+                
+                const trimmed = currentSentence.trim()
+                if (trimmed) {
+                    sentences.push(trimmed)
+                }
+                currentSentence = ''
+            }
+        }
+        
+        // Handle any remaining text
+        if (currentSentence.trim()) {
+            Object.keys(abbrevMap).forEach((placeholder) => {
+                currentSentence = currentSentence.replace(new RegExp(placeholder, 'g'), abbrevMap[placeholder])
+            })
+            sentences.push(currentSentence.trim())
+        }
+        
+        // Fallback: if no sentences found, try simple split
+        if (sentences.length === 0) {
+            return text
+                .replace(/([.!?])\s+/g, '$1|')
+                .split('|')
+                .map((s) => s.trim())
+                .filter((s) => s.length > 0)
+        }
 
-        return sentences
+        return sentences.filter((s) => s.length > 0)
     }
 
     private cosineSimilarity(vec1: number[], vec2: number[]): number {
@@ -129,8 +181,12 @@ class SemanticTextSplitter extends TextSplitter {
 
         switch (this.breakpointThresholdType) {
             case 'percentile': {
+                // For percentile, we find the threshold below which we consider a breakpoint
+                // Lower percentile = more aggressive splitting (more breakpoints)
+                // Higher percentile = less aggressive splitting (fewer breakpoints)
                 const sorted = [...similarities].sort((a, b) => a - b)
-                const index = Math.floor((this.breakpointThresholdAmount / 100) * sorted.length)
+                const percentile = this.breakpointThresholdAmount / 100
+                const index = Math.floor(percentile * sorted.length)
                 return sorted[Math.min(index, sorted.length - 1)]
             }
             case 'standard_deviation': {
@@ -168,7 +224,7 @@ class SemanticChunker_TextSplitters implements INode {
     constructor() {
         this.label = 'Semantic Chunker'
         this.name = 'semanticChunker'
-        this.version = 1.0
+        this.version = 1
         this.type = 'SemanticChunker'
         this.icon = 'semanticChunker.svg'
         this.category = 'Text Splitters'
@@ -210,8 +266,8 @@ class SemanticChunker_TextSplitters implements INode {
                 label: 'Breakpoint Threshold Amount',
                 name: 'breakpointThresholdAmount',
                 type: 'number',
-                description: 'Threshold value for the selected type (e.g., 95 for 95th percentile)',
-                default: 95,
+                description: 'Threshold value for the selected type. For percentile: lower values = more splits (try 25-50 for balanced splitting)',
+                default: 50,
                 optional: true
             },
             {
