@@ -11,6 +11,30 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
 
 /**
+ * Validates that requested permissions do not exceed user's own permissions
+ * @param userPermissions - Array of permissions the user has
+ * @param isOrganizationAdmin - Whether the user is an organization admin
+ * @param permissions - JSON string of requested permissions
+ * @param operation - The operation being performed (for error message)
+ * @throws InternalFlowiseError if validation fails
+ */
+function validatePermissions(userPermissions: string[], isOrganizationAdmin: boolean, permissions: string, operation: string) {
+    if (!isOrganizationAdmin) {
+        const requestedPermissions = JSON.parse(permissions)
+        // Check if all requested permissions are included in user permissions
+        const hasInvalidPermissions = requestedPermissions.some(
+            (permission: string) => permission !== null && !userPermissions.includes(permission)
+        )
+        if (hasInvalidPermissions) {
+            throw new InternalFlowiseError(
+                StatusCodes.FORBIDDEN,
+                `Cannot ${operation} API key with permissions that exceed your own permissions`
+            )
+        }
+    }
+}
+
+/**
  * Get all API keys for a workspace
  * Non-admin users can only view API keys whose permissions are a subset of their own permissions
  */
@@ -104,15 +128,7 @@ const createApiKey = async (
     permissions: string
 ) => {
     // Validate permissions before creating the key
-    if (!isOrganizationAdmin) {
-        const requestedPermissions = JSON.parse(permissions)
-        // Check if all requested permissions are included in user permissions
-        const hasInvalidPermissions = requestedPermissions.some(
-            (permission: string) => permission !== null && !userPermissions.includes(permission)
-        )
-        if (hasInvalidPermissions)
-            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Cannot create API key with permissions that exceed your own permissions')
-    }
+    validatePermissions(userPermissions, isOrganizationAdmin, permissions, 'create')
 
     const apiKey = generateAPIKey()
     const apiSecret = generateSecretHash(apiKey)
@@ -139,15 +155,7 @@ const updateApiKey = async (
     permissions: string
 ) => {
     // Validate permissions before updating the key
-    if (!isOrganizationAdmin) {
-        const requestedPermissions = JSON.parse(permissions)
-        // Check if all requested permissions are included in user permissions
-        const hasInvalidPermissions = requestedPermissions.some(
-            (permission: string) => permission !== null && !userPermissions.includes(permission)
-        )
-        if (hasInvalidPermissions)
-            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Cannot update API key with permissions that exceed your own permissions')
-    }
+    validatePermissions(userPermissions, isOrganizationAdmin, permissions, 'update')
 
     const appServer = getRunningExpressApp()
     const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
