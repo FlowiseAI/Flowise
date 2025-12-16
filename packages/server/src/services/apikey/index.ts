@@ -8,6 +8,7 @@ import { getErrorMessage } from '../../errors/utils'
 import { addChatflowsCount } from '../../utils/addChatflowsCount'
 import { generateAPIKey, generateSecretHash } from '../../utils/apiKey'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 
 /**
  * Get all API keys for a workspace
@@ -42,6 +43,11 @@ const getAllApiKeys = async (
                     // Check if all key permissions are included in user permissions
                     return keyPermissions.every((permission: string) => permission === null || userPermissions.includes(permission))
                 } catch (error) {
+                    // Log parsing errors to help with debugging malformed permissions
+                    logger.error(
+                        `[server]: Failed to parse permissions for API key ${key.id} (${key.keyName}). Raw value: ${key.permissions}`,
+                        error
+                    )
                     // If parsing fails, exclude this key
                     return false
                 }
