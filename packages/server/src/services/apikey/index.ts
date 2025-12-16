@@ -97,23 +97,30 @@ const createApiKey = async (
     keyName: string,
     permissions: string
 ) => {
-    try {
-        const apiKey = generateAPIKey()
-        const apiSecret = generateSecretHash(apiKey)
-        const appServer = getRunningExpressApp()
-        const newKey = new ApiKey()
-        newKey.id = uuidv4()
-        newKey.apiKey = apiKey
-        newKey.apiSecret = apiSecret
-        newKey.keyName = keyName
-        newKey.permissions = permissions
-        newKey.workspaceId = workspaceId
-        const key = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
-        await appServer.AppDataSource.getRepository(ApiKey).save(key)
-        return await getAllApiKeys(userPermissions, isOrganizationAdmin, workspaceId)
-    } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.createApiKey - ${getErrorMessage(error)}`)
+    // Validate permissions before creating the key
+    if (!isOrganizationAdmin) {
+        const requestedPermissions = JSON.parse(permissions)
+        // Check if all requested permissions are included in user permissions
+        const hasInvalidPermissions = requestedPermissions.some(
+            (permission: string) => permission !== null && !userPermissions.includes(permission)
+        )
+        if (hasInvalidPermissions)
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Cannot create API key with permissions that exceed your own permissions')
     }
+
+    const apiKey = generateAPIKey()
+    const apiSecret = generateSecretHash(apiKey)
+    const appServer = getRunningExpressApp()
+    const newKey = new ApiKey()
+    newKey.id = uuidv4()
+    newKey.apiKey = apiKey
+    newKey.apiSecret = apiSecret
+    newKey.keyName = keyName
+    newKey.permissions = permissions
+    newKey.workspaceId = workspaceId
+    const key = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
+    await appServer.AppDataSource.getRepository(ApiKey).save(key)
+    return await getAllApiKeys(userPermissions, isOrganizationAdmin, workspaceId)
 }
 
 // Update api key
@@ -125,22 +132,29 @@ const updateApiKey = async (
     keyName: string,
     permissions: string
 ) => {
-    try {
-        const appServer = getRunningExpressApp()
-        const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-            id: id,
-            workspaceId: workspaceId
-        })
-        if (!currentKey) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${currentKey} not found`)
-        }
-        currentKey.keyName = keyName
-        currentKey.permissions = permissions
-        await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
-        return await getAllApiKeys(userPermissions, isOrganizationAdmin, workspaceId)
-    } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.updateApiKey - ${getErrorMessage(error)}`)
+    // Validate permissions before updating the key
+    if (!isOrganizationAdmin) {
+        const requestedPermissions = JSON.parse(permissions)
+        // Check if all requested permissions are included in user permissions
+        const hasInvalidPermissions = requestedPermissions.some(
+            (permission: string) => permission !== null && !userPermissions.includes(permission)
+        )
+        if (hasInvalidPermissions)
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Cannot update API key with permissions that exceed your own permissions')
     }
+
+    const appServer = getRunningExpressApp()
+    const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
+        id: id,
+        workspaceId: workspaceId
+    })
+    if (!currentKey) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${currentKey} not found`)
+    }
+    currentKey.keyName = keyName
+    currentKey.permissions = permissions
+    await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
+    return await getAllApiKeys(userPermissions, isOrganizationAdmin, workspaceId)
 }
 
 const deleteApiKey = async (id: string, workspaceId: string) => {
