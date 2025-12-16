@@ -63,6 +63,7 @@
         "@langchain/qdrant": "^0.0.5",
         "@langchain/weaviate": "^0.0.1",
         "@langchain/xai": "^0.0.1",
+        "@llamaindex/anthropic": "^0.3.26",
         "@mem0/community": "^0.0.1",
         "@mendable/firecrawl-js": "^1.18.2",
         "@mistralai/mistralai": "0.1.3",

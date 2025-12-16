@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Anthropic } from 'llamaindex'
+import { Anthropic } from '@llamaindex/anthropic'
 
 class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     label: string
@@ -76,7 +76,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as 'claude-3-opus' | 'claude-3-sonnet' | 'claude-2.1' | 'claude-instant-1.2'
+        const modelName = nodeData.inputs?.modelName as string
         const maxTokensToSample = nodeData.inputs?.maxTokensToSample as string
         const topP = nodeData.inputs?.topP as string
 
