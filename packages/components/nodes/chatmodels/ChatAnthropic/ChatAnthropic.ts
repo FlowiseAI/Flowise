@@ -167,10 +167,9 @@ class ChatAnthropic_ChatModels implements INode {
 
         const model = new ChatAnthropic(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)
-        
         // Langchain sets topP to -1 by default, which is invalid for Claude Opus 4.5 and Claude Sonnet 4.5
         if (model.topP === -1) {
-            delete model.topP
+            model.topP = undefined
         }
 
         return model
