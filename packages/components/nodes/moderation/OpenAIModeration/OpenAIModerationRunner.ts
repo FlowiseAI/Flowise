@@ -9,7 +9,8 @@ export class OpenAIModerationRunner implements Moderation {
         // Handle case where openAIApiKey might be passed as an object instead of a string
         if (typeof openAIApiKey === 'object' && openAIApiKey !== null) {
             // If it's an object, try to extract the key from common property names
-            this.openAIApiKey = openAIApiKey.openAIApiKey || openAIApiKey.apiKey || openAIApiKey.key || ''
+            const potentialKey = openAIApiKey.openAIApiKey || openAIApiKey.apiKey || openAIApiKey.key;
+            this.openAIApiKey = typeof potentialKey === 'string' ? potentialKey : '';
         } else {
             this.openAIApiKey = openAIApiKey || ''
         }
