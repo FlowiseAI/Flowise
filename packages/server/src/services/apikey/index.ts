@@ -1,36 +1,60 @@
 import { StatusCodes } from 'http-status-codes'
-import { generateAPIKey, generateSecretHash } from '../../utils/apiKey'
-import { addChatflowsCount } from '../../utils/addChatflowsCount'
+import { IsNull, Not } from 'typeorm'
+import { v4 as uuidv4 } from 'uuid'
+import { ApiKey } from '../../database/entities/ApiKey'
+import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { addChatflowsCount } from '../../utils/addChatflowsCount'
+import { generateAPIKey, generateSecretHash } from '../../utils/apiKey'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { ApiKey } from '../../database/entities/ApiKey'
-import { Not, IsNull } from 'typeorm'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
-import { v4 as uuidv4 } from 'uuid'
 
-const getAllApiKeysFromDB = async (workspaceId: string, page: number = -1, limit: number = -1) => {
-    const appServer = getRunningExpressApp()
-    const queryBuilder = appServer.AppDataSource.getRepository(ApiKey).createQueryBuilder('api_key').orderBy('api_key.updatedDate', 'DESC')
-    if (page > 0 && limit > 0) {
-        queryBuilder.skip((page - 1) * limit)
-        queryBuilder.take(limit)
-    }
-    queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
-    const [data, total] = await queryBuilder.getManyAndCount()
-    const keysWithChatflows = await addChatflowsCount(data)
-
-    if (page > 0 && limit > 0) {
-        return { total, data: keysWithChatflows }
-    } else {
-        return keysWithChatflows
-    }
-}
-
-const getAllApiKeys = async (workspaceId: string, page: number = -1, limit: number = -1) => {
+/**
+ * Get all API keys for a workspace
+ * Non-admin users can only view API keys whose permissions are a subset of their own permissions
+ */
+const getAllApiKeys = async (
+    userPermissions: string[],
+    isOrganizationAdmin: boolean,
+    workspaceId: string,
+    page: number = -1,
+    limit: number = -1
+) => {
     try {
-        let keys = await getAllApiKeysFromDB(workspaceId, page, limit)
-        return keys
+        const appServer = getRunningExpressApp()
+        const queryBuilder = appServer.AppDataSource.getRepository(ApiKey)
+            .createQueryBuilder('api_key')
+            .orderBy('api_key.updatedDate', 'DESC')
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
+        queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
+        const allKeys = await queryBuilder.getMany()
+
+        // Filter keys based on user permissions
+        let filteredKeys = allKeys
+        if (!isOrganizationAdmin) {
+            // Non-admin users can only see API keys whose permissions are a subset of their own
+            filteredKeys = allKeys.filter((key) => {
+                try {
+                    const keyPermissions = JSON.parse(key.permissions)
+                    // Check if all key permissions are included in user permissions
+                    return keyPermissions.every((permission: string) => permission === null || userPermissions.includes(permission))
+                } catch (error) {
+                    // If parsing fails, exclude this key
+                    return false
+                }
+            })
+        }
+
+        const keysWithChatflows = await addChatflowsCount(filteredKeys)
+
+        if (page > 0 && limit > 0) {
+            return { total: filteredKeys.length, data: keysWithChatflows }
+        } else {
+            return keysWithChatflows
+        }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getAllApiKeys - ${getErrorMessage(error)}`)
     }
@@ -66,7 +90,13 @@ const getApiKeyById = async (apiKeyId: string) => {
     }
 }
 
-const createApiKey = async (keyName: string, permissions: string, workspaceId: string) => {
+const createApiKey = async (
+    userPermissions: string[],
+    isOrganizationAdmin: boolean,
+    workspaceId: string,
+    keyName: string,
+    permissions: string
+) => {
     try {
         const apiKey = generateAPIKey()
         const apiSecret = generateSecretHash(apiKey)
@@ -80,14 +110,21 @@ const createApiKey = async (keyName: string, permissions: string, workspaceId: s
         newKey.workspaceId = workspaceId
         const key = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
         await appServer.AppDataSource.getRepository(ApiKey).save(key)
-        return await getAllApiKeysFromDB(workspaceId)
+        return await getAllApiKeys(userPermissions, isOrganizationAdmin, workspaceId)
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.createApiKey - ${getErrorMessage(error)}`)
     }
 }
 
 // Update api key
-const updateApiKey = async (id: string, keyName: string, permissions: string, workspaceId: string) => {
+const updateApiKey = async (
+    userPermissions: string[],
+    isOrganizationAdmin: boolean,
+    workspaceId: string,
+    id: string,
+    keyName: string,
+    permissions: string
+) => {
     try {
         const appServer = getRunningExpressApp()
         const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
@@ -100,7 +137,7 @@ const updateApiKey = async (id: string, keyName: string, permissions: string, wo
         currentKey.keyName = keyName
         currentKey.permissions = permissions
         await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
-        return await getAllApiKeysFromDB(workspaceId)
+        return await getAllApiKeys(userPermissions, isOrganizationAdmin, workspaceId)
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.updateApiKey - ${getErrorMessage(error)}`)
     }
@@ -119,7 +156,7 @@ const deleteApiKey = async (id: string, workspaceId: string) => {
     }
 }
 
-const importKeys = async (body: any) => {
+const importKeys = async (userPermissions: string[], isOrganizationAdmin: boolean, body: any) => {
     try {
         const jsonFile = body.jsonFile
         const workspaceId = body.workspaceId
@@ -234,7 +271,7 @@ const importKeys = async (body: any) => {
                 await appServer.AppDataSource.getRepository(ApiKey).save(newKeyEntity)
             }
         }
-        return await getAllApiKeysFromDB(workspaceId)
+        return await getAllApiKeys(userPermissions, isOrganizationAdmin, workspaceId)
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.importKeys - ${getErrorMessage(error)}`)
     }

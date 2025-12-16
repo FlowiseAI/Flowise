@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { LoggedInUser } from '../../enterprise/Interface.Enterprise'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import apikeyService from '../../services/apikey'
 import { getPageAndLimitParams } from '../../utils/pagination'
@@ -7,11 +8,16 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 // Get api keys
 const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const user = req.user as LoggedInUser
         const { page, limit } = getPageAndLimitParams(req)
-        if (!req.user?.activeWorkspaceId) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
-        }
-        const apiResponse = await apikeyService.getAllApiKeys(req.user?.activeWorkspaceId, page, limit)
+
+        const apiResponse = await apikeyService.getAllApiKeys(
+            user.permissions,
+            user.isOrganizationAdmin,
+            user.activeWorkspaceId,
+            page,
+            limit
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -29,10 +35,14 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
                 `Error: apikeyController.createApiKey - permissions not provided!`
             )
         }
-        if (!req.user?.activeWorkspaceId) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
-        }
-        const apiResponse = await apikeyService.createApiKey(req.body.keyName, req.body.permissions, req.user?.activeWorkspaceId)
+        const user = req.user as LoggedInUser
+        const apiResponse = await apikeyService.createApiKey(
+            user.permissions,
+            user.isOrganizationAdmin,
+            user.activeWorkspaceId,
+            req.body.keyName,
+            req.body.permissions
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -54,14 +64,14 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
                 `Error: apikeyController.updateApiKey - permissions not provided!`
             )
         }
-        if (!req.user?.activeWorkspaceId) {
-            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
-        }
+        const user = req.user as LoggedInUser
         const apiResponse = await apikeyService.updateApiKey(
+            user.permissions,
+            user.isOrganizationAdmin,
+            user.activeWorkspaceId,
             req.params.id,
             req.body.keyName,
-            req.body.permissions,
-            req.user?.activeWorkspaceId
+            req.body.permissions
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -78,8 +88,8 @@ const importKeys = async (req: Request, res: Response, next: NextFunction) => {
         if (!req.user?.activeWorkspaceId) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
         }
-        req.body.workspaceId = req.user?.activeWorkspaceId
-        const apiResponse = await apikeyService.importKeys(req.body)
+        const user = req.user as LoggedInUser
+        const apiResponse = await apikeyService.importKeys(user.permissions, user.isOrganizationAdmin, req.body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
