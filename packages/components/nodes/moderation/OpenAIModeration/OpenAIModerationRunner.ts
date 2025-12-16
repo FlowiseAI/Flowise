@@ -5,7 +5,7 @@ export class OpenAIModerationRunner implements Moderation {
     private openAIApiKey = ''
     private moderationErrorMessage: string = "Text was found that violates OpenAI's content policy."
 
-    constructor(openAIApiKey: string | any) {
+    constructor(openAIApiKey: any) {
         // Handle case where openAIApiKey might be passed as an object instead of a string
         if (typeof openAIApiKey === 'object' && openAIApiKey !== null) {
             // If it's an object, try to extract the key from common property names
