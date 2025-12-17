@@ -18,7 +18,7 @@ import chatflowService from '../chatflows'
 import chatMessagesService from '../chat-messages'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
-import { getStoragePath } from 'flowise-components'
+import { getStoragePath, parseJsonBody } from 'flowise-components'
 import path from 'path'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import documenStoreService from '../documentstore'
@@ -61,22 +61,6 @@ type ExportData = {
     Execution: Execution[]
     Tool: Tool[]
     Variable: Variable[]
-}
-
-/**
- * Safely parses a JSON string, returning the original value if parsing fails
- * @param value - The value to parse (can be string or any other type)
- * @returns Parsed JSON object if value is a valid JSON string, otherwise returns the original value
- */
-const safeJsonParse = (value: any): any => {
-    if (typeof value === 'string') {
-        try {
-            return JSON.parse(value)
-        } catch (e) {
-            // Not a valid JSON string, return original value
-        }
-    }
-    return value
 }
 
 const convertExportInput = (body: any): ExportInput => {
@@ -831,7 +815,7 @@ const exportChatflowMessages = async (
         let parsedChatTypes: ChatType[] | undefined
         if (chatType) {
             if (typeof chatType === 'string') {
-                const parsed = safeJsonParse(chatType)
+                const parsed = parseJsonBody(chatType)
                 parsedChatTypes = Array.isArray(parsed) ? parsed : [chatType as ChatType]
             } else if (Array.isArray(chatType)) {
                 parsedChatTypes = chatType
@@ -842,7 +826,7 @@ const exportChatflowMessages = async (
         let parsedFeedbackTypes: ChatMessageRatingType[] | undefined
         if (feedbackType) {
             if (typeof feedbackType === 'string') {
-                const parsed = safeJsonParse(feedbackType)
+                const parsed = parseJsonBody(feedbackType)
                 parsedFeedbackTypes = Array.isArray(parsed) ? parsed : [feedbackType as ChatMessageRatingType]
             } else if (Array.isArray(feedbackType)) {
                 parsedFeedbackTypes = feedbackType
@@ -871,7 +855,7 @@ const exportChatflowMessages = async (
 
             // Handle file uploads
             if (chatmsg.fileUploads) {
-                const uploads = safeJsonParse(chatmsg.fileUploads)
+                const uploads = parseJsonBody(chatmsg.fileUploads)
                 if (Array.isArray(uploads)) {
                     uploads.forEach((file: any) => {
                         if (file.type === 'stored-file') {
@@ -890,15 +874,15 @@ const exportChatflowMessages = async (
 
             // Add optional properties
             if (filePaths.length) msg.filePaths = filePaths
-            if (chatmsg.sourceDocuments) msg.sourceDocuments = safeJsonParse(chatmsg.sourceDocuments)
-            if (chatmsg.usedTools) msg.usedTools = safeJsonParse(chatmsg.usedTools)
-            if (chatmsg.fileAnnotations) msg.fileAnnotations = safeJsonParse(chatmsg.fileAnnotations)
+            if (chatmsg.sourceDocuments) msg.sourceDocuments = parseJsonBody(chatmsg.sourceDocuments)
+            if (chatmsg.usedTools) msg.usedTools = parseJsonBody(chatmsg.usedTools)
+            if (chatmsg.fileAnnotations) msg.fileAnnotations = parseJsonBody(chatmsg.fileAnnotations)
             if ((chatmsg as any).feedback) msg.feedback = (chatmsg as any).feedback.content
-            if (chatmsg.agentReasoning) msg.agentReasoning = safeJsonParse(chatmsg.agentReasoning)
+            if (chatmsg.agentReasoning) msg.agentReasoning = parseJsonBody(chatmsg.agentReasoning)
 
             // Handle artifacts
             if (chatmsg.artifacts) {
-                const artifacts = safeJsonParse(chatmsg.artifacts)
+                const artifacts = parseJsonBody(chatmsg.artifacts)
                 msg.artifacts = artifacts
                 if (Array.isArray(artifacts)) {
                     artifacts.forEach((artifact: any) => {
