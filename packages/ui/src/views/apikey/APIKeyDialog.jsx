@@ -1,28 +1,28 @@
-import { createPortal } from 'react-dom'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useDispatch } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
+import { StyledButton } from '@/ui-component/button/StyledButton'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import {
     Box,
-    Typography,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Stack,
     IconButton,
     OutlinedInput,
-    Popover
+    Popover,
+    Stack,
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { StyledButton } from '@/ui-component/button/StyledButton'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // Icons
-import { IconX, IconCopy, IconKey } from '@tabler/icons-react'
+import { IconCopy, IconKey, IconX } from '@tabler/icons-react'
 
 // API
 import apikeyApi from '@/api/apikey'
@@ -30,6 +30,7 @@ import authApi from '@/api/auth'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useConfig } from '@/store/context/ConfigContext'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
@@ -44,6 +45,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
 
     const theme = useTheme()
     const dispatch = useDispatch()
+    const { isOpenSource, isEnterpriseLicensed, isCloud } = useConfig()
 
     // ==============================|| Snackbar ||============================== //
 
@@ -89,6 +91,24 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     useEffect(() => {
         if (getAllPermissionsApi.data) {
             const permissionsData = getAllPermissionsApi.data
+
+            // Filter permissions based on current platform
+            Object.keys(permissionsData).forEach((category) => {
+                permissionsData[category] = permissionsData[category].filter((permission) => {
+                    if (isOpenSource) return permission.isOpenSource
+                    if (isEnterpriseLicensed) return permission.isEnterprise
+                    if (isCloud) return permission.isCloud
+                    return false
+                })
+            })
+
+            // Remove categories that have no permissions left
+            Object.keys(permissionsData).forEach((category) => {
+                if (permissionsData[category].length === 0) {
+                    delete permissionsData[category]
+                }
+            })
+
             setPermissions(permissionsData)
 
             if (dialogProps.type === 'EDIT' && dialogProps.key) {

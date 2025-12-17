@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+import { Platform } from '../../../Interface'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
 import { LoggedInUser } from '../../Interface.Enterprise'
 
@@ -11,11 +12,56 @@ const getAllPermissions = async (req: Request, res: Response, next: NextFunction
 
         let permissions: { [key: string]: { key: string; value: string }[] } = allPermissions
 
+        // Mapping of feature flags to permission prefixes
+        const featureToPermissionMap: { [key: string]: string[] } = {
+            'feat:login-activity': ['loginActivity:'],
+            'feat:logs': ['logs:'],
+            'feat:roles': ['roles:'],
+            'feat:share': ['credentials:share', 'templates:custom-share'],
+            'feat:sso-config': ['sso:'],
+            'feat:users': ['users:'],
+            'feat:workspaces': ['workspace:']
+        }
+
+        if (type !== 'ROLE' && appServer.identityManager.getPlatformType() === Platform.CLOUD) {
+            const userFeatures = user.features
+            if (userFeatures) {
+                const disabledFeatures = Object.entries(userFeatures).filter(([, value]) => value === 'false')
+
+                // Get list of disabled permission prefixes
+                const disabledPermissionPrefixes: string[] = []
+                disabledFeatures.forEach(([featureKey]) => {
+                    const prefixes = featureToPermissionMap[featureKey]
+                    if (prefixes) {
+                        disabledPermissionPrefixes.push(...prefixes)
+                    }
+                })
+
+                // Filter out permissions based on disabled features
+                const filteredPermissions: { [key: string]: { key: string; value: string }[] } = {}
+
+                for (const [category, categoryPermissions] of Object.entries(allPermissions)) {
+                    const filteredCategoryPermissions = (categoryPermissions as any[]).filter((permission) => {
+                        // Check if this permission starts with any disabled prefix
+                        const isDisabled = disabledPermissionPrefixes.some((prefix) => permission.key.startsWith(prefix))
+                        return !isDisabled
+                    })
+
+                    // Only include category if it has remaining permissions
+                    if (filteredCategoryPermissions.length > 0) {
+                        filteredPermissions[category] = filteredCategoryPermissions
+                    }
+                }
+
+                permissions = filteredPermissions
+            }
+        }
+
         if (type !== 'ROLE' && user.isOrganizationAdmin === false) {
             const userPermissions = user.permissions as string[]
             const filteredPermissions: { [key: string]: { key: string; value: string }[] } = {}
 
-            for (const [category, categoryPermissions] of Object.entries(allPermissions)) {
+            for (const [category, categoryPermissions] of Object.entries(permissions)) {
                 const filteredCategoryPermissions = (categoryPermissions as any[]).filter((permission) =>
                     userPermissions?.includes(permission.key)
                 )
