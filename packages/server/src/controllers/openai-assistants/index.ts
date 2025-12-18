@@ -8,6 +8,7 @@ import { streamStorageFile, validateMimeTypeAndExtensionMatch } from 'flowise-co
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
+import { getErrorMessage } from '../../errors/utils';
 
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {
@@ -109,7 +110,7 @@ const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunct
                 try {
                     validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
                 } catch (error) {
-                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, error instanceof Error ? error.message : String(error))
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
                 }
 
                 uploadFiles.push({

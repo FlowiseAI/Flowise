@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { validateMimeTypeAndExtensionMatch } from 'flowise-components'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import openAIAssistantVectorStoreService from '../../services/openai-assistants-vector-store'
+import { getErrorMessage } from '../../errors/utils'
 
 const getAssistantVectorStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -148,7 +149,7 @@ const uploadFilesToAssistantVectorStore = async (req: Request, res: Response, ne
                 try {
                     validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
                 } catch (error) {
-                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, error instanceof Error ? error.message : String(error))
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
                 }
 
                 uploadFiles.push({
