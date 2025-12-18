@@ -82,7 +82,7 @@ const validateFilename = (filename: string): void => {
         throw new Error('Invalid filename: filename is required and must be a string')
     }
     if (isUnsafeFilePath(filename)) {
-        throw new Error(`Invalid filename: path traversal detected in filename "${filename}"`)
+        throw new Error(`Invalid filename: unsafe characters or path traversal attempt detected in filename "${filename}"`)
     }
 }
 
