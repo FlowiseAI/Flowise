@@ -19,7 +19,7 @@ class AIBadgrEmbedding_Embeddings implements INode {
         this.name = 'aiBadgrEmbedding'
         this.version = 1.0
         this.type = 'AIBadgrEmbedding'
-        this.icon = 'aibadgr.png'
+        this.icon = 'aibadgr.svg'
         this.category = 'Embeddings'
         this.description = 'AI Badgr Embedding models to generate embeddings for a given text'
         this.baseClasses = [this.type, ...getBaseClasses(OpenAIEmbeddings)]
