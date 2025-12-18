@@ -57,7 +57,8 @@ class AIBadgrEmbedding_Embeddings implements INode {
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                description: 'Additional options to pass to the AI Badgr client. This should be a JSON object.'
             },
             {
                 label: 'Model Name',
@@ -100,6 +101,10 @@ class AIBadgrEmbedding_Embeddings implements INode {
         if (baseOptions) {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                if (parsedBaseOptions.baseURL) {
+                    console.warn("The 'baseURL' parameter is not allowed when using the AIBadgrEmbedding node.")
+                    parsedBaseOptions.baseURL = undefined
+                }
             } catch (exception) {
                 throw new Error("Invalid JSON in the AIBadgrEmbedding's BaseOptions: " + exception)
             }
@@ -107,7 +112,7 @@ class AIBadgrEmbedding_Embeddings implements INode {
 
         obj.configuration = {
             baseURL: this.baseURL,
-            defaultHeaders: parsedBaseOptions
+            ...(parsedBaseOptions ?? {})
         }
 
         const model = new OpenAIEmbeddings(obj)
