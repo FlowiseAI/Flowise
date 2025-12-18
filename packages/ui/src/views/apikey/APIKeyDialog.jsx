@@ -160,7 +160,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                         updatedCategoryPermissions[viewPermissionKey] = true
                     }
                 } else {
-                    const hasEnabledPermissions = Object.keys(updatedCategoryPermissions).some(
+                    const hasEnabledPermissions = Object.entries(updatedCategoryPermissions).some(
                         ([permissionKey, isEnabled]) => permissionKey === viewPermissionKey && isEnabled
                     )
                     if (hasEnabledPermissions) {
