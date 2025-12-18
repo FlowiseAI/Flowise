@@ -1,39 +1,8 @@
 import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-
-/**
- * Available Cerebras models with their descriptions.
- * Update this list when new models become available.
- */
-const CEREBRAS_MODELS = [
-    {
-        label: 'llama-3.3-70b',
-        name: 'llama-3.3-70b',
-        description: 'Best for complex reasoning and long-form content'
-    },
-    {
-        label: 'qwen-3-32b',
-        name: 'qwen-3-32b',
-        description: 'Balanced performance for general-purpose tasks'
-    },
-    {
-        label: 'llama3.1-8b',
-        name: 'llama3.1-8b',
-        description: 'Fastest model, ideal for simple tasks and high throughput'
-    },
-    {
-        label: 'gpt-oss-120b',
-        name: 'gpt-oss-120b',
-        description: 'Largest model for demanding tasks'
-    },
-    {
-        label: 'zai-glm-4.6',
-        name: 'zai-glm-4.6',
-        description: 'Advanced reasoning and complex problem-solving'
-    }
-] as const
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatCerebras_ChatModels implements INode {
     label: string
@@ -73,8 +42,8 @@ class ChatCerebras_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [...CEREBRAS_MODELS],
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
                 default: 'llama3.1-8b'
             },
             {
@@ -149,6 +118,12 @@ class ChatCerebras_ChatModels implements INode {
                 additionalParams: true
             }
         ]
+    }
+
+    loadMethods = {
+        async listModels(_: INodeData, __?: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatCerebras')
+        }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
