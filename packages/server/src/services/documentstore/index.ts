@@ -10,7 +10,8 @@ import {
     mapMimeTypeToInputField,
     removeFilesFromStorage,
     removeSpecificFileFromStorage,
-    removeSpecificFileFromUpload
+    removeSpecificFileFromUpload,
+    validateMimeTypeAndExtensionMatch
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, omit } from 'lodash'
@@ -1826,6 +1827,13 @@ const upsertDocStore = async (
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            try {
+                validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+            } catch (error) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
+            }
 
             try {
                 checkStorage(orgId, subscriptionId, usageCacheManager)

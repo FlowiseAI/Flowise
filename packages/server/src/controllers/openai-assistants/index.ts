@@ -4,7 +4,7 @@ import openaiAssistantsService from '../../services/openai-assistants'
 import contentDisposition from 'content-disposition'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-import { streamStorageFile } from 'flowise-components'
+import { streamStorageFile, validateMimeTypeAndExtensionMatch } from 'flowise-components'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
@@ -104,6 +104,14 @@ const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunct
             for (const file of files) {
                 // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+                // Validate file extension, MIME type, and content to prevent security vulnerabilities
+                try {
+                    validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+                } catch (error) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, error instanceof Error ? error.message : String(error))
+                }
+
                 uploadFiles.push({
                     filePath: file.path ?? file.key,
                     fileName: file.originalname

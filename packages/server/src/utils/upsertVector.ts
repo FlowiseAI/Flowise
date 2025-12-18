@@ -7,7 +7,8 @@ import {
     mapMimeTypeToInputField,
     mapExtToInputField,
     getFileFromUpload,
-    removeSpecificFileFromUpload
+    removeSpecificFileFromUpload,
+    validateMimeTypeAndExtensionMatch
 } from 'flowise-components'
 import logger from '../utils/logger'
 import {
@@ -70,6 +71,14 @@ export const executeUpsert = async ({
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            try {
+                validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+            } catch (error) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
+            }
+
             const { path: storagePath, totalSize } = await addArrayFilesToStorage(
                 file.mimetype,
                 fileBuffer,

@@ -18,7 +18,8 @@ import {
     removeSpecificFileFromUpload,
     EvaluationRunner,
     handleEscapeCharacters,
-    IServerSideEventStreamer
+    IServerSideEventStreamer,
+    validateMimeTypeAndExtensionMatch
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -354,6 +355,14 @@ export const executeFlow = async ({
                 const splitDataURI = upload.data.split(',')
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                 const mime = splitDataURI[0].split(':')[1].split(';')[0]
+
+                // Validate file extension, MIME type, and content to prevent security vulnerabilities
+                try {
+                    validateMimeTypeAndExtensionMatch(filename, mime)
+                } catch (error) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
+                }
+
                 const { totalSize } = await addSingleFileToStorage(mime, bf, filename, orgId, chatflowid, chatId)
                 await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
                 upload.type = 'stored-file'
@@ -418,6 +427,14 @@ export const executeFlow = async ({
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            try {
+                validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+            } catch (error) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
+            }
+
             const { path: storagePath, totalSize } = await addArrayFilesToStorage(
                 file.mimetype,
                 fileBuffer,

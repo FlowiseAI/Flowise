@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { validateMimeTypeAndExtensionMatch } from 'flowise-components'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import openAIAssistantVectorStoreService from '../../services/openai-assistants-vector-store'
 
@@ -142,6 +143,14 @@ const uploadFilesToAssistantVectorStore = async (req: Request, res: Response, ne
             for (const file of files) {
                 // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+                // Validate file extension, MIME type, and content to prevent security vulnerabilities
+                try {
+                    validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+                } catch (error) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, error instanceof Error ? error.message : String(error))
+                }
+
                 uploadFiles.push({
                     filePath: file.path ?? file.key,
                     fileName: file.originalname

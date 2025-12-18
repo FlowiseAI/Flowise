@@ -7,8 +7,10 @@ import {
     mapExtToInputField,
     mapMimeTypeToInputField,
     removeSpecificFileFromUpload,
+    removeSpecificFileFromStorage,
     isValidUUID,
-    isPathTraversal
+    isPathTraversal,
+    validateMimeTypeAndExtensionMatch
 } from 'flowise-components'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { getErrorMessage } from '../errors/utils'
@@ -141,6 +143,15 @@ export const createFileAttachment = async (req: Request) => {
                 )
             }
 
+            // Security fix: Verify file extension matches the declared MIME type
+            // This prevents MIME type spoofing attacks (e.g., uploading .js file with text/plain MIME type)
+            // This addresses the vulnerability (CVE-2025-61687)
+            try {
+                validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+            } catch (error) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
+            }
+
             await checkStorage(orgId, subscriptionId, appServer.usageCacheManager)
 
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
@@ -174,6 +185,9 @@ export const createFileAttachment = async (req: Request) => {
 
             await removeSpecificFileFromUpload(file.path ?? file.key)
 
+            // Track sanitized filename for cleanup if processing fails
+            const sanitizedFilename = fileNames.length > 0 ? fileNames[0] : undefined
+
             try {
                 const nodeData = {
                     inputs: {
@@ -204,6 +218,23 @@ export const createFileAttachment = async (req: Request) => {
                     content
                 })
             } catch (error) {
+                // Security: Clean up storage if processing failed, which includes invalid file type or content detacted from loader
+                if (sanitizedFilename) {
+                    console.info(`Clean up storage for ${file.originalname} (${sanitizedFilename}). Reason: ${getErrorMessage(error)}`)
+                    try {
+                        const { totalSize: newTotalSize } = await removeSpecificFileFromStorage(
+                            orgId,
+                            chatflowid,
+                            chatId,
+                            sanitizedFilename
+                        )
+                        await updateStorageUsage(orgId, workspaceId, newTotalSize, appServer.usageCacheManager)
+                    } catch (cleanupError) {
+                        console.error(
+                            `Failed to cleanup storage for ${file.originalname} (${sanitizedFilename}) - ${getErrorMessage(cleanupError)}`
+                        )
+                    }
+                }
                 throw new Error(`Failed createFileAttachment: ${file.originalname} (${file.mimetype} - ${getErrorMessage(error)}`)
             }
         }
