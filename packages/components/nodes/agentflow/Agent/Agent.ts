@@ -80,7 +80,7 @@ const sanitizeToolName = (name: string): string => {
     
     // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
     if (!sanitized) {
-        return `tool_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`
+        return `tool_${crypto.randomBytes(8).toString('hex')}`
     }
     
     // Enforce 64 character limit common for tool names
