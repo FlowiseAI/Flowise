@@ -63,7 +63,7 @@ describe('validateMimeTypeAndExtensionMatch', () => {
         ])('should throw error for %s', (_description, filename) => {
             expect(() => {
                 validateMimeTypeAndExtensionMatch(filename, 'text/plain')
-            }).toThrow(`Invalid filename: path traversal detected in filename "${filename}"`)
+            }).toThrow(`Invalid filename: unsafe characters or path traversal attempt detected in filename "${filename}"`)
         })
     })
 
