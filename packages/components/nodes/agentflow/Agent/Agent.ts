@@ -68,16 +68,17 @@ interface ISimpliefiedTool {
 
 /**
  * Sanitizes a string to be used as a tool name.
- * Restricts to characters allowed by major LLM APIs (OpenAI, Anthropic, Gemini).
- * Replaces spaces with underscores and ensures the result is not empty.
+ * Restricts to ASCII characters [a-z0-9_-] for LLM API compatibility (OpenAI, Anthropic, Gemini).
+ * Non-ASCII titles (Korean, Chinese, Japanese, etc.) will use auto-generated fallback names.
+ * This prevents 'Invalid tools[0].function.name: empty string' errors.
  */
 const sanitizeToolName = (name: string): string => {
     const sanitized = name
         .toLowerCase()
         .replace(/ /g, '_')
-        .replace(/[^a-z0-9_-]/g, '') // Restrict to characters allowed by major LLMs
+        .replace(/[^a-z0-9_-]/g, '') // ASCII only for LLM API compatibility
     
-    // If the result is empty, generate a fallback name with random suffix for uniqueness
+    // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
     if (!sanitized) {
         return `tool_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`
     }
