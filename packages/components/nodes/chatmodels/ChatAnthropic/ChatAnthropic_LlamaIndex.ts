@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { Anthropic } from '@llamaindex/anthropic'
+import { ChatAnthropic } from '@langchain/anthropic'
 
 class ChatAnthropic_LlamaIndex_ChatModels implements INode {
     label: string
@@ -24,7 +24,7 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around ChatAnthropic LLM specific for LlamaIndex'
-        this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(Anthropic)]
+        this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(ChatAnthropic)]
         this.tags = ['LlamaIndex']
         this.credential = {
             label: 'Connect Credential',
@@ -83,16 +83,16 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
 
-        const obj: Partial<Anthropic> = {
+        const obj: Partial<ChatAnthropic> = {
             temperature: parseFloat(temperature),
             model: modelName,
-            apiKey: anthropicApiKey
+            anthropicApiKey: anthropicApiKey
         }
 
         if (maxTokensToSample) obj.maxTokens = parseInt(maxTokensToSample, 10)
         if (topP) obj.topP = parseFloat(topP)
 
-        const model = new Anthropic(obj)
+        const model = new ChatAnthropic(obj)
         return model
     }
 }

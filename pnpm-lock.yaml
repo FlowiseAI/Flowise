@@ -250,9 +250,6 @@ importers:
       '@langchain/xai':
         specifier: ^0.0.1
         version: 0.0.1(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
-      '@llamaindex/anthropic':
-        specifier: ^0.3.26
-        version: 0.3.26(@llamaindex/core@0.6.22)(@llamaindex/env@0.1.30)
       '@mem0/community':
         specifier: ^0.0.1
         version: 0.0.1(5cc11fc2ac52307d4013e43691e7b64a)
@@ -1316,10 +1313,6 @@ packages:
 
   '@anthropic-ai/sdk@0.27.3':
     resolution: {integrity: sha512-IjLt0gd3L4jlOfilxVXTifn42FnVffMgDC04RJK1KDZpmkBWLv0XC92MVVmkxrFZNS/7l3xWgP/I3nqtX1sQHw==}
-
-  '@anthropic-ai/sdk@0.58.0':
-    resolution: {integrity: sha512-wF8w+LB0AlKVLYUQho0nbK0uDv0K5Cgb92dbh8213t4roilnQ9Tm6zndheIaUxQdoEAeb0uoOT+GkkoIkqD8+A==}
-    hasBin: true
 
   '@anthropic-ai/sdk@0.65.0':
     resolution: {integrity: sha512-zIdPOcrCVEI8t3Di40nH4z9EoeyGZfXbYSvWdDLsB/KkaSYMnEgC7gmcgWu83g2NTn1ZTpbMvpdttWDGGIk6zw==}
@@ -3807,12 +3800,6 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@finom/zod-to-json-schema@3.24.11':
-    resolution: {integrity: sha512-fL656yBPiWebtfGItvtXLWrFNGlF1NcDFS0WdMQXMs9LluVg0CfT5E2oXYp0pidl0vVG53XkW55ysijNkU5/hA==}
-    deprecated: 'Use https://www.npmjs.com/package/zod-v3-to-json-schema instead. See issue comment for details: https://github.com/StefanTerdell/zod-to-json-schema/issues/178#issuecomment-3533122539'
-    peerDependencies:
-      zod: ^4.0.14
-
   '@floating-ui/core@1.6.0':
     resolution: {integrity: sha512-PcF++MykgmTj3CIyOQbKA/hDzOAiqI3mhuoN44WRCopIs1sgoDoU4oty4Jtqaj/y3oDU6fnVSm4QG0a3t5i0+g==}
 
@@ -4988,12 +4975,6 @@ packages:
   '@lezer/markdown@1.3.0':
     resolution: {integrity: sha512-ErbEQ15eowmJUyT095e9NJc3BI9yZ894fjSDtHftD0InkfUBGgnKSU6dvan9jqsZuNHg2+ag/1oyDRxNsENupQ==}
 
-  '@llamaindex/anthropic@0.3.26':
-    resolution: {integrity: sha512-3rVC555MzpxrVSJs7WgpnocQGPQAPj2hqbyGCLcUdAfYQPXM5hq8ocq8ENxY9u1twijP9t/nOu+dliiJvS7brA==}
-    peerDependencies:
-      '@llamaindex/core': 0.6.22
-      '@llamaindex/env': 0.1.30
-
   '@llamaindex/cloud@0.0.5':
     resolution: {integrity: sha512-8HBSiAZkmX1RvpEM2czEVKqMUCKk7uvMSiDpMGWlEj3MUKBYCh+r8E2TtVhZfU4TunEI7nJRMcVBfXDyFz6Lpw==}
     peerDependencies:
@@ -5001,9 +4982,6 @@ packages:
     peerDependenciesMeta:
       node-fetch:
         optional: true
-
-  '@llamaindex/core@0.6.22':
-    resolution: {integrity: sha512-/BXyemkvpxMaUhOkbwJ2PTvzKjSWkL8+6QLpz/n+pk8xBwMMe1GVBgli/J57gCyi8GbrlBafBj6GaPOgWub2Eg==}
 
   '@llamaindex/env@0.1.3':
     resolution: {integrity: sha512-PM9cZ8x6jjdugWG30vBxb9Ju2LFmGY0l0pN7AUXXKULFNytQddx96xHh07pV/juf/WqjhFp75FVAykAlqO/qzQ==}
@@ -5014,17 +4992,6 @@ packages:
       '@aws-crypto/sha256-js':
         optional: true
       pathe:
-        optional: true
-
-  '@llamaindex/env@0.1.30':
-    resolution: {integrity: sha512-y6kutMcCevzbmexUgz+HXf7KiZemzAoFEYSjAILfR+cG6FmYSF8XvLbGOB34Kx8mlRi7EI8rZXpezJ5qCqOyZg==}
-    peerDependencies:
-      '@huggingface/transformers': ^3.5.0
-      gpt-tokenizer: ^2.5.0
-    peerDependenciesMeta:
-      '@huggingface/transformers':
-        optional: true
-      gpt-tokenizer:
         optional: true
 
   '@mapbox/node-pre-gyp@1.0.11':
@@ -16004,9 +15971,6 @@ packages:
   remark-rehype@10.1.0:
     resolution: {integrity: sha512-EFmR5zppdBp0WQeDVZ/b66CWJipB2q2VLNFMabzDSGR66Z2fQii83G5gTBbgGEnEEA0QRussvrFHxk1HWGJskw==}
 
-  remeda@2.32.0:
-    resolution: {integrity: sha512-BZx9DsT4FAgXDTOdgJIc5eY6ECIXMwtlSPQoPglF20ycSWigttDDe88AozEsPPT4OWk5NujroGSBC1phw5uU+w==}
-
   remove-bom-buffer@3.0.0:
     resolution: {integrity: sha512-8v2rWhaakv18qcvNeli2mZ/TMTL2nEyAKRvzo1WtnZBl15SHyEhrCu2/xKlJyUFKHiHgfXIyuY6g2dObJJycXQ==}
     engines: {node: '>=0.10.0'}
@@ -18571,9 +18535,6 @@ packages:
   zod@3.25.32:
     resolution: {integrity: sha512-OSm2xTIRfW8CV5/QKgngwmQW/8aPfGdaQFlrGoErlgg/Epm7cjb6K6VEyExfe65a3VybUOnu381edLb0dfJl0g==}
 
-  zod@4.2.0:
-    resolution: {integrity: sha512-Bd5fw9wlIhtqCCxotZgdTOMwGm1a0u75wARVEY9HMs1X17trvA/lMi4+MGK5EUfYkXVTbX8UDiDKW4OgzHVUZw==}
-
   zustand@4.5.2:
     resolution: {integrity: sha512-2cN1tPkDVkwCy5ickKrI7vijSjPksFRfqS6237NzT0vqSsztTNnQdHw9mmN7uBdk3gceVXU0a+21jFzFzAc9+g==}
     engines: {node: '>=12.7.0'}
@@ -18699,8 +18660,6 @@ snapshots:
       node-fetch: 2.7.0(encoding@0.1.13)
     transitivePeerDependencies:
       - encoding
-
-  '@anthropic-ai/sdk@0.58.0': {}
 
   '@anthropic-ai/sdk@0.65.0(zod@3.22.4)':
     dependencies:
@@ -23132,10 +23091,6 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@finom/zod-to-json-schema@3.24.11(zod@4.2.0)':
-    dependencies:
-      zod: 4.2.0
-
   '@floating-ui/core@1.6.0':
     dependencies:
       '@floating-ui/utils': 0.2.1
@@ -24477,13 +24432,6 @@ snapshots:
       '@lezer/common': 1.2.1
       '@lezer/highlight': 1.2.1
 
-  '@llamaindex/anthropic@0.3.26(@llamaindex/core@0.6.22)(@llamaindex/env@0.1.30)':
-    dependencies:
-      '@anthropic-ai/sdk': 0.58.0
-      '@llamaindex/core': 0.6.22
-      '@llamaindex/env': 0.1.30
-      remeda: 2.32.0
-
   '@llamaindex/cloud@0.0.5(node-fetch@2.7.0(encoding@0.1.13))':
     dependencies:
       '@types/qs': 6.9.17
@@ -24493,29 +24441,12 @@ snapshots:
     optionalDependencies:
       node-fetch: 2.7.0(encoding@0.1.13)
 
-  '@llamaindex/core@0.6.22':
-    dependencies:
-      '@finom/zod-to-json-schema': 3.24.11(zod@4.2.0)
-      '@llamaindex/env': 0.1.30
-      '@types/node': 24.10.4
-      magic-bytes.js: 1.10.0
-      zod: 4.2.0
-    transitivePeerDependencies:
-      - '@huggingface/transformers'
-      - gpt-tokenizer
-
   '@llamaindex/env@0.1.3(@aws-crypto/sha256-js@5.2.0)(pathe@1.1.2)':
     dependencies:
       '@types/lodash': 4.17.20
       '@types/node': 20.12.12
     optionalDependencies:
       '@aws-crypto/sha256-js': 5.2.0
-      pathe: 1.1.2
-
-  '@llamaindex/env@0.1.30':
-    dependencies:
-      '@aws-crypto/sha256-js': 5.2.0
-      js-tiktoken: 1.0.12
       pathe: 1.1.2
 
   '@mapbox/node-pre-gyp@1.0.11(encoding@0.1.13)':
@@ -38977,10 +38908,6 @@ snapshots:
       mdast-util-to-hast: 12.3.0
       unified: 10.1.2
 
-  remeda@2.32.0:
-    dependencies:
-      type-fest: 4.41.0
-
   remove-bom-buffer@3.0.0:
     dependencies:
       is-buffer: 1.1.6
@@ -40728,7 +40655,8 @@ snapshots:
 
   type-fest@4.40.1: {}
 
-  type-fest@4.41.0: {}
+  type-fest@4.41.0:
+    optional: true
 
   type-is@1.6.18:
     dependencies:
@@ -42130,8 +42058,6 @@ snapshots:
   zod@3.24.2: {}
 
   zod@3.25.32: {}
-
-  zod@4.2.0: {}
 
   zustand@4.5.2(@types/react@18.2.65)(immer@10.1.1)(react@18.2.0):
     dependencies:
