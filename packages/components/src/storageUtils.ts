@@ -8,6 +8,7 @@ import {
     S3ClientConfig
 } from '@aws-sdk/client-s3'
 import { Storage } from '@google-cloud/storage'
+import { BlobServiceClient, StorageSharedKeyCredential } from '@azure/storage-blob'
 import fs from 'fs'
 import { Readable } from 'node:stream'
 import path from 'path'
@@ -97,6 +98,26 @@ export const addBase64FilesToStorage = async (
         const totalSize = await getGCSStorageSize(orgId)
 
         return { path: 'FILE-STORAGE::' + JSON.stringify(fileNames), totalSize: totalSize / 1024 / 1024 }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        const splitDataURI = fileBase64.split(',')
+        const filename = splitDataURI.pop()?.split(':')[1] ?? ''
+        const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+        const mime = splitDataURI[0].split(':')[1].split(';')[0]
+
+        const sanitizedFilename = _sanitizeFilename(filename)
+        const blobName = `${orgId}/${chatflowid}/${sanitizedFilename}`
+
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+        await blockBlobClient.upload(bf, bf.length, {
+            blobHTTPHeaders: { blobContentType: mime }
+        })
+
+        fileNames.push(sanitizedFilename)
+        const totalSize = await getAzureBlobStorageSize(orgId)
+
+        return { path: 'FILE-STORAGE::' + JSON.stringify(fileNames), totalSize: totalSize / 1024 / 1024 }
     } else {
         const dir = path.join(getStoragePath(), orgId, chatflowid)
         if (!fs.existsSync(dir)) {
@@ -166,6 +187,23 @@ export const addArrayFilesToStorage = async (
         const totalSize = await getGCSStorageSize(paths[0])
 
         return { path: 'FILE-STORAGE::' + JSON.stringify(fileNames), totalSize: totalSize / 1024 / 1024 }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let blobName = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
+        if (blobName.startsWith('/')) {
+            blobName = blobName.substring(1)
+        }
+
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+        await blockBlobClient.upload(bf, bf.length, {
+            blobHTTPHeaders: { blobContentType: mime }
+        })
+        fileNames.push(sanitizedFilename)
+
+        const totalSize = await getAzureBlobStorageSize(paths[0])
+
+        return { path: 'FILE-STORAGE::' + JSON.stringify(fileNames), totalSize: totalSize / 1024 / 1024 }
     } else {
         const dir = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         if (!fs.existsSync(dir)) {
@@ -226,6 +264,22 @@ export const addSingleFileToStorage = async (
         const totalSize = await getGCSStorageSize(paths[0])
 
         return { path: 'FILE-STORAGE::' + sanitizedFilename, totalSize: totalSize / 1024 / 1024 }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let blobName = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
+        if (blobName.startsWith('/')) {
+            blobName = blobName.substring(1)
+        }
+
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+        await blockBlobClient.upload(bf, bf.length, {
+            blobHTTPHeaders: { blobContentType: mime }
+        })
+
+        const totalSize = await getAzureBlobStorageSize(paths[0])
+
+        return { path: 'FILE-STORAGE::' + sanitizedFilename, totalSize: totalSize / 1024 / 1024 }
     } else {
         const dir = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         if (!fs.existsSync(dir)) {
@@ -270,6 +324,18 @@ export const getFileFromUpload = async (filePath: string): Promise<Buffer> => {
         const file = bucket.file(filePath)
         const [buffer] = await file.download()
         return buffer
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let blobName = filePath
+        // remove the first '/' if it exists
+        if (blobName.startsWith('/')) {
+            blobName = blobName.substring(1)
+        }
+
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+        const downloadResponse = await blockBlobClient.downloadToBuffer()
+        return downloadResponse
     } else {
         return fs.readFileSync(filePath)
     }
@@ -415,6 +481,47 @@ export const getFileFromStorage = async (file: string, ...paths: string[]): Prom
                 throw error
             }
         }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let blobName = paths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
+        if (blobName.startsWith('/')) {
+            blobName = blobName.substring(1)
+        }
+
+        try {
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+            const buffer = await blockBlobClient.downloadToBuffer()
+            return buffer
+        } catch (error) {
+            // Fallback: Check if file exists without the first path element (likely orgId)
+            if (paths.length > 1) {
+                const fallbackPaths = paths.slice(1)
+                let fallbackBlobName = fallbackPaths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
+                if (fallbackBlobName.startsWith('/')) {
+                    fallbackBlobName = fallbackBlobName.substring(1)
+                }
+
+                try {
+                    const fallbackBlobClient = containerClient.getBlockBlobClient(fallbackBlobName)
+                    const buffer = await fallbackBlobClient.downloadToBuffer()
+
+                    // Move to correct location with orgId
+                    const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+                    await blockBlobClient.upload(buffer, buffer.length)
+
+                    // Delete the old file
+                    await fallbackBlobClient.delete()
+
+                    return buffer
+                } catch (fallbackError) {
+                    // Throw the original error since the fallback also failed
+                    throw error
+                }
+            } else {
+                throw error
+            }
+        }
     } else {
         try {
             const fileInStorage = path.join(getStoragePath(), ...paths.map(_sanitizeFilename), sanitizedFilename)
@@ -480,6 +587,23 @@ export const getFilesListFromStorage = async (...paths: string[]): Promise<Array
         } else {
             return []
         }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let prefix = paths.reduce((acc, cur) => acc + '/' + cur, '')
+        if (prefix.startsWith('/')) {
+            prefix = prefix.substring(1)
+        }
+
+        const filesList: Array<{ name: string; path: string; size: number }> = []
+        for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+            filesList.push({
+                name: blob.name.split('/').pop() || '',
+                path: blob.name,
+                size: blob.properties.contentLength || 0
+            })
+        }
+        return filesList
     } else {
         const directory = path.join(getStoragePath(), ...paths)
         const filesList = getFilePaths(directory)
@@ -568,6 +692,21 @@ export const removeFilesFromStorage = async (...paths: string[]) => {
 
         const totalSize = await getGCSStorageSize(paths[0])
         return { totalSize: totalSize / 1024 / 1024 }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let prefix = paths.reduce((acc, cur) => acc + '/' + cur, '')
+        if (prefix.startsWith('/')) {
+            prefix = prefix.substring(1)
+        }
+
+        // Delete all blobs with the prefix
+        for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+            await containerClient.deleteBlob(blob.name)
+        }
+
+        const totalSize = await getAzureBlobStorageSize(paths[0])
+        return { totalSize: totalSize / 1024 / 1024 }
     } else {
         const directory = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         await _deleteLocalFolderRecursive(directory)
@@ -590,6 +729,15 @@ export const removeSpecificFileFromUpload = async (filePath: string) => {
     } else if (storageType === 'gcs') {
         const { bucket } = getGcsClient()
         await bucket.file(filePath).delete()
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let blobName = filePath
+        if (blobName.startsWith('/')) {
+            blobName = blobName.substring(1)
+        }
+
+        await containerClient.deleteBlob(blobName)
     } else {
         fs.unlinkSync(filePath)
     }
@@ -619,6 +767,22 @@ export const removeSpecificFileFromStorage = async (...paths: string[]) => {
         await bucket.file(normalizedPath).delete()
 
         const totalSize = await getGCSStorageSize(paths[0])
+        return { totalSize: totalSize / 1024 / 1024 }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let blobName = paths.reduce((acc, cur) => acc + '/' + cur, '')
+        if (blobName.startsWith('/')) {
+            blobName = blobName.substring(1)
+        }
+
+        // Check if blob exists before deleting
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+        if (await blockBlobClient.exists()) {
+            await blockBlobClient.delete()
+        }
+
+        const totalSize = await getAzureBlobStorageSize(paths[0])
         return { totalSize: totalSize / 1024 / 1024 }
     } else {
         const fileName = paths.pop()
@@ -658,6 +822,21 @@ export const removeFolderFromStorage = async (...paths: string[]) => {
         await bucket.deleteFiles({ prefix: `${normalizedPath}/` })
 
         const totalSize = await getGCSStorageSize(paths[0])
+        return { totalSize: totalSize / 1024 / 1024 }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+
+        let prefix = paths.reduce((acc, cur) => acc + '/' + cur, '')
+        if (prefix.startsWith('/')) {
+            prefix = prefix.substring(1)
+        }
+
+        // Delete all blobs with the prefix
+        for await (const blob of containerClient.listBlobsFlat({ prefix })) {
+            await containerClient.deleteBlob(blob.name)
+        }
+
+        const totalSize = await getAzureBlobStorageSize(paths[0])
         return { totalSize: totalSize / 1024 / 1024 }
     } else {
         const directory = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
@@ -874,6 +1053,34 @@ export const streamStorageFile = async (
 
                     return buffer
                 }
+            } catch (fallbackError) {
+                // File not found in fallback location either
+                throw new Error(`File ${fileName} not found`)
+            }
+        }
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+        const blobName = `${orgId}/${chatflowId}/${chatId}/${sanitizedFilename}`
+
+        try {
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+            const buffer = await blockBlobClient.downloadToBuffer()
+            return buffer
+        } catch (error) {
+            // Fallback: Check if file exists without orgId
+            const fallbackBlobName = `${chatflowId}/${chatId}/${sanitizedFilename}`
+            try {
+                const fallbackBlobClient = containerClient.getBlockBlobClient(fallbackBlobName)
+                const buffer = await fallbackBlobClient.downloadToBuffer()
+
+                // Move to correct location with orgId
+                const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+                await blockBlobClient.upload(buffer, buffer.length)
+
+                // Delete the old file
+                await fallbackBlobClient.delete()
+
+                return buffer
             } catch (fallbackError) {
                 // File not found in fallback location either
                 throw new Error(`File ${fileName} not found`)
@@ -1109,6 +1316,45 @@ export const getS3Config = () => {
     const s3Client = new S3Client(s3Config)
 
     return { s3Client, Bucket }
+}
+
+export const getAzureBlobStorageSize = async (orgId: string): Promise<number> => {
+    const { containerClient } = getAzureBlobConfig()
+    let totalSize = 0
+
+    for await (const blob of containerClient.listBlobsFlat({ prefix: orgId })) {
+        totalSize += blob.properties.contentLength || 0
+    }
+
+    return totalSize
+}
+
+export const getAzureBlobConfig = () => {
+    const connectionString = process.env.AZURE_BLOB_STORAGE_CONNECTION_STRING
+    const accountName = process.env.AZURE_BLOB_STORAGE_ACCOUNT_NAME
+    const accountKey = process.env.AZURE_BLOB_STORAGE_ACCOUNT_KEY
+    const containerName = process.env.AZURE_BLOB_STORAGE_CONTAINER_NAME
+
+    if (!containerName || containerName.trim() === '') {
+        throw new Error('AZURE_BLOB_STORAGE_CONTAINER_NAME env variable is required')
+    }
+
+    let blobServiceClient: BlobServiceClient
+
+    // Authenticate either using connection string or account name and key
+    if (connectionString && connectionString.trim() !== '') {
+        blobServiceClient = BlobServiceClient.fromConnectionString(connectionString)
+    } else if (accountName && accountName.trim() !== '' && accountKey && accountKey.trim() !== '') {
+        const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey)
+        blobServiceClient = new BlobServiceClient(`https://${accountName}.blob.core.windows.net`, sharedKeyCredential)
+    } else {
+        throw new Error(
+            'Azure Blob Storage configuration is missing. Provide AZURE_BLOB_STORAGE_CONNECTION_STRING or AZURE_BLOB_STORAGE_ACCOUNT_NAME + AZURE_BLOB_STORAGE_ACCOUNT_KEY'
+        )
+    }
+
+    const containerClient = blobServiceClient.getContainerClient(containerName)
+    return { blobServiceClient, containerClient, containerName }
 }
 
 const _sanitizeFilename = (filename: string): string => {
