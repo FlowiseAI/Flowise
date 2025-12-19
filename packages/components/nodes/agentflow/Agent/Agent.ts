@@ -76,9 +76,9 @@ const sanitizeToolName = (name: string): string => {
         .replace(/ /g, '_')
         .replace(/[^\p{L}\p{N}_-]/gu, '') // Allow Unicode letters and numbers
     
-    // If the result is empty, generate a fallback name
-    if (!sanitized || sanitized.trim() === '') {
-        return `tool_${Date.now()}`
+    // If the result is empty, generate a fallback name with random suffix for uniqueness
+    if (!sanitized) {
+        return `tool_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
     }
     
     return sanitized
