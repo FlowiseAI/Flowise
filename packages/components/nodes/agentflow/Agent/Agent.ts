@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
     ICommonObject,
@@ -67,21 +68,22 @@ interface ISimpliefiedTool {
 
 /**
  * Sanitizes a string to be used as a tool name.
- * Allows Unicode letters (including Korean, Chinese, Japanese, etc.), numbers, underscores, and hyphens.
+ * Restricts to characters allowed by major LLM APIs (OpenAI, Anthropic, Gemini).
  * Replaces spaces with underscores and ensures the result is not empty.
  */
 const sanitizeToolName = (name: string): string => {
     const sanitized = name
         .toLowerCase()
         .replace(/ /g, '_')
-        .replace(/[^\p{L}\p{N}_-]/gu, '') // Allow Unicode letters and numbers
+        .replace(/[^a-z0-9_-]/g, '') // Restrict to characters allowed by major LLMs
     
     // If the result is empty, generate a fallback name with random suffix for uniqueness
     if (!sanitized) {
-        return `tool_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+        return `tool_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`
     }
     
-    return sanitized
+    // Enforce 64 character limit common for tool names
+    return sanitized.slice(0, 64)
 }
 
 class Agent_Agentflow implements INode {
