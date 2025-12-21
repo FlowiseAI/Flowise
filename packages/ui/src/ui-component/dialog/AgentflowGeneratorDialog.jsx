@@ -70,6 +70,19 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
     }
 
     // Check if all mandatory fields are filled for the selected chat model
+    const isMissingRequiredValue = (value) => {
+        if (value === undefined || value === null) return true;
+
+        // Empty / whitespace-only string should be treated as missing
+        if (typeof value === 'string') return value.trim() === '';
+
+        // Empty array should be treated as missing (common for multi-select inputs)
+        if (Array.isArray(value)) return value.length === 0;
+
+        // IMPORTANT: boolean false and number 0 are valid values, so not missing
+        return false;
+    };
+
     // Returns { isValid: boolean, missingFields: string[] }
     const checkMandatoryFields = useCallback(() => {
         if (!selectedChatModel || Object.keys(selectedChatModel).length === 0) {
@@ -88,16 +101,17 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                     // Check for credential in both possible locations
                     const credential = selectedChatModel.credential || selectedChatModel.inputs?.[FLOWISE_CREDENTIAL_ID]
                     if (!credential) {
-                        missingFields.push(inputParam.label || 'Credential')
+                        missingFields.push(inputParam.label || 'Credential');
                     }
-                } else if (!selectedChatModel.inputs?.[inputParam.name]) {
-                    missingFields.push(inputParam.label || inputParam.name)
+                } else if (isMissingRequiredValue(selectedChatModel.inputs?.[inputParam.name])) {
+                    missingFields.push(inputParam.label || inputParam.name);
                 }
             }
         }
 
         return { isValid: missingFields.length === 0, missingFields }
     }, [selectedChatModel])
+
 
     const displayWarning = (message) => {
         enqueueSnackbar({
@@ -168,7 +182,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
         if (!isValid) {
             const message =
                 missingFields.length > 0
-                    ? `Please fill in the following required fields test: ${missingFields.join(', ')}`
+                    ? `Please fill in the following required fields: ${missingFields.join(', ')}`
                     : 'Please fill in all mandatory fields for the selected model.'
             displayWarning(message)
             return
