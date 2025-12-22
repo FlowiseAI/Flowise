@@ -93,7 +93,19 @@ const validateFilename = (filename: string): void => {
  */
 const extractFileExtension = (filename: string): string => {
     const filenameParts = filename.split('.')
-    return filenameParts.length > 1 ? filenameParts.pop()!.toLowerCase() : ''
+    if (filenameParts.length <= 1) {
+        return ''
+    }
+    let ext = filenameParts.pop()!.toLowerCase()
+    // Normalize common extension variations to match MIME type mappings
+    if (ext === 'jpeg') {
+        ext = 'jpg' // image/jpeg and image/jpg both map to 'jpg'
+    } else if (ext === 'tif') {
+        ext = 'tiff' // image/tiff and image/tif both map to 'tiff'
+    } else if (ext === 'oga') {
+        ext = 'ogg' // audio/ogg and audio/oga both map to 'ogg'
+    }
+    return ext
 }
 
 /**

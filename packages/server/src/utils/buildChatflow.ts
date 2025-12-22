@@ -18,8 +18,7 @@ import {
     removeSpecificFileFromUpload,
     EvaluationRunner,
     handleEscapeCharacters,
-    IServerSideEventStreamer,
-    validateMimeTypeAndExtensionMatch
+    IServerSideEventStreamer
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -60,6 +59,7 @@ import {
     constructGraphs,
     getAPIOverrideConfig
 } from '../utils'
+import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
@@ -357,11 +357,7 @@ export const executeFlow = async ({
                 const mime = splitDataURI[0].split(':')[1].split(';')[0]
 
                 // Validate file extension, MIME type, and content to prevent security vulnerabilities
-                try {
-                    validateMimeTypeAndExtensionMatch(filename, mime)
-                } catch (error) {
-                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
-                }
+                validateFileMimeTypeAndExtensionMatch(filename, mime)
 
                 const { totalSize } = await addSingleFileToStorage(mime, bf, filename, orgId, chatflowid, chatId)
                 await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
@@ -429,11 +425,7 @@ export const executeFlow = async ({
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
 
             // Validate file extension, MIME type, and content to prevent security vulnerabilities
-            try {
-                validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
-            } catch (error) {
-                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
-            }
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
 
             const { path: storagePath, totalSize } = await addArrayFilesToStorage(
                 file.mimetype,

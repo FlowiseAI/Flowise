@@ -13,7 +13,53 @@ describe('validateMimeTypeAndExtensionMatch', () => {
             ['readme.md', 'text/x-markdown'],
             ['DOCUMENT.TXT', 'text/plain'],
             ['Document.TxT', 'text/plain'],
-            ['my.document.txt', 'text/plain']
+            ['my.document.txt', 'text/plain'],
+            // Image types
+            ['photo.jpg', 'image/jpeg'],
+            ['photo.jpeg', 'image/jpeg'], // .jpeg should be normalized to .jpg
+            ['PHOTO.JPEG', 'image/jpeg'], // Case insensitive and normalization
+            ['image.png', 'image/png'],
+            ['animation.gif', 'image/gif'],
+            ['picture.webp', 'image/webp'],
+            ['icon.svg', 'image/svg+xml'],
+            ['IMAGE.PNG', 'image/png'],
+            // Audio types
+            ['audio.webm', 'audio/webm'],
+            ['sound.m4a', 'audio/mp4'],
+            ['sound.m4a', 'audio/x-m4a'],
+            ['music.mp3', 'audio/mpeg'],
+            ['music.mp3', 'audio/mp3'],
+            ['audio.ogg', 'audio/ogg'],
+            ['audio.oga', 'audio/ogg'], // .oga should normalize to ogg
+            ['audio.oga', 'audio/oga'],
+            ['sound.wav', 'audio/wav'],
+            ['sound.wav', 'audio/wave'],
+            ['sound.wav', 'audio/x-wav'],
+            ['audio.aac', 'audio/aac'],
+            ['audio.flac', 'audio/flac'],
+            // Video types
+            ['video.mp4', 'video/mp4'],
+            ['video.webm', 'video/webm'],
+            ['movie.mov', 'video/quicktime'],
+            ['clip.avi', 'video/x-msvideo'],
+            // YAML types
+            ['config.yaml', 'application/vnd.yaml'],
+            ['config.yaml', 'application/x-yaml'],
+            ['config.yaml', 'text/vnd.yaml'],
+            ['config.yaml', 'text/x-yaml'],
+            ['config.yaml', 'text/yaml'],
+            // SQL types
+            ['query.sql', 'application/sql'],
+            ['query.sql', 'text/x-sql'],
+            // Document types
+            ['document.rtf', 'application/rtf'],
+            // Additional image types
+            ['image.tiff', 'image/tiff'],
+            ['image.tif', 'image/tiff'], // .tif should normalize to tiff
+            ['image.tif', 'image/tif'],
+            ['icon.ico', 'image/x-icon'],
+            ['icon.ico', 'image/vnd.microsoft.icon'],
+            ['photo.avif', 'image/avif']
         ])('should pass validation for matching MIME type and extension - %s with %s', (filename, mimetype) => {
             expect(() => {
                 validateMimeTypeAndExtensionMatch(filename, mimetype)
@@ -30,7 +76,7 @@ describe('validateMimeTypeAndExtensionMatch', () => {
             ['object filename', {}]
         ])('should throw error for %s', (_description, filename) => {
             expect(() => {
-                validateMimeTypeAndExtensionMatch(filename as any, 'text/plain')
+                validateMimeTypeAndExtensionMatch(filename as unknown as string, 'text/plain')
             }).toThrow('Invalid filename: filename is required and must be a string')
         })
     })
@@ -43,7 +89,7 @@ describe('validateMimeTypeAndExtensionMatch', () => {
             ['non-string MIME type (number)', 123]
         ])('should throw error for %s', (_description, mimetype) => {
             expect(() => {
-                validateMimeTypeAndExtensionMatch('file.txt', mimetype as any)
+                validateMimeTypeAndExtensionMatch('file.txt', mimetype as unknown as string)
             }).toThrow('Invalid MIME type: MIME type is required and must be a string')
         })
     })
@@ -102,7 +148,19 @@ describe('validateMimeTypeAndExtensionMatch', () => {
             ['document.pdf', 'application/json', 'pdf', 'json'],
             ['data.json', 'text/plain', 'json', 'txt'],
             ['malware.exe', 'text/plain', 'exe', 'txt'],
-            ['script.js', 'application/json', 'js', 'json']
+            ['script.js', 'application/json', 'js', 'json'],
+            // Image/audio mismatches
+            ['photo.jpg', 'image/png', 'jpg', 'png'],
+            ['image.png', 'image/jpeg', 'png', 'jpg'],
+            ['audio.mp3', 'audio/wav', 'mp3', 'wav'],
+            ['sound.wav', 'audio/mpeg', 'wav', 'mp3'],
+            // New type mismatches
+            ['config.yaml', 'application/json', 'yaml', 'json'],
+            ['query.sql', 'text/plain', 'sql', 'txt'],
+            ['document.rtf', 'application/pdf', 'rtf', 'pdf'],
+            ['video.mp4', 'video/webm', 'mp4', 'webm'],
+            ['image.tiff', 'image/png', 'tiff', 'png'],
+            ['icon.ico', 'image/png', 'ico', 'png']
         ])('should throw error when extension does not match MIME type - %s with %s', (filename, mimetype, actualExt, expectedExt) => {
             expect(() => {
                 validateMimeTypeAndExtensionMatch(filename, mimetype)

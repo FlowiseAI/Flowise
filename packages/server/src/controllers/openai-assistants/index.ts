@@ -4,11 +4,11 @@ import openaiAssistantsService from '../../services/openai-assistants'
 import contentDisposition from 'content-disposition'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-import { streamStorageFile, validateMimeTypeAndExtensionMatch } from 'flowise-components'
+import { streamStorageFile } from 'flowise-components'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
-import { getErrorMessage } from '../../errors/utils'
+import { validateFileMimeTypeAndExtensionMatch } from '../../utils/fileValidation'
 
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {
@@ -107,11 +107,7 @@ const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunct
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
 
                 // Validate file extension, MIME type, and content to prevent security vulnerabilities
-                try {
-                    validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
-                } catch (error) {
-                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
-                }
+                validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
 
                 uploadFiles.push({
                     filePath: file.path ?? file.key,

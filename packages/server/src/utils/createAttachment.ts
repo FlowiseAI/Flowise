@@ -9,10 +9,10 @@ import {
     removeSpecificFileFromUpload,
     removeSpecificFileFromStorage,
     isValidUUID,
-    isPathTraversal,
-    validateMimeTypeAndExtensionMatch
+    isPathTraversal
 } from 'flowise-components'
 import { getRunningExpressApp } from './getRunningExpressApp'
+import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { getErrorMessage } from '../errors/utils'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
 import { ChatFlow } from '../database/entities/ChatFlow'
@@ -146,11 +146,7 @@ export const createFileAttachment = async (req: Request) => {
             // Security fix: Verify file extension matches the declared MIME type
             // This prevents MIME type spoofing attacks (e.g., uploading .js file with text/plain MIME type)
             // This addresses the vulnerability (CVE-2025-61687)
-            try {
-                validateMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
-            } catch (error) {
-                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(error))
-            }
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
 
             await checkStorage(orgId, subscriptionId, appServer.usageCacheManager)
 
