@@ -1,4 +1,3 @@
-import crypto from 'crypto'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
     ICommonObject,
@@ -80,7 +79,7 @@ const sanitizeToolName = (name: string): string => {
 
     // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
     if (!sanitized) {
-        return `tool_${crypto.randomBytes(8).toString('hex')}`
+        return `tool_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
     }
 
     // Enforce 64 character limit common for tool names
@@ -710,9 +709,9 @@ class Agent_Agentflow implements INode {
                 if (Array.isArray(toolInstance)) {
                     for (const subTool of toolInstance) {
                         const subToolInstance = subTool as Tool
-                            ; (subToolInstance as any).agentSelectedTool = tool.agentSelectedTool
+                        ;(subToolInstance as any).agentSelectedTool = tool.agentSelectedTool
                         if (tool.agentSelectedToolRequiresHumanInput) {
-                            ; (subToolInstance as any).requiresHumanInput = true
+                            ;(subToolInstance as any).requiresHumanInput = true
                         }
                         toolsInstance.push(subToolInstance)
                     }
@@ -924,14 +923,14 @@ class Agent_Agentflow implements INode {
                     if (tool === 'code_interpreter') {
                         builtInTool.container = { type: 'auto' }
                     }
-                    ; (toolsInstance as any).push(builtInTool)
-                        ; (availableTools as any).push({
-                            name: tool,
-                            toolNode: {
-                                label: tool,
-                                name: tool
-                            }
-                        })
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
                 }
             }
 
@@ -941,14 +940,14 @@ class Agent_Agentflow implements INode {
                     const builtInTool: ICommonObject = {
                         [tool]: {}
                     }
-                        ; (toolsInstance as any).push(builtInTool)
-                        ; (availableTools as any).push({
-                            name: tool,
-                            toolNode: {
-                                label: tool,
-                                name: tool
-                            }
-                        })
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
                 }
             }
 
@@ -959,7 +958,7 @@ class Agent_Agentflow implements INode {
                     const toolName = tool.split('_').slice(0, -1).join('_')
 
                     if (tool === 'code_execution_20250825') {
-                        ; (llmNodeInstance as any).clientOptions = {
+                        ;(llmNodeInstance as any).clientOptions = {
                             defaultHeaders: {
                                 'anthropic-beta': ['code-execution-2025-08-25', 'files-api-2025-04-14']
                             }
@@ -967,7 +966,7 @@ class Agent_Agentflow implements INode {
                     }
 
                     if (tool === 'web_fetch_20250910') {
-                        ; (llmNodeInstance as any).clientOptions = {
+                        ;(llmNodeInstance as any).clientOptions = {
                             defaultHeaders: {
                                 'anthropic-beta': ['web-fetch-2025-09-10']
                             }
@@ -978,14 +977,14 @@ class Agent_Agentflow implements INode {
                         type: tool,
                         name: toolName
                     }
-                        ; (toolsInstance as any).push(builtInTool)
-                        ; (availableTools as any).push({
-                            name: tool,
-                            toolNode: {
-                                label: tool,
-                                name: tool
-                            }
-                        })
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
                 }
             }
 
