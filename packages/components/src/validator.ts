@@ -98,13 +98,12 @@ const extractFileExtension = (filename: string): string => {
     }
     let ext = filenameParts.pop()!.toLowerCase()
     // Normalize common extension variations to match MIME type mappings
-    if (ext === 'jpeg') {
-        ext = 'jpg' // image/jpeg and image/jpg both map to 'jpg'
-    } else if (ext === 'tif') {
-        ext = 'tiff' // image/tiff and image/tif both map to 'tiff'
-    } else if (ext === 'oga') {
-        ext = 'ogg' // audio/ogg and audio/oga both map to 'ogg'
+    const extensionNormalizationMap: { [key: string]: string } = {
+        jpeg: 'jpg', // image/jpeg and image/jpg both map to 'jpg'
+        tif: 'tiff', // image/tiff and image/tif both map to 'tiff'
+        oga: 'ogg' // audio/ogg and audio/oga both map to 'ogg'
     }
+    ext = extensionNormalizationMap[ext] ?? ext
     return ext
 }
 

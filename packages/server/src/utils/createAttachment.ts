@@ -13,6 +13,7 @@ import {
 } from 'flowise-components'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
+import logger from './logger'
 import { getErrorMessage } from '../errors/utils'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
 import { ChatFlow } from '../database/entities/ChatFlow'
@@ -216,7 +217,7 @@ export const createFileAttachment = async (req: Request) => {
             } catch (error) {
                 // Security: Clean up storage if processing failed, which includes invalid file type or content detacted from loader
                 if (sanitizedFilename) {
-                    console.info(`Clean up storage for ${file.originalname} (${sanitizedFilename}). Reason: ${getErrorMessage(error)}`)
+                    logger.info(`Clean up storage for ${file.originalname} (${sanitizedFilename}). Reason: ${getErrorMessage(error)}`)
                     try {
                         const { totalSize: newTotalSize } = await removeSpecificFileFromStorage(
                             orgId,
@@ -226,7 +227,7 @@ export const createFileAttachment = async (req: Request) => {
                         )
                         await updateStorageUsage(orgId, workspaceId, newTotalSize, appServer.usageCacheManager)
                     } catch (cleanupError) {
-                        console.error(
+                        logger.error(
                             `Failed to cleanup storage for ${file.originalname} (${sanitizedFilename}) - ${getErrorMessage(cleanupError)}`
                         )
                     }
