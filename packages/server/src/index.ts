@@ -1,44 +1,44 @@
-import express, { Request, Response } from 'express'
-import path from 'path'
-import cors from 'cors'
-import http from 'http'
+import { ExpressAdapter } from '@bull-board/express'
 import cookieParser from 'cookie-parser'
-import { DataSource, IsNull } from 'typeorm'
-import { MODE, Platform } from './Interface'
-import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
-import logger, { expressRequestLogger } from './utils/logger'
-import { getDataSource } from './DataSource'
-import { NodesPool } from './NodesPool'
-import { ChatFlow } from './database/entities/ChatFlow'
-import { CachePool } from './CachePool'
-import { AbortControllerPool } from './AbortControllerPool'
-import { RateLimiterManager } from './utils/rateLimit'
-import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
-import { Telemetry } from './utils/telemetry'
-import flowiseApiV1Router from './routes'
-import errorHandlerMiddleware from './middlewares/errors'
-import { WHITELIST_URLS } from './utils/constants'
-import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
-import { IdentityManager } from './IdentityManager'
-import { SSEStreamer } from './utils/SSEStreamer'
-import { validateAPIKey } from './utils/validateKey'
-import { LoggedInUser } from './enterprise/Interface.Enterprise'
-import { IMetricsProvider } from './Interface.Metrics'
-import { Prometheus } from './metrics/Prometheus'
-import { OpenTelemetry } from './metrics/OpenTelemetry'
-import { QueueManager } from './queue/QueueManager'
-import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
+import cors from 'cors'
+import express, { Request, Response } from 'express'
 import 'global-agent/bootstrap'
-import { UsageCacheManager } from './UsageCacheManager'
-import { Workspace } from './enterprise/database/entities/workspace.entity'
+import http from 'http'
+import path from 'path'
+import { DataSource, IsNull } from 'typeorm'
+import { AbortControllerPool } from './AbortControllerPool'
+import { CachePool } from './CachePool'
+import { ChatFlow } from './database/entities/ChatFlow'
+import { getDataSource } from './DataSource'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
+import { Workspace } from './enterprise/database/entities/workspace.entity'
+import { LoggedInUser } from './enterprise/Interface.Enterprise'
+import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
+import { IdentityManager } from './IdentityManager'
+import { MODE, Platform } from './Interface'
+import { IMetricsProvider } from './Interface.Metrics'
+import { OpenTelemetry } from './metrics/OpenTelemetry'
+import { Prometheus } from './metrics/Prometheus'
+import errorHandlerMiddleware from './middlewares/errors'
+import { NodesPool } from './NodesPool'
+import { QueueManager } from './queue/QueueManager'
+import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
+import flowiseApiV1Router from './routes'
+import { UsageCacheManager } from './UsageCacheManager'
+import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
-import { ExpressAdapter } from '@bull-board/express'
+import { WHITELIST_URLS } from './utils/constants'
+import logger, { expressRequestLogger } from './utils/logger'
+import { RateLimiterManager } from './utils/rateLimit'
+import { SSEStreamer } from './utils/SSEStreamer'
+import { Telemetry } from './utils/telemetry'
+import { validateAPIKey } from './utils/validateKey'
+import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 
 declare global {
     namespace Express {
-        interface User extends LoggedInUser {}
+        interface User extends LoggedInUser { }
         interface Request {
             user?: LoggedInUser
         }
@@ -222,8 +222,10 @@ export class App {
             if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
                 // Step 2: Check if the req path is casesensitive
                 if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
-                    // Step 3: Check if the req path is in the whitelist
-                    const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                    // Step 3: Check if the req path is in the whitelist (respect BASE_PATH)
+                    const basePath = (process.env.BASE_PATH || '').trim().replace(/\/$/, '')
+                    const prefixedWhitelist = whitelistURLs.map((u) => (basePath ? `${basePath}${u}` : u))
+                    const isWhitelisted = prefixedWhitelist.some((url) => req.path.startsWith(url))
                     if (isWhitelisted) {
                         next()
                     } else if (req.headers['x-request-from'] === 'internal') {
@@ -318,12 +320,20 @@ export class App {
             }
         }
 
-        this.app.use('/api/v1', flowiseApiV1Router)
+        // Respect optional URL prefix for both API and UI
+        const basePath = (process.env.BASE_PATH || '').trim().replace(/\/$/, '') || ''
+
+        // Mount API with optional base path
+        if (basePath) {
+            this.app.use(`${basePath}/api/v1`, flowiseApiV1Router)
+        } else {
+            this.app.use('/api/v1', flowiseApiV1Router)
+        }
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment
         // ----------------------------------------
-        this.app.get('/api/v1/ip', (request, response) => {
+        this.app.get(`${basePath || ''}/api/v1/ip`, (request, response) => {
             response.send({
                 ip: request.ip,
                 msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
@@ -331,7 +341,8 @@ export class App {
         })
 
         if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && !this.identityManager.isCloud()) {
-            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+            const adminBase = basePath ? `${basePath}/admin/queues` : '/admin/queues'
+            this.app.use(adminBase, this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
@@ -342,7 +353,9 @@ export class App {
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 
-        this.app.use('/', express.static(uiBuildPath))
+        // Serve UI assets under base path
+        const uiMountPath = basePath || '/'
+        this.app.use(uiMountPath, express.static(uiBuildPath))
 
         // All other requests not handled will return React app
         this.app.use((req: Request, res: Response) => {
