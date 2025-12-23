@@ -64,7 +64,6 @@ export class Permissions {
         apikeysCategory.addPermission(new Permission('apikeys:create', 'Create', true, true, true))
         apikeysCategory.addPermission(new Permission('apikeys:update', 'Update', true, true, true))
         apikeysCategory.addPermission(new Permission('apikeys:delete', 'Delete', true, true, true))
-        apikeysCategory.addPermission(new Permission('apikeys:import', 'Import', true, true, true))
         this.categories.push(apikeysCategory)
 
         const documentStoresCategory = new PermissionCategory('documentStores')

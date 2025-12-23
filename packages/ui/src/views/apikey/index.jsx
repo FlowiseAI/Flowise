@@ -1,15 +1,18 @@
-import * as PropTypes from 'prop-types'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import moment from 'moment/moment'
-import { useEffect, useState } from 'react'
+import * as PropTypes from 'prop-types'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
-import React from 'react'
 
 // material-ui
 import {
-    Button,
     Box,
+    Button,
     Chip,
+    Collapse,
+    IconButton,
+    Paper,
+    Popover,
     Skeleton,
     Stack,
     Table,
@@ -17,25 +20,20 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
-    IconButton,
-    Popover,
-    Collapse,
     Typography
 } from '@mui/material'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import { useTheme, styled } from '@mui/material/styles'
+import { styled, useTheme } from '@mui/material/styles'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
-import APIKeyDialog from './APIKeyDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
-import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
-import { Available } from '@/ui-component/rbac/available'
-import UploadJSONFileDialog from '@/views/apikey/UploadJSONFileDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import MainCard from '@/ui-component/cards/MainCard'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
+import { Available } from '@/ui-component/rbac/available'
+import APIKeyDialog from './APIKeyDialog'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -49,19 +47,8 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import {
-    IconTrash,
-    IconEdit,
-    IconCopy,
-    IconChevronsUp,
-    IconChevronsDown,
-    IconX,
-    IconPlus,
-    IconEye,
-    IconEyeOff,
-    IconFileUpload
-} from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
+import { IconChevronsDown, IconChevronsUp, IconCopy, IconEdit, IconEye, IconEyeOff, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 
 // ==============================|| APIKey ||============================== //
 
@@ -243,9 +230,6 @@ const APIKey = () => {
     const [showApiKeys, setShowApiKeys] = useState([])
     const openPopOver = Boolean(anchorEl)
 
-    const [showUploadDialog, setShowUploadDialog] = useState(false)
-    const [uploadDialogProps, setUploadDialogProps] = useState({})
-
     const [search, setSearch] = useState('')
 
     /* Table Pagination */
@@ -320,17 +304,6 @@ const APIKey = () => {
         setShowDialog(true)
     }
 
-    const uploadDialog = () => {
-        const dialogProp = {
-            type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Upload',
-            data: {}
-        }
-        setUploadDialogProps(dialogProp)
-        setShowUploadDialog(true)
-    }
-
     const deleteKey = async (key) => {
         const confirmPayload = {
             title: `Delete`,
@@ -385,7 +358,6 @@ const APIKey = () => {
 
     const onConfirm = () => {
         setShowDialog(false)
-        setShowUploadDialog(false)
         refresh(currentPage, pageLimit)
     }
 
@@ -419,16 +391,6 @@ const APIKey = () => {
                             title='API Keys'
                             description='Flowise API & SDK authentication keys'
                         >
-                            <PermissionButton
-                                permissionId={'apikeys:import'}
-                                variant='outlined'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={uploadDialog}
-                                startIcon={<IconFileUpload />}
-                                id='btn_importApiKeys'
-                            >
-                                Import
-                            </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
                                 variant='contained'
@@ -572,14 +534,6 @@ const APIKey = () => {
                 onConfirm={onConfirm}
                 setError={setError}
             ></APIKeyDialog>
-            {showUploadDialog && (
-                <UploadJSONFileDialog
-                    show={showUploadDialog}
-                    dialogProps={uploadDialogProps}
-                    onCancel={() => setShowUploadDialog(false)}
-                    onConfirm={onConfirm}
-                ></UploadJSONFileDialog>
-            )}
             <ConfirmDialog />
         </>
     )
