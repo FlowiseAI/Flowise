@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+import { StatusCodes } from 'http-status-codes'
 import { Platform } from '../../../Interface'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
 import { LoggedInUser } from '../../Interface.Enterprise'
@@ -23,6 +24,21 @@ const getAllPermissions = async (req: Request, res: Response, next: NextFunction
             'feat:workspaces': ['workspace:']
         }
 
+        // Category filtering for non-ROLE type
+        if (type !== 'ROLE') {
+            const filteredPermissions: { [key: string]: { key: string; value: string }[] } = {}
+
+            for (const [category, categoryPermissions] of Object.entries(allPermissions)) {
+                // Exclude workspace and admin categories
+                if (category !== 'workspace' && category !== 'admin') {
+                    filteredPermissions[category] = categoryPermissions
+                }
+            }
+
+            permissions = filteredPermissions
+        }
+
+        // Feature-based filtering for Cloud platform
         if (type !== 'ROLE' && appServer.identityManager.getPlatformType() === Platform.CLOUD) {
             const userFeatures = user.features
             if (userFeatures) {
@@ -40,7 +56,7 @@ const getAllPermissions = async (req: Request, res: Response, next: NextFunction
                 // Filter out permissions based on disabled features
                 const filteredPermissions: { [key: string]: { key: string; value: string }[] } = {}
 
-                for (const [category, categoryPermissions] of Object.entries(allPermissions)) {
+                for (const [category, categoryPermissions] of Object.entries(permissions)) {
                     const filteredCategoryPermissions = (categoryPermissions as any[]).filter((permission) => {
                         // Check if this permission starts with any disabled prefix
                         const isDisabled = disabledPermissionPrefixes.some((prefix) => permission.key.startsWith(prefix))
@@ -57,6 +73,7 @@ const getAllPermissions = async (req: Request, res: Response, next: NextFunction
             }
         }
 
+        // User-level filtering for non-admin users
         if (type !== 'ROLE' && user.isOrganizationAdmin === false) {
             const userPermissions = user.permissions as string[]
             const filteredPermissions: { [key: string]: { key: string; value: string }[] } = {}
@@ -74,7 +91,7 @@ const getAllPermissions = async (req: Request, res: Response, next: NextFunction
             permissions = filteredPermissions
         }
 
-        return res.json(permissions)
+        return res.status(StatusCodes.OK).json(permissions)
     } catch (error) {
         next(error)
     }
