@@ -11,13 +11,7 @@ const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) =>
         const user = req.user as LoggedInUser
         const { page, limit } = getPageAndLimitParams(req)
 
-        const apiResponse = await apikeyService.getAllApiKeys(
-            user.permissions,
-            user.isOrganizationAdmin,
-            user.activeWorkspaceId,
-            page,
-            limit
-        )
+        const apiResponse = await apikeyService.getAllApiKeys(user, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -36,13 +30,7 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
             )
         }
         const user = req.user as LoggedInUser
-        const apiResponse = await apikeyService.createApiKey(
-            user.permissions,
-            user.isOrganizationAdmin,
-            user.activeWorkspaceId,
-            req.body.keyName,
-            req.body.permissions
-        )
+        const apiResponse = await apikeyService.createApiKey(user, req.body.keyName, req.body.permissions)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -65,14 +53,7 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
             )
         }
         const user = req.user as LoggedInUser
-        const apiResponse = await apikeyService.updateApiKey(
-            user.permissions,
-            user.isOrganizationAdmin,
-            user.activeWorkspaceId,
-            req.params.id,
-            req.body.keyName,
-            req.body.permissions
-        )
+        const apiResponse = await apikeyService.updateApiKey(user, req.params.id, req.body.keyName, req.body.permissions)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
