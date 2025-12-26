@@ -1,14 +1,13 @@
+import { OTLPTraceExporter as ProtoOTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 import { getPhoenixTracer } from './handler'
 
 jest.mock('@opentelemetry/exporter-trace-otlp-proto', () => {
     return {
-        ProtoOTLPTraceExporter: jest.fn().mockImplementation((args) => {
+        OTLPTraceExporter: jest.fn().mockImplementation((args) => {
             return { args }
         })
     }
 })
-
-import { OTLPTraceExporter as ProtoOTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto'
 
 describe('URL Handling For Phoenix Tracer', () => {
     const apiKey = 'test-api-key'
