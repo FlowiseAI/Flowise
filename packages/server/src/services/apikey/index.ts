@@ -18,7 +18,15 @@ import logger from '../../utils/logger'
  * @throws InternalFlowiseError if validation fails
  */
 function validatePermissions(user: LoggedInUser, permissions: string, operation: string) {
-    const requestedPermissions = JSON.parse(permissions)
+    let requestedPermissions: string[]
+    try {
+        requestedPermissions = JSON.parse(permissions)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.BAD_REQUEST,
+            `Error parsing permissions for ${operation} API key: ${getErrorMessage(error)}`
+        )
+    }
 
     // API Keys should not have workspace or admin permissions
     // This applies to ALL users, including admins (platform constraint)
