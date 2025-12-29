@@ -4,6 +4,7 @@ import cors from 'cors'
 import express, { Request, Response } from 'express'
 import 'global-agent/bootstrap'
 import http from 'http'
+import { StatusCodes } from 'http-status-codes'
 import path from 'path'
 import { DataSource } from 'typeorm'
 import { AbortControllerPool } from './AbortControllerPool'
@@ -256,10 +257,16 @@ export class App {
                         const customerId = org.customerId as string
                         const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
                         const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
-
+                        let permissions: string[] = []
+                        try {
+                            permissions = JSON.parse(apiKey.permissions)
+                        } catch (error) {
+                            logger.error(`Error parsing permissions for API key ${apiKey.id}:`, error)
+                            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Error parsing permissions for API key' })
+                        }
                         // @ts-ignore
                         req.user = {
-                            permissions: [...JSON.parse(apiKey.permissions)],
+                            permissions: permissions,
                             features,
                             activeOrganizationId: activeOrganizationId,
                             activeOrganizationSubscriptionId: subscriptionId,
