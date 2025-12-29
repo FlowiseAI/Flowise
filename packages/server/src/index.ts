@@ -261,7 +261,7 @@ export class App {
                         try {
                             permissions = JSON.parse(apiKey.permissions)
                         } catch (error) {
-                            logger.error(`Error parsing permissions for API key ${apiKey.id}:`, error)
+                            logger.error('Error parsing API key permissions', error)
                             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Error parsing permissions for API key' })
                         }
                         // @ts-ignore
