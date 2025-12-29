@@ -76,6 +76,15 @@ function APIKeyRow(props) {
     const [open, setOpen] = useState(false)
     const theme = useTheme()
 
+    // Parse permissions with error handling
+    let permissions = []
+    try {
+        permissions = JSON.parse(props.apiKey.permissions || '[]')
+    } catch (error) {
+        console.error('Failed to parse API key permissions:', error)
+        permissions = []
+    }
+
     return (
         <>
             <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
@@ -126,7 +135,7 @@ function APIKeyRow(props) {
                                 WebkitBoxOrient: 'vertical'
                             }}
                         >
-                            {JSON.parse(props.apiKey.permissions || '[]').map((d, key) => (
+                            {permissions.map((d, key) => (
                                 <React.Fragment key={key}>
                                     {d}
                                     {', '}
