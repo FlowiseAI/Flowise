@@ -112,7 +112,12 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
             setPermissions(permissionsData)
 
             if (dialogProps.type === 'EDIT' && dialogProps.key) {
-                const keyPermissions = JSON.parse(dialogProps.key.permissions || '[]')
+                let keyPermissions = []
+                try {
+                    keyPermissions = JSON.parse(dialogProps.key.permissions || '[]')
+                } catch (error) {
+                    console.error('Failed to parse API key permissions for editing:', error)
+                }
                 if (keyPermissions && keyPermissions.length > 0) {
                     const tempSelectedPermissions = {}
                     Object.keys(permissionsData).forEach((category) => {
