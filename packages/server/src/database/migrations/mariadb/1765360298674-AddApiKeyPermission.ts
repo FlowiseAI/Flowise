@@ -1,6 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
 import { Role } from '../../../enterprise/database/entities/role.entity'
 import { hasColumn } from '../../../utils/database.util'
+import logger from '../../../utils/logger'
 
 export class AddApiKeyPermission1765360298674 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -25,7 +26,13 @@ export class AddApiKeyPermission1765360298674 implements MigrationInterface {
         )
         if (roles.length > 0) {
             for (const role of roles) {
-                let permissions = JSON.parse(role.permissions)
+                let permissions: string[] = []
+                try {
+                    permissions = JSON.parse(role.permissions)
+                } catch (error) {
+                    logger.error(`AddApiKeyPermission1765360298674 error parsing permissions for role ${role.id}:`, error)
+                    continue
+                }
                 permissions = permissions.filter((permission: string) => !itemsToRemove.includes(permission))
                 await queryRunner.query(
                     `UPDATE \`role\` SET \`${columnName}\` = '${JSON.stringify(permissions)}' WHERE \`id\` = '${role.id}';`
