@@ -46,6 +46,7 @@ import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { validateFileMimeTypeAndExtensionMatch } from '../../utils/fileValidation'
 import { databaseEntities, getAppVersion, saveUpsertFlowData } from '../../utils'
 import { DOCUMENT_STORE_BASE_FOLDER, INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -1826,6 +1827,9 @@ const upsertDocStore = async (
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
 
             try {
                 checkStorage(orgId, subscriptionId, usageCacheManager)
