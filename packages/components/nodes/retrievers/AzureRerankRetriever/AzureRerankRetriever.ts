@@ -123,14 +123,20 @@ class AzureRerankRetriever_Retrievers implements INode {
         const query = nodeData.inputs?.query as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const azureApiKey = getCredentialParam('azureFoundryApiKey', credentialData, nodeData)
+        if (!azureApiKey) {
+            throw new Error('Azure Foundry API Key is missing in credentials.')
+        }
         const azureEndpoint = getCredentialParam('azureFoundryEndpoint', credentialData, nodeData)
+        if (!azureEndpoint) {
+            throw new Error('Azure Foundry Endpoint is missing in credentials.')
+        }
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : (baseRetriever as VectorStoreRetriever).k ?? 4
         const maxChunksPerDoc = nodeData.inputs?.maxChunksPerDoc as string
-        const max_chunks_per_doc = maxChunksPerDoc ? parseFloat(maxChunksPerDoc) : 10
+        const maxChunksPerDocValue = maxChunksPerDoc ? parseFloat(maxChunksPerDoc) : 10
         const output = nodeData.outputs?.output as string
 
-        const azureCompressor = new AzureRerank(azureApiKey, azureEndpoint, model, k, max_chunks_per_doc)
+        const azureCompressor = new AzureRerank(azureApiKey, azureEndpoint, model, k, maxChunksPerDocValue)
 
         const retriever = new ContextualCompressionRetriever({
             baseCompressor: azureCompressor,
