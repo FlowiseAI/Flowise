@@ -4,15 +4,15 @@ import { Document } from '@langchain/core/documents'
 import { BaseDocumentCompressor } from 'langchain/retrievers/document_compressors'
 
 export class AzureRerank extends BaseDocumentCompressor {
-    private AzureAPIKey: any
-    private AZURE_API_URL: string
+    private readonly azureApiKey: string
+    private readonly azureApiUrl: string
     private readonly model: string
     private readonly k: number
     private readonly maxChunksPerDoc: number
-    constructor(AzureAPIKey: string, AZURE_API_URL: string, model: string, k: number, maxChunksPerDoc: number) {
+    constructor(azureApiKey: string, azureApiUrl: string, model: string, k: number, maxChunksPerDoc: number) {
         super()
-        this.AzureAPIKey = AzureAPIKey
-        this.AZURE_API_URL = AZURE_API_URL
+        this.azureApiKey = azureApiKey
+        this.azureApiUrl = azureApiUrl
         this.model = model
         this.k = k
         this.maxChunksPerDoc = maxChunksPerDoc
@@ -28,7 +28,7 @@ export class AzureRerank extends BaseDocumentCompressor {
         }
         const config = {
             headers: {
-                'api-key': `${this.AzureAPIKey}`,
+                'api-key': `${this.azureApiKey}`,
                 'Content-Type': 'application/json',
                 Accept: 'application/json'
             }
@@ -42,7 +42,7 @@ export class AzureRerank extends BaseDocumentCompressor {
             documents: documents.map((doc) => doc.pageContent)
         }
         try {
-            let returnedDocs = await axios.post(this.AZURE_API_URL, data, config)
+            let returnedDocs = await axios.post(this.azureApiUrl, data, config)
             const finalResults: Document<Record<string, any>>[] = []
             returnedDocs.data.results.forEach((result: any) => {
                 const doc = documents[result.index]
@@ -51,7 +51,7 @@ export class AzureRerank extends BaseDocumentCompressor {
             })
             return finalResults.splice(0, this.k)
         } catch (error) {
-            return documents
+            throw new Error(`Azure Rerank API call failed: ${error.message}`)
         }
     }
 }
