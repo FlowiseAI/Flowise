@@ -253,7 +253,11 @@ class Composio_Tools implements INode {
         const toolset = new LangchainToolSet({ apiKey: composioApiKey })
         const appName = nodeData.inputs?.appName as string
 
-        const appInfo = await toolset.client.apps.get({ appKey: appName?.toLowerCase() })
+        if (!appName) {
+            throw new Error('App name is required. Please select an app.')
+        }
+
+        const appInfo = await toolset.client.apps.get({ appKey: appName.toLowerCase() })
         const requiresAuth = (appInfo as any)?.no_auth !== true
 
         if (!requiresAuth) {
