@@ -8,11 +8,12 @@ import {
     IconLock,
     IconRobot,
     IconVariable,
-    IconFiles
+    IconFiles,
+    IconCalculator
 } from '@tabler/icons-react'
 
 // constant
-const icons = { IconUsersGroup, IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconFiles }
+const icons = { IconUsersGroup, IconHierarchy, IconBuildingStore, IconKey, IconTool, IconLock, IconRobot, IconVariable, IconFiles, IconCalculator }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -92,6 +93,14 @@ const dashboard = {
             type: 'item',
             url: '/document-stores',
             icon: icons.IconFiles,
+            breadcrumbs: true
+        },
+        {
+            id: 'mortgage-calculator',
+            title: 'Mortgage Calculator',
+            type: 'item',
+            url: '/mortgage-calculator',
+            icon: icons.IconCalculator,
             breadcrumbs: true
         }
     ]
