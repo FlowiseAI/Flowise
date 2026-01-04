@@ -29,6 +29,7 @@ import { UpsertHistory } from '../database/entities/UpsertHistory'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
+import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { getErrorMessage } from '../errors/utils'
 import { v4 as uuidv4 } from 'uuid'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
@@ -70,6 +71,10 @@ export const executeUpsert = async ({
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+
             const { path: storagePath, totalSize } = await addArrayFilesToStorage(
                 file.mimetype,
                 fileBuffer,
