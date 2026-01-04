@@ -648,6 +648,12 @@
                     "output_cost": 0.00012
                 },
                 {
+                    "label": "gemini-3-flash-preview",
+                    "name": "gemini-3-flash-preview",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.000003
+                },
+                {
                     "label": "gemini-3-pro-image-preview",
                     "name": "gemini-3-pro-image-preview",
                     "input_cost": 0.00002,
@@ -728,6 +734,12 @@
                     "name": "gemini-3-pro-preview",
                     "input_cost": 0.00002,
                     "output_cost": 0.00012
+                },
+                {
+                    "label": "gemini-3-flash-preview",
+                    "name": "gemini-3-flash-preview",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.000003
                 },
                 {
                     "label": "gemini-2.5-pro",

@@ -1130,6 +1130,18 @@ export const mapMimeTypeToExt = (mimeType: string) => {
         case 'application/jsonl':
         case 'text/jsonl':
             return 'jsonl'
+        // YAML types
+        case 'application/vnd.yaml':
+        case 'application/x-yaml':
+        case 'text/vnd.yaml':
+        case 'text/x-yaml':
+        case 'text/yaml':
+            return 'yaml'
+        // SQL types
+        case 'application/sql':
+        case 'text/x-sql':
+            return 'sql'
+        // Document types
         case 'application/msword':
             return 'doc'
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
@@ -1142,6 +1154,59 @@ export const mapMimeTypeToExt = (mimeType: string) => {
             return 'ppt'
         case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
             return 'pptx'
+        case 'application/rtf':
+            return 'rtf'
+        // Image types
+        case 'image/jpeg':
+        case 'image/jpg':
+            return 'jpg'
+        case 'image/png':
+            return 'png'
+        case 'image/gif':
+            return 'gif'
+        case 'image/webp':
+            return 'webp'
+        case 'image/svg+xml':
+            return 'svg'
+        case 'image/bmp':
+            return 'bmp'
+        case 'image/tiff':
+        case 'image/tif':
+            return 'tiff'
+        case 'image/x-icon':
+        case 'image/vnd.microsoft.icon':
+            return 'ico'
+        case 'image/avif':
+            return 'avif'
+        // Audio types
+        case 'audio/webm':
+            return 'webm'
+        case 'audio/mp4':
+        case 'audio/x-m4a':
+            return 'm4a'
+        case 'audio/mpeg':
+        case 'audio/mp3':
+            return 'mp3'
+        case 'audio/ogg':
+        case 'audio/oga':
+            return 'ogg'
+        case 'audio/wav':
+        case 'audio/wave':
+        case 'audio/x-wav':
+            return 'wav'
+        case 'audio/aac':
+            return 'aac'
+        case 'audio/flac':
+            return 'flac'
+        // Video types
+        case 'video/mp4':
+            return 'mp4'
+        case 'video/webm':
+            return 'webm'
+        case 'video/quicktime':
+            return 'mov'
+        case 'video/x-msvideo':
+            return 'avi'
         default:
             return ''
     }
