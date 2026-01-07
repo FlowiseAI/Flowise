@@ -112,12 +112,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
             setPermissions(permissionsData)
 
             if (dialogProps.type === 'EDIT' && dialogProps.key) {
-                let keyPermissions = []
-                try {
-                    keyPermissions = JSON.parse(dialogProps.key.permissions || '[]')
-                } catch (error) {
-                    console.error('Failed to parse API key permissions for editing:', error)
-                }
+                const keyPermissions = dialogProps.key.permissions || []
                 if (keyPermissions && keyPermissions.length > 0) {
                     const tempSelectedPermissions = {}
                     Object.keys(permissionsData).forEach((category) => {
@@ -226,7 +221,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
 
             const createResp = await apikeyApi.createNewAPI({
                 keyName,
-                permissions: JSON.stringify(tempPermissions)
+                permissions: tempPermissions
             })
             if (createResp.data) {
                 enqueueSnackbar({
@@ -279,7 +274,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
 
             const saveResp = await apikeyApi.updateAPI(dialogProps.key.id, {
                 keyName,
-                permissions: JSON.stringify(tempPermissions)
+                permissions: tempPermissions
             })
             if (saveResp.data) {
                 enqueueSnackbar({

@@ -76,14 +76,7 @@ function APIKeyRow(props) {
     const [open, setOpen] = useState(false)
     const theme = useTheme()
 
-    // Parse permissions with error handling
-    let permissions = []
-    try {
-        permissions = JSON.parse(props.apiKey.permissions || '[]')
-    } catch (error) {
-        console.error('Failed to parse API key permissions:', error)
-        permissions = []
-    }
+    const permissions = props.apiKey.permissions || []
 
     return (
         <>

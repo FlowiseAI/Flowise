@@ -17,17 +17,7 @@ import logger from '../../utils/logger'
  * @param operation - The operation being performed (for error message)
  * @throws InternalFlowiseError if validation fails
  */
-function validatePermissions(user: LoggedInUser, permissions: string, operation: string) {
-    let requestedPermissions: string[]
-    try {
-        requestedPermissions = JSON.parse(permissions)
-    } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.BAD_REQUEST,
-            `Error parsing permissions for ${operation} API key: ${getErrorMessage(error)}`
-        )
-    }
-
+function validatePermissions(user: LoggedInUser, requestedPermissions: string[], operation: string) {
     // API Keys should not have workspace or admin permissions
     // This applies to ALL users, including admins (platform constraint)
     const hasRestrictedPermissions = requestedPermissions.some((permission: string) => {
@@ -94,7 +84,7 @@ function validatePermissions(user: LoggedInUser, permissions: string, operation:
         )
         if (hasInvalidPermissions) {
             throw new InternalFlowiseError(
-                StatusCodes.FORBIDDEN,
+                StatusCodes.BAD_REQUEST,
                 `Cannot ${operation} API key with permissions that exceed your own permissions`
             )
         }
@@ -123,19 +113,8 @@ const getAllApiKeys = async (user: LoggedInUser, page: number = -1, limit: numbe
         if (!user.isOrganizationAdmin) {
             // Non-admin users can only see API keys whose permissions are a subset of their own
             filteredKeys = allKeys.filter((key) => {
-                try {
-                    const keyPermissions = JSON.parse(key.permissions)
-                    // Check if all key permissions are included in user permissions
-                    return keyPermissions.every((permission: string) => permission === null || user.permissions.includes(permission))
-                } catch (error) {
-                    // Log parsing errors to help with debugging malformed permissions
-                    logger.error(
-                        `[server]: Failed to parse permissions for API key ${key.id} (${key.keyName}). Raw value: ${key.permissions}`,
-                        error
-                    )
-                    // If parsing fails, exclude this key
-                    return false
-                }
+                // Check if all key permissions are included in user permissions
+                return key.permissions.every((permission: string) => permission === null || user.permissions.includes(permission))
             })
         }
 
@@ -181,7 +160,7 @@ const getApiKeyById = async (apiKeyId: string) => {
     }
 }
 
-const createApiKey = async (user: LoggedInUser, keyName: string, permissions: string) => {
+const createApiKey = async (user: LoggedInUser, keyName: string, permissions: string[]) => {
     // Validate permissions before creating the key
     validatePermissions(user, permissions, 'create')
 
@@ -201,7 +180,7 @@ const createApiKey = async (user: LoggedInUser, keyName: string, permissions: st
 }
 
 // Update api key
-const updateApiKey = async (user: LoggedInUser, id: string, keyName: string, permissions: string) => {
+const updateApiKey = async (user: LoggedInUser, id: string, keyName: string, permissions: string[]) => {
     // Validate permissions before updating the key
     validatePermissions(user, permissions, 'update')
 

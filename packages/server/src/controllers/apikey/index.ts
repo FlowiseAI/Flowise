@@ -23,7 +23,7 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
         if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.createApiKey - keyName not provided!`)
         }
-        if (!req.body.permissions || typeof req.body.permissions !== 'string') {
+        if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: apikeyController.createApiKey - permissions not provided!`
@@ -46,7 +46,7 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
         if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.updateApiKey - keyName not provided!`)
         }
-        if (!req.body.permissions || typeof req.body.permissions !== 'string') {
+        if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: apikeyController.updateApiKey - permissions not provided!`
