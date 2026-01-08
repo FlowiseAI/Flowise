@@ -13,7 +13,7 @@ import { getDataSource } from './DataSource'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
-import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
+import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
 import { IdentityManager } from './IdentityManager'
 import { MODE, Platform } from './Interface'
 import { IMetricsProvider } from './Interface.Metrics'
@@ -317,7 +317,17 @@ export class App {
         })
 
         if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && !this.identityManager.isCloud()) {
-            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+            // Initialize admin queues rate limiter
+            const id = 'bullmq_admin_dashboard'
+            await this.rateLimiterManager.addRateLimiter(
+                id,
+                60,
+                100,
+                process.env.ADMIN_RATE_LIMIT_MESSAGE || 'Too many requests to admin dashboard, please try again later.'
+            )
+
+            const rateLimiter = this.rateLimiterManager.getRateLimiterById(id)
+            this.app.use('/admin/queues', rateLimiter, verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
