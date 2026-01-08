@@ -92,6 +92,21 @@ function validatePermissions(user: LoggedInUser, requestedPermissions: string[],
 }
 
 /**
+ * Get all API keys for an organization
+ * Returns all API keys across all workspaces in the organization
+ */
+async function getAllApiKeysByOrganization(organizationId: string): Promise<ApiKey[]> {
+    const appServer = getRunningExpressApp()
+    const ApiKeys = await appServer.AppDataSource.getRepository(ApiKey)
+        .createQueryBuilder('api_key')
+        .select(['api_key.keyName', 'api_key.permissions'])
+        .leftJoin('workspace', 'workspace', 'api_key.workspaceId = workspace.id')
+        .where('workspace.organizationId = :organizationId', { organizationId })
+        .getMany()
+    return ApiKeys
+}
+
+/**
  * Get all API keys for a workspace
  * Non-admin users can only view API keys whose permissions are a subset of their own permissions
  */
@@ -237,6 +252,7 @@ export default {
     createApiKey,
     deleteApiKey,
     getAllApiKeys,
+    getAllApiKeysByOrganization,
     updateApiKey,
     verifyApiKey,
     getApiKey,

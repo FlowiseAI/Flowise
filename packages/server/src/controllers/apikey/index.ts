@@ -9,10 +9,13 @@ import { getPageAndLimitParams } from '../../utils/pagination'
 const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = req.user as LoggedInUser
-        const { page, limit } = getPageAndLimitParams(req)
 
+        if (req.query?.type === 'organization' && user.isOrganizationAdmin)
+            return res.status(StatusCodes.OK).json(await apikeyService.getAllApiKeysByOrganization(user.activeOrganizationId))
+
+        const { page, limit } = getPageAndLimitParams(req)
         const apiResponse = await apikeyService.getAllApiKeys(user, page, limit)
-        return res.json(apiResponse)
+        return res.status(StatusCodes.OK).json(apiResponse)
     } catch (error) {
         next(error)
     }
