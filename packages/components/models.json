@@ -893,6 +893,7 @@
                 }
             ],
             "regions": [
+                { "label": "global", "name": "global" },
                 { "label": "us-east1", "name": "us-east1" },
                 { "label": "us-east4", "name": "us-east4" },
                 { "label": "us-central1", "name": "us-central1" },
