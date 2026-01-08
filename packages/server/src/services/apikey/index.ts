@@ -13,7 +13,7 @@ import logger from '../../utils/logger'
 /**
  * Validates that requested permissions are allowed for API keys
  * @param user - The logged-in user
- * @param permissions - JSON string of requested permissions
+ * @param permissions - string array of requested permissions
  * @param operation - The operation being performed (for error message)
  * @throws InternalFlowiseError if validation fails
  */
