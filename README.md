@@ -17,225 +17,204 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 
 </div>
 
-<h3>Build AI Agents, Visually</h3>
+<h3>AI Agents चे व्हिज्युअल बिल्डिंग</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true"></a>
 
-## 📚 Table of Contents
+## 📚 विषय सूची
 
--   [⚡ Quick Start](#-quick-start)
--   [🐳 Docker](#-docker)
--   [👨‍💻 Developers](#-developers)
--   [🌱 Env Variables](#-env-variables)
--   [📖 Documentation](#-documentation)
--   [🌐 Self Host](#-self-host)
--   [☁️ Flowise Cloud](#️-flowise-cloud)
--   [🙋 Support](#-support)
--   [🙌 Contributing](#-contributing)
--   [📄 License](#-license)
+- [⚡ जलद सुरुवात](#-जलद-सुरुवात)
+- [🐳 Docker](#-docker)
+- [👨‍💻 डेव्हलपर्स](#-डेव्हलपर्स)
+- [🌱 Env Variables](#-env-variables)
+- [📖 दस्तऐवजीकरण](#-दस्तऐवजीकरण)
+- [🌐 स्वयं-होस्ट](#-स्वयं-होस्ट)
+- [☁️ Flowise Cloud](#️-flowise-cloud)
+- [🙋 मदत](#-मदत)
+- [🙌 योगदान](#-योगदान)
+- [📄 परवाना](#-परवाना)
 
-## ⚡Quick Start
+## ⚡ जलद सुरुवात
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+[NodeJS](https://nodejs.org/en/download) >= 18.15.0 डाउनलोड आणि इन्स्टॉल करा.
 
-1. Install Flowise
+1. **Flowise इन्स्टॉल करा**
     ```bash
     npm install -g flowise
     ```
-2. Start Flowise
 
+2. **Flowise सुरू करा**
     ```bash
     npx flowise start
     ```
 
-3. Open [http://localhost:3000](http://localhost:3000)
+3. **ब्राऊझर उघडा:**  
+   [http://localhost:3000](http://localhost:3000)
+
+---
 
 ## 🐳 Docker
 
 ### Docker Compose
 
-1. Clone the Flowise project
-2. Go to `docker` folder at the root of the project
-3. Copy `.env.example` file, paste it into the same location, and rename to `.env` file
-4. `docker compose up -d`
-5. Open [http://localhost:3000](http://localhost:3000)
-6. You can bring the containers down by `docker compose stop`
+1. Flowise प्रोजेक्ट क्लोन करा  
+2. root मधील `docker` फोल्डरमध्ये जा  
+3. `.env.example` कॉपी करून `.env` नाव द्या  
+4. कंटेनर सुरू करा:
+    ```bash
+    docker compose up -d
+    ```
+5. उघडा: [http://localhost:3000](http://localhost:3000)  
+6. थांबवण्यासाठी:
+    ```bash
+    docker compose stop
+    ```
 
 ### Docker Image
 
-1. Build the image locally:
-
+1. इमेज तयार करा:
     ```bash
     docker build --no-cache -t flowise .
     ```
 
-2. Run image:
-
+2. Run:
     ```bash
     docker run -d --name flowise -p 3000:3000 flowise
     ```
 
-3. Stop image:
-
+3. Stop:
     ```bash
     docker stop flowise
     ```
 
-## 👨‍💻 Developers
+---
 
-Flowise has 3 different modules in a single mono repository.
+## 👨‍💻 डेव्हलपर्स
 
--   `server`: Node backend to serve API logics
--   `ui`: React frontend
--   `components`: Third-party nodes integrations
--   `api-documentation`: Auto-generated swagger-ui API docs from express
+Flowise मोनो रिपॉझिटरीमध्ये 4 मॉड्यूल आहेत:
 
-### Prerequisite
+- `server`: Node.js backend  
+- `ui`: React frontend  
+- `components`: तृतीय-पक्ष इंटिग्रेशन नोड्स  
+- `api-documentation`: swagger API docs  
 
--   Install [PNPM](https://pnpm.io/installation)
-    ```bash
-    npm i -g pnpm
-    ```
+### पूर्वअट
 
-### Setup
+PNPM इन्स्टॉल करा:
+```bash
+npm i -g pnpm
+```
 
-1.  Clone the repository:
+### सेटअप
+
+1. रिपॉझिटरी क्लोन करा:
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2.  Go into repository folder:
+2. डिरेक्टरीमध्ये जा:
 
     ```bash
     cd Flowise
     ```
 
-3.  Install all dependencies of all modules:
-
+3. सर्व dependencies इन्स्टॉल:
     ```bash
     pnpm install
     ```
 
-4.  Build all the code:
-
+4. Build:
     ```bash
     pnpm build
     ```
 
-    <details>
-    <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
-    If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
-
+    #### ❗ Exit code 134 (JS heap out of memory)
     ```bash
-    # macOS / Linux / Git Bash
     export NODE_OPTIONS="--max-old-space-size=4096"
-
-    # Windows PowerShell
-    $env:NODE_OPTIONS="--max-old-space-size=4096"
-
-    # Windows CMD
-    set NODE_OPTIONS=--max-old-space-size=4096
-    ```
-
-    Then run:
-
-    ```bash
     pnpm build
     ```
 
-    </details>
-
-5.  Start the app:
-
+5. अॅप सुरू करा:
     ```bash
     pnpm start
     ```
 
-    You can now access the app on [http://localhost:3000](http://localhost:3000)
+6. Development मोड:
 
-6.  For development build:
+    - `packages/ui` मध्ये `.env` तयार करा ⇒ `VITE_PORT`
+    - `packages/server` मध्ये `.env` ⇒ `PORT`
 
-    -   Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    -   Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    -   Run:
+    Run:
+    ```bash
+    pnpm dev
+    ```
 
-        ```bash
-        pnpm dev
-        ```
+Dev मोड ऍक्सेस:  
+**http://localhost:8080**
 
-    Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
+---
 
 ## 🌱 Env Variables
 
-Flowise supports different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
+Flowise instance configure करण्यासाठी `.env` मध्ये environment variables वापरा.  
+पूर्ण यादीसाठी “CONTRIBUTING.md” पहा.
 
-## 📖 Documentation
+---
 
-You can view the Flowise Docs [here](https://docs.flowiseai.com/)
+## 📖 दस्तऐवजीकरण
 
-## 🌐 Self Host
+Flowise Docs येथे उपलब्ध:  
+👉 **https://docs.flowiseai.com/**
 
-Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
+---
 
--   [AWS](https://docs.flowiseai.com/configuration/deployment/aws)
--   [Azure](https://docs.flowiseai.com/configuration/deployment/azure)
--   [Digital Ocean](https://docs.flowiseai.com/configuration/deployment/digital-ocean)
--   [GCP](https://docs.flowiseai.com/configuration/deployment/gcp)
--   [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
--   <details>
-      <summary>Others</summary>
+## 🌐 स्वयं-होस्ट
 
-    -   [Railway](https://docs.flowiseai.com/configuration/deployment/railway)
+Flowise तुमच्या स्वतःच्या सर्व्हर किंवा क्लाऊडवर सहज होस्ट करता येतो.  
+आम्ही खालील डिप्लॉयमेंट्स सपोर्ट करतो:
 
-        [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
+- AWS  
+- Azure  
+- Digital Ocean  
+- GCP  
+- Alibaba Cloud  
 
-    -   [Northflank](https://northflank.com/stacks/deploy-flowiseai)
+अतिरिक्त:
 
-        [![Deploy to Northflank](https://assets.northflank.com/deploy_to_northflank_smm_36700fb050.svg)](https://northflank.com/stacks/deploy-flowiseai)
+- Railway  
+- Northflank  
+- Render  
+- HuggingFace Spaces  
+- Elestio  
+- Sealos  
+- RepoCloud  
 
-    -   [Render](https://docs.flowiseai.com/configuration/deployment/render)
-
-        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.flowiseai.com/configuration/deployment/render)
-
-    -   [HuggingFace Spaces](https://docs.flowiseai.com/deployment/hugging-face)
-
-        <a href="https://huggingface.co/spaces/FlowiseAI/Flowise"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
-
-    -   [Elestio](https://elest.io/open-source/flowiseai)
-
-        [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/flowiseai)
-
-    -   [Sealos](https://template.sealos.io/deploy?templateName=flowise)
-
-        [![Deploy on Sealos](https://sealos.io/Deploy-on-Sealos.svg)](https://template.sealos.io/deploy?templateName=flowise)
-
-    -   [RepoCloud](https://repocloud.io/details/?app_id=29)
-
-        [![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
-
-      </details>
+---
 
 ## ☁️ Flowise Cloud
 
-Get Started with [Flowise Cloud](https://flowiseai.com/).
+Flowise Cloud वर सुरू करा:  
+👉 https://flowiseai.com/
 
-## 🙋 Support
+---
 
-Feel free to ask any questions, raise problems, and request new features in [Discussion](https://github.com/FlowiseAI/Flowise/discussions).
+## 🙋 मदत
 
-## 🙌 Contributing
+प्रश्न, समस्या किंवा फिचर विनंत्यांसाठी Discussions वापरा:  
+👉 https://github.com/FlowiseAI/Flowise/discussions
 
-Thanks go to these awesome contributors
+---
 
-<a href="https://github.com/FlowiseAI/Flowise/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
-</a><br><br>
+## 🙌 योगदान
 
-See [Contributing Guide](CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
+Flowise contributors चे मनापासून आभार!
 
-[![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
+Contributing Guide: `CONTRIBUTING.md`  
+Discord: https://discord.gg/jbaHfsRVBW
 
-## 📄 License
+---
 
-Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
+## 📄 परवाना
+
+Flowise हा **Apache License 2.0** अंतर्गत उपलब्ध आहे.
