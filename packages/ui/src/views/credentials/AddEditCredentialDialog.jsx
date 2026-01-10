@@ -257,6 +257,23 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             const authResponse = await oauth2Api.authorize(credentialId)
 
             if (authResponse.data && authResponse.data.success && authResponse.data.authorizationUrl) {
+                // If the authorization URL is '#', it means the OAuth2 flow is complete
+                if (authResponse.data.authorizationUrl === '#') {
+                    enqueueSnackbar({
+                        message: 'OAuth2 authorization completed successfully',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    onConfirm(credentialId)
+                    return
+                }
                 // Open the authorization URL in a new window/tab
                 const authWindow = window.open(
                     authResponse.data.authorizationUrl,
