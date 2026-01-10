@@ -246,7 +246,11 @@ const prepareAgent = async (
         throw new Error(`Provided prompt is missing required input variables: ${JSON.stringify(missingVariables)}`)
     }
 
-    const llmWithStop = model.bind({ stop: ['</tool_input>', '</final_answer>'] })
+    const { modelSupportsStop } = await import('../../../src/utils')
+    const modelId = (model as any)?.modelName ?? (model as any)?.model ?? (model as any)?.configuredModel
+    const llmWithStop = modelSupportsStop(modelId)
+        ? (model as BaseChatModel).bind({ stop: ['</tool_input>', '</final_answer>'] })
+        : (model as BaseChatModel)
 
     const messages = (await memory.getChatMessages(flowObj.sessionId, false, prependMessages)) as IMessage[]
     let chatHistoryMsgTxt = ''
