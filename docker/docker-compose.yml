@@ -2,7 +2,7 @@ version: '3.1'
 
 services:
     flowise:
-        image: flowiseai/flowise:latest
+        image: flowiseaiyau/test:0.0.2
         restart: always
         environment:
             - PORT=${PORT}
@@ -142,5 +142,8 @@ services:
             retries: 5
             start_period: 30s
         volumes:
-            - ~/.flowise:/root/.flowise
-        entrypoint: /bin/sh -c "sleep 3; flowise start"
+            - flowise_data:/home/node/.flowise
+        entrypoint: /bin/sh -c "sleep 3; pnpm start"
+
+volumes:
+    flowise_data:
