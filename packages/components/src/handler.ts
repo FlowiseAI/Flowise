@@ -1400,7 +1400,7 @@ export class AnalyticHandler {
         return returnIds
     }
 
-    async onLLMEnd(returnIds: ICommonObject, output: string) {
+    async onLLMEnd(returnIds: ICommonObject, output: string, usageMetadata?: any) {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
             const llmRun: RunTree | undefined = this.handlers['langSmith'].llmRun[returnIds['langSmith'].llmRun]
             if (llmRun) {
@@ -1416,9 +1416,51 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
-                generation.end({
-                    output: output
-                })
+                const endParams: any = { output: output }
+                
+                // Add usage metadata if available
+                if (usageMetadata) {
+                    const usage: any = {
+                        unit: 'TOKENS'
+                    }
+                    
+                    // Handle modern format (input_tokens, output_tokens, total_tokens)
+                    if (usageMetadata.input_tokens !== undefined) {
+                        usage.input = usageMetadata.input_tokens
+                    }
+                    if (usageMetadata.output_tokens !== undefined) {
+                        usage.output = usageMetadata.output_tokens
+                    }
+                    if (usageMetadata.total_tokens !== undefined) {
+                        usage.total = usageMetadata.total_tokens
+                    }
+                    
+                    // Handle legacy format (promptTokens, completionTokens, totalTokens)
+                    if (usageMetadata.promptTokens !== undefined) {
+                        usage.input = usageMetadata.promptTokens
+                    }
+                    if (usageMetadata.completionTokens !== undefined) {
+                        usage.output = usageMetadata.completionTokens
+                    }
+                    if (usageMetadata.totalTokens !== undefined) {
+                        usage.total = usageMetadata.totalTokens
+                    }
+                    
+                    // Add cost data if available
+                    if (usageMetadata.inputCost !== undefined) {
+                        usage.inputCost = usageMetadata.inputCost
+                    }
+                    if (usageMetadata.outputCost !== undefined) {
+                        usage.outputCost = usageMetadata.outputCost
+                    }
+                    if (usageMetadata.totalCost !== undefined) {
+                        usage.totalCost = usageMetadata.totalCost
+                    }
+                    
+                    endParams.usage = usage
+                }
+                
+                generation.end(endParams)
             }
         }
 
@@ -1474,7 +1516,7 @@ export class AnalyticHandler {
         }
     }
 
-    async onLLMError(returnIds: ICommonObject, error: string | object) {
+    async onLLMError(returnIds: ICommonObject, error: string | object, usageMetadata?: any) {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
             const llmRun: RunTree | undefined = this.handlers['langSmith'].llmRun[returnIds['langSmith'].llmRun]
             if (llmRun) {
@@ -1490,9 +1532,40 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
-                generation.end({
-                    output: error
-                })
+                const endParams: any = { output: error, level: 'ERROR' }
+                
+                // Add usage metadata if available even on error
+                if (usageMetadata) {
+                    const usage: any = {
+                        unit: 'TOKENS'
+                    }
+                    
+                    // Handle modern format
+                    if (usageMetadata.input_tokens !== undefined) {
+                        usage.input = usageMetadata.input_tokens
+                    }
+                    if (usageMetadata.output_tokens !== undefined) {
+                        usage.output = usageMetadata.output_tokens
+                    }
+                    if (usageMetadata.total_tokens !== undefined) {
+                        usage.total = usageMetadata.total_tokens
+                    }
+                    
+                    // Handle legacy format
+                    if (usageMetadata.promptTokens !== undefined) {
+                        usage.input = usageMetadata.promptTokens
+                    }
+                    if (usageMetadata.completionTokens !== undefined) {
+                        usage.output = usageMetadata.completionTokens
+                    }
+                    if (usageMetadata.totalTokens !== undefined) {
+                        usage.total = usageMetadata.totalTokens
+                    }
+                    
+                    endParams.usage = usage
+                }
+                
+                generation.end(endParams)
             }
         }
 
