@@ -625,11 +625,26 @@ class OpenAIAssistant_Agents implements INode {
                 const assistantMessages = messageData.filter((msg) => msg.role === 'assistant')
                 if (!assistantMessages.length) return ''
 
+                // Extract usage metadata from the completed run
+                let usageMetadata: any = undefined
+                try {
+                    const completedRun = await openai.beta.threads.runs.retrieve(threadId, runThreadId)
+                    if (completedRun.usage) {
+                        usageMetadata = {
+                            input_tokens: completedRun.usage.prompt_tokens,
+                            output_tokens: completedRun.usage.completion_tokens,
+                            total_tokens: completedRun.usage.total_tokens
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error retrieving run usage:', error)
+                }
+
                 // Remove images from the logging text
                 let llmOutput = text.replace(imageRegex, '')
                 llmOutput = llmOutput.replace('<br/>', '')
 
-                await analyticHandlers.onLLMEnd(llmIds, llmOutput)
+                await analyticHandlers.onLLMEnd(llmIds, llmOutput, usageMetadata)
                 await analyticHandlers.onChainEnd(parentIds, messageData, true)
 
                 return {
@@ -919,7 +934,22 @@ class OpenAIAssistant_Agents implements INode {
             let llmOutput = returnVal.replace(imageRegex, '')
             llmOutput = llmOutput.replace('<br/>', '')
 
-            await analyticHandlers.onLLMEnd(llmIds, llmOutput)
+            // Extract usage metadata from the completed run
+            let usageMetadata: any = undefined
+            try {
+                const completedRun = await openai.beta.threads.runs.retrieve(threadId, runThreadId)
+                if (completedRun.usage) {
+                    usageMetadata = {
+                        input_tokens: completedRun.usage.prompt_tokens,
+                        output_tokens: completedRun.usage.completion_tokens,
+                        total_tokens: completedRun.usage.total_tokens
+                    }
+                }
+            } catch (error) {
+                console.error('Error retrieving run usage:', error)
+            }
+
+            await analyticHandlers.onLLMEnd(llmIds, llmOutput, usageMetadata)
             await analyticHandlers.onChainEnd(parentIds, messageData, true)
 
             return {

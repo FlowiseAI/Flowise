@@ -576,7 +576,7 @@ class LLM_Agentflow implements INode {
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
-                await analyticHandlers.onLLMEnd(llmIds, finalResponse)
+                await analyticHandlers.onLLMEnd(llmIds, finalResponse, response.usage_metadata)
             }
 
             // Send additional streaming events if needed
