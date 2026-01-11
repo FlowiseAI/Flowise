@@ -5,6 +5,7 @@ import chatMessagesService from '../../services/chat-messages'
 import { aMonthAgo, clearSessionMemory } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Between, DeleteResult, FindOptionsWhere, In } from 'typeorm'
+import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -137,6 +138,92 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             activeWorkspaceId
         )
         return res.json(parseAPIResponse(apiResponse))
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getPublicChatMessages = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatMessagesController.getPublicChatMessages - id not provided!`
+            )
+        }
+
+        const sessionId = req.query?.sessionId as string | undefined
+        const chatId = req.query?.chatId as string | undefined
+        if (!sessionId && !chatId) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                'Error: chatMessagesController.getPublicChatMessages - sessionId or chatId not provided!'
+            )
+        }
+
+        const appServer = getRunningExpressApp()
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({ id: req.params.id })
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
+        }
+        if (!chatflow.isPublic) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Chatflow is not public')
+        }
+
+        let chatbotConfig: any = {}
+        if (chatflow.chatbotConfig) {
+            try {
+                chatbotConfig =
+                    typeof chatflow.chatbotConfig === 'string' ? JSON.parse(chatflow.chatbotConfig) : chatflow.chatbotConfig
+            } catch (error) {
+                throw new InternalFlowiseError(
+                    StatusCodes.INTERNAL_SERVER_ERROR,
+                    `Error parsing Chatbot Config for Chatflow ${req.params.id}`
+                )
+            }
+        }
+
+        if (!chatbotConfig?.chatHistory?.enabled) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Chat history is not enabled')
+        }
+
+        let isDomainAllowed = true
+        let unauthorizedOriginError = chatbotConfig.allowedOriginsError || 'This site is not allowed to access this chatbot'
+        const isValidAllowedOrigins = chatbotConfig.allowedOrigins?.length && chatbotConfig.allowedOrigins[0] !== ''
+        if (isValidAllowedOrigins && req.headers.origin) {
+            const originHeader = req.headers.origin
+            const origin = new URL(originHeader).host
+            isDomainAllowed =
+                chatbotConfig.allowedOrigins.filter((domain: string) => {
+                    try {
+                        const allowedOrigin = new URL(domain).host
+                        return origin === allowedOrigin
+                    } catch (e) {
+                        return false
+                    }
+                }).length > 0
+        }
+
+        if (!isDomainAllowed) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, unauthorizedOriginError)
+        }
+
+        const sortOrder = req.query?.order as string | undefined
+        const messages = await appServer.AppDataSource.getRepository(ChatMessage).find({
+            where: {
+                chatflowid: req.params.id,
+                chatType: ChatType.EXTERNAL,
+                ...(sessionId ? { sessionId } : { chatId })
+            },
+            relations: {
+                execution: true
+            },
+            order: {
+                createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
+            }
+        })
+
+        return res.json(parseAPIResponse(messages))
     } catch (error) {
         next(error)
     }
@@ -363,6 +450,7 @@ export default {
     createChatMessage,
     getAllChatMessages,
     getAllInternalChatMessages,
+    getPublicChatMessages,
     removeAllChatMessages,
     abortChatMessage
 }

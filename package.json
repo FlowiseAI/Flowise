@@ -86,6 +86,9 @@
             "webpack-dev-middleware": "7.4.2",
             "ws": "8.18.3",
             "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+        },
+        "patchedDependencies": {
+            "flowise-embed": "patches/flowise-embed.patch"
         }
     },
     "engines": {

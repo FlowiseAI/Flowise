@@ -8,6 +8,7 @@ export const WHITELIST_URLS = [
     '/api/v1/chatflows/apikey/',
     '/api/v1/public-chatflows',
     '/api/v1/public-chatbotConfig',
+    '/api/v1/public-chatmessage',
     '/api/v1/public-executions',
     '/api/v1/prediction/',
     '/api/v1/vector/upsert/',
