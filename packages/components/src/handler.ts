@@ -1400,7 +1400,7 @@ export class AnalyticHandler {
         return returnIds
     }
 
-    async onLLMEnd(returnIds: ICommonObject, output: string) {
+    async onLLMEnd(returnIds: ICommonObject, output: any) {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
             const llmRun: RunTree | undefined = this.handlers['langSmith'].llmRun[returnIds['langSmith'].llmRun]
             if (llmRun) {
@@ -1416,9 +1416,33 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
-                generation.end({
-                    output: output
-                })
+                let outputText: string = ''
+                let usage: { promptTokens?: number; completionTokens?: number; totalTokens?: number } | undefined
+                let model: string | undefined
+
+                if (typeof output === 'string') {
+                    outputText = output
+                } else if (output && typeof output === 'object') {
+                    outputText = typeof output.content === 'string' ? output.content : tryJsonStringify(output, '[output]')
+                    const usageMetadata = output.usageMetadata || output.usage_metadata
+                    if (usageMetadata) {
+                        usage = {
+                            promptTokens: usageMetadata.input_tokens ?? usageMetadata.prompt_tokens ?? undefined,
+                            completionTokens: usageMetadata.output_tokens ?? usageMetadata.completion_tokens ?? undefined,
+                            totalTokens: usageMetadata.total_tokens ?? undefined
+                        }
+                    }
+                    const responseMetadata = output.responseMetadata || output.response_metadata
+                    if (responseMetadata) {
+                        model = responseMetadata.model || responseMetadata.model_name || responseMetadata.modelId || undefined
+                    }
+                }
+
+                const payload: any = { output: outputText }
+                if (usage && (usage.promptTokens || usage.completionTokens || usage.totalTokens)) payload.usage = usage
+                if (model) payload.model = model
+
+                generation.end(payload)
             }
         }
 

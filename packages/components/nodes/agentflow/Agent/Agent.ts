@@ -1378,9 +1378,24 @@ class Agent_Agentflow implements INode {
                 isStructuredOutput
             )
 
-            // End analytics tracking
+            // End analytics tracking (send full output for usage/cost)
             if (analyticHandlers && llmIds) {
-                await analyticHandlers.onLLMEnd(llmIds, finalResponse)
+                const outputObj = this.prepareOutputObject(
+                    response,
+                    availableTools,
+                    finalResponse,
+                    startTime,
+                    endTime,
+                    timeDelta,
+                    usedTools,
+                    sourceDocuments,
+                    artifacts,
+                    additionalTokens,
+                    isWaitingForHumanInput ?? false,
+                    fileAnnotations,
+                    isStructuredOutput
+                )
+                await analyticHandlers.onLLMEnd(llmIds, outputObj)
             }
 
             // Send additional streaming events if needed
