@@ -1514,9 +1514,33 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
             const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
             if (generation) {
-                generation.end({
-                    output: error
-                })
+                let errorText: string = ''
+                let usage: { promptTokens?: number; completionTokens?: number; totalTokens?: number } | undefined
+                let model: string | undefined
+
+                if (typeof error === 'string') {
+                    errorText = error
+                } else if (error && typeof error === 'object') {
+                    errorText = typeof error.message === 'string' ? error.message : tryJsonStringify(error, '[error]')
+                    const usageMetadata = (error as any).usageMetadata || (error as any).usage_metadata
+                    if (usageMetadata) {
+                        usage = {
+                            promptTokens: usageMetadata.input_tokens ?? usageMetadata.prompt_tokens ?? undefined,
+                            completionTokens: usageMetadata.output_tokens ?? usageMetadata.completion_tokens ?? undefined,
+                            totalTokens: usageMetadata.total_tokens ?? undefined
+                        }
+                    }
+                    const responseMetadata = (error as any).responseMetadata || (error as any).response_metadata
+                    if (responseMetadata) {
+                        model = responseMetadata.model || responseMetadata.model_name || responseMetadata.modelId || undefined
+                    }
+                }
+
+                const payload: any = { output: errorText, level: 'ERROR' }
+                if (usage && (usage.promptTokens || usage.completionTokens || usage.totalTokens)) payload.usage = usage
+                if (model) payload.model = model
+
+                generation.end(payload)
             }
         }
 
