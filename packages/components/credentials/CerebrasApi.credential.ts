@@ -10,13 +10,14 @@ class CerebrasAPIAuth implements INodeCredential {
     constructor() {
         this.label = 'Cerebras API Key'
         this.name = 'cerebrasAIApi'
-        this.version = 1.0
+        this.version = 2.0
+        this.description = 'Get your free API key from Cerebras Cloud'
         this.inputs = [
             {
                 label: 'Cerebras API Key',
                 name: 'cerebrasApiKey',
                 type: 'password',
-                description: 'API Key (cloud.cerebras.ai)'
+                description: 'Get your API key from https://cloud.cerebras.ai/ (starts with csk-)'
             }
         ]
     }

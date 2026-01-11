@@ -8,6 +8,7 @@ import { streamStorageFile } from 'flowise-components'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
+import { validateFileMimeTypeAndExtensionMatch } from '../../utils/fileValidation'
 
 // List available assistants
 const getAllOpenaiAssistants = async (req: Request, res: Response, next: NextFunction) => {
@@ -104,6 +105,10 @@ const uploadAssistantFiles = async (req: Request, res: Response, next: NextFunct
             for (const file of files) {
                 // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
                 file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+                // Validate file extension, MIME type, and content to prevent security vulnerabilities
+                validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+
                 uploadFiles.push({
                     filePath: file.path ?? file.key,
                     fileName: file.originalname
