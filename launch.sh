@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVICE_USER="$(id -un)"
 SERVICE_GROUP="$(id -gn)"
+TMP_BIN=""
 
 export PATH="$HOME/.local/bin:$PATH"
 
@@ -83,17 +84,16 @@ trust_caddy_ca() {
 }
 
 ensure_pnpm_shim() {
-    local tmp_bin
-    tmp_bin="$(mktemp -d)"
-    trap 'rm -rf "$tmp_bin"' EXIT
+    TMP_BIN="$(mktemp -d)"
+    trap 'if [ -n "${TMP_BIN:-}" ]; then rm -rf "$TMP_BIN"; fi' EXIT
 
-    cat > "$tmp_bin/pnpm" <<'PNPMSHIM'
+    cat > "$TMP_BIN/pnpm" <<'PNPMSHIM'
 #!/usr/bin/env bash
 exec corepack pnpm "$@"
 PNPMSHIM
-    chmod +x "$tmp_bin/pnpm"
+    chmod +x "$TMP_BIN/pnpm"
 
-    export PATH="$tmp_bin:$PATH"
+    export PATH="$TMP_BIN:$PATH"
 }
 
 install_deps_if_needed() {
