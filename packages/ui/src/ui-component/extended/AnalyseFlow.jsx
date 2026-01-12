@@ -219,7 +219,7 @@ const analyticProviders = [
     }
 ]
 
-const AnalyseFlow = ({ dialogProps }) => {
+const AnalyseFlow = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -231,6 +231,7 @@ const AnalyseFlow = ({ dialogProps }) => {
     const [providerExpanded, setProviderExpanded] = useState({})
 
     const onSave = async () => {
+        if (readOnly) return
         try {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 analytic: JSON.stringify(analytic)
@@ -270,6 +271,7 @@ const AnalyseFlow = ({ dialogProps }) => {
     }
 
     const setValue = (value, providerName, inputParamName) => {
+        if (readOnly) return
         let newVal = {}
         if (!Object.prototype.hasOwnProperty.call(analytic, providerName)) {
             newVal = { ...analytic, [providerName]: {} }
@@ -389,6 +391,7 @@ const AnalyseFlow = ({ dialogProps }) => {
                                         data={analytic[provider.name] ? { credential: analytic[provider.name].credentialId } : {}}
                                         inputParam={inputParam}
                                         onSelect={(newValue) => setValue(newValue, provider.name, 'credentialId')}
+                                        disabled={readOnly}
                                     />
                                 )}
                                 {providerExpanded[provider.name] && inputParam.type === 'boolean' && (
@@ -397,6 +400,7 @@ const AnalyseFlow = ({ dialogProps }) => {
                                         value={
                                             analytic[provider.name] ? analytic[provider.name][inputParam.name] : inputParam.default ?? false
                                         }
+                                        disabled={readOnly}
                                     />
                                 )}
                                 {providerExpanded[provider.name] &&
@@ -409,6 +413,7 @@ const AnalyseFlow = ({ dialogProps }) => {
                                                     ? analytic[provider.name][inputParam.name]
                                                     : inputParam.default ?? ''
                                             }
+                                            disabled={readOnly}
                                         />
                                     )}
                             </Box>
@@ -416,7 +421,7 @@ const AnalyseFlow = ({ dialogProps }) => {
                     </AccordionDetails>
                 </Accordion>
             ))}
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
+            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave} disabled={readOnly}>
                 Save
             </StyledButton>
         </>
@@ -426,7 +431,8 @@ const AnalyseFlow = ({ dialogProps }) => {
 AnalyseFlow.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
-    onCancel: PropTypes.func
+    onCancel: PropTypes.func,
+    readOnly: PropTypes.bool
 }
 
 export default AnalyseFlow

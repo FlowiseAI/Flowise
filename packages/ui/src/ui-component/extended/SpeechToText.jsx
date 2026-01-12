@@ -239,7 +239,7 @@ const speechToTextProviders = {
     }
 }
 
-const SpeechToText = ({ dialogProps, onConfirm }) => {
+const SpeechToText = ({ dialogProps, onConfirm, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -252,6 +252,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
     const [selectedProvider, setSelectedProvider] = useState('none')
 
     const onSave = async () => {
+        if (readOnly) return
         const speechToText = setValue(true, selectedProvider, 'status')
         try {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
@@ -293,6 +294,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
     }
 
     const setValue = (value, providerName, inputParamName) => {
+        if (readOnly) return speechToText
         let newVal = {}
         if (!Object.prototype.hasOwnProperty.call(speechToText, providerName)) {
             newVal = { ...speechToText, [providerName]: {} }
@@ -318,6 +320,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
     }
 
     const handleProviderChange = (event) => {
+        if (readOnly) return
         setSelectedProvider(event.target.value)
     }
 
@@ -361,6 +364,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                                 color: theme?.customization?.isDarkMode ? '#fff' : 'inherit'
                             }
                         }}
+                        disabled={readOnly}
                     >
                         <MenuItem value='none'>None</MenuItem>
                         {Object.values(speechToTextProviders).map((provider) => (
@@ -438,6 +442,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                                     }
                                     inputParam={inputParam}
                                     onSelect={(newValue) => setValue(newValue, selectedProvider, 'credentialId')}
+                                    disabled={readOnly}
                                 />
                             )}
                             {inputParam.type === 'boolean' && (
@@ -448,6 +453,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                                             ? speechToText[selectedProvider][inputParam.name]
                                             : inputParam.default ?? false
                                     }
+                                    disabled={readOnly}
                                 />
                             )}
                             {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
@@ -459,6 +465,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                                             ? speechToText[selectedProvider][inputParam.name]
                                             : inputParam.default ?? ''
                                     }
+                                    disabled={readOnly}
                                 />
                             )}
 
@@ -472,12 +479,14 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                                             ? speechToText[selectedProvider][inputParam.name]
                                             : inputParam.default ?? 'choose an option'
                                     }
+                                    disabled={readOnly}
                                 />
                             )}
                         </Box>
                     ))}
                 </>
             )}
+            {!readOnly && (
             <StyledButton
                 style={{ marginBottom: 10, marginTop: 10 }}
                 disabled={selectedProvider !== 'none' && !speechToText[selectedProvider]?.credentialId}
@@ -486,13 +495,15 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
             >
                 Save
             </StyledButton>
+            )}
         </>
     )
 }
 
 SpeechToText.propTypes = {
     dialogProps: PropTypes.object,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    readOnly: PropTypes.bool
 }
 
 export default SpeechToText

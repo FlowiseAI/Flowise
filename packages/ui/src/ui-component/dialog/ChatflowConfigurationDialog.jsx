@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
+import { useAuth } from '@/hooks/useAuth'
 import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
 import TextToSpeech from '@/ui-component/extended/TextToSpeech'
@@ -89,10 +90,14 @@ function a11yProps(index) {
 const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const [tabValue, setTabValue] = useState(0)
+    const { hasPermission } = useAuth()
+
+    const canEdit = hasPermission(isAgentCanvas ? 'agentflows:config' : 'chatflows:config')
+    const canView = canEdit || hasPermission(isAgentCanvas ? 'agentflows:config:view' : 'chatflows:config:view')
 
     const filteredTabs = CHATFLOW_CONFIGURATION_TABS.filter((tab) => !isAgentCanvas || !tab.hideInAgentFlow)
 
-    const component = show ? (
+    const component = show && canView ? (
         <Dialog
             onClose={onCancel}
             open={show}
@@ -137,16 +142,20 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                 </Tabs>
                 {filteredTabs.map((item, index) => (
                     <TabPanel key={item.id} value={tabValue} index={index}>
-                        {item.id === 'security' && <Security dialogProps={dialogProps} />}
-                        {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
-                        {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
-                        {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
-                        {item.id === 'textToSpeech' ? <TextToSpeech dialogProps={dialogProps} /> : null}
-                        {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
-                        {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
-                        {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
-                        {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
-                        {item.id === 'postProcessing' ? <PostProcessing dialogProps={dialogProps} /> : null}
+                        {item.id === 'security' && <Security dialogProps={dialogProps} readOnly={!canEdit} />}
+                        {item.id === 'conversationStarters' ? (
+                            <StarterPrompts dialogProps={dialogProps} readOnly={!canEdit} />
+                        ) : null}
+                        {item.id === 'followUpPrompts' ? (
+                            <FollowUpPrompts dialogProps={dialogProps} readOnly={!canEdit} />
+                        ) : null}
+                        {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} readOnly={!canEdit} /> : null}
+                        {item.id === 'textToSpeech' ? <TextToSpeech dialogProps={dialogProps} readOnly={!canEdit} /> : null}
+                        {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} readOnly={!canEdit} /> : null}
+                        {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} readOnly={!canEdit} /> : null}
+                        {item.id === 'leads' ? <Leads dialogProps={dialogProps} readOnly={!canEdit} /> : null}
+                        {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} readOnly={!canEdit} /> : null}
+                        {item.id === 'postProcessing' ? <PostProcessing dialogProps={dialogProps} readOnly={!canEdit} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>

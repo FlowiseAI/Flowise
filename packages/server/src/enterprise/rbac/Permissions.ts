@@ -14,6 +14,7 @@ export class Permissions {
         chatflowsCategory.addPermission(new Permission('chatflows:export', 'Export'))
         chatflowsCategory.addPermission(new Permission('chatflows:import', 'Import'))
         chatflowsCategory.addPermission(new Permission('chatflows:config', 'Edit Configuration'))
+        chatflowsCategory.addPermission(new Permission('chatflows:config:view', 'View Configuration'))
         chatflowsCategory.addPermission(new Permission('chatflows:domains', 'Allowed Domains'))
         this.categories.push(chatflowsCategory)
 
@@ -26,6 +27,7 @@ export class Permissions {
         agentflowsCategory.addPermission(new Permission('agentflows:export', 'Export'))
         agentflowsCategory.addPermission(new Permission('agentflows:import', 'Import'))
         agentflowsCategory.addPermission(new Permission('agentflows:config', 'Edit Configuration'))
+        agentflowsCategory.addPermission(new Permission('agentflows:config:view', 'View Configuration'))
         agentflowsCategory.addPermission(new Permission('agentflows:domains', 'Allowed Domains'))
         this.categories.push(agentflowsCategory)
 

@@ -51,7 +51,7 @@ const agent_settings = {
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal,
-            permission: 'agentflows:config'
+            permission: 'agentflows:config,agentflows:config:view'
         },
         {
             id: 'saveAsTemplate',
