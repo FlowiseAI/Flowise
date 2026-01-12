@@ -1275,6 +1275,21 @@ export const parseDocumentLoaderMetadata = (metadata: object | string): object =
     return metadata
 }
 
+export const resolveDocumentObjValue = (obj: any, sourceObj: any): any => {
+    if (typeof obj === 'object' && obj !== null) {
+        const resolved: any = Array.isArray(obj) ? [] : {}
+        for (const key in obj) {
+            const value = obj[key]
+            resolved[key] = resolveDocumentObjValue(value, sourceObj)
+        }
+        return resolved
+    } else if (typeof obj === 'string' && obj.startsWith('$document')) {
+        return customGet(sourceObj, obj)
+    } else {
+        return obj
+    }
+}
+
 export const handleDocumentLoaderMetadata = (
     docs: Document[],
     _omitMetadataKeys: string,
@@ -1286,22 +1301,25 @@ export const handleDocumentLoaderMetadata = (
         omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
     }
 
-    metadata = parseDocumentLoaderMetadata(metadata)
+    const parsedMetadata = parseDocumentLoaderMetadata(metadata)
 
-    return docs.map((doc) => ({
-        ...doc,
-        metadata:
-            _omitMetadataKeys === '*'
-                ? metadata
-                : omit(
-                      {
-                          ...metadata,
-                          ...doc.metadata,
-                          ...(sourceIdKey ? { [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey } : undefined)
-                      },
-                      omitMetadataKeys
-                  )
-    }))
+    return docs.map((doc) => {
+        const resolvedMetadata = resolveDocumentObjValue(parsedMetadata, { $document: doc })
+        return {
+            ...doc,
+            metadata:
+                _omitMetadataKeys === '*'
+                    ? resolvedMetadata
+                    : omit(
+                          {
+                              ...doc.metadata,
+                              ...resolvedMetadata,
+                              ...(sourceIdKey ? { [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey } : undefined)
+                          },
+                          omitMetadataKeys
+                      )
+        }
+    })
 }
 
 export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, textSplitter?: TextSplitter) => {
