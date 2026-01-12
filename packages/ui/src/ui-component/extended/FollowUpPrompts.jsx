@@ -301,7 +301,7 @@ const followUpPromptsOptions = {
     }
 }
 
-const FollowUpPrompts = ({ dialogProps }) => {
+const FollowUpPrompts = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -315,6 +315,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
     const [selectedProvider, setSelectedProvider] = useState('none')
 
     const handleChange = (key, value) => {
+        if (readOnly) return
         setFollowUpPromptsConfig({
             ...followUpPromptsConfig,
             [key]: value
@@ -322,12 +323,14 @@ const FollowUpPrompts = ({ dialogProps }) => {
     }
 
     const handleSelectedProviderChange = (event) => {
+        if (readOnly) return
         const selectedProvider = event.target.value
         setSelectedProvider(selectedProvider)
         handleChange('selectedProvider', selectedProvider)
     }
 
     const setValue = (value, providerName, inputParamName) => {
+        if (readOnly) return followUpPromptsConfig
         let newVal = {}
         if (!Object.prototype.hasOwnProperty.call(followUpPromptsConfig, providerName)) {
             newVal = { ...followUpPromptsConfig, [providerName]: {} }
@@ -350,6 +353,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
     }
 
     const onSave = async () => {
+        if (readOnly) return
         // TODO: saving without changing the prompt will not save the prompt
         try {
             let value = {
@@ -464,6 +468,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                     label='Enable Follow-up Prompts'
                     onChange={(value) => handleChange('status', value)}
                     value={followUpPromptsConfig.status}
+                    disabled={readOnly}
                 />
                 {followUpPromptsConfig && followUpPromptsConfig.status && (
                     <>
@@ -473,6 +478,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                 size='small'
                                 value={selectedProvider}
                                 onChange={handleSelectedProviderChange}
+                                disabled={readOnly}
                                 sx={{
                                     '& .MuiSvgIcon-root': {
                                         color: theme?.customization?.isDarkMode ? '#fff' : 'inherit'
@@ -601,7 +607,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                     </>
                 )}
             </Box>
-            <StyledButton disabled={checkDisabled()} variant='contained' onClick={onSave}>
+            <StyledButton disabled={checkDisabled() || readOnly} variant='contained' onClick={onSave}>
                 Save
             </StyledButton>
         </>
@@ -609,7 +615,8 @@ const FollowUpPrompts = ({ dialogProps }) => {
 }
 
 FollowUpPrompts.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default FollowUpPrompts

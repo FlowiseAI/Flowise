@@ -23,7 +23,7 @@ Let us know where we can reach you`
 const endTitle = `Thank you!
 What can I do for you?`
 
-const Leads = ({ dialogProps }) => {
+const Leads = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -35,6 +35,7 @@ const Leads = ({ dialogProps }) => {
     const [chatbotConfig, setChatbotConfig] = useState({})
 
     const handleChange = (key, value) => {
+        if (readOnly) return
         setLeadsConfig({
             ...leadsConfig,
             [key]: value
@@ -42,6 +43,7 @@ const Leads = ({ dialogProps }) => {
     }
 
     const onSave = async () => {
+        if (readOnly) return
         try {
             let value = {
                 leads: leadsConfig
@@ -108,7 +110,7 @@ const Leads = ({ dialogProps }) => {
                     mb: 2
                 }}
             >
-                <SwitchInput label='Enable Lead Capture' onChange={(value) => handleChange('status', value)} value={leadsConfig.status} />
+                <SwitchInput label='Enable Lead Capture' onChange={(value) => handleChange('status', value)} value={leadsConfig.status} disabled={readOnly} />
                 {leadsConfig && leadsConfig['status'] && (
                     <>
                         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
@@ -123,6 +125,7 @@ const Leads = ({ dialogProps }) => {
                                 placeholder={formTitle}
                                 name='form-title'
                                 size='small'
+                                disabled={readOnly}
                                 onChange={(e) => {
                                     handleChange('title', e.target.value)
                                 }}
@@ -140,6 +143,7 @@ const Leads = ({ dialogProps }) => {
                                 placeholder={endTitle}
                                 name='form-title'
                                 size='small'
+                                disabled={readOnly}
                                 onChange={(e) => {
                                     handleChange('successMessage', e.target.value)
                                 }}
@@ -148,20 +152,21 @@ const Leads = ({ dialogProps }) => {
                         <Typography variant='h4'>Form fields</Typography>
                         <Box sx={{ width: '100%' }}>
                             <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
-                                <SwitchInput label='Name' onChange={(value) => handleChange('name', value)} value={leadsConfig.name} />
+                                <SwitchInput label='Name' onChange={(value) => handleChange('name', value)} value={leadsConfig.name} disabled={readOnly} />
                                 <SwitchInput
                                     label='Email Address'
                                     onChange={(value) => handleChange('email', value)}
                                     value={leadsConfig.email}
+                                    disabled={readOnly}
                                 />
-                                <SwitchInput label='Phone' onChange={(value) => handleChange('phone', value)} value={leadsConfig.phone} />
+                                <SwitchInput label='Phone' onChange={(value) => handleChange('phone', value)} value={leadsConfig.phone} disabled={readOnly} />
                             </Box>
                         </Box>
                     </>
                 )}
             </Box>
             <StyledButton
-                disabled={!leadsConfig['name'] && !leadsConfig['phone'] && !leadsConfig['email'] && leadsConfig['status']}
+                disabled={(!leadsConfig['name'] && !leadsConfig['phone'] && !leadsConfig['email'] && leadsConfig['status']) || readOnly}
                 style={{ marginBottom: 10, marginTop: 10 }}
                 variant='contained'
                 onClick={onSave}
@@ -173,7 +178,8 @@ const Leads = ({ dialogProps }) => {
 }
 
 Leads.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default Leads

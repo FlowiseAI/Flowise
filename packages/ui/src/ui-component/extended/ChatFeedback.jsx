@@ -17,7 +17,7 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const ChatFeedback = ({ dialogProps, onConfirm }) => {
+const ChatFeedback = ({ dialogProps, onConfirm, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -29,10 +29,12 @@ const ChatFeedback = ({ dialogProps, onConfirm }) => {
     const [chatbotConfig, setChatbotConfig] = useState({})
 
     const handleChange = (value) => {
+        if (readOnly) return
         setChatFeedbackStatus(value)
     }
 
     const onSave = async () => {
+        if (readOnly) return
         try {
             let value = {
                 chatFeedback: {
@@ -93,18 +95,21 @@ const ChatFeedback = ({ dialogProps, onConfirm }) => {
     return (
         <>
             <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <SwitchInput label='Enable chat feedback' onChange={handleChange} value={chatFeedbackStatus} />
+                <SwitchInput label='Enable chat feedback' onChange={handleChange} value={chatFeedbackStatus} disabled={readOnly} />
             </Box>
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
-                Save
-            </StyledButton>
+            {!readOnly && (
+                <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
+                    Save
+                </StyledButton>
+            )}
         </>
     )
 }
 
 ChatFeedback.propTypes = {
     dialogProps: PropTypes.object,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    readOnly: PropTypes.bool
 }
 
 export default ChatFeedback

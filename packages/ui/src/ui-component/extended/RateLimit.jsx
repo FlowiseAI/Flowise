@@ -19,7 +19,7 @@ import chatflowsApi from '@/api/chatflows'
 // utils
 import useNotifier from '@/utils/useNotifier'
 
-const RateLimit = ({ dialogProps }) => {
+const RateLimit = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const chatflowid = chatflow.id
@@ -61,6 +61,7 @@ const RateLimit = ({ dialogProps }) => {
     }
 
     const handleChange = (value) => {
+        if (readOnly) return
         setRateLimitStatus(value)
     }
 
@@ -74,6 +75,7 @@ const RateLimit = ({ dialogProps }) => {
     }
 
     const onSave = async () => {
+        if (readOnly) return
         try {
             const saveResp = await chatflowsApi.updateChatflow(chatflowid, {
                 apiConfig: JSON.stringify(formatObj())
@@ -158,7 +160,7 @@ const RateLimit = ({ dialogProps }) => {
                 />
             </Typography>
             <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
-                <SwitchInput label='Enable Rate Limit' onChange={handleChange} value={rateLimitStatus} />
+                <SwitchInput label='Enable Rate Limit' onChange={handleChange} value={rateLimitStatus} disabled={readOnly} />
                 {rateLimitStatus && (
                     <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
                         {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
@@ -167,16 +169,19 @@ const RateLimit = ({ dialogProps }) => {
                     </Stack>
                 )}
             </Stack>
-            <StyledButton disabled={checkDisabled()} variant='contained' onClick={() => onSave()} sx={{ width: 'auto' }}>
-                Save
-            </StyledButton>
+            {!readOnly && (
+                <StyledButton disabled={checkDisabled()} variant='contained' onClick={() => onSave()} sx={{ width: 'auto' }}>
+                    Save
+                </StyledButton>
+            )}
         </Stack>
     )
 }
 
 RateLimit.propTypes = {
     isSessionMemory: PropTypes.bool,
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default RateLimit

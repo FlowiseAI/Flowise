@@ -16,7 +16,7 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const StarterPrompts = ({ dialogProps, onConfirm }) => {
+const StarterPrompts = ({ dialogProps, onConfirm, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -33,6 +33,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
     const [chatbotConfig, setChatbotConfig] = useState({})
 
     const addInputField = () => {
+        if (readOnly) return
         setInputFields([
             ...inputFields,
             {
@@ -41,12 +42,14 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
         ])
     }
     const removeInputFields = (index) => {
+        if (readOnly) return
         const rows = [...inputFields]
         rows.splice(index, 1)
         setInputFields(rows)
     }
 
     const handleChange = (index, evnt) => {
+        if (readOnly) return
         const { name, value } = evnt.target
         const list = [...inputFields]
         list[index][name] = value
@@ -54,6 +57,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
     }
 
     const onSave = async () => {
+        if (readOnly) return
         try {
             let value = {
                 starterPrompts: {
@@ -169,6 +173,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
                                         size='small'
                                         value={data.prompt}
                                         name='prompt'
+                                        disabled={readOnly}
                                         endAdornment={
                                             <InputAdornment position='end' sx={{ padding: '2px' }}>
                                                 {inputFields.length > 1 && (
@@ -176,7 +181,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
                                                         sx={{ height: 30, width: 30 }}
                                                         size='small'
                                                         color='error'
-                                                        disabled={inputFields.length === 1}
+                                                        disabled={inputFields.length === 1 || readOnly}
                                                         onClick={() => removeInputFields(index)}
                                                         edge='end'
                                                     >
@@ -199,16 +204,19 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
                     })}
                 </List>
             </Box>
-            <StyledButton variant='contained' onClick={onSave}>
-                Save
-            </StyledButton>
+            {!readOnly && (
+                <StyledButton variant='contained' onClick={onSave}>
+                    Save
+                </StyledButton>
+            )}
         </>
     )
 }
 
 StarterPrompts.propTypes = {
     dialogProps: PropTypes.object,
-    onConfirm: PropTypes.func
+    onConfirm: PropTypes.func,
+    readOnly: PropTypes.bool
 }
 
 export default StarterPrompts

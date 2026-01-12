@@ -44,7 +44,7 @@ const chatHistory = JSON.stringify($flow.chatHistory, null, 2);
 // Return a modified response
 return $flow.rawOutput + " This is a post processed response!";`
 
-const PostProcessing = ({ dialogProps }) => {
+const PostProcessing = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -61,10 +61,12 @@ const PostProcessing = ({ dialogProps }) => {
     const [expandDialogProps, setExpandDialogProps] = useState({})
 
     const handleChange = (value) => {
+        if (readOnly) return
         setPostProcessingEnabled(value)
     }
 
     const onExpandDialogClicked = (value) => {
+        if (readOnly) return
         const dialogProps = {
             value,
             inputParam: {
@@ -83,6 +85,7 @@ const PostProcessing = ({ dialogProps }) => {
     }
 
     const onSave = async () => {
+        if (readOnly) return
         try {
             let value = {
                 postProcessing: {
@@ -146,7 +149,7 @@ const PostProcessing = ({ dialogProps }) => {
     return (
         <>
             <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <SwitchInput label='Enable Post Processing' onChange={handleChange} value={postProcessingEnabled} />
+                <SwitchInput label='Enable Post Processing' onChange={handleChange} value={postProcessingEnabled} disabled={readOnly} />
             </Box>
             <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
                 <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
@@ -154,6 +157,7 @@ const PostProcessing = ({ dialogProps }) => {
                     <Button
                         sx={{ ml: 2 }}
                         variant='outlined'
+                        disabled={readOnly}
                         onClick={() => {
                             setPostProcessingFunction(sampleFunction)
                         }}
@@ -169,6 +173,7 @@ const PostProcessing = ({ dialogProps }) => {
                         }}
                         title='Expand'
                         color='primary'
+                        disabled={readOnly}
                         onClick={() => onExpandDialogClicked(postProcessingFunction)}
                     >
                         <IconArrowsMaximize />
@@ -191,7 +196,11 @@ const PostProcessing = ({ dialogProps }) => {
                         theme={customization.isDarkMode ? 'dark' : 'light'}
                         lang={'js'}
                         placeholder={sampleFunction}
-                        onValueChange={(code) => setPostProcessingFunction(code)}
+                        onValueChange={(code) => {
+                            if (readOnly) return
+                            setPostProcessingFunction(code)
+                        }}
+                        disabled={readOnly}
                         basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                     />
                 </div>
@@ -298,7 +307,7 @@ const PostProcessing = ({ dialogProps }) => {
             <StyledButton
                 style={{ marginBottom: 10, marginTop: 10 }}
                 variant='contained'
-                disabled={!postProcessingFunction || postProcessingFunction?.trim().length === 0}
+                disabled={(!postProcessingFunction || postProcessingFunction?.trim().length === 0) || readOnly}
                 onClick={onSave}
             >
                 Save
@@ -317,7 +326,8 @@ const PostProcessing = ({ dialogProps }) => {
 }
 
 PostProcessing.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default PostProcessing

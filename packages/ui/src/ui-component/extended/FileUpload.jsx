@@ -39,7 +39,7 @@ const availableFileTypes = [
     { name: 'PPTX', ext: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', extension: '.pptx' }
 ]
 
-const FileUpload = ({ dialogProps }) => {
+const FileUpload = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
 
@@ -55,10 +55,12 @@ const FileUpload = ({ dialogProps }) => {
     const [pdfLegacyBuild, setPdfLegacyBuild] = useState(false)
 
     const handleChange = (value) => {
+        if (readOnly) return
         setFullFileUpload(value)
     }
 
     const handleAllowedFileTypesChange = (event) => {
+        if (readOnly) return
         const { checked, value } = event.target
         if (checked) {
             setAllowedFileTypes((prev) => [...prev, value])
@@ -68,14 +70,17 @@ const FileUpload = ({ dialogProps }) => {
     }
 
     const handlePdfUsageChange = (event) => {
+        if (readOnly) return
         setPdfUsage(event.target.value)
     }
 
     const handleLegacyBuildChange = (value) => {
+        if (readOnly) return
         setPdfLegacyBuild(value)
     }
 
     const onSave = async () => {
+        if (readOnly) return
         try {
             const value = {
                 status: fullFileUpload,
@@ -191,7 +196,7 @@ const FileUpload = ({ dialogProps }) => {
                         <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>{parser(message)}</span>
                     </div>
                 </div>
-                <SwitchInput label='Enable Full File Upload' onChange={handleChange} value={fullFileUpload} />
+                <SwitchInput label='Enable Full File Upload' onChange={handleChange} value={fullFileUpload} disabled={readOnly} />
             </Box>
 
             <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>Allow Uploads of Type</Typography>
@@ -221,7 +226,7 @@ const FileUpload = ({ dialogProps }) => {
                             name={fileType.ext}
                             checked={allowedFileTypes.indexOf(fileType.ext) !== -1}
                             value={fileType.ext}
-                            disabled={!fullFileUpload}
+                            disabled={!fullFileUpload || readOnly}
                             onChange={handleAllowedFileTypesChange}
                         />
                         <label htmlFor={fileType.ext} style={{ marginLeft: 10 }}>
@@ -250,7 +255,7 @@ const FileUpload = ({ dialogProps }) => {
 
                     <Box>
                         <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>
-                        <FormControl disabled={!fullFileUpload}>
+                        <FormControl disabled={!fullFileUpload || readOnly}>
                             <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
                                 <FormControlLabel value='perPage' control={<Radio />} label='One document per page' />
                                 <FormControlLabel value='perFile' control={<Radio />} label='One document per file' />
@@ -263,13 +268,13 @@ const FileUpload = ({ dialogProps }) => {
                             label='Use Legacy Build (for PDF compatibility issues)'
                             onChange={handleLegacyBuildChange}
                             value={pdfLegacyBuild}
-                            disabled={!fullFileUpload}
+                            disabled={!fullFileUpload || readOnly}
                         />
                     </Box>
                 </Box>
             )}
 
-            <StyledButton style={{ marginBottom: 10, marginTop: 20 }} variant='contained' onClick={onSave}>
+            <StyledButton style={{ marginBottom: 10, marginTop: 20 }} variant='contained' onClick={onSave} disabled={readOnly}>
                 Save
             </StyledButton>
         </>
@@ -277,7 +282,8 @@ const FileUpload = ({ dialogProps }) => {
 }
 
 FileUpload.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default FileUpload
