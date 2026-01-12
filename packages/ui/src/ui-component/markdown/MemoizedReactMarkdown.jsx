@@ -117,7 +117,18 @@ export const MemoizedReactMarkdown = memo(
                             )
                         },
                         p({ children }) {
-                            return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
+                            return (
+                                <p
+                                    style={{
+                                        whiteSpace: 'pre-line',
+                                        overflowWrap: 'break-word',
+                                        wordBreak: 'break-word',
+                                        marginRight: '1.5rem' // Awful hack to avoid text overflow issues
+                                    }}
+                                >
+                                    {children}
+                                </p>
+                            )
                         },
                         ...props.components
                     }}
