@@ -103,7 +103,7 @@
         "cheerio": "^1.0.0-rc.12",
         "chromadb": "3.1.6",
         "cohere-ai": "^7.7.5",
-        "composio-core": "^0.4.7",
+        "composio-core": "^0.5.39",
         "couchbase": "4.4.1",
         "crypto-js": "^4.1.1",
         "css-what": "^6.1.0",
