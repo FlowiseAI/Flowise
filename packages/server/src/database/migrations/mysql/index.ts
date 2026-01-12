@@ -42,6 +42,8 @@ import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowT
 import { AddTextToSpeechToChatFlow1759419216034 } from './1759419216034-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424828558 } from './1759424828558-AddChatFlowNameIndex'
 import { FixDocumentStoreFileChunkLongText1765000000000 } from './1765000000000-FixDocumentStoreFileChunkLongText'
+import { AddChatFlowVersioning1770000000000 } from './1770000000000-AddChatFlowVersioning'
+import { MigrateChatFlowToVersioning1770000000001 } from './1770000000001-MigrateChatFlowToVersioning'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -110,5 +112,7 @@ export const mysqlMigrations = [
     ModifyChatflowType1755066758601,
     AddTextToSpeechToChatFlow1759419216034,
     AddChatFlowNameIndex1759424828558,
-    FixDocumentStoreFileChunkLongText1765000000000
+    FixDocumentStoreFileChunkLongText1765000000000,
+    AddChatFlowVersioning1770000000000,
+    MigrateChatFlowToVersioning1770000000001
 ]

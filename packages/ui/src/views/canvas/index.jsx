@@ -102,9 +102,10 @@ const Canvas = () => {
 
     const reactFlowWrapper = useRef(null)
 
-    const [lastUpdatedDateTime, setLasUpdatedDateTime] = useState('')
-    const [chatflowName, setChatflowName] = useState('')
-    const [flowData, setFlowData] = useState('')
+    const [_lastUpdatedDateTime, _setLasUpdatedDateTime] = useState('')
+    const [_chatflowName, _setChatflowName] = useState('')
+    const [_flowData, _setFlowData] = useState('')
+    const [currentVersion, setCurrentVersion] = useState(null)
 
     // ==============================|| Chatflow API ||============================== //
 
@@ -113,6 +114,9 @@ const Canvas = () => {
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
     const getHasChatflowChangedApi = useApi(chatflowsApi.getHasChatflowChanged)
+    const getVersionApi = useApi(chatflowsApi.getVersion)
+    const createVersionApi = useApi(chatflowsApi.createVersion)
+    const getActiveVersionApi = useApi(chatflowsApi.getAllVersions)
 
     // ==============================|| Events & Actions ||============================== //
 
@@ -237,11 +241,73 @@ const Canvas = () => {
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
-                setChatflowName(chatflowName)
-                setFlowData(flowData)
-                getHasChatflowChangedApi.request(chatflow.id, lastUpdatedDateTime)
+                // Create a new version with isActive: false
+                const versionData = {
+                    flowData,
+                    changeDescription: 'Manual save',
+                    sourceVersion: currentVersion || null,
+                    isActive: false
+                }
+                createVersionApi.request(chatflow.id, versionData)
             }
         }
+    }
+
+    const handleVersionLoad = (versionNumber) => {
+        if (chatflowId) {
+            getVersionApi.request(chatflowId, versionNumber)
+        }
+    }
+
+    const getFlowDataFromCanvas = () => {
+        if (!reactFlowInstance) return null
+
+        const nodes = reactFlowInstance.getNodes().map((node) => {
+            const nodeData = cloneDeep(node.data)
+            if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
+                nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
+                nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
+            }
+            node.data = {
+                ...nodeData,
+                selected: false
+            }
+            return node
+        })
+
+        const rfInstanceObject = reactFlowInstance.toObject()
+        rfInstanceObject.nodes = nodes
+        return JSON.stringify(rfInstanceObject)
+    }
+
+    const handlePublishVersion = async (description) => {
+        if (!chatflow.id) {
+            enqueueSnackbar({
+                message: 'Please save the flow first before publishing a version',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'warning',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            return
+        }
+
+        const flowData = getFlowDataFromCanvas()
+        if (!flowData) return
+
+        const versionData = {
+            flowData,
+            changeDescription: description || '',
+            sourceVersion: currentVersion || null,
+            isActive: true
+        }
+
+        createVersionApi.request(chatflow.id, versionData)
     }
 
     // eslint-disable-next-line
@@ -483,6 +549,72 @@ const Canvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getHasChatflowChangedApi.data, getHasChatflowChangedApi.error])
 
+    // Load specific version
+    useEffect(() => {
+        if (getVersionApi.data) {
+            const version = getVersionApi.data
+            const flowData = version.flowData ? JSON.parse(version.flowData) : { nodes: [], edges: [] }
+            setNodes(flowData.nodes || [])
+            setEdges(flowData.edges || [])
+            setCurrentVersion(version.version)
+            enqueueSnackbar({
+                message: `Loaded version ${version.version}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } else if (getVersionApi.error) {
+            errorFailed(`Failed to load version: ${getVersionApi.error.response.data.message}`)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getVersionApi.data, getVersionApi.error])
+
+    // Get active version info when chatflow loads
+    useEffect(() => {
+        if (getActiveVersionApi.data) {
+            const activeVersion = getActiveVersionApi.data.activeVersion
+            const versions = getActiveVersionApi.data.versions || []
+            const activeVersionData = versions.find((v) => v.version === activeVersion)
+            if (activeVersionData) {
+                setCurrentVersion(activeVersionData.version)
+            }
+        } else if (getActiveVersionApi.error) {
+            console.error('[VERSION] API Error:', getActiveVersionApi.error)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getActiveVersionApi.data, getActiveVersionApi.error])
+
+    // Create version successful
+    useEffect(() => {
+        if (createVersionApi.data) {
+            const newVersion = createVersionApi.data
+            dispatch({ type: REMOVE_DIRTY })
+            setCurrentVersion(newVersion.version)
+            enqueueSnackbar({
+                message: `Version ${newVersion.version} created successfully`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } else if (createVersionApi.error) {
+            errorFailed(`Failed to create version: ${createVersionApi.error.response?.data?.message || 'Unknown error'}`)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [createVersionApi.data, createVersionApi.error])
+
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
         if (canvasDataStore.chatflow) {
@@ -500,6 +632,25 @@ const Canvas = () => {
         setIsUpsertButtonEnabled(false)
         if (chatflowId) {
             getSpecificChatflowApi.request(chatflowId)
+            // Fetch versions directly to ensure the call is made
+            chatflowsApi
+                .getAllVersions(chatflowId)
+                .then((response) => {
+                    const data = response.data
+                    if (data) {
+                        const activeVersion = data.activeVersion
+                        const versions = data.versions || []
+                        const activeVersionData = versions.find((v) => v.version === activeVersion)
+                        if (activeVersionData) {
+                            setCurrentVersion(activeVersionData.version)
+                        } else if (versions.length > 0) {
+                            setCurrentVersion(versions[0].version)
+                        }
+                    }
+                })
+                .catch(() => {
+                    // Versioning not available for this flow - this is expected for non-migrated flows
+                })
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {
                 handleLoadFlow(localStorage.getItem('duplicatedFlowData'))
@@ -524,7 +675,7 @@ const Canvas = () => {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [chatflowId])
 
     useEffect(() => {
         setCanvasDataStore(canvas)
@@ -576,6 +727,9 @@ const Canvas = () => {
                             handleSaveFlow={handleSaveFlow}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
+                            handleVersionLoad={handleVersionLoad}
+                            handlePublishVersion={handlePublishVersion}
+                            currentVersion={currentVersion}
                             isAgentCanvas={isAgentCanvas}
                         />
                     </Toolbar>

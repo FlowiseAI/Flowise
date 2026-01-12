@@ -4,6 +4,7 @@ import assistantsRouter from './assistants'
 import attachmentsRouter from './attachments'
 import chatMessageRouter from './chat-messages'
 import chatflowsRouter from './chatflows'
+import chatflowVersionsRouter from './chatflow-versions'
 import chatflowsStreamingRouter from './chatflows-streaming'
 import chatflowsUploadsRouter from './chatflows-uploads'
 import componentsCredentialsRouter from './components-credentials'
@@ -75,6 +76,7 @@ router.use('/apikey', apikeyRouter)
 router.use('/assistants', assistantsRouter)
 router.use('/attachments', attachmentsRouter)
 router.use('/chatflows', chatflowsRouter)
+router.use('/chatflows', chatflowVersionsRouter)
 router.use('/chatflows-streaming', chatflowsStreamingRouter)
 router.use('/chatmessage', chatMessageRouter)
 router.use('/chatflows-uploads', chatflowsUploadsRouter)

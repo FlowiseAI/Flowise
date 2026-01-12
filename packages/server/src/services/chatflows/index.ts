@@ -5,6 +5,8 @@ import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { UsageCacheManager } from '../../UsageCacheManager'
 import { ChatFlow, EnumChatflowType } from '../../database/entities/ChatFlow'
+import { ChatFlowMaster } from '../../database/entities/ChatFlowMaster'
+import { ChatFlowVersion } from '../../database/entities/ChatFlowVersion'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
@@ -297,6 +299,35 @@ const saveChatflow = async (
         const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
         dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
     }
+
+    // Create ChatFlowMaster and initial ChatFlowVersion for versioning support
+    const chatFlowMaster = appServer.AppDataSource.getRepository(ChatFlowMaster).create({
+        id: dbResponse.id, // Use the same ID as the ChatFlow for consistency
+        name: dbResponse.name,
+        type: dbResponse.type,
+        workspaceId: dbResponse.workspaceId,
+        category: dbResponse.category,
+        isPublic: dbResponse.isPublic
+    })
+    await appServer.AppDataSource.getRepository(ChatFlowMaster).save(chatFlowMaster)
+
+    // Create initial version (version 1, active)
+    const initialVersion = appServer.AppDataSource.getRepository(ChatFlowVersion).create({
+        masterId: dbResponse.id,
+        version: 1,
+        isActive: true,
+        flowData: dbResponse.flowData,
+        apikeyid: dbResponse.apikeyid,
+        chatbotConfig: dbResponse.chatbotConfig,
+        apiConfig: dbResponse.apiConfig,
+        analytic: dbResponse.analytic,
+        speechToText: dbResponse.speechToText,
+        followUpPrompts: dbResponse.followUpPrompts,
+        changeDescription: 'Initial version',
+        sourceVersion: undefined,
+        createdBy: undefined
+    })
+    await appServer.AppDataSource.getRepository(ChatFlowVersion).save(initialVersion)
 
     const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
 

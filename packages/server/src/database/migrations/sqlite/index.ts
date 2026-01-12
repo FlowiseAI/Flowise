@@ -38,6 +38,8 @@ import { AddTextToSpeechToChatFlow1754986486669 } from './1754986486669-AddTextT
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 import { AddTextToSpeechToChatFlow1759419136055 } from './1759419136055-AddTextToSpeechToChatFlow'
 import { AddChatFlowNameIndex1759424923093 } from './1759424923093-AddChatFlowNameIndex'
+import { AddChatFlowVersioning1770000000000 } from './1770000000000-AddChatFlowVersioning'
+import { MigrateChatFlowToVersioning1770000000001 } from './1770000000001-MigrateChatFlowToVersioning'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
@@ -102,5 +104,7 @@ export const sqliteMigrations = [
     AddTextToSpeechToChatFlow1754986486669,
     ModifyChatflowType1755066758601,
     AddTextToSpeechToChatFlow1759419136055,
-    AddChatFlowNameIndex1759424923093
+    AddChatFlowNameIndex1759424923093,
+    AddChatFlowVersioning1770000000000,
+    MigrateChatFlowToVersioning1770000000001
 ]

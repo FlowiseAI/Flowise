@@ -1,4 +1,6 @@
 import { ChatFlow } from './ChatFlow'
+import { ChatFlowMaster } from './ChatFlowMaster'
+import { ChatFlowVersion } from './ChatFlowVersion'
 import { ChatMessage } from './ChatMessage'
 import { ChatMessageFeedback } from './ChatMessageFeedback'
 import { Credential } from './Credential'
@@ -29,6 +31,8 @@ import { LoginSession } from '../../enterprise/database/entities/login-session.e
 
 export const entities = {
     ChatFlow,
+    ChatFlowMaster,
+    ChatFlowVersion,
     ChatMessage,
     ChatMessageFeedback,
     Credential,
