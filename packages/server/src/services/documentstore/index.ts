@@ -1850,18 +1850,12 @@ const upsertDocStore = async (
             const mimePrefix = 'data:' + file.mimetype + ';base64'
             const storagePath = mimePrefix + ',' + fileBuffer.toString('base64') + `,filename:${file.originalname}`
 
-            const fileInputFieldFromMimeType = mapMimeTypeToInputField(file.mimetype)
-
             const fileExtension = path.extname(file.originalname)
 
-            const fileInputFieldFromExt = mapExtToInputField(fileExtension)
-
-            let fileInputField = 'txtFile'
-
-            if (fileInputFieldFromExt !== 'txtFile') {
-                fileInputField = fileInputFieldFromExt
-            } else if (fileInputFieldFromMimeType !== 'txtFile') {
-                fileInputField = fileInputFieldFromMimeType
+            // Try to map by file extension first, fall back to MIME type if extension is not recognized
+            let fileInputField = mapExtToInputField(fileExtension)
+            if (fileInputField === 'txtFile') {
+                fileInputField = mapMimeTypeToInputField(file.mimetype)
             }
 
             if (loaderId === 'unstructuredFileLoader') {
