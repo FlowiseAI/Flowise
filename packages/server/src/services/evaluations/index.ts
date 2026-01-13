@@ -11,6 +11,7 @@ import { EvaluationRun } from '../../database/entities/EvaluationRun'
 import { Credential } from '../../database/entities/Credential'
 import { ApiKey } from '../../database/entities/ApiKey'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlowVersion } from '../../database/entities/ChatFlowVersion'
 import { getAppVersion } from '../../utils'
 import { In } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
@@ -129,15 +130,22 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                 id: chatflowId,
                 workspaceId: workspaceId
             })
-            if (cFlow && cFlow.apikeyid) {
-                const apikeyObj = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-                    id: cFlow.apikeyid
+            if (cFlow) {
+                // Get the active version's apikeyid
+                const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+                    where: { masterId: chatflowId, isActive: true }
                 })
-                if (apikeyObj) {
-                    apiKeys.push({
-                        chatflowId: chatflowId,
-                        apiKey: apikeyObj.apiKey
+                const apikeyid = activeVersion?.apikeyid ?? cFlow.apikeyid
+                if (apikeyid) {
+                    const apikeyObj = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
+                        id: apikeyid
                     })
+                    if (apikeyObj) {
+                        apiKeys.push({
+                            chatflowId: chatflowId,
+                            apiKey: apikeyObj.apiKey
+                        })
+                    }
                 }
             }
         }

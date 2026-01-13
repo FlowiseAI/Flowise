@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { fetchAndMergeActiveVersion } from '../../utils/getChatflowWithActiveVersion'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { INodeParams } from 'flowise-components'
 import { IReactFlowEdge, IReactFlowNode } from '../../Interface'
@@ -30,6 +31,9 @@ const checkFlowValidation = async (flowId: string, workspaceId?: string): Promis
         if (!flow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: validationService.checkFlowValidation - flow not found!`)
         }
+
+        // Merge active version data into the flow
+        await fetchAndMergeActiveVersion(flow)
 
         const flowData = JSON.parse(flow.flowData)
         const nodes = flowData.nodes

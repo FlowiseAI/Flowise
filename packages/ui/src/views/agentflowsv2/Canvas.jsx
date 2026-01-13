@@ -102,6 +102,8 @@ const AgentflowCanvas = () => {
     const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
     const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
     const [isBackgroundEnabled, setIsBackgroundEnabled] = useState(true)
+    const [currentVersion, setCurrentVersion] = useState(null)
+    const versionFlowDataLoaded = useRef(false)
 
     const reactFlowWrapper = useRef(null)
 
@@ -111,6 +113,8 @@ const AgentflowCanvas = () => {
     const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+    const getVersionApi = useApi(chatflowsApi.getVersion)
+    const createVersionApi = useApi(chatflowsApi.createVersion)
 
     // ==============================|| Events & Actions ||============================== //
 
@@ -232,13 +236,74 @@ const AgentflowCanvas = () => {
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
-                const updateBody = {
-                    name: chatflowName,
-                    flowData
+                // Create a new version with isActive: false
+                const versionData = {
+                    flowData,
+                    changeDescription: 'Manual save',
+                    sourceVersion: currentVersion || null,
+                    isActive: false
                 }
-                updateChatflowApi.request(chatflow.id, updateBody)
+                createVersionApi.request(chatflow.id, versionData)
             }
         }
+    }
+
+    const getFlowDataFromCanvas = () => {
+        if (!reactFlowInstance) return null
+
+        const nodes = reactFlowInstance.getNodes().map((node) => {
+            const nodeData = cloneDeep(node.data)
+            if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
+                nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
+                nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
+            }
+            node.data = {
+                ...nodeData,
+                selected: false,
+                status: undefined
+            }
+            return node
+        })
+
+        const rfInstanceObject = reactFlowInstance.toObject()
+        rfInstanceObject.nodes = nodes
+        return JSON.stringify(rfInstanceObject)
+    }
+
+    const handleVersionLoad = (versionNumber) => {
+        if (chatflowId) {
+            getVersionApi.request(chatflowId, versionNumber)
+        }
+    }
+
+    const handlePublishVersion = async (description) => {
+        if (!chatflow.id) {
+            enqueueSnackbar({
+                message: 'Please save the flow first before publishing a version',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'warning',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            return
+        }
+
+        const flowData = getFlowDataFromCanvas()
+        if (!flowData) return
+
+        const versionData = {
+            flowData,
+            changeDescription: description || '',
+            sourceVersion: currentVersion || null,
+            isActive: true
+        }
+
+        createVersionApi.request(chatflow.id, versionData)
     }
 
     // eslint-disable-next-line
@@ -527,9 +592,13 @@ const AgentflowCanvas = () => {
     useEffect(() => {
         if (getSpecificChatflowApi.data) {
             const chatflow = getSpecificChatflowApi.data
-            const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
-            setNodes(initialFlow.nodes || [])
-            setEdges(initialFlow.edges || [])
+            // Only set nodes/edges from chatflow.flowData if version flowData hasn't been loaded yet
+            // The versioning API will load the active version's flowData separately
+            if (!versionFlowDataLoaded.current) {
+                const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
+                setNodes(initialFlow.nodes || [])
+                setEdges(initialFlow.edges || [])
+            }
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
@@ -564,6 +633,56 @@ const AgentflowCanvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateChatflowApi.data, updateChatflowApi.error])
 
+    // Load specific version
+    useEffect(() => {
+        if (getVersionApi.data) {
+            const version = getVersionApi.data
+            const flowData = version.flowData ? JSON.parse(version.flowData) : { nodes: [], edges: [] }
+            setNodes(flowData.nodes || [])
+            setEdges(flowData.edges || [])
+            setCurrentVersion(version.version)
+            enqueueSnackbar({
+                message: `Loaded version ${version.version}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } else if (getVersionApi.error) {
+            errorFailed(`Failed to load version: ${getVersionApi.error.response?.data?.message || 'Unknown error'}`)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getVersionApi.data, getVersionApi.error])
+
+    // Create version successful
+    useEffect(() => {
+        if (createVersionApi.data) {
+            const newVersion = createVersionApi.data
+            dispatch({ type: REMOVE_DIRTY })
+            setCurrentVersion(newVersion.version)
+            enqueueSnackbar({
+                message: `Version ${newVersion.version} created successfully`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } else if (createVersionApi.error) {
+            errorFailed(`Failed to create version: ${createVersionApi.error.response?.data?.message || 'Unknown error'}`)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [createVersionApi.data, createVersionApi.error])
+
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
         if (canvasDataStore.chatflow) {
@@ -579,6 +698,34 @@ const AgentflowCanvas = () => {
         setIsSyncNodesButtonEnabled(false)
         if (chatflowId) {
             getSpecificChatflowApi.request(chatflowId)
+            // Fetch versions to get currentVersion, then load active version's flowData
+            const loadVersionData = async () => {
+                try {
+                    const response = await chatflowsApi.getAllVersions(chatflowId)
+                    const data = response.data
+                    if (data) {
+                        const activeVersion = data.activeVersion
+                        const versions = data.versions || []
+                        const activeVersionData = versions.find((v) => v.version === activeVersion)
+                        const versionToLoad = activeVersionData || versions[0]
+                        if (versionToLoad) {
+                            setCurrentVersion(versionToLoad.version)
+                            const versionResponse = await chatflowsApi.getVersion(chatflowId, versionToLoad.version)
+                            const versionData = versionResponse.data
+                            if (versionData && versionData.flowData) {
+                                const flowData =
+                                    typeof versionData.flowData === 'string' ? JSON.parse(versionData.flowData) : versionData.flowData
+                                versionFlowDataLoaded.current = true
+                                setNodes(flowData.nodes || [])
+                                setEdges(flowData.edges || [])
+                            }
+                        }
+                    }
+                } catch {
+                    // Versioning not available for this flow
+                }
+            }
+            loadVersionData()
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {
                 handleLoadFlow(localStorage.getItem('duplicatedFlowData'))
@@ -695,6 +842,9 @@ const AgentflowCanvas = () => {
                             handleSaveFlow={handleSaveFlow}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
+                            handleVersionLoad={handleVersionLoad}
+                            handlePublishVersion={handlePublishVersion}
+                            currentVersion={currentVersion}
                             isAgentCanvas={true}
                             isAgentflowV2={true}
                         />

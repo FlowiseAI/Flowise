@@ -25,6 +25,7 @@ import { validateFlowAPIKey } from './validateKey'
 import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType, IExecuteFlowParams, MODE } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
+import { fetchAndMergeActiveVersion } from './getChatflowWithActiveVersion'
 import { UpsertHistory } from '../database/entities/UpsertHistory'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -248,6 +249,9 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
+
+        // Merge active version data into the chatflow
+        await fetchAndMergeActiveVersion(chatflow)
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol
         const baseURL = `${httpProtocol}://${req.get('host')}`
