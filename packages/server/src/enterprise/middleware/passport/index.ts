@@ -429,6 +429,34 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     })(req, res, next)
 }
 
+export const verifyTokenForBullMQDashboard = (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate('jwt', { session: true }, (err: any, user: LoggedInUser, info: object) => {
+        if (err) {
+            return next(err)
+        }
+
+        // @ts-ignore
+        if (info && info.name === 'TokenExpiredError') {
+            if (req.cookies && req.cookies.refreshToken) {
+                return res.redirect('/signin?retry=true')
+            }
+            return res.redirect('/signin')
+        }
+
+        if (!user) {
+            return res.redirect('/signin')
+        }
+
+        const identityManager = getRunningExpressApp().identityManager
+        if (identityManager.isEnterprise() && !identityManager.isLicenseValid()) {
+            return res.redirect('/license-expired')
+        }
+
+        req.user = user
+        next()
+    })(req, res, next)
+}
+
 const storeSSOUserPayload = (ssoToken: string, returnUser: any) => {
     const app = getRunningExpressApp()
     app.cachePool.addSSOTokenCache(ssoToken, returnUser)
