@@ -20,10 +20,9 @@ import logger from '../../utils/logger'
 function validatePermissions(user: LoggedInUser, requestedPermissions: string[], operation: string) {
     // API Keys should not have workspace or admin permissions
     // This applies to ALL users, including admins (platform constraint)
-    const hasRestrictedPermissions = requestedPermissions.some((permission: string) => {
-        if (permission === null) return false
-        return permission.startsWith('workspace:') || permission.startsWith('admin:')
-    })
+    const hasRestrictedPermissions = requestedPermissions.some(
+        (permission: string) => permission.startsWith('workspace:') || permission.startsWith('admin:')
+    )
 
     if (hasRestrictedPermissions) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Cannot ${operation} API key with workspace or admin permissions`)
@@ -66,10 +65,9 @@ function validatePermissions(user: LoggedInUser, requestedPermissions: string[],
             }
         })
 
-        const hasDisabledFeaturePermissions = requestedPermissions.some((permission: string) => {
-            if (permission === null) return false
-            return disabledPermissionPrefixes.some((prefix) => permission.startsWith(prefix))
-        })
+        const hasDisabledFeaturePermissions = requestedPermissions.some((permission: string) =>
+            disabledPermissionPrefixes.some((prefix) => permission.startsWith(prefix))
+        )
 
         if (hasDisabledFeaturePermissions) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Cannot ${operation} API key with permissions for disabled features`)
@@ -79,9 +77,7 @@ function validatePermissions(user: LoggedInUser, requestedPermissions: string[],
     // User permission validation - only applies to non-admins (authorization check)
     if (!user.isOrganizationAdmin) {
         // Check if all requested permissions are included in user permissions
-        const hasInvalidPermissions = requestedPermissions.some(
-            (permission: string) => permission !== null && !user.permissions.includes(permission)
-        )
+        const hasInvalidPermissions = requestedPermissions.some((permission: string) => !user.permissions.includes(permission))
         if (hasInvalidPermissions) {
             throw new InternalFlowiseError(
                 StatusCodes.BAD_REQUEST,
@@ -129,7 +125,7 @@ const getAllApiKeys = async (user: LoggedInUser, page: number = -1, limit: numbe
             // Non-admin users can only see API keys whose permissions are a subset of their own
             filteredKeys = allKeys.filter((key) => {
                 // Check if all key permissions are included in user permissions
-                return key.permissions.every((permission: string) => permission === null || user.permissions.includes(permission))
+                return key.permissions.every((permission: string) => user.permissions.includes(permission))
             })
         }
 
