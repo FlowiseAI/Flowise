@@ -17,6 +17,7 @@ import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
 import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { fetchAndMergeActiveVersion, fetchAndMergeActiveVersionsBatch } from '../../utils/getChatflowWithActiveVersion'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
@@ -35,7 +36,6 @@ export function validateChatflowType(type: ChatflowType | undefined) {
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        //**
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
@@ -43,14 +43,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
 
-        // Get the active version's data
-        const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
-            where: { masterId: chatflowId, isActive: true }
-        })
-        if (activeVersion) {
-            chatflow.flowData = activeVersion.flowData
-            if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
-        }
+        await fetchAndMergeActiveVersion(chatflow)
 
         /* Check for post-processing settings, if available isStreamValid is always false */
         let chatflowConfig: ICommonObject = {}
@@ -175,25 +168,7 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
         const [data, total] = await queryBuilder.getManyAndCount()
 
         // Merge active version data for each chatflow
-        const chatflowIds = data.map((cf) => cf.id)
-        if (chatflowIds.length > 0) {
-            const activeVersions = await appServer.AppDataSource.getRepository(ChatFlowVersion).find({
-                where: { masterId: In(chatflowIds), isActive: true }
-            })
-            const versionMap = new Map(activeVersions.map((v) => [v.masterId, v]))
-            for (const chatflow of data) {
-                const activeVersion = versionMap.get(chatflow.id)
-                if (activeVersion) {
-                    chatflow.flowData = activeVersion.flowData
-                    if (activeVersion.apikeyid !== undefined) chatflow.apikeyid = activeVersion.apikeyid
-                    if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
-                    if (activeVersion.apiConfig !== undefined) chatflow.apiConfig = activeVersion.apiConfig
-                    if (activeVersion.analytic !== undefined) chatflow.analytic = activeVersion.analytic
-                    if (activeVersion.speechToText !== undefined) chatflow.speechToText = activeVersion.speechToText
-                    if (activeVersion.followUpPrompts !== undefined) chatflow.followUpPrompts = activeVersion.followUpPrompts
-                }
-            }
-        }
+        await fetchAndMergeActiveVersionsBatch(data)
 
         if (page > 0 && limit > 0) {
             return { data, total }
@@ -285,24 +260,8 @@ const getChatflowById = async (chatflowId: string, workspaceId?: string): Promis
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
 
-        // Try to get the active version's data to ensure we have the latest flowData
-        const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
-            where: {
-                masterId: chatflowId,
-                isActive: true
-            }
-        })
-
-        // If active version exists, merge its data with the chatflow response
-        if (activeVersion) {
-            dbResponse.flowData = activeVersion.flowData
-            if (activeVersion.apikeyid !== undefined) dbResponse.apikeyid = activeVersion.apikeyid
-            if (activeVersion.chatbotConfig !== undefined) dbResponse.chatbotConfig = activeVersion.chatbotConfig
-            if (activeVersion.apiConfig !== undefined) dbResponse.apiConfig = activeVersion.apiConfig
-            if (activeVersion.analytic !== undefined) dbResponse.analytic = activeVersion.analytic
-            if (activeVersion.speechToText !== undefined) dbResponse.speechToText = activeVersion.speechToText
-            if (activeVersion.followUpPrompts !== undefined) dbResponse.followUpPrompts = activeVersion.followUpPrompts
-        }
+        // Merge active version data into the chatflow response
+        await fetchAndMergeActiveVersion(dbResponse)
 
         return dbResponse
     } catch (error) {
@@ -443,15 +402,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
 
-        // Get the active version's data
-        const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
-            where: { masterId: chatflowId, isActive: true }
-        })
-        if (activeVersion) {
-            dbResponse.flowData = activeVersion.flowData
-            if (activeVersion.chatbotConfig !== undefined) dbResponse.chatbotConfig = activeVersion.chatbotConfig
-            if (activeVersion.textToSpeech !== undefined) dbResponse.textToSpeech = activeVersion.textToSpeech
-        }
+        await fetchAndMergeActiveVersion(dbResponse)
 
         const uploadsConfig = await utilGetUploadsConfig(chatflowId)
         // even if chatbotConfig is not set but uploads are enabled

@@ -633,9 +633,9 @@ const Canvas = () => {
         if (chatflowId) {
             getSpecificChatflowApi.request(chatflowId)
             // Fetch versions to get currentVersion, then load active version's flowData
-            chatflowsApi
-                .getAllVersions(chatflowId)
-                .then((response) => {
+            const loadVersionData = async () => {
+                try {
+                    const response = await chatflowsApi.getAllVersions(chatflowId)
                     const data = response.data
                     if (data) {
                         const activeVersion = data.activeVersion
@@ -644,29 +644,21 @@ const Canvas = () => {
                         const versionToLoad = activeVersionData || versions[0]
                         if (versionToLoad) {
                             setCurrentVersion(versionToLoad.version)
-                            // Fetch the full version data including flowData
-                            chatflowsApi
-                                .getVersion(chatflowId, versionToLoad.version)
-                                .then((versionResponse) => {
-                                    const versionData = versionResponse.data
-                                    if (versionData && versionData.flowData) {
-                                        const flowData =
-                                            typeof versionData.flowData === 'string'
-                                                ? JSON.parse(versionData.flowData)
-                                                : versionData.flowData
-                                        setNodes(flowData.nodes || [])
-                                        setEdges(flowData.edges || [])
-                                    }
-                                })
-                                .catch(() => {
-                                    // Failed to load version flowData - silent fail
-                                })
+                            const versionResponse = await chatflowsApi.getVersion(chatflowId, versionToLoad.version)
+                            const versionData = versionResponse.data
+                            if (versionData && versionData.flowData) {
+                                const flowData =
+                                    typeof versionData.flowData === 'string' ? JSON.parse(versionData.flowData) : versionData.flowData
+                                setNodes(flowData.nodes || [])
+                                setEdges(flowData.edges || [])
+                            }
                         }
                     }
-                })
-                .catch(() => {
+                } catch {
                     // Versioning not available for this flow - this is expected for non-migrated flows
-                })
+                }
+            }
+            loadVersionData()
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {
                 handleLoadFlow(localStorage.getItem('duplicatedFlowData'))

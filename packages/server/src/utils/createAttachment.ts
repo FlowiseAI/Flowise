@@ -16,8 +16,8 @@ import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import logger from './logger'
 import { getErrorMessage } from '../errors/utils'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
+import { fetchAndMergeActiveVersion } from './getChatflowWithActiveVersion'
 import { ChatFlow } from '../database/entities/ChatFlow'
-import { ChatFlowVersion } from '../database/entities/ChatFlowVersion'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
 import { Organization } from '../enterprise/database/entities/organization.entity'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
@@ -48,13 +48,8 @@ export const createFileAttachment = async (req: Request) => {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
 
-    // Get the active version's data
-    const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
-        where: { masterId: chatflowid, isActive: true }
-    })
-    if (activeVersion) {
-        if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
-    }
+    // Merge active version data into the chatflow
+    await fetchAndMergeActiveVersion(chatflow)
 
     let orgId = req.user?.activeOrganizationId || ''
     let workspaceId = req.user?.activeWorkspaceId || ''

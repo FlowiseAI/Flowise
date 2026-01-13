@@ -44,6 +44,9 @@ const getAllVersions = async (masterId: string, workspaceId: string): Promise<an
             }))
         }
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowVersionsService.getAllVersions - ${getErrorMessage(error)}`
@@ -77,6 +80,9 @@ const getVersion = async (masterId: string, versionNumber: number, workspaceId: 
 
         return version
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowVersionsService.getVersion - ${getErrorMessage(error)}`
@@ -121,6 +127,9 @@ const getActiveVersion = async (masterId: string, workspaceId: string): Promise<
 
         return activeVersion
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowVersionsService.getActiveVersion - ${getErrorMessage(error)}`
@@ -184,6 +193,9 @@ const createVersion = async (masterId: string, workspaceId: string, versionData:
 
         return savedVersion
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowVersionsService.createVersion - ${getErrorMessage(error)}`
@@ -224,6 +236,9 @@ const updateVersion = async (
 
         return updatedVersion
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowVersionsService.updateVersion - ${getErrorMessage(error)}`
@@ -251,6 +266,9 @@ const setActiveVersion = async (masterId: string, versionNumber: number, workspa
         // Update master updatedDate
         await appServer.AppDataSource.getRepository(ChatFlowMaster).update({ id: masterId }, { updatedDate: new Date() })
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowVersionsService.setActiveVersion - ${getErrorMessage(error)}`
@@ -285,6 +303,9 @@ const deleteVersion = async (masterId: string, versionNumber: number, workspaceI
         // Update master updatedDate
         await appServer.AppDataSource.getRepository(ChatFlowMaster).update({ id: masterId }, { updatedDate: new Date() })
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowVersionsService.deleteVersion - ${getErrorMessage(error)}`

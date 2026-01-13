@@ -1,8 +1,8 @@
 import { IChatMessageFeedback } from '../Interface'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
+import { fetchAndMergeActiveVersion } from './getChatflowWithActiveVersion'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
 import { ChatFlow } from '../database/entities/ChatFlow'
-import { ChatFlowVersion } from '../database/entities/ChatFlowVersion'
 import lunary from 'lunary'
 
 /**
@@ -25,11 +25,9 @@ export const utilUpdateChatMessageFeedback = async (id: string, chatMessageFeedb
     // Get the active version's analytic config
     let analytic = JSON.parse(chatflow?.analytic ?? '{}')
     if (chatflow) {
-        const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
-            where: { masterId: chatflow.id, isActive: true }
-        })
-        if (activeVersion?.analytic) {
-            analytic = JSON.parse(activeVersion.analytic)
+        await fetchAndMergeActiveVersion(chatflow)
+        if (chatflow.analytic) {
+            analytic = JSON.parse(chatflow.analytic)
         }
     }
 

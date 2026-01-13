@@ -61,9 +61,10 @@ export class MigrateChatFlowToVersioning1770000000001 implements MigrationInterf
         )
     }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        // Remove migrated data (keep original chat_flow table intact)
-        await queryRunner.query(`DELETE FROM \`chat_flow_version\` WHERE \`changeDescription\` = 'Migrated from legacy chat_flow';`)
-        await queryRunner.query(`DELETE FROM \`chat_flow_master\` WHERE \`id\` IN (SELECT \`id\` FROM \`chat_flow\`);`)
+    public async down(_queryRunner: QueryRunner): Promise<void> {
+        // This migration is intentionally not reversible.
+        // Data migrations involving complex transformations should not be rolled back automatically.
+        // The original chat_flow table remains intact, so no data is lost.
+        // If you need to revert, restore from a database backup taken before the migration.
     }
 }
