@@ -5,10 +5,32 @@ import { getErrorMessage } from '../../errors/utils'
 import { ChatFlowMaster } from '../../database/entities/ChatFlowMaster'
 import { ChatFlowVersion } from '../../database/entities/ChatFlowVersion'
 
+// ==============================|| Type Definitions ||============================== //
+
+interface IChatFlowVersionSummary {
+    id: string
+    version: number
+    isActive: boolean
+    sourceVersion?: number
+    changeDescription?: string
+    createdBy?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
+interface IAllVersionsResponse {
+    masterId: string
+    name: string
+    activeVersion: number | null
+    versions: IChatFlowVersionSummary[]
+}
+
+// ==============================|| Service Functions ||============================== //
+
 /**
  * Get all versions for a chatflow master
  */
-const getAllVersions = async (masterId: string, workspaceId: string): Promise<any> => {
+const getAllVersions = async (masterId: string, workspaceId: string): Promise<IAllVersionsResponse> => {
     try {
         const appServer = getRunningExpressApp()
 

@@ -1,7 +1,69 @@
-import { DataSource, In } from 'typeorm'
+import { DataSource, EntityManager, In } from 'typeorm'
 import { ChatFlow } from '../database/entities/ChatFlow'
+import { ChatFlowMaster } from '../database/entities/ChatFlowMaster'
 import { ChatFlowVersion } from '../database/entities/ChatFlowVersion'
 import { getRunningExpressApp } from './getRunningExpressApp'
+
+interface ICreateVersioningRecordsOptions {
+    changeDescription?: string
+    createdBy?: string
+}
+
+/**
+ * Creates ChatFlowMaster and initial ChatFlowVersion records for a chatflow
+ * @param chatflow - The chatflow entity to create versioning records for
+ * @param manager - EntityManager to use (for transaction support)
+ * @param options - Optional settings for the initial version
+ */
+export const createVersioningRecordsForChatflow = async (
+    chatflow: ChatFlow,
+    manager: EntityManager,
+    options: ICreateVersioningRecordsOptions = {}
+): Promise<void> => {
+    const { changeDescription = 'Initial version', createdBy } = options
+
+    // Create ChatFlowMaster record
+    const master = new ChatFlowMaster()
+    master.id = chatflow.id
+    master.name = chatflow.name
+    master.type = chatflow.type
+    master.workspaceId = chatflow.workspaceId
+    master.category = chatflow.category
+    master.isPublic = chatflow.isPublic
+    await manager.save(ChatFlowMaster, master)
+
+    // Create initial ChatFlowVersion record
+    const version = new ChatFlowVersion()
+    version.masterId = chatflow.id
+    version.version = 1
+    version.isActive = true
+    version.flowData = chatflow.flowData
+    version.apikeyid = chatflow.apikeyid
+    version.chatbotConfig = chatflow.chatbotConfig
+    version.apiConfig = chatflow.apiConfig
+    version.analytic = chatflow.analytic
+    version.speechToText = chatflow.speechToText
+    version.followUpPrompts = chatflow.followUpPrompts
+    version.changeDescription = changeDescription
+    version.createdBy = createdBy
+    await manager.save(ChatFlowVersion, version)
+}
+
+/**
+ * Creates ChatFlowMaster and initial ChatFlowVersion records for multiple chatflows
+ * @param chatflows - Array of chatflow entities to create versioning records for
+ * @param manager - EntityManager to use (for transaction support)
+ * @param options - Optional settings for the initial versions
+ */
+export const createVersioningRecordsForChatflows = async (
+    chatflows: ChatFlow[],
+    manager: EntityManager,
+    options: ICreateVersioningRecordsOptions = {}
+): Promise<void> => {
+    for (const chatflow of chatflows) {
+        await createVersioningRecordsForChatflow(chatflow, manager, options)
+    }
+}
 
 /**
  * Merges active version data into a single chatflow object

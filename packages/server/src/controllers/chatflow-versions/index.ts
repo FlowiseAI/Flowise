@@ -3,24 +3,63 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import chatflowVersionsService from '../../services/chatflow-versions'
 
+// ==============================|| Validation Helpers ||============================== //
+
+const getValidatedId = (req: Request, functionName: string): string => {
+    if (!req.params.id) {
+        throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: ${functionName} - id not provided!`)
+    }
+    return req.params.id
+}
+
+const getValidatedWorkspaceId = (req: Request, functionName: string): string => {
+    const workspaceId = req.user?.activeWorkspaceId
+    if (!workspaceId) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: ${functionName} - workspace not found!`)
+    }
+    return workspaceId
+}
+
+const getValidatedVersionFromParams = (req: Request, functionName: string): number => {
+    if (!req.params.version) {
+        throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: ${functionName} - version not provided!`)
+    }
+    const versionNumber = parseInt(req.params.version, 10)
+    if (isNaN(versionNumber)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Error: ${functionName} - invalid version number!`)
+    }
+    return versionNumber
+}
+
+const getValidatedVersionFromBody = (req: Request, functionName: string): number => {
+    if (!req.body || req.body.version === undefined) {
+        throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: ${functionName} - version not provided!`)
+    }
+    const versionNumber = parseInt(req.body.version, 10)
+    if (isNaN(versionNumber)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Error: ${functionName} - invalid version number!`)
+    }
+    return versionNumber
+}
+
+const getValidatedBody = (req: Request, functionName: string): any => {
+    if (!req.body) {
+        throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: ${functionName} - body not provided!`)
+    }
+    return req.body
+}
+
+// ==============================|| Controller Functions ||============================== //
+
 /**
  * Get all versions for a chatflow
  */
 const getAllVersions = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.id) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.getAllVersions - id not provided!`
-            )
-        }
+        const id = getValidatedId(req, 'chatflowVersionsController.getAllVersions')
+        const workspaceId = getValidatedWorkspaceId(req, 'chatflowVersionsController.getAllVersions')
 
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: chatflowVersionsController.getAllVersions - workspace not found!`)
-        }
-
-        const apiResponse = await chatflowVersionsService.getAllVersions(req.params.id, workspaceId)
+        const apiResponse = await chatflowVersionsService.getAllVersions(id, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -32,27 +71,11 @@ const getAllVersions = async (req: Request, res: Response, next: NextFunction) =
  */
 const getVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.id || !req.params.version) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.getVersion - id or version not provided!`
-            )
-        }
+        const id = getValidatedId(req, 'chatflowVersionsController.getVersion')
+        const workspaceId = getValidatedWorkspaceId(req, 'chatflowVersionsController.getVersion')
+        const versionNumber = getValidatedVersionFromParams(req, 'chatflowVersionsController.getVersion')
 
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: chatflowVersionsController.getVersion - workspace not found!`)
-        }
-
-        const versionNumber = parseInt(req.params.version, 10)
-        if (isNaN(versionNumber)) {
-            throw new InternalFlowiseError(
-                StatusCodes.BAD_REQUEST,
-                `Error: chatflowVersionsController.getVersion - invalid version number!`
-            )
-        }
-
-        const apiResponse = await chatflowVersionsService.getVersion(req.params.id, versionNumber, workspaceId)
+        const apiResponse = await chatflowVersionsService.getVersion(id, versionNumber, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -64,31 +87,16 @@ const getVersion = async (req: Request, res: Response, next: NextFunction) => {
  */
 const createVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.id) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.createVersion - id not provided!`
-            )
-        }
-
-        if (!req.body) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.createVersion - body not provided!`
-            )
-        }
-
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: chatflowVersionsController.createVersion - workspace not found!`)
-        }
+        const id = getValidatedId(req, 'chatflowVersionsController.createVersion')
+        const workspaceId = getValidatedWorkspaceId(req, 'chatflowVersionsController.createVersion')
+        const body = getValidatedBody(req, 'chatflowVersionsController.createVersion')
 
         const versionData = {
-            ...req.body,
+            ...body,
             createdBy: req.user?.email || req.user?.name
         }
 
-        const apiResponse = await chatflowVersionsService.createVersion(req.params.id, workspaceId, versionData)
+        const apiResponse = await chatflowVersionsService.createVersion(id, workspaceId, versionData)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -100,34 +108,12 @@ const createVersion = async (req: Request, res: Response, next: NextFunction) =>
  */
 const updateVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.id || !req.params.version) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.updateVersion - id or version not provided!`
-            )
-        }
+        const id = getValidatedId(req, 'chatflowVersionsController.updateVersion')
+        const workspaceId = getValidatedWorkspaceId(req, 'chatflowVersionsController.updateVersion')
+        const versionNumber = getValidatedVersionFromParams(req, 'chatflowVersionsController.updateVersion')
+        const body = getValidatedBody(req, 'chatflowVersionsController.updateVersion')
 
-        if (!req.body) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.updateVersion - body not provided!`
-            )
-        }
-
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: chatflowVersionsController.updateVersion - workspace not found!`)
-        }
-
-        const versionNumber = parseInt(req.params.version, 10)
-        if (isNaN(versionNumber)) {
-            throw new InternalFlowiseError(
-                StatusCodes.BAD_REQUEST,
-                `Error: chatflowVersionsController.updateVersion - invalid version number!`
-            )
-        }
-
-        const apiResponse = await chatflowVersionsService.updateVersion(req.params.id, versionNumber, workspaceId, req.body)
+        const apiResponse = await chatflowVersionsService.updateVersion(id, versionNumber, workspaceId, body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -139,37 +125,11 @@ const updateVersion = async (req: Request, res: Response, next: NextFunction) =>
  */
 const setActiveVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.id) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.setActiveVersion - id not provided!`
-            )
-        }
+        const id = getValidatedId(req, 'chatflowVersionsController.setActiveVersion')
+        const workspaceId = getValidatedWorkspaceId(req, 'chatflowVersionsController.setActiveVersion')
+        const versionNumber = getValidatedVersionFromBody(req, 'chatflowVersionsController.setActiveVersion')
 
-        if (!req.body || req.body.version === undefined) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.setActiveVersion - version not provided!`
-            )
-        }
-
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowVersionsController.setActiveVersion - workspace not found!`
-            )
-        }
-
-        const versionNumber = parseInt(req.body.version, 10)
-        if (isNaN(versionNumber)) {
-            throw new InternalFlowiseError(
-                StatusCodes.BAD_REQUEST,
-                `Error: chatflowVersionsController.setActiveVersion - invalid version number!`
-            )
-        }
-
-        await chatflowVersionsService.setActiveVersion(req.params.id, versionNumber, workspaceId)
+        await chatflowVersionsService.setActiveVersion(id, versionNumber, workspaceId)
         return res.json({ success: true, message: `Version ${versionNumber} is now active` })
     } catch (error) {
         next(error)
@@ -181,27 +141,11 @@ const setActiveVersion = async (req: Request, res: Response, next: NextFunction)
  */
 const deleteVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (!req.params.id || !req.params.version) {
-            throw new InternalFlowiseError(
-                StatusCodes.PRECONDITION_FAILED,
-                `Error: chatflowVersionsController.deleteVersion - id or version not provided!`
-            )
-        }
+        const id = getValidatedId(req, 'chatflowVersionsController.deleteVersion')
+        const workspaceId = getValidatedWorkspaceId(req, 'chatflowVersionsController.deleteVersion')
+        const versionNumber = getValidatedVersionFromParams(req, 'chatflowVersionsController.deleteVersion')
 
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: chatflowVersionsController.deleteVersion - workspace not found!`)
-        }
-
-        const versionNumber = parseInt(req.params.version, 10)
-        if (isNaN(versionNumber)) {
-            throw new InternalFlowiseError(
-                StatusCodes.BAD_REQUEST,
-                `Error: chatflowVersionsController.deleteVersion - invalid version number!`
-            )
-        }
-
-        await chatflowVersionsService.deleteVersion(req.params.id, versionNumber, workspaceId)
+        await chatflowVersionsService.deleteVersion(id, versionNumber, workspaceId)
         return res.json({ success: true, message: `Version ${versionNumber} deleted successfully` })
     } catch (error) {
         next(error)
