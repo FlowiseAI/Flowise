@@ -372,21 +372,43 @@ class Jira_Tools implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         let credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const username = getCredentialParam('username', credentialData, nodeData)
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const authType = getCredentialParam('authType', credentialData, nodeData) || 'basicAuth'
         const jiraHost = nodeData.inputs?.jiraHost as string
-
-        if (!username) {
-            throw new Error('No username found in credential')
-        }
-
-        if (!accessToken) {
-            throw new Error('No access token found in credential')
-        }
 
         if (!jiraHost) {
             throw new Error('No Jira host provided')
         }
+
+        let username: string | undefined
+        let accessToken: string | undefined
+        let bearerToken: string | undefined
+
+        // Handle authentication based on type
+        if (authType === 'basicAuth') {
+            username = getCredentialParam('username', credentialData, nodeData)
+            accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+
+            if (!username) {
+                throw new Error('No username found in credential')
+            }
+
+            if (!accessToken) {
+                throw new Error('No access token found in credential')
+            }
+        } else if (authType === 'bearerToken') {
+            bearerToken = getCredentialParam('bearerTokenValue', credentialData, nodeData)
+
+            if (!bearerToken) {
+                throw new Error('No bearer token found in credential')
+            }
+        } else {
+            throw new Error('Invalid authentication type')
+        }
+
+        // Get SSL configuration
+        const sslCertPath = getCredentialParam('sslCertPath', credentialData, nodeData)
+        const sslKeyPath = getCredentialParam('sslKeyPath', credentialData, nodeData)
+        const verifySslCerts = getCredentialParam('verifySslCerts', credentialData, nodeData) !== false
 
         // Get all actions based on type
         const jiraType = nodeData.inputs?.jiraType as string
@@ -407,7 +429,12 @@ class Jira_Tools implements INode {
             actions,
             username,
             accessToken,
+            bearerToken,
+            authType,
             jiraHost,
+            sslCertPath,
+            sslKeyPath,
+            verifySslCerts,
             defaultParams
         })
 

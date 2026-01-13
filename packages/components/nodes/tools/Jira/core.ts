@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
+import * as fs from 'fs'
+import * as https from 'https'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 
@@ -23,7 +25,12 @@ export interface RequestParameters {
     actions?: string[]
     username?: string
     accessToken?: string
+    bearerToken?: string
+    authType?: string
     jiraHost?: string
+    sslCertPath?: string
+    sslKeyPath?: string
+    verifySslCerts?: boolean
     defaultParams?: any
 }
 
@@ -134,13 +141,74 @@ const DeleteUserSchema = z.object({
 class BaseJiraTool extends DynamicStructuredTool {
     protected username: string = ''
     protected accessToken: string = ''
+    protected bearerToken: string = ''
+    protected authType: string = 'basicAuth'
     protected jiraHost: string = ''
+    protected sslCertPath?: string
+    protected sslKeyPath?: string
+    protected verifySslCerts: boolean = true
 
     constructor(args: any) {
         super(args)
         this.username = args.username ?? ''
         this.accessToken = args.accessToken ?? ''
+        this.bearerToken = args.bearerToken ?? ''
+        this.authType = args.authType ?? 'basicAuth'
         this.jiraHost = args.jiraHost ?? ''
+        this.sslCertPath = args.sslCertPath
+        this.sslKeyPath = args.sslKeyPath
+        this.verifySslCerts = args.verifySslCerts !== false
+    }
+
+    private buildHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+        }
+
+        // Add authentication header based on auth type
+        if (this.authType === 'basicAuth') {
+            const auth = Buffer.from(`${this.username}:${this.accessToken}`).toString('base64')
+            headers.Authorization = `Basic ${auth}`
+        } else if (this.authType === 'bearerToken') {
+            headers.Authorization = `Bearer ${this.bearerToken}`
+        }
+
+        return headers
+    }
+
+    private buildFetchOptions(): RequestInit {
+        const options: RequestInit = {}
+
+        // Add SSL configuration if needed
+        if (this.jiraHost.startsWith('https://')) {
+            const httpsAgent: any = {
+                rejectUnauthorized: this.verifySslCerts
+            }
+
+            // Load client certificate and key if provided
+            if (this.sslCertPath && this.sslKeyPath) {
+                try {
+                    httpsAgent.cert = fs.readFileSync(this.sslCertPath, 'utf-8')
+                    httpsAgent.key = fs.readFileSync(this.sslKeyPath, 'utf-8')
+                } catch (error) {
+                    throw new Error(`Failed to load SSL certificate/key: ${error}`)
+                }
+            }
+
+            // Load CA certificate if provided
+            if (this.sslCertPath && !this.sslKeyPath) {
+                try {
+                    httpsAgent.ca = fs.readFileSync(this.sslCertPath, 'utf-8')
+                } catch (error) {
+                    throw new Error(`Failed to load SSL certificate: ${error}`)
+                }
+            }
+
+            options.agent = new https.Agent(httpsAgent)
+        }
+
+        return options
     }
 
     async makeJiraRequest({
@@ -155,28 +223,30 @@ class BaseJiraTool extends DynamicStructuredTool {
         params?: any
     }): Promise<string> {
         const url = `${this.jiraHost}/rest/api/3/${endpoint}`
-        const auth = Buffer.from(`${this.username}:${this.accessToken}`).toString('base64')
+        const headers = this.buildHeaders()
+        const fetchOptions = this.buildFetchOptions()
 
-        const headers = {
-            Authorization: `Basic ${auth}`,
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            ...this.headers
+        try {
+            const response = await fetch(url, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : undefined,
+                ...fetchOptions
+            })
+
+            if (!response.ok) {
+                const errorText = await response.text()
+                throw new Error(`Jira API Error ${response.status}: ${response.statusText} - ${errorText}`)
+            }
+
+            const data = await response.text()
+            return data + TOOL_ARGS_PREFIX + JSON.stringify(params)
+        } catch (error) {
+            if (error instanceof Error) {
+                throw new Error(`Failed to connect to Jira: ${error.message}`)
+            }
+            throw error
         }
-
-        const response = await fetch(url, {
-            method,
-            headers,
-            body: body ? JSON.stringify(body) : undefined
-        })
-
-        if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Jira API Error ${response.status}: ${response.statusText} - ${errorText}`)
-        }
-
-        const data = await response.text()
-        return data + TOOL_ARGS_PREFIX + JSON.stringify(params)
     }
 }
 
@@ -197,7 +267,12 @@ class ListIssuesTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -243,7 +318,12 @@ class CreateIssueTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -323,7 +403,12 @@ class GetIssueTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -358,7 +443,12 @@ class UpdateIssueTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -426,7 +516,12 @@ class DeleteIssueTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -461,7 +556,12 @@ class AssignIssueTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -500,7 +600,12 @@ class TransitionIssueTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -542,7 +647,12 @@ class ListCommentsTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -582,7 +692,12 @@ class CreateCommentTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -639,7 +754,12 @@ class GetCommentTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -674,7 +794,12 @@ class UpdateCommentTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -727,7 +852,12 @@ class DeleteCommentTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -763,7 +893,12 @@ class SearchUsersTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -804,7 +939,12 @@ class GetUserTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -843,7 +983,12 @@ class CreateUserTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -887,7 +1032,12 @@ class UpdateUserTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -930,7 +1080,12 @@ class DeleteUserTool extends BaseJiraTool {
             ...toolInput,
             username: args.username,
             accessToken: args.accessToken,
+            bearerToken: args.bearerToken,
+            authType: args.authType,
             jiraHost: args.jiraHost,
+            sslCertPath: args.sslCertPath,
+            sslKeyPath: args.sslKeyPath,
+            verifySslCerts: args.verifySslCerts,
             maxOutputLength: args.maxOutputLength
         })
         this.defaultParams = args.defaultParams || {}
@@ -957,7 +1112,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
     const actions = args?.actions || []
     const username = args?.username || ''
     const accessToken = args?.accessToken || ''
+    const bearerToken = args?.bearerToken || ''
+    const authType = args?.authType || 'basicAuth'
     const jiraHost = args?.jiraHost || ''
+    const sslCertPath = args?.sslCertPath
+    const sslKeyPath = args?.sslKeyPath
+    const verifySslCerts = args?.verifySslCerts !== false
     const maxOutputLength = args?.maxOutputLength || Infinity
     const defaultParams = args?.defaultParams || {}
 
@@ -967,7 +1127,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new ListIssuesTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -979,7 +1144,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new CreateIssueTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -991,7 +1161,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new GetIssueTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1003,7 +1178,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new UpdateIssueTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1015,7 +1195,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new DeleteIssueTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1027,7 +1212,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new AssignIssueTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1039,7 +1229,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new TransitionIssueTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1052,7 +1247,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new ListCommentsTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1064,7 +1264,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new CreateCommentTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1076,7 +1281,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new GetCommentTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1088,7 +1298,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new UpdateCommentTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1100,7 +1315,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new DeleteCommentTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1113,7 +1333,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new SearchUsersTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1125,7 +1350,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new GetUserTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1137,7 +1367,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new CreateUserTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1149,7 +1384,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new UpdateUserTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
@@ -1161,7 +1401,12 @@ export const createJiraTools = (args?: RequestParameters): DynamicStructuredTool
             new DeleteUserTool({
                 username,
                 accessToken,
+                bearerToken,
+                authType,
                 jiraHost,
+                sslCertPath,
+                sslKeyPath,
+                verifySslCerts,
                 maxOutputLength,
                 defaultParams
             })
