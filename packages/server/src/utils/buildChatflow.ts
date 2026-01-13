@@ -991,31 +991,36 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
     const chatflowid = req.params.id
 
-    // Check if chatflow exists
-    const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-        id: chatflowid
-    })
+    // Check if a versioned chatflow was already prepared by the controller (for version-specific predictions)
+    let chatflow = (req as any).versionedChatflow
+
     if (!chatflow) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
-    }
-
-    // Get the active version's data to ensure we have the latest flowData
-    const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
-        where: {
-            masterId: chatflowid,
-            isActive: true
+        // Check if chatflow exists
+        chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowid
+        })
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
-    })
 
-    // If active version exists, merge its data with the chatflow
-    if (activeVersion) {
-        chatflow.flowData = activeVersion.flowData
-        if (activeVersion.apikeyid !== undefined) chatflow.apikeyid = activeVersion.apikeyid
-        if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
-        if (activeVersion.apiConfig !== undefined) chatflow.apiConfig = activeVersion.apiConfig
-        if (activeVersion.analytic !== undefined) chatflow.analytic = activeVersion.analytic
-        if (activeVersion.speechToText !== undefined) chatflow.speechToText = activeVersion.speechToText
-        if (activeVersion.followUpPrompts !== undefined) chatflow.followUpPrompts = activeVersion.followUpPrompts
+        // Get the active version's data to ensure we have the latest flowData
+        const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+            where: {
+                masterId: chatflowid,
+                isActive: true
+            }
+        })
+
+        // If active version exists, merge its data with the chatflow
+        if (activeVersion) {
+            chatflow.flowData = activeVersion.flowData
+            if (activeVersion.apikeyid !== undefined) chatflow.apikeyid = activeVersion.apikeyid
+            if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
+            if (activeVersion.apiConfig !== undefined) chatflow.apiConfig = activeVersion.apiConfig
+            if (activeVersion.analytic !== undefined) chatflow.analytic = activeVersion.analytic
+            if (activeVersion.speechToText !== undefined) chatflow.speechToText = activeVersion.speechToText
+            if (activeVersion.followUpPrompts !== undefined) chatflow.followUpPrompts = activeVersion.followUpPrompts
+        }
     }
 
     const isAgentFlow = chatflow.type === 'MULTIAGENT'

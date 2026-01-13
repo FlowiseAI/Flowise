@@ -113,9 +113,11 @@ export class App {
             const chatflows = await getDataSource().getRepository(ChatFlow).find()
             const chatflowIds = chatflows.map((cf) => cf.id)
             if (chatflowIds.length > 0) {
-                const activeVersions = await getDataSource().getRepository(ChatFlowVersion).find({
-                    where: { masterId: In(chatflowIds), isActive: true }
-                })
+                const activeVersions = await getDataSource()
+                    .getRepository(ChatFlowVersion)
+                    .find({
+                        where: { masterId: In(chatflowIds), isActive: true }
+                    })
                 const versionMap = new Map(activeVersions.map((v) => [v.masterId, v]))
                 for (const chatflow of chatflows) {
                     const activeVersion = versionMap.get(chatflow.id)

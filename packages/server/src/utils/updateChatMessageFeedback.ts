@@ -21,7 +21,7 @@ export const utilUpdateChatMessageFeedback = async (id: string, chatMessageFeedb
     const updatedFeedback = await appServer.AppDataSource.getRepository(ChatMessageFeedback).findOne({ where: { id } })
 
     const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({ where: { id: updatedFeedback?.chatflowid } })
-    
+
     // Get the active version's analytic config
     let analytic = JSON.parse(chatflow?.analytic ?? '{}')
     if (chatflow) {
