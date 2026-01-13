@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
 import { ChatflowType, IChatFlowMaster } from '../../Interface'
 import { EnumChatflowType } from './ChatFlow'

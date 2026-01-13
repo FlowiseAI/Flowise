@@ -170,15 +170,17 @@ const createVersion = async (masterId: string, workspaceId: string, versionData:
         newVersion.createdBy = versionData.createdBy
         newVersion.isActive = versionData.isActive !== undefined ? versionData.isActive : true
 
-        // If setting as active, deactivate current active version
-        if (newVersion.isActive) {
-            await appServer.AppDataSource.getRepository(ChatFlowVersion).update({ masterId, isActive: true }, { isActive: false })
-        }
-
-        const savedVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).save(newVersion)
-
-        // Update master updatedDate
-        await appServer.AppDataSource.getRepository(ChatFlowMaster).update({ id: masterId }, { updatedDate: new Date() })
+        // Use transaction to ensure atomicity when setting active version
+        const savedVersion = await appServer.AppDataSource.transaction(async (transactionalEntityManager) => {
+            // If setting as active, deactivate current active version
+            if (newVersion.isActive) {
+                await transactionalEntityManager.getRepository(ChatFlowVersion).update({ masterId, isActive: true }, { isActive: false })
+            }
+            const saved = await transactionalEntityManager.getRepository(ChatFlowVersion).save(newVersion)
+            // Update master updatedDate
+            await transactionalEntityManager.getRepository(ChatFlowMaster).update({ id: masterId }, { updatedDate: new Date() })
+            return saved
+        })
 
         return savedVersion
     } catch (error) {

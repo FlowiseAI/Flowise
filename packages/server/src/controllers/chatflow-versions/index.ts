@@ -8,7 +8,7 @@ import chatflowVersionsService from '../../services/chatflow-versions'
  */
 const getAllVersions = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
+        if (!req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowVersionsController.getAllVersions - id not provided!`
@@ -32,7 +32,7 @@ const getAllVersions = async (req: Request, res: Response, next: NextFunction) =
  */
 const getVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id || !req.params.version) {
+        if (!req.params.id || !req.params.version) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowVersionsController.getVersion - id or version not provided!`
@@ -64,7 +64,7 @@ const getVersion = async (req: Request, res: Response, next: NextFunction) => {
  */
 const createVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
+        if (!req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowVersionsController.createVersion - id not provided!`
@@ -100,7 +100,7 @@ const createVersion = async (req: Request, res: Response, next: NextFunction) =>
  */
 const updateVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id || !req.params.version) {
+        if (!req.params.id || !req.params.version) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowVersionsController.updateVersion - id or version not provided!`
@@ -139,7 +139,7 @@ const updateVersion = async (req: Request, res: Response, next: NextFunction) =>
  */
 const setActiveVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id) {
+        if (!req.params.id) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowVersionsController.setActiveVersion - id not provided!`
@@ -181,7 +181,7 @@ const setActiveVersion = async (req: Request, res: Response, next: NextFunction)
  */
 const deleteVersion = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (typeof req.params === 'undefined' || !req.params.id || !req.params.version) {
+        if (!req.params.id || !req.params.version) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: chatflowVersionsController.deleteVersion - id or version not provided!`

@@ -481,7 +481,7 @@ const Canvas = () => {
                 return
             }
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
-            setLasUpdatedDateTime(chatflow.updatedDate)
+            _setLasUpdatedDateTime(chatflow.updatedDate)
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
@@ -510,7 +510,7 @@ const Canvas = () => {
     useEffect(() => {
         if (updateChatflowApi.data) {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
-            setLasUpdatedDateTime(updateChatflowApi.data.updatedDate)
+            _setLasUpdatedDateTime(updateChatflowApi.data.updatedDate)
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
@@ -632,7 +632,7 @@ const Canvas = () => {
         setIsUpsertButtonEnabled(false)
         if (chatflowId) {
             getSpecificChatflowApi.request(chatflowId)
-            // Fetch versions directly to ensure the call is made
+            // Fetch versions to get currentVersion, then load active version's flowData
             chatflowsApi
                 .getAllVersions(chatflowId)
                 .then((response) => {
@@ -641,10 +641,26 @@ const Canvas = () => {
                         const activeVersion = data.activeVersion
                         const versions = data.versions || []
                         const activeVersionData = versions.find((v) => v.version === activeVersion)
-                        if (activeVersionData) {
-                            setCurrentVersion(activeVersionData.version)
-                        } else if (versions.length > 0) {
-                            setCurrentVersion(versions[0].version)
+                        const versionToLoad = activeVersionData || versions[0]
+                        if (versionToLoad) {
+                            setCurrentVersion(versionToLoad.version)
+                            // Fetch the full version data including flowData
+                            chatflowsApi
+                                .getVersion(chatflowId, versionToLoad.version)
+                                .then((versionResponse) => {
+                                    const versionData = versionResponse.data
+                                    if (versionData && versionData.flowData) {
+                                        const flowData =
+                                            typeof versionData.flowData === 'string'
+                                                ? JSON.parse(versionData.flowData)
+                                                : versionData.flowData
+                                        setNodes(flowData.nodes || [])
+                                        setEdges(flowData.edges || [])
+                                    }
+                                })
+                                .catch(() => {
+                                    // Failed to load version flowData - silent fail
+                                })
                         }
                     }
                 })
