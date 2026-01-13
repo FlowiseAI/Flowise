@@ -1041,6 +1041,36 @@
             ]
         },
         {
+            "name": "chatCerebras",
+            "models": [
+                {
+                    "label": "llama-3.3-70b",
+                    "name": "llama-3.3-70b",
+                    "description": "Best for complex reasoning and long-form content"
+                },
+                {
+                    "label": "qwen-3-32b",
+                    "name": "qwen-3-32b",
+                    "description": "Balanced performance for general-purpose tasks"
+                },
+                {
+                    "label": "llama3.1-8b",
+                    "name": "llama3.1-8b",
+                    "description": "Fastest model, ideal for simple tasks and high throughput"
+                },
+                {
+                    "label": "gpt-oss-120b",
+                    "name": "gpt-oss-120b",
+                    "description": "Largest model for demanding tasks"
+                },
+                {
+                    "label": "zai-glm-4.6",
+                    "name": "zai-glm-4.6",
+                    "description": "Advanced reasoning and complex problem-solving"
+                }
+            ]
+        },
+        {
             "name": "deepseek",
             "models": [
                 {
