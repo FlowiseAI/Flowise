@@ -26,10 +26,15 @@ const createApiKey = async (req: Request, res: Response, next: NextFunction) => 
         if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.createApiKey - keyName not provided!`)
         }
-        if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
+        if (
+            !req.body.permissions ||
+            !Array.isArray(req.body.permissions) ||
+            req.body.permissions.length === 0 ||
+            !req.body.permissions.every((p: any) => typeof p === 'string')
+        ) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: apikeyController.createApiKey - permissions not provided!`
+                `Error: apikeyController.createApiKey - permissions must be an array of strings!`
             )
         }
         const user = req.user as LoggedInUser
@@ -49,10 +54,15 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
         if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.updateApiKey - keyName not provided!`)
         }
-        if (!req.body.permissions || !Array.isArray(req.body.permissions)) {
+        if (
+            !req.body.permissions ||
+            !Array.isArray(req.body.permissions) ||
+            req.body.permissions.length === 0 ||
+            !req.body.permissions.every((p: any) => typeof p === 'string')
+        ) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: apikeyController.updateApiKey - permissions not provided!`
+                `Error: apikeyController.updateApiKey - permissions must be an array of strings!`
             )
         }
         const user = req.user as LoggedInUser
