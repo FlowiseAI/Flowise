@@ -725,16 +725,14 @@ const AgentflowCanvas = () => {
                                         setEdges(flowData.edges || [])
                                     }
                                 })
-                                .catch((error) => {
+                                .catch(() => {
                                     // Failed to load version flowData - silent fail
-                                    console.error('Failed to load version flowData', error)
                                 })
                         }
                     }
                 })
-                .catch((error) => {
+                .catch(() => {
                     // Versioning not available for this flow
-                    console.error('Failed to get versions', error)
                 })
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {

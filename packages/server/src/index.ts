@@ -3,13 +3,14 @@ import path from 'path'
 import cors from 'cors'
 import http from 'http'
 import cookieParser from 'cookie-parser'
-import { DataSource, IsNull } from 'typeorm'
+import { DataSource, In, IsNull } from 'typeorm'
 import { MODE, Platform } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
+import { ChatFlowVersion } from './database/entities/ChatFlowVersion'
 import { CachePool } from './CachePool'
 import { AbortControllerPool } from './AbortControllerPool'
 import { RateLimiterManager } from './utils/rateLimit'
@@ -108,7 +109,22 @@ export class App {
 
             // Initialize Rate Limit
             this.rateLimiterManager = RateLimiterManager.getInstance()
-            await this.rateLimiterManager.initializeRateLimiters(await getDataSource().getRepository(ChatFlow).find())
+            // Get all chatflows and merge active version data for rate limiting
+            const chatflows = await getDataSource().getRepository(ChatFlow).find()
+            const chatflowIds = chatflows.map((cf) => cf.id)
+            if (chatflowIds.length > 0) {
+                const activeVersions = await getDataSource().getRepository(ChatFlowVersion).find({
+                    where: { masterId: In(chatflowIds), isActive: true }
+                })
+                const versionMap = new Map(activeVersions.map((v) => [v.masterId, v]))
+                for (const chatflow of chatflows) {
+                    const activeVersion = versionMap.get(chatflow.id)
+                    if (activeVersion?.apiConfig !== undefined) {
+                        chatflow.apiConfig = activeVersion.apiConfig
+                    }
+                }
+            }
+            await this.rateLimiterManager.initializeRateLimiters(chatflows)
             logger.info('🚦 [server]: Rate limiters initialized successfully')
 
             // Initialize cache pool

@@ -24,6 +24,7 @@ import {
 import { validateFlowAPIKey } from './validateKey'
 import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType, IExecuteFlowParams, MODE } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
+import { ChatFlowVersion } from '../database/entities/ChatFlowVersion'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { UpsertHistory } from '../database/entities/UpsertHistory'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
@@ -247,6 +248,18 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+        }
+
+        // Get the active version's data to ensure we have the latest flowData
+        const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+            where: { masterId: chatflowid, isActive: true }
+        })
+        if (activeVersion) {
+            chatflow.flowData = activeVersion.flowData
+            if (activeVersion.apikeyid !== undefined) chatflow.apikeyid = activeVersion.apikeyid
+            if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
+            if (activeVersion.apiConfig !== undefined) chatflow.apiConfig = activeVersion.apiConfig
+            if (activeVersion.analytic !== undefined) chatflow.analytic = activeVersion.analytic
         }
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol

@@ -17,6 +17,7 @@ import logger from './logger'
 import { getErrorMessage } from '../errors/utils'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
 import { ChatFlow } from '../database/entities/ChatFlow'
+import { ChatFlowVersion } from '../database/entities/ChatFlowVersion'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
 import { Organization } from '../enterprise/database/entities/organization.entity'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
@@ -45,6 +46,14 @@ export const createFileAttachment = async (req: Request) => {
     })
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+    }
+
+    // Get the active version's data
+    const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+        where: { masterId: chatflowid, isActive: true }
+    })
+    if (activeVersion) {
+        if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
     }
 
     let orgId = req.user?.activeOrganizationId || ''

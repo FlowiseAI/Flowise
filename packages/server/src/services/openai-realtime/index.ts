@@ -13,6 +13,7 @@ import {
 import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlowVersion } from '../../database/entities/ChatFlowVersion'
 import { IDepthQueue, IReactFlowNode } from '../../Interface'
 import { ICommonObject, INodeData } from 'flowise-components'
 import { convertToOpenAIFunction } from '@langchain/core/utils/function_calling'
@@ -33,6 +34,15 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     })
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+    }
+
+    // Get the active version's data to ensure we have the latest flowData
+    const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+        where: { masterId: chatflowid, isActive: true }
+    })
+    if (activeVersion) {
+        chatflow.flowData = activeVersion.flowData
+        if (activeVersion.analytic !== undefined) chatflow.analytic = activeVersion.analytic
     }
 
     const chatId = _chatId || uuidv4()

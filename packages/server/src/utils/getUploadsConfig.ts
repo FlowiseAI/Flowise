@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { INodeParams } from 'flowise-components'
 import { ChatFlow } from '../database/entities/ChatFlow'
+import { ChatFlowVersion } from '../database/entities/ChatFlowVersion'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { IUploadFileSizeAndTypes, IReactFlowNode, IReactFlowEdge } from '../Interface'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
@@ -24,6 +25,15 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
     })
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+    }
+
+    // Get the active version's data to ensure we have the latest flowData
+    const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+        where: { masterId: chatflowid, isActive: true }
+    })
+    if (activeVersion) {
+        chatflow.flowData = activeVersion.flowData
+        if (activeVersion.speechToText !== undefined) chatflow.speechToText = activeVersion.speechToText
     }
 
     const flowObj = JSON.parse(chatflow.flowData)

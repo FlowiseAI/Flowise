@@ -41,6 +41,7 @@ import {
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { databaseEntities } from '.'
 import { ChatFlow } from '../database/entities/ChatFlow'
+import { ChatFlowVersion } from '../database/entities/ChatFlowVersion'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Variable } from '../database/entities/Variable'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -996,6 +997,25 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     })
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+    }
+
+    // Get the active version's data to ensure we have the latest flowData
+    const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+        where: {
+            masterId: chatflowid,
+            isActive: true
+        }
+    })
+
+    // If active version exists, merge its data with the chatflow
+    if (activeVersion) {
+        chatflow.flowData = activeVersion.flowData
+        if (activeVersion.apikeyid !== undefined) chatflow.apikeyid = activeVersion.apikeyid
+        if (activeVersion.chatbotConfig !== undefined) chatflow.chatbotConfig = activeVersion.chatbotConfig
+        if (activeVersion.apiConfig !== undefined) chatflow.apiConfig = activeVersion.apiConfig
+        if (activeVersion.analytic !== undefined) chatflow.analytic = activeVersion.analytic
+        if (activeVersion.speechToText !== undefined) chatflow.speechToText = activeVersion.speechToText
+        if (activeVersion.followUpPrompts !== undefined) chatflow.followUpPrompts = activeVersion.followUpPrompts
     }
 
     const isAgentFlow = chatflow.type === 'MULTIAGENT'

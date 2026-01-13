@@ -3,6 +3,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlowVersion } from '../../database/entities/ChatFlowVersion'
 import { INodeParams } from 'flowise-components'
 import { IReactFlowEdge, IReactFlowNode } from '../../Interface'
 
@@ -29,6 +30,14 @@ const checkFlowValidation = async (flowId: string, workspaceId?: string): Promis
 
         if (!flow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: validationService.checkFlowValidation - flow not found!`)
+        }
+
+        // Get the active version's data to ensure we have the latest flowData
+        const activeVersion = await appServer.AppDataSource.getRepository(ChatFlowVersion).findOne({
+            where: { masterId: flowId, isActive: true }
+        })
+        if (activeVersion) {
+            flow.flowData = activeVersion.flowData
         }
 
         const flowData = JSON.parse(flow.flowData)

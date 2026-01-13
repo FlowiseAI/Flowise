@@ -3,6 +3,8 @@ import { EntityManager, In, QueryRunner } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { Assistant } from '../../database/entities/Assistant'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatFlowMaster } from '../../database/entities/ChatFlowMaster'
+import { ChatFlowVersion } from '../../database/entities/ChatFlowVersion'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
@@ -618,6 +620,35 @@ async function saveBatch(manager: EntityManager, entity: any, items: any[], batc
     }
 }
 
+async function createVersioningRecordsForChatflows(manager: EntityManager, chatflows: ChatFlow[]) {
+    for (const chatflow of chatflows) {
+        // Create ChatFlowMaster record
+        const master = new ChatFlowMaster()
+        master.id = chatflow.id
+        master.name = chatflow.name
+        master.type = chatflow.type
+        master.workspaceId = chatflow.workspaceId
+        master.category = chatflow.category
+        master.isPublic = chatflow.isPublic
+        await manager.save(ChatFlowMaster, master)
+
+        // Create initial ChatFlowVersion record
+        const version = new ChatFlowVersion()
+        version.masterId = chatflow.id
+        version.version = 1
+        version.isActive = true
+        version.flowData = chatflow.flowData
+        version.apikeyid = chatflow.apikeyid
+        version.chatbotConfig = chatflow.chatbotConfig
+        version.apiConfig = chatflow.apiConfig
+        version.analytic = chatflow.analytic
+        version.speechToText = chatflow.speechToText
+        version.followUpPrompts = chatflow.followUpPrompts
+        version.changeDescription = 'Imported version'
+        await manager.save(ChatFlowVersion, version)
+    }
+}
+
 const importData = async (importData: ExportData, orgId: string, activeWorkspaceId: string, subscriptionId: string) => {
     // Initialize missing properties with empty arrays to avoid "undefined" errors
     importData.AgentFlow = importData.AgentFlow || []
@@ -768,13 +799,25 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
 
             await queryRunner.startTransaction()
 
-            if (importData.AgentFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.AgentFlow)
-            if (importData.AgentFlowV2.length > 0) await queryRunner.manager.save(ChatFlow, importData.AgentFlowV2)
-            if (importData.AssistantFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.AssistantFlow)
+            if (importData.AgentFlow.length > 0) {
+                await queryRunner.manager.save(ChatFlow, importData.AgentFlow)
+                await createVersioningRecordsForChatflows(queryRunner.manager, importData.AgentFlow)
+            }
+            if (importData.AgentFlowV2.length > 0) {
+                await queryRunner.manager.save(ChatFlow, importData.AgentFlowV2)
+                await createVersioningRecordsForChatflows(queryRunner.manager, importData.AgentFlowV2)
+            }
+            if (importData.AssistantFlow.length > 0) {
+                await queryRunner.manager.save(ChatFlow, importData.AssistantFlow)
+                await createVersioningRecordsForChatflows(queryRunner.manager, importData.AssistantFlow)
+            }
             if (importData.AssistantCustom.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantCustom)
             if (importData.AssistantOpenAI.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantOpenAI)
             if (importData.AssistantAzure.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantAzure)
-            if (importData.ChatFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.ChatFlow)
+            if (importData.ChatFlow.length > 0) {
+                await queryRunner.manager.save(ChatFlow, importData.ChatFlow)
+                await createVersioningRecordsForChatflows(queryRunner.manager, importData.ChatFlow)
+            }
             if (importData.ChatMessage.length > 0) await saveBatch(queryRunner.manager, ChatMessage, importData.ChatMessage)
             if (importData.ChatMessageFeedback.length > 0)
                 await queryRunner.manager.save(ChatMessageFeedback, importData.ChatMessageFeedback)
