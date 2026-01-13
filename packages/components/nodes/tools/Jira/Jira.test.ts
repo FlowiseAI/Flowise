@@ -325,7 +325,7 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
         })
 
         describe('SSL Error Handling', () => {
-            it('should throw descriptive error when certificate file cannot be read', async () => {
+            it('should return descriptive error when certificate file cannot be read', async () => {
                 mockReadFileSync.mockImplementation(() => {
                     throw new Error('ENOENT: no such file or directory')
                 })
@@ -341,7 +341,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
                 })
 
                 const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('Failed to load SSL certificate')
+                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                    .resolves.toContain('Failed to load SSL certificate')
             })
         })
 
@@ -422,7 +423,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
                 })
 
                 const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('Jira API Error 401')
+                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                    .resolves.toContain('Jira API Error 401')
             })
 
             it('should fail with 403 when Bearer token lacks permissions', async () => {
@@ -442,7 +444,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
                 })
 
                 const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('Jira API Error 403')
+                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                    .resolves.toContain('Jira API Error 403')
             })
         })
 
@@ -494,7 +497,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
                 })
 
                 const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('CERT_HAS_EXPIRED')
+                await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                    .resolves.toContain('CERT_HAS_EXPIRED')
             })
 
             it('should handle self-signed certificate with verifySslCerts disabled', async () => {
@@ -804,7 +808,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
             })
 
             const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('Failed to connect to Jira')
+            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                .resolves.toContain('Failed to connect to Jira')
         })
 
         it('should handle timeout errors', async () => {
@@ -819,7 +824,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
             })
 
             const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('ETIMEDOUT')
+            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                .resolves.toContain('ETIMEDOUT')
         })
 
         it('should handle DNS resolution errors', async () => {
@@ -834,7 +840,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
             })
 
             const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('ENOTFOUND')
+            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                .resolves.toContain('ENOTFOUND')
         })
 
         it('should handle rate limiting (429) errors', async () => {
@@ -854,7 +861,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
             })
 
             const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('Jira API Error 429')
+            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                .resolves.toContain('Jira API Error 429')
         })
 
         it('should handle server errors (500)', async () => {
@@ -874,7 +882,8 @@ describe('JIRA Tool Authentication & SSL Tests', () => {
             })
 
             const getIssueTool = tools.find((t) => t.name === 'jira_get_issue')
-            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' })).rejects.toThrow('Jira API Error 500')
+            await expect(getIssueTool!.invoke({ issueKey: 'PROJ-123' }))
+                .resolves.toContain('Jira API Error 500')
         })
     })
 })

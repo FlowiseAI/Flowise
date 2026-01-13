@@ -243,6 +243,10 @@ class BaseJiraTool extends DynamicStructuredTool {
             return data + TOOL_ARGS_PREFIX + JSON.stringify(params)
         } catch (error) {
             if (error instanceof Error) {
+                // Don't re-wrap API errors, only wrap network/connection errors
+                if (error.message.startsWith('Jira API Error')) {
+                    throw error
+                }
                 throw new Error(`Failed to connect to Jira: ${error.message}`)
             }
             throw error

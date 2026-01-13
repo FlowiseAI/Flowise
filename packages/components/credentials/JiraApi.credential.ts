@@ -66,7 +66,7 @@ class JiraApi implements INodeCredential {
                 name: 'sslCertPath',
                 type: 'string',
                 placeholder: '/path/to/cert.pem',
-                description: 'Path to SSL certificate file for self-signed certificates',
+                description: 'Path to the SSL certificate file (e.g., custom CA, client certificate for mTLS)',
                 optional: true
             },
             {
