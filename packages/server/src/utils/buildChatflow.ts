@@ -398,8 +398,12 @@ export const executeFlow = async ({
                     const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
                     logger.debug(`[server]: [${orgId}]: Speech to text result: ${speechToTextResult}`)
                     if (speechToTextResult) {
-                        incomingInput.question = speechToTextResult
-                        question = speechToTextResult
+                        if (incomingInput.question && incomingInput.question.trim()) {
+                            incomingInput.question = `${incomingInput.question.trim()}\n\n ${speechToTextResult}`
+                        } else {
+                            incomingInput.question = speechToTextResult
+                        }
+                        question = incomingInput.question
                     }
                 }
             }
