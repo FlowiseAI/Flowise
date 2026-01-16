@@ -48,7 +48,7 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<ChatCloudflareWorkersAI> {
         const model = nodeData.inputs?.model as string
         const baseUrl = nodeData.inputs?.baseUrl as string
 
