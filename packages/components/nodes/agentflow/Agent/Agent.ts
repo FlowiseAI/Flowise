@@ -65,6 +65,27 @@ interface ISimpliefiedTool {
     }
 }
 
+/**
+ * Sanitizes a string to be used as a tool name.
+ * Restricts to ASCII characters [a-z0-9_-] for LLM API compatibility (OpenAI, Anthropic, Gemini).
+ * Non-ASCII titles (Korean, Chinese, Japanese, etc.) will use auto-generated fallback names.
+ * This prevents 'Invalid tools[0].function.name: empty string' errors.
+ */
+const sanitizeToolName = (name: string): string => {
+    const sanitized = name
+        .toLowerCase()
+        .replace(/ /g, '_')
+        .replace(/[^a-z0-9_-]/g, '') // ASCII only for LLM API compatibility
+
+    // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
+    if (!sanitized) {
+        return `tool_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+    }
+
+    // Enforce 64 character limit common for tool names
+    return sanitized.slice(0, 64)
+}
+
 class Agent_Agentflow implements INode {
     label: string
     name: string
@@ -757,10 +778,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: storeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(storeName),
                             description: knowledgeBase.docStoreDescription,
                             retriever: docStoreVectorInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -777,10 +795,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: storeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(storeName),
                         description: knowledgeBase.docStoreDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -838,10 +853,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: knowledgeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(knowledgeName),
                             description: knowledgeBase.knowledgeDescription,
                             retriever: vectorStoreInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -858,10 +870,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: knowledgeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(knowledgeName),
                         description: knowledgeBase.knowledgeDescription,
                         schema: jsonSchema,
                         toolNode: {
