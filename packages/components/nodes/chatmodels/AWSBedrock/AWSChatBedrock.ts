@@ -140,7 +140,7 @@ class AWSChatBedrock_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const streaming = nodeData.inputs?.streaming as boolean
         const latencyOptimized = nodeData.inputs?.latencyOptimized as boolean
-        const endpointHost = nodeData.inputs?.endpointHost as string
+        const endpointHost = (nodeData.inputs?.endpointHost as string)?.trim()
 
         const obj: ChatBedrockConverseInput = {
             region: iRegion,
