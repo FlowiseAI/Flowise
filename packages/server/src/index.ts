@@ -26,7 +26,7 @@ import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import flowiseApiV1Router from './routes'
 import { UsageCacheManager } from './UsageCacheManager'
 import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
-import { WHITELIST_URLS } from './utils/constants'
+import { API_KEY_BLACKLIST_URLS, WHITELIST_URLS } from './utils/constants'
 import logger, { expressRequestLogger } from './utils/logger'
 import { RateLimiterManager } from './utils/rateLimit'
 import { SSEStreamer } from './utils/SSEStreamer'
@@ -224,6 +224,11 @@ export class App {
                     } else if (req.headers['x-request-from'] === 'internal') {
                         verifyToken(req, res, next)
                     } else {
+                        const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
+                        if (isAPIKeyBlacklistedURLS) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+
                         // Only check license validity for non-open-source platforms
                         if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
                             if (!this.identityManager.isLicenseValid()) {
