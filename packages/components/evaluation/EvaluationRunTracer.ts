@@ -82,10 +82,10 @@ export class EvaluationRunTracer extends RunCollectorCallbackHandler {
             const tokenUsage = run.outputs?.llmOutput?.tokenUsage
             if (tokenUsage) {
                 const metric = {
-                    completionTokens: tokenUsage.completionTokens,
-                    promptTokens: tokenUsage.promptTokens,
+                    completionTokens: tokenUsage.completionTokens ?? 0,
+                    promptTokens: tokenUsage.promptTokens ?? 0,
                     model: model,
-                    totalTokens: tokenUsage.totalTokens
+                    totalTokens: tokenUsage.totalTokens ?? ((tokenUsage.completionTokens ?? 0) + (tokenUsage.promptTokens ?? 0))
                 }
                 EvaluationRunner.addMetrics(this.evaluationRunId, JSON.stringify(metric))
             }
@@ -97,10 +97,10 @@ export class EvaluationRunTracer extends RunCollectorCallbackHandler {
             const usage_metadata = run.outputs?.generations[0][0]?.message?.usage_metadata
             if (usage_metadata) {
                 const metric = {
-                    completionTokens: usage_metadata.output_tokens,
-                    promptTokens: usage_metadata.input_tokens,
+                    completionTokens: usage_metadata.output_tokens ?? 0,
+                    promptTokens: usage_metadata.input_tokens ?? 0,
                     model: model || this.model,
-                    totalTokens: usage_metadata.total_tokens
+                    totalTokens: usage_metadata.total_tokens ?? ((usage_metadata.output_tokens ?? 0) + (usage_metadata.input_tokens ?? 0))
                 }
                 EvaluationRunner.addMetrics(this.evaluationRunId, JSON.stringify(metric))
             }
