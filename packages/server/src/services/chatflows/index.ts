@@ -1,6 +1,7 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { In } from 'typeorm'
+import { validate as isValidUUID } from 'uuid'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { UsageCacheManager } from '../../UsageCacheManager'
@@ -242,6 +243,9 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
 
 const getChatflowById = async (chatflowId: string, workspaceId?: string): Promise<any> => {
     try {
+        if (!isValidUUID(chatflowId)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid chatflow Id`)
+        }
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
             where: {
