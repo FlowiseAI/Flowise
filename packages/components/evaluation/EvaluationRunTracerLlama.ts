@@ -107,30 +107,30 @@ export class EvaluationRunTracerLlama {
         // Anthropic
         if (event.detail?.payload?.response?.raw?.usage) {
             const usage = event.detail.payload.response.raw.usage
-            if (usage.output_tokens) {
+            if (usage.output_tokens !== undefined) {
                 const metric = {
                     completionTokens: usage.output_tokens,
-                    promptTokens: usage.input_tokens,
+                    promptTokens: usage.input_tokens ?? 0,
                     model: model,
-                    totalTokens: usage.input_tokens + usage.output_tokens
+                    totalTokens: (usage.input_tokens ?? 0) + usage.output_tokens
                 }
                 EvaluationRunner.addMetrics(evalID, JSON.stringify(metric))
-            } else if (usage.completion_tokens) {
+            } else if (usage.completion_tokens !== undefined) {
                 const metric = {
                     completionTokens: usage.completion_tokens,
-                    promptTokens: usage.prompt_tokens,
+                    promptTokens: usage.prompt_tokens ?? 0,
                     model: model,
-                    totalTokens: usage.total_tokens
+                    totalTokens: usage.total_tokens ?? (usage.completion_tokens + (usage.prompt_tokens ?? 0))
                 }
                 EvaluationRunner.addMetrics(evalID, JSON.stringify(metric))
             }
         } else if (event.detail?.payload?.response?.raw['amazon-bedrock-invocationMetrics']) {
             const usage = event.detail?.payload?.response?.raw['amazon-bedrock-invocationMetrics']
             const metric = {
-                completionTokens: usage.outputTokenCount,
-                promptTokens: usage.inputTokenCount,
+                completionTokens: usage.outputTokenCount ?? 0,
+                promptTokens: usage.inputTokenCount ?? 0,
                 model: event.detail?.payload?.response?.raw.model,
-                totalTokens: usage.inputTokenCount + usage.outputTokenCount
+                totalTokens: (usage.inputTokenCount ?? 0) + (usage.outputTokenCount ?? 0)
             }
             EvaluationRunner.addMetrics(evalID, JSON.stringify(metric))
         } else {
