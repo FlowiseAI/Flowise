@@ -244,7 +244,7 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
 const getChatflowById = async (chatflowId: string, workspaceId?: string): Promise<any> => {
     try {
         if (!isValidUUID(chatflowId)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid chatflow Id`)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid chatflow ID format`)
         }
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
