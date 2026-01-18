@@ -88,6 +88,7 @@ describe('Condition Agentflow - Regex Operation', () => {
             ]
             const result = await nodeClass.run(createConditionNodeData('test-null', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBeUndefined()
+            expect(result.output.conditions[1].isFulfilled).toBe(true)
         })
 
         it('should be case-sensitive by default', async () => {
@@ -96,15 +97,12 @@ describe('Condition Agentflow - Regex Operation', () => {
             ]
             const result = await nodeClass.run(createConditionNodeData('test-case', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBeUndefined()
+            expect(result.output.conditions[1].isFulfilled).toBe(true)
         })
     })
 
     describe('Flowise input escaping', () => {
-        // Flowise escapes special characters: \ → \\, [ → \[, ] → \]
-        // Our regex handler unescapes these
-
         it('should unescape brackets in pattern', async () => {
-            // User typed [0-9]+, Flowise stored as \[0-9\]+
             const conditions = [
                 { type: 'string', value1: 'test123abc', operation: 'regex', value2: '\\[0-9\\]+' }
             ]
@@ -113,70 +111,75 @@ describe('Condition Agentflow - Regex Operation', () => {
         })
 
         it('should unescape double-backslash pattern', async () => {
-            // User typed \d+, Flowise stored as \\d+ (2 backslashes)
-            // In JS string literal: '\\\\d+' represents 2 actual backslashes + d+
             const conditions = [
                 { type: 'string', value1: 'test123abc', operation: 'regex', value2: '\\\\d+' }
             ]
             const result = await nodeClass.run(createConditionNodeData('test-backslash', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
+
+        it('should unescape escaped asterisk', async () => {
+            // User typed go*al, Flowise stored as go\*al
+            const conditions = [
+                { type: 'string', value1: 'goooal', operation: 'regex', value2: 'go\\*al' }
+            ]
+            const result = await nodeClass.run(createConditionNodeData('test-escaped-asterisk', conditions), '', { agentflowRuntime: { state: {} } })
+            expect(result.output.conditions[0].isFulfilled).toBe(true)
+        })
     })
 
     describe('Complex regex patterns - all metacharacters', () => {
-        // Proving that Flowise does NOT escape: ^, $, ., *, +, ?, (, ), {, }, |
-
         it('should handle ^ (start anchor)', async () => {
             const conditions = [{ type: 'string', value1: 'hello world', operation: 'regex', value2: '^hello' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-caret', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-caret', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle $ (end anchor)', async () => {
             const conditions = [{ type: 'string', value1: 'hello world', operation: 'regex', value2: 'world$' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-dollar', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-dollar', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle . (any character)', async () => {
             const conditions = [{ type: 'string', value1: 'cat', operation: 'regex', value2: 'c.t' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-dot', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-dot', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle * (zero or more)', async () => {
             const conditions = [{ type: 'string', value1: 'goooal', operation: 'regex', value2: 'go*al' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-star', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-star', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle + (one or more)', async () => {
             const conditions = [{ type: 'string', value1: 'goooal', operation: 'regex', value2: 'go+al' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-plus', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-plus', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle ? (zero or one)', async () => {
             const conditions = [{ type: 'string', value1: 'color', operation: 'regex', value2: 'colou?r' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-question', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-question', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle | (alternation)', async () => {
             const conditions = [{ type: 'string', value1: 'cat', operation: 'regex', value2: 'cat|dog' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-pipe', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-pipe', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle () (grouping)', async () => {
             const conditions = [{ type: 'string', value1: 'abcabc', operation: 'regex', value2: '(abc)+' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-parens', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-parens', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
         it('should handle {} (quantifier)', async () => {
             const conditions = [{ type: 'string', value1: 'aaa', operation: 'regex', value2: 'a{3}' }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-braces', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-braces', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
@@ -185,10 +188,9 @@ describe('Condition Agentflow - Regex Operation', () => {
                 type: 'string',
                 value1: 'user@example.com',
                 operation: 'regex',
-                // ^[a-z]+@[a-z]+\.(com|org)$ - the \. needs escaping in JS
                 value2: '^[a-z]+@[a-z]+\\.(com|org)$'
             }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-complex', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-complex', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
@@ -199,7 +201,7 @@ describe('Condition Agentflow - Regex Operation', () => {
                 operation: 'regex',
                 value2: '^https?://[a-z.]+/.*$'
             }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-url', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-url', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
 
@@ -210,9 +212,8 @@ describe('Condition Agentflow - Regex Operation', () => {
                 operation: 'regex',
                 value2: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
             }]
-            const result = await new Condition_Agentflow().run(createConditionNodeData('test-uuid', conditions), '', { agentflowRuntime: { state: {} } })
+            const result = await nodeClass.run(createConditionNodeData('test-uuid', conditions), '', { agentflowRuntime: { state: {} } })
             expect(result.output.conditions[0].isFulfilled).toBe(true)
         })
     })
 })
-
