@@ -254,6 +254,9 @@ const getChatflowById = async (chatflowId: string, workspaceId?: string): Promis
         }
         return dbResponse
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: chatflowsService.getChatflowById - ${getErrorMessage(error)}`
