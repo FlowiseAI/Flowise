@@ -104,6 +104,8 @@ export class AccountService {
         } finally {
             await queryRunner.release()
         }
+
+        return { message: 'success' }
     }
 
     private async ensureOneOrganizationOnly(queryRunner: QueryRunner) {
@@ -542,7 +544,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async resetPassword(data: AccountDTO) {
@@ -587,7 +589,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async logout(user: LoggedInUser) {
