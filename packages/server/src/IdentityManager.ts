@@ -299,8 +299,19 @@ export class IdentityManager {
 
             const queryUserId = req.query.userId as string | undefined
             const queryId = req.query.id as string | undefined
+            const queryEmail = req.query.email as string | undefined
             const queryOrganizationId = req.query.organizationId as string | undefined
             const targetUserId = queryUserId || queryId
+
+            // Check for email query parameter
+            if (queryEmail) {
+                // Email must match authenticated user's email (case-insensitive)
+                if (queryEmail.toLowerCase() !== user.email.toLowerCase()) {
+                    return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
+                }
+                // Email matches, allow through
+                return next()
+            }
 
             // If no userId provided, allow through (for other query patterns)
             if (!targetUserId) {
@@ -319,60 +330,6 @@ export class IdentityManager {
 
             // Otherwise, forbid access to other users' data
             return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
-        }
-    }
-
-    public static checkOrganizationUserAccess() {
-        return async (req: Request, res: Response, next: NextFunction) => {
-            const user = req.user
-            if (!user) {
-                return res.status(StatusCodes.UNAUTHORIZED).json({ message: ErrorMessage.FORBIDDEN })
-            }
-
-            const queryUserId = req.query.userId as string | undefined
-            const queryOrganizationId = req.query.organizationId as string | undefined
-
-            // If userId matches authenticated user, already allowed by checkUserIdMatch
-            if (queryUserId === user.id) {
-                return next()
-            }
-
-            // Check if user has required permissions
-            const requiredPermissions = ['users:manage', 'workspace:view', 'workspace:add-user', 'workspace:unlink-user']
-            const hasPermission =
-                user.isOrganizationAdmin ||
-                (user.permissions && requiredPermissions.some((permission) => user.permissions?.includes(permission)))
-
-            if (!hasPermission) {
-                return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
-            }
-
-            // Verify caller's organization matches the query organizationId
-            if (user.activeOrganizationId !== queryOrganizationId) {
-                return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
-            }
-
-            // Verify target user belongs to the same organization
-            try {
-                const appServer = getRunningExpressApp()
-                const organizationUserRepository = appServer.AppDataSource.getRepository(OrganizationUser)
-                const targetOrgUser = await organizationUserRepository.findOne({
-                    where: {
-                        organizationId: queryOrganizationId,
-                        userId: queryUserId
-                    }
-                })
-
-                if (!targetOrgUser) {
-                    return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
-                }
-
-                // All checks passed, allow the request
-                return next()
-            } catch (error) {
-                console.error(`Error checking organization membership: ${error}`)
-                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: ErrorMessage.FORBIDDEN })
-            }
         }
     }
 

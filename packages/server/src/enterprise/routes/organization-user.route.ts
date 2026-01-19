@@ -6,7 +6,7 @@ import { IdentityManager } from '../../IdentityManager'
 const router = express.Router()
 const organizationUserController = new OrganizationUserController()
 
-router.get('/', IdentityManager.checkUserIdMatch(), IdentityManager.checkOrganizationUserAccess(), organizationUserController.read)
+router.get('/', IdentityManager.checkUserIdMatch(), organizationUserController.read)
 
 router.post('/', IdentityManager.checkFeatureByPlan('feat:users'), checkPermission('users:manage'), organizationUserController.create)
 
