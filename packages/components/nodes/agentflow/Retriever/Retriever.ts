@@ -12,6 +12,7 @@ import { processTemplateVariables } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { Document } from '@langchain/core/documents'
+import { DocumentStoreError } from '../../../src/error'
 
 interface IKnowledgeBase {
     documentStore: string
@@ -152,27 +153,46 @@ class Retriever_Agentflow implements INode {
         const knowledgeBases = nodeData.inputs?.retrieverKnowledgeDocumentStores as IKnowledgeBase[]
         if (knowledgeBases && knowledgeBases.length > 0) {
             for (const knowledgeBase of knowledgeBases) {
-                const [storeId, _] = knowledgeBase.documentStore.split(':')
+                try {
+                    const [storeId, _] = knowledgeBase.documentStore.split(':')
 
-                const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
-                const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
-                const newDocStoreVectorInstance = new docStoreVectorModule.nodeClass()
-                const docStoreVectorInstance = (await newDocStoreVectorInstance.init(
-                    {
-                        ...nodeData,
-                        inputs: {
-                            ...nodeData.inputs,
-                            selectedStore: storeId
-                        },
-                        outputs: {
-                            output: 'retriever'
+                    const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
+                    const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
+                    const newDocStoreVectorInstance = new docStoreVectorModule.nodeClass()
+                    let docStoreVectorInstance
+                    try {
+                        docStoreVectorInstance = (await newDocStoreVectorInstance.init(
+                            {
+                                ...nodeData,
+                                inputs: {
+                                    ...nodeData.inputs,
+                                    selectedStore: storeId
+                                },
+                                outputs: {
+                                    output: 'retriever'
+                                }
+                            },
+                            '',
+                            options
+                        )) as BaseRetriever
+                    } catch (error) {
+                        if (error instanceof DocumentStoreError) {
+                            throw error
                         }
-                    },
-                    '',
-                    options
-                )) as BaseRetriever
-
-                docs = await docStoreVectorInstance.invoke(retrieverQuery || input, { signal: abortController?.signal })
+                        throw new DocumentStoreError(error.message, storeId, error instanceof Error ? { cause: error.cause } : undefined)
+                    }
+                    const storeDocs = await docStoreVectorInstance.invoke(retrieverQuery || input, { signal: abortController?.signal })
+                    docs.push(...storeDocs)
+                } catch (error) {
+                    if (error instanceof DocumentStoreError) {
+                        console.warn(
+                            `Document store ${knowledgeBase.documentStore} unavailable, continuing with other stores:`,
+                            error.message
+                        )
+                        continue
+                    }
+                    throw error
+                }
             }
         }
 

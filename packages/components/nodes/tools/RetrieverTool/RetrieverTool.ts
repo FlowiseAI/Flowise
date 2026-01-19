@@ -7,6 +7,7 @@ import { getBaseClasses, resolveFlowObjValue, parseWithTypeConversion } from '..
 import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import { getErrorMessage } from '../../../src/error'
 
 const howToUse = `Add additional filters to vector store. You can also filter with flow config, including the current "state":
 - \`$flow.sessionId\`
@@ -194,20 +195,32 @@ class Retriever_Tools implements INode {
         const flow = { chatflowId: options.chatflowid }
 
         const func = async ({ input }: { input: string }, _?: CallbackManagerForToolRun, flowConfig?: IFlowConfig) => {
-            if (retrieverToolMetadataFilter) {
-                const flowObj = flowConfig
-
-                const metadatafilter =
-                    typeof retrieverToolMetadataFilter === 'object' ? retrieverToolMetadataFilter : JSON.parse(retrieverToolMetadataFilter)
-                const newMetadataFilter = resolveFlowObjValue(metadatafilter, flowObj)
-
-                const vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore
-                vectorStore.filter = newMetadataFilter
+            try {
+                if (retrieverToolMetadataFilter) {
+                    const flowObj = flowConfig
+                    const metadatafilter =
+                        typeof retrieverToolMetadataFilter === 'object'
+                            ? retrieverToolMetadataFilter
+                            : JSON.parse(retrieverToolMetadataFilter)
+                    const newMetadataFilter = resolveFlowObjValue(metadatafilter, flowObj)
+                    const vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore
+                    vectorStore.filter = newMetadataFilter
+                }
+                const docs = await retriever.invoke(input)
+                const content = docs.map((doc) => doc.pageContent).join('\n\n')
+                const sourceDocuments = JSON.stringify(docs)
+                return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
+            } catch (error) {
+                const errorMessage = getErrorMessage(error)
+                const isDocStoreError =
+                    errorMessage &&
+                    (errorMessage.includes('document store') || errorMessage.includes('vector store') || errorMessage.includes('retriever'))
+                if (isDocStoreError) {
+                    console.warn('Document store retrieval failed, returning fallback response:', getErrorMessage(error))
+                    return 'Knowledge base temporarily unavailable. Proceeding with general knowledge.'
+                }
+                throw error
             }
-            const docs = await retriever.invoke(input)
-            const content = docs.map((doc) => doc.pageContent).join('\n\n')
-            const sourceDocuments = JSON.stringify(docs)
-            return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
         }
 
         const schema = z.object({
