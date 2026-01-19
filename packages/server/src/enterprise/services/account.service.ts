@@ -25,7 +25,6 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
-import { sanitizeUser } from '../../utils/sanitize.util'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 
 type AccountDTO = {

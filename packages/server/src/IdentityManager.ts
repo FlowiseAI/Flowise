@@ -17,6 +17,7 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import path from 'path'
 import { LoginMethodStatus } from './enterprise/database/entities/login-method.entity'
+import { OrganizationUser } from './enterprise/database/entities/organization-user.entity'
 import { ErrorMessage, LoggedInUser } from './enterprise/Interface.Enterprise'
 import { Permissions } from './enterprise/rbac/Permissions'
 import { LoginMethodService } from './enterprise/services/login-method.service'
@@ -286,6 +287,92 @@ export class IdentityManager {
                 }
             }
             return res.status(403).json({ message: ErrorMessage.FORBIDDEN })
+        }
+    }
+
+    public static checkUserIdMatch() {
+        return (req: Request, res: Response, next: NextFunction) => {
+            const user = req.user
+            if (!user) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({ message: ErrorMessage.FORBIDDEN })
+            }
+
+            const queryUserId = req.query.userId as string | undefined
+            const queryId = req.query.id as string | undefined
+            const queryOrganizationId = req.query.organizationId as string | undefined
+            const targetUserId = queryUserId || queryId
+
+            // If no userId provided, allow through (for other query patterns)
+            if (!targetUserId) {
+                return next()
+            }
+
+            // If userId matches authenticated user, allow
+            if (targetUserId === user.id) {
+                return next()
+            }
+
+            // If organizationId is present, let checkOrganizationUserAccess handle the org admin case
+            if (queryOrganizationId) {
+                return next()
+            }
+
+            // Otherwise, forbid access to other users' data
+            return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
+        }
+    }
+
+    public static checkOrganizationUserAccess() {
+        return async (req: Request, res: Response, next: NextFunction) => {
+            const user = req.user
+            if (!user) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({ message: ErrorMessage.FORBIDDEN })
+            }
+
+            const queryUserId = req.query.userId as string | undefined
+            const queryOrganizationId = req.query.organizationId as string | undefined
+
+            // If userId matches authenticated user, already allowed by checkUserIdMatch
+            if (queryUserId === user.id) {
+                return next()
+            }
+
+            // Check if user has required permissions
+            const requiredPermissions = ['users:manage', 'workspace:view', 'workspace:add-user', 'workspace:unlink-user']
+            const hasPermission =
+                user.isOrganizationAdmin ||
+                (user.permissions && requiredPermissions.some((permission) => user.permissions?.includes(permission)))
+
+            if (!hasPermission) {
+                return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
+            }
+
+            // Verify caller's organization matches the query organizationId
+            if (user.activeOrganizationId !== queryOrganizationId) {
+                return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
+            }
+
+            // Verify target user belongs to the same organization
+            try {
+                const appServer = getRunningExpressApp()
+                const organizationUserRepository = appServer.AppDataSource.getRepository(OrganizationUser)
+                const targetOrgUser = await organizationUserRepository.findOne({
+                    where: {
+                        organizationId: queryOrganizationId,
+                        userId: queryUserId
+                    }
+                })
+
+                if (!targetOrgUser) {
+                    return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
+                }
+
+                // All checks passed, allow the request
+                return next()
+            } catch (error) {
+                console.error(`Error checking organization membership: ${error}`)
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: ErrorMessage.FORBIDDEN })
+            }
         }
     }
 
