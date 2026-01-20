@@ -385,7 +385,11 @@ class Qdrant_VectorStores implements INode {
                     const vectorStoreName = collectionName
                     await recordManager.createSchema()
                     ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
-                    const keys: string[] = await recordManager.listKeys({})
+                    const filterKeys: ICommonObject = {}
+                    if (options.docId) {
+                        filterKeys.docId = options.docId
+                    }
+                    const keys: string[] = await recordManager.listKeys(filterKeys)
 
                     await vectorStore.delete({ ids: keys })
                     await recordManager.deleteKeys(keys)

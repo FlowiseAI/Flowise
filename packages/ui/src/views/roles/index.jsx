@@ -81,7 +81,7 @@ function ViewPermissionsDrawer(props) {
 
     useEffect(() => {
         if (props.open) {
-            getAllPermissionsApi.request()
+            getAllPermissionsApi.request('ROLE')
         }
         return () => {
             setSelectedPermissions({})

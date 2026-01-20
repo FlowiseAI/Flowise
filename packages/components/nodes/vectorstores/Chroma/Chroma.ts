@@ -1,10 +1,9 @@
 import { flatten } from 'lodash'
-import { Chroma } from '@langchain/community/vectorstores/chroma'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
-import { ChromaExtended } from './core'
+import { Chroma } from './core'
 import { index } from '../../../src/indexing'
 
 class Chroma_VectorStores implements INode {
@@ -123,21 +122,11 @@ class Chroma_VectorStores implements INode {
                 }
             }
 
-            const obj: {
-                collectionName: string
-                url?: string
-                chromaApiKey?: string
-                chromaTenant?: string
-                chromaDatabase?: string
-            } = { collectionName }
-            if (chromaURL) obj.url = chromaURL
-            if (chromaApiKey) obj.chromaApiKey = chromaApiKey
-            if (chromaTenant) obj.chromaTenant = chromaTenant
-            if (chromaDatabase) obj.chromaDatabase = chromaDatabase
+            const obj = _buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
 
             try {
                 if (recordManager) {
-                    const vectorStore = await ChromaExtended.fromExistingCollection(embeddings, obj)
+                    const vectorStore = await Chroma.fromExistingCollection(embeddings, obj)
                     await recordManager.createSchema()
                     const res = await index({
                         docsSource: finalDocs,
@@ -151,7 +140,7 @@ class Chroma_VectorStores implements INode {
                     })
                     return res
                 } else {
-                    await ChromaExtended.fromDocuments(finalDocs, embeddings, obj)
+                    await Chroma.fromDocuments(finalDocs, embeddings, obj)
                     return { numAdded: finalDocs.length, addedDocs: finalDocs }
                 }
             } catch (e) {
@@ -169,31 +158,25 @@ class Chroma_VectorStores implements INode {
             const chromaTenant = getCredentialParam('chromaTenant', credentialData, nodeData)
             const chromaDatabase = getCredentialParam('chromaDatabase', credentialData, nodeData)
 
-            const obj: {
-                collectionName: string
-                url?: string
-                chromaApiKey?: string
-                chromaTenant?: string
-                chromaDatabase?: string
-            } = { collectionName }
-            if (chromaURL) obj.url = chromaURL
-            if (chromaApiKey) obj.chromaApiKey = chromaApiKey
-            if (chromaTenant) obj.chromaTenant = chromaTenant
-            if (chromaDatabase) obj.chromaDatabase = chromaDatabase
+            const obj = _buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
 
             try {
                 if (recordManager) {
                     const vectorStoreName = collectionName
                     await recordManager.createSchema()
                     ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
-                    const keys: string[] = await recordManager.listKeys({})
+                    const filterKeys: ICommonObject = {}
+                    if (options.docId) {
+                        filterKeys.docId = options.docId
+                    }
+                    const keys: string[] = await recordManager.listKeys(filterKeys)
 
-                    const chromaStore = new ChromaExtended(embeddings, obj)
+                    const chromaStore = new Chroma(embeddings, obj)
 
                     await chromaStore.delete({ ids: keys })
                     await recordManager.deleteKeys(keys)
                 } else {
-                    const chromaStore = new ChromaExtended(embeddings, obj)
+                    const chromaStore = new Chroma(embeddings, obj)
                     await chromaStore.delete({ ids })
                 }
             } catch (e) {
@@ -216,24 +199,14 @@ class Chroma_VectorStores implements INode {
         const chromaDatabase = getCredentialParam('chromaDatabase', credentialData, nodeData)
         const chromaMetadataFilter = nodeData.inputs?.chromaMetadataFilter
 
-        const obj: {
-            collectionName: string
-            url?: string
-            chromaApiKey?: string
-            chromaTenant?: string
-            chromaDatabase?: string
-            filter?: object | undefined
-        } = { collectionName }
-        if (chromaURL) obj.url = chromaURL
-        if (chromaApiKey) obj.chromaApiKey = chromaApiKey
-        if (chromaTenant) obj.chromaTenant = chromaTenant
-        if (chromaDatabase) obj.chromaDatabase = chromaDatabase
+        const obj: ICommonObject = _buildChromaConfig(collectionName, chromaURL, chromaApiKey, chromaTenant, chromaDatabase)
+
         if (chromaMetadataFilter) {
             const metadatafilter = typeof chromaMetadataFilter === 'object' ? chromaMetadataFilter : parseJsonBody(chromaMetadataFilter)
             obj.filter = metadatafilter
         }
 
-        const vectorStore = await ChromaExtended.fromExistingCollection(embeddings, obj)
+        const vectorStore = await Chroma.fromExistingCollection(embeddings, obj)
 
         if (output === 'retriever') {
             const retriever = vectorStore.asRetriever(k)
@@ -247,6 +220,43 @@ class Chroma_VectorStores implements INode {
         }
         return vectorStore
     }
+}
+
+const _buildChromaConfig = (
+    collectionName: string,
+    chromaURL: string | undefined,
+    chromaApiKey: string | undefined,
+    chromaTenant: string | undefined,
+    chromaDatabase: string | undefined
+): ICommonObject => {
+    const obj: {
+        collectionName: string
+        url?: string
+        chromaCloudAPIKey?: string
+        clientParams?: {
+            host?: string
+            port?: number
+            ssl?: boolean
+            tenant?: string
+            database?: string
+        }
+    } = { collectionName }
+
+    if (chromaURL) obj.url = chromaURL
+    if (chromaApiKey) obj.chromaCloudAPIKey = chromaApiKey
+
+    if (chromaTenant || chromaDatabase) {
+        obj.clientParams = {}
+        if (chromaTenant) obj.clientParams.tenant = chromaTenant
+        if (chromaDatabase) obj.clientParams.database = chromaDatabase
+        if (chromaApiKey) {
+            obj.clientParams.host = 'api.trychroma.com'
+            obj.clientParams.port = 8000
+            obj.clientParams.ssl = true
+        }
+    }
+
+    return obj
 }
 
 module.exports = { nodeClass: Chroma_VectorStores }

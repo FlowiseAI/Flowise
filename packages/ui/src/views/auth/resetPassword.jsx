@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -18,6 +18,9 @@ import accountApi from '@/api/account.api'
 // utils
 import useNotifier from '@/utils/useNotifier'
 import { validatePassword } from '@/utils/validation'
+
+// Hooks
+import { useError } from '@/store/context/ErrorContext'
 
 // Icons
 import { IconExclamationCircle, IconX } from '@tabler/icons-react'
@@ -70,6 +73,8 @@ const ResetPasswordPage = () => {
     const [loading, setLoading] = useState(false)
     const [authErrors, setAuthErrors] = useState([])
 
+    const { authRateLimitError, setAuthRateLimitError } = useError()
+
     const goLogin = () => {
         navigate('/signin', { replace: true })
     }
@@ -78,6 +83,7 @@ const ResetPasswordPage = () => {
         event.preventDefault()
         const validationErrors = []
         setAuthErrors([])
+        setAuthRateLimitError(null)
         if (!tokenVal) {
             validationErrors.push('Token cannot be left blank!')
         }
@@ -142,6 +148,11 @@ const ResetPasswordPage = () => {
         }
     }
 
+    useEffect(() => {
+        setAuthRateLimitError(null)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     return (
         <>
             <MainCard>
@@ -153,6 +164,11 @@ const ResetPasswordPage = () => {
                                     <li key={key}>{msg}</li>
                                 ))}
                             </ul>
+                        </Alert>
+                    )}
+                    {authRateLimitError && (
+                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                            {authRateLimitError}
                         </Alert>
                     )}
                     <Stack sx={{ gap: 1 }}>

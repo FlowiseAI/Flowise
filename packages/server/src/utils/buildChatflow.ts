@@ -2,7 +2,7 @@ import { Request } from 'express'
 import * as path from 'path'
 import { DataSource } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
-import { omit } from 'lodash'
+import { omit, cloneDeep } from 'lodash'
 import {
     IFileUpload,
     convertSpeechToText,
@@ -59,6 +59,7 @@ import {
     constructGraphs,
     getAPIOverrideConfig
 } from '../utils'
+import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
@@ -354,6 +355,10 @@ export const executeFlow = async ({
                 const splitDataURI = upload.data.split(',')
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                 const mime = splitDataURI[0].split(':')[1].split(';')[0]
+
+                // Validate file extension, MIME type, and content to prevent security vulnerabilities
+                validateFileMimeTypeAndExtensionMatch(filename, mime)
+
                 const { totalSize } = await addSingleFileToStorage(mime, bf, filename, orgId, chatflowid, chatId)
                 await updateStorageUsage(orgId, workspaceId, totalSize, usageCacheManager)
                 upload.type = 'stored-file'
@@ -418,6 +423,10 @@ export const executeFlow = async ({
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+
             const { path: storagePath, totalSize } = await addArrayFilesToStorage(
                 file.mimetype,
                 fileBuffer,
@@ -817,7 +826,14 @@ export const executeFlow = async ({
                         sessionId,
                         chatId,
                         input: question,
-                        rawOutput: resultText,
+                        postProcessing: {
+                            rawOutput: resultText,
+                            chatHistory: cloneDeep(chatHistory),
+                            sourceDocuments: result?.sourceDocuments ? cloneDeep(result.sourceDocuments) : undefined,
+                            usedTools: result?.usedTools ? cloneDeep(result.usedTools) : undefined,
+                            artifacts: result?.artifacts ? cloneDeep(result.artifacts) : undefined,
+                            fileAnnotations: result?.fileAnnotations ? cloneDeep(result.fileAnnotations) : undefined
+                        },
                         appDataSource,
                         databaseEntities,
                         workspaceId,

@@ -5,10 +5,13 @@ import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { AnalyticHandler } from '../../../src/handler'
 import { ILLMMessage } from '../Interface.Agentflow'
 import {
+    addImageArtifactsToMessages,
+    extractArtifactsFromResponse,
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
     replaceBase64ImagesWithFileReferences,
+    replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
 import { processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
@@ -31,7 +34,7 @@ class LLM_Agentflow implements INode {
     constructor() {
         this.label = 'LLM'
         this.name = 'llmAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'LLM'
         this.category = 'Agent Flows'
         this.description = 'Large language models to analyze user-provided inputs and generate responses'
@@ -287,8 +290,7 @@ class LLM_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
@@ -448,6 +450,12 @@ class LLM_Agentflow implements INode {
             }
             delete nodeData.inputs?.llmMessages
 
+            /**
+             * Add image artifacts from previous assistant responses as user messages
+             * Images are converted from FILE-STORAGE::<image_path> to base 64 image_url format
+             */
+            await addImageArtifactsToMessages(messages, options)
+
             // Configure structured output if specified
             const isStructuredOutput = _llmStructuredOutput && Array.isArray(_llmStructuredOutput) && _llmStructuredOutput.length > 0
             if (isStructuredOutput) {
@@ -467,9 +475,11 @@ class LLM_Agentflow implements INode {
 
             // Track execution time
             const startTime = Date.now()
-
             const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
+            /*
+             * Invoke LLM
+             */
             if (isStreamable) {
                 response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
             } else {
@@ -494,6 +504,40 @@ class LLM_Agentflow implements INode {
             const endTime = Date.now()
             const timeDelta = endTime - startTime
 
+            // Extract artifacts and file annotations from response metadata
+            let artifacts: any[] = []
+            let fileAnnotations: any[] = []
+            if (response.response_metadata) {
+                const {
+                    artifacts: extractedArtifacts,
+                    fileAnnotations: extractedFileAnnotations,
+                    savedInlineImages
+                } = await extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
+
+                if (extractedArtifacts.length > 0) {
+                    artifacts = extractedArtifacts
+
+                    // Stream artifacts if this is the last node
+                    if (isLastNode && sseStreamer) {
+                        sseStreamer.streamArtifactsEvent(chatId, artifacts)
+                    }
+                }
+
+                if (extractedFileAnnotations.length > 0) {
+                    fileAnnotations = extractedFileAnnotations
+
+                    // Stream file annotations if this is the last node
+                    if (isLastNode && sseStreamer) {
+                        sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
+                    }
+                }
+
+                // Replace inlineData base64 with file references in the response
+                if (savedInlineImages && savedInlineImages.length > 0) {
+                    replaceInlineDataWithFileReferences(response, savedInlineImages)
+                }
+            }
+
             // Update flow state if needed
             let newState = { ...state }
             if (_llmUpdateState && Array.isArray(_llmUpdateState) && _llmUpdateState.length > 0) {
@@ -513,10 +557,22 @@ class LLM_Agentflow implements INode {
                 finalResponse = response.content.map((item: any) => item.text).join('\n')
             } else if (response.content && typeof response.content === 'string') {
                 finalResponse = response.content
+            } else if (response.content === '') {
+                // Empty response content, this could happen when there is only image data
+                finalResponse = ''
             } else {
                 finalResponse = JSON.stringify(response, null, 2)
             }
-            const output = this.prepareOutputObject(response, finalResponse, startTime, endTime, timeDelta, isStructuredOutput)
+            const output = this.prepareOutputObject(
+                response,
+                finalResponse,
+                startTime,
+                endTime,
+                timeDelta,
+                isStructuredOutput,
+                artifacts,
+                fileAnnotations
+            )
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
@@ -528,12 +584,23 @@ class LLM_Agentflow implements INode {
                 this.sendStreamingEvents(options, chatId, response)
             }
 
+            // Stream file annotations if any were extracted
+            if (fileAnnotations.length > 0 && isLastNode && sseStreamer) {
+                sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
+            }
+
             // Process template variables in state
             newState = processTemplateVariables(newState, finalResponse)
 
+            /**
+             * Remove the temporarily added image artifact messages before storing
+             * This is to avoid storing the actual base64 data into database
+             */
+            const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
+
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messages,
+                messagesToStore,
                 runtimeImageMessagesWithFileRef,
                 pastImageMessagesWithFileRef
             )
@@ -584,7 +651,13 @@ class LLM_Agentflow implements INode {
                     {
                         role: returnRole,
                         content: finalResponse,
-                        name: nodeData?.label ? nodeData?.label.toLowerCase().replace(/\s/g, '_').trim() : nodeData?.id
+                        name: nodeData?.label ? nodeData?.label.toLowerCase().replace(/\s/g, '_').trim() : nodeData?.id,
+                        ...(((artifacts && artifacts.length > 0) || (fileAnnotations && fileAnnotations.length > 0)) && {
+                            additional_kwargs: {
+                                ...(artifacts && artifacts.length > 0 && { artifacts }),
+                                ...(fileAnnotations && fileAnnotations.length > 0 && { fileAnnotations })
+                            }
+                        })
                     }
                 ]
             }
@@ -805,7 +878,9 @@ class LLM_Agentflow implements INode {
         startTime: number,
         endTime: number,
         timeDelta: number,
-        isStructuredOutput: boolean
+        isStructuredOutput: boolean,
+        artifacts: any[] = [],
+        fileAnnotations: any[] = []
     ): any {
         const output: any = {
             content: finalResponse,
@@ -824,6 +899,10 @@ class LLM_Agentflow implements INode {
             output.usageMetadata = response.usage_metadata
         }
 
+        if (response.response_metadata) {
+            output.responseMetadata = response.response_metadata
+        }
+
         if (isStructuredOutput && typeof response === 'object') {
             const structuredOutput = response as Record<string, any>
             for (const key in structuredOutput) {
@@ -831,6 +910,14 @@ class LLM_Agentflow implements INode {
                     output[key] = structuredOutput[key]
                 }
             }
+        }
+
+        if (artifacts && artifacts.length > 0) {
+            output.artifacts = flatten(artifacts)
+        }
+
+        if (fileAnnotations && fileAnnotations.length > 0) {
+            output.fileAnnotations = fileAnnotations
         }
 
         return output

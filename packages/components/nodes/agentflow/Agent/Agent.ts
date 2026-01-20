@@ -21,22 +21,18 @@ import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
+import { randomBytes } from 'crypto'
 import {
+    addImageArtifactsToMessages,
+    extractArtifactsFromResponse,
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
     replaceBase64ImagesWithFileReferences,
+    replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import {
-    convertMultiOptionsToStringArray,
-    getCredentialData,
-    getCredentialParam,
-    processTemplateVariables,
-    configureStructuredOutput
-} from '../../../src/utils'
-import { addSingleFileToStorage } from '../../../src/storageUtils'
-import fetch from 'node-fetch'
+import { convertMultiOptionsToStringArray, processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
 
 interface ITool {
     agentSelectedTool: string
@@ -70,6 +66,27 @@ interface ISimpliefiedTool {
     }
 }
 
+/**
+ * Sanitizes a string to be used as a tool name.
+ * Restricts to ASCII characters [a-z0-9_-] for LLM API compatibility (OpenAI, Anthropic, Gemini).
+ * Non-ASCII titles (Korean, Chinese, Japanese, etc.) will use auto-generated fallback names.
+ * This prevents 'Invalid tools[0].function.name: empty string' errors.
+ */
+const sanitizeToolName = (name: string): string => {
+    const sanitized = name
+        .toLowerCase()
+        .replace(/ /g, '_')
+        .replace(/[^a-z0-9_-]/g, '') // ASCII only for LLM API compatibility
+
+    // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
+    if (!sanitized) {
+        return `tool_${Date.now()}_${randomBytes(4).toString('hex').slice(0, 5)}`
+    }
+
+    // Enforce 64 character limit common for tool names
+    return sanitized.slice(0, 64)
+}
+
 class Agent_Agentflow implements INode {
     label: string
     name: string
@@ -87,7 +104,7 @@ class Agent_Agentflow implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'agentAgentflow'
-        this.version = 2.2
+        this.version = 3.2
         this.type = 'Agent'
         this.category = 'Agent Flows'
         this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
@@ -182,6 +199,11 @@ class Agent_Agentflow implements INode {
                         label: 'Google Search',
                         name: 'googleSearch',
                         description: 'Search real-time web content'
+                    },
+                    {
+                        label: 'Code Execution',
+                        name: 'codeExecution',
+                        description: 'Write and run Python code in a sandboxed environment'
                     }
                 ],
                 show: {
@@ -514,8 +536,7 @@ class Agent_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
@@ -758,10 +779,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: storeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(storeName),
                             description: knowledgeBase.docStoreDescription,
                             retriever: docStoreVectorInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -778,10 +796,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: storeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(storeName),
                         description: knowledgeBase.docStoreDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -839,10 +854,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: knowledgeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(knowledgeName),
                             description: knowledgeBase.knowledgeDescription,
                             retriever: vectorStoreInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -859,10 +871,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: knowledgeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(knowledgeName),
                         description: knowledgeBase.knowledgeDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -1072,12 +1081,6 @@ class Agent_Agentflow implements INode {
                 llmIds = await analyticHandlers.onLLMStart(llmLabel, messages, options.parentTraceIds)
             }
 
-            // Track execution time
-            const startTime = Date.now()
-
-            // Get initial response from LLM
-            const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
-
             // Handle tool calls with support for recursion
             let usedTools: IUsedTool[] = []
             let sourceDocuments: Array<any> = []
@@ -1090,11 +1093,23 @@ class Agent_Agentflow implements INode {
             const messagesBeforeToolCalls = [...messages]
             let _toolCallMessages: BaseMessageLike[] = []
 
+            /**
+             * Add image artifacts from previous assistant responses as user messages
+             * Images are converted from FILE-STORAGE::<image_path> to base 64 image_url format
+             */
+            await addImageArtifactsToMessages(messages, options)
+
             // Check if this is hummanInput for tool calls
             const _humanInput = nodeData.inputs?.humanInput
             const humanInput: IHumanInput = typeof _humanInput === 'string' ? JSON.parse(_humanInput) : _humanInput
             const humanInputAction = options.humanInputAction
             const iterationContext = options.iterationContext
+
+            // Track execution time
+            const startTime = Date.now()
+
+            // Get initial response from LLM
+            const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
             if (humanInput) {
                 if (humanInput.type !== 'proceed' && humanInput.type !== 'reject') {
@@ -1205,7 +1220,15 @@ class Agent_Agentflow implements INode {
                 // Skip this if structured output is enabled - it will be streamed after conversion
                 let finalResponse = ''
                 if (response.content && Array.isArray(response.content)) {
-                    finalResponse = response.content.map((item: any) => item.text).join('\n')
+                    finalResponse = response.content
+                        .map((item: any) => {
+                            if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                                return item.text
+                            }
+                            return ''
+                        })
+                        .filter((text: string) => text)
+                        .join('\n')
                 } else if (response.content && typeof response.content === 'string') {
                     finalResponse = response.content
                 } else {
@@ -1234,9 +1257,53 @@ class Agent_Agentflow implements INode {
             // Prepare final response and output object
             let finalResponse = ''
             if (response.content && Array.isArray(response.content)) {
-                finalResponse = response.content.map((item: any) => item.text).join('\n')
+                // Process items and concatenate consecutive text items
+                const processedParts: string[] = []
+                let currentTextBuffer = ''
+
+                for (const item of response.content) {
+                    const itemAny = item as any
+                    const isTextItem = (itemAny.text && !itemAny.type) || (itemAny.type === 'text' && itemAny.text)
+
+                    if (isTextItem) {
+                        // Accumulate consecutive text items
+                        currentTextBuffer += itemAny.text
+                    } else {
+                        // Flush accumulated text before processing other types
+                        if (currentTextBuffer) {
+                            processedParts.push(currentTextBuffer)
+                            currentTextBuffer = ''
+                        }
+
+                        // Process non-text items
+                        if (itemAny.type === 'executableCode' && itemAny.executableCode) {
+                            // Format executable code as a code block
+                            const language = itemAny.executableCode.language?.toLowerCase() || 'python'
+                            processedParts.push(`\n\`\`\`${language}\n${itemAny.executableCode.code}\n\`\`\`\n`)
+                        } else if (itemAny.type === 'codeExecutionResult' && itemAny.codeExecutionResult) {
+                            // Format code execution result
+                            const outcome = itemAny.codeExecutionResult.outcome || 'OUTCOME_OK'
+                            const output = itemAny.codeExecutionResult.output || ''
+                            if (outcome === 'OUTCOME_OK' && output) {
+                                processedParts.push(`**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`)
+                            } else if (outcome !== 'OUTCOME_OK') {
+                                processedParts.push(`**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`)
+                            }
+                        }
+                    }
+                }
+
+                // Flush any remaining text
+                if (currentTextBuffer) {
+                    processedParts.push(currentTextBuffer)
+                }
+
+                finalResponse = processedParts.filter((text) => text).join('\n')
             } else if (response.content && typeof response.content === 'string') {
                 finalResponse = response.content
+            } else if (response.content === '') {
+                // Empty response content, this could happen when there is only image data
+                finalResponse = ''
             } else {
                 finalResponse = JSON.stringify(response, null, 2)
             }
@@ -1252,10 +1319,13 @@ class Agent_Agentflow implements INode {
                 }
             }
 
-            // Extract artifacts from annotations in response metadata
+            // Extract artifacts from annotations in response metadata and replace inline data
             if (response.response_metadata) {
-                const { artifacts: extractedArtifacts, fileAnnotations: extractedFileAnnotations } =
-                    await this.extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
+                const {
+                    artifacts: extractedArtifacts,
+                    fileAnnotations: extractedFileAnnotations,
+                    savedInlineImages
+                } = await extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
                 if (extractedArtifacts.length > 0) {
                     artifacts = [...artifacts, ...extractedArtifacts]
 
@@ -1272,6 +1342,11 @@ class Agent_Agentflow implements INode {
                     if (isLastNode && sseStreamer) {
                         sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
                     }
+                }
+
+                // Replace inlineData base64 with file references in the response
+                if (savedInlineImages && savedInlineImages.length > 0) {
+                    replaceInlineDataWithFileReferences(response, savedInlineImages)
                 }
             }
 
@@ -1329,11 +1404,19 @@ class Agent_Agentflow implements INode {
             }
 
             // Process template variables in state
-            newState = processTemplateVariables(newState, finalResponse)
+            const outputForStateProcessing =
+                isStructuredOutput && typeof response === 'object' ? JSON.stringify(response, null, 2) : finalResponse
+            newState = processTemplateVariables(newState, outputForStateProcessing)
+
+            /**
+             * Remove the temporarily added image artifact messages before storing
+             * This is to avoid storing the actual base64 data into database
+             */
+            const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
 
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messages,
+                messagesToStore,
                 runtimeImageMessagesWithFileRef,
                 pastImageMessagesWithFileRef
             )
@@ -1472,7 +1555,12 @@ class Agent_Agentflow implements INode {
         // Handle Gemini googleSearch tool
         if (groundingMetadata && groundingMetadata.webSearchQueries && Array.isArray(groundingMetadata.webSearchQueries)) {
             // Check for duplicates
-            if (!builtInUsedTools.find((tool) => tool.tool === 'googleSearch')) {
+            const isDuplicate = builtInUsedTools.find(
+                (tool) =>
+                    tool.tool === 'googleSearch' &&
+                    JSON.stringify((tool.toolInput as any)?.queries) === JSON.stringify(groundingMetadata.webSearchQueries)
+            )
+            if (!isDuplicate) {
                 builtInUsedTools.push({
                     tool: 'googleSearch',
                     toolInput: {
@@ -1486,7 +1574,12 @@ class Agent_Agentflow implements INode {
         // Handle Gemini urlContext tool
         if (urlContextMetadata && urlContextMetadata.urlMetadata && Array.isArray(urlContextMetadata.urlMetadata)) {
             // Check for duplicates
-            if (!builtInUsedTools.find((tool) => tool.tool === 'urlContext')) {
+            const isDuplicate = builtInUsedTools.find(
+                (tool) =>
+                    tool.tool === 'urlContext' &&
+                    JSON.stringify((tool.toolInput as any)?.urlMetadata) === JSON.stringify(urlContextMetadata.urlMetadata)
+            )
+            if (!isDuplicate) {
                 builtInUsedTools.push({
                     tool: 'urlContext',
                     toolInput: {
@@ -1497,45 +1590,53 @@ class Agent_Agentflow implements INode {
             }
         }
 
-        return builtInUsedTools
-    }
+        // Handle Gemini codeExecution tool
+        if (response.content && Array.isArray(response.content)) {
+            for (let i = 0; i < response.content.length; i++) {
+                const item = response.content[i]
 
-    /**
-     * Saves base64 image data to storage and returns file information
-     */
-    private async saveBase64Image(
-        outputItem: any,
-        options: ICommonObject
-    ): Promise<{ filePath: string; fileName: string; totalSize: number } | null> {
-        try {
-            if (!outputItem.result) {
-                return null
+                if (item.type === 'executableCode' && item.executableCode) {
+                    const language = item.executableCode.language || 'PYTHON'
+                    const code = item.executableCode.code || ''
+                    let toolOutput = ''
+
+                    // Check for duplicates
+                    const isDuplicate = builtInUsedTools.find(
+                        (tool) =>
+                            tool.tool === 'codeExecution' &&
+                            (tool.toolInput as any)?.language === language &&
+                            (tool.toolInput as any)?.code === code
+                    )
+                    if (isDuplicate) {
+                        continue
+                    }
+
+                    // Check the next item for the output
+                    const nextItem = i + 1 < response.content.length ? response.content[i + 1] : null
+
+                    if (nextItem) {
+                        if (nextItem.type === 'codeExecutionResult' && nextItem.codeExecutionResult) {
+                            const outcome = nextItem.codeExecutionResult.outcome
+                            const output = nextItem.codeExecutionResult.output || ''
+                            toolOutput = outcome === 'OUTCOME_OK' ? output : `Error: ${output}`
+                        } else if (nextItem.type === 'inlineData') {
+                            toolOutput = 'Generated image data'
+                        }
+                    }
+
+                    builtInUsedTools.push({
+                        tool: 'codeExecution',
+                        toolInput: {
+                            language,
+                            code
+                        },
+                        toolOutput
+                    })
+                }
             }
-
-            // Extract base64 data and create buffer
-            const base64Data = outputItem.result
-            const imageBuffer = Buffer.from(base64Data, 'base64')
-
-            // Determine file extension and MIME type
-            const outputFormat = outputItem.output_format || 'png'
-            const fileName = `generated_image_${outputItem.id || Date.now()}.${outputFormat}`
-            const mimeType = outputFormat === 'png' ? 'image/png' : 'image/jpeg'
-
-            // Save the image using the existing storage utility
-            const { path, totalSize } = await addSingleFileToStorage(
-                mimeType,
-                imageBuffer,
-                fileName,
-                options.orgId,
-                options.chatflowid,
-                options.chatId
-            )
-
-            return { filePath: path, fileName, totalSize }
-        } catch (error) {
-            console.error('Error saving base64 image:', error)
-            return null
         }
+
+        return builtInUsedTools
     }
 
     /**
@@ -1713,8 +1814,26 @@ class Agent_Agentflow implements INode {
                     if (typeof chunk === 'string') {
                         content = chunk
                     } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
-                        const contents = chunk.content as MessageContentText[]
-                        content = contents.map((item) => item.text).join('')
+                        content = chunk.content
+                            .map((item: any) => {
+                                if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                                    return item.text
+                                } else if (item.type === 'executableCode' && item.executableCode) {
+                                    const language = item.executableCode.language?.toLowerCase() || 'python'
+                                    return `\n\`\`\`${language}\n${item.executableCode.code}\n\`\`\`\n`
+                                } else if (item.type === 'codeExecutionResult' && item.codeExecutionResult) {
+                                    const outcome = item.codeExecutionResult.outcome || 'OUTCOME_OK'
+                                    const output = item.codeExecutionResult.output || ''
+                                    if (outcome === 'OUTCOME_OK' && output) {
+                                        return `**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`
+                                    } else if (outcome !== 'OUTCOME_OK') {
+                                        return `**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`
+                                    }
+                                }
+                                return ''
+                            })
+                            .filter((text: string) => text)
+                            .join('')
                     } else if (chunk.content) {
                         content = chunk.content.toString()
                     }
@@ -1728,9 +1847,16 @@ class Agent_Agentflow implements INode {
             console.error('Error during streaming:', error)
             throw error
         }
+
+        // Only convert to string if all content items are text (no inlineData or other special types)
         if (Array.isArray(response.content) && response.content.length > 0) {
-            const responseContents = response.content as MessageContentText[]
-            response.content = responseContents.map((item) => item.text).join('')
+            const hasNonTextContent = response.content.some(
+                (item: any) => item.type === 'inlineData' || item.type === 'executableCode' || item.type === 'codeExecutionResult'
+            )
+            if (!hasNonTextContent) {
+                const responseContents = response.content as MessageContentText[]
+                response.content = responseContents.map((item) => item.text).join('')
+            }
         }
         return response
     }
@@ -2482,190 +2608,6 @@ class Agent_Agentflow implements INode {
         }
 
         return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput }
-    }
-
-    /**
-     * Extracts artifacts from response metadata (both annotations and built-in tools)
-     */
-    private async extractArtifactsFromResponse(
-        responseMetadata: any,
-        modelNodeData: INodeData,
-        options: ICommonObject
-    ): Promise<{ artifacts: any[]; fileAnnotations: any[] }> {
-        const artifacts: any[] = []
-        const fileAnnotations: any[] = []
-
-        if (!responseMetadata?.output || !Array.isArray(responseMetadata.output)) {
-            return { artifacts, fileAnnotations }
-        }
-
-        for (const outputItem of responseMetadata.output) {
-            // Handle container file citations from annotations
-            if (outputItem.type === 'message' && outputItem.content && Array.isArray(outputItem.content)) {
-                for (const contentItem of outputItem.content) {
-                    if (contentItem.annotations && Array.isArray(contentItem.annotations)) {
-                        for (const annotation of contentItem.annotations) {
-                            if (annotation.type === 'container_file_citation' && annotation.file_id && annotation.filename) {
-                                try {
-                                    // Download and store the file content
-                                    const downloadResult = await this.downloadContainerFile(
-                                        annotation.container_id,
-                                        annotation.file_id,
-                                        annotation.filename,
-                                        modelNodeData,
-                                        options
-                                    )
-
-                                    if (downloadResult) {
-                                        const fileType = this.getArtifactTypeFromFilename(annotation.filename)
-
-                                        if (fileType === 'png' || fileType === 'jpeg' || fileType === 'jpg') {
-                                            const artifact = {
-                                                type: fileType,
-                                                data: downloadResult.filePath
-                                            }
-
-                                            artifacts.push(artifact)
-                                        } else {
-                                            fileAnnotations.push({
-                                                filePath: downloadResult.filePath,
-                                                fileName: annotation.filename
-                                            })
-                                        }
-                                    }
-                                } catch (error) {
-                                    console.error('Error processing annotation:', error)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Handle built-in tool artifacts (like image generation)
-            if (outputItem.type === 'image_generation_call' && outputItem.result) {
-                try {
-                    const savedImageResult = await this.saveBase64Image(outputItem, options)
-                    if (savedImageResult) {
-                        // Replace the base64 result with the file path in the response metadata
-                        outputItem.result = savedImageResult.filePath
-
-                        // Create artifact in the same format as other image artifacts
-                        const fileType = this.getArtifactTypeFromFilename(savedImageResult.fileName)
-                        artifacts.push({
-                            type: fileType,
-                            data: savedImageResult.filePath
-                        })
-                    }
-                } catch (error) {
-                    console.error('Error processing image generation artifact:', error)
-                }
-            }
-        }
-
-        return { artifacts, fileAnnotations }
-    }
-
-    /**
-     * Downloads file content from container file citation
-     */
-    private async downloadContainerFile(
-        containerId: string,
-        fileId: string,
-        filename: string,
-        modelNodeData: INodeData,
-        options: ICommonObject
-    ): Promise<{ filePath: string; totalSize: number } | null> {
-        try {
-            const credentialData = await getCredentialData(modelNodeData.credential ?? '', options)
-            const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, modelNodeData)
-
-            if (!openAIApiKey) {
-                console.warn('No OpenAI API key available for downloading container file')
-                return null
-            }
-
-            // Download the file using OpenAI Container API
-            const response = await fetch(`https://api.openai.com/v1/containers/${containerId}/files/${fileId}/content`, {
-                method: 'GET',
-                headers: {
-                    Accept: '*/*',
-                    Authorization: `Bearer ${openAIApiKey}`
-                }
-            })
-
-            if (!response.ok) {
-                console.warn(
-                    `Failed to download container file ${fileId} from container ${containerId}: ${response.status} ${response.statusText}`
-                )
-                return null
-            }
-
-            // Extract the binary data from the Response object
-            const data = await response.arrayBuffer()
-            const dataBuffer = Buffer.from(data)
-            const mimeType = this.getMimeTypeFromFilename(filename)
-
-            // Store the file using the same storage utility as OpenAIAssistant
-            const { path, totalSize } = await addSingleFileToStorage(
-                mimeType,
-                dataBuffer,
-                filename,
-                options.orgId,
-                options.chatflowid,
-                options.chatId
-            )
-
-            return { filePath: path, totalSize }
-        } catch (error) {
-            console.error('Error downloading container file:', error)
-            return null
-        }
-    }
-
-    /**
-     * Gets MIME type from filename extension
-     */
-    private getMimeTypeFromFilename(filename: string): string {
-        const extension = filename.toLowerCase().split('.').pop()
-        const mimeTypes: { [key: string]: string } = {
-            png: 'image/png',
-            jpg: 'image/jpeg',
-            jpeg: 'image/jpeg',
-            gif: 'image/gif',
-            pdf: 'application/pdf',
-            txt: 'text/plain',
-            csv: 'text/csv',
-            json: 'application/json',
-            html: 'text/html',
-            xml: 'application/xml'
-        }
-        return mimeTypes[extension || ''] || 'application/octet-stream'
-    }
-
-    /**
-     * Gets artifact type from filename extension for UI rendering
-     */
-    private getArtifactTypeFromFilename(filename: string): string {
-        const extension = filename.toLowerCase().split('.').pop()
-        const artifactTypes: { [key: string]: string } = {
-            png: 'png',
-            jpg: 'jpeg',
-            jpeg: 'jpeg',
-            html: 'html',
-            htm: 'html',
-            md: 'markdown',
-            markdown: 'markdown',
-            json: 'json',
-            js: 'javascript',
-            javascript: 'javascript',
-            tex: 'latex',
-            latex: 'latex',
-            txt: 'text',
-            csv: 'text',
-            pdf: 'text'
-        }
-        return artifactTypes[extension || ''] || 'text'
     }
 
     /**
