@@ -1,4 +1,4 @@
-const { nodeClass: Condition_Agentflow } = require('./Condition')
+import { nodeClass as Condition_Agentflow } from './Condition'
 import { INodeData } from '../../../src/Interface'
 
 function createNodeData(inputs: any): INodeData {
@@ -60,6 +60,29 @@ describe('Condition Agentflow', () => {
         const result = await nodeClass.run(nodeData, '', { agentflowRuntime: { state: {} } })
         const matchedCondition = result.output.conditions.find(
             (condition: any) => condition.operation === 'regex' && condition.value1 === 'Hello123' && condition.value2 === '[invalid'
+        )
+        const elseCondition = result.output.conditions.find(
+            (condition: any) => condition.operation === 'equal' && condition.value1 === '' && condition.value2 === ''
+        )
+        expect(matchedCondition?.isFulfilled).toBe(false)
+        expect(elseCondition?.isFulfilled).toBe(true)
+    })
+
+    it('should return false when regex exceeds safety limits', async () => {
+        const nodeData = createNodeData({
+            conditions: [
+                {
+                    type: 'string',
+                    value1: 'Hello123',
+                    operation: 'regex',
+                    value2: 'a'.repeat(300)
+                }
+            ]
+        })
+
+        const result = await nodeClass.run(nodeData, '', { agentflowRuntime: { state: {} } })
+        const matchedCondition = result.output.conditions.find(
+            (condition: any) => condition.operation === 'regex' && condition.value2 === 'a'.repeat(300)
         )
         const elseCondition = result.output.conditions.find(
             (condition: any) => condition.operation === 'equal' && condition.value1 === '' && condition.value2 === ''

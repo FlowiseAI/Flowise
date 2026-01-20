@@ -271,8 +271,13 @@ class Condition_Agentflow implements INode {
             equal: (value1: CommonType, value2: CommonType) => value1 === value2,
             notEqual: (value1: CommonType, value2: CommonType) => value1 !== value2,
             regex: (value1: CommonType, value2: CommonType) => {
+                const pattern = (value2 ?? '').toString()
+                const input = (value1 ?? '').toString()
+                if (pattern.length > 256 || input.length > 10000) {
+                    return false
+                }
                 try {
-                    return new RegExp((value2 ?? '').toString()).test((value1 ?? '').toString())
+                    return new RegExp(pattern).test(input)
                 } catch {
                     return false
                 }
