@@ -21,6 +21,7 @@ import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
+import { randomBytes } from 'crypto'
 import {
     addImageArtifactsToMessages,
     extractArtifactsFromResponse,
@@ -79,7 +80,7 @@ const sanitizeToolName = (name: string): string => {
 
     // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
     if (!sanitized) {
-        return `tool_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+        return `tool_${Date.now()}_${randomBytes(4).toString('hex').slice(0, 5)}`
     }
 
     // Enforce 64 character limit common for tool names
