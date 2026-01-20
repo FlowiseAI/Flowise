@@ -88,7 +88,10 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
         return false
     }
 
-    // Returns { isValid: boolean, missingFields: string[] }
+    /**
+     * Check Mandatory Fields
+     * @returns { isValid: boolean, missingFields: string[] }
+     */
     const checkMandatoryFields = useCallback(() => {
         if (!selectedChatModel || Object.keys(selectedChatModel).length === 0) {
             return { isValid: false, missingFields: [] }
