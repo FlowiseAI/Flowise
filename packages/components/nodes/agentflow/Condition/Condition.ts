@@ -271,9 +271,11 @@ class Condition_Agentflow implements INode {
             equal: (value1: CommonType, value2: CommonType) => value1 === value2,
             notEqual: (value1: CommonType, value2: CommonType) => value1 !== value2,
             regex: (value1: CommonType, value2: CommonType) => {
+                const MAX_PATTERN_LENGTH = 256
+                const MAX_INPUT_LENGTH = 10000
                 const pattern = (value2 ?? '').toString()
                 const input = (value1 ?? '').toString()
-                if (pattern.length > 256 || input.length > 10000) {
+                if (pattern.length > MAX_PATTERN_LENGTH || input.length > MAX_INPUT_LENGTH) {
                     return false
                 }
                 try {
