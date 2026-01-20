@@ -3,7 +3,7 @@ import { AES, enc } from 'crypto-js'
 import { getEncryptionKey } from '../../utils'
 
 export function getHash(value: string) {
-    const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
+    const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10'))
     return bcrypt.hashSync(value, salt)
 }
 

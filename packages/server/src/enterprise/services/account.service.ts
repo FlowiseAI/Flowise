@@ -566,7 +566,7 @@ export class AccountService {
 
             // all checks are done, now update the user password, don't forget to hash it and do not forget to clear the temp token
             // leave the user status and other details as is
-            const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
+            const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10'))
             // @ts-ignore
             const hash = bcrypt.hashSync(data.user.password, salt)
             data.user = user
