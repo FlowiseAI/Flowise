@@ -82,9 +82,9 @@ export async function secureAxiosRequest(
         currentConfig = {
             ...currentConfig,
             url: currentUrl,
-             ...(target.protocol === 'http'
-                ? { httpAgent: agent }
-                : { httpsAgent: agent }),
+            ...(target.protocol === 'http'
+               ? { httpAgent: agent }
+               : { httpsAgent: agent }),
             headers: {
                 ...currentConfig.headers,
                 Host: target.hostname
