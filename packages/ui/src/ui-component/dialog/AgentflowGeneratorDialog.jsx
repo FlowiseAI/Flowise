@@ -73,7 +73,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
      * Check if all mandatory fields are filled for the selected chat model.
      *
      * @param value
-     * @returns {boolean} 
+     * @returns {boolean}
      */
     const isMissingRequiredValue = (value) => {
         if (value === undefined || value === null) return true
