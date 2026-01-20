@@ -17,6 +17,8 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'SimpleStore'
@@ -28,6 +30,8 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
         this.description = 'Upsert embedded data to local path and perform similarity search'
         this.baseClasses = [this.type, 'VectorIndexRetriever']
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Document',

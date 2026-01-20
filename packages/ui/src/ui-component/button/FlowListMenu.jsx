@@ -74,7 +74,7 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi }) {
+export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi, currentPage, pageLimit }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -101,6 +101,24 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
 
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+
+    const refreshFlows = async () => {
+        try {
+            const params = {
+                page: currentPage,
+                limit: pageLimit
+            }
+            if (isAgentCanvas && isAgentflowV2) {
+                await updateFlowsApi.request('AGENTFLOW', params)
+            } else if (isAgentCanvas) {
+                await updateFlowsApi.request('MULTIAGENT', params)
+            } else {
+                await updateFlowsApi.request(params)
+            }
+        } catch (error) {
+            if (setError) setError(error)
+        }
+    }
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
@@ -166,10 +184,16 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
         }
         try {
             await updateChatflowApi.request(chatflow.id, updateBody)
+            const params = {
+                page: currentPage,
+                limit: pageLimit
+            }
             if (isAgentCanvas && isAgentflowV2) {
-                await updateFlowsApi.request('AGENTFLOW')
+                await updateFlowsApi.request('AGENTFLOW', params)
+            } else if (isAgentCanvas) {
+                await updateFlowsApi.request('MULTIAGENT', params)
             } else {
-                await updateFlowsApi.request(isAgentCanvas ? 'MULTIAGENT' : undefined)
+                await updateFlowsApi.request(params)
             }
         } catch (error) {
             if (setError) setError(error)
@@ -209,7 +233,15 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
         }
         try {
             await updateChatflowApi.request(chatflow.id, updateBody)
-            await updateFlowsApi.request(isAgentCanvas ? 'AGENTFLOW' : undefined)
+            const params = {
+                page: currentPage,
+                limit: pageLimit
+            }
+            if (isAgentCanvas) {
+                await updateFlowsApi.request('AGENTFLOW', params)
+            } else {
+                await updateFlowsApi.request(params)
+            }
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
@@ -241,10 +273,16 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
         if (isConfirmed) {
             try {
                 await chatflowsApi.deleteChatflow(chatflow.id)
+                const params = {
+                    page: currentPage,
+                    limit: pageLimit
+                }
                 if (isAgentCanvas && isAgentflowV2) {
-                    await updateFlowsApi.request('AGENTFLOW')
+                    await updateFlowsApi.request('AGENTFLOW', params)
+                } else if (isAgentCanvas) {
+                    await updateFlowsApi.request('MULTIAGENT', params)
                 } else {
-                    await updateFlowsApi.request(isAgentCanvas ? 'MULTIAGENT' : undefined)
+                    await updateFlowsApi.request(params)
                 }
             } catch (error) {
                 if (setError) setError(error)
@@ -422,21 +460,25 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 show={conversationStartersDialogOpen}
                 dialogProps={conversationStartersDialogProps}
                 onCancel={() => setConversationStartersDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             <ChatFeedbackDialog
                 show={chatFeedbackDialogOpen}
                 dialogProps={chatFeedbackDialogProps}
                 onCancel={() => setChatFeedbackDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             <AllowedDomainsDialog
                 show={allowedDomainsDialogOpen}
                 dialogProps={allowedDomainsDialogProps}
                 onCancel={() => setAllowedDomainsDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             <SpeechToTextDialog
                 show={speechToTextDialogOpen}
                 dialogProps={speechToTextDialogProps}
                 onCancel={() => setSpeechToTextDialogOpen(false)}
+                onConfirm={refreshFlows}
             />
             {exportTemplateDialogOpen && (
                 <ExportAsTemplateDialog
@@ -454,5 +496,7 @@ FlowListMenu.propTypes = {
     isAgentCanvas: PropTypes.bool,
     isAgentflowV2: PropTypes.bool,
     setError: PropTypes.func,
-    updateFlowsApi: PropTypes.object
+    updateFlowsApi: PropTypes.object,
+    currentPage: PropTypes.number,
+    pageLimit: PropTypes.number
 }

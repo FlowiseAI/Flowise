@@ -59,7 +59,9 @@ export const FlowListTable = ({
     updateFlowsApi,
     setError,
     isAgentCanvas,
-    isAgentflowV2
+    isAgentflowV2,
+    currentPage,
+    pageLimit
 }) => {
     const { hasPermission } = useAuth()
     const isActionsAvailable = isAgentCanvas
@@ -331,6 +333,8 @@ export const FlowListTable = ({
                                                         chatflow={row}
                                                         setError={setError}
                                                         updateFlowsApi={updateFlowsApi}
+                                                        currentPage={currentPage}
+                                                        pageLimit={pageLimit}
                                                     />
                                                 </Stack>
                                             </StyledTableCell>
@@ -355,5 +359,7 @@ FlowListTable.propTypes = {
     updateFlowsApi: PropTypes.object,
     setError: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
-    isAgentflowV2: PropTypes.bool
+    isAgentflowV2: PropTypes.bool,
+    currentPage: PropTypes.number,
+    pageLimit: PropTypes.number
 }

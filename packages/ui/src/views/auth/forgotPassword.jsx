@@ -16,6 +16,7 @@ import accountApi from '@/api/account.api'
 // Hooks
 import useApi from '@/hooks/useApi'
 import { useConfig } from '@/store/context/ConfigContext'
+import { useError } from '@/store/context/ErrorContext'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
@@ -41,10 +42,13 @@ const ForgotPasswordPage = () => {
     const [isLoading, setLoading] = useState(false)
     const [responseMsg, setResponseMsg] = useState(undefined)
 
+    const { authRateLimitError, setAuthRateLimitError } = useError()
+
     const forgotPasswordApi = useApi(accountApi.forgotPassword)
 
     const sendResetRequest = async (event) => {
         event.preventDefault()
+        setAuthRateLimitError(null)
         const body = {
             user: {
                 email: usernameVal
@@ -53,6 +57,11 @@ const ForgotPasswordPage = () => {
         setLoading(true)
         await forgotPasswordApi.request(body)
     }
+
+    useEffect(() => {
+        setAuthRateLimitError(null)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [setAuthRateLimitError])
 
     useEffect(() => {
         if (forgotPasswordApi.error) {
@@ -87,6 +96,11 @@ const ForgotPasswordPage = () => {
                     {responseMsg && responseMsg?.type === 'error' && (
                         <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
                             {responseMsg.msg}
+                        </Alert>
+                    )}
+                    {authRateLimitError && (
+                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                            {authRateLimitError}
                         </Alert>
                     )}
                     {responseMsg && responseMsg?.type !== 'error' && (

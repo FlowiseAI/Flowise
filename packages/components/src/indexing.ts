@@ -8,6 +8,10 @@ import { IndexingResult } from './Interface'
 
 type Metadata = Record<string, unknown>
 
+export interface ExtendedRecordManagerInterface extends RecordManagerInterface {
+    update(keys: Array<{ uid: string; docId: string }> | string[], updateOptions?: Record<string, any>): Promise<void>
+}
+
 type StringOrDocFunc = string | ((doc: DocumentInterface) => string)
 
 export interface HashedDocumentInterface extends DocumentInterface {
@@ -207,7 +211,7 @@ export const _isBaseDocumentLoader = (arg: any): arg is BaseDocumentLoader => {
 
 interface IndexArgs {
     docsSource: BaseDocumentLoader | DocumentInterface[]
-    recordManager: RecordManagerInterface
+    recordManager: ExtendedRecordManagerInterface
     vectorStore: VectorStore
     options?: IndexOptions
 }
@@ -275,7 +279,7 @@ export async function index(args: IndexArgs): Promise<IndexingResult> {
 
         const uids: string[] = []
         const docsToIndex: DocumentInterface[] = []
-        const docsToUpdate: string[] = []
+        const docsToUpdate: Array<{ uid: string; docId: string }> = []
         const seenDocs = new Set<string>()
         hashedDocs.forEach((hashedDoc, i) => {
             const docExists = batchExists[i]
@@ -283,7 +287,7 @@ export async function index(args: IndexArgs): Promise<IndexingResult> {
                 if (forceUpdate) {
                     seenDocs.add(hashedDoc.uid)
                 } else {
-                    docsToUpdate.push(hashedDoc.uid)
+                    docsToUpdate.push({ uid: hashedDoc.uid, docId: hashedDoc.metadata.docId as string })
                     return
                 }
             }
@@ -308,7 +312,7 @@ export async function index(args: IndexArgs): Promise<IndexingResult> {
         }
 
         await recordManager.update(
-            hashedDocs.map((doc) => doc.uid),
+            hashedDocs.map((doc) => ({ uid: doc.uid, docId: doc.metadata.docId as string })),
             { timeAtLeast: indexStartDt, groupIds: sourceIds }
         )
 

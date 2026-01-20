@@ -607,7 +607,12 @@ export class LangchainChatGoogleGenerativeAI
     private client: GenerativeModel
 
     get _isMultimodalModel() {
-        return this.model.includes('vision') || this.model.startsWith('gemini-1.5') || this.model.startsWith('gemini-2')
+        return (
+            this.model.includes('vision') ||
+            this.model.startsWith('gemini-1.5') ||
+            this.model.startsWith('gemini-2') ||
+            this.model.startsWith('gemini-3')
+        )
     }
 
     constructor(fields: GoogleGenerativeAIChatInput) {

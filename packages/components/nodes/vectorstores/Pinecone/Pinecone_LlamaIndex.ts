@@ -31,6 +31,8 @@ class PineconeLlamaIndex_VectorStores implements INode {
     inputs: INodeParams[]
     credential: INodeParams
     outputs: INodeOutputsValue[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Pinecone'
@@ -42,6 +44,8 @@ class PineconeLlamaIndex_VectorStores implements INode {
         this.description = `Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database`
         this.baseClasses = [this.type, 'VectorIndexRetriever']
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

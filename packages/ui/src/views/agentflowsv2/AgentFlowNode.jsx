@@ -150,6 +150,8 @@ const AgentFlowNode = ({ data }) => {
                 return <IconWorldWww size={14} color={'white'} />
             case 'googleSearch':
                 return <IconBrandGoogle size={14} color={'white'} />
+            case 'codeExecution':
+                return <IconCode size={14} color={'white'} />
             default:
                 return null
         }

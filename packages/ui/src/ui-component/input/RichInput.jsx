@@ -7,11 +7,11 @@ import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
 import { styled } from '@mui/material/styles'
 import { Box } from '@mui/material'
-import Mention from '@tiptap/extension-mention'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from './suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
+import { CustomMention } from '@/utils/customMention'
 
 const lowlight = createLowlight(common)
 
@@ -20,7 +20,7 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
     StarterKit.configure({
         codeBlock: false
     }),
-    Mention.configure({
+    CustomMention.configure({
         HTMLAttributes: {
             class: 'variable'
         },

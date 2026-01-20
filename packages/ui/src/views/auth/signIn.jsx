@@ -14,6 +14,7 @@ import { Input } from '@/ui-component/input/Input'
 // Hooks
 import useApi from '@/hooks/useApi'
 import { useConfig } from '@/store/context/ConfigContext'
+import { useError } from '@/store/context/ErrorContext'
 
 // API
 import authApi from '@/api/auth'
@@ -62,6 +63,8 @@ const SignInPage = () => {
     const [showResendButton, setShowResendButton] = useState(false)
     const [successMessage, setSuccessMessage] = useState('')
 
+    const { authRateLimitError, setAuthRateLimitError } = useError()
+
     const loginApi = useApi(authApi.login)
     const ssoLoginApi = useApi(ssoApi.ssoLogin)
     const getDefaultProvidersApi = useApi(loginMethodApi.getDefaultLoginMethods)
@@ -71,6 +74,7 @@ const SignInPage = () => {
 
     const doLogin = (event) => {
         event.preventDefault()
+        setAuthRateLimitError(null)
         setLoading(true)
         const body = {
             email: usernameVal,
@@ -92,11 +96,12 @@ const SignInPage = () => {
 
     useEffect(() => {
         store.dispatch(logoutSuccess())
+        setAuthRateLimitError(null)
         if (!isOpenSource) {
             getDefaultProvidersApi.request()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [setAuthRateLimitError, isOpenSource])
 
     useEffect(() => {
         // Parse the "user" query parameter from the URL
@@ -177,6 +182,11 @@ const SignInPage = () => {
                     {successMessage && (
                         <Alert variant='filled' severity='success' onClose={() => setSuccessMessage('')}>
                             {successMessage}
+                        </Alert>
+                    )}
+                    {authRateLimitError && (
+                        <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
+                            {authRateLimitError}
                         </Alert>
                     )}
                     {authError && (

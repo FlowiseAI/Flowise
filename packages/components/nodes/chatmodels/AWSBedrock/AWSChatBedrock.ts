@@ -65,6 +65,13 @@ class AWSChatBedrock_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Custom Endpoint Host',
+                name: 'endpointHost',
+                type: 'string',
+                description: 'Custom endpoint host to use for the model. If provided, will override the default endpoint host.',
+                optional: true
+            },
+            {
                 label: 'Streaming',
                 name: 'streaming',
                 type: 'boolean',
@@ -133,6 +140,7 @@ class AWSChatBedrock_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const streaming = nodeData.inputs?.streaming as boolean
         const latencyOptimized = nodeData.inputs?.latencyOptimized as boolean
+        const endpointHost = (nodeData.inputs?.endpointHost as string)?.trim()
 
         const obj: ChatBedrockConverseInput = {
             region: iRegion,
@@ -144,6 +152,10 @@ class AWSChatBedrock_ChatModels implements INode {
 
         if (latencyOptimized) {
             obj.performanceConfig = { latency: 'optimized' }
+        }
+
+        if (endpointHost) {
+            obj.endpointHost = endpointHost
         }
 
         /**

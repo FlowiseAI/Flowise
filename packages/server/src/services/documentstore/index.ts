@@ -46,6 +46,7 @@ import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { validateFileMimeTypeAndExtensionMatch } from '../../utils/fileValidation'
 import { databaseEntities, getAppVersion, saveUpsertFlowData } from '../../utils'
 import { DOCUMENT_STORE_BASE_FOLDER, INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -391,7 +392,7 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
     }
 }
 
-const deleteVectorStoreFromStore = async (storeId: string, workspaceId: string) => {
+const deleteVectorStoreFromStore = async (storeId: string, workspaceId: string, docId?: string) => {
     try {
         const appServer = getRunningExpressApp()
         const componentNodes = appServer.nodesPool.componentNodes
@@ -461,7 +462,7 @@ const deleteVectorStoreFromStore = async (storeId: string, workspaceId: string) 
 
         // Call the delete method of the vector store
         if (vectorStoreObj.vectorStoreMethods.delete) {
-            await vectorStoreObj.vectorStoreMethods.delete(vStoreNodeData, idsToDelete, options)
+            await vectorStoreObj.vectorStoreMethods.delete(vStoreNodeData, idsToDelete, { ...options, docId })
         }
     } catch (error) {
         throw new InternalFlowiseError(
@@ -561,7 +562,12 @@ const _saveFileToStorage = async (
     }
 }
 
-const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComponentNodes, data: IDocumentStoreLoaderForPreview) => {
+const _splitIntoChunks = async (
+    appDataSource: DataSource,
+    componentNodes: IComponentNodes,
+    data: IDocumentStoreLoaderForPreview,
+    workspaceId?: string
+) => {
     try {
         let splitterInstance = null
         if (data.splitterId && data.splitterConfig && Object.keys(data.splitterConfig).length > 0) {
@@ -588,7 +594,8 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
             appDataSource,
             databaseEntities,
             logger,
-            processRaw: true
+            processRaw: true,
+            workspaceId
         }
         const docNodeInstance = new nodeModule.nodeClass()
         let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
@@ -700,7 +707,7 @@ const previewChunksMiddleware = async (
     }
 }
 
-export const previewChunks = async ({ appDataSource, componentNodes, data, orgId }: IExecutePreviewLoader) => {
+export const previewChunks = async ({ appDataSource, componentNodes, data, orgId, workspaceId }: IExecutePreviewLoader) => {
     try {
         if (data.preview) {
             if (
@@ -714,7 +721,7 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
         if (!data.rehydrated) {
             await _normalizeFilePaths(appDataSource, data, null, orgId)
         }
-        let docs = await _splitIntoChunks(appDataSource, componentNodes, data)
+        let docs = await _splitIntoChunks(appDataSource, componentNodes, data, workspaceId)
         const totalChunks = docs.length
         // if -1, return all chunks
         if (data.previewChunkCount === -1) data.previewChunkCount = totalChunks
@@ -1157,6 +1164,18 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject, workspaceId: str
         )
     }
 }
+/**
+ * Saves vector store configuration to the document store entity.
+ * Handles embedding, vector store, and record manager configurations.
+ *
+ * @example
+ * // Strict mode: Only save what's provided, clear the rest
+ * await saveVectorStoreConfig(ds, { storeId, embeddingName, embeddingConfig }, true, wsId)
+ *
+ * @example
+ * // Lenient mode: Reuse existing configs if not provided
+ * await saveVectorStoreConfig(ds, { storeId, vectorStoreName, vectorStoreConfig }, false, wsId)
+ */
 const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObject, isStrictSave = true, workspaceId: string) => {
     try {
         const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
@@ -1221,6 +1240,15 @@ const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObj
     }
 }
 
+/**
+ * Inserts documents from document store into the configured vector store.
+ *
+ * Process:
+ * 1. Saves vector store configuration (embedding, vector store, record manager)
+ * 2. Sets document store status to UPSERTING
+ * 3. Performs the actual vector store upsert operation
+ * 4. Updates status to UPSERTED upon completion
+ */
 export const insertIntoVectorStore = async ({
     appDataSource,
     componentNodes,
@@ -1231,19 +1259,16 @@ export const insertIntoVectorStore = async ({
     workspaceId
 }: IExecuteVectorStoreInsert) => {
     try {
+        // Step 1: Save configuration based on isStrictSave mode
         const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave, workspaceId)
+
+        // Step 2: Mark as UPSERTING before starting the operation
         entity.status = DocumentStoreStatus.UPSERTING
         await appDataSource.getRepository(DocumentStore).save(entity)
 
-        const indexResult = await _insertIntoVectorStoreWorkerThread(
-            appDataSource,
-            componentNodes,
-            telemetry,
-            data,
-            isStrictSave,
-            orgId,
-            workspaceId
-        )
+        // Step 3: Perform the actual vector store upsert
+        // Note: Configuration already saved above, worker thread just retrieves and uses it
+        const indexResult = await _insertIntoVectorStoreWorkerThread(appDataSource, componentNodes, telemetry, data, orgId, workspaceId)
         return indexResult
     } catch (error) {
         throw new InternalFlowiseError(
@@ -1308,12 +1333,18 @@ const _insertIntoVectorStoreWorkerThread = async (
     componentNodes: IComponentNodes,
     telemetry: Telemetry,
     data: ICommonObject,
-    isStrictSave = true,
     orgId: string,
     workspaceId: string
 ) => {
     try {
-        const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave, workspaceId)
+        // Configuration already saved by insertIntoVectorStore, just retrieve the entity
+        const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
+            id: data.storeId,
+            workspaceId: workspaceId
+        })
+        if (!entity) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
+        }
         let upsertHistory: Record<string, any> = {}
         const chatflowid = data.storeId // fake chatflowid because this is not tied to any chatflow
 
@@ -1350,7 +1381,10 @@ const _insertIntoVectorStoreWorkerThread = async (
         const docs: Document[] = chunks.map((chunk: DocumentStoreFileChunk) => {
             return new Document({
                 pageContent: chunk.pageContent,
-                metadata: JSON.parse(chunk.metadata)
+                metadata: {
+                    ...JSON.parse(chunk.metadata),
+                    docId: chunk.docId
+                }
             })
         })
         vStoreNodeData.inputs.document = docs
@@ -1794,6 +1828,9 @@ const upsertDocStore = async (
             // Address file name with special characters: https://github.com/expressjs/multer/issues/1104
             file.originalname = Buffer.from(file.originalname, 'latin1').toString('utf8')
 
+            // Validate file extension, MIME type, and content to prevent security vulnerabilities
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+
             try {
                 checkStorage(orgId, subscriptionId, usageCacheManager)
                 const { totalSize } = await addArrayFilesToStorage(
@@ -1911,6 +1948,8 @@ const upsertDocStore = async (
             recordManagerConfig
         }
 
+        // Use isStrictSave: false to preserve existing configurations during upsert
+        // This allows the operation to reuse existing embedding/vector store/record manager configs
         const res = await insertIntoVectorStore({
             appDataSource,
             componentNodes,
