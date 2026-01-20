@@ -187,18 +187,25 @@ type ResolvedTarget = {
 
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyListString = process.env.HTTP_DENY_LIST
-    if (!denyListString) {
-        throw new Error('HTTP_DENY_LIST must be set for secure requests')
-    }
+    const denyList = denyListString
+        ? denyListString.split(',').map((s) => s.trim())
+        : null
 
-    const denyList = denyListString.split(',').map((s) => s.trim())
     const u = new URL(url)
     const hostname = u.hostname
-    const protocol = u.protocol === 'https:' ? 'https' : 'http'
+    const protocol: 'http' | 'https' = u.protocol === 'https:' ? 'https' : 'http'
 
     if (ipaddr.isValid(hostname)) {
-        isDeniedIP(hostname, denyList)
-        return { hostname, ip: hostname, family: hostname.includes(':') ? 6 : 4, protocol }
+        if (denyList) {
+            isDeniedIP(hostname, denyList)
+        }
+
+        return {
+            hostname,
+            ip: hostname,
+            family: hostname.includes(':') ? 6 : 4,
+            protocol
+        }
     }
 
     const records = await dns.lookup(hostname, { all: true })
@@ -206,8 +213,10 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
         throw new Error(`DNS resolution failed for ${hostname}`)
     }
 
-    for (const r of records) {
-        isDeniedIP(r.address, denyList)
+    if (denyList) {
+        for (const r of records) {
+            isDeniedIP(r.address, denyList)
+        }
     }
 
     const chosen = records.find((r) => r.family === 4) ?? records[0]
