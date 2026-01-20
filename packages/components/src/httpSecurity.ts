@@ -198,7 +198,7 @@ type ResolvedTarget = {
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyListString = process.env.HTTP_DENY_LIST
     if (!denyListString) {
-        throw new Error('HTTP_DENY_LIST must be set for secureAxiosRequest')
+        throw new Error('HTTP_DENY_LIST must be set for secure requests')
     }
 
     const denyList = denyListString.split(',').map(s => s.trim())
