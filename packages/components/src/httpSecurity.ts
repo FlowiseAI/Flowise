@@ -62,7 +62,7 @@ export async function checkDenyList(url: string): Promise<void> {
  * @returns Promise<AxiosResponse>
  * @throws Error if any URL in the redirect chain is denied
  */
-export async function secureAxiosRequest(config: AxiosRequestConfig,maxRedirects: number = 5): Promise<AxiosResponse> {
+export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirects: number = 5): Promise<AxiosResponse> {
     let currentUrl = config.url
     if (!currentUrl) {
         throw new Error('secureAxiosRequest: url is required')
@@ -78,7 +78,7 @@ export async function secureAxiosRequest(config: AxiosRequestConfig,maxRedirects
         currentConfig = {
             ...currentConfig,
             url: currentUrl,
-             ...(target.protocol === 'http' ? { httpAgent: agent } : { httpsAgent: agent }),
+            ...(target.protocol === 'http' ? { httpAgent: agent } : { httpsAgent: agent }),
             headers: {
                 ...currentConfig.headers,
                 Host: target.hostname
@@ -130,11 +130,7 @@ export async function secureAxiosRequest(config: AxiosRequestConfig,maxRedirects
  * @returns Promise<Response>
  * @throws Error if any URL in the redirect chain is denied
  */
-export async function secureFetch(
-    url: string,
-    init?: RequestInit,
-    maxRedirects: number = 5
-): Promise<Response> {
+export async function secureFetch(url: string, init?: RequestInit, maxRedirects: number = 5): Promise<Response> {
     let currentUrl = url
     let redirectCount = 0
     let currentInit = { ...init, redirect: 'manual' as const } // Disable automatic redirects
@@ -143,7 +139,7 @@ export async function secureFetch(
         const resolved = await resolveAndValidate(currentUrl)
         const agent = createPinnedAgent(resolved)
 
-        const response = await fetch(currentUrl, { ...currentInit, agent: () => agent})
+        const response = await fetch(currentUrl, { ...currentInit, agent: () => agent })
 
         // If it's a successful response (not a redirect), return it
         if (response.status < 300 || response.status >= 400) {
