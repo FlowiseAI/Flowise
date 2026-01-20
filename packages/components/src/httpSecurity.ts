@@ -62,11 +62,7 @@ export async function checkDenyList(url: string): Promise<void> {
  * @returns Promise<AxiosResponse>
  * @throws Error if any URL in the redirect chain is denied
  */
-export async function secureAxiosRequest(
-    config: AxiosRequestConfig,
-    maxRedirects: number = 5
-): Promise<AxiosResponse> {
-
+export async function secureAxiosRequest(config: AxiosRequestConfig,maxRedirects: number = 5): Promise<AxiosResponse> {
     let currentUrl = config.url
     if (!currentUrl) {
         throw new Error('secureAxiosRequest: url is required')
@@ -82,9 +78,7 @@ export async function secureAxiosRequest(
         currentConfig = {
             ...currentConfig,
             url: currentUrl,
-             ...(target.protocol === 'http'
-                ? { httpAgent: agent }
-                : { httpsAgent: agent }),
+             ...(target.protocol === 'http' ? { httpAgent: agent } : { httpsAgent: agent }),
             headers: {
                 ...currentConfig.headers,
                 Host: target.hostname
@@ -142,7 +136,7 @@ export async function secureFetch(
     maxRedirects: number = 5
 ): Promise<Response> {
     let currentUrl = url
-    let redirectCount = 0;
+    let redirectCount = 0
     let currentInit = { ...init, redirect: 'manual' as const } // Disable automatic redirects
 
     while (redirectCount <= maxRedirects) {
@@ -198,10 +192,10 @@ type ResolvedTarget = {
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyListString = process.env.HTTP_DENY_LIST
     if (!denyListString) {
-        throw new Error('HTTP_DENY_LIST must be set for secureAxiosRequest')
+        throw new Error('HTTP_DENY_LIST must be set for secure requests')
     }
 
-    const denyList = denyListString.split(',').map(s => s.trim())
+    const denyList = denyListString.split(',').map((s) => s.trim())
     const u = new URL(url)
     const hostname = u.hostname
     const protocol = u.protocol === 'https:' ? 'https' : 'http'
@@ -220,7 +214,7 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
         isDeniedIP(r.address, denyList)
     }
 
-    const chosen = records.find(r => r.family === 4) ?? records[0]
+    const chosen = records.find((r) => r.family === 4) ?? records[0]
 
     return {
         hostname,
