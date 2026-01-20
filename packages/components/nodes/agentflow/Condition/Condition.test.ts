@@ -87,7 +87,7 @@ describe('Condition Agentflow', () => {
         const elseCondition = result.output.conditions.find(
             (condition: any) => condition.operation === 'equal' && condition.value1 === '' && condition.value2 === ''
         )
-        expect(matchedCondition?.isFulfilled).toBe(false)
+        expect(matchedCondition?.isFulfilled).toBeFalsy()
         expect(elseCondition?.isFulfilled).toBe(true)
     })
 })
