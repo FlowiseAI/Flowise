@@ -26,6 +26,7 @@ import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { validatePasswordOrThrow } from '../utils/validation.util'
 
 type AccountDTO = {
     user: Partial<User>
@@ -564,11 +565,14 @@ export class AccountService {
             const diff = now.diff(tokenExpiry, 'minutes')
             if (Math.abs(diff) > expiryInMins) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
 
+            // @ts-ignore
+            const password = data.user.password
+            validatePasswordOrThrow(password)
+
             // all checks are done, now update the user password, don't forget to hash it and do not forget to clear the temp token
             // leave the user status and other details as is
             const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
-            // @ts-ignore
-            const hash = bcrypt.hashSync(data.user.password, salt)
+            const hash = bcrypt.hashSync(password, salt)
             data.user = user
             data.user.credential = hash
             data.user.tempToken = ''
