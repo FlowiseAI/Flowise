@@ -187,9 +187,7 @@ type ResolvedTarget = {
 
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyListString = process.env.HTTP_DENY_LIST
-    const denyList = denyListString
-        ? denyListString.split(',').map((s) => s.trim())
-        : null
+    const denyList = denyListString ? denyListString.split(',').map((s) => s.trim()) : null
 
     const u = new URL(url)
     const hostname = u.hostname
