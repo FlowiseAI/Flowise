@@ -290,49 +290,6 @@ export class IdentityManager {
         }
     }
 
-    public static checkUserIdMatch() {
-        return (req: Request, res: Response, next: NextFunction) => {
-            const user = req.user
-            if (!user) {
-                return res.status(StatusCodes.UNAUTHORIZED).json({ message: ErrorMessage.FORBIDDEN })
-            }
-
-            const queryUserId = req.query.userId as string | undefined
-            const queryId = req.query.id as string | undefined
-            const queryEmail = req.query.email as string | undefined
-            const queryOrganizationId = req.query.organizationId as string | undefined
-            const targetUserId = queryUserId || queryId
-
-            // Check for email query parameter
-            if (queryEmail) {
-                // Email must match authenticated user's email (case-insensitive)
-                if (queryEmail.toLowerCase() !== user.email.toLowerCase()) {
-                    return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
-                }
-                // Email matches, allow through
-                return next()
-            }
-
-            // If no userId provided, allow through (for other query patterns)
-            if (!targetUserId) {
-                return next()
-            }
-
-            // If userId matches authenticated user, allow
-            if (targetUserId === user.id) {
-                return next()
-            }
-
-            // If organizationId is present, let checkOrganizationUserAccess handle the org admin case
-            if (queryOrganizationId) {
-                return next()
-            }
-
-            // Otherwise, forbid access to other users' data
-            return res.status(StatusCodes.FORBIDDEN).json({ message: ErrorMessage.FORBIDDEN })
-        }
-    }
-
     public async createStripeCustomerPortalSession(req: Request) {
         if (!this.stripeManager) {
             throw new Error('Stripe manager is not initialized')

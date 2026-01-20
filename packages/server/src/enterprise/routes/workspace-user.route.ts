@@ -7,7 +7,7 @@ const router = express.Router()
 const workspaceUserController = new WorkspaceUserController()
 
 // no feature flag because user with lower plan can read invited workspaces with higher plan
-router.get('/', IdentityManager.checkUserIdMatch(), workspaceUserController.read)
+router.get('/', workspaceUserController.read)
 
 router.post(
     '/',
