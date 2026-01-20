@@ -270,6 +270,13 @@ class Condition_Agentflow implements INode {
             endsWith: (value1: CommonType, value2: CommonType) => (value1 as string).endsWith(value2 as string),
             equal: (value1: CommonType, value2: CommonType) => value1 === value2,
             notEqual: (value1: CommonType, value2: CommonType) => value1 !== value2,
+            regex: (value1: CommonType, value2: CommonType) => {
+                try {
+                    return new RegExp((value2 ?? '').toString()).test((value1 ?? '').toString())
+                } catch {
+                    return false
+                }
+            },
             larger: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) > (Number(value2) || 0),
             largerEqual: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) >= (Number(value2) || 0),
             smaller: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) < (Number(value2) || 0),
