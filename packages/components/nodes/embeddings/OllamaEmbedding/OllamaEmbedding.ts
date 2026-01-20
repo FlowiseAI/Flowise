@@ -85,7 +85,7 @@ class OllamaEmbedding_Embeddings implements INode {
 
         // default useMMap to true
         // Note: @langchain/ollama uses `useMmap` (not `useMMap`) in requestOptions
-        requestOptions.useMmap = useMMap === undefined ? true : useMMap
+        requestOptions.useMmap = useMMap ?? true
 
         if (Object.keys(requestOptions).length) obj.requestOptions = requestOptions
 
