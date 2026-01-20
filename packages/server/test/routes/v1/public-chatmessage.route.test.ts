@@ -23,8 +23,14 @@ export function publicChatmessageRouteTest() {
         let publicChatflowId = ''
         let publicSessionId = ''
         let publicChatId = ''
+        let defaultChatflowId = ''
+        let defaultSessionId = ''
+        let defaultChatId = ''
         let disabledChatflowId = ''
         let disabledSessionId = ''
+        let privateChatflowId = ''
+        let privateSessionId = ''
+        let privateChatId = ''
 
         beforeAll(async () => {
             const appServer = getRunningExpressApp()
@@ -73,8 +79,14 @@ export function publicChatmessageRouteTest() {
             publicChatflowId = uuidv4()
             publicSessionId = uuidv4()
             publicChatId = uuidv4()
+            defaultChatflowId = uuidv4()
+            defaultSessionId = uuidv4()
+            defaultChatId = uuidv4()
             disabledChatflowId = uuidv4()
             disabledSessionId = uuidv4()
+            privateChatflowId = uuidv4()
+            privateSessionId = uuidv4()
+            privateChatId = uuidv4()
 
             await chatflowRepo.save({
                 id: publicChatflowId,
@@ -85,6 +97,14 @@ export function publicChatmessageRouteTest() {
                 workspaceId: testData.workspaceId
             })
             await chatflowRepo.save({
+                id: defaultChatflowId,
+                name: 'Public Chat History Default On',
+                flowData: JSON.stringify({ nodes: [], edges: [] }),
+                isPublic: true,
+                chatbotConfig: JSON.stringify({}),
+                workspaceId: testData.workspaceId
+            })
+            await chatflowRepo.save({
                 id: disabledChatflowId,
                 name: 'Public Chat History Disabled',
                 flowData: JSON.stringify({ nodes: [], edges: [] }),
@@ -92,7 +112,15 @@ export function publicChatmessageRouteTest() {
                 chatbotConfig: JSON.stringify({ chatHistory: { enabled: false } }),
                 workspaceId: testData.workspaceId
             })
-            testData.chatflowIds.push(publicChatflowId, disabledChatflowId)
+            await chatflowRepo.save({
+                id: privateChatflowId,
+                name: 'Private Chat History Allowed',
+                flowData: JSON.stringify({ nodes: [], edges: [] }),
+                isPublic: false,
+                chatbotConfig: JSON.stringify({}),
+                workspaceId: testData.workspaceId
+            })
+            testData.chatflowIds.push(publicChatflowId, defaultChatflowId, disabledChatflowId, privateChatflowId)
 
             const baseMessage = {
                 chatflowid: publicChatflowId,
@@ -122,7 +150,25 @@ export function publicChatmessageRouteTest() {
                 content: 'internal',
                 createdDate: new Date('2024-01-01T00:00:02.000Z')
             })
-            const saved = await messageRepo.save([userMessage, apiMessage, internalMessage])
+            const defaultUserMessage = messageRepo.create({
+                chatflowid: defaultChatflowId,
+                chatType: ChatType.EXTERNAL,
+                chatId: defaultChatId,
+                sessionId: defaultSessionId,
+                role: 'userMessage',
+                content: 'default history',
+                createdDate: new Date('2024-01-02T00:00:00.000Z')
+            })
+            const privateUserMessage = messageRepo.create({
+                chatflowid: privateChatflowId,
+                chatType: ChatType.EXTERNAL,
+                chatId: privateChatId,
+                sessionId: privateSessionId,
+                role: 'userMessage',
+                content: 'private history',
+                createdDate: new Date('2024-01-03T00:00:00.000Z')
+            })
+            const saved = await messageRepo.save([userMessage, apiMessage, internalMessage, defaultUserMessage, privateUserMessage])
             testData.chatMessageIds.push(...saved.map((message) => message.id))
         })
 
@@ -169,6 +215,20 @@ export function publicChatmessageRouteTest() {
             })
         })
 
+        describe(`GET ${route}/:id when chat history config is missing`, () => {
+            it(`should return a ${StatusCodes.OK} status by default`, async () => {
+                await supertest(getRunningExpressApp().app)
+                    .get(`${route}/${defaultChatflowId}?sessionId=${defaultSessionId}`)
+                    .expect(StatusCodes.OK)
+                    .then((response) => {
+                        const body = response.body
+                        expect(Array.isArray(body)).toEqual(true)
+                        expect(body).toHaveLength(1)
+                        expect(body[0].content).toEqual('default history')
+                    })
+            })
+        })
+
         describe(`GET ${route}/:id returns external chat history`, () => {
             it(`should return a ${StatusCodes.OK} status with parsed messages`, async () => {
                 await supertest(getRunningExpressApp().app)
@@ -182,6 +242,20 @@ export function publicChatmessageRouteTest() {
                         expect(body[1].content).toEqual('hi')
                         expect(Array.isArray(body[0].sourceDocuments)).toEqual(true)
                         expect(body[0].sourceDocuments[0].pageContent).toEqual('doc1')
+                    })
+            })
+        })
+
+        describe(`GET ${route}/:id when chatflow is not public`, () => {
+            it(`should return a ${StatusCodes.OK} status by default`, async () => {
+                await supertest(getRunningExpressApp().app)
+                    .get(`${route}/${privateChatflowId}?sessionId=${privateSessionId}`)
+                    .expect(StatusCodes.OK)
+                    .then((response) => {
+                        const body = response.body
+                        expect(Array.isArray(body)).toEqual(true)
+                        expect(body).toHaveLength(1)
+                        expect(body[0].content).toEqual('private history')
                     })
             })
         })

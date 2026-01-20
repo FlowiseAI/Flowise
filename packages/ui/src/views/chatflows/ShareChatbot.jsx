@@ -60,6 +60,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
     const [isPublicChatflow, setChatflowIsPublic] = useState(chatflow.isPublic ?? false)
     const [generateNewSession, setGenerateNewSession] = useState(chatbotConfig?.generateNewSession ?? false)
     const [renderHTML, setRenderHTML] = useState(chatbotConfig?.renderHTML ?? false)
+    const [chatHistoryEnabled, setChatHistoryEnabled] = useState(chatbotConfig?.chatHistory?.enabled ?? true)
 
     const [title, setTitle] = useState(chatbotConfig?.title ?? '')
     const [titleAvatarSrc, setTitleAvatarSrc] = useState(chatbotConfig?.titleAvatarSrc ?? '')
@@ -160,6 +161,10 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             obj.renderHTML = true
         } else {
             obj.renderHTML = false
+        }
+
+        obj.chatHistory = {
+            enabled: chatHistoryEnabled
         }
 
         if (isAgentCanvas) {
@@ -346,6 +351,9 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             case 'renderHTML':
                 setRenderHTML(value)
                 break
+            case 'chatHistoryEnabled':
+                setChatHistoryEnabled(value)
+                break
         }
     }
 
@@ -490,6 +498,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 {colorField(poweredByTextColor, 'poweredByTextColor', 'PoweredBy TextColor')}
                 {isAgentCanvas && booleanField(showAgentMessages, 'showAgentMessages', 'Show agent reasonings when using Agentflow')}
                 {booleanField(renderHTML, 'renderHTML', 'Render HTML on the chat')}
+                {booleanField(chatHistoryEnabled, 'chatHistoryEnabled', 'Allow public chat history retrieval')}
                 {isSessionMemory &&
                     booleanField(generateNewSession, 'generateNewSession', 'Start new session when chatbot link is opened or refreshed')}
             </Card>

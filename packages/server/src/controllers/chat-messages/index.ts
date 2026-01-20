@@ -166,10 +166,6 @@ const getPublicChatMessages = async (req: Request, res: Response, next: NextFunc
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${req.params.id} not found`)
         }
-        if (!chatflow.isPublic) {
-            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Chatflow is not public')
-        }
-
         let chatbotConfig: any = {}
         if (chatflow.chatbotConfig) {
             try {
@@ -183,7 +179,7 @@ const getPublicChatMessages = async (req: Request, res: Response, next: NextFunc
             }
         }
 
-        if (!chatbotConfig?.chatHistory?.enabled) {
+        if (chatbotConfig?.chatHistory?.enabled === false) {
             throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Chat history is not enabled')
         }
 
