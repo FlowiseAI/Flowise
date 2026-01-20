@@ -276,11 +276,24 @@ class Condition_Agentflow implements INode {
                 const pattern = (value2 ?? '').toString()
                 const input = (value1 ?? '').toString()
                 if (pattern.length > MAX_PATTERN_LENGTH || input.length > MAX_INPUT_LENGTH) {
+                    console.warn(
+                        '[Condition_Agentflow] Regex condition skipped due to safety limits:',
+                        {
+                            patternLength: pattern.length,
+                            inputLength: input.length,
+                            maxPatternLength: 256,
+                            maxInputLength: 10000
+                        }
+                    )
                     return false
                 }
                 try {
                     return new RegExp(pattern).test(input)
-                } catch {
+                } catch (e) {
+                    console.warn('[Condition_Agentflow] Invalid regex pattern in condition.', {
+                        error: (e as Error)?.message,
+                        pattern
+                    })
                     return false
                 }
             },
