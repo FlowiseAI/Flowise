@@ -142,7 +142,7 @@ export async function secureFetch(
     maxRedirects: number = 5
 ): Promise<Response> {
     let currentUrl = url
-    let redirectCount = 0;
+    let redirectCount = 0
     let currentInit = { ...init, redirect: 'manual' as const } // Disable automatic redirects
 
     while (redirectCount <= maxRedirects) {
