@@ -146,6 +146,9 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 onSelect={(newValue) => {
                                     data.credential = newValue
                                     data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                                    if (nodeDataChangeHandler) {
+                                        nodeDataChangeHandler({ nodeId: data.id, inputParam, newValue })
+                                    }
                                 }}
                             />
                         )}
