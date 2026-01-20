@@ -1,5 +1,5 @@
 import { nodeClass as Condition_Agentflow } from './Condition'
-import { INodeData } from '../../../src/Interface'
+import { INodeData, INode, ICondition } from '../../../src/Interface'
 
 function createNodeData(inputs: any): INodeData {
     return {
