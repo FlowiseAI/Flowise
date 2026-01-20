@@ -35,8 +35,14 @@ describe('Condition Agentflow', () => {
         })
 
         const result = await nodeClass.run(nodeData, '', { agentflowRuntime: { state: {} } })
-        expect(result.output.conditions[0].isFulfilled).toBe(true)
-        expect(result.output.conditions[1].isFulfilled).toBe(false)
+        const matchedCondition = result.output.conditions.find(
+            (condition: any) => condition.operation === 'regex' && condition.value1 === 'Hello123' && condition.value2 === '^Hello\\d+$'
+        )
+        const elseCondition = result.output.conditions.find(
+            (condition: any) => condition.operation === 'equal' && condition.value1 === '' && condition.value2 === ''
+        )
+        expect(matchedCondition?.isFulfilled).toBe(true)
+        expect(elseCondition?.isFulfilled).toBe(false)
     })
 
     it('should return false for invalid regex patterns', async () => {
@@ -52,7 +58,13 @@ describe('Condition Agentflow', () => {
         })
 
         const result = await nodeClass.run(nodeData, '', { agentflowRuntime: { state: {} } })
-        expect(result.output.conditions[0].isFulfilled).toBe(false)
-        expect(result.output.conditions[1].isFulfilled).toBe(true)
+        const matchedCondition = result.output.conditions.find(
+            (condition: any) => condition.operation === 'regex' && condition.value1 === 'Hello123' && condition.value2 === '[invalid'
+        )
+        const elseCondition = result.output.conditions.find(
+            (condition: any) => condition.operation === 'equal' && condition.value1 === '' && condition.value2 === ''
+        )
+        expect(matchedCondition?.isFulfilled).toBe(false)
+        expect(elseCondition?.isFulfilled).toBe(true)
     })
 })
