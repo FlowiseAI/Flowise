@@ -50,6 +50,7 @@ export function validatePasswordOrThrow(password: unknown): void {
     if (!/(?=.*\d)/.test(password)) errors.push('at least one number')
     if (!/(?=.*[^a-zA-Z0-9])/.test(password)) errors.push('at least one special character')
     if (password.length < 8) errors.push('minimum length of 8 characters')
+    if (password.length > 128) errors.push('maximum length of 128 characters')
 
     throw new Error(`Invalid password: Must contain ${errors.join(', ')}`)
 }
