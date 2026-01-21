@@ -61,6 +61,6 @@ export class ChatFlow implements IChatFlow {
     @UpdateDateColumn()
     updatedDate: Date
 
-    @Column({ nullable: true, type: 'text' })
-    workspaceId?: string
+    @Column({ nullable: false, type: 'text' })
+    workspaceId: string
 }

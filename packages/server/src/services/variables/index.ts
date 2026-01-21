@@ -32,10 +32,10 @@ const createVariable = async (newVariable: Variable, orgId: string) => {
     }
 }
 
-const deleteVariable = async (variableId: string): Promise<any> => {
+const deleteVariable = async (variableId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Variable).delete({ id: variableId })
+        const dbResponse = await appServer.AppDataSource.getRepository(Variable).delete({ id: variableId, workspaceId: workspaceId })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -45,7 +45,7 @@ const deleteVariable = async (variableId: string): Promise<any> => {
     }
 }
 
-const getAllVariables = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllVariables = async (workspaceId: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(Variable)
@@ -77,11 +77,12 @@ const getAllVariables = async (workspaceId?: string, page: number = -1, limit: n
     }
 }
 
-const getVariableById = async (variableId: string) => {
+const getVariableById = async (variableId: string, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
-            id: variableId
+            id: variableId,
+            workspaceId: workspaceId
         })
 
         if (appServer.identityManager.getPlatformType() === Platform.CLOUD && dbResponse?.type === 'runtime') {

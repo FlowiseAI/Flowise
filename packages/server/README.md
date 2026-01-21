@@ -41,7 +41,7 @@ cd Flowise/packages/server
 pnpm install
 ./node_modules/.bin/cypress install
 pnpm build
-#Only for writting new tests on local dev -> pnpm run cypress:open
+#Only for writing new tests on local dev -> pnpm run cypress:open
 pnpm run e2e
 ```
 

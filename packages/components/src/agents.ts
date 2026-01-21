@@ -1021,7 +1021,7 @@ export class JsonOutputToolsParser extends BaseLLMOutputParser<ParsedToolCall[]>
         const parsedToolCalls = []
 
         if (!toolCalls) {
-            // @ts-expect-error name and arguemnts are defined by Object.defineProperty
+            // @ts-expect-error name and arguments are defined by Object.defineProperty
             const parsedToolCall: ParsedToolCall = {
                 type: 'undefined',
                 args: {}
@@ -1047,7 +1047,7 @@ export class JsonOutputToolsParser extends BaseLLMOutputParser<ParsedToolCall[]>
         const clonedToolCalls = JSON.parse(JSON.stringify(toolCalls))
         for (const toolCall of clonedToolCalls) {
             if (toolCall.function !== undefined) {
-                // @ts-expect-error name and arguemnts are defined by Object.defineProperty
+                // @ts-expect-error name and arguments are defined by Object.defineProperty
                 const parsedToolCall: ParsedToolCall = {
                     type: toolCall.function.name,
                     args: JSON.parse(toolCall.function.arguments)

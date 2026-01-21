@@ -190,11 +190,14 @@ class Playwright_DocumentLoaders implements INode {
         async function playwrightLoader(url: string): Promise<Document[] | undefined> {
             try {
                 let docs = []
+
+                const executablePath = process.env.PLAYWRIGHT_EXECUTABLE_PATH
+
                 const config: PlaywrightWebBaseLoaderOptions = {
                     launchOptions: {
                         args: ['--no-sandbox'],
                         headless: true,
-                        executablePath: process.env.PLAYWRIGHT_EXECUTABLE_FILE_PATH
+                        executablePath: executablePath
                     }
                 }
                 if (waitUntilGoToOption) {

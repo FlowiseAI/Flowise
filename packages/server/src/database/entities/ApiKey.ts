@@ -1,8 +1,7 @@
 import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm'
-import { IApiKey } from '../../Interface'
 
 @Entity('apikey')
-export class ApiKey implements IApiKey {
+export class ApiKey {
     @PrimaryColumn({ type: 'varchar', length: 20 })
     id: string
 
@@ -15,10 +14,13 @@ export class ApiKey implements IApiKey {
     @Column({ type: 'text' })
     keyName: string
 
+    @Column({ nullable: false, type: 'simple-json', default: '[]' })
+    permissions: string[]
+
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
 
-    @Column({ nullable: true, type: 'text' })
-    workspaceId?: string
+    @Column({ nullable: false, type: 'text' })
+    workspaceId: string
 }

@@ -174,6 +174,9 @@ export interface GoogleGenerativeAIChatInput extends BaseChatModelParams, Pick<G
      * - Gemini 1.0 Pro version gemini-1.0-pro-002
      */
     convertSystemMessageToHumanContent?: boolean | undefined
+
+    /** Thinking budget for Gemini 2.5 thinking models. Supports -1 (dynamic), 0 (off), or positive integers. */
+    thinkingBudget?: number
 }
 
 /**
@@ -599,10 +602,17 @@ export class LangchainChatGoogleGenerativeAI
 
     convertSystemMessageToHumanContent: boolean | undefined
 
+    thinkingBudget?: number
+
     private client: GenerativeModel
 
     get _isMultimodalModel() {
-        return this.model.includes('vision') || this.model.startsWith('gemini-1.5') || this.model.startsWith('gemini-2')
+        return (
+            this.model.includes('vision') ||
+            this.model.startsWith('gemini-1.5') ||
+            this.model.startsWith('gemini-2') ||
+            this.model.startsWith('gemini-3')
+        )
     }
 
     constructor(fields: GoogleGenerativeAIChatInput) {
@@ -657,6 +667,7 @@ export class LangchainChatGoogleGenerativeAI
 
         this.streaming = fields.streaming ?? this.streaming
         this.json = fields.json
+        this.thinkingBudget = fields.thinkingBudget
 
         this.client = new GenerativeAI(this.apiKey).getGenerativeModel(
             {
@@ -676,12 +687,22 @@ export class LangchainChatGoogleGenerativeAI
                 baseUrl: fields.baseUrl
             }
         )
+        if (this.thinkingBudget !== undefined) {
+            ;(this.client.generationConfig as any).thinkingConfig = {
+                ...(this.thinkingBudget !== undefined ? { thinkingBudget: this.thinkingBudget } : {})
+            }
+        }
         this.streamUsage = fields.streamUsage ?? this.streamUsage
     }
 
     useCachedContent(cachedContent: CachedContent, modelParams?: ModelParams, requestOptions?: RequestOptions): void {
         if (!this.apiKey) return
         this.client = new GenerativeAI(this.apiKey).getGenerativeModelFromCachedContent(cachedContent, modelParams, requestOptions)
+        if (this.thinkingBudget !== undefined) {
+            ;(this.client.generationConfig as any).thinkingConfig = {
+                ...(this.thinkingBudget !== undefined ? { thinkingBudget: this.thinkingBudget } : {})
+            }
+        }
     }
 
     get useSystemInstruction(): boolean {

@@ -112,7 +112,7 @@ Flowise 在一个单一的单体存储库中有 3 个不同的模块。
     pnpm start
     ```
 
-11. 提交代码并从指向 [Flowise 主分支](https://github.com/FlowiseAI/Flowise/tree/master) 的分叉分支上提交 Pull Request。
+11. 提交代码并从指向 [Flowise 主分支](https://github.com/FlowiseAI/Flowise/tree/main) 的分叉分支上提交 Pull Request。
 
 ## 🌱 环境变量
 

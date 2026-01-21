@@ -1,11 +1,11 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
+import { convertTextToSpeechStream } from 'flowise-components'
+import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import chatflowsService from '../../services/chatflows'
 import textToSpeechService from '../../services/text-to-speech'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { convertTextToSpeechStream } from 'flowise-components'
 import { databaseEntities } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const generateTextToSpeech = async (req: Request, res: Response) => {
     try {
@@ -30,8 +30,15 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
         let provider: string, credentialId: string, voice: string, model: string
 
         if (chatflowId) {
+            const workspaceId = req.user?.activeWorkspaceId
+            if (!workspaceId) {
+                throw new InternalFlowiseError(
+                    StatusCodes.NOT_FOUND,
+                    `Error: textToSpeechController.generateTextToSpeech - workspace ${workspaceId} not found!`
+                )
+            }
             // Get TTS config from chatflow
-            const chatflow = await chatflowsService.getChatflowById(chatflowId)
+            const chatflow = await chatflowsService.getChatflowById(chatflowId, workspaceId)
             const ttsConfig = JSON.parse(chatflow.textToSpeech)
 
             // Find the provider with status: true

@@ -30,7 +30,7 @@ class ExecuteFlow_Agentflow implements INode {
     constructor() {
         this.label = 'Execute Flow'
         this.name = 'executeFlowAgentflow'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'ExecuteFlow'
         this.category = 'Agent Flows'
         this.description = 'Execute another flow'
@@ -102,8 +102,7 @@ class ExecuteFlow_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',

@@ -25,7 +25,7 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
-import { sanitizeUser } from '../../utils/sanitize.util'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 
 type AccountDTO = {
     user: Partial<User>
@@ -103,6 +103,8 @@ export class AccountService {
         } finally {
             await queryRunner.release()
         }
+
+        return { message: 'success' }
     }
 
     private async ensureOneOrganizationOnly(queryRunner: QueryRunner) {
@@ -541,7 +543,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async resetPassword(data: AccountDTO) {
@@ -576,6 +578,9 @@ export class AccountService {
             await queryRunner.startTransaction()
             data.user = await this.userService.saveUser(data.user, queryRunner)
             await queryRunner.commitTransaction()
+
+            // Invalidate all sessions for this user after password reset
+            await destroyAllSessionsForUser(user.id as string)
         } catch (error) {
             await queryRunner.rollbackTransaction()
             throw error
@@ -583,7 +588,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async logout(user: LoggedInUser) {

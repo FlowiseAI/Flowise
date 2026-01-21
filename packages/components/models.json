@@ -4,11 +4,25 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-opus-4-5-20251101-v1:0",
+                    "name": "anthropic.claude-opus-4-5-20251101-v1:0",
+                    "description": "Claude 4.5 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "anthropic.claude-sonnet-4-5-20250929-v1:0",
                     "name": "anthropic.claude-sonnet-4-5-20250929-v1:0",
                     "description": "Claude 4.5 Sonnet",
                     "input_cost": 0.000003,
                     "output_cost": 0.000015
+                },
+                {
+                    "label": "anthropic.claude-haiku-4-5-20251001-v1:0",
+                    "name": "anthropic.claude-haiku-4-5-20251001-v1:0",
+                    "description": "Claude 4.5 Haiku",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000005
                 },
                 {
                     "label": "openai.gpt-oss-20b-1:0",
@@ -309,6 +323,36 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.2",
+                    "name": "gpt-5.2",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-pro",
+                    "name": "gpt-5.2-pro",
+                    "input_cost": 0.000021,
+                    "output_cost": 0.000168
+                },
+                {
+                    "label": "gpt-5.2-chat-latest",
+                    "name": "gpt-5.2-chat-latest",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-codex",
+                    "name": "gpt-5.2-codex",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.1",
+                    "name": "gpt-5.1",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
+                },
+                {
                     "label": "gpt-5",
                     "name": "gpt-5",
                     "input_cost": 0.00000125,
@@ -493,11 +537,25 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-opus-4-5",
+                    "name": "claude-opus-4-5",
+                    "description": "Claude 4.5 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "claude-sonnet-4-5",
                     "name": "claude-sonnet-4-5",
                     "description": "Claude 4.5 Sonnet",
                     "input_cost": 0.000003,
                     "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-haiku-4-5",
+                    "name": "claude-haiku-4-5",
+                    "description": "Claude 4.5 Haiku",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000005
                 },
                 {
                     "label": "claude-sonnet-4-0",
@@ -608,6 +666,24 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
+                    "label": "gemini-3-pro-preview",
+                    "name": "gemini-3-pro-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gemini-3-flash-preview",
+                    "name": "gemini-3-flash-preview",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.000003
+                },
+                {
+                    "label": "gemini-3-pro-image-preview",
+                    "name": "gemini-3-pro-image-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
+                {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
                     "input_cost": 0.3e-6,
@@ -616,6 +692,12 @@
                 {
                     "label": "gemini-2.5-flash",
                     "name": "gemini-2.5-flash",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gemini-2.5-flash-image",
+                    "name": "gemini-2.5-flash-image",
                     "input_cost": 1.25e-6,
                     "output_cost": 0.00001
                 },
@@ -671,6 +753,18 @@
         {
             "name": "chatGoogleVertexAI",
             "models": [
+                {
+                    "label": "gemini-3-pro-preview",
+                    "name": "gemini-3-pro-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gemini-3-flash-preview",
+                    "name": "gemini-3-flash-preview",
+                    "input_cost": 0.0000005,
+                    "output_cost": 0.000003
+                },
                 {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
@@ -738,11 +832,25 @@
                     "output_cost": 3.75e-7
                 },
                 {
+                    "label": "claude-opus-4-5@20251101",
+                    "name": "claude-opus-4-5@20251101",
+                    "description": "Claude 4.5 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
                     "label": "claude-sonnet-4-5@20250929",
                     "name": "claude-sonnet-4-5@20250929",
                     "description": "Claude 4.5 Sonnet",
                     "input_cost": 0.000003,
                     "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-haiku-4-5@20251001",
+                    "name": "claude-haiku-4-5@20251001",
+                    "description": "Claude 4.5 Haiku",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000005
                 },
                 {
                     "label": "claude-opus-4-1@20250805",
@@ -809,6 +917,7 @@
                 }
             ],
             "regions": [
+                { "label": "global", "name": "global" },
                 { "label": "us-east1", "name": "us-east1" },
                 { "label": "us-east4", "name": "us-east4" },
                 { "label": "us-central1", "name": "us-central1" },
@@ -956,6 +1065,36 @@
             ]
         },
         {
+            "name": "chatCerebras",
+            "models": [
+                {
+                    "label": "llama-3.3-70b",
+                    "name": "llama-3.3-70b",
+                    "description": "Best for complex reasoning and long-form content"
+                },
+                {
+                    "label": "qwen-3-32b",
+                    "name": "qwen-3-32b",
+                    "description": "Balanced performance for general-purpose tasks"
+                },
+                {
+                    "label": "llama3.1-8b",
+                    "name": "llama3.1-8b",
+                    "description": "Fastest model, ideal for simple tasks and high throughput"
+                },
+                {
+                    "label": "gpt-oss-120b",
+                    "name": "gpt-oss-120b",
+                    "description": "Largest model for demanding tasks"
+                },
+                {
+                    "label": "zai-glm-4.6",
+                    "name": "zai-glm-4.6",
+                    "description": "Advanced reasoning and complex problem-solving"
+                }
+            ]
+        },
+        {
             "name": "deepseek",
             "models": [
                 {
@@ -975,6 +1114,36 @@
         {
             "name": "chatOpenAI",
             "models": [
+                {
+                    "label": "gpt-5.2",
+                    "name": "gpt-5.2",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-pro",
+                    "name": "gpt-5.2-pro",
+                    "input_cost": 0.000021,
+                    "output_cost": 0.000168
+                },
+                {
+                    "label": "gpt-5.2-chat-latest",
+                    "name": "gpt-5.2-chat-latest",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-codex",
+                    "name": "gpt-5.2-codex",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.1",
+                    "name": "gpt-5.1",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
+                },
                 {
                     "label": "gpt-5",
                     "name": "gpt-5",

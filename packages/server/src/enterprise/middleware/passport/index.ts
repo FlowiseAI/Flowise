@@ -81,6 +81,11 @@ const _initializePassportMiddleware = async (app: express.Application) => {
     app.use(passport.initialize())
     app.use(passport.session())
 
+    if (options.store) {
+        const appServer = getRunningExpressApp()
+        appServer.sessionStore = options.store
+    }
+
     passport.serializeUser((user: any, done) => {
         done(null, user)
     })
@@ -174,7 +179,6 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                         activeWorkspaceId: workspaceUser.workspaceId,
                         activeWorkspace: workspaceUser.workspace.name,
                         assignedWorkspaces,
-                        isApiKeyValidated: true,
                         permissions: [...JSON.parse(role.permissions)],
                         features
                     }
@@ -418,6 +422,34 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
         const identityManager = getRunningExpressApp().identityManager
         if (identityManager.isEnterprise() && !identityManager.isLicenseValid()) {
             return res.status(401).json({ redirectUrl: '/license-expired' })
+        }
+
+        req.user = user
+        next()
+    })(req, res, next)
+}
+
+export const verifyTokenForBullMQDashboard = (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate('jwt', { session: true }, (err: any, user: LoggedInUser, info: object) => {
+        if (err) {
+            return next(err)
+        }
+
+        // @ts-ignore
+        if (info && info.name === 'TokenExpiredError') {
+            if (req.cookies && req.cookies.refreshToken) {
+                return res.redirect('/signin?retry=true')
+            }
+            return res.redirect('/signin')
+        }
+
+        if (!user) {
+            return res.redirect('/signin')
+        }
+
+        const identityManager = getRunningExpressApp().identityManager
+        if (identityManager.isEnterprise() && !identityManager.isLicenseValid()) {
+            return res.redirect('/license-expired')
         }
 
         req.user = user

@@ -4,7 +4,7 @@ import { WeaviateLibArgs, WeaviateStore } from '@langchain/weaviate'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRecursively } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRecursively, parseJsonBody } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 import { VectorStore } from '@langchain/core/vectorstores'
@@ -252,7 +252,11 @@ class Weaviate_VectorStores implements INode {
                     const vectorStoreName = weaviateTextKey ? weaviateIndex + '_' + weaviateTextKey : weaviateIndex
                     await recordManager.createSchema()
                     ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
-                    const keys: string[] = await recordManager.listKeys({})
+                    const filterKeys: ICommonObject = {}
+                    if (options.docId) {
+                        filterKeys.docId = options.docId
+                    }
+                    const keys: string[] = await recordManager.listKeys(filterKeys)
 
                     await weaviateStore.delete({ ids: keys })
                     await recordManager.deleteKeys(keys)
@@ -294,7 +298,7 @@ class Weaviate_VectorStores implements INode {
         if (weaviateTextKey) obj.textKey = weaviateTextKey
         if (weaviateMetadataKeys) obj.metadataKeys = JSON.parse(weaviateMetadataKeys.replace(/\s/g, ''))
         if (weaviateFilter) {
-            weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : JSON.parse(weaviateFilter)
+            weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : parseJsonBody(weaviateFilter)
         }
 
         const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore

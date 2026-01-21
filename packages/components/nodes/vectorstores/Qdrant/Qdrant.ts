@@ -6,7 +6,7 @@ import { Document } from '@langchain/core/documents'
 import { QdrantVectorStore, QdrantLibArgs } from '@langchain/qdrant'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { index } from '../../../src/indexing'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 
@@ -385,7 +385,11 @@ class Qdrant_VectorStores implements INode {
                     const vectorStoreName = collectionName
                     await recordManager.createSchema()
                     ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
-                    const keys: string[] = await recordManager.listKeys({})
+                    const filterKeys: ICommonObject = {}
+                    if (options.docId) {
+                        filterKeys.docId = options.docId
+                    }
+                    const keys: string[] = await recordManager.listKeys(filterKeys)
 
                     await vectorStore.delete({ ids: keys })
                     await recordManager.deleteKeys(keys)
@@ -440,7 +444,7 @@ class Qdrant_VectorStores implements INode {
             qdrantCollectionConfiguration =
                 typeof qdrantCollectionConfiguration === 'object'
                     ? qdrantCollectionConfiguration
-                    : JSON.parse(qdrantCollectionConfiguration)
+                    : parseJsonBody(qdrantCollectionConfiguration)
             dbConfig.collectionConfig = {
                 ...qdrantCollectionConfiguration,
                 vectors: {
@@ -452,7 +456,7 @@ class Qdrant_VectorStores implements INode {
         }
 
         if (queryFilter) {
-            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : JSON.parse(queryFilter)
+            retrieverConfig.filter = typeof queryFilter === 'object' ? queryFilter : parseJsonBody(queryFilter)
         }
         if (isFileUploadEnabled && options.chatId) {
             retrieverConfig.filter = retrieverConfig.filter || {}

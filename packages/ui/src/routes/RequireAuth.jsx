@@ -1,9 +1,9 @@
-import { Navigate } from 'react-router'
-import PropTypes from 'prop-types'
-import { useLocation } from 'react-router-dom'
-import { useConfig } from '@/store/context/ConfigContext'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfig } from '@/store/context/ConfigContext'
+import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
+import { Navigate } from 'react-router'
+import { useLocation } from 'react-router-dom'
 
 /**
  * Checks if a feature flag is enabled
@@ -29,12 +29,17 @@ const checkFeatureFlag = (features, display, children) => {
 
 export const RequireAuth = ({ permission, display, children }) => {
     const location = useLocation()
-    const { isCloud, isOpenSource, isEnterpriseLicensed } = useConfig()
+    const { isCloud, isOpenSource, isEnterpriseLicensed, loading } = useConfig()
     const { hasPermission } = useAuth()
     const isGlobal = useSelector((state) => state.auth.isGlobal)
     const currentUser = useSelector((state) => state.auth.user)
     const features = useSelector((state) => state.auth.features)
     const permissions = useSelector((state) => state.auth.permissions)
+
+    // Step 0: Wait for config to load
+    if (loading) {
+        return null
+    }
 
     // Step 1: Authentication Check
     // Redirect to login if user is not authenticated
@@ -50,29 +55,36 @@ export const RequireAuth = ({ permission, display, children }) => {
 
     // Cloud & Enterprise: Check both permissions and feature flags
     if (isCloud || isEnterpriseLicensed) {
-        // Allow access to basic features (no display property)
-        if (!display) return children
+        // Routes with display property - check feature flags
+        if (display) {
+            // Check if user has any permissions
+            if (permissions.length === 0) {
+                return <Navigate to='/unauthorized' replace state={{ path: location.pathname }} />
+            }
 
-        // Check if user has any permissions
-        if (permissions.length === 0) {
-            return <Navigate to='/unauthorized' replace state={{ path: location.pathname }} />
+            // Organization admins bypass permission checks
+            if (isGlobal) {
+                return checkFeatureFlag(features, display, children)
+            }
+
+            // Check user permissions and feature flags
+            if (!permission || hasPermission(permission)) {
+                return checkFeatureFlag(features, display, children)
+            }
+
+            return <Navigate to='/unauthorized' replace />
         }
 
-        // Organization admins bypass permission checks
-        if (isGlobal) {
-            return checkFeatureFlag(features, display, children)
+        // Standard routes: check permissions (global admins bypass)
+        if (permission && !hasPermission(permission) && !isGlobal) {
+            return <Navigate to='/unauthorized' replace />
         }
 
-        // Check user permissions and feature flags
-        if (!permission || hasPermission(permission)) {
-            return checkFeatureFlag(features, display, children)
-        }
-
-        return <Navigate to='/unauthorized' replace />
+        return children
     }
 
-    // Fallback: Allow access if none of the above conditions match
-    return children
+    // Fallback: If none of the platform types match, deny access
+    return <Navigate to='/unauthorized' replace />
 }
 
 RequireAuth.propTypes = {

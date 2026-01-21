@@ -4,11 +4,12 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
+import { cloneDeep, omit, get } from 'lodash'
 import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AES, enc } from 'crypto-js'
-import { omit, get } from 'lodash'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
@@ -1129,6 +1130,18 @@ export const mapMimeTypeToExt = (mimeType: string) => {
         case 'application/jsonl':
         case 'text/jsonl':
             return 'jsonl'
+        // YAML types
+        case 'application/vnd.yaml':
+        case 'application/x-yaml':
+        case 'text/vnd.yaml':
+        case 'text/x-yaml':
+        case 'text/yaml':
+            return 'yaml'
+        // SQL types
+        case 'application/sql':
+        case 'text/x-sql':
+            return 'sql'
+        // Document types
         case 'application/msword':
             return 'doc'
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
@@ -1141,6 +1154,59 @@ export const mapMimeTypeToExt = (mimeType: string) => {
             return 'ppt'
         case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
             return 'pptx'
+        case 'application/rtf':
+            return 'rtf'
+        // Image types
+        case 'image/jpeg':
+        case 'image/jpg':
+            return 'jpg'
+        case 'image/png':
+            return 'png'
+        case 'image/gif':
+            return 'gif'
+        case 'image/webp':
+            return 'webp'
+        case 'image/svg+xml':
+            return 'svg'
+        case 'image/bmp':
+            return 'bmp'
+        case 'image/tiff':
+        case 'image/tif':
+            return 'tiff'
+        case 'image/x-icon':
+        case 'image/vnd.microsoft.icon':
+            return 'ico'
+        case 'image/avif':
+            return 'avif'
+        // Audio types
+        case 'audio/webm':
+            return 'webm'
+        case 'audio/mp4':
+        case 'audio/x-m4a':
+            return 'm4a'
+        case 'audio/mpeg':
+        case 'audio/mp3':
+            return 'mp3'
+        case 'audio/ogg':
+        case 'audio/oga':
+            return 'ogg'
+        case 'audio/wav':
+        case 'audio/wave':
+        case 'audio/x-wav':
+            return 'wav'
+        case 'audio/aac':
+            return 'aac'
+        case 'audio/flac':
+            return 'flac'
+        // Video types
+        case 'video/mp4':
+            return 'mp4'
+        case 'video/webm':
+            return 'webm'
+        case 'video/quicktime':
+            return 'mov'
+        case 'video/x-msvideo':
+            return 'avi'
         default:
             return ''
     }
@@ -1500,9 +1566,29 @@ export const executeJavaScriptCode = async (
 
             const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs })
 
+            // Determine which libraries to install
+            const librariesToInstall = new Set<string>(libraries)
+
+            // Auto-detect required libraries from code
+            // Extract required modules from import/require statements
+            const importRegex = /(?:import\s+.*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
+            let match
+            while ((match = importRegex.exec(code)) !== null) {
+                const moduleName = match[1] || match[2]
+                // Extract base module name (e.g., 'typeorm' from 'typeorm/something')
+                const baseModuleName = moduleName.split('/')[0]
+                librariesToInstall.add(baseModuleName)
+            }
+
             // Install libraries
-            for (const library of libraries) {
-                await sbx.commands.run(`npm install ${library}`)
+            for (const library of librariesToInstall) {
+                // Validate library name to prevent command injection.
+                const validPackageNameRegex = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/
+                if (validPackageNameRegex.test(library)) {
+                    await sbx.commands.run(`npm install ${library}`)
+                } else {
+                    console.warn(`[Sandbox] Skipping installation of invalid module: ${library}`)
+                }
             }
 
             // Separate imports from the rest of the code for proper ES6 module structure
@@ -1759,4 +1845,322 @@ export const parseJsonBody = (body: string): any => {
             }
         }
     }
+}
+
+/**
+ * Parse a value against a Zod schema with automatic type conversion for common type mismatches
+ * @param schema - The Zod schema to parse against
+ * @param arg - The value to parse
+ * @param maxDepth - Maximum recursion depth to prevent infinite loops (default: 10)
+ * @returns The parsed value
+ * @throws Error if parsing fails after attempting type conversions
+ */
+export async function parseWithTypeConversion<T extends z.ZodTypeAny>(schema: T, arg: unknown, maxDepth: number = 10): Promise<z.infer<T>> {
+    // Safety check: prevent infinite recursion
+    if (maxDepth <= 0) {
+        throw new Error('Maximum recursion depth reached in parseWithTypeConversion')
+    }
+
+    try {
+        return await schema.parseAsync(arg)
+    } catch (e) {
+        // Check if it's a ZodError and try to fix type mismatches
+        if (z.ZodError && e instanceof z.ZodError) {
+            const zodError = e as z.ZodError
+            // Deep clone the arg to avoid mutating the original
+            const modifiedArg = typeof arg === 'object' && arg !== null ? cloneDeep(arg) : arg
+            let hasModification = false
+
+            // Helper function to set a value at a nested path
+            const setValueAtPath = (obj: any, path: (string | number)[], value: any): void => {
+                let current = obj
+                for (let i = 0; i < path.length - 1; i++) {
+                    const key = path[i]
+                    if (current && typeof current === 'object' && key in current) {
+                        current = current[key]
+                    } else {
+                        return // Path doesn't exist
+                    }
+                }
+                if (current !== undefined && current !== null) {
+                    const finalKey = path[path.length - 1]
+                    current[finalKey] = value
+                }
+            }
+
+            // Helper function to get a value at a nested path
+            const getValueAtPath = (obj: any, path: (string | number)[]): any => {
+                let current = obj
+                for (const key of path) {
+                    if (current && typeof current === 'object' && key in current) {
+                        current = current[key]
+                    } else {
+                        return undefined
+                    }
+                }
+                return current
+            }
+
+            // Helper function to convert value to expected type
+            const convertValue = (value: any, expected: string, received: string): any => {
+                // Expected string
+                if (expected === 'string') {
+                    if (received === 'object' || received === 'array') {
+                        return JSON.stringify(value)
+                    }
+                    if (received === 'number' || received === 'boolean') {
+                        return String(value)
+                    }
+                }
+                // Expected number
+                else if (expected === 'number') {
+                    if (received === 'string') {
+                        const parsed = parseFloat(value)
+                        if (!isNaN(parsed)) {
+                            return parsed
+                        }
+                    }
+                    if (received === 'boolean') {
+                        return value ? 1 : 0
+                    }
+                }
+                // Expected boolean
+                else if (expected === 'boolean') {
+                    if (received === 'string') {
+                        const lower = String(value).toLowerCase().trim()
+                        if (lower === 'true' || lower === '1' || lower === 'yes') {
+                            return true
+                        }
+                        if (lower === 'false' || lower === '0' || lower === 'no') {
+                            return false
+                        }
+                    }
+                    if (received === 'number') {
+                        return value !== 0
+                    }
+                }
+                // Expected object
+                else if (expected === 'object') {
+                    if (received === 'string') {
+                        try {
+                            const parsed = JSON.parse(value)
+                            if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+                                return parsed
+                            }
+                        } catch {
+                            // Invalid JSON, return undefined to skip conversion
+                        }
+                    }
+                }
+                // Expected array
+                else if (expected === 'array') {
+                    if (received === 'string') {
+                        try {
+                            const parsed = JSON.parse(value)
+                            if (Array.isArray(parsed)) {
+                                return parsed
+                            }
+                        } catch {
+                            // Invalid JSON, return undefined to skip conversion
+                        }
+                    }
+                    if (received === 'object' && value !== null) {
+                        // Convert object to array (e.g., {0: 'a', 1: 'b'} -> ['a', 'b'])
+                        // Only if it looks like an array-like object
+                        const keys = Object.keys(value)
+                        const numericKeys = keys.filter((k) => /^\d+$/.test(k))
+                        if (numericKeys.length === keys.length) {
+                            return numericKeys.map((k) => value[k])
+                        }
+                    }
+                }
+                return undefined // No conversion possible
+            }
+
+            // Process each issue in the error
+            for (const issue of zodError.issues) {
+                // Handle invalid_type errors (type mismatches)
+                if (issue.code === 'invalid_type' && issue.path.length > 0) {
+                    try {
+                        const valueAtPath = getValueAtPath(modifiedArg, issue.path)
+                        if (valueAtPath !== undefined) {
+                            const convertedValue = convertValue(valueAtPath, issue.expected, issue.received)
+                            if (convertedValue !== undefined) {
+                                setValueAtPath(modifiedArg, issue.path, convertedValue)
+                                hasModification = true
+                            }
+                        }
+                    } catch (pathError) {
+                        console.error('Error processing path in Zod error', pathError)
+                    }
+                }
+            }
+
+            // If we modified the arg, recursively call parseWithTypeConversion
+            // This allows newly surfaced nested errors to also get conversion treatment
+            // Decrement maxDepth to prevent infinite recursion
+            if (hasModification) {
+                return await parseWithTypeConversion(schema, modifiedArg, maxDepth - 1)
+            }
+        }
+        // Re-throw the original error if not a ZodError or no conversion possible
+        throw e
+    }
+}
+
+/**
+ * Configures structured output for the LLM using Zod schema
+ * @param {BaseChatModel} llmNodeInstance - The LLM instance to configure
+ * @param {any[]} structuredOutput - Array of structured output schema definitions
+ * @returns {BaseChatModel} - The configured LLM instance
+ */
+export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, structuredOutput: any[]): BaseChatModel => {
+    try {
+        const zodObj: ICommonObject = {}
+        for (const sch of structuredOutput) {
+            if (sch.type === 'string') {
+                zodObj[sch.key] = z.string().describe(sch.description || '')
+            } else if (sch.type === 'stringArray') {
+                zodObj[sch.key] = z.array(z.string()).describe(sch.description || '')
+            } else if (sch.type === 'number') {
+                zodObj[sch.key] = z.number().describe(sch.description || '')
+            } else if (sch.type === 'boolean') {
+                zodObj[sch.key] = z.boolean().describe(sch.description || '')
+            } else if (sch.type === 'enum') {
+                const enumValues = sch.enumValues?.split(',').map((item: string) => item.trim()) || []
+                zodObj[sch.key] = z
+                    .enum(enumValues.length ? (enumValues as [string, ...string[]]) : ['default'])
+                    .describe(sch.description || '')
+            } else if (sch.type === 'jsonArray') {
+                const jsonSchema = sch.jsonSchema
+                if (jsonSchema) {
+                    try {
+                        // Parse the JSON schema
+                        const schemaObj = JSON.parse(jsonSchema)
+
+                        // Create a Zod schema from the JSON schema
+                        const itemSchema = createZodSchemaFromJSON(schemaObj)
+
+                        // Create an array schema of the item schema
+                        zodObj[sch.key] = z.array(itemSchema).describe(sch.description || '')
+                    } catch (err) {
+                        console.error(`Error parsing JSON schema for ${sch.key}:`, err)
+                        // Fallback to generic array of records
+                        zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
+                    }
+                } else {
+                    // If no schema provided, use generic array of records
+                    zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
+                }
+            }
+        }
+        const structuredOutputSchema = z.object(zodObj)
+
+        // @ts-ignore
+        return llmNodeInstance.withStructuredOutput(structuredOutputSchema)
+    } catch (exception) {
+        console.error(exception)
+        return llmNodeInstance
+    }
+}
+
+/**
+ * Creates a Zod schema from a JSON schema object
+ * @param {any} jsonSchema - The JSON schema object
+ * @returns {z.ZodTypeAny} - A Zod schema
+ */
+export const createZodSchemaFromJSON = (jsonSchema: any): z.ZodTypeAny => {
+    // If the schema is an object with properties, create an object schema
+    if (typeof jsonSchema === 'object' && jsonSchema !== null) {
+        const schemaObj: Record<string, z.ZodTypeAny> = {}
+
+        // Process each property in the schema
+        for (const [key, value] of Object.entries(jsonSchema)) {
+            if (value === null) {
+                // Handle null values
+                schemaObj[key] = z.null()
+            } else if (typeof value === 'object' && !Array.isArray(value)) {
+                // Check if the property has a type definition
+                if ('type' in value) {
+                    const type = value.type as string
+                    const description = ('description' in value ? (value.description as string) : '') || ''
+
+                    // Create the appropriate Zod type based on the type property
+                    if (type === 'string') {
+                        schemaObj[key] = z.string().describe(description)
+                    } else if (type === 'number') {
+                        schemaObj[key] = z.number().describe(description)
+                    } else if (type === 'boolean') {
+                        schemaObj[key] = z.boolean().describe(description)
+                    } else if (type === 'array') {
+                        // If it's an array type, check if items is defined
+                        if ('items' in value && value.items) {
+                            const itemSchema = createZodSchemaFromJSON(value.items)
+                            schemaObj[key] = z.array(itemSchema).describe(description)
+                        } else {
+                            // Default to array of any if items not specified
+                            schemaObj[key] = z.array(z.any()).describe(description)
+                        }
+                    } else if (type === 'object') {
+                        // If it's an object type, check if properties is defined
+                        if ('properties' in value && value.properties) {
+                            const nestedSchema = createZodSchemaFromJSON(value.properties)
+                            schemaObj[key] = nestedSchema.describe(description)
+                        } else {
+                            // Default to record of any if properties not specified
+                            schemaObj[key] = z.record(z.any()).describe(description)
+                        }
+                    } else {
+                        // Default to any for unknown types
+                        schemaObj[key] = z.any().describe(description)
+                    }
+
+                    // Check if the property is optional
+                    if ('optional' in value && value.optional === true) {
+                        schemaObj[key] = schemaObj[key].optional()
+                    }
+                } else if (Array.isArray(value)) {
+                    // Array values without a type property
+                    if (value.length > 0) {
+                        // If the array has items, recursively create a schema for the first item
+                        const itemSchema = createZodSchemaFromJSON(value[0])
+                        schemaObj[key] = z.array(itemSchema)
+                    } else {
+                        // Empty array, allow any array
+                        schemaObj[key] = z.array(z.any())
+                    }
+                } else {
+                    // It's a nested object without a type property, recursively create schema
+                    schemaObj[key] = createZodSchemaFromJSON(value)
+                }
+            } else if (Array.isArray(value)) {
+                // Array values
+                if (value.length > 0) {
+                    // If the array has items, recursively create a schema for the first item
+                    const itemSchema = createZodSchemaFromJSON(value[0])
+                    schemaObj[key] = z.array(itemSchema)
+                } else {
+                    // Empty array, allow any array
+                    schemaObj[key] = z.array(z.any())
+                }
+            } else {
+                // For primitive values (which shouldn't be in the schema directly)
+                // Use the corresponding Zod type
+                if (typeof value === 'string') {
+                    schemaObj[key] = z.string()
+                } else if (typeof value === 'number') {
+                    schemaObj[key] = z.number()
+                } else if (typeof value === 'boolean') {
+                    schemaObj[key] = z.boolean()
+                } else {
+                    schemaObj[key] = z.any()
+                }
+            }
+        }
+
+        return z.object(schemaObj)
+    }
+
+    // Fallback to any for unknown types
+    return z.any()
 }

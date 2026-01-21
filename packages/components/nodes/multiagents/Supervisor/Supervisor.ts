@@ -21,6 +21,7 @@ import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { ChatAnthropic } from '../../chatmodels/ChatAnthropic/FlowiseChatAnthropic'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
+import { AzureChatOpenAI } from '../../chatmodels/AzureChatOpenAI/FlowiseAzureChatOpenAI'
 
 const sysPrompt = `You are a supervisor tasked with managing a conversation between the following workers: {team_members}.
 Given the following user request, respond with the worker to act next.
@@ -242,7 +243,7 @@ class Supervisor_MultiAgents implements INode {
                             }
                         }
                     })
-            } else if (llm instanceof ChatOpenAI) {
+            } else if (llm instanceof ChatOpenAI || llm instanceof AzureChatOpenAI) {
                 let prompt = ChatPromptTemplate.fromMessages([
                     ['system', systemPrompt],
                     new MessagesPlaceholder('messages'),
