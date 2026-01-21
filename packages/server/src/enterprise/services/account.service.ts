@@ -15,7 +15,7 @@ import { User, UserStatus } from '../database/entities/user.entity'
 import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspace-user.entity'
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
-import { compareHash } from '../utils/encryption.util'
+import { compareHash, getHash, hashNeedsUpgrade } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
 import auditService from './audit'
@@ -26,6 +26,7 @@ import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import logger from '../../utils/logger'
 
 type AccountDTO = {
     user: Partial<User>
@@ -468,6 +469,19 @@ export class AccountService {
                 await auditService.recordLoginActivity(user.email || '', LoginActivityCode.INCORRECT_CREDENTIAL, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.INCORRECT_USER_EMAIL_OR_CREDENTIALS)
             }
+
+            // If the stored hash was created with fewer salt rounds than the current minimum
+            // (e.g. 5 before we increased to 10), rehash with the current rounds on successful login.
+            const minRounds = parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10', 10)
+            if (hashNeedsUpgrade(user.credential!, minRounds)) {
+                try {
+                    const newHash = getHash(data.user.credential!)
+                    await this.userService.saveUser({ ...user, credential: newHash }, queryRunner)
+                } catch (upgradeError) {
+                    logger.warn(`Failed to upgrade password hash for user ${user.email}`, upgradeError)
+                }
+            }
+
             if (user.status === UserStatus.UNVERIFIED) {
                 await auditService.recordLoginActivity(data.user.email || '', LoginActivityCode.REGISTRATION_PENDING, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.USER_EMAIL_UNVERIFIED)
