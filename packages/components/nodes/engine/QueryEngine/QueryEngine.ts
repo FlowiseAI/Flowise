@@ -25,6 +25,8 @@ class QueryEngine_LlamaIndex implements INode {
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
     sessionId?: string
+    badge: string
+    deprecateMessage: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Query Engine'
@@ -36,6 +38,8 @@ class QueryEngine_LlamaIndex implements INode {
         this.description = 'Simple query engine built to answer question over your data, without memory'
         this.baseClasses = [this.type, 'BaseQueryEngine']
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Vector Store Retriever',

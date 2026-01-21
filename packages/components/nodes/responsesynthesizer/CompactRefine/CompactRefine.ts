@@ -13,6 +13,8 @@ class CompactRefine_LlamaIndex implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Compact and Refine'
@@ -25,6 +27,8 @@ class CompactRefine_LlamaIndex implements INode {
             'CompactRefine is a slight variation of Refine that first compacts the text chunks into the smallest possible number of chunks.'
         this.baseClasses = [this.type, 'ResponseSynthesizer']
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Refine Prompt',
