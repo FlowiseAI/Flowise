@@ -88,7 +88,8 @@
             "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
         },
         "patchedDependencies": {
-            "flowise-embed": "patches/flowise-embed.patch"
+            "flowise-embed": "patches/flowise-embed.patch",
+            "flowise-embed@3.0.5": "patches/flowise-embed@3.0.5.patch"
         }
     },
     "engines": {

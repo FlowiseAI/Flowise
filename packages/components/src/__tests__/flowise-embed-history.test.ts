@@ -31,12 +31,26 @@ describe('flowise-embed includeHistory integration', () => {
         expect(contents).toContain('sessionId!==t')
     })
 
+    test('web.js bundle scopes external storage by session key', () => {
+        const webJsPath = require.resolve('flowise-embed/dist/web.js')
+        const contents = readText(webJsPath)
+
+        expect(contents).toContain('_EXTERNAL_')
+    })
+
     test('web.umd.js bundle persists sessionId when storing history', () => {
         const webUmdPath = require.resolve('flowise-embed/dist/web.umd.js')
         const contents = readText(webUmdPath)
 
         expect(contents).toContain('chatHistory:n,sessionId:t')
         expect(contents).toContain('sessionId!==t')
+    })
+
+    test('web.umd.js bundle scopes external storage by session key', () => {
+        const webUmdPath = require.resolve('flowise-embed/dist/web.umd.js')
+        const contents = readText(webUmdPath)
+
+        expect(contents).toContain('_EXTERNAL_')
     })
 
     test('type definitions expose includeHistory on Chatbot init', () => {
