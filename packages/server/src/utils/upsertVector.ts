@@ -1,43 +1,43 @@
 import { Request } from 'express'
-import * as path from 'path'
-import { cloneDeep, omit } from 'lodash'
 import {
-    IMessage,
     addArrayFilesToStorage,
-    mapMimeTypeToInputField,
-    mapExtToInputField,
     getFileFromUpload,
+    IMessage,
+    mapExtToInputField,
+    mapMimeTypeToInputField,
     removeSpecificFileFromUpload
 } from 'flowise-components'
-import logger from '../utils/logger'
+import { StatusCodes } from 'http-status-codes'
+import { cloneDeep, omit } from 'lodash'
+import * as path from 'path'
+import { v4 as uuidv4 } from 'uuid'
+import { ChatType, IExecuteFlowParams, IncomingInput, INodeDirectedGraph, IReactFlowObject, MODE } from '../Interface'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
+import { ChatFlow } from '../database/entities/ChatFlow'
+import { UpsertHistory } from '../database/entities/UpsertHistory'
+import { Variable } from '../database/entities/Variable'
+import { Organization } from '../enterprise/database/entities/organization.entity'
+import { Workspace } from '../enterprise/database/entities/workspace.entity'
+import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { getErrorMessage } from '../errors/utils'
 import {
     buildFlow,
     constructGraphs,
-    getAllConnectedNodes,
     findMemoryNode,
-    getMemorySessionId,
+    getAllConnectedNodes,
+    getAPIOverrideConfig,
     getAppVersion,
-    getTelemetryFlowObj,
+    getMemorySessionId,
     getStartingNodes,
-    getAPIOverrideConfig
+    getTelemetryFlowObj
 } from '../utils'
-import { validateFlowAPIKey } from './validateKey'
-import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType, IExecuteFlowParams, MODE } from '../Interface'
-import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
-import { UpsertHistory } from '../database/entities/UpsertHistory'
-import { InternalFlowiseError } from '../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
-import { checkStorage, updateStorageUsage } from './quotaUsage'
-import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
-import { getErrorMessage } from '../errors/utils'
-import { v4 as uuidv4 } from 'uuid'
-import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
-import { Variable } from '../database/entities/Variable'
-import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
+import logger from '../utils/logger'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
-import { Workspace } from '../enterprise/database/entities/workspace.entity'
-import { Organization } from '../enterprise/database/entities/organization.entity'
+import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
+import { checkStorage, updateStorageUsage } from './quotaUsage'
+import { validateFlowAPIKey } from './validateKey'
 
 export const executeUpsert = async ({
     componentNodes,
@@ -262,7 +262,6 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             }
         }
 
-        // This can be public API, so we can only get orgId from the chatflow
         const chatflowWorkspaceId = chatflow.workspaceId
         const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
             id: chatflowWorkspaceId
@@ -271,6 +270,8 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
         }
         const workspaceId = workspace.id
+
+        if (workspaceId !== req.user?.activeWorkspaceId) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Unauthorized')
 
         const org = await appServer.AppDataSource.getRepository(Organization).findOneBy({
             id: workspace.organizationId
