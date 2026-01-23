@@ -22,7 +22,8 @@ import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
 
 export const enum ChatflowErrorMessage {
-    INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type'
+    INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type',
+    INVALID_CHATFLOW_ID = 'Invalid Chatflow ID'
 }
 
 export function validateChatflowType(type: ChatflowType | undefined) {
@@ -244,7 +245,7 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
 const getChatflowById = async (chatflowId: string, workspaceId?: string): Promise<any> => {
     try {
         if (!isValidUUID(chatflowId)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid chatflow ID format`)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, ChatflowErrorMessage.INVALID_CHATFLOW_ID)
         }
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
