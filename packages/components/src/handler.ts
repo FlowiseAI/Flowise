@@ -190,28 +190,32 @@ interface MLflowOptions {
 }
 
 /**
- * MLflow client for tracking LLM runs and experiments
- * Uses MLflow REST API for logging runs, metrics, and parameters
+ * Thread-safe MLflow client for tracking LLM runs and experiments.
+ * Uses MLflow REST API directly - no global environment variables.
+ * Each instance maintains its own authentication headers.
  */
 export class MLflowClient {
     private trackingUri: string
     private experimentName: string
     private experimentId: string | null = null
     private headers: Record<string, string>
-    private activeRuns: Map<string, { runId: string; startTime: number }> = new Map()
+    private activeRuns: Map<string, { runId: string; startTime: number; tokenCount: number }> = new Map()
 
     constructor(options: MLflowOptions) {
         this.trackingUri = options.trackingUri.replace(/\/$/, '')
         this.experimentName = options.experimentName
 
-        // Set up authentication headers
+        // Set up authentication headers - instance-specific, NOT global
         this.headers = {
             'Content-Type': 'application/json'
         }
 
+        // Bearer Token auth (Databricks, managed MLflow)
         if (options.apiToken) {
             this.headers['Authorization'] = `Bearer ${options.apiToken}`
-        } else if (options.username && options.password) {
+        }
+        // Basic Auth (username/password)
+        else if (options.username && options.password) {
             const auth = Buffer.from(`${options.username}:${options.password}`).toString('base64')
             this.headers['Authorization'] = `Basic ${auth}`
         }
@@ -266,18 +270,22 @@ export class MLflowClient {
 
         try {
             const startTime = Date.now()
+            const allTags = [
+                { key: 'mlflow.source.name', value: 'Flowise' },
+                { key: 'mlflow.source.type', value: 'LOCAL' },
+                ...(tags ? Object.entries(tags).map(([key, value]) => ({ key, value })) : [])
+            ]
+
             const result = await this.fetch('/runs/create', 'POST', {
                 experiment_id: this.experimentId,
                 run_name: runName,
                 start_time: startTime,
-                tags: tags
-                    ? Object.entries(tags).map(([key, value]) => ({ key, value }))
-                    : [{ key: 'mlflow.source.name', value: 'Flowise' }]
+                tags: allTags
             })
 
             const runId = result.run?.info?.run_id
             if (runId) {
-                this.activeRuns.set(runId, { runId, startTime })
+                this.activeRuns.set(runId, { runId, startTime, tokenCount: 0 })
             }
             return runId || null
         } catch (err) {
@@ -298,6 +306,13 @@ export class MLflowClient {
         }
     }
 
+    async logParams(runId: string, params: Record<string, string>): Promise<void> {
+        // Log multiple params efficiently
+        for (const [key, value] of Object.entries(params)) {
+            await this.logParam(runId, key, value)
+        }
+    }
+
     async logMetric(runId: string, key: string, value: number, step?: number): Promise<void> {
         try {
             await this.fetch('/runs/log-metric', 'POST', {
@@ -309,6 +324,13 @@ export class MLflowClient {
             })
         } catch (err) {
             if (process.env.DEBUG === 'true') console.error(`Error logging MLflow metric: ${err}`)
+        }
+    }
+
+    async logMetrics(runId: string, metrics: Record<string, number>): Promise<void> {
+        // Log multiple metrics efficiently
+        for (const [key, value] of Object.entries(metrics)) {
+            await this.logMetric(runId, key, value)
         }
     }
 
@@ -324,15 +346,40 @@ export class MLflowClient {
         }
     }
 
+    async setTags(runId: string, tags: Record<string, string>): Promise<void> {
+        // Set multiple tags efficiently
+        for (const [key, value] of Object.entries(tags)) {
+            await this.setTag(runId, key, value)
+        }
+    }
+
+    /**
+     * Track token usage for a run
+     */
+    addTokenUsage(runId: string, tokens: number): void {
+        const runInfo = this.activeRuns.get(runId)
+        if (runInfo) {
+            runInfo.tokenCount += tokens
+        }
+    }
+
     async endRun(runId: string, status: 'FINISHED' | 'FAILED' | 'KILLED' = 'FINISHED'): Promise<void> {
         try {
             const runInfo = this.activeRuns.get(runId)
             const endTime = Date.now()
 
             if (runInfo) {
-                // Log duration metric
-                const duration = endTime - runInfo.startTime
-                await this.logMetric(runId, 'duration_ms', duration)
+                // Log latency metric
+                const latencyMs = endTime - runInfo.startTime
+                await this.logMetric(runId, 'latency_ms', latencyMs)
+
+                // Log token usage if tracked
+                if (runInfo.tokenCount > 0) {
+                    await this.logMetric(runId, 'token_usage', runInfo.tokenCount)
+                }
+
+                // Log success metric based on status
+                await this.logMetric(runId, 'success', status === 'FINISHED' ? 1 : 0)
             }
 
             await this.fetch('/runs/update', 'POST', {
@@ -350,7 +397,7 @@ export class MLflowClient {
     async logInputOutput(runId: string, input: string | object, output?: string | object): Promise<void> {
         try {
             const inputStr = typeof input === 'string' ? input : JSON.stringify(input)
-            await this.setTag(runId, 'input', inputStr)
+            await this.setTag(runId, 'mlflow.note.content', inputStr) // Standard MLflow tag for inputs
 
             if (output) {
                 const outputStr = typeof output === 'string' ? output : JSON.stringify(output)
@@ -358,6 +405,48 @@ export class MLflowClient {
             }
         } catch (err) {
             if (process.env.DEBUG === 'true') console.error(`Error logging MLflow input/output: ${err}`)
+        }
+    }
+
+    /**
+     * Log a complete chain execution with all relevant data
+     */
+    async logChainExecution(
+        runId: string,
+        data: {
+            chainId?: string
+            sessionId?: string
+            chainName?: string
+            input: string | object
+            output?: string | object
+            tokenUsage?: number
+            error?: string
+        }
+    ): Promise<void> {
+        try {
+            // Log parameters
+            const params: Record<string, string> = {}
+            if (data.chainId) params['chain_id'] = data.chainId
+            if (data.sessionId) params['session_id'] = data.sessionId
+            if (data.chainName) params['chain_name'] = data.chainName
+            if (Object.keys(params).length > 0) {
+                await this.logParams(runId, params)
+            }
+
+            // Log input/output as tags
+            await this.logInputOutput(runId, data.input, data.output)
+
+            // Track token usage
+            if (data.tokenUsage) {
+                this.addTokenUsage(runId, data.tokenUsage)
+            }
+
+            // Log error if present
+            if (data.error) {
+                await this.setTag(runId, 'error', data.error)
+            }
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error logging chain execution: ${err}`)
         }
     }
 }
@@ -1312,8 +1401,12 @@ export class AnalyticHandler {
 
                 if (runId) {
                     await mlflow.logInputOutput(runId, input)
-                    await mlflow.logParam(runId, 'chain_name', name)
-                    await mlflow.logParam(runId, 'session_id', this.options.chatId || 'unknown')
+                    // Log required parameters: chain_id, chain_name, session_id
+                    await mlflow.logParams(runId, {
+                        chain_id: runId,
+                        chain_name: name,
+                        session_id: this.options.chatId || 'unknown'
+                    })
 
                     this.handlers['mlflow'].chainRun = { [runId]: runId }
                     returnIds['mlflow'].chainRun = runId
@@ -1416,7 +1509,7 @@ export class AnalyticHandler {
             if (mlflow && chainRunId) {
                 const outputStr = typeof output === 'string' ? output : JSON.stringify(output)
                 await mlflow.setTag(chainRunId, 'output', outputStr)
-                await mlflow.logMetric(chainRunId, 'success', 1)
+                // endRun automatically logs latency_ms, token_usage, and success metrics
                 await mlflow.endRun(chainRunId, 'FINISHED')
             }
         }
@@ -1511,7 +1604,7 @@ export class AnalyticHandler {
             if (mlflow && chainRunId) {
                 const errorStr = typeof error === 'string' ? error : JSON.stringify(error)
                 await mlflow.setTag(chainRunId, 'error', errorStr)
-                await mlflow.logMetric(chainRunId, 'success', 0)
+                // endRun automatically logs latency_ms, token_usage, and success=0 for FAILED status
                 await mlflow.endRun(chainRunId, 'FAILED')
             }
         }
