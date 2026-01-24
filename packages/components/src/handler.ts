@@ -181,6 +181,187 @@ function getOpikTracer(options: OpikTracerOptions): Tracer | undefined {
     }
 }
 
+interface MLflowOptions {
+    trackingUri: string
+    experimentName: string
+    apiToken?: string
+    username?: string
+    password?: string
+}
+
+/**
+ * MLflow client for tracking LLM runs and experiments
+ * Uses MLflow REST API for logging runs, metrics, and parameters
+ */
+export class MLflowClient {
+    private trackingUri: string
+    private experimentName: string
+    private experimentId: string | null = null
+    private headers: Record<string, string>
+    private activeRuns: Map<string, { runId: string; startTime: number }> = new Map()
+
+    constructor(options: MLflowOptions) {
+        this.trackingUri = options.trackingUri.replace(/\/$/, '')
+        this.experimentName = options.experimentName
+
+        // Set up authentication headers
+        this.headers = {
+            'Content-Type': 'application/json'
+        }
+
+        if (options.apiToken) {
+            this.headers['Authorization'] = `Bearer ${options.apiToken}`
+        } else if (options.username && options.password) {
+            const auth = Buffer.from(`${options.username}:${options.password}`).toString('base64')
+            this.headers['Authorization'] = `Basic ${auth}`
+        }
+    }
+
+    private async fetch(endpoint: string, method: string, body?: object): Promise<any> {
+        try {
+            const response = await fetch(`${this.trackingUri}/api/2.0/mlflow${endpoint}`, {
+                method,
+                headers: this.headers,
+                body: body ? JSON.stringify(body) : undefined
+            })
+
+            if (!response.ok) {
+                const errorText = await response.text()
+                throw new Error(`MLflow API error: ${response.status} - ${errorText}`)
+            }
+
+            const text = await response.text()
+            return text ? JSON.parse(text) : {}
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`MLflow API error: ${err}`)
+            throw err
+        }
+    }
+
+    async init(): Promise<void> {
+        try {
+            // Try to get or create the experiment
+            const searchResult = await this.fetch('/experiments/search', 'POST', {
+                filter: `name = '${this.experimentName}'`
+            })
+
+            if (searchResult.experiments && searchResult.experiments.length > 0) {
+                this.experimentId = searchResult.experiments[0].experiment_id
+            } else {
+                // Create new experiment
+                const createResult = await this.fetch('/experiments/create', 'POST', {
+                    name: this.experimentName
+                })
+                this.experimentId = createResult.experiment_id
+            }
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error initializing MLflow experiment: ${err}`)
+        }
+    }
+
+    async startRun(runName: string, tags?: Record<string, string>): Promise<string | null> {
+        if (!this.experimentId) {
+            await this.init()
+        }
+
+        try {
+            const startTime = Date.now()
+            const result = await this.fetch('/runs/create', 'POST', {
+                experiment_id: this.experimentId,
+                run_name: runName,
+                start_time: startTime,
+                tags: tags
+                    ? Object.entries(tags).map(([key, value]) => ({ key, value }))
+                    : [{ key: 'mlflow.source.name', value: 'Flowise' }]
+            })
+
+            const runId = result.run?.info?.run_id
+            if (runId) {
+                this.activeRuns.set(runId, { runId, startTime })
+            }
+            return runId || null
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error starting MLflow run: ${err}`)
+            return null
+        }
+    }
+
+    async logParam(runId: string, key: string, value: string): Promise<void> {
+        try {
+            await this.fetch('/runs/log-parameter', 'POST', {
+                run_id: runId,
+                key,
+                value: String(value).substring(0, 500) // MLflow has a 500 char limit for params
+            })
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error logging MLflow param: ${err}`)
+        }
+    }
+
+    async logMetric(runId: string, key: string, value: number, step?: number): Promise<void> {
+        try {
+            await this.fetch('/runs/log-metric', 'POST', {
+                run_id: runId,
+                key,
+                value,
+                timestamp: Date.now(),
+                step: step || 0
+            })
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error logging MLflow metric: ${err}`)
+        }
+    }
+
+    async setTag(runId: string, key: string, value: string): Promise<void> {
+        try {
+            await this.fetch('/runs/set-tag', 'POST', {
+                run_id: runId,
+                key,
+                value: String(value).substring(0, 5000) // MLflow has a 5000 char limit for tags
+            })
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error setting MLflow tag: ${err}`)
+        }
+    }
+
+    async endRun(runId: string, status: 'FINISHED' | 'FAILED' | 'KILLED' = 'FINISHED'): Promise<void> {
+        try {
+            const runInfo = this.activeRuns.get(runId)
+            const endTime = Date.now()
+
+            if (runInfo) {
+                // Log duration metric
+                const duration = endTime - runInfo.startTime
+                await this.logMetric(runId, 'duration_ms', duration)
+            }
+
+            await this.fetch('/runs/update', 'POST', {
+                run_id: runId,
+                status,
+                end_time: endTime
+            })
+
+            this.activeRuns.delete(runId)
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error ending MLflow run: ${err}`)
+        }
+    }
+
+    async logInputOutput(runId: string, input: string | object, output?: string | object): Promise<void> {
+        try {
+            const inputStr = typeof input === 'string' ? input : JSON.stringify(input)
+            await this.setTag(runId, 'input', inputStr)
+
+            if (output) {
+                const outputStr = typeof output === 'string' ? output : JSON.stringify(output)
+                await this.setTag(runId, 'output', outputStr)
+            }
+        } catch (err) {
+            if (process.env.DEBUG === 'true') console.error(`Error logging MLflow input/output: ${err}`)
+        }
+    }
+}
+
 function tryGetJsonSpaces() {
     try {
         return parseInt(getEnvironmentVariable('LOG_JSON_SPACES') ?? '2')
@@ -679,6 +860,13 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
 
                     const tracer: Tracer | undefined = getOpikTracer(opikOptions)
                     callbacks.push(tracer)
+                } else if (provider === 'mlflow') {
+                    // MLflow uses a different tracking approach - it doesn't have LangChain callbacks
+                    // MLflow tracking is handled through the AnalyticHandler class for agentflow
+                    // For regular chatflows, we skip it here as it's tracked separately
+                    if (process.env.DEBUG === 'true') {
+                        console.log('MLflow analytics enabled - tracking handled via AnalyticHandler')
+                    }
                 }
             }
         }
@@ -864,6 +1052,25 @@ export class AnalyticHandler {
             const rootSpan: Span | undefined = undefined
 
             this.handlers['opik'] = { client: opik, opikProject, rootSpan }
+        } else if (provider === 'mlflow') {
+            const mlflowTrackingUri = getCredentialParam('mlflowTrackingUri', credentialData, this.nodeData)
+            const mlflowApiToken = getCredentialParam('mlflowApiToken', credentialData, this.nodeData)
+            const mlflowUsername = getCredentialParam('mlflowUsername', credentialData, this.nodeData)
+            const mlflowPassword = getCredentialParam('mlflowPassword', credentialData, this.nodeData)
+            const mlflowExperiment = providerConfig.experimentName as string
+
+            const mlflowOptions: MLflowOptions = {
+                trackingUri: mlflowTrackingUri ?? 'http://localhost:5000',
+                experimentName: mlflowExperiment ?? 'Flowise',
+                apiToken: mlflowApiToken,
+                username: mlflowUsername,
+                password: mlflowPassword
+            }
+
+            const mlflow = new MLflowClient(mlflowOptions)
+            await mlflow.init()
+
+            this.handlers['mlflow'] = { client: mlflow, experimentName: mlflowExperiment }
         }
     }
 
@@ -875,7 +1082,8 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
-            opik: {}
+            opik: {},
+            mlflow: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1091,6 +1299,28 @@ export class AnalyticHandler {
             returnIds['opik'].chainSpan = chainSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const mlflow: MLflowClient = this.handlers['mlflow'].client
+
+            if (!parentIds || !Object.keys(parentIds).length) {
+                // Start a new root run for this chain
+                const runId = await mlflow.startRun(name, {
+                    'mlflow.source.name': 'Flowise',
+                    'session.id': this.options.chatId || '',
+                    'run.type': 'chain'
+                })
+
+                if (runId) {
+                    await mlflow.logInputOutput(runId, input)
+                    await mlflow.logParam(runId, 'chain_name', name)
+                    await mlflow.logParam(runId, 'session_id', this.options.chatId || 'unknown')
+
+                    this.handlers['mlflow'].chainRun = { [runId]: runId }
+                    returnIds['mlflow'].chainRun = runId
+                }
+            }
+        }
+
         return returnIds
     }
 
@@ -1179,6 +1409,18 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const mlflow: MLflowClient = this.handlers['mlflow'].client
+            const chainRunId: string | undefined = returnIds['mlflow']?.chainRun
+
+            if (mlflow && chainRunId) {
+                const outputStr = typeof output === 'string' ? output : JSON.stringify(output)
+                await mlflow.setTag(chainRunId, 'output', outputStr)
+                await mlflow.logMetric(chainRunId, 'success', 1)
+                await mlflow.endRun(chainRunId, 'FINISHED')
+            }
+        }
+
         if (shutdown) {
             // Cleanup this instance when chain ends
             AnalyticHandler.resetInstance(this.chatId)
@@ -1262,6 +1504,18 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const mlflow: MLflowClient = this.handlers['mlflow'].client
+            const chainRunId: string | undefined = returnIds['mlflow']?.chainRun
+
+            if (mlflow && chainRunId) {
+                const errorStr = typeof error === 'string' ? error : JSON.stringify(error)
+                await mlflow.setTag(chainRunId, 'error', errorStr)
+                await mlflow.logMetric(chainRunId, 'success', 0)
+                await mlflow.endRun(chainRunId, 'FAILED')
+            }
+        }
+
         if (shutdown) {
             // Cleanup this instance when chain ends
             AnalyticHandler.resetInstance(this.chatId)
@@ -1275,7 +1529,8 @@ export class AnalyticHandler {
             lunary: {},
             langWatch: {},
             arize: {},
-            phoenix: {}
+            phoenix: {},
+            mlflow: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1397,6 +1652,18 @@ export class AnalyticHandler {
             returnIds['opik'].llmSpan = llmSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const mlflow: MLflowClient = this.handlers['mlflow'].client
+            const chainRunId: string | undefined = parentIds['mlflow']?.chainRun
+
+            if (mlflow && chainRunId) {
+                // Log LLM call as a metric on the parent chain run
+                await mlflow.logMetric(chainRunId, 'llm_calls', 1)
+                const inputStr = typeof input === 'string' ? input : JSON.stringify(input)
+                await mlflow.setTag(chainRunId, `llm.${name}.input`, inputStr.substring(0, 5000))
+            }
+        }
+
         return returnIds
     }
 
@@ -1472,6 +1739,8 @@ export class AnalyticHandler {
                 llmSpan.end()
             }
         }
+
+        // MLflow LLM tracking is done at chain level - output logged when chain ends
     }
 
     async onLLMError(returnIds: ICommonObject, error: string | object) {
@@ -1556,7 +1825,8 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
-            opik: {}
+            opik: {},
+            mlflow: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1672,6 +1942,18 @@ export class AnalyticHandler {
 
             this.handlers['opik'].toolSpan = { [toolSpanId]: toolSpan }
             returnIds['opik'].toolSpan = toolSpanId
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const mlflow: MLflowClient = this.handlers['mlflow'].client
+            const chainRunId: string | undefined = parentIds['mlflow']?.chainRun
+
+            if (mlflow && chainRunId) {
+                // Log tool call as a metric on the parent chain run
+                await mlflow.logMetric(chainRunId, 'tool_calls', 1)
+                const inputStr = typeof input === 'string' ? input : JSON.stringify(input)
+                await mlflow.setTag(chainRunId, `tool.${name}.input`, inputStr.substring(0, 5000))
+            }
         }
 
         return returnIds

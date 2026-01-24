@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="mlflow-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0194E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#43B0F1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#mlflow-gradient)"/>
+  <g fill="white">
+    <text x="100" y="120" font-family="Arial, sans-serif" font-size="48" font-weight="bold" text-anchor="middle">ML</text>
+    <path d="M40 140 Q100 160 160 140" stroke="white" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="60" cy="75" r="8"/>
+    <circle cx="100" cy="60" r="8"/>
+    <circle cx="140" cy="75" r="8"/>
+    <path d="M60 75 L100 60 L140 75" stroke="white" stroke-width="4" fill="none"/>
+  </g>
+</svg>
