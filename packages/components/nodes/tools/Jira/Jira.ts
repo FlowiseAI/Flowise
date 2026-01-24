@@ -41,7 +41,7 @@ class Jira_Tools implements INode {
                 label: 'Enable SSL Certificate',
                 name: 'enableSSL',
                 type: 'boolean',
-                description: 'Enable if your JIRA Server/DC uses a SSL certificate',
+                description: 'Enable if your JIRA Server/DC uses an SSL certificate',
                 optional: true,
                 default: false
             },
