@@ -295,6 +295,7 @@ export interface IncomingInput {
     history?: IMessage[]
     action?: IAction
     streaming?: boolean
+    async?: boolean
 }
 
 export interface IncomingAgentflowInput extends Omit<IncomingInput, 'question'> {

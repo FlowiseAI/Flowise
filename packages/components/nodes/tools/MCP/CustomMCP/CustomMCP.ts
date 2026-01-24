@@ -11,7 +11,9 @@ const mcpServerConfig = `{
 }`
 
 const howToUseCode = `
-You can use variables in the MCP Server Config with double curly braces \`{{ }}\` and prefix \`$vars.<variableName>\`. 
+You can use variables in the MCP Server Config with double curly braces \`{{ }}\` and prefix \`$vars.<variableName>\` or \`$flow.<property>\`. 
+
+Available \`$flow\` properties include \`sessionId\`, \`chatId\`, \`chatflowid\`/\`chatflowId\`, \`input\`, \`state\`, and \`apiMessageId\` when available.
 
 For example, you have a variable called "var1":
 \`\`\`json
@@ -35,6 +37,16 @@ For example, when using SSE, you can use the variable "var1" in the headers:
     "url": "https://api.example.com/endpoint/sse",
     "headers": {
         "Authorization": "Bearer {{$vars.var1}}"
+    }
+}
+\`\`\`
+
+For example, include the current session id in headers:
+\`\`\`json
+{
+    "url": "https://api.example.com/endpoint/sse",
+    "headers": {
+        "X-Session-Id": "{{$flow.sessionId}}"
     }
 }
 \`\`\`
@@ -145,6 +157,29 @@ class Custom_MCP implements INode {
             const optionsWithWorkspaceId = options.workspaceId ? options : { ...options, workspaceId }
             const variables = await getVars(appDataSource, databaseEntities, nodeData, optionsWithWorkspaceId)
             sandbox['$vars'] = prepareSandboxVars(variables)
+        }
+
+        if (mcpServerConfig.includes('$flow')) {
+            const flow: ICommonObject = {}
+            const usesFlowInput = mcpServerConfig.includes('$flow.input')
+            const usesFlowState = mcpServerConfig.includes('$flow.state')
+            if (options.sessionId) flow.sessionId = options.sessionId
+            if (options.chatId) flow.chatId = options.chatId
+            if (options.chatflowid) flow.chatflowid = options.chatflowid
+            if (options.chatflowId) flow.chatflowId = options.chatflowId
+            if (options.apiMessageId) flow.apiMessageId = options.apiMessageId
+            if (usesFlowState && options.agentflowRuntime?.state) {
+                flow.state = options.agentflowRuntime.state
+            }
+            if (usesFlowInput) {
+                const flowInput = options.input ?? options.question ?? options.form
+                if (flowInput !== undefined) {
+                    flow.input = flowInput
+                }
+            }
+            if (Object.keys(flow).length > 0) {
+                sandbox['$flow'] = flow
+            }
         }
 
         let canonicalConfig

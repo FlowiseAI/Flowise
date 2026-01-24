@@ -54,6 +54,23 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
             }
         }
         if (isDomainAllowed) {
+            const isAsyncRequested = req.body.async === 'true' || req.body.async === true
+            if (isAsyncRequested) {
+                let chatId = req.body.chatId
+                if (!req.body.chatId) {
+                    chatId = req.body.chatId ?? req.body.overrideConfig?.sessionId ?? uuidv4()
+                    req.body.chatId = chatId
+                }
+                req.body.streaming = false
+                void predictionsServices.buildChatflow(req).catch((error) => {
+                    logger.error(`[server]: Async prediction failed: ${getErrorMessage(error)}`)
+                })
+                return res.status(StatusCodes.ACCEPTED).json({
+                    status: 'accepted',
+                    chatId,
+                    sessionId: req.body.overrideConfig?.sessionId ?? chatId
+                })
+            }
             const streamable = await chatflowsService.checkIfChatflowIsValidForStreaming(req.params.id)
             const isStreamingRequested = req.body.streaming === 'true' || req.body.streaming === true
             if (streamable?.isStreaming && isStreamingRequested) {

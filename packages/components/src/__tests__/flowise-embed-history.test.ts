@@ -8,6 +8,7 @@ describe('flowise-embed includeHistory integration', () => {
         const contents = readText(webJsPath)
 
         expect(contents).toContain('includeHistory')
+        expect(contents).toContain('usePolling')
         expect(contents).toContain('public-chatmessage')
         expect(contents).toContain('sessionId=')
         expect(contents).toContain('chatId=')
@@ -18,6 +19,7 @@ describe('flowise-embed includeHistory integration', () => {
         const contents = readText(webUmdPath)
 
         expect(contents).toContain('includeHistory')
+        expect(contents).toContain('usePolling')
         expect(contents).toContain('public-chatmessage')
         expect(contents).toContain('sessionId=')
         expect(contents).toContain('chatId=')
@@ -61,5 +63,9 @@ describe('flowise-embed includeHistory integration', () => {
         expect(readText(webDtsPath)).toContain('includeHistory')
         expect(readText(windowDtsPath)).toContain('includeHistory')
         expect(readText(botDtsPath)).toContain('includeHistory')
+
+        expect(readText(webDtsPath)).toContain('usePolling')
+        expect(readText(windowDtsPath)).toContain('usePolling')
+        expect(readText(botDtsPath)).toContain('usePolling')
     })
 })

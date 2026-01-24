@@ -1,6 +1,7 @@
 import * as Server from '../src'
 import { getRunningExpressApp } from '../src/utils/getRunningExpressApp'
 import { organizationUserRouteTest } from './routes/v1/organization-user.route.test'
+import { predictionsRouteTest } from './routes/v1/predictions.route.test'
 import { publicChatmessageRouteTest } from './routes/v1/public-chatmessage.route.test'
 import { userRouteTest } from './routes/v1/user.route.test'
 import { apiKeyTest } from './utils/api-key.util.test'
@@ -22,6 +23,7 @@ afterAll(async () => {
 describe('Routes Test', () => {
     userRouteTest()
     organizationUserRouteTest()
+    predictionsRouteTest()
     publicChatmessageRouteTest()
 })
 
