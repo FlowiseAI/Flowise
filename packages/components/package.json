@@ -136,7 +136,6 @@
         "lunary": "^0.7.12",
         "mammoth": "^1.5.1",
         "meilisearch": "^0.41.0",
-        "mlflow-tracing": "^0.1.2",
         "moment": "^2.29.3",
         "mongodb": "6.3.0",
         "mysql2": "^3.11.3",

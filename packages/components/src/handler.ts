@@ -245,8 +245,10 @@ export class MLflowClient {
     async init(): Promise<void> {
         try {
             // Try to get or create the experiment
+            // Escape single quotes in experiment name to prevent filter injection
+            const escapedName = this.experimentName.replace(/'/g, "''")
             const searchResult = await this.fetch('/experiments/search', 'POST', {
-                filter: `name = '${this.experimentName}'`
+                filter: `name = '${escapedName}'`
             })
 
             if (searchResult.experiments && searchResult.experiments.length > 0) {
@@ -260,6 +262,7 @@ export class MLflowClient {
             }
         } catch (err) {
             if (process.env.DEBUG === 'true') console.error(`Error initializing MLflow experiment: ${err}`)
+            throw err
         }
     }
 
@@ -1751,7 +1754,8 @@ export class AnalyticHandler {
 
             if (mlflow && chainRunId) {
                 // Log LLM call as a metric on the parent chain run
-                await mlflow.logMetric(chainRunId, 'llm_calls', 1)
+                // Use Date.now() as step to record each call individually
+                await mlflow.logMetric(chainRunId, 'llm_calls', 1, Date.now())
                 const inputStr = typeof input === 'string' ? input : JSON.stringify(input)
                 await mlflow.setTag(chainRunId, `llm.${name}.input`, inputStr.substring(0, 5000))
             }
@@ -2043,7 +2047,8 @@ export class AnalyticHandler {
 
             if (mlflow && chainRunId) {
                 // Log tool call as a metric on the parent chain run
-                await mlflow.logMetric(chainRunId, 'tool_calls', 1)
+                // Use Date.now() as step to record each call individually
+                await mlflow.logMetric(chainRunId, 'tool_calls', 1, Date.now())
                 const inputStr = typeof input === 'string' ? input : JSON.stringify(input)
                 await mlflow.setTag(chainRunId, `tool.${name}.input`, inputStr.substring(0, 5000))
             }
