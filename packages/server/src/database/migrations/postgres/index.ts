@@ -42,6 +42,7 @@ import { AddTextToSpeechToChatFlow1759419194331 } from './1759419194331-AddTextT
 import { AddChatFlowNameIndex1759424903973 } from './1759424903973-AddChatFlowNameIndex'
 import { AddChatFlowVersioning1770000000000 } from './1770000000000-AddChatFlowVersioning'
 import { MigrateChatFlowToVersioning1770000000001 } from './1770000000001-MigrateChatFlowToVersioning'
+import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermission'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/postgres/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/postgres/1720230151484-AddWorkspace'
@@ -111,4 +112,5 @@ export const postgresMigrations = [
     AddChatFlowNameIndex1759424903973,
     AddChatFlowVersioning1770000000000,
     MigrateChatFlowToVersioning1770000000001
+    AddApiKeyPermission1765360298674
 ]

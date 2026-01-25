@@ -43,6 +43,7 @@ import { AddChatFlowNameIndex1759424809984 } from './1759424809984-AddChatFlowNa
 import { FixDocumentStoreFileChunkLongText1765000000000 } from './1765000000000-FixDocumentStoreFileChunkLongText'
 import { AddChatFlowVersioning1770000000000 } from './1770000000000-AddChatFlowVersioning'
 import { MigrateChatFlowToVersioning1770000000001 } from './1770000000001-MigrateChatFlowToVersioning'
+import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermission'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mariadb/1720230151482-AddAuthTables'
 import { AddWorkspace1725437498242 } from '../../../enterprise/database/migrations/mariadb/1725437498242-AddWorkspace'
@@ -113,4 +114,5 @@ export const mariadbMigrations = [
     FixDocumentStoreFileChunkLongText1765000000000,
     AddChatFlowVersioning1770000000000,
     MigrateChatFlowToVersioning1770000000001
+    AddApiKeyPermission1765360298674
 ]
