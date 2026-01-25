@@ -203,10 +203,9 @@ class BaseJiraTool extends DynamicStructuredTool {
             body: body ? JSON.stringify(body) : undefined
         }
 
-        if (this.authConfig?.sslCertificate) {
-            fetchOptions.agent = new https.Agent({
-                ca: this.authConfig.sslCertificate
-            })
+        // Use HTTPS agent created in constructor if available
+        if (this.httpsAgent) {
+            fetchOptions.agent = this.httpsAgent
         }
 
         const response = await fetch(url, fetchOptions)
