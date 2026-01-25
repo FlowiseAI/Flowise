@@ -22,8 +22,20 @@ This document tracks changes and additions made in this fork relative to upstrea
   - Registered in `packages/server/test/index.test.ts`
 - Embed history test now validates `usePolling` config exposure and bundle content:
   - `packages/components/src/__tests__/flowise-embed-history.test.ts`
+- Custom MCP bundle test ensures `$flow` substitutions are compiled into the dist artifact:
+  - `packages/components/src/__tests__/custom-mcp-flow-vars.test.ts`
 
 ## Agentflow Custom MCP supports $flow variables in config
 - MCP server config templating now supports `{{ $flow.* }}` in addition to `{{ $vars.* }}`.
   - Exposes session and flow identifiers like `sessionId`, `chatId`, `chatflowid`/`chatflowId`, plus `input`, `state`, and `apiMessageId` when present.
   - Implemented in `packages/components/nodes/tools/MCP/CustomMCP/CustomMCP.ts`.
+
+## Embed asset divergence (upstream vs fork)
+- Upstream `flowise-embed@3.0.5` bundle:
+  - Full‑page fallback height uses `100dvh`.
+  - Does not include `includeHistory`/`usePolling` or public chat polling references.
+- Forked embed bundle (`node_modules/flowise-embed/dist/web.js`) differs:
+  - Adds `includeHistory` and `usePolling` support.
+  - Uses `/api/v1/public-chatmessage` polling path.
+  - Persists `sessionId` in external chat history and scopes storage by `_EXTERNAL_`.
+  - Full‑page fallback height uses `auto`.

@@ -27,6 +27,7 @@
 
 # misc
 .DS_Store
+/Flowise
 
 ## env
 .env.local
