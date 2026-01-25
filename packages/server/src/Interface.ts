@@ -346,15 +346,6 @@ export interface IUploadFileSizeAndTypes {
     maxUploadSize: number
 }
 
-export interface IApiKey {
-    id: string
-    keyName: string
-    apiKey: string
-    apiSecret: string
-    updatedDate: Date
-    workspaceId: string
-}
-
 export interface ICustomTemplate {
     id: string
     name: string

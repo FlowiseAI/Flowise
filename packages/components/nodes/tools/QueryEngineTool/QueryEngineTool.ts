@@ -12,6 +12,8 @@ class QueryEngine_Tools implements INode {
     tags: string[]
     baseClasses: string[]
     inputs?: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'QueryEngine Tool'
@@ -23,6 +25,8 @@ class QueryEngine_Tools implements INode {
         this.tags = ['LlamaIndex']
         this.description = 'Tool used to invoke query engine'
         this.baseClasses = [this.type, 'Tool_LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Base QueryEngine',

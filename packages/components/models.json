@@ -323,6 +323,30 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.2",
+                    "name": "gpt-5.2",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-pro",
+                    "name": "gpt-5.2-pro",
+                    "input_cost": 0.000021,
+                    "output_cost": 0.000168
+                },
+                {
+                    "label": "gpt-5.2-chat-latest",
+                    "name": "gpt-5.2-chat-latest",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-codex",
+                    "name": "gpt-5.2-codex",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
                     "label": "gpt-5.1",
                     "name": "gpt-5.1",
                     "input_cost": 0.00000125,
@@ -1090,6 +1114,30 @@
         {
             "name": "chatOpenAI",
             "models": [
+                {
+                    "label": "gpt-5.2",
+                    "name": "gpt-5.2",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-pro",
+                    "name": "gpt-5.2-pro",
+                    "input_cost": 0.000021,
+                    "output_cost": 0.000168
+                },
+                {
+                    "label": "gpt-5.2-chat-latest",
+                    "name": "gpt-5.2-chat-latest",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-codex",
+                    "name": "gpt-5.2-codex",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
                 {
                     "label": "gpt-5.1",
                     "name": "gpt-5.1",
