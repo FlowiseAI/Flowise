@@ -13,6 +13,8 @@ class ChatOllama_LlamaIndex_ChatModels implements INode {
     tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'ChatOllama'
@@ -24,6 +26,8 @@ class ChatOllama_LlamaIndex_ChatModels implements INode {
         this.description = 'Wrapper around ChatOllama LLM specific for LlamaIndex'
         this.baseClasses = [this.type, 'BaseChatModel_LlamaIndex', ...getBaseClasses(Ollama)]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Base URL',

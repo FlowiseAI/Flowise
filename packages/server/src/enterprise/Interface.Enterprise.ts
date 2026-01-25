@@ -72,7 +72,7 @@ export type LoggedInUser = {
     activeWorkspaceId: string
     activeWorkspace: string
     assignedWorkspaces: IAssignedWorkspace[]
-    permissions?: string[]
+    permissions: string[]
     features?: Record<string, string>
     ssoRefreshToken?: string
     ssoToken?: string
