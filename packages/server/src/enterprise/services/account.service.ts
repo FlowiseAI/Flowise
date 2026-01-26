@@ -70,6 +70,43 @@ export class AccountService {
         return data
     }
 
+    /**
+     * Sanitizes the registration DTO to prevent mass assignment vulnerabilities.
+     * Only allows client-controlled fields for user registration; all other fields
+     * and nested objects are server-controlled and must not be accepted from client.
+     */
+    private sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
+        const sanitized: AccountDTO = {
+            user: {},
+            organization: {},
+            organizationUser: {},
+            workspace: {},
+            workspaceUser: {},
+            role: {}
+        }
+
+        // Only allow specific user fields that clients can control during registration
+        const allowedUserFields: (keyof User)[] = ['name', 'email', 'credential', 'tempToken']
+        if (data.user) {
+            for (const field of allowedUserFields) {
+                if (data.user[field] !== undefined) {
+                    sanitized.user[field] = data.user[field] as any
+                }
+            }
+            // Also allow referral field (used for Stripe referral tracking in CLOUD platform)
+            // This is not a User entity field but is accepted in the DTO
+            if ('referral' in data.user && data.user.referral !== undefined) {
+                ;(sanitized.user as any).referral = data.user.referral
+            }
+        }
+
+        // All other nested objects (organization, organizationUser, workspace, workspaceUser, role)
+        // are completely server-controlled during registration and must be empty.
+        // The server will populate these based on business logic, not client input.
+
+        return sanitized
+    }
+
     public async resendVerificationEmail({ email }: { email: string }) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -278,7 +315,9 @@ export class AccountService {
     }
 
     public async register(data: AccountDTO) {
-        return await this.saveRegisterAccount(data)
+        // Sanitize input to prevent mass assignment - only allow client-controlled fields
+        const sanitizedData = this.sanitizeRegistrationDTO(data)
+        return await this.saveRegisterAccount(sanitizedData)
     }
 
     private async saveInviteAccount(data: AccountDTO, currentUser?: Express.User) {
