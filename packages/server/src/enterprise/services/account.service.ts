@@ -15,9 +15,11 @@ import { User, UserStatus } from '../database/entities/user.entity'
 import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspace-user.entity'
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 import { compareHash } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
+import { validatePasswordOrThrow } from '../utils/validation.util'
 import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
@@ -25,8 +27,6 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
-import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
-import { validatePasswordOrThrow } from '../utils/validation.util'
 
 type AccountDTO = {
     user: Partial<User>
@@ -586,10 +586,10 @@ export class AccountService {
             // Invalidate all sessions for this user after password reset
             await destroyAllSessionsForUser(user.id as string)
         } catch (error) {
-            await queryRunner.rollbackTransaction()
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            await queryRunner.release()
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
 
         return { message: 'success' }
