@@ -33,9 +33,9 @@ overrides:
   xlsx: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
 
 patchedDependencies:
-  flowise-embed:
+  flowise-embed@3.0.5:
     hash: xrueyrllgq2pmtce5zjatideuy
-    path: patches/flowise-embed.patch
+    path: patches/flowise-embed@3.0.5.patch
 
 importers:
 
