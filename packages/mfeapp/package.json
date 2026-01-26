@@ -11,7 +11,7 @@
     "dependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "@flowise/agentflow": "file:../../agentflow",
+        "@flowise/agentflow": "file:../agentflow",
         "flowise-embed": "latest",
         "flowise-embed-react": "latest"
     },
