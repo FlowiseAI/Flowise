@@ -24,6 +24,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 ## 📚 Table of Contents
 
 -   [⚡ Quick Start](#-quick-start)
+    -   [Troubleshooting: Node.js Version](#troubleshooting-nodejs-version)
 -   [🐳 Docker](#-docker)
 -   [👨‍💻 Developers](#-developers)
 -   [🌱 Env Variables](#-env-variables)
@@ -36,7 +37,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 
 ## ⚡Quick Start
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+Download and Install [NodeJS](https://nodejs.org/en/download) >= 20.0.0
 
 1. Install Flowise
     ```bash
@@ -49,6 +50,227 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
+
+### Troubleshooting: Node.js Version
+
+If you encounter `ReferenceError: File is not defined` or similar errors, your Node.js version is likely below v20.
+
+<details>
+<summary>Upgrade Node.js using NVM (Recommended)</summary>
+
+1. **Install NVM (Node Version Manager)**:
+    ```bash
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    source ~/.bashrc
+    ```
+
+2. **Install and use Node.js v20**:
+    ```bash
+    nvm install 20
+    nvm use 20
+    nvm alias default 20
+    ```
+
+3. **Verify installation**:
+    ```bash
+    node -v
+    # should show v20.x.x
+    ```
+
+4. **Reinstall Flowise**:
+    ```bash
+    npm install -g flowise
+    ```
+
+</details>
+
+<details>
+<summary>Alternative: Install via NodeSource (APT)</summary>
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+</details>
+
+<details>
+<summary>Clean Up Old Node.js Versions (Linux)</summary>
+
+After upgrading via NVM, remove any system-installed Node.js to avoid conflicts:
+
+```bash
+sudo apt-get remove --purge nodejs npm
+sudo apt-get autoremove
+```
+
+Verify NVM's Node is active:
+```bash
+which node
+# Should show: ~/.nvm/versions/node/v20.x.x/bin/node
+```
+
+</details>
+
+<details>
+<summary>Run Flowise as a Background Service</summary>
+
+#### Option A: Using pm2 (Recommended)
+
+`pm2` is a process manager for Node.js that keeps apps alive and restarts them on failure.
+
+1. **Install pm2**:
+    ```bash
+    npm install -g pm2
+    ```
+
+2. **Start Flowise**:
+    ```bash
+    pm2 start "npx flowise start" --name flowise
+    ```
+
+3. **Enable auto-start on reboot**:
+    ```bash
+    pm2 save
+    pm2 startup
+    ```
+    Follow the printed instructions (usually a `sudo` command).
+
+4. **Useful commands**:
+    ```bash
+    pm2 list          # Check status
+    pm2 logs flowise  # View logs
+    pm2 restart flowise
+    pm2 stop flowise
+    ```
+
+#### Option B: Using systemd (Native Linux)
+
+1. **Create a systemd service file**:
+    ```bash
+    sudo nano /etc/systemd/system/flowise.service
+    ```
+
+2. **Add the following** (replace `YOUR_USERNAME` with your actual username):
+    ```ini
+    [Unit]
+    Description=Flowise AI Service
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=YOUR_USERNAME
+    WorkingDirectory=/home/YOUR_USERNAME
+    ExecStart=/bin/bash -c 'export NVM_DIR="/home/YOUR_USERNAME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && npx flowise start'
+    Restart=always
+    RestartSec=10
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+
+3. **Enable and start the service**:
+    ```bash
+    sudo systemctl daemon-reload
+    sudo systemctl enable flowise
+    sudo systemctl start flowise
+    ```
+
+4. **Check status**:
+    ```bash
+    sudo systemctl status flowise
+    ```
+
+</details>
+
+<details>
+<summary>Nginx Reverse Proxy Setup</summary>
+
+Set up Nginx to access Flowise via a custom domain (e.g., `http://flowise.local`).
+
+1. **Install Nginx**:
+    ```bash
+    sudo apt update && sudo apt install nginx -y
+    ```
+
+2. **Create server block**:
+    ```bash
+    sudo nano /etc/nginx/sites-available/flowise
+    ```
+    
+    Add:
+    ```nginx
+    server {
+        listen 80;
+        server_name flowise.local;
+
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+    ```
+
+3. **For local testing**, add to `/etc/hosts`:
+    ```bash
+    echo "127.0.0.1 flowise.local" | sudo tee -a /etc/hosts
+    ```
+
+4. **Enable and reload**:
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/flowise /etc/nginx/sites-enabled/
+    sudo nginx -t
+    sudo systemctl reload nginx
+    ```
+
+5. **Access**: Open `http://flowise.local`
+
+#### Enable HTTPS with Let's Encrypt
+
+For production with a real domain:
+```bash
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d flowise.example.com
+```
+
+Verify auto-renewal:
+```bash
+sudo certbot renew --dry-run
+```
+
+#### Add Basic Authentication
+
+1. **Create password file**:
+    ```bash
+    sudo apt install apache2-utils -y
+    sudo htpasswd -c /etc/nginx/.htpasswd your_username
+    ```
+
+2. **Update Nginx config** — add inside `location / { }`:
+    ```nginx
+    auth_basic "Restricted Access";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+    ```
+
+3. **Reload**:
+    ```bash
+    sudo nginx -t && sudo systemctl reload nginx
+    ```
+
+#### Flowise Built-in Authentication
+
+Alternatively, use Flowise's native auth by setting environment variables:
+```bash
+# In your .env file or service config
+FLOWISE_USERNAME=admin
+FLOWISE_PASSWORD=your_secure_password
+```
+
+</details>
 
 ## 🐳 Docker
 

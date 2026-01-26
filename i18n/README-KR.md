@@ -19,7 +19,9 @@
 
 ## ⚡빠른 시작 가이드
 
-18.15.0 버전 이상의 [NodeJS](https://nodejs.org/en/download) 다운로드 및 설치
+20.0.0 버전 이상의 [NodeJS](https://nodejs.org/en/download) 다운로드 및 설치
+
+> **참고**: Node.js 버전 관련 문제(`File is not defined` 오류 등)가 발생하면 [영어 README의 문제 해결 섹션](../README.md#troubleshooting-nodejs-version)을 참조하세요.
 
 1. Flowise 설치
     ```bash

@@ -19,7 +19,9 @@
 
 ## ⚡ 快速開始
 
-下載並安裝 [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+下載並安裝 [NodeJS](https://nodejs.org/en/download) >= 20.0.0
+
+> **注意**：如果遇到 Node.js 版本相關問題（例如 `File is not defined` 錯誤），請參閱[英文 README 中的疑難排解章節](../README.md#troubleshooting-nodejs-version)。
 
 1. 安裝 Flowise
     ```bash

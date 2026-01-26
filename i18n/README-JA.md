@@ -19,7 +19,9 @@
 
 ## ⚡ クイックスタート
 
-[NodeJS](https://nodejs.org/en/download) >= 18.15.0 をダウンロードしてインストール
+[NodeJS](https://nodejs.org/en/download) >= 20.0.0 をダウンロードしてインストール
+
+> **注意**: Node.js のバージョンに関する問題（`File is not defined` エラーなど）が発生した場合は、[英語 README のトラブルシューティングセクション](../README.md#troubleshooting-nodejs-version)を参照してください。
 
 1. Flowise のインストール
     ```bash
