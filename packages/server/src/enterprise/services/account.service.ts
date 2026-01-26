@@ -18,6 +18,7 @@ import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { compareHash, getHash, hashNeedsUpgrade } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
+import { validatePasswordOrThrow } from '../utils/validation.util'
 import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
@@ -578,11 +579,15 @@ export class AccountService {
             const diff = now.diff(tokenExpiry, 'minutes')
             if (Math.abs(diff) > expiryInMins) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
 
+            // @ts-ignore
+            const password = data.user.password
+            validatePasswordOrThrow(password)
+
             // all checks are done, now update the user password, don't forget to hash it and do not forget to clear the temp token
             // leave the user status and other details as is
             const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10'))
             // @ts-ignore
-            const hash = bcrypt.hashSync(data.user.password, salt)
+            const hash = bcrypt.hashSync(password, salt)
             data.user = user
             data.user.credential = hash
             data.user.tempToken = ''
@@ -596,10 +601,10 @@ export class AccountService {
             // Invalidate all sessions for this user after password reset
             await destroyAllSessionsForUser(user.id as string)
         } catch (error) {
-            await queryRunner.rollbackTransaction()
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            await queryRunner.release()
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
 
         return { message: 'success' }
