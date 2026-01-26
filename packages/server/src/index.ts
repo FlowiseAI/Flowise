@@ -20,6 +20,7 @@ import { IMetricsProvider } from './Interface.Metrics'
 import { OpenTelemetry } from './metrics/OpenTelemetry'
 import { Prometheus } from './metrics/Prometheus'
 import errorHandlerMiddleware from './middlewares/errors'
+import { optionalSessionToken } from './middleware/jwtAuth'
 import { NodesPool } from './NodesPool'
 import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
@@ -212,6 +213,9 @@ export class App {
 
         await initializeJwtCookieMiddleware(this.app, this.identityManager)
 
+        // Try session token authentication first (optional - doesn't fail if missing)
+        this.app.use(optionalSessionToken)
+
         this.app.use(async (req, res, next) => {
             // Step 1: Check if the req path contains /api/v1 regardless of case
             if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
@@ -223,6 +227,9 @@ export class App {
                         next()
                     } else if (req.headers['x-request-from'] === 'internal') {
                         verifyToken(req, res, next)
+                    } else if (req.user && req.user.activeWorkspaceId) {
+                        // Session token already authenticated the user
+                        next()
                     } else {
                         const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
                         if (isAPIKeyBlacklistedURLS) {

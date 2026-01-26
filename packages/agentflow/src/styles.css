@@ -1,0 +1,25 @@
+/* Basic styles for Agentflow component */
+.agentflow-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* ReactFlow overrides */
+.react-flow__node {
+    cursor: pointer;
+}
+
+.react-flow__handle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.react-flow__handle-left {
+    left: -5px;
+}
+
+.react-flow__handle-right {
+    right: -5px;
+}

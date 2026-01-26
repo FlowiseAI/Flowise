@@ -1,0 +1,239 @@
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 320px;
+    border-right: 1px solid #e0e0e0;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #f9fafb;
+}
+
+.control-panel h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: #1a1a1a;
+}
+
+.control-panel .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 24px;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+}
+
+.btn-secondary:hover {
+    background-color: #d1d5db;
+}
+
+.info-section {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.info-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+
+.info-section ol {
+    margin-left: 20px;
+    line-height: 1.6;
+    font-size: 14px;
+    color: #4b5563;
+}
+
+.canvas-container {
+    flex: 1;
+    position: relative;
+}
+
+.saved-flow-preview {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    max-height: 300px;
+    overflow: auto;
+}
+
+.saved-flow-preview h3 {
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+
+.saved-flow-preview pre {
+    font-size: 11px;
+    background-color: #f9fafb;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.loading-container,
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.error-container h2 {
+    color: #dc2626;
+    margin-bottom: 12px;
+}
+
+.error-container p {
+    color: #4b5563;
+    margin-bottom: 8px;
+}
+
+/* ========== Chat Sidebar ========== */
+.chat-sidebar {
+    width: 400px;
+    border-left: 1px solid #e0e0e0;
+    background-color: #fafbfc;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Tenant Selector - positioned as overlay */
+.tenant-selector {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-bottom: 1px solid #475569;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.tenant-selector label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    padding: 4px 12px;
+    transition: border-color 0.2s;
+}
+
+.select-wrapper:focus-within {
+    border-color: #6366f1;
+}
+
+.tenant-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.tenant-selector select {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #f1f5f9;
+    padding: 8px 0;
+    cursor: pointer;
+    outline: none;
+}
+
+.tenant-selector select option {
+    background-color: #1e293b;
+    color: #f1f5f9;
+}
+
+/* FullPageChat Container - positioned below tenant selector */
+.chat-embed-container {
+    position: absolute;
+    top: 100px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}

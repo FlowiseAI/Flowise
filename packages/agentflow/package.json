@@ -1,0 +1,71 @@
+{
+    "name": "@flowise/agentflow",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "Embeddable Flow Editor for Flowise",
+    "license": "SEE LICENSE IN LICENSE.md",
+    "main": "dist/index.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md"
+    ],
+    "exports": {
+        ".": {
+            "import": "./dist/index.esm.js",
+            "require": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./flowise.css": "./dist/flowise.css"
+    },
+    "peerDependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.10.6",
+        "@emotion/styled": "^11.10.6",
+        "@mui/icons-material": "5.0.3",
+        "@mui/material": "5.15.0",
+        "@mui/system": "^6.4.3",
+        "@reduxjs/toolkit": "^2.2.7",
+        "@tabler/icons-react": "^3.30.0",
+        "axios": "^1.12.0",
+        "clsx": "^1.1.1",
+        "lodash": "^4.17.21",
+        "prop-types": "^15.7.2",
+        "react-redux": "^8.0.5",
+        "react-rewards": "^2.1.0",
+        "reactflow": "^11.5.6",
+        "redux": "^4.0.5",
+        "uuid": "^9.0.1"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^25.0.0",
+        "@rollup/plugin-json": "^6.1.0",
+        "@rollup/plugin-node-resolve": "^15.0.0",
+        "@rollup/plugin-typescript": "^11.0.0",
+        "@types/lodash": "^4.14.191",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "@types/uuid": "^9.0.0",
+        "rollup": "^4.0.0",
+        "rollup-plugin-peer-deps-external": "^2.2.4",
+        "rollup-plugin-postcss": "^4.0.2",
+        "tslib": "^2.6.0",
+        "typescript": "^5.4.5"
+    },
+    "scripts": {
+        "build": "rollup -c",
+        "dev": "rollup -c -w",
+        "clean": "rimraf dist"
+    },
+    "keywords": [
+        "flowise",
+        "agentflow",
+        "flow-editor",
+        "react",
+        "embeddable"
+    ]
+}
