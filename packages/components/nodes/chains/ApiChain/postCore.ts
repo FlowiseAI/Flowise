@@ -3,7 +3,7 @@ import { CallbackManagerForChainRun } from '@langchain/core/callbacks/manager'
 import { BaseChain, ChainInputs, LLMChain, SerializedAPIChain } from 'langchain/chains'
 import { BasePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { ChainValues } from '@langchain/core/utils/types'
-import fetch from 'node-fetch'
+import { secureFetch } from '../../../src/httpSecurity'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:
 {api_docs}
@@ -107,7 +107,7 @@ export class APIChain extends BaseChain implements APIChainInput {
                 throw new Error('Access to internal networks is not allowed')
             }
 
-            const res = await fetch(url, {
+            const res = await secureFetch(url, {
                 method: 'POST',
                 headers: this.headers,
                 body: JSON.stringify(data)
