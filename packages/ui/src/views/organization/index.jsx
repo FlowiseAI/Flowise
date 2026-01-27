@@ -91,17 +91,13 @@ const OrganizationSetupPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [username, setUsername] = useState('')
     const [orgName, setOrgName] = useState('')
-    const [existingUsername, setExistingUsername] = useState('')
-    const [existingPassword, setExistingPassword] = useState('')
 
     const [loading, setLoading] = useState(false)
     const [authError, setAuthError] = useState('')
     const [successMsg, setSuccessMsg] = useState(undefined)
-    const [requiresAuthentication, setRequiresAuthentication] = useState(false)
 
     const loginApi = useApi(authApi.login)
     const registerAccountApi = useApi(accountApi.registerAccount)
-    const getBasicAuthApi = useApi(accountApi.getBasicAuth)
     const navigate = useNavigate()
 
     const getDefaultProvidersApi = useApi(loginMethodApi.getLoginMethods)
@@ -119,26 +115,6 @@ const OrganizationSetupPage = () => {
         if (result.success) {
             setLoading(true)
             setAuthError('')
-
-            // Check authentication first if required
-            if (requiresAuthentication) {
-                try {
-                    const authResult = await accountApi.checkBasicAuth({
-                        username: existingUsername,
-                        password: existingPassword
-                    })
-
-                    if (!authResult || !authResult.data || authResult.data.message !== 'Authentication successful') {
-                        setAuthError('Authentication failed. Please check your existing credentials.')
-                        setLoading(false)
-                        return
-                    }
-                } catch (error) {
-                    setAuthError('Authentication failed. Please check your existing credentials.')
-                    setLoading(false)
-                    return
-                }
-            }
 
             // Proceed with registration after successful authentication
             const body = {
@@ -181,16 +157,8 @@ const OrganizationSetupPage = () => {
     }, [registerAccountApi.error])
 
     useEffect(() => {
-        if (getBasicAuthApi.data && getBasicAuthApi.data.isUsernamePasswordSet === true) {
-            setRequiresAuthentication(true)
-        }
-    }, [getBasicAuthApi.data])
-
-    useEffect(() => {
         if (!isOpenSource) {
             getDefaultProvidersApi.request()
-        } else {
-            getBasicAuthApi.request()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -271,11 +239,6 @@ const OrganizationSetupPage = () => {
                     <Stack sx={{ gap: 1 }}>
                         <Typography variant='h1'>Setup Account</Typography>
                     </Stack>
-                    {requiresAuthentication && (
-                        <Alert severity='info'>
-                            Application authentication now requires email and password. Contact administrator to setup an account.
-                        </Alert>
-                    )}
                     {(isOpenSource || isEnterpriseLicensed) && (
                         <Typography variant='caption'>
                             Account setup does not make any external connections, your data stays securely on your locally hosted server.
@@ -283,48 +246,6 @@ const OrganizationSetupPage = () => {
                     )}
                     <form onSubmit={register}>
                         <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
-                            {requiresAuthentication && (
-                                <>
-                                    <Box>
-                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <Typography sx={{ mb: 1 }}>
-                                                Existing Username<span style={{ color: 'red' }}>&nbsp;*</span>
-                                            </Typography>
-                                            <div style={{ flexGrow: 1 }}></div>
-                                        </div>
-                                        <TextField
-                                            fullWidth
-                                            placeholder='Existing Username'
-                                            value={existingUsername}
-                                            onChange={(e) => setExistingUsername(e.target.value)}
-                                        />
-                                        <Typography variant='caption'>
-                                            <i>Existing username that was set as FLOWISE_USERNAME environment variable</i>
-                                        </Typography>
-                                    </Box>
-                                    <Box>
-                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <Typography sx={{ mb: 1 }}>
-                                                Existing Password<span style={{ color: 'red' }}>&nbsp;*</span>
-                                            </Typography>
-                                            <div style={{ flexGrow: 1 }}></div>
-                                        </div>
-                                        <TextField
-                                            fullWidth
-                                            type='password'
-                                            placeholder='Existing Password'
-                                            value={existingPassword}
-                                            onChange={(e) => setExistingPassword(e.target.value)}
-                                        />
-                                        <Typography variant='caption'>
-                                            <i>Existing password that was set as FLOWISE_PASSWORD environment variable</i>
-                                        </Typography>
-                                    </Box>
-                                    <Divider>
-                                        <Chip label='New Account Details' size='small' />
-                                    </Divider>
-                                </>
-                            )}
                             {isEnterpriseLicensed && (
                                 <>
                                     <Box>
@@ -416,12 +337,7 @@ const OrganizationSetupPage = () => {
                                     <i>Reconfirm your password. Must match the password typed above.</i>
                                 </Typography>
                             </Box>
-                            <StyledButton
-                                variant='contained'
-                                style={{ borderRadius: 12, height: 40, marginRight: 5 }}
-                                type='submit'
-                                disabled={requiresAuthentication && (!existingUsername || !existingPassword)}
-                            >
+                            <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
                                 Sign Up
                             </StyledButton>
                             {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
