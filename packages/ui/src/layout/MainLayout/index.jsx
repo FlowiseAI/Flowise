@@ -11,6 +11,7 @@ import Header from './Header'
 import Sidebar from './Sidebar'
 import { drawerWidth, headerHeight } from '@/store/constant'
 import { SET_MENU } from '@/store/actions'
+import useScrollDirection from '@/hooks/useScrollDirection'
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
@@ -59,6 +60,7 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
+    const { hideHeader } = useScrollDirection()
 
     // Handle left drawer
     const leftDrawerOpened = useSelector((state) => state.customization.opened)
@@ -83,7 +85,9 @@ const MainLayout = () => {
                 elevation={0}
                 sx={{
                     bgcolor: theme.palette.background.default,
-                    transition: leftDrawerOpened ? theme.transitions.create('width') : 'none'
+                    transform: hideHeader ? 'translateY(-100%)' : 'translateY(0)',
+                    transition: 'transform 0.3s ease-in-out',
+                    boxShadow: hideHeader ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
                 }}
             >
                 <Toolbar sx={{ height: `${headerHeight}px`, borderBottom: '1px solid', borderColor: theme.palette.grey[900] + 25 }}>
