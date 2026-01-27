@@ -79,9 +79,6 @@ export class LoginMethodService {
         try {
             queryRunner = this.dataSource.createQueryRunner()
             await queryRunner.connect()
-            if (getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD) {
-                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.FORBIDDEN)
-            }
             const createdBy = await this.userService.readUserById(data.createdBy, queryRunner)
             if (!createdBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
             const organization = await this.organizationService.readOrganizationById(data.organizationId, queryRunner)
