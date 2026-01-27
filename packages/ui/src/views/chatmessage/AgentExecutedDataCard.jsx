@@ -653,7 +653,9 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
         <Box sx={{ display: 'flex', height: '100%', width: '100%', mt: 2 }}>
             <Accordion
                 sx={{
-                    width: '100%'
+                    width: '100%',
+                    maxWidth: '100%',
+                    overflow: 'hidden'
                 }}
             >
                 <AccordionSummary
@@ -683,18 +685,27 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
                     <Typography>Process Flow</Typography>
                 </AccordionSummary>
                 <Divider />
-                <AccordionDetails>
-                    <RichTreeView
-                        expandedItems={expandedItems}
-                        onExpandedItemsChange={handleExpandedItemsChange}
-                        selectedItems={selectedItem ? [selectedItem.id] : []}
-                        onSelectedItemsChange={handleNodeSelect}
-                        items={executionTree}
-                        slots={{
-                            item: (treeItemProps) => <CustomTreeItem {...treeItemProps} agentflowId={agentflowId} sessionId={sessionId} />
-                        }}
-                        sx={{ width: '100%' }}
-                    />
+                <AccordionDetails
+                    sx={{
+                        overflowX: 'auto',
+                        padding: 0
+                    }}
+                >
+                    <Box sx={{ padding: 2, minWidth: 'fit-content' }}>
+                        <RichTreeView
+                            expandedItems={expandedItems}
+                            onExpandedItemsChange={handleExpandedItemsChange}
+                            selectedItems={selectedItem ? [selectedItem.id] : []}
+                            onSelectedItemsChange={handleNodeSelect}
+                            items={executionTree}
+                            slots={{
+                                item: (treeItemProps) => (
+                                    <CustomTreeItem {...treeItemProps} agentflowId={agentflowId} sessionId={sessionId} />
+                                )
+                            }}
+                            sx={{ width: '100%' }}
+                        />
+                    </Box>
                 </AccordionDetails>
             </Accordion>
         </Box>
