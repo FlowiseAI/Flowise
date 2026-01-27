@@ -376,12 +376,14 @@ class ConditionAgent_Agentflow implements INode {
             const endTime = Date.now()
             const timeDelta = endTime - startTime
 
-            // End analytics tracking
+            // End analytics tracking (pass usage metadata if present)
             if (analyticHandlers && llmIds) {
-                await analyticHandlers.onLLMEnd(
-                    llmIds,
-                    typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
-                )
+                const outputObj: any = {
+                    content: typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+                }
+                if (response.usage_metadata) outputObj.usageMetadata = response.usage_metadata
+                if (response.response_metadata) outputObj.responseMetadata = response.response_metadata
+                await analyticHandlers.onLLMEnd(llmIds, outputObj)
             }
 
             let calledOutputName: string
