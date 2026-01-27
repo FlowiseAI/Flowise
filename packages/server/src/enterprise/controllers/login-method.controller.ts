@@ -20,7 +20,7 @@ export class LoginMethodController {
                 getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD ||
                 getRunningExpressApp().identityManager.getPlatformType() === Platform.OPEN_SOURCE
             ) {
-                throw new InternalFlowiseError(StatusCodes.BAD_GATEWAY, GeneralErrorMessage.FORBIDDEN)
+                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
             }
             const loginMethodService = new LoginMethodService()
             const loginMethod = await loginMethodService.createLoginMethod(req.body)
