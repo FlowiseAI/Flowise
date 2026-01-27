@@ -66,6 +66,9 @@ export class LoginMethodController {
         try {
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
+            if (getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.FORBIDDEN)
+            }
             const query = req.query as Partial<LoginMethod>
             const loginMethodService = new LoginMethodService()
 
@@ -103,6 +106,9 @@ export class LoginMethodController {
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
             const loginMethodService = new LoginMethodService()
+            if (getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.FORBIDDEN)
+            }
             const loginMethod = await loginMethodService.createOrUpdateConfig(req.body)
             if (loginMethod?.status === 'OK' && loginMethod?.organizationId) {
                 const appServer = getRunningExpressApp()
