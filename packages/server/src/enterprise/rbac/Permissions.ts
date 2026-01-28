@@ -1,10 +1,6 @@
 export class Permissions {
     private categories: PermissionCategory[] = []
     constructor() {
-        // const auditCategory = new PermissionCategory('audit')
-        // auditCategory.addPermission(new Permission('auditLogs:view', 'View Audit Logs'))
-        // this.categories.push(auditCategory)
-
         const chatflowsCategory = new PermissionCategory('chatflows')
         chatflowsCategory.addPermission(new Permission('chatflows:view', 'View', true, true, true))
         chatflowsCategory.addPermission(new Permission('chatflows:create', 'Create', true, true, true))
@@ -29,6 +25,7 @@ export class Permissions {
         agentflowsCategory.addPermission(new Permission('agentflows:domains', 'Allowed Domains', true, true, true))
         this.categories.push(agentflowsCategory)
 
+        // ... rest of the categories (tools, assistants, etc.) remain as they are in the 'main' branch
         const toolsCategory = new PermissionCategory('tools')
         toolsCategory.addPermission(new Permission('tools:view', 'View', true, true, true))
         toolsCategory.addPermission(new Permission('tools:create', 'Create', true, true, true))
@@ -142,7 +139,7 @@ export class Permissions {
         this.categories.push(loginActivityCategory)
     }
 
-    public toJSON(): { [key: string]: { key: string; value: string }[] } {
+ public toJSON(): { [key: string]: { key: string; value: string; isOpenSource: boolean; isEnterprise: boolean; isCloud: boolean }[] } {
         return this.categories.reduce((acc, category) => {
             return {
                 ...acc,
@@ -153,16 +150,17 @@ export class Permissions {
 }
 
 export class PermissionCategory {
-    public permissions: any[] = []
+    public permissions: Permission[] = []
 
     constructor(public category: string) {}
 
     addPermission(permission: Permission) {
         this.permissions.push(permission)
     }
+
     public toJSON() {
         return {
-            [this.category]: [...this.permissions.map((permission) => permission.toJSON())]
+            [this.category]: this.permissions.map((permission) => permission.toJSON())
         }
     }
 }
@@ -185,4 +183,5 @@ export class Permission {
             isCloud: this.isCloud
         }
     }
+}
 }

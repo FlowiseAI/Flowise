@@ -92,7 +92,7 @@ const textToSpeechProviders = {
     }
 }
 
-const TextToSpeech = ({ dialogProps }) => {
+const TextToSpeech = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
 
     useNotifier()
@@ -122,6 +122,7 @@ const TextToSpeech = ({ dialogProps }) => {
     }
 
     const onSave = async () => {
+        if (readOnly) return
         const textToSpeechConfig = setValue(true, selectedProvider, 'status')
         try {
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
@@ -162,6 +163,7 @@ const TextToSpeech = ({ dialogProps }) => {
     }
 
     const setValue = (value, providerName, inputParamName) => {
+        if (readOnly) return textToSpeech
         let newVal = {}
         if (!textToSpeech || !Object.hasOwn(textToSpeech, providerName)) {
             newVal = { ...(textToSpeech || {}), [providerName]: {} }
@@ -193,6 +195,7 @@ const TextToSpeech = ({ dialogProps }) => {
     }
 
     const handleProviderChange = (provider, configOverride = null) => {
+        if (readOnly) return
         setSelectedProvider(provider)
         setVoices([])
         resetTestAudio()
@@ -430,6 +433,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                 color: theme?.customization?.isDarkMode ? '#fff' : 'inherit'
                             }
                         }}
+                        disabled={readOnly}
                     >
                         <MenuItem value='none'>None</MenuItem>
                         {Object.values(textToSpeechProviders).map((provider) => (
@@ -513,6 +517,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                             setTimeout(() => loadVoicesForProvider(selectedProvider, newValue), 100)
                                         }
                                     }}
+                                    disabled={readOnly}
                                 />
                             )}
                             {inputParam.type === 'boolean' && (
@@ -523,6 +528,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                             ? textToSpeech[selectedProvider][inputParam.name]
                                             : inputParam.default ?? false
                                     }
+                                    disabled={readOnly}
                                 />
                             )}
                             {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') && (
@@ -534,6 +540,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                             ? textToSpeech[selectedProvider][inputParam.name]
                                             : inputParam.default ?? ''
                                     }
+                                    disabled={readOnly}
                                 />
                             )}
                             {inputParam.type === 'options' && (
@@ -546,6 +553,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                             ? textToSpeech[selectedProvider][inputParam.name]
                                             : inputParam.default ?? 'choose an option'
                                     }
+                                    disabled={readOnly}
                                 />
                             )}
                             {inputParam.type === 'voice_select' && (
@@ -579,7 +587,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                             }}
                                         />
                                     )}
-                                    disabled={loadingVoices || !textToSpeech?.[selectedProvider]?.credentialId}
+                                    disabled={readOnly || loadingVoices || !textToSpeech?.[selectedProvider]?.credentialId}
                                 />
                             )}
                         </Box>
@@ -641,6 +649,7 @@ const TextToSpeech = ({ dialogProps }) => {
                     </Box>
                 </>
             )}
+            {!readOnly && (
             <StyledButton
                 style={{ marginBottom: 10, marginTop: 10 }}
                 disabled={selectedProvider !== 'none' && !textToSpeech?.[selectedProvider]?.credentialId}
@@ -649,12 +658,14 @@ const TextToSpeech = ({ dialogProps }) => {
             >
                 Save
             </StyledButton>
+            )}
         </>
     )
 }
 
 TextToSpeech.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default TextToSpeech

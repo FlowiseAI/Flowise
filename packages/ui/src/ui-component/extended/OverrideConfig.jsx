@@ -38,8 +38,9 @@ import variablesApi from '@/api/variables'
 
 // utils
 
-const OverrideConfigTable = ({ columns, onToggle, rows, sx }) => {
+const OverrideConfigTable = ({ columns, onToggle, rows, sx, readOnly = false }) => {
     const handleChange = (enabled, row) => {
+        if (readOnly) return
         onToggle(row, enabled)
     }
 
@@ -117,7 +118,7 @@ OverrideConfigTable.propTypes = {
     onToggle: PropTypes.func
 }
 
-const OverrideConfig = ({ dialogProps }) => {
+const OverrideConfig = ({ dialogProps, readOnly = false }) => {
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const chatflowid = chatflow.id
@@ -173,6 +174,7 @@ const OverrideConfig = ({ dialogProps }) => {
     }
 
     const onNodeOverrideToggle = (node, property, status) => {
+        if (readOnly) return
         setNodeOverrides((prev) => {
             const newConfig = { ...prev }
             newConfig[node] = newConfig[node].map((item) => {
@@ -186,6 +188,7 @@ const OverrideConfig = ({ dialogProps }) => {
     }
 
     const onVariableOverrideToggle = (id, status) => {
+        if (readOnly) return
         setVariableOverrides((prev) => {
             return prev.map((item) => {
                 if (item.id === id) {
@@ -370,7 +373,7 @@ const OverrideConfig = ({ dialogProps }) => {
                 />
             </Typography>
             <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
-                <SwitchInput label='Enable Override Configuration' onChange={setOverrideConfigStatus} value={overrideConfigStatus} />
+                <SwitchInput label='Enable Override Configuration' onChange={setOverrideConfigStatus} value={overrideConfigStatus} disabled={readOnly} />
                 {overrideConfigStatus && (
                     <>
                         {nodeOverrides && nodeConfig && (
@@ -436,6 +439,7 @@ const OverrideConfig = ({ dialogProps }) => {
                                                         onToggle={(property, status) =>
                                                             onNodeOverrideToggle(nodeLabel, property.name, status)
                                                         }
+                                                        readOnly={readOnly}
                                                     />
                                                 </AccordionDetails>
                                             </Accordion>
@@ -453,21 +457,25 @@ const OverrideConfig = ({ dialogProps }) => {
                                     rows={variableOverrides}
                                     columns={['name', 'type', 'enabled']}
                                     onToggle={(property, status) => onVariableOverrideToggle(property.id, status)}
+                                    readOnly={readOnly}
                                 />
                             </Card>
                         )}
                     </>
                 )}
             </Stack>
-            <StyledButton variant='contained' onClick={onOverrideConfigSave}>
-                Save
-            </StyledButton>
+            {!readOnly && (
+                <StyledButton variant='contained' onClick={onOverrideConfigSave}>
+                    Save
+                </StyledButton>
+            )}
         </Stack>
     )
 }
 
 OverrideConfig.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default OverrideConfig

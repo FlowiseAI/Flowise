@@ -57,7 +57,7 @@ const settings = {
             title: 'Configuration',
             type: 'item',
             url: '',
-            permission: 'chatflows:config',
+            permission: 'chatflows:config,chatflows:config:view',
             icon: icons.IconAdjustmentsHorizontal
         },
         {

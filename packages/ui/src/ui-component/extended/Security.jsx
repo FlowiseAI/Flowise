@@ -7,20 +7,21 @@ import RateLimit from '@/ui-component/extended/RateLimit'
 import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import OverrideConfig from './OverrideConfig'
 
-const Security = ({ dialogProps }) => {
+const Security = ({ dialogProps, readOnly = false }) => {
     const theme = useTheme()
 
     return (
         <Stack direction='column' divider={<Divider sx={{ my: 0.5, borderColor: theme.palette.grey[900] + 25 }} />} spacing={4}>
-            <RateLimit dialogProps={dialogProps} />
-            <AllowedDomains dialogProps={dialogProps} />
-            <OverrideConfig dialogProps={dialogProps} />
+            <RateLimit dialogProps={dialogProps} readOnly={readOnly} />
+            <AllowedDomains dialogProps={dialogProps} readOnly={readOnly} />
+            <OverrideConfig dialogProps={dialogProps} readOnly={readOnly} />
         </Stack>
     )
 }
 
 Security.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    readOnly: PropTypes.bool
 }
 
 export default Security
