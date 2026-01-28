@@ -2,6 +2,10 @@ import bcrypt from 'bcryptjs'
 import { AES, enc } from 'crypto-js'
 import { getEncryptionKey } from '../../utils'
 
+export function getPasswordSaltRounds(): number {
+    return parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10', 10)
+}
+
 /**
  * Extracts the cost factor (salt rounds) from a bcrypt hash using bcrypt.getRounds().
  * @returns The number of rounds used, or null if the string is not a valid bcrypt hash.
@@ -26,7 +30,7 @@ export function hashNeedsUpgrade(storedHash: string, minRounds: number): boolean
 }
 
 export function getHash(value: string) {
-    const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10'))
+    const salt = bcrypt.genSaltSync(getPasswordSaltRounds())
     return bcrypt.hashSync(value, salt)
 }
 

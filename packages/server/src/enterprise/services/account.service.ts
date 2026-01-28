@@ -7,6 +7,7 @@ import { IdentityManager } from '../../IdentityManager'
 import { Platform, UserPlan } from '../../Interface'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization, OrganizationName } from '../database/entities/organization.entity'
@@ -15,7 +16,8 @@ import { User, UserStatus } from '../database/entities/user.entity'
 import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspace-user.entity'
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
-import { compareHash, getHash, hashNeedsUpgrade } from '../utils/encryption.util'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
 import { validatePasswordOrThrow } from '../utils/validation.util'
@@ -26,8 +28,6 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
-import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
-import logger from '../../utils/logger'
 
 type AccountDTO = {
     user: Partial<User>
@@ -473,8 +473,7 @@ export class AccountService {
 
             // If the stored hash was created with fewer salt rounds than the current minimum
             // (e.g. 5 before we increased to 10), rehash with the current rounds on successful login.
-            const minRounds = parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10', 10)
-            if (hashNeedsUpgrade(user.credential!, minRounds)) {
+            if (hashNeedsUpgrade(user.credential!, getPasswordSaltRounds())) {
                 try {
                     const newHash = getHash(data.user.credential!)
                     await this.userService.saveUser({ ...user, credential: newHash }, queryRunner)
@@ -585,7 +584,7 @@ export class AccountService {
 
             // all checks are done, now update the user password, don't forget to hash it and do not forget to clear the temp token
             // leave the user status and other details as is
-            const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '10'))
+            const salt = bcrypt.genSaltSync(getPasswordSaltRounds())
             // @ts-ignore
             const hash = bcrypt.hashSync(password, salt)
             data.user = user
