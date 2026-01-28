@@ -70,6 +70,24 @@ export function validateRequiredEnvVarsOrThrow(): void {
             name: 'EXPRESS_SESSION_SECRET',
             message:
                 'EXPRESS_SESSION_SECRET environment variable is required. Generate a secure 32-byte secret using: openssl rand -base64 32'
+        },
+        {
+            name: 'JWT_AUTH_TOKEN_SECRET',
+            message:
+                'JWT_AUTH_TOKEN_SECRET environment variable is required. Generate a secure 64-byte secret using: openssl rand -base64 64'
+        },
+        {
+            name: 'JWT_REFRESH_TOKEN_SECRET',
+            message:
+                'JWT_REFRESH_TOKEN_SECRET environment variable is required. Generate a secure 64-byte secret using: openssl rand -base64 64'
+        },
+        {
+            name: 'JWT_ISSUER',
+            message: 'JWT_ISSUER environment variable is required. Set to a meaningful identifier for your application (e.g., your organization name)'
+        },
+        {
+            name: 'JWT_AUDIENCE',
+            message: 'JWT_AUDIENCE environment variable is required. Set to a meaningful identifier for your application (e.g., your application name)'
         }
     ]
 

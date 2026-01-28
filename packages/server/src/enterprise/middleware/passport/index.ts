@@ -26,12 +26,12 @@ import { v4 as uuidv4 } from 'uuid'
 
 const localStrategy = require('passport-local').Strategy
 
-const jwtAudience = process.env.JWT_AUDIENCE || 'AUDIENCE'
-const jwtIssuer = process.env.JWT_ISSUER || 'ISSUER'
+const jwtAudience = process.env.JWT_AUDIENCE!
+const jwtIssuer = process.env.JWT_ISSUER!
 
 const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 'true'
-const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET || 'auth_token'
-const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_AUTH_TOKEN_SECRET || 'refresh_token'
+const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET!
+const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET!
 
 // Allow explicit override of cookie security settings
 // This is useful when running behind a reverse proxy/load balancer that terminates SSL
