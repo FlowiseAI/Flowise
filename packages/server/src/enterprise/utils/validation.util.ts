@@ -54,3 +54,17 @@ export function validatePasswordOrThrow(password: unknown): void {
 
     throw new Error(`Invalid password: Must contain ${errors.join(', ')}`)
 }
+
+/**
+ * Validates that TOKEN_HASH_SECRET environment variable is set and not empty.
+ * Throws an Error with a descriptive message if invalid.
+ * @throws Error with message indicating TOKEN_HASH_SECRET is required and how to generate it.
+ */
+export function validateTokenHashSecretOrThrow(): void {
+    const tokenHashSecret = process.env.TOKEN_HASH_SECRET
+    if (!tokenHashSecret || tokenHashSecret.trim() === '') {
+        throw new Error(
+            'TOKEN_HASH_SECRET environment variable is required. Generate a secure 32-byte secret using: openssl rand -base64 32'
+        )
+    }
+}

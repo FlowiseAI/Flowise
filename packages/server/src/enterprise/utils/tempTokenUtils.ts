@@ -28,10 +28,7 @@ export const generateTempToken = () => {
 
 // Encrypt token with password using crypto.Cipheriv
 export const encryptToken = (stringToEncrypt: string) => {
-    const key = crypto
-        .createHash('sha256')
-        .update(process.env.TOKEN_HASH_SECRET || 'Secre$t')
-        .digest()
+    const key = crypto.createHash('sha256').update(process.env.TOKEN_HASH_SECRET!).digest()
 
     const IV_LENGTH = 16
     const iv = crypto.randomBytes(IV_LENGTH)
@@ -47,10 +44,7 @@ export const encryptToken = (stringToEncrypt: string) => {
 // Decrypt token using the inverse of encryption crypto algorithm
 export const decryptToken = (stringToDecrypt: string): string | undefined => {
     try {
-        const key = crypto
-            .createHash('sha256')
-            .update(process.env.TOKEN_HASH_SECRET || 'Secre$t')
-            .digest()
+        const key = crypto.createHash('sha256').update(process.env.TOKEN_HASH_SECRET!).digest()
 
         let textParts = stringToDecrypt.split(':')
         let iv = Buffer.from(textParts.shift() as string, 'hex')

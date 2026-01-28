@@ -14,6 +14,7 @@ import { Organization } from './enterprise/database/entities/organization.entity
 import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
 import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
+import { validateTokenHashSecretOrThrow } from './enterprise/utils/validation.util'
 import { IdentityManager } from './IdentityManager'
 import { MODE, Platform } from './Interface'
 import { IMetricsProvider } from './Interface.Metrics'
@@ -80,6 +81,9 @@ export class App {
     async initDatabase() {
         // Initialize database
         try {
+            // Validate required environment variables
+            validateTokenHashSecretOrThrow()
+
             await this.AppDataSource.initialize()
             logger.info('📦 [server]: Data Source initialized successfully')
 
