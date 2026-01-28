@@ -83,11 +83,13 @@ export function validateRequiredEnvVarsOrThrow(): void {
         },
         {
             name: 'JWT_ISSUER',
-            message: 'JWT_ISSUER environment variable is required. Set to a meaningful identifier for your application (e.g., your organization name)'
+            message:
+                'JWT_ISSUER environment variable is required. Set to a meaningful identifier for your application (e.g., your organization name)'
         },
         {
             name: 'JWT_AUDIENCE',
-            message: 'JWT_AUDIENCE environment variable is required. Set to a meaningful identifier for your application (e.g., your application name)'
+            message:
+                'JWT_AUDIENCE environment variable is required. Set to a meaningful identifier for your application (e.g., your application name)'
         }
     ]
 
