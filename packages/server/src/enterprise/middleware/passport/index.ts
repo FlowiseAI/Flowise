@@ -52,7 +52,7 @@ const jwtOptions = {
 const _initializePassportMiddleware = async (app: express.Application) => {
     // Configure session middleware
     let options: any = {
-        secret: process.env.EXPRESS_SESSION_SECRET || 'flowise',
+        secret: process.env.EXPRESS_SESSION_SECRET!,
         resave: false,
         saveUninitialized: false,
         cookie: {

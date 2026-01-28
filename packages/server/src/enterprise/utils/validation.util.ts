@@ -56,15 +56,27 @@ export function validatePasswordOrThrow(password: unknown): void {
 }
 
 /**
- * Validates that TOKEN_HASH_SECRET environment variable is set and not empty.
- * Throws an Error with a descriptive message if invalid.
- * @throws Error with message indicating TOKEN_HASH_SECRET is required and how to generate it.
+ * Validates that all required environment variables are set and not empty.
+ * Throws an Error with a descriptive message if any required variable is missing.
+ * @throws Error with message indicating which variable is required and how to generate it.
  */
-export function validateTokenHashSecretOrThrow(): void {
-    const tokenHashSecret = process.env.TOKEN_HASH_SECRET
-    if (!tokenHashSecret || tokenHashSecret.trim() === '') {
-        throw new Error(
-            'TOKEN_HASH_SECRET environment variable is required. Generate a secure 32-byte secret using: openssl rand -base64 32'
-        )
+export function validateRequiredEnvVarsOrThrow(): void {
+    const requiredVars = [
+        {
+            name: 'TOKEN_HASH_SECRET',
+            message: 'TOKEN_HASH_SECRET environment variable is required. Generate a secure 32-byte secret using: openssl rand -base64 32'
+        },
+        {
+            name: 'EXPRESS_SESSION_SECRET',
+            message:
+                'EXPRESS_SESSION_SECRET environment variable is required. Generate a secure 32-byte secret using: openssl rand -base64 32'
+        }
+    ]
+
+    for (const { name, message } of requiredVars) {
+        const value = process.env[name]
+        if (!value || value.trim() === '') {
+            throw new Error(message)
+        }
     }
 }
