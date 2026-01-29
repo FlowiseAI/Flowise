@@ -43,6 +43,8 @@ jobs:
                   runTests: false
             - name: Cypress test
               uses: cypress-io/github-action@v6
+              env:
+                  CYPRESS_TEST: '1'
               with:
                   install: false
                   working-directory: packages/server

@@ -4,6 +4,9 @@ import path from 'path'
 import logger from '../utils/logger'
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
+if (process.env.CYPRESS_TEST === '1') {
+    dotenv.config({ path: path.join(__dirname, '..', '..', '.env.cypress'), override: true })
+}
 
 enum EXIT_CODE {
     SUCCESS = 0,
