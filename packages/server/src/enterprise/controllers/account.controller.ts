@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { AccountService } from '../services/account.service'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { AccountService } from '../services/account.service'
 
 export class AccountController {
     public async register(req: Request, res: Response, next: NextFunction) {
@@ -68,7 +68,7 @@ export class AccountController {
         try {
             const accountService = new AccountService()
             const data = await accountService.resetPassword(req.body)
-            return res.status(StatusCodes.CREATED).json(data)
+            return res.status(StatusCodes.OK).json(data)
         } catch (error) {
             next(error)
         }
