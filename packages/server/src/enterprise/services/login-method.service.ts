@@ -8,8 +8,6 @@ import { decrypt, encrypt } from '../utils/encryption.util'
 import { UserErrorMessage, UserService } from './user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
 import { IsNull } from 'typeorm'
-import { Platform } from '../../Interface'
-import { GeneralErrorMessage } from '../../utils/constants'
 
 export const enum LoginMethodErrorMessage {
     INVALID_LOGIN_METHOD_ID = 'Invalid Login Method Id',

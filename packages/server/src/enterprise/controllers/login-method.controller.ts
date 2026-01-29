@@ -14,14 +14,16 @@ import GoogleSSO from '../sso/GoogleSSO'
 import { decrypt } from '../utils/encryption.util'
 
 export class LoginMethodController {
+    private assertEnterprisePlatform(): void {
+        const platformType = getRunningExpressApp().identityManager.getPlatformType()
+        if (platformType === Platform.CLOUD || platformType === Platform.OPEN_SOURCE) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+        }
+    }
+
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
-            if (
-                getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD ||
-                getRunningExpressApp().identityManager.getPlatformType() === Platform.OPEN_SOURCE
-            ) {
-                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
-            }
+            this.assertEnterprisePlatform()
             const loginMethodService = new LoginMethodService()
             const loginMethod = await loginMethodService.createLoginMethod(req.body)
             return res.status(StatusCodes.CREATED).json(loginMethod)
@@ -70,14 +72,9 @@ export class LoginMethodController {
     public async read(req: Request, res: Response, next: NextFunction) {
         let queryRunner
         try {
+            this.assertEnterprisePlatform()
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
-            if (
-                getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD ||
-                getRunningExpressApp().identityManager.getPlatformType() === Platform.OPEN_SOURCE
-            ) {
-                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
-            }
             const query = req.query as Partial<LoginMethod>
             const loginMethodService = new LoginMethodService()
 
@@ -114,13 +111,8 @@ export class LoginMethodController {
     }
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
+            this.assertEnterprisePlatform()
             const loginMethodService = new LoginMethodService()
-            if (
-                getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD ||
-                getRunningExpressApp().identityManager.getPlatformType() === Platform.OPEN_SOURCE
-            ) {
-                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
-            }
             const loginMethod = await loginMethodService.createOrUpdateConfig(req.body)
             if (loginMethod?.status === 'OK' && loginMethod?.organizationId) {
                 const appServer = getRunningExpressApp()
