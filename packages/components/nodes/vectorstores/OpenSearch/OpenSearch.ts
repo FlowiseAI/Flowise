@@ -23,7 +23,7 @@ class OpenSearch_VectorStores implements INode {
     constructor() {
         this.label = 'OpenSearch'
         this.name = 'openSearch'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'OpenSearch'
         this.icon = 'opensearch.svg'
         this.category = 'Vector Stores'
@@ -61,6 +61,34 @@ class OpenSearch_VectorStores implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Engine',
+                name: 'engine',
+                type: 'options',
+                description: 'Vector search engine. Use "lucene" or "faiss" for OpenSearch 3.x+, "nmslib" for older versions',
+                options: [
+                    { label: 'Lucene (OpenSearch 2.x+)', name: 'lucene' },
+                    { label: 'Faiss (OpenSearch 2.x+)', name: 'faiss' },
+                    { label: 'NMSLIB (Legacy, pre-3.0)', name: 'nmslib' }
+                ],
+                default: 'lucene',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Space Type',
+                name: 'spaceType',
+                type: 'options',
+                description: 'Distance metric for similarity search',
+                options: [
+                    { label: 'L2 (Euclidean)', name: 'l2' },
+                    { label: 'Cosine Similarity', name: 'cosinesimil' },
+                    { label: 'Inner Product', name: 'innerproduct' }
+                ],
+                default: 'l2',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -83,7 +111,6 @@ class OpenSearch_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const indexName = nodeData.inputs?.indexName as string
-
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const opensearchURL = getCredentialParam('openSearchUrl', credentialData, nodeData)
             const user = getCredentialParam('user', credentialData, nodeData)
@@ -102,7 +129,8 @@ class OpenSearch_VectorStores implements INode {
             try {
                 await OpenSearchVectorStore.fromDocuments(finalDocs, embeddings, {
                     client,
-                    indexName: indexName
+                    indexName: indexName,
+                    vectorSearchOptions: getVectorSearchOptions(nodeData)
                 })
                 return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
@@ -117,7 +145,6 @@ class OpenSearch_VectorStores implements INode {
         const output = nodeData.outputs?.output as string
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
-
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const opensearchURL = getCredentialParam('openSearchUrl', credentialData, nodeData)
         const user = getCredentialParam('user', credentialData, nodeData)
@@ -127,7 +154,8 @@ class OpenSearch_VectorStores implements INode {
 
         const vectorStore = new OpenSearchVectorStore(embeddings, {
             client,
-            indexName
+            indexName,
+            vectorSearchOptions: getVectorSearchOptions(nodeData)
         })
 
         if (output === 'retriever') {
@@ -138,6 +166,17 @@ class OpenSearch_VectorStores implements INode {
             return vectorStore
         }
         return vectorStore
+    }
+}
+
+const getVectorSearchOptions = (nodeData: INodeData) => {
+    const engine = (nodeData.inputs?.engine as string) || 'lucene'
+    const spaceType = (nodeData.inputs?.spaceType as string) || 'l2'
+    // TODO: Remove 'as any' casts when @langchain/community updates OpenSearchEngine types
+    // to include 'lucene' and 'faiss' as valid engines (currently only has 'nmslib' | 'hnsw').
+    return {
+        engine: engine as any,
+        spaceType: spaceType as any
     }
 }
 
