@@ -29,8 +29,11 @@ import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
 
+/** Optional referral field for Stripe referral tracking in CLOUD; not a User entity column. */
+type RegistrationUser = Partial<User> & { referral?: string }
+
 type AccountDTO = {
-    user: Partial<User>
+    user: RegistrationUser
     organization: Partial<Organization>
     organizationUser: Partial<OrganizationUser>
     workspace: Partial<Workspace>
@@ -85,13 +88,13 @@ export class AccountService {
         const allowedUserFields: (keyof User)[] = ['name', 'email', 'credential', 'tempToken']
         if (data.user && typeof data.user === 'object' && !Array.isArray(data.user)) {
             for (const field of allowedUserFields) {
-                if (data.user[field] !== undefined) {
+                const value = data.user[field]
+                if (value !== undefined && value !== null) {
                     sanitized.user[field] = data.user[field] as any
                 }
             }
-            // Referral is used for Stripe referral tracking in CLOUD; not a User entity column.
-            if ('referral' in data.user && data.user.referral !== undefined) {
-                ;(sanitized.user as any).referral = data.user.referral
+            if (data.user.referral !== undefined) {
+                sanitized.user.referral = data.user.referral
             }
         }
 
@@ -166,7 +169,6 @@ export class AccountService {
                 const { customerId, subscriptionId } = await this.identityManager.createStripeUserAndSubscribe({
                     email: data.user.email,
                     userPlan: UserPlan.FREE,
-                    // @ts-ignore
                     referral: data.user.referral || ''
                 })
                 data.organization.customerId = customerId

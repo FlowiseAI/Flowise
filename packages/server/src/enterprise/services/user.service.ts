@@ -79,40 +79,27 @@ export class UserService {
         return getHash(credential)
     }
 
-    /**
-     * Fields that may be supplied when creating a new user. Server-managed fields
-     * (id, createdBy, updatedBy, createdDate, updatedDate) are never taken from input.
-     */
-    private static readonly ALLOWED_USER_CREATE_FIELDS: (keyof User)[] = [
-        'name',
-        'email',
-        'credential',
-        'status',
-        'tempToken',
-        'tokenExpiry'
-    ]
-
     public async createNewUser(data: Partial<User>, queryRunner: QueryRunner) {
         const user = await this.readUserByEmail(data.email, queryRunner)
         if (user) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
+        if (data.credential) data.credential = this.encryptUserCredential(data.credential)
+        if (!data.name) data.name = data.email
+        this.validateUserName(data.name)
+        if (data.status) this.validateUserStatus(data.status)
 
-        const safeData: Partial<User> = {}
-        for (const field of UserService.ALLOWED_USER_CREATE_FIELDS) {
-            if (data[field] !== undefined) {
-                safeData[field] = data[field] as any
-            }
+        data.id = generateId()
+        const createdById = data.createdBy
+        if (createdById) {
+            const createdByUser = await this.readUserById(createdById, queryRunner)
+            if (!createdByUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+            data.createdBy = createdByUser.id
+            data.updatedBy = data.createdBy
+        } else {
+            data.createdBy = data.id
+            data.updatedBy = data.id
         }
 
-        if (safeData.credential) safeData.credential = this.encryptUserCredential(safeData.credential)
-        if (!safeData.name) safeData.name = safeData.email
-        this.validateUserName(safeData.name)
-        if (safeData.status) this.validateUserStatus(safeData.status)
-
-        safeData.id = generateId()
-        safeData.createdBy = safeData.id
-        safeData.updatedBy = safeData.id
-
-        const userObj = queryRunner.manager.create(User, safeData)
+        const userObj = queryRunner.manager.create(User, data)
 
         this.telemetry.sendTelemetry(
             TelemetryEventType.USER_CREATED,
