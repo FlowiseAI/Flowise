@@ -7,6 +7,7 @@ import { IdentityManager } from '../../IdentityManager'
 import { Platform, UserPlan } from '../../Interface'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization, OrganizationName } from '../database/entities/organization.entity'
@@ -15,9 +16,11 @@ import { User, UserStatus } from '../database/entities/user.entity'
 import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspace-user.entity'
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
-import { compareHash } from '../utils/encryption.util'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
+import { validatePasswordOrThrow } from '../utils/validation.util'
 import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
@@ -25,8 +28,6 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
-import { sanitizeUser } from '../../utils/sanitize.util'
-import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 
 type AccountDTO = {
     user: Partial<User>
@@ -104,6 +105,8 @@ export class AccountService {
         } finally {
             await queryRunner.release()
         }
+
+        return { message: 'success' }
     }
 
     private async ensureOneOrganizationOnly(queryRunner: QueryRunner) {
@@ -467,6 +470,18 @@ export class AccountService {
                 await auditService.recordLoginActivity(user.email || '', LoginActivityCode.INCORRECT_CREDENTIAL, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.INCORRECT_USER_EMAIL_OR_CREDENTIALS)
             }
+
+            // If the stored hash was created with fewer salt rounds than the current minimum
+            // (e.g. 5 before we increased to 10), rehash with the current rounds on successful login.
+            if (hashNeedsUpgrade(user.credential!, getPasswordSaltRounds())) {
+                try {
+                    const newHash = getHash(data.user.credential!)
+                    await this.userService.saveUser({ ...user, credential: newHash }, queryRunner)
+                } catch (upgradeError) {
+                    logger.warn(`Failed to upgrade password hash for user ${user.email}`, upgradeError)
+                }
+            }
+
             if (user.status === UserStatus.UNVERIFIED) {
                 await auditService.recordLoginActivity(data.user.email || '', LoginActivityCode.REGISTRATION_PENDING, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.USER_EMAIL_UNVERIFIED)
@@ -542,7 +557,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async resetPassword(data: AccountDTO) {
@@ -563,11 +578,15 @@ export class AccountService {
             const diff = now.diff(tokenExpiry, 'minutes')
             if (Math.abs(diff) > expiryInMins) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
 
+            // @ts-ignore
+            const password = data.user.password
+            validatePasswordOrThrow(password)
+
             // all checks are done, now update the user password, don't forget to hash it and do not forget to clear the temp token
             // leave the user status and other details as is
-            const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
+            const salt = bcrypt.genSaltSync(getPasswordSaltRounds())
             // @ts-ignore
-            const hash = bcrypt.hashSync(data.user.password, salt)
+            const hash = bcrypt.hashSync(password, salt)
             data.user = user
             data.user.credential = hash
             data.user.tempToken = ''
@@ -581,13 +600,13 @@ export class AccountService {
             // Invalidate all sessions for this user after password reset
             await destroyAllSessionsForUser(user.id as string)
         } catch (error) {
-            await queryRunner.rollbackTransaction()
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            await queryRunner.release()
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async logout(user: LoggedInUser) {
