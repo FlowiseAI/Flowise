@@ -41,10 +41,16 @@ jobs:
               with:
                   working-directory: ./
                   runTests: false
+            # Required env vars for server startup (set as repo Actions secrets with test values)
             - name: Cypress test
               uses: cypress-io/github-action@v6
               env:
-                  CYPRESS_TEST: '1'
+                  TOKEN_HASH_SECRET: ${{ secrets.E2E_TOKEN_HASH_SECRET }}
+                  EXPRESS_SESSION_SECRET: ${{ secrets.E2E_EXPRESS_SESSION_SECRET }}
+                  JWT_AUTH_TOKEN_SECRET: ${{ secrets.E2E_JWT_AUTH_TOKEN_SECRET }}
+                  JWT_REFRESH_TOKEN_SECRET: ${{ secrets.E2E_JWT_REFRESH_TOKEN_SECRET }}
+                  JWT_ISSUER: ${{ secrets.E2E_JWT_ISSUER }}
+                  JWT_AUDIENCE: ${{ secrets.E2E_JWT_AUDIENCE }}
               with:
                   install: false
                   working-directory: packages/server

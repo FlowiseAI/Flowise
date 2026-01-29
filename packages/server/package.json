@@ -45,8 +45,8 @@
         "version": "oclif readme && git add README.md",
         "cypress:open": "cypress open",
         "cypress:run": "cypress run",
-        "e2e": "CYPRESS_TEST=1 start-server-and-test dev http://localhost:3000 cypress:run",
-        "cypress:ci": "CYPRESS_TEST=1 START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start https-get://localhost:3000 cypress:run",
+        "e2e": "start-server-and-test dev http://localhost:3000 cypress:run",
+        "cypress:ci": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start https-get://localhost:3000 cypress:run",
         "test": "jest --runInBand --detectOpenHandles --forceExit"
     },
     "keywords": [],

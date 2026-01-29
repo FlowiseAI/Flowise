@@ -4,9 +4,6 @@ import path from 'path'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
-if (process.env.CYPRESS_TEST === '1') {
-    dotenv.config({ path: path.join(__dirname, '..', '..', '.env.cypress'), override: true })
-}
 
 // default config
 const loggingConfig = {
