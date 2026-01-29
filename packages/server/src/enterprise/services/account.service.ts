@@ -306,7 +306,6 @@ export class AccountService {
     }
 
     public async register(data: AccountDTO) {
-        // Sanitize input to prevent mass assignment - only allow client-controlled fields
         const sanitizedData = this.sanitizeRegistrationDTO(data)
         return await this.saveRegisterAccount(sanitizedData)
     }
