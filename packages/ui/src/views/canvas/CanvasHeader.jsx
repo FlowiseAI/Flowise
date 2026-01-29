@@ -5,10 +5,33 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
+import {
+    Avatar,
+    Box,
+    ButtonBase,
+    Typography,
+    Stack,
+    TextField,
+    Button,
+    Chip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
+} from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import {
+    IconSettings,
+    IconChevronLeft,
+    IconDeviceFloppy,
+    IconPencil,
+    IconCheck,
+    IconX,
+    IconCode,
+    IconHistory,
+    IconUpload
+} from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -19,6 +42,7 @@ import ChatflowConfigurationDialog from '@/ui-component/dialog/ChatflowConfigura
 import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
+import VersionHistoryDialog from '@/ui-component/dialog/VersionHistoryDialog'
 import { Available } from '@/ui-component/rbac/available'
 
 // API
@@ -34,7 +58,17 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({
+    chatflow,
+    isAgentCanvas,
+    isAgentflowV2,
+    handleSaveFlow,
+    handleDeleteFlow,
+    handleLoadFlow,
+    handleVersionLoad,
+    handlePublishVersion,
+    currentVersion
+}) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -58,6 +92,10 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+    const [versionHistoryDialogOpen, setVersionHistoryDialogOpen] = useState(false)
+    const [versionHistoryDialogProps, setVersionHistoryDialogProps] = useState({})
+    const [publishDialogOpen, setPublishDialogOpen] = useState(false)
+    const [publishDescription, setPublishDescription] = useState('')
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
@@ -213,9 +251,23 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         setAPIDialogOpen(true)
     }
 
-    const onSaveChatflowClick = () => {
+    const _onSaveChatflowClick = () => {
         if (chatflow.id) handleSaveFlow(flowName)
         else setFlowDialogOpen(true)
+    }
+
+    const onPublishClick = () => {
+        if (chatflow.id) {
+            setPublishDialogOpen(true)
+        } else {
+            setFlowDialogOpen(true)
+        }
+    }
+
+    const onConfirmPublish = () => {
+        handlePublishVersion(publishDescription)
+        setPublishDialogOpen(false)
+        setPublishDescription('')
     }
 
     const onConfirmSaveName = (flowName) => {
@@ -282,7 +334,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     </Box>
                     <Box sx={{ width: '100%' }}>
                         {!isEditingFlowName ? (
-                            <Stack flexDirection='row'>
+                            <Stack flexDirection='row' alignItems='center'>
                                 <Typography
                                     sx={{
                                         fontSize: '1.5rem',
@@ -295,6 +347,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 >
                                     {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
                                 </Typography>
+                                {chatflow?.id && currentVersion && (
+                                    <Chip label={`v${currentVersion}`} size='small' color='default' sx={{ ml: 1, height: 24 }} />
+                                )}
                                 {chatflow?.id && (
                                     <Available permission={savePermission}>
                                         <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
@@ -387,50 +442,117 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         )}
                     </Box>
                 </Stack>
-                <Box>
+                <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     {chatflow?.id && (
-                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
-                            <Avatar
-                                variant='rounded'
-                                sx={{
-                                    ...theme.typography.commonAvatar,
-                                    ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.canvasHeader.deployLight,
-                                    color: theme.palette.canvasHeader.deployDark,
-                                    '&:hover': {
-                                        background: theme.palette.canvasHeader.deployDark,
-                                        color: theme.palette.canvasHeader.deployLight
-                                    }
+                        <>
+                            <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.canvasHeader.deployLight,
+                                        color: theme.palette.canvasHeader.deployDark,
+                                        '&:hover': {
+                                            background: theme.palette.canvasHeader.deployDark,
+                                            color: theme.palette.canvasHeader.deployLight
+                                        }
+                                    }}
+                                    color='inherit'
+                                    onClick={onAPIDialogClick}
+                                >
+                                    <IconCode stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </ButtonBase>
+                            <ButtonBase
+                                title='Version History'
+                                sx={{ borderRadius: '50%', mr: 2 }}
+                                onClick={() => {
+                                    setVersionHistoryDialogProps({
+                                        chatflowId: chatflow.id
+                                    })
+                                    setVersionHistoryDialogOpen(true)
                                 }}
-                                color='inherit'
-                                onClick={onAPIDialogClick}
                             >
-                                <IconCode stroke={1.5} size='1.3rem' />
-                            </Avatar>
-                        </ButtonBase>
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.secondary.light,
+                                        color: theme.palette.secondary.dark,
+                                        '&:hover': {
+                                            background: theme.palette.secondary.dark,
+                                            color: theme.palette.secondary.light
+                                        }
+                                    }}
+                                    color='inherit'
+                                >
+                                    <IconHistory stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </ButtonBase>
+                        </>
                     )}
                     <Available permission={savePermission}>
-                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
-                            <Avatar
-                                variant='rounded'
-                                sx={{
-                                    ...theme.typography.commonAvatar,
-                                    ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.canvasHeader.saveLight,
-                                    color: theme.palette.canvasHeader.saveDark,
-                                    '&:hover': {
-                                        background: theme.palette.canvasHeader.saveDark,
-                                        color: theme.palette.canvasHeader.saveLight
+                        <Stack direction='row' spacing={0} sx={{ mr: 2 }}>
+                            <ButtonBase
+                                title='Save'
+                                sx={{ borderRadius: chatflow?.id ? '50% 0 0 50%' : '50%' }}
+                                onClick={() => {
+                                    if (chatflow.id) {
+                                        handleSaveFlow(chatflow.name)
+                                    } else {
+                                        setFlowDialogOpen(true)
                                     }
                                 }}
-                                color='inherit'
-                                onClick={onSaveChatflowClick}
                             >
-                                <IconDeviceFloppy stroke={1.5} size='1.3rem' />
-                            </Avatar>
-                        </ButtonBase>
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.canvasHeader.saveLight,
+                                        color: theme.palette.canvasHeader.saveDark,
+                                        borderRadius: chatflow?.id ? '8px 0 0 8px' : '8px',
+                                        '&:hover': {
+                                            background: theme.palette.canvasHeader.saveDark,
+                                            color: theme.palette.canvasHeader.saveLight
+                                        }
+                                    }}
+                                    color='inherit'
+                                >
+                                    <IconDeviceFloppy stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </ButtonBase>
+                            {chatflow?.id && (
+                                <ButtonBase title='Save & Publish' sx={{ borderRadius: '0 50% 50% 0' }} onClick={onPublishClick}>
+                                    <Avatar
+                                        variant='rounded'
+                                        sx={{
+                                            ...theme.typography.commonAvatar,
+                                            ...theme.typography.mediumAvatar,
+                                            transition: 'all .2s ease-in-out',
+                                            background: theme.palette.canvasHeader.saveLight,
+                                            color: theme.palette.canvasHeader.saveDark,
+                                            borderRadius: '0 8px 8px 0',
+                                            minWidth: '24px',
+                                            width: '24px',
+                                            borderLeft: `1px solid ${theme.palette.canvasHeader.saveDark}`,
+                                            '&:hover': {
+                                                background: theme.palette.canvasHeader.saveDark,
+                                                color: theme.palette.canvasHeader.saveLight
+                                            }
+                                        }}
+                                        color='inherit'
+                                    >
+                                        <IconUpload stroke={1.5} size='1rem' />
+                                    </Avatar>
+                                </ButtonBase>
+                            )}
+                        </Stack>
                     </Available>
                     <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
                         <Avatar
@@ -498,6 +620,37 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
                 isAgentCanvas={isAgentCanvas}
             />
+            <VersionHistoryDialog
+                show={versionHistoryDialogOpen}
+                dialogProps={versionHistoryDialogProps}
+                onCancel={() => setVersionHistoryDialogOpen(false)}
+                onVersionLoad={handleVersionLoad}
+            />
+            {/* Publish Version Dialog */}
+            <Dialog open={publishDialogOpen} onClose={() => setPublishDialogOpen(false)} maxWidth='sm' fullWidth>
+                <DialogTitle>Publish New Version</DialogTitle>
+                <DialogContent>
+                    <Typography variant='body2' sx={{ mb: 2 }}>
+                        This will create a new version (v{currentVersion ? currentVersion + 1 : 1}) and set it as the active version.
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        multiline
+                        rows={3}
+                        label='Version Description (optional)'
+                        placeholder='Describe the changes in this version...'
+                        value={publishDescription}
+                        onChange={(e) => setPublishDescription(e.target.value)}
+                        sx={{ mt: 1 }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setPublishDialogOpen(false)}>Cancel</Button>
+                    <Button variant='contained' onClick={onConfirmPublish} startIcon={<IconUpload size={18} />}>
+                        Publish Version
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     )
 }
@@ -507,6 +660,9 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
+    handleVersionLoad: PropTypes.func,
+    handlePublishVersion: PropTypes.func,
+    currentVersion: PropTypes.number,
     isAgentCanvas: PropTypes.bool,
     isAgentflowV2: PropTypes.bool
 }
