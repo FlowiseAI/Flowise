@@ -7,6 +7,7 @@ import { IdentityManager } from '../../IdentityManager'
 import { Platform, UserPlan } from '../../Interface'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization, OrganizationName } from '../database/entities/organization.entity'
@@ -16,7 +17,7 @@ import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspa
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
-import { compareHash } from '../utils/encryption.util'
+import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
 import { validatePasswordOrThrow } from '../utils/validation.util'
@@ -469,6 +470,18 @@ export class AccountService {
                 await auditService.recordLoginActivity(user.email || '', LoginActivityCode.INCORRECT_CREDENTIAL, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.INCORRECT_USER_EMAIL_OR_CREDENTIALS)
             }
+
+            // If the stored hash was created with fewer salt rounds than the current minimum
+            // (e.g. 5 before we increased to 10), rehash with the current rounds on successful login.
+            if (hashNeedsUpgrade(user.credential!, getPasswordSaltRounds())) {
+                try {
+                    const newHash = getHash(data.user.credential!)
+                    await this.userService.saveUser({ ...user, credential: newHash }, queryRunner)
+                } catch (upgradeError) {
+                    logger.warn(`Failed to upgrade password hash for user ${user.email}`, upgradeError)
+                }
+            }
+
             if (user.status === UserStatus.UNVERIFIED) {
                 await auditService.recordLoginActivity(data.user.email || '', LoginActivityCode.REGISTRATION_PENDING, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.USER_EMAIL_UNVERIFIED)
@@ -571,7 +584,8 @@ export class AccountService {
 
             // all checks are done, now update the user password, don't forget to hash it and do not forget to clear the temp token
             // leave the user status and other details as is
-            const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
+            const salt = bcrypt.genSaltSync(getPasswordSaltRounds())
+            // @ts-ignore
             const hash = bcrypt.hashSync(password, salt)
             data.user = user
             data.user.credential = hash
