@@ -116,6 +116,11 @@ class AzureSSO extends SSOBase {
     static async testSetup(ssoConfig: any) {
         const { tenantID, clientID, clientSecret } = ssoConfig
 
+        // Validate tenantID before proceeding!
+        if (!AzureSSO.isValidTenantID(tenantID)) {
+            return { error: 'Invalid tenantID format.' }
+        }
+
         try {
             const tokenResponse = await axios.post(
                 `https://login.microsoftonline.com/${tenantID}/oauth2/v2.0/token`,
@@ -134,6 +139,18 @@ class AzureSSO extends SSOBase {
             const errorMessage = 'Microsoft Configuration test failed. Please check your credentials and Tenant ID.'
             return { error: errorMessage }
         }
+    }
+
+    /**
+     * Validate a Microsoft tenant ID (should be a UUID or domain ending with .onmicrosoft.com)
+     */
+    static isValidTenantID(tenantID: string): boolean {
+        if (typeof tenantID !== 'string') return false;
+        // UUID v4 regex (Azure tenant ID is often a GUID), case insensitive
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        // .onmicrosoft.com domain, loose check
+        const domainRegex = /^[a-zA-Z0-9-]+\.onmicrosoft\.com$/;
+        return uuidRegex.test(tenantID) || domainRegex.test(tenantID);
     }
 
     async refreshToken(ssoRefreshToken: string) {

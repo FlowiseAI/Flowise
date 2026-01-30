@@ -109,15 +109,34 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         })
         ;(dataset as any).rows = items
 
+        // Validate chatflowId - ensure all provided IDs exist in the database
+        let chatflowIds: string[] = [];
+        try {
+            chatflowIds = JSON.parse(body.chatflowId);
+        } catch (error) {
+            // fallback: treat as single id
+            chatflowIds = [body.chatflowId];
+        }
+        // Only allow strings that do not contain slashes
+        if (chatflowIds.some((id) => typeof id !== 'string' || id.includes('/') || id.includes('\\'))) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatflowId format');
+        }
+        const appServer = getRunningExpressApp();
+        const existingChatflows = await appServer.AppDataSource.getRepository(ChatFlow).findBy({
+            id: In(chatflowIds)
+        });
+        if (existingChatflows.length !== chatflowIds.length) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'One or more chatflowIds not found');
+        }
         const data: ICommonObject = {
             chatflowId: body.chatflowId,
             dataset: dataset,
             evaluationType: body.evaluationType,
             evaluationId: newEvaluation.id,
             credentialId: body.credentialId
-        }
+        };
         if (body.datasetAsOneConversation) {
-            data.sessionId = uuidv4()
+            data.sessionId = uuidv4();
         }
 
         // When chatflow has an APIKey

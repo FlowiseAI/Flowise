@@ -11,6 +11,35 @@ import { StatusCodes } from 'http-status-codes'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { getPageAndLimitParams } from '../../utils/pagination'
 
+// Type guard and normalization for feedbackType
+function normalizeFeedbackTypeParam(val: unknown): ChatMessageRatingType[] {
+    // Supported as string or array (possibly from req.query)
+    const validValues = Object.values(ChatMessageRatingType);
+    if (typeof val === 'string') {
+        // Could be CSV, single value, or JSON array string
+        try {
+            // Try JSON parse if it's an array-like
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) {
+                // Filter & map only valid rating types
+                return parsed.filter((x) => typeof x === 'string' && validValues.includes(x as ChatMessageRatingType));
+            } else if (typeof parsed === 'string' && validValues.includes(parsed)) {
+                return [parsed];
+            }
+        } catch {
+            // Not JSON, fall through
+        }
+        // CSV or single value
+        return val
+            .split(',')
+            .map((x) => x.trim())
+            .filter((x) => validValues.includes(x as ChatMessageRatingType)) as ChatMessageRatingType[];
+    } else if (Array.isArray(val)) {
+        return val.filter((x) => typeof x === 'string' && validValues.includes(x as ChatMessageRatingType));
+    }
+    return [];
+}
+
 const getFeedbackTypeFilters = (_feedbackTypeFilters: ChatMessageRatingType[]): ChatMessageRatingType[] | undefined => {
     try {
         let feedbackTypeFilters
@@ -75,9 +104,12 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
 
         const { page, limit } = getPageAndLimitParams(req)
 
-        let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
-        if (feedbackTypeFilters) {
+        // Always normalize and sanitize feedbackType param to ChatMessageRatingType[]
+        let feedbackTypeFilters = normalizeFeedbackTypeParam(req.query?.feedbackType)
+        if (feedbackTypeFilters && feedbackTypeFilters.length > 0) {
             feedbackTypeFilters = getFeedbackTypeFilters(feedbackTypeFilters)
+        } else {
+            feedbackTypeFilters = undefined
         }
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(

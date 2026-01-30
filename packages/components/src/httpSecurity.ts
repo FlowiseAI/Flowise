@@ -54,6 +54,39 @@ export async function checkDenyList(url: string): Promise<void> {
 }
 
 /**
+ * Checks if a URL is allowed based on HTTP_ALLOW_LIST environment variable
+ * @param url - URL to check
+ * @throws Error if URL hostname is not in allow-list
+ */
+export function checkAllowList(url: string): void {
+    const httpAllowListString: string | undefined = process.env.HTTP_ALLOW_LIST
+    if (!httpAllowListString) {
+        throw new Error('Access to this host is denied: no allow-list configured')
+    }
+    const httpAllowList = httpAllowListString.split(',').map(entry => entry.trim()).filter(entry => !!entry)
+    const urlObj = new URL(url)
+    const hostname = urlObj.hostname
+
+    // Only allow http and https schemes
+    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+        throw new Error('Only http and https URLs are allowed')
+    }
+
+    // Strict match, or basic wildcard match e.g. *.example.com
+    const isAllowed = httpAllowList.some(entry => {
+        // wildcard matching for patterns like *.example.com
+        if (entry.startsWith('*.')) {
+            const base = entry.slice(2)
+            return hostname === base || hostname.endsWith('.' + base)
+        }
+        return hostname === entry
+    })
+    if (!isAllowed) {
+        throw new Error('Access to this host is denied by allow-list policy')
+    }
+}
+
+/**
  * Makes a secure HTTP request that validates all URLs in redirect chains against the deny list
  * @param config - Axios request configuration
  * @param maxRedirects - Maximum number of redirects to follow (default: 5)
@@ -171,7 +204,8 @@ export async function secureFetch(url: string, init?: RequestInit, maxRedirects:
     let redirectCount = 0
     let currentInit = { ...init, redirect: 'manual' as const } // Disable automatic redirects
 
-    // Validate the initial URL
+    // Validate the initial URL using both allow-list and deny-list
+    checkAllowList(currentUrl)
     await checkDenyList(currentUrl)
 
     while (redirectCount <= maxRedirects) {
@@ -198,7 +232,8 @@ export async function secureFetch(url: string, init?: RequestInit, maxRedirects:
         // Resolve the redirect URL (handle relative URLs)
         const redirectUrl = new URL(location, currentUrl).toString()
 
-        // Validate the redirect URL against the deny list
+        // Validate the redirect URL against the allow-list and deny list
+        checkAllowList(redirectUrl)
         await checkDenyList(redirectUrl)
 
         // Update current URL for next iteration
