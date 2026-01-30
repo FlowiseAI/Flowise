@@ -1,10 +1,9 @@
-import { INode, INodeParams, INodeData, ICommonObject } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
 import { Tool } from '@langchain/core/tools'
-import fetch from 'node-fetch'
 import * as cheerio from 'cheerio'
 import { URL } from 'url'
-import { xmlScrape } from '../../../src/utils'
+import { secureFetch } from '../../../src'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, xmlScrape } from '../../../src/utils'
 
 interface ScrapedPageData {
     url: string
@@ -60,7 +59,7 @@ class WebScraperRecursiveTool extends Tool {
 
     private async scrapeSingleUrl(url: string): Promise<Omit<ScrapedPageData, 'url'> & { foundLinks: string[] }> {
         try {
-            const response = await fetch(url, { timeout: this.timeoutMs, redirect: 'follow', follow: 5 })
+            const response = await secureFetch(url, { timeout: this.timeoutMs, redirect: 'follow', follow: 5 })
             if (!response.ok) {
                 const errorText = await response.text()
                 return {
