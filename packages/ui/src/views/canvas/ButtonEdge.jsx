@@ -5,6 +5,7 @@ import { useContext, memo } from 'react'
 import { SET_DIRTY } from '@/store/actions'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import { IconX } from '@tabler/icons-react'
+import { useCollaboration } from '@/hooks/useCollaboration'
 
 import './index.css'
 
@@ -24,9 +25,12 @@ const ButtonEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
 
     const dispatch = useDispatch()
 
+    const { updateEdge } = useCollaboration()
+
     const onEdgeClick = (evt, id) => {
         evt.stopPropagation()
         deleteEdge(id)
+        updateEdge({ id }, 'remove')
         dispatch({ type: SET_DIRTY })
     }
 

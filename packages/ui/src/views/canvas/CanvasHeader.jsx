@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button, Switch, FormControlLabel, Popover, Paper } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
@@ -34,12 +34,22 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({
+    chatflow,
+    isAgentCanvas,
+    isAgentflowV2,
+    handleSaveFlow,
+    handleDeleteFlow,
+    handleLoadFlow,
+    isCollaborativeMode,
+    onCollaborativeModeChange
+}) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const flowNameRef = useRef()
     const settingsRef = useRef()
+    const collaborationToggleRef = useRef()
 
     const [isEditingFlowName, setEditingFlowName] = useState(null)
     const [flowName, setFlowName] = useState('')
@@ -58,6 +68,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+    const [collaborationPopoverOpen, setCollaborationPopoverOpen] = useState(false)
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
@@ -224,6 +235,24 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         handleSaveFlow(flowName)
     }
 
+    const handleCollaborationToggle = (event) => {
+        const newValue = event.target.checked
+        onCollaborativeModeChange(newValue)
+
+        // Show popover only if turning ON and haven't seen the message before
+        if (newValue) {
+            const hasSeenCollaborationMessage = localStorage.getItem('hasSeenCollaborationMessage')
+            if (!hasSeenCollaborationMessage) {
+                setCollaborationPopoverOpen(true)
+            }
+        }
+    }
+
+    const handleCollaborationPopoverClose = () => {
+        localStorage.setItem('hasSeenCollaborationMessage', 'true')
+        setCollaborationPopoverOpen(false)
+    }
+
     useEffect(() => {
         if (updateChatflowApi.data) {
             setFlowName(updateChatflowApi.data.name)
@@ -293,7 +322,10 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
+                                    {canvas.isDirty && !isCollaborativeMode && (
+                                        <strong style={{ color: theme.palette.orange.main }}>*</strong>
+                                    )}{' '}
+                                    {flowName}
                                 </Typography>
                                 {chatflow?.id && (
                                     <Available permission={savePermission}>
@@ -388,6 +420,43 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     </Box>
                 </Stack>
                 <Box>
+                    <Available permission={savePermission}>
+                        <ButtonBase
+                            ref={collaborationToggleRef}
+                            title='Collaborative Mode'
+                            sx={{
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.canvasHeader.deployLight,
+                                color: theme.palette.canvasHeader.deployDark,
+                                '&:hover': {
+                                    background: theme.palette.canvasHeader.deployDark,
+                                    color: theme.palette.canvasHeader.deployLight
+                                },
+                                borderRadius: 8,
+                                mr: 2
+                            }}
+                        >
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={isCollaborativeMode}
+                                        onChange={handleCollaborationToggle}
+                                        sx={{
+                                            '& .MuiSwitch-switchBase.Mui-checked': {
+                                                color: '#4db8a8'
+                                            },
+                                            '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                                backgroundColor: '#4db8a8'
+                                            }
+                                        }}
+                                    />
+                                }
+                                label={<Typography sx={{ fontWeight: 500, color: theme.palette.text.primary }}>Collaboration</Typography>}
+                                labelPlacement='start'
+                                sx={{ mr: 0 }}
+                            />
+                        </ButtonBase>
+                    </Available>
                     {chatflow?.id && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar
@@ -411,7 +480,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         </ButtonBase>
                     )}
                     <Available permission={savePermission}>
-                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }} disabled={isCollaborativeMode}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -427,6 +496,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 }}
                                 color='inherit'
                                 onClick={onSaveChatflowClick}
+                                disabled={isCollaborativeMode}
                             >
                                 <IconDeviceFloppy stroke={1.5} size='1.3rem' />
                             </Avatar>
@@ -498,6 +568,42 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
                 isAgentCanvas={isAgentCanvas}
             />
+            <Popover
+                open={collaborationPopoverOpen}
+                anchorEl={collaborationToggleRef.current}
+                onClose={handleCollaborationPopoverClose}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center'
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center'
+                }}
+                sx={{ mt: 1 }}
+            >
+                <Paper sx={{ p: 2.5, maxWidth: 320 }}>
+                    <Typography sx={{ mb: 2, fontSize: '0.95rem', lineHeight: 1.6 }}>
+                        Collaboration is now active. Changes will be visible to other editors in real time.
+                    </Typography>
+                    <Button
+                        fullWidth
+                        variant='outlined'
+                        onClick={handleCollaborationPopoverClose}
+                        sx={{
+                            textTransform: 'none',
+                            borderColor: theme.palette.grey[300],
+                            color: theme.palette.text.primary,
+                            '&:hover': {
+                                borderColor: theme.palette.grey[400],
+                                backgroundColor: theme.palette.grey[50]
+                            }
+                        }}
+                    >
+                        Understood
+                    </Button>
+                </Paper>
+            </Popover>
         </>
     )
 }
@@ -508,7 +614,9 @@ CanvasHeader.propTypes = {
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
-    isAgentflowV2: PropTypes.bool
+    isAgentflowV2: PropTypes.bool,
+    isCollaborativeMode: PropTypes.bool,
+    onCollaborativeModeChange: PropTypes.func
 }
 
 export default CanvasHeader
