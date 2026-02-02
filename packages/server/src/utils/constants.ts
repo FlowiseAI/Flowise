@@ -10,7 +10,6 @@ export const WHITELIST_URLS = [
     '/api/v1/public-chatbotConfig',
     '/api/v1/public-executions',
     '/api/v1/prediction/',
-    '/api/v1/vector/upsert/',
     '/api/v1/node-icon/',
     '/api/v1/components-credentials-icon/',
     '/api/v1/chatflows-streaming',
@@ -23,8 +22,6 @@ export const WHITELIST_URLS = [
     '/api/v1/ping',
     '/api/v1/version',
     '/api/v1/attachments',
-    '/api/v1/metrics',
-    '/api/v1/nvidia-nim',
     '/api/v1/auth/resolve',
     '/api/v1/auth/login',
     '/api/v1/auth/refreshToken',
@@ -56,6 +53,8 @@ export const WHITELIST_URLS = [
     GithubSSO.LOGOUT_URI,
     GithubSSO.CALLBACK_URI
 ]
+
+export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim']
 
 export const enum GeneralErrorMessage {
     UNAUTHORIZED = 'Unauthorized',

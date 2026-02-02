@@ -1,11 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
-import { Dataset } from '../../database/entities/Dataset'
-import { DatasetRow } from '../../database/entities/DatasetRow'
 import { Readable } from 'stream'
 import { In } from 'typeorm'
+import { Dataset } from '../../database/entities/Dataset'
+import { DatasetRow } from '../../database/entities/DatasetRow'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 import csv from 'csv-parser'
 
@@ -50,6 +50,7 @@ const getDataset = async (id: string, workspaceId: string, page: number = -1, li
             id: id,
             workspaceId: workspaceId
         })
+        if (!dataset) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Dataset ${id} not found`)
         const queryBuilder = appServer.AppDataSource.getRepository(DatasetRow).createQueryBuilder('dsr').orderBy('dsr.sequenceNo', 'ASC')
         queryBuilder.andWhere('dsr.datasetId = :datasetId', { datasetId: id })
         if (page > 0 && limit > 0) {

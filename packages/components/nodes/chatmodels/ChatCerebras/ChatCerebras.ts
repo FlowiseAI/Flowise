@@ -1,7 +1,8 @@
 import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 
 class ChatCerebras_ChatModels implements INode {
     label: string
@@ -18,7 +19,7 @@ class ChatCerebras_ChatModels implements INode {
     constructor() {
         this.label = 'ChatCerebras'
         this.name = 'chatCerebras'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatCerebras'
         this.icon = 'cerebras.png'
         this.category = 'Chat Models'
@@ -41,8 +42,9 @@ class ChatCerebras_ChatModels implements INode {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'string',
-                placeholder: 'llama3.1-8b'
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'llama3.1-8b'
             },
             {
                 label: 'Temperature',
@@ -118,6 +120,12 @@ class ChatCerebras_ChatModels implements INode {
         ]
     }
 
+    loadMethods = {
+        async listModels(_: INodeData, __?: ICommonObject): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatCerebras')
+        }
+    }
+
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
@@ -159,10 +167,16 @@ class ChatCerebras_ChatModels implements INode {
             }
         }
 
-        if (basePath || parsedBaseOptions) {
-            obj.configuration = {
-                baseURL: basePath,
-                defaultHeaders: parsedBaseOptions
+        // Add integration tracking header and configure endpoint
+        const integrationHeader = {
+            'X-Cerebras-3rd-Party-Integration': 'flowise'
+        }
+
+        obj.configuration = {
+            baseURL: basePath || 'https://api.cerebras.ai/v1',
+            defaultHeaders: {
+                ...integrationHeader,
+                ...(parsedBaseOptions || {})
             }
         }
 
