@@ -449,6 +449,7 @@ export async function deepCrawlToDocuments(opts: DeepCrawlOptions, options?: ICo
     }
 
     // Add queue monitoring
+    let processedCount = 0
     let lastLogTime = 0
     const QUEUE_LOG_INTERVAL = 5000
     
@@ -617,27 +618,33 @@ export async function deepCrawlToDocuments(opts: DeepCrawlOptions, options?: ICo
         maxRequestsPerCrawl,
         maxConcurrency: Math.max(1, Math.min(opts.concurrency, 10)),
         requestHandlerTimeoutSecs: Math.ceil(opts.timeoutMs / 1000),
+
         maxRequestRetries: 0,
-        navigationTimeoutSecs: Math.ceil(opts.timeoutMs / 2000),
+        navigationTimeoutSecs: Math.ceil(opts.timeoutMs / 1000),
+
         useSessionPool: false,
         persistCookiesPerSession: false,
+
         autoscaledPoolOptions: {
             maxTasksPerMinute: opts.delayMs > 0 ? Math.floor(60000 / opts.delayMs) : 1000,
-            desiredConcurrency: Math.max(1, opts.concurrency),
+            desiredConcurrency: Math.max(1, opts.concurrency)
         },
-        // Minimal error handling since assets shouldn't reach here
-        errorHandler: (context: any) => {
-            const { request, error } = context
-            // Only log non-asset errors
-            if (!error?.message?.includes('SKIP_ASSET_URL')) {
-                dbg('Crawler error:', error?.message, request?.url)
-            }
+
+        failedRequestHandler: async ({ request, error }: any) => {
+            const msg = String(error?.message || '')
+            if (msg.includes('SKIP_ASSET_URL')) return
+            dbg('Failed request:', request?.url, msg)
         },
-        additionalMimeTypes: ['*/*'],
-        
+
         async requestHandler({ request, $, enqueueLinks }: any) {
             if (pages.length >= maxPages) return
             if (opts.delayMs > 0) await new Promise((r) => setTimeout(r, opts.delayMs))
+
+            // ✅ Prevent "$ is not a function"
+            if (typeof $ !== 'function') {
+                dbg('SKIP (no cheerio $)', request.url)
+                return
+            }
 
             const userData = (request.userData || { depth: 0, sourceType: 'crawl' }) as UserData
             const title = $('title')?.text()?.trim() || ''
@@ -645,7 +652,6 @@ export async function deepCrawlToDocuments(opts: DeepCrawlOptions, options?: ICo
             try {
                 $(stripSel.join(',')).remove()
             } catch {
-                // Fallback to individual selectors
                 for (const sel of stripSel) {
                     try {
                         $(sel).remove()
