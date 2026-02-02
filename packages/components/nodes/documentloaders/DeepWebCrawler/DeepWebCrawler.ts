@@ -156,7 +156,7 @@ class DeepWebCrawler_DocumentLoaders implements INode {
         if (!startUrl) throw new Error('Start URL is required')
 
         const crawlMode = String(nodeData.inputs?.crawlMode ?? 'both')
-        const renderJs = Boolean(nodeData.inputs?.renderJs ?? false)
+        const renderJs = Boolean(nodeData.inputs?.renderJs ?? true)
         const maxPages = Number(nodeData.inputs?.maxPages ?? 200)
         const maxDepth = Number(nodeData.inputs?.maxDepth ?? 3)
         const sameDomainOnly = Boolean(nodeData.inputs?.sameDomainOnly ?? true)
@@ -168,7 +168,7 @@ class DeepWebCrawler_DocumentLoaders implements INode {
         const minBlockChars = Number(nodeData.inputs?.minBlockChars ?? 80)
         const respectRobots = Boolean(nodeData.inputs?.respectRobots ?? false)
         const concurrency = Number(nodeData.inputs?.concurrency ?? 3)
-        const delayMs = Number(nodeData.inputs?.delayMs ?? 0)
+        const delayMs = Number(nodeData.inputs?.delayMs ?? 1000)
         const timeoutMs = Number(nodeData.inputs?.timeoutMs ?? 45000)
 
         return deepCrawlToDocuments({

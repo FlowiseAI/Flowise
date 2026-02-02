@@ -77,99 +77,6 @@ function urlAllowedByFilters(url: string, startHost: string, sameDomainOnly: boo
     }
 }
 
-function shouldSkipUrl(url: string): boolean {
-    try {
-        const parsed = new URL(url)
-        const path = parsed.pathname
-        
-        // Skip URLs with common asset patterns
-        if (path.includes('/img/') || 
-            path.includes('/images/') || 
-            path.includes('/assets/') ||
-            path.includes('/static/') ||
-            path.includes('/media/') ||
-            path.includes('/uploads/')) {
-            return true
-        }
-        
-        // Check file extension at the end of the pathname
-        const assetPattern = /\.(jpe?g|png|gif|webp|svg|ico|css|js|map|pdf|zip|rar|7z|tar|gz|mp[34]|wav|woff2?|ttf|eot)$/i
-        return assetPattern.test(path)
-    } catch {
-        return false
-    }
-}
-
-function isLikelyAssetUrl(url: string, context?: { contentType?: string }): boolean {
-    // First check content-type if available
-    if (context?.contentType) {
-        const assetContentTypes = [
-            'image/', 'video/', 'audio/', 'font/',
-            'application/javascript',
-            'application/json',
-            'application/pdf',
-            'application/zip',
-            'application/x-rar-compressed',
-            'application/x-7z-compressed',
-            'application/x-tar',
-            'application/x-gzip'
-        ]
-        if (assetContentTypes.some(type => context.contentType?.startsWith(type))) {
-            return true
-        }
-    }
-    
-    try {
-        const parsed = new URL(url)
-        const path = parsed.pathname.toLowerCase()
-        
-        // Skip common asset directories
-        const assetDirs = ['/img/', '/images/', '/assets/', '/static/', '/media/', '/uploads/', '/cdn/', '/dist/']
-        if (assetDirs.some(dir => path.includes(dir))) {
-            return true
-        }
-        
-        // Check for file extensions at the end of the path
-        const lastSegment = path.split('/').pop() || ''
-        const hasExtension = /\.\w+$/.test(lastSegment)
-        
-        if (hasExtension) {
-            const extension = lastSegment.split('.').pop()?.toLowerCase() || ''
-            const nonAssetExtensions = new Set([
-                'html', 'htm', 'php', 'asp', 'aspx', 'jsp',
-                'xml', 'rss', 'atom',
-                'txt', 'md', 'rst',
-                'cgi', 'pl', 'py', 'rb'
-            ])
-            
-            // Asset extensions to skip
-            const assetExtensions = new Set([
-                'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'ico', 'bmp', 'tiff',
-                'css', 'js', 'map',
-                'pdf',
-                'zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz',
-                'mp4', 'mp3', 'avi', 'mov', 'wmv', 'flv', 'mkv', 'webm',
-                'wav', 'ogg', 'wma', 'm4a',
-                'woff', 'woff2', 'ttf', 'eot', 'otf',
-                'exe', 'dmg', 'pkg', 'msi', 'app',
-                'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-                'csv', 'json', 'xml', 'txt', 'rtf', 'yml', 'yaml'
-            ])
-            
-            // Skip if it's an asset extension AND not a known non-asset extension
-            if (assetExtensions.has(extension) && !nonAssetExtensions.has(extension)) {
-                return true
-            }
-        }
-        
-        return false
-    } catch {
-        // Fallback to regex, but only for the path part
-        const urlWithoutQuery = url.split('?')[0].split('#')[0]
-        return /\.(?:jpe?g|png|gif|webp|svg|ico|css|js|map|pdf|zip|rar|7z|tar|gz|mp[34]|wav|woff2?|ttf|eot)$/i.test(urlWithoutQuery)
-    }
-}
-
 function isAssetUrl(url: string): boolean {
     try {
         const parsed = new URL(url)
@@ -413,15 +320,7 @@ function toBlocks(text: string, minChars: number): string[] {
         .filter((b) => b.length >= minChars)
 }
 
-function shouldFilterBlock(block: string, blockFreq: Map<string, number>, totalPages: number, thresholdPct: number): boolean {
-    if (totalPages < 2) return false
-    const count = blockFreq.get(block) || 0
-    const threshold = Math.ceil(totalPages * thresholdPct)
-    return count >= threshold
-}
-
 export async function deepCrawlToDocuments(opts: DeepCrawlOptions, options?: ICommonObject): Promise<Document[]> {
-    const logger = options?.logger
     const orgId = options?.orgId ?? 'unknown-org'
 
     const DEBUG = process.env.DEBUG === 'true'
@@ -448,7 +347,6 @@ export async function deepCrawlToDocuments(opts: DeepCrawlOptions, options?: ICo
     const blockFreq = new Map<string, number>()
     const seen = new Set<string>()
     
-    let processedCount = 0
     const maxPages = opts.maxPages > 0 ? opts.maxPages : Infinity
 
     // ✅ Make ALL Crawlee state in-memory for Flowise preview/process runs
