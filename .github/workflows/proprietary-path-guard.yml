@@ -24,6 +24,9 @@ on:
         required: false
         default: 'Testing'
 
+permissions:
+  contents: read
+
 jobs:
   check-proprietary-paths:
     name: Check for Proprietary Paths
