@@ -24,8 +24,7 @@ class ChatLitellm_ChatModels implements INode {
         this.type = 'ChatLitellm'
         this.icon = 'litellm.jpg'
         this.category = 'Chat Models'
-        this.description =
-            'Connect to a Litellm server using OpenAI-compatible API; image uploads need a model marked supports_vision=true in LiteLLM.'
+        this.description = 'Connect to a Litellm server using OpenAI-compatible API'
         this.baseClasses = [this.type, 'BaseChatModel', ...getBaseClasses(LangchainChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -98,7 +97,7 @@ class ChatLitellm_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                    'Allow image input. Image uploads need a model marked supports_vision=true in LiteLLM. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             },
