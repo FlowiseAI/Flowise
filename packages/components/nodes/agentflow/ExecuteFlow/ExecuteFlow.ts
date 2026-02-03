@@ -171,6 +171,9 @@ class ExecuteFlow_Agentflow implements INode {
                 throw new Error(`Invalid JSON in executeFlowOverrideConfig: ${parseError.message}`)
             }
         }
+        if (overrideConfig?.length === 0) {
+            overrideConfig = {}
+        }
 
         const state = options.agentflowRuntime?.state as ICommonObject
         const runtimeChatHistory = (options.agentflowRuntime?.chatHistory as BaseMessageLike[]) ?? []
