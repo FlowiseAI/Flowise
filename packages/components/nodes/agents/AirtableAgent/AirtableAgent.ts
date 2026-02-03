@@ -182,7 +182,9 @@ json.dumps(my_dict)`
             const validation = validatePythonCodeForDataFrame(pythonCode)
             if (!validation.valid) {
                 throw new Error(
-                    `Generated code was rejected for security reasons (${validation.reason ?? 'unsafe construct'}). Please rephrase your question to use only pandas DataFrame operations.`
+                    `Generated code was rejected for security reasons (${
+                        validation.reason ?? 'unsafe construct'
+                    }). Please rephrase your question to use only pandas DataFrame operations.`
                 )
             }
             try {
