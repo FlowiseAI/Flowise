@@ -51,8 +51,7 @@ const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
     { pattern: /\b__mro__\b/g, reason: '__mro__' },
     { pattern: /\b__globals__\b/g, reason: '__globals__' },
     { pattern: /\b__code__\b/g, reason: '__code__' },
-    { pattern: /\b__closure__\b/g, reason: '__closure__' },
-    { pattern: /\bgetattr\s*\(/g, reason: 'getattr()' }
+    { pattern: /\b__closure__\b/g, reason: '__closure__' }
 ]
 
 /**
