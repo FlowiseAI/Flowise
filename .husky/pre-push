@@ -15,25 +15,6 @@ ALLOWED_APPS="^apps/oss-app/"
 remote="$1"
 url="$2"
 
-# Function to check if a file is proprietary
-is_proprietary() {
-    local file="$1"
-
-    # Check explicitly blocked paths
-    if echo "$file" | grep -qE "$BLOCKED_PATHS"; then
-        return 0  # true - is proprietary
-    fi
-
-    # Check apps/ directory - only oss-app is allowed
-    if echo "$file" | grep -qE "^apps/"; then
-        if ! echo "$file" | grep -qE "$ALLOWED_APPS"; then
-            return 0  # true - is proprietary (not in whitelist)
-        fi
-    fi
-
-    return 1  # false - not proprietary
-}
-
 # Check if pushing to OSS remote (FlowiseAI/Flowise)
 if echo "$url" | grep -qE "FlowiseAI/Flowise(\.git)?$"; then
     echo "🔒 Pushing to OSS repo - checking for proprietary code..."
@@ -64,14 +45,12 @@ if echo "$url" | grep -qE "FlowiseAI/Flowise(\.git)?$"; then
             files_to_check=$(git diff --name-only "$remote_sha..$local_sha")
         fi
 
-        # Check each file for proprietary paths (using pipe + subshell for shell compatibility)
+        # Check for proprietary paths
         violations=$(
-            echo "$files_to_check" | while IFS= read -r file; do
-                [ -z "$file" ] && continue
-                if is_proprietary "$file"; then
-                    echo "$file"
-                fi
-            done
+            {
+                echo "$files_to_check" | grep -E "$BLOCKED_PATHS"
+                echo "$files_to_check" | grep -E "^apps/" | grep -vE "$ALLOWED_APPS"
+            } 2>/dev/null | sort -u
         )
 
         if [ -n "$violations" ]; then
