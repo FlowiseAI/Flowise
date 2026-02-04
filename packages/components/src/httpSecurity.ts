@@ -1,9 +1,39 @@
-import * as ipaddr from 'ipaddr.js'
-import dns from 'dns/promises'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
-import fetch, { RequestInit, Response } from 'node-fetch'
+import dns from 'dns/promises'
 import http from 'http'
 import https from 'https'
+import * as ipaddr from 'ipaddr.js'
+import fetch, { RequestInit, Response } from 'node-fetch'
+
+const DEFAULT_DENY_LIST = [
+    '0.0.0.0',
+    '10.0.0.0/8',
+    '127.0.0.0/8',
+    '169.254.0.0/16',
+    '169.254.169.253',
+    '169.254.169.254',
+    '172.16.0.0/12',
+    '192.168.0.0/16',
+    '224.0.0.0/4',
+    '240.0.0.0/4',
+    '255.255.255.255/32',
+    '::1',
+    'fc00::/7',
+    'fd00:ec2::254',
+    'fe80::/10',
+    'ff00::/8',
+    'localhost',
+    'ip6-localhost'
+]
+
+/**
+ * Gets the HTTP deny list from environment variable or returns default
+ * @returns Array of denied IP addresses/CIDR ranges
+ */
+function getHttpDenyList(): string[] {
+    const httpDenyListString = process.env.HTTP_DENY_LIST
+    return httpDenyListString ? httpDenyListString.split(',').map((s) => s.trim()) : DEFAULT_DENY_LIST
+}
 
 /**
  * Checks if an IP address is in the deny list
@@ -33,15 +63,13 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
 }
 
 /**
- * Checks if a URL is allowed based on HTTP_DENY_LIST environment variable
+ * Checks if a URL is allowed based on HTTP_DENY_LIST environment variable.
  * @param url - URL to check
  * @throws Error if URL hostname resolves to a denied IP
  */
 export async function checkDenyList(url: string): Promise<void> {
-    const httpDenyListString: string | undefined = process.env.HTTP_DENY_LIST
-    if (!httpDenyListString) return
+    const httpDenyList = getHttpDenyList()
 
-    const httpDenyList = httpDenyListString.split(',').map((ip) => ip.trim())
     const urlObj = new URL(url)
     const hostname = urlObj.hostname
 
@@ -186,17 +214,14 @@ type ResolvedTarget = {
 }
 
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
-    const denyListString = process.env.HTTP_DENY_LIST
-    const denyList = denyListString ? denyListString.split(',').map((s) => s.trim()) : null
+    const denyList = getHttpDenyList()
 
     const u = new URL(url)
     const hostname = u.hostname
     const protocol: 'http' | 'https' = u.protocol === 'https:' ? 'https' : 'http'
 
     if (ipaddr.isValid(hostname)) {
-        if (denyList) {
-            isDeniedIP(hostname, denyList)
-        }
+        isDeniedIP(hostname, denyList)
 
         return {
             hostname,
@@ -211,10 +236,8 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
         throw new Error(`DNS resolution failed for ${hostname}`)
     }
 
-    if (denyList) {
-        for (const r of records) {
-            isDeniedIP(r.address, denyList)
-        }
+    for (const r of records) {
+        isDeniedIP(r.address, denyList)
     }
 
     const chosen = records.find((r) => r.family === 4) ?? records[0]
