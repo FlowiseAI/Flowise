@@ -27,12 +27,16 @@ const DEFAULT_DENY_LIST = [
 ]
 
 /**
- * Gets the HTTP deny list from environment variable or returns default
- * @returns Array of denied IP addresses/CIDR ranges
+ * Gets the HTTP deny list, always including default protections plus any custom entries
+ * @returns Array of denied IP addresses/CIDR ranges (always includes DEFAULT_DENY_LIST)
  */
 function getHttpDenyList(): string[] {
     const httpDenyListString = process.env.HTTP_DENY_LIST
-    return httpDenyListString ? httpDenyListString.split(',').map((s) => s.trim()) : DEFAULT_DENY_LIST
+    if (httpDenyListString) {
+        const customList = httpDenyListString.split(',').map((s) => s.trim())
+        return [...DEFAULT_DENY_LIST, ...customList]
+    }
+    return DEFAULT_DENY_LIST
 }
 
 /**
