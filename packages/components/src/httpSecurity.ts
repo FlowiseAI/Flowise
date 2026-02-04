@@ -33,8 +33,8 @@ const DEFAULT_DENY_LIST = [
 function getHttpDenyList(): string[] {
     const httpDenyListString = process.env.HTTP_DENY_LIST
     if (httpDenyListString) {
-        const customList = httpDenyListString.split(',').map((s) => s.trim())
-        return [...DEFAULT_DENY_LIST, ...customList]
+        const customList = httpDenyListString.split(',').map((s) => s.trim()).filter(Boolean);
+        return [...new Set([...DEFAULT_DENY_LIST, ...customList])];
     }
     return DEFAULT_DENY_LIST
 }
