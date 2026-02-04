@@ -46,10 +46,11 @@ if echo "$url" | grep -qE "FlowiseAI/Flowise(\.git)?$"; then
         fi
 
         # Check for proprietary paths
+        # Note: || true prevents grep's exit code 1 (no match) from aborting the subshell
         violations=$(
             {
-                echo "$files_to_check" | grep -E "$BLOCKED_PATHS"
-                echo "$files_to_check" | grep -E "^apps/" | grep -vE "$ALLOWED_APPS"
+                echo "$files_to_check" | grep -E "$BLOCKED_PATHS" || true
+                echo "$files_to_check" | grep -E "^apps/" | grep -vE "$ALLOWED_APPS" || true
             } 2>/dev/null | sort -u
         )
 
