@@ -1061,8 +1061,8 @@
                     "label": "command-r7b-12-2024",
                     "name": "command-r7b-12-2024",
                     "description": "Small, fast; RAG, tool use, agents",
-                    "input_cost": 0.0025,
-                    "output_cost": 0.01
+                    "input_cost": 0.000037,
+                    "output_cost": 0.00015
                 },
                 {
                     "label": "command-a-reasoning-08-2025",
@@ -1075,8 +1075,8 @@
                     "label": "command-r-08-2024",
                     "name": "command-r-08-2024",
                     "description": "Command R – RAG, tool use, multilingual",
-                    "input_cost": 0.0025,
-                    "output_cost": 0.01
+                    "input_cost": 0.00015,
+                    "output_cost": 0.0006
                 },
                 {
                     "label": "command-r-plus-08-2024",

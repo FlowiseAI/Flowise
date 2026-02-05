@@ -43,7 +43,7 @@ class ChatCohere_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'command-r-plus-08-2024'
+                default: 'command-r7b-12-2024'
             },
             {
                 label: 'Temperature',
