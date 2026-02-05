@@ -1051,14 +1051,37 @@
             "name": "chatCohere",
             "models": [
                 {
-                    "label": "command-a",
-                    "name": "command-a",
+                    "label": "command-a-03-2025",
+                    "name": "command-a-03-2025",
+                    "description": "Command A – most performant; tool use, RAG, multilingual",
                     "input_cost": 0.0025,
                     "output_cost": 0.01
                 },
                 {
-                    "label": "command-r-plus",
-                    "name": "command-r-plus",
+                    "label": "command-r7b-12-2024",
+                    "name": "command-r7b-12-2024",
+                    "description": "Small, fast; RAG, tool use, agents",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
+                },
+                {
+                    "label": "command-a-reasoning-08-2025",
+                    "name": "command-a-reasoning-08-2025",
+                    "description": "Command A Reasoning – nuanced problem-solving, agents",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
+                },
+                {
+                    "label": "command-r-08-2024",
+                    "name": "command-r-08-2024",
+                    "description": "Command R – RAG, tool use, multilingual",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
+                },
+                {
+                    "label": "command-r-plus-08-2024",
+                    "name": "command-r-plus-08-2024",
+                    "description": "Command R+ – complex RAG, multi-step tool use",
                     "input_cost": 0.0025,
                     "output_cost": 0.01
                 }
