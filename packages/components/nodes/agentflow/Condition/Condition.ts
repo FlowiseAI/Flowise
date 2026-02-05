@@ -275,6 +275,14 @@ class Condition_Agentflow implements INode {
             smaller: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) < (Number(value2) || 0),
             smallerEqual: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) <= (Number(value2) || 0),
             startsWith: (value1: CommonType, value2: CommonType) => (value1 as string).startsWith(value2 as string),
+            regex: (value1: CommonType, value2: CommonType) => {
+                try {
+                    const pattern = new RegExp(value2 as string)
+                    return pattern.test((value1 || '').toString())
+                } catch {
+                    return false
+                }
+            },
             isEmpty: (value1: CommonType) => [undefined, null, ''].includes(value1 as string),
             notEmpty: (value1: CommonType) => ![undefined, null, ''].includes(value1 as string)
         }
