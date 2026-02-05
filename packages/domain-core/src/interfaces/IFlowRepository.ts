@@ -1,4 +1,48 @@
 /**
+ * Flow Repository Interface
+ *
+ * Defines the contract for persisting and retrieving flows.
+ * Implementations can use JSON files, SQL databases, or external APIs.
+ */
+export interface IFlowRepository {
+    /**
+     * Save a flow
+     * @param flowId - Unique identifier for the flow
+     * @param flowData - The flow data to persist
+     */
+    saveFlow(flowId: string, flowData: unknown): Promise<void>
+
+    /**
+     * Retrieve a flow by ID
+     * @param flowId - Unique identifier for the flow
+     * @returns The flow data, or undefined if not found
+     */
+    getFlow(flowId: string): Promise<unknown | undefined>
+
+    /**
+     * List all flows
+     * @returns Array of flow metadata
+     */
+    listFlows(): Promise<
+        Array<{
+            id: string
+            name: string
+            [key: string]: unknown
+        }>
+    >
+
+    /**
+     * Delete a flow
+     * @param flowId - Unique identifier for the flow
+     */
+    deleteFlow(flowId: string): Promise<void>
+}
+
+// ============================================
+// DOMAIN ENTITIES (for future domain-driven design)
+// ============================================
+
+/**
  * Flow Node - represents a node in the flow graph
  */
 export interface FlowNode {
@@ -33,7 +77,10 @@ export interface FlowData {
 
 /**
  * Flow Entity
- * Represents an agentflow or chatflow in the system
+ * Represents an agentflow or chatflow in the system.
+ *
+ * Note: This is a domain entity for future use.
+ * The original IChatFlow interface remains in packages/server/src/Interface.ts.
  */
 export interface Flow {
     id: string
@@ -51,7 +98,7 @@ export interface Flow {
 }
 
 /**
- * Options for flow repository operations
+ * Options for domain flow repository operations
  */
 export interface FlowFindOptions {
     /** Tenant identifier for multi-tenant queries */
@@ -63,14 +110,14 @@ export interface FlowFindOptions {
 }
 
 /**
- * Flow Repository Interface
+ * Domain Flow Repository Interface
  *
- * Defines the contract for persisting and retrieving flows (agentflows/chatflows).
- * Implementations can use SQL databases, cloud storage, or JSON files.
+ * A more sophisticated repository interface for domain-driven design.
+ * Use IFlowRepository for simple CRUD operations.
  *
  * @example
  * ```typescript
- * class MyFlowRepository implements IFlowRepository {
+ * class MyDomainFlowRepository implements IDomainFlowRepository {
  *   async findById(id: string, options?: FlowFindOptions): Promise<Flow | null> {
  *     if (options?.isDraft) {
  *       return await this.draftStorage.get(id)
@@ -80,7 +127,7 @@ export interface FlowFindOptions {
  * }
  * ```
  */
-export interface IFlowRepository {
+export interface IDomainFlowRepository {
     /**
      * Find flow by ID
      *

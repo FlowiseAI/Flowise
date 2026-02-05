@@ -3,6 +3,10 @@
  *
  * Framework-agnostic interfaces that define contracts between
  * the legacy codebase and domain-driven implementations.
+ *
+ * NOTE: These interfaces are NEW abstractions for the domain layer.
+ * They do NOT replace existing Flowise interfaces (e.g., IChatFlow in server/src/Interface.ts).
+ * Implementations should handle conversion between domain entities and existing Flowise types.
  */
 
 // ============================================
@@ -16,73 +20,13 @@ export * from './ICredentialStore'
 export * from './ITokenService'
 
 // ============================================
-// LEGACY INTERFACES (kept for backward compatibility)
+// UTILITY INTERFACES
 // ============================================
 
-/**
- * @deprecated Use IFlowRepository instead
- * Legacy Flow Repository Interface
- */
-export interface ILegacyFlowRepository {
-    saveFlow(flowId: string, flowData: unknown): Promise<void>
-    getFlow(flowId: string): Promise<unknown | undefined>
-    listFlows(): Promise<
-        Array<{
-            id: string
-            name: string
-            [key: string]: unknown
-        }>
-    >
-    deleteFlow(flowId: string): Promise<void>
-}
+export * from './IUtils'
 
-/**
- * @deprecated Use IAuthService instead
- * Authentication Provider Interface - Legacy interface for backward compatibility
- */
-export interface IAuthProvider {
-    initialize(): Promise<void>
-    authenticate(credentials: unknown): Promise<{
-        user: unknown
-        token?: string
-    }>
-    verifyToken(token: string): Promise<unknown | null>
-}
+// ============================================
+// LEGACY INTERFACES (backward compatibility)
+// ============================================
 
-/**
- * Feature context for feature flag evaluation
- */
-export interface FeatureContext {
-    userId?: string
-    tenantId?: string
-    environment?: string
-    [key: string]: unknown
-}
-
-/**
- * Feature Management Interface
- * Defines the contract for feature flagging and subsetting.
- */
-export interface IFeatureManager {
-    isFeatureEnabled(featureName: string, context?: FeatureContext): boolean
-    getEnabledFeatures(context?: FeatureContext): string[]
-}
-
-/**
- * Log metadata
- */
-export interface LogMeta {
-    [key: string]: unknown
-}
-
-/**
- * Logger Interface
- * Defines the contract for logging across different environments.
- */
-export interface ILogger {
-    info(message: string, meta?: LogMeta): void
-    warn(message: string, meta?: LogMeta): void
-    error(message: string, meta?: LogMeta): void
-    debug(message: string, meta?: LogMeta): void
-}
-
+export * from './ILegacy'
