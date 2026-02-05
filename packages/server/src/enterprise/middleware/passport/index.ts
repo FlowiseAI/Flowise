@@ -192,13 +192,15 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         )
     )
 
-    app.post('/api/v1/auth/resolve', async (req, res) => {
+    const basePath = process.env.FLOWISE_BASE_PATH || ''
+
+    app.post(`${basePath}/api/v1/auth/resolve`, async (req, res) => {
         // check for the organization, if empty redirect to the organization setup page for OpenSource and Enterprise Versions
         // for Cloud (Horizontal) version, redirect to the signin page
         const expressApp = getRunningExpressApp()
         const platform = expressApp.identityManager.getPlatformType()
         if (platform === Platform.CLOUD) {
-            return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/signin' })
+            return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${basePath}/signin` })
         }
         const orgService = new OrganizationService()
         const queryRunner = expressApp.AppDataSource.createQueryRunner()
@@ -209,25 +211,25 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
             switch (platform) {
                 case Platform.ENTERPRISE:
                     if (!identityManager.isLicenseValid()) {
-                        return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/license-expired' })
+                        return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${basePath}/license-expired` })
                     }
-                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/organization-setup' })
+                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${basePath}/organization-setup` })
                 default:
-                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/organization-setup' })
+                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${basePath}/organization-setup` })
             }
         }
         switch (platform) {
             case Platform.ENTERPRISE:
                 if (!identityManager.isLicenseValid()) {
-                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/license-expired' })
+                    return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${basePath}/license-expired` })
                 }
-                return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/signin' })
+                return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${basePath}/signin` })
             default:
-                return res.status(HttpStatusCode.Ok).json({ redirectUrl: '/signin' })
+                return res.status(HttpStatusCode.Ok).json({ redirectUrl: `${basePath}/signin` })
         }
     })
 
-    app.post('/api/v1/auth/refreshToken', async (req, res) => {
+    app.post(`${basePath}/api/v1/auth/refreshToken`, async (req, res) => {
         const refreshToken = req.cookies.refreshToken
         if (!refreshToken) return res.sendStatus(401)
 
@@ -264,7 +266,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         })
     })
 
-    app.post('/api/v1/auth/login', (req, res, next?) => {
+    app.post(`${basePath}/api/v1/auth/login`, (req, res, next?) => {
         passport.authenticate('login', async (err: any, user: LoggedInUser) => {
             try {
                 if (err || !user) {

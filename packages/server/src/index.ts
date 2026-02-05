@@ -129,7 +129,8 @@ export class App {
             if (process.env.MODE === MODE.QUEUE) {
                 this.queueManager = QueueManager.getInstance()
                 const serverAdapter = new ExpressAdapter()
-                serverAdapter.setBasePath('/admin/queues')
+                const basePath = process.env.FLOWISE_BASE_PATH || ''
+                serverAdapter.setBasePath(`${basePath}/admin/queues`)
                 this.queueManager.setupAllQueues({
                     componentNodes: this.nodesPool.componentNodes,
                     telemetry: this.telemetry,
@@ -205,10 +206,12 @@ export class App {
             if (next) next()
         })
 
+        const basePath = process.env.FLOWISE_BASE_PATH || ''
         const denylistURLs = process.env.DENYLIST_URLS ? process.env.DENYLIST_URLS.split(',') : []
-        const whitelistURLs = WHITELIST_URLS.filter((url) => !denylistURLs.includes(url))
-        const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
-        const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
+        const whitelistURLs = WHITELIST_URLS.filter((url) => !denylistURLs.includes(url)).map((url) => basePath + url)
+        const apiKeyBlacklistURLs = API_KEY_BLACKLIST_URLS.map((url) => basePath + url)
+        const URL_CASE_INSENSITIVE_REGEX: RegExp = new RegExp(`${basePath}/api/v1/`, 'i')
+        const URL_CASE_SENSITIVE_REGEX: RegExp = new RegExp(`${basePath}/api/v1/`)
 
         await initializeJwtCookieMiddleware(this.app, this.identityManager)
 
@@ -224,7 +227,7 @@ export class App {
                     } else if (req.headers['x-request-from'] === 'internal') {
                         verifyToken(req, res, next)
                     } else {
-                        const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
+                        const isAPIKeyBlacklistedURLS = apiKeyBlacklistURLs.some((url) => req.path.startsWith(url))
                         if (isAPIKeyBlacklistedURLS) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
@@ -309,7 +312,6 @@ export class App {
             }
         }
 
-        const basePath = process.env.FLOWISE_BASE_PATH || ''
         this.app.use(`${basePath}/api/v1`, flowiseApiV1Router)
 
         // ----------------------------------------
@@ -346,10 +348,22 @@ export class App {
 
         this.app.use(basePath || '/', express.static(uiBuildPath))
 
-        // All other requests not handled will return React app
-        this.app.use((req: Request, res: Response) => {
-            res.sendFile(uiHtmlPath)
-        })
+        // Redirect root to basePath if basePath is set
+        if (basePath) {
+            this.app.get('/', (req: Request, res: Response) => {
+                res.redirect(basePath)
+            })
+            
+            // SPA fallback for routes under basePath only
+            this.app.get(`${basePath}/*`, (req: Request, res: Response) => {
+                res.sendFile(uiHtmlPath)
+            })
+        } else {
+            // SPA fallback for all routes when no basePath
+            this.app.use((req: Request, res: Response) => {
+                res.sendFile(uiHtmlPath)
+            })
+        }
 
         // Error handling
         this.app.use(errorHandlerMiddleware)
