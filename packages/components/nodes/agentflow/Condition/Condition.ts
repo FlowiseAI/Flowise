@@ -270,6 +270,33 @@ class Condition_Agentflow implements INode {
             endsWith: (value1: CommonType, value2: CommonType) => (value1 as string).endsWith(value2 as string),
             equal: (value1: CommonType, value2: CommonType) => value1 === value2,
             notEqual: (value1: CommonType, value2: CommonType) => value1 !== value2,
+            regex: (value1: CommonType, value2: CommonType) => {
+                const MAX_PATTERN_LENGTH = 256
+                const MAX_INPUT_LENGTH = 10000
+                const pattern = (value2 ?? '').toString()
+                const input = (value1 ?? '').toString()
+                if (pattern.length > MAX_PATTERN_LENGTH || input.length > MAX_INPUT_LENGTH) {
+                    console.warn(
+                        '[Condition_Agentflow] Regex condition skipped due to safety limits:',
+                        {
+                            patternLength: pattern.length,
+                            inputLength: input.length,
+                            maxPatternLength: 256,
+                            maxInputLength: 10000
+                        }
+                    )
+                    return false
+                }
+                try {
+                    return new RegExp(pattern).test(input)
+                } catch (e) {
+                    console.warn('[Condition_Agentflow] Invalid regex pattern in condition.', {
+                        error: (e as Error)?.message,
+                        pattern
+                    })
+                    return false
+                }
+            },
             larger: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) > (Number(value2) || 0),
             largerEqual: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) >= (Number(value2) || 0),
             smaller: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) < (Number(value2) || 0),
