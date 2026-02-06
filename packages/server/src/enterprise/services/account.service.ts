@@ -20,6 +20,7 @@ import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersist
 import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
+import { getSecureAppUrl, getSecureTokenLink } from '../utils/url.util'
 import { validatePasswordOrThrow } from '../utils/validation.util'
 import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
@@ -95,7 +96,7 @@ export class AccountService {
             await queryRunner.manager.save(User, updatedUser)
 
             // resend invite
-            const verificationLink = `${process.env.APP_URL}/verify?token=${updateUserData.tempToken}`
+            const verificationLink = getSecureTokenLink('/verify', updateUserData.tempToken!)
             await sendVerificationEmailForCloud(email, verificationLink)
 
             await queryRunner.commitTransaction()
@@ -171,7 +172,7 @@ export class AccountService {
                 }
                 // send verification email only if user signed up with email/password
                 if (data.user.credential) {
-                    const verificationLink = `${process.env.APP_URL}/verify?token=${data.user.tempToken}`
+                    const verificationLink = getSecureTokenLink('/verify', data.user.tempToken!)
                     await sendVerificationEmailForCloud(data.user.email!, verificationLink)
                 }
                 break
@@ -312,8 +313,8 @@ export class AccountService {
                 // send invite
                 const registerLink =
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
-                        ? `${process.env.APP_URL}/register?token=${data.user.tempToken}`
-                        : `${process.env.APP_URL}/register`
+                        ? getSecureTokenLink('/register', data.user.tempToken!)
+                        : getSecureAppUrl('/register')
                 await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
                 data.user = await this.userService.createNewUser(data.user, queryRunner)
 
@@ -381,9 +382,9 @@ export class AccountService {
                     tokenExpiry.setHours(tokenExpiry.getHours() + expiryInHours)
                     data.user.tokenExpiry = tokenExpiry
                     await this.userService.saveUser(data.user, queryRunner)
-                    registerLink = `${process.env.APP_URL}/register?token=${data.user.tempToken}`
+                    registerLink = getSecureTokenLink('/register', data.user.tempToken!)
                 } else {
-                    registerLink = `${process.env.APP_URL}/register`
+                    registerLink = getSecureAppUrl('/register')
                 }
                 if (workspaceUser.length === 1) {
                     oldWorkspaceUser = workspaceUser[0]
@@ -409,7 +410,7 @@ export class AccountService {
             } else {
                 data.organizationUser.updatedBy = data.user.createdBy
 
-                const dashboardLink = `${process.env.APP_URL}`
+                const dashboardLink = getSecureAppUrl()
                 await sendWorkspaceAdd(data.user.email!, data.workspace.name!, dashboardLink)
             }
 
@@ -547,7 +548,7 @@ export class AccountService {
             tokenExpiry.setMinutes(tokenExpiry.getMinutes() + expiryInMins)
             data.user.tokenExpiry = tokenExpiry
             data.user = await this.userService.saveUser(data.user, queryRunner)
-            const resetLink = `${process.env.APP_URL}/reset-password?token=${data.user.tempToken}`
+            const resetLink = getSecureTokenLink('/reset-password', data.user.tempToken!)
             await sendPasswordResetEmail(data.user.email!, resetLink)
             await queryRunner.commitTransaction()
         } catch (error) {
