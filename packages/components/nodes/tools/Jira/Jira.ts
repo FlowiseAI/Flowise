@@ -18,7 +18,7 @@ class Jira_Tools implements INode {
     constructor() {
         this.label = 'Jira'
         this.name = 'jiraTool'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Jira'
         this.icon = 'jira.svg'
         this.category = 'Tools'
