@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes'
 import { INodeParams } from 'flowise-components'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
+import { fetchAndMergeActiveVersion } from './getChatflowWithActiveVersion'
 import { IUploadFileSizeAndTypes, IReactFlowNode, IReactFlowEdge } from '../Interface'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 
@@ -25,6 +26,9 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
+
+    // Merge active version data into the chatflow
+    await fetchAndMergeActiveVersion(chatflow)
 
     const flowObj = JSON.parse(chatflow.flowData)
     const nodes: IReactFlowNode[] = flowObj.nodes

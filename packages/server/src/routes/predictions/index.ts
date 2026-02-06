@@ -14,4 +14,12 @@ router.post(
     predictionsController.createPrediction
 )
 
+// CREATE prediction for specific version
+router.post(
+    '/:id/versions/:version',
+    getMulterStorage().array('files'),
+    predictionsController.getRateLimiterMiddleware,
+    predictionsController.createVersionPrediction
+)
+
 export default router

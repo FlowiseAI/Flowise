@@ -33,6 +33,17 @@ import {
     getTelemetryFlowObj
 } from '../utils'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
+import { fetchAndMergeActiveVersion } from './getChatflowWithActiveVersion'
+import { UpsertHistory } from '../database/entities/UpsertHistory'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
+import { checkStorage, updateStorageUsage } from './quotaUsage'
+import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
+import { getErrorMessage } from '../errors/utils'
+import { v4 as uuidv4 } from 'uuid'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
+import { Variable } from '../database/entities/Variable'
+import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
 import logger from '../utils/logger'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
@@ -248,6 +259,9 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
         }
+
+        // Merge active version data into the chatflow
+        await fetchAndMergeActiveVersion(chatflow)
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol
         const baseURL = `${httpProtocol}://${req.get('host')}`
