@@ -2090,8 +2090,8 @@
                     "name": "text-embedding-004"
                 },
                 {
-                    "label": "gemini-embedding-exp-03-07",
-                    "name": "gemini-embedding-exp-03-07"
+                    "label": "gemini-embedding-001",
+                    "name": "gemini-embedding-001"
                 }
             ]
         },
