@@ -30,8 +30,4 @@ router.post('/reset-password', accountController.resetPassword)
 
 router.post('/billing', accountController.createStripeCustomerPortalSession)
 
-router.get('/basic-auth', accountController.getBasicAuth)
-
-router.post('/basic-auth', accountController.checkBasicAuth)
-
 export default router
