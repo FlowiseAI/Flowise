@@ -301,8 +301,13 @@ function _convertLangChainContentToPart(content: MessageContentComplex, isMultim
             }
         }
     } else if ('functionCall' in content) {
-        // No action needed here — function calls will be added later from message.tool_calls
-        return undefined
+        // Preserve the original functionCall part including thoughtSignature if present
+        // (required by Gemini thinking models like gemini-2.5/3.x)
+        const part: Record<string, any> = { functionCall: (content as any).functionCall }
+        if ('thoughtSignature' in content) {
+            part.thoughtSignature = (content as any).thoughtSignature
+        }
+        return part as Part
     } else {
         if ('type' in content) {
             throw new Error(`Unknown content type ${content.type}`)
@@ -363,14 +368,20 @@ export function convertMessageContentToParts(message: BaseMessage, isMultimodalM
     }
 
     if (isAIMessage(message) && message.tool_calls?.length) {
-        functionCalls = message.tool_calls.map((tc) => {
-            return {
-                functionCall: {
-                    name: tc.name,
-                    args: tc.args
+        // Only add function calls from tool_calls if none were already present in content.
+        // Content-based function call parts may include thoughtSignature from thinking models
+        // (e.g. gemini-2.5/3.x), which must be preserved for subsequent API calls.
+        const hasFunctionCallsFromContent = messageParts.some((p: any) => 'functionCall' in p)
+        if (!hasFunctionCallsFromContent) {
+            functionCalls = message.tool_calls.map((tc) => {
+                return {
+                    functionCall: {
+                        name: tc.name,
+                        args: tc.args
+                    }
                 }
-            }
-        })
+            })
+        }
     }
 
     return [...messageParts, ...functionCalls]
