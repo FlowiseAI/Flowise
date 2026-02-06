@@ -1,5 +1,5 @@
 import { describe, expect, it, afterEach } from '@jest/globals'
-import { getSecureAppUrl, getSecureTokenLink } from './url.util'
+import { getSecureAppUrl, getSecureTokenLink } from '../../../src/enterprise/utils/url.util'
 
 describe('URL Security Utilities', () => {
     const originalEnv = process.env.APP_URL

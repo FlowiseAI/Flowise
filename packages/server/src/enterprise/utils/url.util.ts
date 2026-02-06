@@ -21,7 +21,10 @@ export function getSecureAppUrl(path?: string): string {
     if (appUrl.startsWith('http://')) {
         const urlObj = new URL(appUrl)
         const isLocalhost =
-            urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1' || urlObj.hostname === '::1' || urlObj.hostname === '0.0.0.0'
+            urlObj.hostname === 'localhost' ||
+            urlObj.hostname === '127.0.0.1' ||
+            urlObj.hostname === '[::1]' ||
+            urlObj.hostname === '0.0.0.0'
 
         if (!isLocalhost) {
             // Convert HTTP to HTTPS for production/remote URLs
