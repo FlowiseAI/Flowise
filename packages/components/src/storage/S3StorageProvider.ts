@@ -76,6 +76,10 @@ export class S3StorageProvider extends BaseStorageProvider {
     }
 
     async addBase64FilesToStorage(fileBase64: string, chatflowid: string, fileNames: string[], orgId: string): Promise<StorageResult> {
+        // Validate chatflowid
+        this.validateChatflowId(chatflowid)
+        this.validatePathSecurity(chatflowid)
+
         const splitDataURI = fileBase64.split(',')
         const filename = splitDataURI.pop()?.split(':')[1] ?? ''
         const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -265,6 +269,10 @@ export class S3StorageProvider extends BaseStorageProvider {
     }
 
     async streamStorageFile(chatflowId: string, chatId: string, fileName: string, orgId: string): Promise<Buffer | undefined> {
+        // Validate chatflowId and chatId
+        this.validateChatflowId(chatflowId)
+        this.validatePathSecurity(chatflowId, chatId)
+
         const sanitizedFilename = this.sanitizeFilename(fileName)
         const Key = orgId + '/' + chatflowId + '/' + chatId + '/' + sanitizedFilename
 
@@ -330,7 +338,6 @@ export class S3StorageProvider extends BaseStorageProvider {
                 throw new Error(`File ${fileName} not found`)
             }
         }
-        return undefined
     }
 
     async getFilesListFromStorage(...paths: string[]): Promise<FileInfo[]> {

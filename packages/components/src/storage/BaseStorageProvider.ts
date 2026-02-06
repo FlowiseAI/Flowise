@@ -2,6 +2,7 @@ import path from 'node:path'
 import { IStorageProvider, FileInfo, StorageResult } from './IStorageProvider'
 import sanitize from 'sanitize-filename'
 import { getUserHome } from '../utils'
+import { isPathTraversal, isValidUUID } from '../validator'
 import fs from 'node:fs'
 
 export abstract class BaseStorageProvider implements IStorageProvider {
@@ -61,6 +62,26 @@ export abstract class BaseStorageProvider implements IStorageProvider {
             fs.mkdirSync(storagePath, { recursive: true })
         }
         return storagePath
+    }
+
+    /**
+     * Shared utility for validating chatflowId format (UUID)
+     */
+    protected validateChatflowId(chatflowId: string): void {
+        if (!chatflowId || !isValidUUID(chatflowId)) {
+            throw new Error('Invalid chatflowId format - must be a valid UUID')
+        }
+    }
+
+    /**
+     * Shared utility for checking path traversal attempts
+     */
+    protected validatePathSecurity(...paths: string[]): void {
+        for (const p of paths) {
+            if (p && isPathTraversal(p)) {
+                throw new Error('Invalid path characters detected')
+            }
+        }
     }
 
     /**

@@ -5,7 +5,6 @@ import DailyRotateFile from 'winston-daily-rotate-file'
 import { transports } from 'winston'
 import { BaseStorageProvider } from './BaseStorageProvider'
 import { FileInfo, StorageResult } from './IStorageProvider'
-import { isPathTraversal, isValidUUID } from '../validator'
 
 export class LocalStorageProvider extends BaseStorageProvider {
     constructor() {
@@ -23,6 +22,10 @@ export class LocalStorageProvider extends BaseStorageProvider {
     }
 
     async addBase64FilesToStorage(fileBase64: string, chatflowid: string, fileNames: string[], orgId: string): Promise<StorageResult> {
+        // Validate chatflowid
+        this.validateChatflowId(chatflowid)
+        this.validatePathSecurity(chatflowid)
+
         const dir = this.buildPath(orgId, chatflowid)
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
@@ -121,15 +124,9 @@ export class LocalStorageProvider extends BaseStorageProvider {
         fileName: string,
         orgId: string
     ): Promise<fs.ReadStream | Buffer | undefined> {
-        // Validate chatflowid
-        if (!chatflowId || !isValidUUID(chatflowId)) {
-            throw new Error('Invalid chatflowId format - must be a valid UUID')
-        }
-
-        // Check for path traversal attempts
-        if (isPathTraversal(chatflowId) || isPathTraversal(chatId)) {
-            throw new Error('Invalid path characters detected in chatflowId or chatId')
-        }
+        // Validate chatflowId and chatId
+        this.validateChatflowId(chatflowId)
+        this.validatePathSecurity(chatflowId, chatId)
 
         const sanitizedFilename = this.sanitizeFilename(fileName)
         const filePath = this.buildPath(orgId, chatflowId, chatId, sanitizedFilename)
