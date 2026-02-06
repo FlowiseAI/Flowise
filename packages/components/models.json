@@ -2198,14 +2198,6 @@
                 {
                     "label": "gemini-embedding-001",
                     "name": "gemini-embedding-001"
-                },
-                {
-                    "label": "embedding-001",
-                    "name": "embedding-001"
-                },
-                {
-                    "label": "text-embedding-004",
-                    "name": "text-embedding-004"
                 }
             ]
         },
