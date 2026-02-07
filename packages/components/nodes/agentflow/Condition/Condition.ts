@@ -277,7 +277,7 @@ class Condition_Agentflow implements INode {
             startsWith: (value1: CommonType, value2: CommonType) => (value1 as string).startsWith(value2 as string),
             regex: (value1: CommonType, value2: CommonType) => {
                 try {
-                    const pattern = new RegExp(value2 as string)
+                    const pattern = new RegExp(String(value2 ?? ''))
                     return pattern.test((value1 || '').toString())
                 } catch {
                     return false
