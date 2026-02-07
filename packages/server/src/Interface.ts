@@ -24,7 +24,8 @@ export type ExecutionState = 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'TERMINATED' 
 
 export enum MODE {
     QUEUE = 'queue',
-    MAIN = 'main'
+    MAIN = 'main',
+    WS_ONLY = 'ws-only'
 }
 
 export enum ChatType {

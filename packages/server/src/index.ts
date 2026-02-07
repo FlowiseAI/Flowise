@@ -33,6 +33,8 @@ import { SSEStreamer } from './utils/SSEStreamer'
 import { Telemetry } from './utils/telemetry'
 import { validateAPIKey } from './utils/validateKey'
 import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { WSServer } from './enterprise/websocket/wsServer'
+import websocketStatsRouter from './enterprise/routes/websocket-stats.route'
 
 declare global {
     namespace Express {
@@ -72,6 +74,7 @@ export class App {
     redisSubscriber: RedisEventSubscriber
     usageCacheManager: UsageCacheManager
     sessionStore: any
+    wsServer: WSServer
 
     constructor() {
         this.app = express()
@@ -150,6 +153,43 @@ export class App {
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
         }
+    }
+
+    /**
+     * Minimal configuration for WebSocket-only mode
+     * Only sets up essential middleware and health check endpoints
+     */
+    async configWebSocketOnly() {
+        // Basic middleware
+        this.app.use(express.json({ limit: '50mb' }))
+        this.app.use(cookieParser())
+        this.app.use(cors(getCorsOptions()))
+
+        // Trust proxy for load balancer
+        this.app.set('trust proxy', true)
+
+        // Disable x-powered-by header
+        this.app.disable('x-powered-by')
+
+        // Add request logger
+        this.app.use(expressRequestLogger)
+
+        // Initialize JWT middleware for WebSocket authentication
+        await initializeJwtCookieMiddleware(this.app, this.identityManager)
+
+        // WebSocket stats and health endpoints
+        this.app.use('/api/v1/ws', websocketStatsRouter)
+
+        // Catch-all for unsupported routes in WS-only mode
+        this.app.use((req: Request, res: Response) => {
+            res.status(404).json({
+                error: 'Not Found',
+                message: 'This server is running in WebSocket-only mode. API endpoints are not available.',
+                mode: 'ws-only'
+            })
+        })
+
+        logger.info('⚙️  [server]: WebSocket-only configuration complete')
     }
 
     async config() {
@@ -376,12 +416,38 @@ export async function start(): Promise<void> {
     const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
+    const mode = process.env.MODE || MODE.MAIN
+    const enableWebsocket = process.env.ENABLE_WEBSOCKET === 'true'
 
     await serverApp.initDatabase()
-    await serverApp.config()
+
+    if (mode === MODE.WS_ONLY) {
+        // WebSocket-only mode: Minimal API for health checks and stats
+        logger.info('🚀 [server]: Starting in WebSocket-only mode')
+        await serverApp.configWebSocketOnly()
+
+        // Initialize WebSocket server in WS-only mode
+        try {
+            serverApp.wsServer = new WSServer(server)
+            logger.info('🔌 [server]: WebSocket server initialized successfully')
+        } catch (error) {
+            logger.error('❌ [server]: Error initializing WebSocket server:', error)
+        }
+    } else {
+        await serverApp.config()
+
+        if (enableWebsocket) {
+            try {
+                serverApp.wsServer = new WSServer(server)
+                logger.info('🔌 [server]: WebSocket server initialized successfully')
+            } catch (error) {
+                logger.error('❌ [server]: Error initializing WebSocket server:', error)
+            }
+        }
+    }
 
     server.listen(port, host, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
+        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port} [MODE: ${mode}]`)
     })
 }
 
