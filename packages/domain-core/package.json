@@ -1,0 +1,25 @@
+{
+    "name": "@flowise/domain-core",
+    "version": "1.0.0",
+    "description": "Flowise Domain Core - Service Locator and Shared Interfaces",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "clean": "rimraf dist"
+    },
+    "keywords": [
+        "flowise",
+        "domain-core",
+        "interfaces"
+    ],
+    "license": "Apache-2.0",
+    "devDependencies": {
+        "rimraf": "^5.0.5",
+        "typescript": "^5.4.5"
+    },
+    "engines": {
+        "node": ">=18.15.0 <19.0.0 || ^20"
+    }
+}
