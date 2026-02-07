@@ -19,8 +19,9 @@ export default defineConfig(async ({ mode }) => {
         }
     }
 
-    dotenv.config()
+    dotenv.config({ path: resolve(__dirname, '.env') })
     return {
+        base: process.env.VITE_BASE_PATH || '/',
         plugins: [react()],
         resolve: {
             alias: {
