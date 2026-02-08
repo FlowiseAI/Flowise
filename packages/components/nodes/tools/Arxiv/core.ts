@@ -184,7 +184,7 @@ export class ArxivTool extends DynamicStructuredTool {
             splitPages: false,
             pdfjs: () =>
                 // @ts-ignore
-                this.legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                this.legacyBuild ? import('pdfjs-dist/legacy/build/pdf.mjs') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
         })
 
         const docs = await loader.load()

@@ -196,7 +196,7 @@ class Pdf_DocumentLoaders implements INode {
                 splitPages: false,
                 pdfjs: () =>
                     // @ts-ignore
-                    legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                    legacyBuild ? import('pdfjs-dist/legacy/build/pdf.mjs') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
                 let splittedDocs = await loader.load()
@@ -209,7 +209,7 @@ class Pdf_DocumentLoaders implements INode {
             const loader = new PDFLoader(new Blob([bf]), {
                 pdfjs: () =>
                     // @ts-ignore
-                    legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                    legacyBuild ? import('pdfjs-dist/legacy/build/pdf.mjs') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
             })
             if (textSplitter) {
                 let splittedDocs = await loader.load()
