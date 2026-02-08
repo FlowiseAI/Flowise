@@ -398,6 +398,15 @@ export const resolveVariables = async (
                 // Replace the reference with actual value
                 const nodeOutput = nodeData.data['output'] as ICommonObject
                 const actualValue = nodeOutput?.content ?? nodeOutput?.http?.data
+
+                if (nodeData.data.name === 'humanInputAgentflow') {
+                    const conditions = (nodeOutput?.conditions as Partial<ICondition>[] & Partial<IHumanInput>[]) || []
+                    const fulfilledOutcome = conditions.find((condition) => condition.isFulfilled === true)
+                    const formattedValue = fulfilledOutcome?.type ?? match
+                    resolvedValue = resolvedValue.replace(match, formattedValue)
+                    continue
+                }
+
                 // For arrays and objects, stringify them to prevent toString() conversion issues
                 const formattedValue =
                     Array.isArray(actualValue) || (typeof actualValue === 'object' && actualValue !== null)
