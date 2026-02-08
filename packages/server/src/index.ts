@@ -14,6 +14,7 @@ import { Organization } from './enterprise/database/entities/organization.entity
 import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
 import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
+import { initAuthSecrets } from './enterprise/utils/authSecrets'
 import { IdentityManager } from './IdentityManager'
 import { MODE, Platform } from './Interface'
 import { IMetricsProvider } from './Interface.Metrics'
@@ -101,8 +102,12 @@ export class App {
             logger.info('⏹️ [server]: Abort controllers pool initialized successfully')
 
             // Initialize encryption key
-            await getEncryptionKey()
+            const encryptionKey = await getEncryptionKey()
             logger.info('🔑 [server]: Encryption key initialized successfully')
+
+            // Initialize auth secrets (from env or derived from encryption key)
+            initAuthSecrets(encryptionKey)
+            logger.info('🔐 [server]: Auth initialized successfully')
 
             // Initialize Rate Limit
             this.rateLimiterManager = RateLimiterManager.getInstance()
