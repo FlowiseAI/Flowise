@@ -236,13 +236,13 @@ class File_DocumentLoaders implements INode {
                           splitPages: false,
                           pdfjs: () =>
                               // @ts-ignore
-                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.mjs') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
                       })
                     : // @ts-ignore
                       new PDFLoader(blob, {
                           pdfjs: () =>
                               // @ts-ignore
-                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.mjs') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
                       }),
             '': (blob) => new TextLoader(blob)
         })
