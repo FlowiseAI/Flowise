@@ -88,10 +88,11 @@ export class UserService {
         if (data.status) this.validateUserStatus(data.status)
 
         data.id = generateId()
-        if (data.createdBy) {
-            const createdBy = await this.readUserById(data.createdBy, queryRunner)
-            if (!createdBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-            data.createdBy = createdBy.id
+        const createdById = data.createdBy
+        if (createdById) {
+            const createdByUser = await this.readUserById(createdById, queryRunner)
+            if (!createdByUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+            data.createdBy = createdByUser.id
             data.updatedBy = data.createdBy
         } else {
             data.createdBy = data.id
