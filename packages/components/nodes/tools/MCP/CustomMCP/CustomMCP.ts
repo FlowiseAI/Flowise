@@ -173,13 +173,19 @@ class Custom_MCP implements INode {
                 serverParams = JSON.parse(serverParamsString)
             }
 
-            if (process.env.CUSTOM_MCP_SECURITY_CHECK !== 'false') {
-                try {
+            try {
                     validateMCPServerConfig(serverParams)
                 } catch (error) {
                     throw new Error(`Security validation failed: ${error.message}`)
                 }
-            }
+
+            // if (process.env.CUSTOM_MCP_SECURITY_CHECK !== 'false') {
+            //     try {
+            //         validateMCPServerConfig(serverParams)
+            //     } catch (error) {
+            //         throw new Error(`Security validation failed: ${error.message}`)
+            //     }
+            // }
 
             // Compatible with stdio and SSE
             let toolkit: MCPToolkit

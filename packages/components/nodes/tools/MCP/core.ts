@@ -5,6 +5,7 @@ import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import logger from '../../../../server/src/utils/logger'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -259,6 +260,77 @@ export const validateEnvironmentVariables = (env: Record<string, any>): void => 
     }
 }
 
+/**
+ * Validates that command arguments don't contain flags that enable arbitrary code execution
+ * This prevents attacks where whitelisted commands are used with dangerous flags
+ * (e.g., "npx -c malicious-command" or "python -c malicious-code")
+ * @param command The command to validate
+ * @param args The arguments to validate
+ */
+export const validateCommandFlags = (command: string, args: string[]): void => {
+    // Define dangerous flags for each command that enable code execution
+    const dangerousFlagsByCommand: Record<string, string[]> = {
+        npx: [
+            '-c', // Execute shell commands
+            '--call', // Execute shell commands
+            '--shell-auto-fallback' // Shell execution fallback
+        ],
+        node: [
+            '-e', // Execute JavaScript code
+            '--eval', // Execute JavaScript code
+            '-p', // Evaluate and print JavaScript code
+            '--print', // Evaluate and print JavaScript code
+            '--inspect', // Enable remote debugging (security risk)
+            '--inspect-brk', // Enable remote debugging with breakpoint (security risk)
+            '--experimental-policy' // Could load malicious policies
+        ],
+        python: [
+            '-c', // Execute Python code
+            '-m' // Run library modules (could run malicious modules)
+        ],
+        python3: [
+            '-c', // Execute Python code
+            '-m' // Run library modules (could run malicious modules)
+        ],
+        docker: [
+            'run', // Run containers (too powerful)
+            'exec', // Execute in containers
+            '-v', // Mount host filesystems
+            '--volume', // Mount host filesystems
+            '--privileged', // Privileged mode
+            '--cap-add', // Add capabilities
+            '--security-opt', // Modify security options
+            '--network=host', // Host network access
+            '--pid=host', // Host PID namespace
+            '--ipc=host' // Host IPC namespace
+        ]
+    }
+
+    const dangerousFlags = dangerousFlagsByCommand[command] || []
+
+    for (const arg of args) {
+        if (typeof arg !== 'string') continue
+
+        const normalizedArg = arg.toLowerCase().trim()
+
+        // Check for exact matches (case-insensitive)
+        if (dangerousFlags.some((flag) => normalizedArg === flag.toLowerCase())) {
+            const errorMsg = `Argument '${arg}' is not allowed for command '${command}'.`
+            logger.error(`[MCP Security] Dangerous flag detected: ${errorMsg}`)
+            throw new Error(errorMsg)
+        }
+
+        // Check for flags with = syntax (e.g., --call=command, --network=host)
+        for (const flag of dangerousFlags) {
+            if (normalizedArg.startsWith(flag.toLowerCase() + '=')) {
+                const errorMsg = `Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`
+                logger.error(`[MCP Security] Dangerous flag detected: ${errorMsg}`)
+                throw new Error(errorMsg)
+            }
+        }
+    }
+}
+
 export const validateMCPServerConfig = (serverParams: any): void => {
     // Validate the entire server configuration
     if (!serverParams || typeof serverParams !== 'object') {
@@ -276,6 +348,11 @@ export const validateMCPServerConfig = (serverParams: any): void => {
     if (serverParams.args && Array.isArray(serverParams.args)) {
         validateArgsForLocalFileAccess(serverParams.args)
         validateCommandInjection(serverParams.args)
+
+        // Validate command-specific dangerous flags
+        if (serverParams.command) {
+            validateCommandFlags(serverParams.command, serverParams.args)
+        }
     }
 
     // Validate environment variables
