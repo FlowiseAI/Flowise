@@ -122,17 +122,7 @@ export const availableDependencies = [
 
 const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
 
-export const defaultAllowBuiltInDep = [
-    'assert',
-    'buffer',
-    'crypto',
-    'events',
-    'path',
-    'querystring',
-    'timers',
-    'url',
-    'zlib'
-]
+export const defaultAllowBuiltInDep = ['assert', 'buffer', 'crypto', 'events', 'path', 'querystring', 'timers', 'url', 'zlib']
 
 /**
  * Get base classes of components
