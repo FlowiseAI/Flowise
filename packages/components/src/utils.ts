@@ -127,13 +127,9 @@ export const defaultAllowBuiltInDep = [
     'buffer',
     'crypto',
     'events',
-    'http',
-    'https',
-    'net',
     'path',
     'querystring',
     'timers',
-    'tls',
     'url',
     'zlib'
 ]
