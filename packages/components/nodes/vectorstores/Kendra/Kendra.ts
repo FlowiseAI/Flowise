@@ -3,7 +3,8 @@ import { AmazonKendraRetriever } from '@langchain/aws'
 import { KendraClient, BatchPutDocumentCommand, BatchDeleteDocumentCommand } from '@aws-sdk/client-kendra'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
+import { FLOWISE_CHATID, parseJsonBody } from '../../../src/utils'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 import { MODEL_TYPE, getRegions } from '../../../src/modelLoader'
 
@@ -119,23 +120,11 @@ class Kendra_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
-            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
             let clientConfig: any = { region }
-
-            if (credentialData && Object.keys(credentialData).length !== 0) {
-                const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-                const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
-                const sessionToken = getCredentialParam('awsSession', credentialData, nodeData)
-
-                if (accessKeyId && secretAccessKey) {
-                    clientConfig.credentials = {
-                        accessKeyId,
-                        secretAccessKey,
-                        ...(sessionToken && { sessionToken })
-                    }
-                }
+            if (credentialConfig.credentials) {
+                clientConfig.credentials = credentialConfig.credentials
             }
-
             const client = new KendraClient(clientConfig)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
@@ -192,23 +181,11 @@ class Kendra_VectorStores implements INode {
             const indexId = nodeData.inputs?.indexId as string
             const region = nodeData.inputs?.region as string
 
-            const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+            const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
             let clientConfig: any = { region }
-
-            if (credentialData && Object.keys(credentialData).length !== 0) {
-                const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-                const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
-                const sessionToken = getCredentialParam('awsSession', credentialData, nodeData)
-
-                if (accessKeyId && secretAccessKey) {
-                    clientConfig.credentials = {
-                        accessKeyId,
-                        secretAccessKey,
-                        ...(sessionToken && { sessionToken })
-                    }
-                }
+            if (credentialConfig.credentials) {
+                clientConfig.credentials = credentialConfig.credentials
             }
-
             const client = new KendraClient(clientConfig)
 
             try {
@@ -235,15 +212,11 @@ class Kendra_VectorStores implements INode {
         const attributeFilter = nodeData.inputs?.attributeFilter
         const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
         let clientOptions: any = {}
 
-        if (credentialData && Object.keys(credentialData).length !== 0) {
-            clientOptions.credentials = {
-                accessKeyId: getCredentialParam('awsKey', credentialData, nodeData),
-                secretAccessKey: getCredentialParam('awsSecret', credentialData, nodeData),
-                sessionToken: getCredentialParam('awsSession', credentialData, nodeData)
-            }
+        if (credentialConfig.credentials) {
+            clientOptions.credentials = credentialConfig.credentials
         }
 
         let filter = undefined
