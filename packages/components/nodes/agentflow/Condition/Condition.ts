@@ -270,6 +270,19 @@ class Condition_Agentflow implements INode {
             endsWith: (value1: CommonType, value2: CommonType) => (value1 as string).endsWith(value2 as string),
             equal: (value1: CommonType, value2: CommonType) => value1 === value2,
             notEqual: (value1: CommonType, value2: CommonType) => value1 !== value2,
+            regex: (value1: CommonType, value2: CommonType) => {
+                const rawPattern = (value2 || '').toString()
+                const match = rawPattern.match(/^\/(.*)\/(\w*)$/)
+                const pattern = match ? match[1] : rawPattern
+                const flags = match ? match[2] : undefined
+
+                try {
+                    const regex = new RegExp(pattern, flags)
+                    return regex.test((value1 || '').toString())
+                } catch (error) {
+                    return false
+                }
+            },
             larger: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) > (Number(value2) || 0),
             largerEqual: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) >= (Number(value2) || 0),
             smaller: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) < (Number(value2) || 0),
@@ -305,7 +318,10 @@ class Condition_Agentflow implements INode {
                     value2 = removeMarkdown((_value2 as string) || '')
             }
 
-            const compareOperationResult = compareOperationFunctions[operation](value1, value2)
+            const compareOperation = compareOperationFunctions[operation]
+            if (!compareOperation) continue
+
+            const compareOperationResult = compareOperation(value1, value2)
             if (compareOperationResult) {
                 // find the matching condition
                 const conditionIndex = conditions.findIndex((c) => JSON.stringify(c) === JSON.stringify(condition))
