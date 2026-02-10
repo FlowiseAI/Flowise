@@ -30,6 +30,7 @@ import GoogleSSOLoginIcon from '@/assets/images/google.svg'
 import AzureSSOLoginIcon from '@/assets/images/microsoft-azure.svg'
 import { useConfig } from '@/store/context/ConfigContext'
 import { IconCircleCheck, IconExclamationCircle } from '@tabler/icons-react'
+import config from '@/config'
 
 // ==============================|| Organization & Admin User Setup ||============================== //
 
@@ -233,7 +234,7 @@ const OrganizationSetupPage = () => {
     }, [loginApi.data])
 
     const signInWithSSO = (ssoProvider) => {
-        window.location.href = `/api/v1/${ssoProvider}/login`
+        window.location.href = `${config.basename}/api/v1/${ssoProvider}/login`
     }
 
     return (

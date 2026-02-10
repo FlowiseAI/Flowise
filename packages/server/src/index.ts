@@ -362,7 +362,15 @@ export class App {
             })
         } else {
             // SPA fallback for all routes when no basePath
-            this.app.use((req: Request, res: Response) => {
+            // Only serve index.html for routes that don't look like file requests
+            this.app.get('*', (req: Request, res: Response, next) => {
+                // Skip if it looks like a file request (has extension)
+                const ext = path.extname(req.path)
+                if (ext) {
+                    // It's a file request, let it 404 naturally
+                    return next()
+                }
+                // Otherwise serve the SPA
                 res.sendFile(uiHtmlPath)
             })
         }

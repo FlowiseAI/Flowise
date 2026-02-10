@@ -28,6 +28,7 @@ import useNotifier from '@/utils/useNotifier'
 // store
 import { loginSuccess, logoutSuccess } from '@/store/reducers/authSlice'
 import { store } from '@/store'
+import config from '@/config'
 
 // icons
 import AzureSSOLoginIcon from '@/assets/images/microsoft-azure.svg'
@@ -161,7 +162,7 @@ const SignInPage = () => {
     }, [authError])
 
     const signInWithSSO = (ssoProvider) => {
-        window.location.href = `/api/v1/${ssoProvider}/login`
+        window.location.href = `${config.basename}/api/v1/${ssoProvider}/login`
     }
 
     const handleResendVerification = async () => {
