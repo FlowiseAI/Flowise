@@ -36,10 +36,11 @@ pnpm add react react-dom @mui/material @mui/icons-material @emotion/react @emoti
 ## Basic Usage
 
 ```tsx
-import { Agentflow } from '@flowise/agentflow'
 import '@flowise/agentflow/flowise.css'
 
-function App() {
+import { Agentflow } from '@flowise/agentflow'
+
+export default function App() {
     return (
         <div style={{ width: '100vw', height: '100vh' }}>
             <Agentflow instanceUrl='http://localhost:3000' token='your-api-key' />

@@ -22,7 +22,7 @@ module.exports = {
         }
     },
     plugins: ['react', 'react-hooks', '@typescript-eslint', 'unused-imports', 'jsx-a11y', 'simple-import-sort', 'import'],
-    ignorePatterns: ['dist', 'node_modules', 'build', 'vite.config.ts', 'examples/dist'],
+    ignorePatterns: ['dist', 'node_modules', 'build', 'vite.config.ts', 'examples/dist', '**/*.json'],
     rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         '@typescript-eslint/no-explicit-any': 'warn',
