@@ -12,7 +12,7 @@ export interface NodeToolbarActionsProps {
     nodeId: string
     nodeName: string
     isVisible: boolean
-    onInfoClick: () => void
+    onInfoClick?: () => void
 }
 
 /**
@@ -50,17 +50,19 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                 >
                     <IconTrash size={20} />
                 </IconButton>
-                <IconButton
-                    size='small'
-                    title='Info'
-                    onClick={onInfoClick}
-                    sx={{
-                        color: isDarkMode ? 'white' : theme.palette.grey[600],
-                        '&:hover': { color: theme.palette.info.main }
-                    }}
-                >
-                    <IconInfoCircle size={20} />
-                </IconButton>
+                {onInfoClick && (
+                    <IconButton
+                        size='small'
+                        title='Info'
+                        onClick={onInfoClick}
+                        sx={{
+                            color: isDarkMode ? 'white' : theme.palette.grey[600],
+                            '&:hover': { color: theme.palette.info.main }
+                        }}
+                    >
+                        <IconInfoCircle size={20} />
+                    </IconButton>
+                )}
             </ButtonGroup>
         </StyledNodeToolbar>
     )

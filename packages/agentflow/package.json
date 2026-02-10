@@ -44,7 +44,6 @@
         "axios": "^1.7.2",
         "lodash": "^4.17.21",
         "@tabler/icons-react": "^3.7.0",
-        "prop-types": "^15.7.2",
         "uuid": "^9.0.1"
     },
     "devDependencies": {

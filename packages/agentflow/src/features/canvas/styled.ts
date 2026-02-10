@@ -12,7 +12,7 @@ export const CardWrapper: ComponentType<MainCardProps> = styled(MainCard)(({ the
     borderRadius: '8px',
     width: 'max-content',
     height: 'auto',
-    padding: '10px 14px',
+    padding: '10px',
     boxShadow: 'none'
 }))
 

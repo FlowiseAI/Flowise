@@ -36,9 +36,9 @@ pnpm add react react-dom @mui/material @mui/icons-material @emotion/react @emoti
 ## Basic Usage
 
 ```tsx
-import '@flowise/agentflow/flowise.css'
-
 import { Agentflow } from '@flowise/agentflow'
+
+import '@flowise/agentflow/flowise.css'
 
 export default function App() {
     return (

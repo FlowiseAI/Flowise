@@ -1,3 +1,11 @@
+const features = ['canvas', 'generator', 'node-editor', 'node-palette']
+const crossFeatureRules = features.map((feature) => ({
+    target: `./src/features/${feature}`,
+    from: './src/features',
+    except: [`./${feature}`],
+    message: 'Features cannot import from other features. Move shared logic to core.'
+}))
+
 module.exports = {
     extends: [
         'eslint:recommended',
@@ -117,30 +125,7 @@ module.exports = {
                         message: 'Infrastructure cannot import from features. Move shared code to core.'
                     },
                     // features/ cannot import from other features (prevent cross-feature dependencies)
-                    {
-                        target: './src/features/canvas',
-                        from: './src/features',
-                        except: ['./canvas'],
-                        message: 'Features cannot import from other features. Move shared logic to core.'
-                    },
-                    {
-                        target: './src/features/generator',
-                        from: './src/features',
-                        except: ['./generator'],
-                        message: 'Features cannot import from other features. Move shared logic to core.'
-                    },
-                    {
-                        target: './src/features/node-editor',
-                        from: './src/features',
-                        except: ['./node-editor'],
-                        message: 'Features cannot import from other features. Move shared logic to core.'
-                    },
-                    {
-                        target: './src/features/node-palette',
-                        from: './src/features',
-                        except: ['./node-palette'],
-                        message: 'Features cannot import from other features. Move shared logic to core.'
-                    }
+                    ...crossFeatureRules
                 ]
             }
         ]

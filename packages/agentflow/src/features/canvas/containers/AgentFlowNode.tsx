@@ -1,17 +1,18 @@
 import { memo, useEffect, useRef, useState } from 'react'
-import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
+import { useUpdateNodeInternals } from 'reactflow'
 
 import { Box, Typography } from '@mui/material'
-import { alpha, darken, lighten, useTheme } from '@mui/material/styles'
-import { IconCircleChevronRightFilled } from '@tabler/icons-react'
 
-import type { NodeData, OutputAnchor } from '../../../core/types'
+import type { NodeData } from '../../../core/types'
 import { useApiContext, useConfigContext } from '../../../infrastructure/store'
+import { NodeIcon } from '../components/NodeIcon'
 import { NodeInfoDialog } from '../components/NodeInfoDialog'
+import { NodeInputHandle } from '../components/NodeInputHandle'
 import { NodeModelConfigs } from '../components/NodeModelConfigs'
+import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
 import { NodeStatusIndicator, NodeWarningIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
-import { renderNodeIcon } from '../nodeIcons'
+import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
 
 export interface AgentFlowNodeProps {
@@ -20,13 +21,8 @@ export interface AgentFlowNodeProps {
 
 /**
  * Agent Flow Node component for rendering nodes in the canvas
- *
- * TODO: Refactor - Significant code duplication exists between AgentFlowNode,
- * IterationNode, and StickyNote components. Consider extracting common UI patterns
- * (color handling, hover states, handles, toolbar) into reusable wrapper components.
  */
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
-    const theme = useTheme()
     const { isDarkMode } = useConfigContext()
     const { instanceUrl } = useApiContext()
     const ref = useRef<HTMLDivElement>(null)
@@ -36,42 +32,15 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const [warningMessage, setWarningMessage] = useState('')
     const [showInfoDialog, setShowInfoDialog] = useState(false)
 
-    const defaultColor = '#666666'
-    const nodeColor = data.color || defaultColor
+    const { nodeColor, stateColor, backgroundColor } = useNodeColors({
+        nodeColor: data.color,
+        selected: data.selected,
+        isDarkMode,
+        isHovered
+    })
 
-    const getStateColor = () => {
-        if (data.selected) return nodeColor
-        if (isHovered) return alpha(nodeColor, 0.8)
-        return alpha(nodeColor, 0.5)
-    }
-
-    const getOutputAnchors = (): OutputAnchor[] => {
-        return data.outputAnchors ?? []
-    }
-
-    const getAnchorPosition = (index: number) => {
-        const currentHeight = ref.current?.clientHeight || 0
-        const spacing = currentHeight / (getOutputAnchors().length + 1)
-        const anchorPosition = spacing * (index + 1)
-
-        if (anchorPosition > 0) {
-            updateNodeInternals(data.id)
-        }
-
-        return anchorPosition
-    }
-
-    const getMinimumHeight = () => {
-        const outputCount = getOutputAnchors().length
-        return Math.max(60, outputCount * 20 + 40)
-    }
-
-    const getBackgroundColor = () => {
-        if (isDarkMode) {
-            return isHovered ? darken(nodeColor, 0.7) : darken(nodeColor, 0.8)
-        }
-        return isHovered ? lighten(nodeColor, 0.8) : lighten(nodeColor, 0.9)
-    }
+    const outputAnchors = data.outputAnchors ?? []
+    const minHeight = getMinimumNodeHeight(outputAnchors.length)
 
     useEffect(() => {
         if (ref.current) {
@@ -107,16 +76,17 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 content={false}
                 sx={{
                     width: 'max-content',
-                    borderColor: getStateColor(),
+                    borderColor: stateColor,
                     borderWidth: '1px',
-                    boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none',
-                    minHeight: getMinimumHeight(),
+                    boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
+                    minHeight,
                     height: 'auto',
-                    backgroundColor: getBackgroundColor(),
+                    backgroundColor,
                     display: 'flex',
                     alignItems: 'center',
+                    px: '14px',
                     '&:hover': {
-                        boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none'
+                        boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none'
                     }
                 }}
                 border={false}
@@ -125,69 +95,11 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 <NodeWarningIndicator message={warningMessage} />
 
                 <Box sx={{ width: 'max-content', flexShrink: 0 }}>
-                    {!data.hideInput && (
-                        <Handle
-                            type='target'
-                            position={Position.Left}
-                            id={data.id}
-                            style={{
-                                width: 5,
-                                height: 20,
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                position: 'absolute',
-                                left: -2
-                            }}
-                        >
-                            <div
-                                style={{
-                                    width: 5,
-                                    height: 20,
-                                    backgroundColor: nodeColor,
-                                    position: 'absolute',
-                                    left: '50%',
-                                    top: '50%',
-                                    transform: 'translate(-50%, -50%)'
-                                }}
-                            />
-                        </Handle>
-                    )}
+                    <NodeInputHandle nodeId={data.id} nodeColor={nodeColor} hidden={data.hideInput} />
 
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <Box style={{ padding: 10 }}>
-                            {data.color && !data.icon ? (
-                                <div
-                                    style={{
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: '15px',
-                                        backgroundColor: data.color,
-                                        cursor: 'grab',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    }}
-                                >
-                                    {renderNodeIcon(data)}
-                                </div>
-                            ) : (
-                                <div
-                                    style={{
-                                        width: 40,
-                                        height: 40,
-                                        borderRadius: '50%',
-                                        backgroundColor: 'white',
-                                        cursor: 'grab',
-                                        overflow: 'hidden'
-                                    }}
-                                >
-                                    <img
-                                        style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                        src={`${instanceUrl}/api/v1/node-icon/${data.name}`}
-                                        alt={data.name}
-                                    />
-                                </div>
-                            )}
+                            <NodeIcon data={data} instanceUrl={instanceUrl} />
                         </Box>
                         <Box>
                             <Typography
@@ -202,45 +114,13 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                         </Box>
                     </div>
 
-                    {getOutputAnchors().map((outputAnchor, index) => (
-                        <Handle
-                            type='source'
-                            position={Position.Right}
-                            key={outputAnchor.id}
-                            id={outputAnchor.id}
-                            style={{
-                                height: 20,
-                                width: 20,
-                                top: getAnchorPosition(index),
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                position: 'absolute',
-                                right: -10,
-                                opacity: isHovered ? 1 : 0,
-                                transition: 'opacity 0.2s'
-                            }}
-                        >
-                            <div
-                                style={{
-                                    position: 'absolute',
-                                    width: 20,
-                                    height: 20,
-                                    borderRadius: '50%',
-                                    backgroundColor: theme.palette.background.paper,
-                                    pointerEvents: 'none'
-                                }}
-                            />
-                            <IconCircleChevronRightFilled
-                                size={20}
-                                color={nodeColor}
-                                style={{
-                                    pointerEvents: 'none',
-                                    position: 'relative',
-                                    zIndex: 1
-                                }}
-                            />
-                        </Handle>
-                    ))}
+                    <NodeOutputHandles
+                        outputAnchors={outputAnchors}
+                        nodeColor={nodeColor}
+                        isHovered={isHovered}
+                        nodeRef={ref}
+                        nodeId={data.id}
+                    />
                 </Box>
             </CardWrapper>
 

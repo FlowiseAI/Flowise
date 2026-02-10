@@ -125,9 +125,6 @@ importers:
             lodash:
                 specifier: ^4.17.21
                 version: 4.17.21
-            prop-types:
-                specifier: ^15.7.2
-                version: 15.8.1
             react:
                 specifier: ^18.2.0
                 version: 18.2.0
@@ -29890,6 +29887,14 @@ snapshots:
         transitivePeerDependencies:
             - debug
 
+    axios@1.12.0(debug@4.4.3):
+        dependencies:
+            follow-redirects: 1.15.6(debug@4.4.3)
+            form-data: 4.0.4
+            proxy-from-env: 1.1.0
+        transitivePeerDependencies:
+            - debug
+
     axobject-query@3.2.1:
         dependencies:
             dequal: 2.0.3
@@ -33168,6 +33173,10 @@ snapshots:
         optionalDependencies:
             debug: 4.4.1(supports-color@8.1.1)
 
+    follow-redirects@1.15.6(debug@4.4.3):
+        optionalDependencies:
+            debug: 4.4.3
+
     for-each@0.3.3:
         dependencies:
             is-callable: 1.2.7
@@ -34188,9 +34197,9 @@ snapshots:
             '@types/debug': 4.1.12
             '@types/node': 10.14.22
             '@types/tough-cookie': 4.0.5
-            axios: 1.12.0(debug@4.4.1)
+            axios: 1.12.0(debug@4.4.3)
             camelcase: 6.3.0
-            debug: 4.4.1(supports-color@8.1.1)
+            debug: 4.4.3
             dotenv: 16.4.5
             extend: 3.0.2
             file-type: 16.5.4

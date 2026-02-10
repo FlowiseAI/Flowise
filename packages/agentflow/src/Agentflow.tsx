@@ -34,6 +34,7 @@ function AgentflowCanvas({
     onFlowGenerated,
     showDefaultHeader = true,
     enableGenerator = true,
+    showDefaultPalette = true,
     renderHeader,
     renderNodePalette
 }: {
@@ -139,7 +140,9 @@ function AgentflowCanvas({
                 {/* Canvas */}
                 <div className='agentflow-canvas' ref={reactFlowWrapper} onDragOver={handleDragOver} onDrop={handleDrop}>
                     {/* Add Nodes Drawer - floating button */}
-                    {!readOnly && <AddNodesDrawer nodes={availableNodes} onNodeClick={(node) => handleAddNode(node.name)} />}
+                    {!readOnly && showDefaultPalette && (
+                        <AddNodesDrawer nodes={availableNodes} onNodeClick={(node) => handleAddNode(node.name)} />
+                    )}
 
                     {/* Generate Flow Button */}
                     {!readOnly && enableGenerator && (
