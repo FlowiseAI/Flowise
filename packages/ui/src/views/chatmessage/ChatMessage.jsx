@@ -97,6 +97,26 @@ const messageImageStyle = {
     objectFit: 'cover'
 }
 
+// Extension must match recording MIME so server validation and STT work (audio/webm, audio/mp4, audio/ogg).
+const getRecordingExtensionForMime = (mime) => {
+    const mimeToExt = {
+        'audio/webm': 'webm',
+        'audio/mp4': 'm4a',
+        'audio/x-m4a': 'm4a',
+        'audio/ogg': 'ogg',
+        'audio/oga': 'ogg',
+        'audio/wav': 'wav',
+        'audio/wave': 'wav',
+        'audio/x-wav': 'wav'
+    }
+    const extension = mimeToExt[mime]
+    if (extension) {
+        return extension
+    }
+    console.warn(`Unsupported audio MIME type: ${mime}. Defaulting to 'webm'.`)
+    return 'webm'
+}
+
 const CardWithDeleteOverlay = ({ item, disabled, customization, onDelete }) => {
     const [isHovered, setIsHovered] = useState(false)
     const defaultBackgroundColor = customization.isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'transparent'
@@ -445,21 +465,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         setPreviews((prevPreviews) => [...prevPreviews, ...newFiles])
         // 👇️ reset file input
         event.target.value = null
-    }
-
-    // Extension must match recording MIME so server validation and STT work (audio/webm, audio/mp4, audio/ogg).
-    const getRecordingExtensionForMime = (mime) => {
-        const mimeToExt = {
-            'audio/webm': 'webm',
-            'audio/mp4': 'm4a',
-            'audio/x-m4a': 'm4a',
-            'audio/ogg': 'ogg',
-            'audio/oga': 'ogg',
-            'audio/wav': 'wav',
-            'audio/wave': 'wav',
-            'audio/x-wav': 'wav'
-        }
-        return mimeToExt[mime] || 'webm'
     }
 
     const addRecordingToPreviews = (blob) => {
