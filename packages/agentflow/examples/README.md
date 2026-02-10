@@ -24,7 +24,7 @@ This folder demonstrates various usage patterns of the `@flowise/agentflow` pack
     pnpm dev
     ```
 
-4. Open http://localhost:5175 in your browser
+4. Open http://localhost:5174 in your browser
 
 ## Configuration
 

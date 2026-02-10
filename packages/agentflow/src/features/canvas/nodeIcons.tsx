@@ -1,6 +1,6 @@
 import { IconBrandGoogle, IconBrowserCheck, IconCode, IconPhoto, IconWorldWww } from '@tabler/icons-react'
 
-import { AGENTFLOW_ICONS } from '../../core/node-config'
+import { AGENTFLOW_ICONS } from '../../core'
 import type { NodeData } from '../../core/types'
 
 /**

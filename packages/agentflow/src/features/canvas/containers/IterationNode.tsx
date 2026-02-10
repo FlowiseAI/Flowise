@@ -16,7 +16,7 @@ import {
 } from '@tabler/icons-react'
 
 import { MainCard } from '../../../atoms'
-import { AGENTFLOW_ICONS } from '../../../core/node-config'
+import { AGENTFLOW_ICONS } from '../../../core'
 import type { NodeData, OutputAnchor } from '../../../core/types'
 import { useAgentflowContext, useApiContext, useConfigContext } from '../../../infrastructure/store'
 
@@ -44,6 +44,10 @@ export interface IterationNodeProps {
 
 /**
  * Iteration Node component for loop/iteration nodes in the canvas
+ *
+ * TODO: Refactor - Significant code duplication exists between AgentFlowNode,
+ * IterationNode, and StickyNote components. Consider extracting common UI patterns
+ * (color handling, hover states, handles, toolbar) into reusable wrapper components.
  */
 function IterationNodeComponent({ data }: IterationNodeProps) {
     const theme = useTheme()

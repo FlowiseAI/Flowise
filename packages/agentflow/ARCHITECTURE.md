@@ -118,19 +118,19 @@ core/
 ├── types/                  # Global interfaces (Node, Edge, Flow)
 │   └── index.ts
 ├── node-config/            # Node configuration (icons, colors, default types)
-│   ├── node-icons.ts       # AGENTFLOW_ICONS, DEFAULT_AGENTFLOW_NODES
-│   ├── node-icon-utils.ts  # getAgentflowIcon, getNodeColor
+│   ├── nodeIcons.ts        # AGENTFLOW_ICONS, DEFAULT_AGENTFLOW_NODES
+│   ├── nodeIconUtils.ts    # getAgentflowIcon, getNodeColor
 │   └── index.ts
 ├── node-catalog/           # Node catalog and filtering logic
-│   ├── node-filters.ts     # filterNodesByComponents, isAgentflowNode, groupNodesByCategory
+│   ├── nodeFilters.ts      # filterNodesByComponents, isAgentflowNode, groupNodesByCategory
 │   └── index.ts
 ├── validation/             # Flow validation logic
-│   ├── flow-validation.ts  # validateFlow, validateNode
+│   ├── flowValidation.ts   # validateFlow, validateNode
 │   └── index.ts
 ├── utils/                  # Generic utilities
-│   ├── node-factory.ts     # initNode, getUniqueNodeId, getUniqueNodeLabel
-│   ├── connection-validation.ts # isValidConnectionAgentflowV2
-│   ├── flow-export.ts      # generateExportFlowData
+│   ├── nodeFactory.ts      # initNode, getUniqueNodeId, getUniqueNodeLabel
+│   ├── connectionValidation.ts # isValidConnectionAgentflowV2
+│   ├── flowExport.ts       # generateExportFlowData
 │   └── index.ts
 └── index.ts                # Barrel export (use sparingly)
 ```
@@ -353,9 +353,9 @@ import { useFlowHandlers } from '@features/canvas/hooks/useFlowHandlers'
 
 ### Naming Convention
 
-| Type      | Convention                  | Example                      |
-| --------- | --------------------------- | ---------------------------- |
-| Component | PascalCase.tsx              | `AgentFlowNode.tsx`          |
-| Hook      | camelCase.ts (use prefix)   | `useFlowInstance.ts`         |
-| Logic/Types | camelCase.ts              | `validation.ts`, `types.ts`  |
-| Styles    | kebab-case (co-located)     | `canvas.css`                 |
+| Type        | Convention                | Example                               |
+| ----------- | ------------------------- | ------------------------------------- |
+| Component   | PascalCase.tsx            | `AgentFlowNode.tsx`                   |
+| Hook        | camelCase.ts (use prefix) | `useFlowInstance.ts`                  |
+| Logic/Types | camelCase.ts              | `flowValidation.ts`, `nodeFilters.ts` |
+| Styles      | kebab-case (co-located)   | `canvas.css`                          |

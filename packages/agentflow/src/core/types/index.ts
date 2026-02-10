@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
+import type { AxiosInstance } from 'axios'
+
 // ============================================================================
 // Flow Data Types
 // ============================================================================
@@ -250,7 +252,7 @@ export interface AgentFlowInstance {
 // ============================================================================
 
 export interface ApiContextValue {
-    client: unknown // AxiosInstance
+    client: AxiosInstance
     instanceUrl: string
 }
 

@@ -20,6 +20,10 @@ export interface AgentFlowNodeProps {
 
 /**
  * Agent Flow Node component for rendering nodes in the canvas
+ *
+ * TODO: Refactor - Significant code duplication exists between AgentFlowNode,
+ * IterationNode, and StickyNote components. Consider extracting common UI patterns
+ * (color handling, hover states, handles, toolbar) into reusable wrapper components.
  */
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const theme = useTheme()

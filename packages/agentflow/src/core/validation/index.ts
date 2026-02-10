@@ -1,2 +1,2 @@
 // Flow validation utilities
-export { validateFlow, validateNode } from './flow-validation'
+export { validateFlow, validateNode } from './flowValidation'

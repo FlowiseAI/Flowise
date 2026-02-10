@@ -1,4 +1,7 @@
-import type { NodeData } from '../../core/types'
+import type { NodeData } from '../../core'
+import { groupNodesByCategory } from '../../core'
+
+export { groupNodesByCategory }
 
 /**
  * Calculate fuzzy search score between search term and target text
@@ -104,20 +107,6 @@ export function searchNodes(nodes: NodeData[], searchValue: string): NodeData[] 
         .filter((item) => item.score > 0)
         .sort((a, b) => b.score - a.score)
         .map((item) => item.node)
-}
-
-/**
- * Group nodes by category
- */
-export function groupNodesByCategory(nodes: NodeData[]): Record<string, NodeData[]> {
-    return nodes.reduce((acc, node) => {
-        const category = node.category || 'Other'
-        if (!acc[category]) {
-            acc[category] = []
-        }
-        acc[category].push(node)
-        return acc
-    }, {} as Record<string, NodeData[]>)
 }
 
 /**

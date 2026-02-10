@@ -1,9 +1,8 @@
 import { useCallback, useRef } from 'react'
 import { addEdge, Connection, EdgeChange, NodeChange } from 'reactflow'
 
-import { getNodeColor } from '../../../core/node-config'
+import { getNodeColor, getUniqueNodeId, initNode, isValidConnectionAgentflowV2 } from '../../../core'
 import type { FlowData, FlowEdge, FlowNode, NodeData } from '../../../core/types'
-import { getUniqueNodeId, initNode, isValidConnectionAgentflowV2 } from '../../../core/utils'
 import { useAgentflowContext } from '../../../infrastructure/store'
 
 interface UseFlowHandlersProps {

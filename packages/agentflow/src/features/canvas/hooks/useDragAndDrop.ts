@@ -1,8 +1,8 @@
 import { RefObject, useCallback } from 'react'
 import { useReactFlow } from 'reactflow'
 
+import { getUniqueNodeId, initNode } from '../../../core'
 import type { FlowNode, NodeData } from '../../../core/types'
-import { getUniqueNodeId, initNode } from '../../../core/utils'
 import { useAgentflowContext } from '../../../infrastructure/store'
 
 interface UseDragAndDropProps {

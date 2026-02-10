@@ -1,4 +1,4 @@
-import { AGENTFLOW_ICONS, type AgentflowIcon } from './node-icons'
+import { AGENTFLOW_ICONS, type AgentflowIcon } from './nodeIcons'
 
 /**
  * Get icon config for a node by name

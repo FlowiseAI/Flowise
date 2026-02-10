@@ -33,6 +33,10 @@ export interface StickyNoteProps {
 
 /**
  * Sticky Note node component for adding notes to the canvas
+ *
+ * TODO: Refactor - Significant code duplication exists between AgentFlowNode,
+ * IterationNode, and StickyNote components. Consider extracting common UI patterns
+ * (color handling, hover states, handles, toolbar) into reusable wrapper components.
  */
 function StickyNoteComponent({ data }: StickyNoteProps) {
     const theme = useTheme()

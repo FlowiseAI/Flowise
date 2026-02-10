@@ -153,7 +153,7 @@ export function validateNode(node: FlowNode, _edges: FlowEdge[]): ValidationErro
     // Check required inputs (if defined)
     const inputParams = node.data.inputParams || []
     for (const param of inputParams) {
-        if (!param.optional && !node.data[param.name as keyof typeof node.data]) {
+        if (!param.optional && !node.data.inputs?.[param.name]) {
             errors.push({
                 nodeId: node.id,
                 message: `Required input "${param.label || param.name}" is missing`,
