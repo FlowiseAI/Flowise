@@ -5,7 +5,6 @@ import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
-import logger from '../../../../server/src/utils/logger'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -308,6 +307,11 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
 
     const dangerousFlags = dangerousFlagsByCommand[command] || []
 
+    // Collect single-char dangerous flags (e.g. '-c' -> 'c') for combined flag detection
+    const dangerousShortChars = new Set(
+        dangerousFlags.filter((f) => /^-[a-zA-Z]$/.test(f)).map((f) => f[1].toLowerCase())
+    )
+
     for (const arg of args) {
         if (typeof arg !== 'string') continue
 
@@ -316,16 +320,31 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
         // Check for exact matches (case-insensitive)
         if (dangerousFlags.some((flag) => normalizedArg === flag.toLowerCase())) {
             const errorMsg = `Argument '${arg}' is not allowed for command '${command}'.`
-            logger.error(`[MCP Security] Dangerous flag detected: ${errorMsg}`)
             throw new Error(errorMsg)
         }
 
         // Check for flags with = syntax (e.g., --call=command, --network=host)
         for (const flag of dangerousFlags) {
             if (normalizedArg.startsWith(flag.toLowerCase() + '=')) {
-                const errorMsg = `Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`
-                logger.error(`[MCP Security] Dangerous flag detected: ${errorMsg}`)
-                throw new Error(errorMsg)
+                throw new Error(`Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`)
+            }
+        }
+
+        // Check for combined short flags (e.g. "-yc" = "-y" + "-c")
+        // A combined flag starts with a single '-', is not a long flag '--', and has multiple characters after '-'
+        if (/^-[a-zA-Z]{2,}/.test(normalizedArg)) {
+            const flagChars = normalizedArg.slice(1) // strip leading '-'
+            for (const ch of flagChars) {
+                if (dangerousShortChars.has(ch)) {
+                    throw new Error(`Argument '${arg}' contains dangerous flag '-${ch}' for command '${command}'.`)
+                }
+            }
+        }
+
+        // Check for a dangerous flag followed by a space-separated value in the same arg (e.g. "-c touch /tmp/pwn")
+        for (const flag of dangerousFlags) {
+            if (flag.startsWith('-') && normalizedArg.startsWith(flag.toLowerCase() + ' ')) {
+                throw new Error(`Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`)
             }
         }
     }

@@ -179,7 +179,8 @@ describe('MCP Security Validations', () => {
         describe('edge cases', () => {
             it('should handle non-string arguments gracefully', () => {
                 expect(() => {
-                    validateCommandFlags('npx', [123 as any, null as any, undefined as any])
+                    // @ts-ignore - testing non-string args
+                    validateCommandFlags('npx', [123, null, undefined])
                 }).not.toThrow()
             })
 
