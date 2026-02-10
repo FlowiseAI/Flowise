@@ -279,7 +279,14 @@ class Condition_Agentflow implements INode {
             notEmpty: (value1: CommonType) => ![undefined, null, ''].includes(value1 as string),
             regex: (value1: CommonType, value2: CommonType) => {
                 try {
-                    const regex = new RegExp((value2 || '').toString())
+                    const pattern = (value2 || '').toString()
+                    // ReDoS protection: reject patterns with nested quantifiers that can cause catastrophic backtracking
+                    // Matches patterns like (a+)+, (a*)+, (a+)*, (\w+)+, etc.
+                    const redosPattern = /(\+|\*|\?|\{[^}]+\})\s*\)[\*\+\?]|\)[\*\+\?]\s*(\+|\*|\?|\{[^}]+\})/
+                    if (redosPattern.test(pattern)) {
+                        return false
+                    }
+                    const regex = new RegExp(pattern)
                     return regex.test((value1 || '').toString())
                 } catch {
                     return false
