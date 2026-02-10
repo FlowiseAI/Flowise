@@ -57,6 +57,7 @@ export const WHITELIST_URLS = [
 export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim']
 
 export const enum GeneralErrorMessage {
+    FORBIDDEN = 'Forbidden',
     UNAUTHORIZED = 'Unauthorized',
     UNHANDLED_EDGE_CASE = 'Unhandled Edge Case',
     INVALID_PASSWORD = 'Invalid Password',

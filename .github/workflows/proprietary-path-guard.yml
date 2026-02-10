@@ -1,0 +1,106 @@
+name: Proprietary Path Guard
+
+# =============================================================================
+# This workflow checks that PRs don't add files to proprietary paths.
+#
+# Proprietary paths:
+#   - extensions/     Reserved for enterprise extensions
+#   - apps/*          Only apps/oss-app/ is allowed
+#
+# These paths are reserved for downstream forks and enterprise distributions.
+# =============================================================================
+
+on:
+  pull_request:
+    branches: [main, develop, master]
+  push:
+    branches: ['**']
+
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual run'
+        required: false
+        default: 'Testing'
+
+permissions:
+  contents: read
+
+jobs:
+  check-proprietary-paths:
+    name: Check for Proprietary Paths
+    runs-on: ubuntu-latest
+    if: github.repository == 'FlowiseAI/Flowise'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for proprietary paths
+        id: check-paths
+        run: |
+          echo "🔍 Checking for proprietary paths..."
+          echo "Trigger: ${{ github.event_name }}"
+          echo ""
+
+          # Get changed files based on event type
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            # Push to existing branch - compare with previous commit
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          else
+            # New branch - compare against default branch
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.event.repository.default_branch }}...${{ github.sha }} 2>/dev/null || echo "")
+          fi
+
+          echo "Files to check:"
+          echo "$CHANGED_FILES" | head -50 | sed 's/^/  /'
+          echo ""
+
+          # Check for proprietary paths
+          VIOLATIONS=""
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+
+            # Block all extensions/
+            if echo "$file" | grep -qE "^extensions/"; then
+              VIOLATIONS="$VIOLATIONS$file\n"
+              continue
+            fi
+
+            # Block all apps/ except apps/oss-app/
+            if echo "$file" | grep -qE "^apps/"; then
+              if ! echo "$file" | grep -qE "^apps/oss-app/"; then
+                VIOLATIONS="$VIOLATIONS$file\n"
+              fi
+            fi
+          done <<< "$CHANGED_FILES"
+
+          if [ -n "$VIOLATIONS" ]; then
+            echo "has_violations=true" >> $GITHUB_OUTPUT
+            echo "violations<<EOF" >> $GITHUB_OUTPUT
+            printf "%s" "$VIOLATIONS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+            echo "❌ Files in proprietary paths detected!"
+            echo ""
+            printf "%s" "$VIOLATIONS" | sed 's/^/  ❌ /'
+            echo ""
+            echo "Proprietary paths:"
+            echo "  - extensions/    (reserved for enterprise extensions)"
+            echo "  - apps/*         (only apps/oss-app/ is allowed)"
+          else
+            echo "has_violations=false" >> $GITHUB_OUTPUT
+            echo "✅ No proprietary paths detected"
+          fi
+
+      - name: Fail if violations found
+        if: steps.check-paths.outputs.has_violations == 'true'
+        run: |
+          echo "::error::Files detected in proprietary paths. These paths are reserved for enterprise extensions."
+          exit 1
