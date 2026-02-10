@@ -447,6 +447,21 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         event.target.value = null
     }
 
+    // Extension must match recording MIME so server validation and STT work (audio/webm, audio/mp4, audio/ogg).
+    const getRecordingExtensionForMime = (mime) => {
+        const mimeToExt = {
+            'audio/webm': 'webm',
+            'audio/mp4': 'm4a',
+            'audio/x-m4a': 'm4a',
+            'audio/ogg': 'ogg',
+            'audio/oga': 'ogg',
+            'audio/wav': 'wav',
+            'audio/wave': 'wav',
+            'audio/x-wav': 'wav'
+        }
+        return mimeToExt[mime] || 'webm'
+    }
+
     const addRecordingToPreviews = (blob) => {
         let mimeType = ''
         const pos = blob.type.indexOf(';')
@@ -455,6 +470,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         } else {
             mimeType = blob.type ? blob.type.substring(0, pos) : ''
         }
+        const ext = getRecordingExtensionForMime(mimeType)
         // read blob and add to previews
         const reader = new FileReader()
         reader.readAsDataURL(blob)
@@ -464,7 +480,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 data: base64data,
                 preview: audioUploadSVG,
                 type: 'audio',
-                name: `audio_${Date.now()}.wav`,
+                name: `audio_${Date.now()}.${ext}`,
                 mime: mimeType
             }
             setPreviews((prevPreviews) => [...prevPreviews, upload])
