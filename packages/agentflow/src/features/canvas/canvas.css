@@ -1,0 +1,322 @@
+/* Agentflow Component Styles */
+
+.agentflow-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Header */
+.agentflow-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    min-height: 56px;
+}
+
+.agentflow-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.agentflow-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.agentflow-header-actions button {
+    padding: 8px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agentflow-header-actions button:hover {
+    background: #f5f5f5;
+    border-color: #bdbdbd;
+}
+
+.agentflow-header-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Main layout */
+.agentflow-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Node Palette */
+.agentflow-palette {
+    width: 240px;
+    background: #fafafa;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    padding: 16px 0;
+}
+
+.agentflow-palette-title {
+    padding: 0 16px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #757575;
+}
+
+.agentflow-palette-item {
+    padding: 10px 16px;
+    margin: 0 8px 4px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-left-width: 4px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agentflow-palette-item:hover {
+    background: #f5f5f5;
+    border-color: #bdbdbd;
+}
+
+/* Canvas */
+.agentflow-canvas {
+    flex: 1;
+    background: #f8f9fa;
+}
+
+.agentflow-canvas .react-flow {
+    width: 100%;
+    height: 100%;
+}
+
+/* ReactFlow customizations */
+.agentflow-canvas .react-flow__node {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Content-sized nodes: width/height follow content (no fixed size) */
+.agentflow-canvas .react-flow__node-agentflowNode,
+.agentflow-canvas .react-flow__node-stickyNote {
+    width: fit-content !important;
+    height: fit-content !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+}
+
+.agentflow-canvas .react-flow__edge-path {
+    stroke-width: 2;
+}
+
+.agentflow-canvas .react-flow__controls {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.agentflow-canvas .react-flow__minimap {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.agentflow-canvas .react-flow__background {
+    background: #f8f9fa;
+}
+
+/* Dark theme support */
+.agentflow-container.dark {
+    background: #1a1a1a;
+}
+
+.agentflow-container.dark .agentflow-header {
+    background: #2d2d2d;
+    border-color: #404040;
+}
+
+.agentflow-container.dark .agentflow-title {
+    color: #fff;
+}
+
+.agentflow-container.dark .agentflow-header-actions button {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #fff;
+}
+
+.agentflow-container.dark .agentflow-header-actions button:hover {
+    background: #404040;
+}
+
+.agentflow-container.dark .agentflow-palette {
+    background: #252525;
+    border-color: #404040;
+}
+
+.agentflow-container.dark .agentflow-palette-title {
+    color: #9e9e9e;
+}
+
+.agentflow-container.dark .agentflow-palette-item {
+    background: #2d2d2d;
+    border-color: #404040;
+    color: #fff;
+}
+
+.agentflow-container.dark .agentflow-palette-item:hover {
+    background: #404040;
+}
+
+.agentflow-container.dark .agentflow-canvas {
+    background: #1a1a1a;
+}
+
+.agentflow-container.dark .react-flow__background {
+    background: #1a1a1a;
+}
+
+/* Node styles (placeholder - will be enhanced with actual components) */
+.agentflow-node {
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    min-width: 180px;
+}
+
+.agentflow-node-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.agentflow-node-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agentflow-node-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.agentflow-node-content {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Handles */
+.agentflow-handle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #9e9e9e;
+}
+
+.agentflow-handle-connected {
+    border-color: #4caf50;
+    background: #4caf50;
+}
+
+/* Edge styles */
+.agentflow-edge {
+    stroke-width: 2;
+}
+
+.agentflow-edge-label {
+    font-size: 11px;
+    fill: #666;
+}
+
+/* Sticky note */
+.agentflow-sticky-note {
+    padding: 12px;
+    background: #fee440;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+    min-height: 100px;
+}
+
+.agentflow-sticky-note textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+/* Iteration node */
+.agentflow-iteration-node {
+    background: rgba(156, 137, 184, 0.1);
+    border: 2px dashed #9c89b8;
+    border-radius: 12px;
+    padding: 20px;
+    min-width: 300px;
+    min-height: 200px;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.agentflow-node-running {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.spin-animation {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .agentflow-palette {
+        width: 200px;
+    }
+
+    .agentflow-palette-item {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+}

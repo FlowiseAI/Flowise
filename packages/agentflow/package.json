@@ -1,0 +1,63 @@
+{
+  "name": "@flowise/agentflow",
+  "version": "0.0.0-dev.1",
+  "description": "Embeddable Agentflow component for React applications",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "main": "./dist/index.umd.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.umd.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./flowise.css": "./dist/flowise.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "build": "tsc && vite build",
+    "clean": "rimraf dist",
+    "dev": "vite",
+    "dev:example": "vite --config examples/vite.config.ts",
+    "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx}\" --fix",
+    "nuke": "rimraf dist node_modules .turbo"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "@mui/material": "^5.15.0",
+    "@mui/icons-material": "^5.0.0",
+    "@emotion/react": "^11.10.0",
+    "@emotion/styled": "^11.10.0",
+    "reactflow": "^11.5.0"
+  },
+  "dependencies": {
+    "axios": "1.12.0",
+    "lodash": "^4.17.21",
+    "@tabler/icons-react": "^3.30.0",
+    "prop-types": "^15.7.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.195",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/uuid": "^9.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.4.5",
+    "vite": "^5.0.2",
+    "vite-plugin-dts": "^3.7.0"
+  }
+}
