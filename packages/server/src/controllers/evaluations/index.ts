@@ -29,8 +29,9 @@ const createEvaluation = async (req: Request, res: Response, next: NextFunction)
         const body = req.body
         body.workspaceId = workspaceId
 
-        const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
-        const baseURL = `${httpProtocol}://${req.get('host')}`
+        // const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
+        // const baseURL = `${httpProtocol}://${req.get('host')}`
+        const baseURL = `http://localhost:3000`
         const apiResponse = await evaluationsService.createEvaluation(body, baseURL, orgId, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
