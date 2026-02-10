@@ -101,7 +101,6 @@
         "csv-parser": "^3.0.0",
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
-        "express-basic-auth": "^1.2.1",
         "express-mysql-session": "^3.0.3",
         "express-rate-limit": "^6.9.0",
         "express-session": "^1.18.1",
