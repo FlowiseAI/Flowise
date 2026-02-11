@@ -159,10 +159,32 @@ describe('MCP Security Validations', () => {
                 }).toThrow("Argument '--privileged' is not allowed for command 'docker'")
             })
 
-            it('should block host network access', () => {
+            it('should block host network/pid/ipc access', () => {
+                // --flag=value syntax
                 expect(() => {
                     validateCommandFlags('docker', ['--network=host'])
-                }).toThrow("Argument '--network=host' is not allowed for command 'docker'")
+                }).toThrow("contains flag '--network'")
+
+                expect(() => {
+                    validateCommandFlags('docker', ['--pid=host'])
+                }).toThrow("contains flag '--pid'")
+
+                expect(() => {
+                    validateCommandFlags('docker', ['--ipc=host'])
+                }).toThrow("contains flag '--ipc'")
+
+                // --flag value as separate args
+                expect(() => {
+                    validateCommandFlags('docker', ['--network', 'host'])
+                }).toThrow("Argument '--network' is not allowed for command 'docker'")
+
+                expect(() => {
+                    validateCommandFlags('docker', ['--pid', 'host'])
+                }).toThrow("Argument '--pid' is not allowed for command 'docker'")
+
+                expect(() => {
+                    validateCommandFlags('docker', ['--ipc', 'host'])
+                }).toThrow("Argument '--ipc' is not allowed for command 'docker'")
             })
 
             it('should allow safe docker usage', () => {
