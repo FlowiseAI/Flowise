@@ -299,33 +299,32 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
             '--privileged', // Privileged mode
             '--cap-add', // Add capabilities
             '--security-opt', // Modify security options
-            '--network=host', // Host network access
-            '--pid=host', // Host PID namespace
-            '--ipc=host' // Host IPC namespace
+            '--network', // Host network access (catches --network=host and --network host)
+            '--pid', // Host PID namespace (catches --pid=host and --pid host)
+            '--ipc' // Host IPC namespace (catches --ipc=host and --ipc host)
         ]
     }
 
     const dangerousFlags = dangerousFlagsByCommand[command] || []
 
     // Collect single-char dangerous flags (e.g. '-c' -> 'c') for combined flag detection
-    const dangerousShortChars = new Set(
-        dangerousFlags.filter((f) => /^-[a-zA-Z]$/.test(f)).map((f) => f[1].toLowerCase())
-    )
+    const dangerousShortChars = new Set(dangerousFlags.filter((f) => /^-[a-zA-Z]$/.test(f)).map((f) => f[1].toLowerCase()))
 
     for (const arg of args) {
         if (typeof arg !== 'string') continue
 
         const normalizedArg = arg.toLowerCase().trim()
 
-        // Check for exact matches (case-insensitive)
-        if (dangerousFlags.some((flag) => normalizedArg === flag.toLowerCase())) {
-            const errorMsg = `Argument '${arg}' is not allowed for command '${command}'.`
-            throw new Error(errorMsg)
-        }
-
-        // Check for flags with = syntax (e.g., --call=command, --network=host)
+        // Check for dangerous flags in various forms (exact, =value, space-separated value)
         for (const flag of dangerousFlags) {
-            if (normalizedArg.startsWith(flag.toLowerCase() + '=')) {
+            const lowerCaseFlag = flag.toLowerCase()
+            if (normalizedArg === lowerCaseFlag) {
+                throw new Error(`Argument '${arg}' is not allowed for command '${command}'.`)
+            }
+            if (normalizedArg.startsWith(lowerCaseFlag + '=')) {
+                throw new Error(`Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`)
+            }
+            if (flag.startsWith('-') && normalizedArg.startsWith(lowerCaseFlag + ' ')) {
                 throw new Error(`Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`)
             }
         }
@@ -338,13 +337,6 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
                 if (dangerousShortChars.has(ch)) {
                     throw new Error(`Argument '${arg}' contains dangerous flag '-${ch}' for command '${command}'.`)
                 }
-            }
-        }
-
-        // Check for a dangerous flag followed by a space-separated value in the same arg (e.g. "-c touch /tmp/pwn")
-        for (const flag of dangerousFlags) {
-            if (flag.startsWith('-') && normalizedArg.startsWith(flag.toLowerCase() + ' ')) {
-                throw new Error(`Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`)
             }
         }
     }
