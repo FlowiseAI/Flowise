@@ -1,13 +1,16 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { AccountService } from '../services/account.service'
+import { AccountDTO, AccountService } from '../services/account.service'
+import { Organization } from '../database/entities/organization.entity'
+import { User } from '../database/entities/user.entity'
 
 export class AccountController {
     public async register(req: Request, res: Response, next: NextFunction) {
         try {
             const accountService = new AccountService()
-            const data = await accountService.register(req.body)
+            const sanitizedBody = sanitizeRegistrationDTO(req.body)
+            const data = await accountService.register(sanitizedBody)
             return res.status(StatusCodes.CREATED).json(data)
         } catch (error) {
             next(error)
@@ -133,4 +136,43 @@ export class AccountController {
             return res.json({ message: 'Authentication failed' })
         }
     }
+}
+
+function sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
+    const sanitized: AccountDTO = {
+        user: {},
+        organization: {},
+        organizationUser: {},
+        workspace: {},
+        workspaceUser: {},
+        role: {}
+    }
+
+    // Strict allowlist: only fields a client may supply during registration.
+    // Never accept server-managed fields: id, createdBy, updatedBy, createdDate, updatedDate, status, tokenExpiry.
+    const allowedUserFields: (keyof User)[] = ['name', 'email', 'credential', 'tempToken']
+    if (data.user && typeof data.user === 'object' && !Array.isArray(data.user)) {
+        for (const field of allowedUserFields) {
+            const value = data.user[field]
+            if (value !== undefined && value !== null) {
+                sanitized.user[field] = data.user[field] as any
+            }
+        }
+        if (data.user.referral !== undefined) {
+            sanitized.user.referral = data.user.referral
+        }
+    }
+
+    // Allow organization.name for Enterprise owner registration (the only path that doesn't hardcode it).
+    const allowedOrgFields: (keyof Organization)[] = ['name']
+    if (data.organization && typeof data.organization === 'object' && !Array.isArray(data.organization)) {
+        for (const field of allowedOrgFields) {
+            const value = data.organization[field]
+            if (value !== undefined && value !== null) {
+                sanitized.organization[field] = data.organization[field] as any
+            }
+        }
+    }
+
+    return sanitized
 }

@@ -32,7 +32,7 @@ import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
 /** Optional referral field for Stripe referral tracking in CLOUD; not a User entity column. */
 type RegistrationUser = Partial<User> & { referral?: string }
 
-type AccountDTO = {
+export type AccountDTO = {
     user: RegistrationUser
     organization: Partial<Organization>
     organizationUser: Partial<OrganizationUser>
@@ -71,34 +71,6 @@ export class AccountService {
         data.role = data.role || {}
 
         return data
-    }
-
-    private sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
-        const sanitized: AccountDTO = {
-            user: {},
-            organization: {},
-            organizationUser: {},
-            workspace: {},
-            workspaceUser: {},
-            role: {}
-        }
-
-        // Strict allowlist: only fields a client may supply during registration.
-        // Never accept server-managed fields: id, createdBy, updatedBy, createdDate, updatedDate, status, tokenExpiry.
-        const allowedUserFields: (keyof User)[] = ['name', 'email', 'credential', 'tempToken']
-        if (data.user && typeof data.user === 'object' && !Array.isArray(data.user)) {
-            for (const field of allowedUserFields) {
-                const value = data.user[field]
-                if (value !== undefined && value !== null) {
-                    sanitized.user[field] = data.user[field] as any
-                }
-            }
-            if (data.user.referral !== undefined) {
-                sanitized.user.referral = data.user.referral
-            }
-        }
-
-        return sanitized
     }
 
     public async resendVerificationEmail({ email }: { email: string }) {
@@ -308,8 +280,7 @@ export class AccountService {
     }
 
     public async register(data: AccountDTO) {
-        const sanitizedData = this.sanitizeRegistrationDTO(data)
-        return await this.saveRegisterAccount(sanitizedData)
+        return await this.saveRegisterAccount(data)
     }
 
     private async saveInviteAccount(data: AccountDTO, currentUser?: Express.User) {
