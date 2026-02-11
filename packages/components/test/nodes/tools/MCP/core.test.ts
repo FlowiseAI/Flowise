@@ -27,6 +27,12 @@ describe('MCP Security Validations', () => {
                 }).toThrow("Argument '--shell-auto-fallback' is not allowed for command 'npx'")
             })
 
+            it('should block -y flag', () => {
+                expect(() => {
+                    validateCommandFlags('npx', ['-y', 'https://test-malicious-download.com'])
+                }).toThrow("Argument '-y' is not allowed for command 'npx'")
+            })
+
             it('should block case variations', () => {
                 expect(() => {
                     validateCommandFlags('npx', ['-C', 'command'])
@@ -40,10 +46,6 @@ describe('MCP Security Validations', () => {
             it('should allow legitimate npx usage', () => {
                 expect(() => {
                     validateCommandFlags('npx', ['@modelcontextprotocol/server-filesystem', '/tmp'])
-                }).not.toThrow()
-
-                expect(() => {
-                    validateCommandFlags('npx', ['-y', '@modelcontextprotocol/server-github'])
                 }).not.toThrow()
             })
         })
@@ -393,14 +395,6 @@ describe('MCP Security Validations', () => {
         })
 
         it('should allow legitimate MCP server configurations', () => {
-            expect(() => {
-                validateMCPServerConfig({
-                    command: 'npx',
-                    args: ['-y', '@modelcontextprotocol/server-github'],
-                    env: { GITHUB_TOKEN: 'token123' }
-                })
-            }).not.toThrow()
-
             expect(() => {
                 validateMCPServerConfig({
                     command: 'node',
