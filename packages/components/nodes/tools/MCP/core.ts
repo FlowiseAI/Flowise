@@ -272,7 +272,8 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
         npx: [
             '-c', // Execute shell commands
             '--call', // Execute shell commands
-            '--shell-auto-fallback' // Shell execution fallback
+            '--shell-auto-fallback', // Shell execution fallback
+            '-y' // Auto-confirms installation prompts
         ],
         node: [
             '-e', // Execute JavaScript code
