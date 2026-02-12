@@ -988,8 +988,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
          if (input.trim()) {
             inputHistory.addToHistory(input)
         }
-
-        
+  
         setLoading(true)
         clearAgentflowNodeStatus()
 
@@ -1206,13 +1205,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                         : inputHistory.getNextInput()
                 setUserInput(newInput)
             }
-            
+
             // Otherwise, let the arrow key move the cursor normally
             return
         }
-
-        if (e.key === 'Enter'&& !e.shiftKey ) {
-                handleSubmit(e)
+        if (e.key === 'Enter' && !e.shiftKey) {
+            handleSubmit(e)
         }
     }
 
