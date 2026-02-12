@@ -154,11 +154,11 @@ function sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
     if (data.user && typeof data.user === 'object' && !Array.isArray(data.user)) {
         for (const field of allowedUserFields) {
             const value = data.user[field]
-            if (value !== undefined && value !== null) {
-                sanitized.user[field] = data.user[field] as any
+            if (value != null) {
+                sanitized.user[field] = value as any
             }
         }
-        if (data.user.referral !== undefined) {
+        if (data.user.referral != null) {
             sanitized.user.referral = data.user.referral
         }
     }
