@@ -128,16 +128,20 @@ export class RateLimiterManager {
     public getRateLimiter(): (req: Request, res: Response, next: NextFunction) => void {
         return (req: Request, res: Response, next: NextFunction) => {
             const id = req.params.id
-            if (!this.rateLimiters[id]) return next()
+            // Ensure the id is valid and corresponds to an own, function-valued rate limiter
+            if (typeof id !== 'string' || id.length === 0) return next()
+            if (!Object.prototype.hasOwnProperty.call(this.rateLimiters, id)) return next()
             const idRateLimiter = this.rateLimiters[id]
+            if (typeof idRateLimiter !== 'function') return next()
             return idRateLimiter(req, res, next)
         }
     }
 
     public getRateLimiterById(id: string): (req: Request, res: Response, next: NextFunction) => void {
         return (req: Request, res: Response, next: NextFunction) => {
-            if (!this.rateLimiters[id]) return next()
+            if (!Object.prototype.hasOwnProperty.call(this.rateLimiters, id)) return next()
             const idRateLimiter = this.rateLimiters[id]
+            if (typeof idRateLimiter !== 'function') return next()
             return idRateLimiter(req, res, next)
         }
     }
