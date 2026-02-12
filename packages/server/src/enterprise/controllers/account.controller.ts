@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { AccountDTO, AccountService } from '../services/account.service'
 import { Organization } from '../database/entities/organization.entity'
 import { User } from '../database/entities/user.entity'
+import { AccountDTO, AccountService } from '../services/account.service'
 
 export class AccountController {
     public async register(req: Request, res: Response, next: NextFunction) {
@@ -171,7 +171,6 @@ function sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
             if (value != null) {
                 sanitized.organization[field] = value as any
             }
-        }
         }
     }
 
