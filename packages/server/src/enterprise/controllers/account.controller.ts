@@ -168,9 +168,10 @@ function sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
     if (data.organization && typeof data.organization === 'object' && !Array.isArray(data.organization)) {
         for (const field of allowedOrgFields) {
             const value = data.organization[field]
-            if (value !== undefined && value !== null) {
-                sanitized.organization[field] = data.organization[field] as any
+            if (value != null) {
+                sanitized.organization[field] = value as any
             }
+        }
         }
     }
 
