@@ -145,7 +145,6 @@ const OrganizationSetupPage = () => {
                 user: {
                     name: username,
                     email: email,
-                    type: 'pro',
                     credential: password
                 }
             }
