@@ -1,5 +1,6 @@
 import { CommonType, ICommonObject, ICondition, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import removeMarkdown from 'remove-markdown'
+import safeRegex from 'safe-regex2'
 
 class Condition_Agentflow implements INode {
     label: string
@@ -280,10 +281,8 @@ class Condition_Agentflow implements INode {
             regex: (value1: CommonType, value2: CommonType) => {
                 try {
                     const pattern = (value2 || '').toString()
-                    // ReDoS protection: reject patterns with nested quantifiers that can cause catastrophic backtracking
-                    // Matches patterns like (a+)+, (a*)+, (a+)*, (\w+)+, etc.
-                    const redosPattern = /(\+|\*|\?|\{[^}]+\})\s*\)[\*\+\?]|\)[\*\+\?]\s*(\+|\*|\?|\{[^}]+\})/
-                    if (redosPattern.test(pattern)) {
+                    // ReDoS protection: validate regex pattern safety before execution
+                    if (!safeRegex(pattern)) {
                         return false
                     }
                     const regex = new RegExp(pattern)
