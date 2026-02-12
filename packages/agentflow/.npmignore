@@ -1,0 +1,14 @@
+# Source files
+/src
+/tests
+/*.ts
+/*.tsx
+tsconfig.json
+vite.config.ts
+
+# Dev files
+.turbo
+node_modules
+
+# Keep dist
+!dist

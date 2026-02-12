@@ -97,6 +97,26 @@ const messageImageStyle = {
     objectFit: 'cover'
 }
 
+// Extension must match recording MIME so server validation and STT work (audio/webm, audio/mp4, audio/ogg).
+const getRecordingExtensionForMime = (mime) => {
+    const mimeToExt = {
+        'audio/webm': 'webm',
+        'audio/mp4': 'm4a',
+        'audio/x-m4a': 'm4a',
+        'audio/ogg': 'ogg',
+        'audio/oga': 'ogg',
+        'audio/wav': 'wav',
+        'audio/wave': 'wav',
+        'audio/x-wav': 'wav'
+    }
+    const extension = mimeToExt[mime]
+    if (extension) {
+        return extension
+    }
+    console.warn(`Unsupported audio MIME type: ${mime}. Defaulting to 'webm'.`)
+    return 'webm'
+}
+
 const CardWithDeleteOverlay = ({ item, disabled, customization, onDelete }) => {
     const [isHovered, setIsHovered] = useState(false)
     const defaultBackgroundColor = customization.isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'transparent'
@@ -455,6 +475,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         } else {
             mimeType = blob.type ? blob.type.substring(0, pos) : ''
         }
+        const ext = getRecordingExtensionForMime(mimeType)
         // read blob and add to previews
         const reader = new FileReader()
         reader.readAsDataURL(blob)
@@ -464,7 +485,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 data: base64data,
                 preview: audioUploadSVG,
                 type: 'audio',
-                name: `audio_${Date.now()}.wav`,
+                name: `audio_${Date.now()}.${ext}`,
                 mime: mimeType
             }
             setPreviews((prevPreviews) => [...prevPreviews, upload])
