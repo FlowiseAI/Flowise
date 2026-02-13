@@ -23,6 +23,7 @@ module.exports = {
         'unused-imports/no-unused-vars': ['warn', { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' }],
         'no-undef': 'off',
         'no-console': [process.env.CI ? 'error' : 'warn', { allow: ['warn', 'error', 'info'] }],
-        'prettier/prettier': 'error'
+        'prettier/prettier': 'error',
+        "no-control-regex": 0 // Used to match control regex's in user input
     }
 }
