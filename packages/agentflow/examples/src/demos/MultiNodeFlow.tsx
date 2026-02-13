@@ -10,7 +10,7 @@ import { useRef } from 'react'
 import type { AgentFlowInstance, FlowData } from '@flowise/agentflow'
 import { Agentflow } from '@flowise/agentflow'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 // A complete translation agent flow
 const translationFlow: FlowData = {
@@ -152,9 +152,9 @@ export function MultiNodeFlow() {
         <div style={{ width: '100%', height: '100vh' }}>
             <Agentflow
                 ref={agentflowRef}
-                instanceUrl={instanceUrl}
+                apiBaseUrl={apiBaseUrl}
                 token={token ?? undefined}
-                flow={translationFlow}
+                initialFlow={translationFlow}
                 showDefaultHeader={true}
                 onFlowChange={(flow) => console.log('Flow changed:', flow.nodes.length, 'nodes')}
             />
@@ -163,9 +163,9 @@ export function MultiNodeFlow() {
 }
 
 export const MultiNodeFlowProps = {
-    instanceUrl: '{from environment variables}',
+    apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    flow: 'FlowData (multiple nodes)',
+    initialFlow: 'FlowData (multiple nodes)',
     showDefaultHeader: true,
     onFlowChange: '(flow: FlowData) => void'
 }

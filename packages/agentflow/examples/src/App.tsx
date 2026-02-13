@@ -6,7 +6,7 @@
 
 import { type ComponentType, lazy, Suspense, useState } from 'react'
 
-import { instanceUrl, token } from './config'
+import { apiBaseUrl, token } from './config'
 import {
     AllNodeTypesExampleProps,
     BasicExampleProps,
@@ -108,8 +108,8 @@ export default function App() {
     const actualProps = currentExample?.props
         ? Object.fromEntries(
               Object.entries(currentExample.props).map(([key, value]) => {
-                  if (key === 'instanceUrl' && typeof value === 'string' && value.includes('environment variables')) {
-                      return [key, instanceUrl]
+                  if (key === 'apiBaseUrl' && typeof value === 'string' && value.includes('environment variables')) {
+                      return [key, apiBaseUrl]
                   }
                   if (key === 'token' && typeof value === 'string' && value.includes('environment variables')) {
                       return [key, token ? `${token.substring(0, 20)}...` : 'undefined']
@@ -163,9 +163,9 @@ export default function App() {
                 </select>
                 {currentExample && <span style={{ color: '#666', fontSize: '13px' }}>{currentExample.description}</span>}
 
-                {/* Instance URL Display */}
+                {/* API Base URL Display */}
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '12px', color: '#999' }}>{instanceUrl}</span>
+                    <span style={{ fontSize: '12px', color: '#999' }}>{apiBaseUrl}</span>
                 </div>
             </div>
 
