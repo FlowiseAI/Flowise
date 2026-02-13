@@ -11,6 +11,7 @@ interface UseApiReturn<T> extends UseApiState<T> {
     reset: () => void
 }
 
+// TODO: Review if still necessary — package uses ApiContext + dedicated hooks (useNodesApi, useChatflowsApi) instead
 /**
  * Hook for managing API call state
  * @param apiFunc - The API function to call

@@ -15,6 +15,7 @@ export function getUniqueNodeId(nodeData: NodeData, nodes: FlowNode[]): string {
     return baseId
 }
 
+// TODO: Integrate with node drop/creation flow to assign unique labels per node type
 /**
  * Generate a unique node label based on existing nodes
  */
@@ -33,6 +34,7 @@ export function getUniqueNodeLabel(nodeData: NodeData, nodes: FlowNode[]): strin
     return `${nodeData.label} ${suffix}`
 }
 
+// TODO: Integrate with node drop/creation flow to populate default input values
 /**
  * Initialize default values for node parameters
  */

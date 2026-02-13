@@ -27,7 +27,9 @@ export function createNodesApi(client: AxiosInstance) {
          * Get node icon URL
          */
         getNodeIconUrl: (instanceUrl: string, nodeName: string): string => {
-            return `${instanceUrl}/api/v1/node-icon/${nodeName}`
+            // Strip trailing slashes so we never get double slashes in the URL.
+            const base = instanceUrl.replace(/\/+$/, '')
+            return `${base}/api/v1/node-icon/${nodeName}`
         }
     }
 }

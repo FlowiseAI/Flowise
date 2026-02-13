@@ -135,6 +135,7 @@ function detectCycle(nodes: FlowNode[], edges: FlowEdge[]): boolean {
     return false
 }
 
+// TODO: Integrate with per-node inline validation to surface errors on individual nodes in the canvas
 /**
  * Check if a specific node is valid
  */

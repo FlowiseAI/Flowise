@@ -19,6 +19,7 @@ export interface EditNodeDialogProps {
     onCancel: () => void
 }
 
+// TODO: Integrate with canvas node click/double-click to open this dialog for editing node properties
 /**
  * Dialog for editing node properties
  */
