@@ -1,11 +1,10 @@
-import { DEFAULT_AGENTFLOW_NODES } from '../node-config'
-
 import { makeNodeData } from '@test-utils/factories'
+
+import { DEFAULT_AGENTFLOW_NODES } from '../node-config'
 
 import { filterNodesByComponents, groupNodesByCategory, isAgentflowNode } from './nodeFilters'
 
-const makeNode = (name: string, category?: string) =>
-    makeNodeData({ name, label: name, category: category || 'Agent Flows' })
+const makeNode = (name: string, category?: string) => makeNodeData({ name, label: name, category: category || 'Agent Flows' })
 
 describe('filterNodesByComponents', () => {
     const allNodes = [

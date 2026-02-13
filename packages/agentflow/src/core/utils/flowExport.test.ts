@@ -1,6 +1,6 @@
-import type { FlowEdge, FlowNode } from '../types'
-
 import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
+
+import type { FlowEdge, FlowNode } from '../types'
 
 import { generateExportFlowData } from './flowExport'
 

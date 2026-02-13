@@ -1,11 +1,10 @@
-import type { FlowEdge, FlowNode } from '../types'
-
 import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
+
+import type { FlowEdge, FlowNode } from '../types'
 
 import { validateFlow, validateNode } from './flowValidation'
 
-const makeNode = (id: string, name: string, label?: string) =>
-    makeFlowNode(id, { data: { id, name, label: label || name } })
+const makeNode = (id: string, name: string, label?: string) => makeFlowNode(id, { data: { id, name, label: label || name } })
 
 const makeEdge = makeFlowEdge
 

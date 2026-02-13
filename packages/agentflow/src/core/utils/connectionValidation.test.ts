@@ -1,6 +1,6 @@
-import type { FlowEdge } from '../types'
-
 import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
+
+import type { FlowEdge } from '../types'
 
 import { isValidConnectionAgentflowV2 } from './connectionValidation'
 

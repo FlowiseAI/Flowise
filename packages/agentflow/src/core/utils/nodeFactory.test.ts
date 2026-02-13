@@ -1,11 +1,10 @@
-import type { NodeData } from '../types'
-
 import { makeFlowNode, makeNodeData } from '@test-utils/factories'
+
+import type { NodeData } from '../types'
 
 import { getUniqueNodeId, getUniqueNodeLabel, initializeDefaultNodeData, initNode } from './nodeFactory'
 
-const makeNode = (id: string, name: string, label: string) =>
-    makeFlowNode(id, { data: { id, name, label } })
+const makeNode = (id: string, name: string, label: string) => makeFlowNode(id, { data: { id, name, label } })
 
 describe('getUniqueNodeId', () => {
     it('should return name_0 when no nodes exist', () => {

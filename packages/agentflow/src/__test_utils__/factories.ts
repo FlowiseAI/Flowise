@@ -47,4 +47,4 @@ export const makeFlowEdge = (source: string, target: string, overrides?: Partial
  * makeNodeData({ name: 'llmAgentflow', label: 'LLM', category: 'AI' })
  */
 export const makeNodeData = (overrides?: Partial<NodeData>): NodeData =>
-    ({ id: '', name: 'testNode', label: 'Test Node', ...overrides }) as NodeData
+    ({ id: '', name: 'testNode', label: 'Test Node', ...overrides } as NodeData)

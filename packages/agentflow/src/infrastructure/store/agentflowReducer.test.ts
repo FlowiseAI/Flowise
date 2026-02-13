@@ -1,11 +1,10 @@
-import type { AgentflowAction, AgentflowState, FlowNode } from '../../core/types'
-
 import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
+
+import type { AgentflowAction, AgentflowState, FlowNode } from '../../core/types'
 
 import { agentflowReducer, normalizeNodes } from './agentflowReducer'
 
-const makeNode = (id: string, type = 'agentFlow', overrides?: Partial<FlowNode>) =>
-    makeFlowNode(id, { type, ...overrides })
+const makeNode = (id: string, type = 'agentFlow', overrides?: Partial<FlowNode>) => makeFlowNode(id, { type, ...overrides })
 
 const makeEdge = makeFlowEdge
 
