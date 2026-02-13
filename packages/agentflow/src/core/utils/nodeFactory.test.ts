@@ -1,13 +1,11 @@
-import type { FlowNode, NodeData } from '../types'
+import type { NodeData } from '../types'
+
+import { makeFlowNode, makeNodeData } from '@test-utils/factories'
 
 import { getUniqueNodeId, getUniqueNodeLabel, initializeDefaultNodeData, initNode } from './nodeFactory'
 
-const makeNode = (id: string, name: string, label: string): FlowNode => ({
-    id,
-    type: 'customNode',
-    position: { x: 0, y: 0 },
-    data: { id, name, label }
-})
+const makeNode = (id: string, name: string, label: string) =>
+    makeFlowNode(id, { data: { id, name, label } })
 
 describe('getUniqueNodeId', () => {
     it('should return name_0 when no nodes exist', () => {
@@ -75,9 +73,6 @@ describe('initializeDefaultNodeData', () => {
         })
     })
 })
-
-const makeNodeData = (overrides?: Partial<NodeData>): NodeData =>
-    ({ id: '', name: 'testNode', label: 'Test Node', ...overrides } as NodeData)
 
 describe('initNode', () => {
     it('should set the new node id on the returned data', () => {

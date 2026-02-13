@@ -1,4 +1,4 @@
-import type { NodeData } from '../../core'
+import { makeNodeData } from '@test-utils/factories'
 
 import { debounce, fuzzyScore, searchNodes } from './search'
 
@@ -67,8 +67,8 @@ describe('fuzzyScore', () => {
 })
 
 describe('searchNodes', () => {
-    const makeNode = (name: string, label: string, category?: string, description?: string): NodeData =>
-        ({ id: '', name, label, category, description } as NodeData)
+    const makeNode = (name: string, label: string, category?: string, description?: string) =>
+        makeNodeData({ name, label, category, description })
 
     const nodes = [
         makeNode('llmAgentflow', 'LLM', 'Agent Flows', 'Language model node'),

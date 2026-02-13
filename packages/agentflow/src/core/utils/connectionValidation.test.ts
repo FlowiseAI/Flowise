@@ -1,21 +1,12 @@
-import type { FlowEdge, FlowNode } from '../types'
+import type { FlowEdge } from '../types'
+
+import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
 
 import { isValidConnectionAgentflowV2 } from './connectionValidation'
 
 describe('isValidConnectionAgentflowV2', () => {
-    const makeNode = (id: string): FlowNode => ({
-        id,
-        type: 'customNode',
-        position: { x: 0, y: 0 },
-        data: { id, name: id, label: id }
-    })
-
-    const makeEdge = (source: string, target: string): FlowEdge => ({
-        id: `${source}-${target}`,
-        source,
-        target,
-        type: 'default'
-    })
+    const makeNode = makeFlowNode
+    const makeEdge = makeFlowEdge
 
     it('should reject self-connections', () => {
         const nodes = [makeNode('a')]

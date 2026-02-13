@@ -1,20 +1,13 @@
 import type { FlowEdge, FlowNode } from '../types'
 
+import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
+
 import { validateFlow, validateNode } from './flowValidation'
 
-const makeNode = (id: string, name: string, label?: string): FlowNode => ({
-    id,
-    type: 'customNode',
-    position: { x: 0, y: 0 },
-    data: { id, name, label: label || name }
-})
+const makeNode = (id: string, name: string, label?: string) =>
+    makeFlowNode(id, { data: { id, name, label: label || name } })
 
-const makeEdge = (source: string, target: string): FlowEdge => ({
-    id: `${source}-${target}`,
-    source,
-    target,
-    type: 'default'
-})
+const makeEdge = makeFlowEdge
 
 describe('validateFlow', () => {
     it('should return error for empty flow', () => {

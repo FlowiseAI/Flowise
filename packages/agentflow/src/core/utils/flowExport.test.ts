@@ -1,24 +1,14 @@
 import type { FlowEdge, FlowNode } from '../types'
 
+import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
+
 import { generateExportFlowData } from './flowExport'
 
-const makeNode = (id: string, overrides?: Partial<FlowNode>): FlowNode => ({
-    id,
-    type: 'customNode',
-    position: { x: 0, y: 0 },
-    selected: true,
-    data: { id, name: 'testNode', label: 'Test' },
-    ...overrides
-})
+const makeNode = (id: string, overrides?: Partial<FlowNode>) =>
+    makeFlowNode(id, { selected: true, data: { id, name: 'testNode', label: 'Test' }, ...overrides })
 
-const makeEdge = (source: string, target: string, overrides?: Partial<FlowEdge>): FlowEdge => ({
-    id: `${source}-${target}`,
-    source,
-    target,
-    type: 'default',
-    selected: true,
-    ...overrides
-})
+const makeEdge = (source: string, target: string, overrides?: Partial<FlowEdge>) =>
+    makeFlowEdge(source, target, { selected: true, ...overrides })
 
 describe('generateExportFlowData', () => {
     it('should deselect all nodes and edges', () => {
