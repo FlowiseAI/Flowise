@@ -24,6 +24,6 @@ module.exports = {
         'no-undef': 'off',
         'no-console': [process.env.CI ? 'error' : 'warn', { allow: ['warn', 'error', 'info'] }],
         'prettier/prettier': 'error',
-        "no-control-regex": 0 // Used to match control regex's in user input
+        'no-control-regex': 0 // Used to match control regex's in user input
     }
 }
