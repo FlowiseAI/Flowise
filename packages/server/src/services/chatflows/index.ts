@@ -359,7 +359,7 @@ const updateChatflow = async (
 }
 
 // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
-// Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
+// Safe as public endpoint as chatbotConfig doesn't contain sensitive credential, do not return dbResponse.flowData as it does have sensitive data
 const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -388,7 +388,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
                 }
                 delete parsedConfig.allowedOrigins
                 delete parsedConfig.allowedOriginsError
-                return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData, isTTSEnabled }
+                return { ...parsedConfig, uploads: uploadsConfig, isTTSEnabled }
             } catch (e) {
                 throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
             }
