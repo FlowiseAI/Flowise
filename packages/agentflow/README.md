@@ -58,15 +58,19 @@ pnpm install
 # Build the package
 pnpm build
 
+# Run tests
+pnpm test
+
 # Run examples
 cd examples && pnpm install && pnpm dev
 ```
 
-Visit the [examples](./examples) directory for more usage patterns.
+Visit the [examples](./examples) directory for more usage patterns. See [TESTS.md](./TESTS.md) for the full test plan and coverage status.
 
 ## Documentation
 
 -   [ARCHITECTURE.md](./ARCHITECTURE.md) - Internal architecture and design patterns
+-   [TESTS.md](./TESTS.md) - Test plan, coverage tiers, and configuration
 -   [Examples](./examples/README.md) - Usage examples and demos
 
 ## Contributing
