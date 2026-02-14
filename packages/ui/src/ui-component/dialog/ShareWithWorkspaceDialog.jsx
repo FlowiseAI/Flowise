@@ -209,7 +209,7 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
                     <Button size='small' variant={selectAll ? 'outlined' : 'contained'} onClick={handleSelectAll}>
                         Check All ({outputSchema.length})
                     </Button>
-                    <Button size='small' variant='outlined' onClick={handleDeselectAll}>
+                    <Button size='small' variant={selectAll ? 'contained' : 'outlined'} onClick={handleDeselectAll}>
                         Uncheck All
                     </Button>
                 </Stack>
