@@ -117,8 +117,15 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 
+    useEffect(() => {
+        if (outputSchema.length > 0) {
+            setSelectAll(outputSchema.every((row) => row.shared))
+        } else {
+            setSelectAll(false)
+        }
+    }, [outputSchema])
+
     const handleSelectAll = () => {
-        const allIds = outputSchema.map((row) => row.id)
         setOutputSchema((prev) => prev.map((row) => ({ ...row, shared: true })))
         setSelectAll(true)
     }
