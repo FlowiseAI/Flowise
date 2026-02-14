@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import { styled, alpha } from '@mui/material/styles'
