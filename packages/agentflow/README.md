@@ -1,7 +1,7 @@
 # @flowise/agentflow
 
 [![Version](https://img.shields.io/npm/v/@flowise/agentflow)](https://www.npmjs.com/package/@flowise/agentflow)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](../../LICENSE.md)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md)
 
 > Embeddable React component for building and visualizing AI agent workflows
 
@@ -186,7 +186,7 @@ npm publish --tag dev
 npm publish
 ```
 
-> The `prepublishOnly` script automatically runs `pnpm build` before every publish, so stale dist files are never uploaded.
+> The `prepublishOnly` script automatically runs `clean` and `build` before every publish, so stale dist files are never uploaded.
 
 ## Documentation
 
@@ -200,7 +200,7 @@ This package follows a feature-based architecture with clear separation of conce
 
 ## License
 
-Apache-2.0 — see the repository root [LICENSE.md](../../LICENSE.md) for details.
+Apache-2.0 — see the repository root [LICENSE.md](https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md) for details.
 
 ---
 

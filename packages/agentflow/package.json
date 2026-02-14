@@ -55,7 +55,7 @@
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage",
         "nuke": "rimraf dist node_modules .turbo",
-        "prepublishOnly": "pnpm clean && pnpm build"
+        "prepublishOnly": "npm run clean && npm run build"
     },
     "peerDependencies": {
         "react": "^18.2.0",
