@@ -76,7 +76,7 @@ const StyledMenu = styled((props) => (
 }))
 
 export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi, currentPage, pageLimit }) {
-    const navigate = useNavigate();
+    const navigate = useNavigate()
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
