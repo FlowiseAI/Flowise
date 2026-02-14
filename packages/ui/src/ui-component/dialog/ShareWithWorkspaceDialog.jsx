@@ -47,6 +47,7 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
     const [outputSchema, setOutputSchema] = useState([])
 
     const [name, setName] = useState('')
+    const [selectAll, setSelectAll] = useState(false)
 
     const onRowUpdate = (newRow) => {
         setTimeout(() => {
@@ -115,6 +116,17 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
         else dispatch({ type: HIDE_CANVAS_DIALOG })
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
+
+    const handleSelectAll = () => {
+        const allIds = outputSchema.map((row) => row.id)
+        setOutputSchema((prev) => prev.map((row) => ({ ...row, shared: true })))
+        setSelectAll(true)
+    }
+
+    const handleDeselectAll = () => {
+        setOutputSchema((prev) => prev.map((row) => ({ ...row, shared: false })))
+        setSelectAll(false)
+    }
 
     const shareItemRequest = async () => {
         try {
@@ -186,6 +198,14 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
                     </Stack>
                     <OutlinedInput id='name' type='string' disabled={true} fullWidth placeholder={name} value={name} name='name' />
                 </Box>
+                <Stack direction='row' justifyContent='space-between' sx={{ p: 2, pb: 1 }}>
+                    <Button size='small' variant={selectAll ? 'outlined' : 'contained'} onClick={handleSelectAll}>
+                        Check All ({outputSchema.length})
+                    </Button>
+                    <Button size='small' variant='outlined' onClick={handleDeselectAll}>
+                        Uncheck All
+                    </Button>
+                </Stack>
                 <Box sx={{ p: 2 }}>
                     <Grid columns={columns} rows={outputSchema} onRowUpdate={onRowUpdate} />
                 </Box>
