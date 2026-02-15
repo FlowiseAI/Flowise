@@ -21,7 +21,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true"></a>
 
-Flowise includes native tracing integrations for providers such as LangFuse, Arize/Phoenix, and Opik.
+Flowise includes native tracing integrations for providers such as [LangFuse](https://langfuse.com/docs/integrations/flowise), [Arize/Phoenix](https://docs.arize.com/phoenix), and [Opik](https://www.comet.com/docs/opik/integrations/flowise).
 
 ## 📚 Table of Contents
 
