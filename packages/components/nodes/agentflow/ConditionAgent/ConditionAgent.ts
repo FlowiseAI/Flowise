@@ -406,15 +406,17 @@ class ConditionAgent_Agentflow implements INode {
                 }
             }
 
+            const normalizedOutput = calledOutputName.toLowerCase().trim()
+
             // try exact match first
             let matchedScenarioIndex = _conditionAgentScenarios.findIndex(
-                (scenario) => calledOutputName.toLowerCase() === scenario.scenario.toLowerCase()
+                (scenario) => scenario.scenario.toLowerCase() === normalizedOutput
             )
 
             // fallback: check if LLM returned a partial/abbreviated scenario name
             if (matchedScenarioIndex === -1) {
                 matchedScenarioIndex = _conditionAgentScenarios.findIndex(
-                    (scenario) => scenario.scenario.toLowerCase().startsWith(calledOutputName.toLowerCase().trim())
+                    (scenario) => scenario.scenario.toLowerCase().startsWith(normalizedOutput)
                 )
             }
 
@@ -422,8 +424,8 @@ class ConditionAgent_Agentflow implements INode {
             if (matchedScenarioIndex === -1) {
                 matchedScenarioIndex = _conditionAgentScenarios.findIndex(
                     (scenario) =>
-                        scenario.scenario.toLowerCase().includes(calledOutputName.toLowerCase().trim()) ||
-                        calledOutputName.toLowerCase().trim().includes(scenario.scenario.toLowerCase())
+                        scenario.scenario.toLowerCase().includes(normalizedOutput) ||
+                        normalizedOutput.includes(scenario.scenario.toLowerCase())
                 )
             }
 
