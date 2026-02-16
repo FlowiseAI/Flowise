@@ -1102,10 +1102,16 @@ const executeNode = async ({
         }
 
         // Resolve variables in node data
+        let formValue: Record<string, any> = {}
+        if (isObjectNotEmpty(incomingInput.form)) {
+            formValue = incomingInput.form as Record<string, any>
+        } else if (isObjectNotEmpty(agentflowRuntime.form)) {
+            formValue = agentflowRuntime.form as Record<string, any>
+        }
         const reactFlowNodeData: INodeData = await resolveVariables(
             flowNodeData,
             incomingInput.question ?? '',
-            incomingInput.form ?? agentflowRuntime.form ?? {},
+            formValue,
             flowConfig,
             availableVariables,
             variableOverrides,
@@ -2334,4 +2340,11 @@ export const executeAgentFlow = async ({
     }
 
     return result
+}
+
+/**
+ * Utility function to check if an object is not empty, null, or undefined
+ */
+export const isObjectNotEmpty = (obj: any): boolean => {
+    return obj && Object.keys(obj).length > 0 && obj.constructor === Object
 }
