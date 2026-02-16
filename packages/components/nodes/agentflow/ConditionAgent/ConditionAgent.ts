@@ -406,10 +406,32 @@ class ConditionAgent_Agentflow implements INode {
                 }
             }
 
-            // Find the first exact match
-            const matchedScenarioIndex = _conditionAgentScenarios.findIndex(
+            // try exact match first
+            let matchedScenarioIndex = _conditionAgentScenarios.findIndex(
                 (scenario) => calledOutputName.toLowerCase() === scenario.scenario.toLowerCase()
             )
+
+            // fallback: check if LLM returned a partial/abbreviated scenario name
+            if (matchedScenarioIndex === -1) {
+                matchedScenarioIndex = _conditionAgentScenarios.findIndex(
+                    (scenario) => scenario.scenario.toLowerCase().startsWith(calledOutputName.toLowerCase().trim())
+                )
+            }
+
+            // further fallback: substring match in either direction
+            if (matchedScenarioIndex === -1) {
+                matchedScenarioIndex = _conditionAgentScenarios.findIndex(
+                    (scenario) =>
+                        scenario.scenario.toLowerCase().includes(calledOutputName.toLowerCase().trim()) ||
+                        calledOutputName.toLowerCase().trim().includes(scenario.scenario.toLowerCase())
+                )
+            }
+
+            // last resort: if still no match, use the last scenario as an "else" branch
+            // this prevents the flow from silently dying with no response
+            if (matchedScenarioIndex === -1) {
+                matchedScenarioIndex = _conditionAgentScenarios.length - 1
+            }
 
             const conditions = _conditionAgentScenarios.map((scenario, index) => {
                 return {
