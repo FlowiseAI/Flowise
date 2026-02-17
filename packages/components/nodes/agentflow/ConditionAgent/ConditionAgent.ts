@@ -9,6 +9,7 @@ import {
 } from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { findBestScenarioIndex } from './matchScenario'
 
 class ConditionAgent_Agentflow implements INode {
     label: string
@@ -406,34 +407,7 @@ class ConditionAgent_Agentflow implements INode {
                 }
             }
 
-            const normalizedOutput = calledOutputName.toLowerCase().trim()
-
-            // try exact match first
-            let matchedScenarioIndex = _conditionAgentScenarios.findIndex(
-                (scenario) => scenario.scenario.toLowerCase() === normalizedOutput
-            )
-
-            // fallback: check if LLM returned a partial/abbreviated scenario name
-            if (matchedScenarioIndex === -1) {
-                matchedScenarioIndex = _conditionAgentScenarios.findIndex(
-                    (scenario) => scenario.scenario.toLowerCase().startsWith(normalizedOutput)
-                )
-            }
-
-            // further fallback: substring match in either direction
-            if (matchedScenarioIndex === -1) {
-                matchedScenarioIndex = _conditionAgentScenarios.findIndex(
-                    (scenario) =>
-                        scenario.scenario.toLowerCase().includes(normalizedOutput) ||
-                        normalizedOutput.includes(scenario.scenario.toLowerCase())
-                )
-            }
-
-            // last resort: if still no match, use the last scenario as an "else" branch
-            // this prevents the flow from silently dying with no response
-            if (matchedScenarioIndex === -1) {
-                matchedScenarioIndex = _conditionAgentScenarios.length - 1
-            }
+            const matchedScenarioIndex = findBestScenarioIndex(_conditionAgentScenarios, calledOutputName)
 
             const conditions = _conditionAgentScenarios.map((scenario, index) => {
                 return {
