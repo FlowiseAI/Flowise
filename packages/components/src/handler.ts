@@ -1400,25 +1400,83 @@ export class AnalyticHandler {
         return returnIds
     }
 
-    async onLLMEnd(returnIds: ICommonObject, output: string) {
+    async onLLMEnd(returnIds: ICommonObject, output: string | ICommonObject) {
+        // Extract content, usage metadata, and model name from output
+        // Support both string (backward compatible) and structured object formats
+        let outputText: string
+        let usageMetadata: ICommonObject | undefined
+        let modelName: string | undefined
+
+        if (typeof output === 'string') {
+            outputText = output
+        } else {
+            // Extract text content
+            outputText = output.content ?? ''
+
+            // Extract usage metadata (supports both LangChain and OpenAI field names)
+            usageMetadata = output.usageMetadata ?? output.usage_metadata
+            if (usageMetadata) {
+                // Normalize field names for consistent access
+                usageMetadata = {
+                    input_tokens: usageMetadata.input_tokens ?? usageMetadata.prompt_tokens,
+                    output_tokens: usageMetadata.output_tokens ?? usageMetadata.completion_tokens,
+                    total_tokens: usageMetadata.total_tokens
+                }
+            }
+
+            // Extract model name from response metadata
+            const responseMetadata = output.responseMetadata ?? output.response_metadata
+            if (responseMetadata) {
+                modelName = responseMetadata.model ?? responseMetadata.model_name ?? responseMetadata.modelId
+            }
+        }
+
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
             const llmRun: RunTree | undefined = this.handlers['langSmith'].llmRun[returnIds['langSmith'].llmRun]
             if (llmRun) {
-                await llmRun.end({
-                    outputs: {
-                        generations: [output]
+                const outputs: ICommonObject = {
+                    generations: [outputText]
+                }
+                // Include token usage and model info if available
+                if (usageMetadata || modelName) {
+                    outputs.llm_output = {
+                        ...(usageMetadata && {
+                            token_usage: {
+                                prompt_tokens: usageMetadata.input_tokens,
+                                completion_tokens: usageMetadata.output_tokens,
+                                total_tokens: usageMetadata.total_tokens
+                            }
+                        }),
+                        ...(modelName && { model_name: modelName })
                     }
-                })
+                }
+                await llmRun.end({ outputs })
                 await llmRun.patchRun()
             }
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langFuse')) {
-            const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse'].generation]
+            const generation: LangfuseGenerationClient | undefined = this.handlers['langFuse'].generation[returnIds['langFuse']?.generation]
             if (generation) {
-                generation.end({
-                    output: output
-                })
+                const endPayload: ICommonObject = {
+                    output: outputText
+                }
+                // Add model name if available
+                if (modelName) {
+                    endPayload.model = modelName
+                }
+                // Add usage data if available (using Langfuse's OpenAIUsage format)
+                if (usageMetadata) {
+                    endPayload.usage = {
+                        promptTokens: usageMetadata.input_tokens,
+                        completionTokens: usageMetadata.output_tokens,
+                        totalTokens: usageMetadata.total_tokens
+                    }
+                }
+                generation.end(endPayload)
+                // Flush to ensure the generation update is sent before the request completes
+                const langfuse: Langfuse = this.handlers['langFuse'].client
+                await langfuse.flushAsync()
             }
         }
 
@@ -1427,27 +1485,64 @@ export class AnalyticHandler {
             const monitor = this.handlers['lunary'].client
 
             if (monitor && llmEventId) {
-                await monitor.trackEvent('llm', 'end', {
+                const eventData: ICommonObject = {
                     runId: llmEventId,
-                    output
-                })
+                    output: outputText
+                }
+                // Add token usage if available
+                if (usageMetadata) {
+                    eventData.tokensUsage = {
+                        prompt: usageMetadata.input_tokens,
+                        completion: usageMetadata.output_tokens
+                    }
+                }
+                if (modelName) {
+                    eventData.model = modelName
+                }
+                await monitor.trackEvent('llm', 'end', eventData)
             }
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
             const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
             if (span) {
-                span.end({
-                    output: autoconvertTypedValues(output)
-                })
+                const endPayload: ICommonObject = {
+                    output: autoconvertTypedValues(outputText)
+                }
+                // Add metrics if usage available
+                if (usageMetadata) {
+                    endPayload.metrics = {
+                        promptTokens: usageMetadata.input_tokens,
+                        completionTokens: usageMetadata.output_tokens
+                    }
+                }
+                if (modelName) {
+                    endPayload.model = modelName
+                }
+                span.end(endPayload)
             }
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'arize')) {
             const llmSpan: Span | undefined = this.handlers['arize'].llmSpan[returnIds['arize'].llmSpan]
             if (llmSpan) {
-                llmSpan.setAttribute('output.value', JSON.stringify(output))
+                llmSpan.setAttribute('output.value', JSON.stringify(outputText))
                 llmSpan.setAttribute('output.mime_type', 'application/json')
+                // Add token usage attributes
+                if (usageMetadata) {
+                    if (usageMetadata.input_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
+                    }
+                    if (usageMetadata.output_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.completion', usageMetadata.output_tokens)
+                    }
+                    if (usageMetadata.total_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.total', usageMetadata.total_tokens)
+                    }
+                }
+                if (modelName) {
+                    llmSpan.setAttribute('llm.model_name', modelName)
+                }
                 llmSpan.setStatus({ code: SpanStatusCode.OK })
                 llmSpan.end()
             }
@@ -1456,8 +1551,23 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'phoenix')) {
             const llmSpan: Span | undefined = this.handlers['phoenix'].llmSpan[returnIds['phoenix'].llmSpan]
             if (llmSpan) {
-                llmSpan.setAttribute('output.value', JSON.stringify(output))
+                llmSpan.setAttribute('output.value', JSON.stringify(outputText))
                 llmSpan.setAttribute('output.mime_type', 'application/json')
+                // Add token usage attributes
+                if (usageMetadata) {
+                    if (usageMetadata.input_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
+                    }
+                    if (usageMetadata.output_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.completion', usageMetadata.output_tokens)
+                    }
+                    if (usageMetadata.total_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.total', usageMetadata.total_tokens)
+                    }
+                }
+                if (modelName) {
+                    llmSpan.setAttribute('llm.model_name', modelName)
+                }
                 llmSpan.setStatus({ code: SpanStatusCode.OK })
                 llmSpan.end()
             }
@@ -1466,8 +1576,23 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
             const llmSpan: Span | undefined = this.handlers['opik'].llmSpan[returnIds['opik'].llmSpan]
             if (llmSpan) {
-                llmSpan.setAttribute('output.value', JSON.stringify(output))
+                llmSpan.setAttribute('output.value', JSON.stringify(outputText))
                 llmSpan.setAttribute('output.mime_type', 'application/json')
+                // Add token usage attributes
+                if (usageMetadata) {
+                    if (usageMetadata.input_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
+                    }
+                    if (usageMetadata.output_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.completion', usageMetadata.output_tokens)
+                    }
+                    if (usageMetadata.total_tokens !== undefined) {
+                        llmSpan.setAttribute('llm.token_count.total', usageMetadata.total_tokens)
+                    }
+                }
+                if (modelName) {
+                    llmSpan.setAttribute('llm.model_name', modelName)
+                }
                 llmSpan.setStatus({ code: SpanStatusCode.OK })
                 llmSpan.end()
             }
