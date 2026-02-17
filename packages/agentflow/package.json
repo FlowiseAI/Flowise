@@ -27,8 +27,11 @@
         "dev:example": "vite --config examples/vite.config.ts",
         "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-        "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx}\"",
-        "lint:fix": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx}\" --fix",
+        "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx,json,md}\"",
+        "lint:fix": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx,json,md}\" --fix",
+        "test": "jest",
+        "test:watch": "jest --watch",
+        "test:coverage": "jest --coverage",
         "nuke": "rimraf dist node_modules .turbo"
     },
     "peerDependencies": {
@@ -47,6 +50,10 @@
         "uuid": "^9.0.1"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^14.3.1",
+        "@testing-library/user-event": "^14.5.2",
+        "@types/jest": "^29.5.14",
         "@types/lodash": "^4.14.195",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
@@ -56,7 +63,10 @@
         "@vitejs/plugin-react": "^4.2.0",
         "eslint-plugin-import": "^2.29.0",
         "eslint-plugin-simple-import-sort": "^12.0.0",
+        "jest": "^29.7.0",
+        "jest-environment-jsdom": "^29.7.0",
         "rimraf": "^5.0.5",
+        "ts-jest": "^29.3.2",
         "typescript": "^5.4.5",
         "vite": "^5.0.2",
         "vite-plugin-dts": "^3.7.0"

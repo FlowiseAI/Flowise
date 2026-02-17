@@ -1,6 +1,7 @@
 dist
 node_modules
 build
+coverage
 *.config.ts
 *.config.js
 vite.config.ts

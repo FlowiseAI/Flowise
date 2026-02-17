@@ -25,7 +25,7 @@ export interface IterationNodeProps {
 function IterationNodeComponent({ data }: IterationNodeProps) {
     const theme = useTheme()
     const { isDarkMode } = useConfigContext()
-    const { instanceUrl } = useApiContext()
+    const { apiBaseUrl } = useApiContext()
     const { state } = useAgentflowContext()
     const ref = useRef<HTMLDivElement>(null)
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
@@ -83,7 +83,7 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <NodeToolbar align='start' isVisible={true}>
                 <Box style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
-                    <NodeIcon data={data} instanceUrl={instanceUrl} />
+                    <NodeIcon data={data} apiBaseUrl={apiBaseUrl} />
                     <Typography
                         sx={{
                             fontSize: '0.85rem',

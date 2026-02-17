@@ -47,7 +47,7 @@ export interface AddNodesDrawerProps {
  */
 function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDrawerProps) {
     const theme = useTheme()
-    const { instanceUrl } = useApiContext()
+    const { apiBaseUrl } = useApiContext()
     const { isDarkMode: _isDarkMode } = useConfigContext()
 
     const [searchValue, setSearchValue] = useState('')
@@ -331,7 +331,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                                                                                                     objectFit: 'contain'
                                                                                                 }}
                                                                                                 alt={node.name}
-                                                                                                src={`${instanceUrl}/api/v1/node-icon/${node.name}`}
+                                                                                                src={`${apiBaseUrl}/api/v1/node-icon/${node.name}`}
                                                                                             />
                                                                                         </div>
                                                                                     </ListItemAvatar>

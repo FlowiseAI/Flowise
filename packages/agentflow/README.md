@@ -43,11 +43,93 @@ import '@flowise/agentflow/flowise.css'
 export default function App() {
     return (
         <div style={{ width: '100vw', height: '100vh' }}>
-            <Agentflow instanceUrl='http://localhost:3000' token='your-api-key' />
+            <Agentflow apiBaseUrl='http://localhost:3000' token='your-api-key' />
         </div>
     )
 }
 ```
+
+### With Initial Flow Data and Callbacks
+
+```tsx
+import { useRef } from 'react'
+
+import { Agentflow, type AgentFlowInstance, type FlowData } from '@flowise/agentflow'
+
+import '@flowise/agentflow/flowise.css'
+
+export default function App() {
+    const ref = useRef<AgentFlowInstance>(null)
+
+    const initialFlow: FlowData = {
+        nodes: [
+            {
+                id: 'startAgentflow_0',
+                type: 'agentflowNode',
+                position: { x: 100, y: 100 },
+                data: {
+                    id: 'startAgentflow_0',
+                    name: 'startAgentflow',
+                    label: 'Start',
+                    color: '#7EE787',
+                    hideInput: true,
+                    outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
+                }
+            }
+        ],
+        edges: [],
+        viewport: { x: 0, y: 0, zoom: 1 }
+    }
+
+    return (
+        <div style={{ width: '100vw', height: '100vh' }}>
+            <Agentflow
+                ref={ref}
+                apiBaseUrl='http://localhost:3000'
+                token='your-api-key'
+                initialFlow={initialFlow}
+                onFlowChange={(flow) => console.log('Flow changed:', flow)}
+                onSave={(flow) => console.log('Flow saved:', flow)}
+            />
+        </div>
+    )
+}
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `apiBaseUrl` | `string` | **(required)** | Flowise API server endpoint |
+| `token` | `string` | — | Authentication token for API calls |
+| `initialFlow` | `FlowData` | — | Initial flow data to render (uncontrolled — only used on mount) |
+| `flowId` | `string` | — | Flow ID for loading an existing flow from the API |
+| `components` | `string[]` | — | Restrict which node types appear in the palette |
+| `onFlowChange` | `(flow: FlowData) => void` | — | Called when the flow changes (node/edge add, remove, move) |
+| `onSave` | `(flow: FlowData) => void` | — | Called when the user triggers a save |
+| `onFlowGenerated` | `(flow: FlowData) => void` | — | Called when a flow is generated via AI |
+| `theme` | `'light' \| 'dark' \| 'system'` | `'system'` | Theme override |
+| `readOnly` | `boolean` | `false` | Disable editing (nodes not draggable/connectable) |
+| `showDefaultHeader` | `boolean` | `true` | Show built-in header (ignored if `renderHeader` provided) |
+| `showDefaultPalette` | `boolean` | `true` | Show built-in node palette |
+| `enableGenerator` | `boolean` | `true` | Show the AI flow generator button |
+| `renderHeader` | `(props: HeaderRenderProps) => ReactNode` | — | Custom header renderer |
+| `renderNodePalette` | `(props: PaletteRenderProps) => ReactNode` | — | Custom node palette renderer |
+
+### Imperative Methods (via `ref`)
+
+| Method | Return Type | Description |
+|--------|-------------|-------------|
+| `getFlow()` | `FlowData` | Get current flow data |
+| `toJSON()` | `string` | Export flow as JSON string |
+| `validate()` | `ValidationResult` | Validate the current flow |
+| `fitView()` | `void` | Fit all nodes into view |
+| `clear()` | `void` | Remove all nodes and edges |
+| `addNode(name)` | `void` | Add a node by component name |
+
+### Design Note
+
+`<Agentflow>` is an **uncontrolled component**. The `initialFlow` prop seeds the canvas state on mount, but the component owns its own state afterward. Use the `ref` for imperative access and `onFlowChange` to observe changes.
 
 ## Development
 
@@ -58,15 +140,19 @@ pnpm install
 # Build the package
 pnpm build
 
+# Run tests
+pnpm test
+
 # Run examples
 cd examples && pnpm install && pnpm dev
 ```
 
-Visit the [examples](./examples) directory for more usage patterns.
+Visit the [examples](./examples) directory for more usage patterns. See [TESTS.md](./TESTS.md) for the full test plan and coverage status.
 
 ## Documentation
 
 -   [ARCHITECTURE.md](./ARCHITECTURE.md) - Internal architecture and design patterns
+-   [TESTS.md](./TESTS.md) - Test plan, coverage tiers, and configuration
 -   [Examples](./examples/README.md) - Usage examples and demos
 
 ## Contributing

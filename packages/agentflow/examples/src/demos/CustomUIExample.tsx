@@ -10,7 +10,7 @@ import { useRef, useState } from 'react'
 import type { AgentFlowInstance, FlowData, HeaderRenderProps, PaletteRenderProps } from '@flowise/agentflow'
 import { Agentflow } from '@flowise/agentflow'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 const initialFlow: FlowData = {
     nodes: [
@@ -256,9 +256,9 @@ export function CustomUIExample() {
         <div style={{ width: '100%', height: '100vh' }}>
             <Agentflow
                 ref={agentflowRef}
-                instanceUrl={instanceUrl}
+                apiBaseUrl={apiBaseUrl}
                 token={token ?? undefined}
-                flow={initialFlow}
+                initialFlow={initialFlow}
                 renderHeader={(props) => <CustomHeader {...props} />}
                 renderNodePalette={(props) => <CustomPalette {...props} />}
                 showDefaultHeader={false}
@@ -273,9 +273,9 @@ export function CustomUIExample() {
 }
 
 export const CustomUIExampleProps = {
-    instanceUrl: '{from environment variables}',
+    apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    flow: 'FlowData',
+    initialFlow: 'FlowData',
     renderHeader: '(props: HeaderRenderProps) => ReactNode',
     renderNodePalette: '(props: PaletteRenderProps) => ReactNode',
     showDefaultHeader: false,

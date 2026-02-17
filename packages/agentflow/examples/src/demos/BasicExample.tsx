@@ -9,7 +9,7 @@ import { useRef, useState } from 'react'
 import type { AgentFlowInstance, FlowData, ValidationResult } from '@flowise/agentflow'
 import { Agentflow } from '@flowise/agentflow'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 // Example flow data
 const initialFlow: FlowData = {
@@ -102,9 +102,9 @@ export function BasicExample() {
             <div style={{ flex: 1 }}>
                 <Agentflow
                     ref={agentflowRef}
-                    instanceUrl={instanceUrl}
+                    apiBaseUrl={apiBaseUrl}
                     token={token ?? undefined}
-                    flow={initialFlow}
+                    initialFlow={initialFlow}
                     onFlowChange={handleFlowChange}
                     onSave={handleSave}
                     showDefaultHeader={true}
@@ -115,9 +115,9 @@ export function BasicExample() {
 }
 
 export const BasicExampleProps = {
-    instanceUrl: '{from environment variables}',
+    apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    flow: 'FlowData',
+    initialFlow: 'FlowData',
     onFlowChange: '(flow: FlowData) => void',
     onSave: '(flow: FlowData) => void',
     showDefaultHeader: true
