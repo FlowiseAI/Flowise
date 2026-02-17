@@ -736,6 +736,40 @@ export class AnalyticHandler {
         }
     }
 
+    /**
+     * Helper method to end an OpenTelemetry span with output, token usage, and model name attributes.
+     * Used by arize, phoenix, and opik providers.
+     */
+    private _endOtelSpan(
+        providerName: string,
+        returnIds: ICommonObject,
+        outputText: string,
+        usageMetadata?: { input_tokens?: number; output_tokens?: number; total_tokens?: number },
+        modelName?: string
+    ): void {
+        const llmSpan: Span | undefined = this.handlers[providerName]?.llmSpan?.[returnIds[providerName]?.llmSpan]
+        if (llmSpan) {
+            llmSpan.setAttribute('output.value', JSON.stringify(outputText))
+            llmSpan.setAttribute('output.mime_type', 'application/json')
+            if (usageMetadata) {
+                if (usageMetadata.input_tokens !== undefined) {
+                    llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
+                }
+                if (usageMetadata.output_tokens !== undefined) {
+                    llmSpan.setAttribute('llm.token_count.completion', usageMetadata.output_tokens)
+                }
+                if (usageMetadata.total_tokens !== undefined) {
+                    llmSpan.setAttribute('llm.token_count.total', usageMetadata.total_tokens)
+                }
+            }
+            if (modelName) {
+                llmSpan.setAttribute('llm.model_name', modelName)
+            }
+            llmSpan.setStatus({ code: SpanStatusCode.OK })
+            llmSpan.end()
+        }
+    }
+
     async init() {
         if (this.initialized) return
 
@@ -1439,15 +1473,24 @@ export class AnalyticHandler {
                 }
                 // Include token usage and model info if available
                 if (usageMetadata || modelName) {
-                    outputs.llm_output = {
-                        ...(usageMetadata && {
-                            token_usage: {
-                                prompt_tokens: usageMetadata.input_tokens,
-                                completion_tokens: usageMetadata.output_tokens,
-                                total_tokens: usageMetadata.total_tokens
-                            }
-                        }),
-                        ...(modelName && { model_name: modelName })
+                    outputs.llm_output = {}
+                    if (usageMetadata) {
+                        const token_usage: ICommonObject = {}
+                        if (usageMetadata.input_tokens !== undefined) {
+                            token_usage.prompt_tokens = usageMetadata.input_tokens
+                        }
+                        if (usageMetadata.output_tokens !== undefined) {
+                            token_usage.completion_tokens = usageMetadata.output_tokens
+                        }
+                        if (usageMetadata.total_tokens !== undefined) {
+                            token_usage.total_tokens = usageMetadata.total_tokens
+                        }
+                        if (Object.keys(token_usage).length > 0) {
+                            outputs.llm_output.token_usage = token_usage
+                        }
+                    }
+                    if (modelName) {
+                        outputs.llm_output.model_name = modelName
                     }
                 }
                 await llmRun.end({ outputs })
@@ -1524,78 +1567,15 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'arize')) {
-            const llmSpan: Span | undefined = this.handlers['arize'].llmSpan[returnIds['arize'].llmSpan]
-            if (llmSpan) {
-                llmSpan.setAttribute('output.value', JSON.stringify(outputText))
-                llmSpan.setAttribute('output.mime_type', 'application/json')
-                // Add token usage attributes
-                if (usageMetadata) {
-                    if (usageMetadata.input_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
-                    }
-                    if (usageMetadata.output_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.completion', usageMetadata.output_tokens)
-                    }
-                    if (usageMetadata.total_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.total', usageMetadata.total_tokens)
-                    }
-                }
-                if (modelName) {
-                    llmSpan.setAttribute('llm.model_name', modelName)
-                }
-                llmSpan.setStatus({ code: SpanStatusCode.OK })
-                llmSpan.end()
-            }
+            this._endOtelSpan('arize', returnIds, outputText, usageMetadata, modelName)
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'phoenix')) {
-            const llmSpan: Span | undefined = this.handlers['phoenix'].llmSpan[returnIds['phoenix'].llmSpan]
-            if (llmSpan) {
-                llmSpan.setAttribute('output.value', JSON.stringify(outputText))
-                llmSpan.setAttribute('output.mime_type', 'application/json')
-                // Add token usage attributes
-                if (usageMetadata) {
-                    if (usageMetadata.input_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
-                    }
-                    if (usageMetadata.output_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.completion', usageMetadata.output_tokens)
-                    }
-                    if (usageMetadata.total_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.total', usageMetadata.total_tokens)
-                    }
-                }
-                if (modelName) {
-                    llmSpan.setAttribute('llm.model_name', modelName)
-                }
-                llmSpan.setStatus({ code: SpanStatusCode.OK })
-                llmSpan.end()
-            }
+            this._endOtelSpan('phoenix', returnIds, outputText, usageMetadata, modelName)
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
-            const llmSpan: Span | undefined = this.handlers['opik'].llmSpan[returnIds['opik'].llmSpan]
-            if (llmSpan) {
-                llmSpan.setAttribute('output.value', JSON.stringify(outputText))
-                llmSpan.setAttribute('output.mime_type', 'application/json')
-                // Add token usage attributes
-                if (usageMetadata) {
-                    if (usageMetadata.input_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.prompt', usageMetadata.input_tokens)
-                    }
-                    if (usageMetadata.output_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.completion', usageMetadata.output_tokens)
-                    }
-                    if (usageMetadata.total_tokens !== undefined) {
-                        llmSpan.setAttribute('llm.token_count.total', usageMetadata.total_tokens)
-                    }
-                }
-                if (modelName) {
-                    llmSpan.setAttribute('llm.model_name', modelName)
-                }
-                llmSpan.setStatus({ code: SpanStatusCode.OK })
-                llmSpan.end()
-            }
+            this._endOtelSpan('opik', returnIds, outputText, usageMetadata, modelName)
         }
     }
 
