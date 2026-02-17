@@ -203,7 +203,7 @@ function AgentflowCanvas({
  * function App() {
  *   return (
  *     <Agentflow
- *       instanceUrl="https://flowise-url.com"
+ *       apiBaseUrl="https://flowise-url.com"
  *       token="your-auth-token"
  *       components={['agentAgentflow', 'llmAgentflow']}
  *     />
@@ -213,9 +213,9 @@ function AgentflowCanvas({
  */
 export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function Agentflow(props, ref) {
     const {
-        instanceUrl,
+        apiBaseUrl,
         token,
-        flow,
+        initialFlow,
         components,
         onFlowChange,
         onSave,
@@ -231,17 +231,17 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
 
     return (
         <AgentflowProvider
-            instanceUrl={instanceUrl}
+            apiBaseUrl={apiBaseUrl}
             token={token}
             theme={theme}
             components={components}
             readOnly={readOnly}
-            initialFlow={flow}
+            initialFlow={initialFlow}
         >
             <ReactFlowProvider>
                 <AgentflowCanvasWithRef
                     ref={ref}
-                    initialFlow={flow}
+                    initialFlow={initialFlow}
                     readOnly={readOnly}
                     onFlowChange={onFlowChange}
                     onSave={onSave}
