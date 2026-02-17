@@ -1,7 +1,7 @@
 # @flowise/agentflow
 
 [![Version](https://img.shields.io/npm/v/@flowise/agentflow)](https://www.npmjs.com/package/@flowise/agentflow)
-[![License](https://img.shields.io/badge/license-SEE%20LICENSE-blue)](./LICENSE.md)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md)
 
 > Embeddable React component for building and visualizing AI agent workflows
 
@@ -149,6 +149,45 @@ cd examples && pnpm install && pnpm dev
 
 Visit the [examples](./examples) directory for more usage patterns. See [TESTS.md](./TESTS.md) for the full test plan and coverage status.
 
+## Publishing
+
+### Version Update
+
+Bump the version in `package.json` before publishing. Use `npm version` to update the version and create a git tag:
+
+```bash
+# Prerelease (for testing)
+npm version prerelease --preid=dev   # 0.0.0-dev.1 → 0.0.0-dev.2
+
+# Patch / Minor / Major (for stable releases)
+npm version patch                    # 0.0.1
+npm version minor                    # 0.1.0
+npm version major                    # 1.0.0
+```
+
+### Verify Before Publishing
+
+```bash
+# Build and check the tarball contents
+pnpm build
+npm pack --dry-run
+
+# Full publish dry-run (runs prepublishOnly + simulates upload)
+npm publish --dry-run
+```
+
+### Publish
+
+```bash
+# Prerelease — tagged so `npm install @flowise/agentflow` won't pick it up
+npm publish --tag dev
+
+# Stable release — gets the `latest` tag
+npm publish
+```
+
+> The `prepublishOnly` script automatically runs `clean` and `build` before every publish, so stale dist files are never uploaded.
+
 ## Documentation
 
 -   [ARCHITECTURE.md](./ARCHITECTURE.md) - Internal architecture and design patterns
@@ -161,7 +200,7 @@ This package follows a feature-based architecture with clear separation of conce
 
 ## License
 
-See [LICENSE.md](./LICENSE.md) for details.
+Apache-2.0 — see the repository root [LICENSE.md](https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md) for details.
 
 ---
 
