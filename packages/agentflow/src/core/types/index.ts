@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import type { AxiosInstance } from 'axios'
+import { NodeInfoDialogProps } from '@/features/canvas/components/NodeInfoDialog'
+import { EditNodeDialogProps } from '@/features/node-editor/EditNodeDialog'
 
 // ============================================================================
 // Flow Data Types
@@ -269,6 +271,8 @@ export interface AgentflowState {
     chatflow: FlowConfig | null
     isDirty: boolean
     reactFlowInstance: ReactFlowInstance | null
+    editingNodeId: string | null
+    editDialogProps: EditNodeDialogProps['dialogProps'] | null
 }
 
 export type AgentflowAction =
@@ -277,6 +281,8 @@ export type AgentflowAction =
     | { type: 'SET_CHATFLOW'; payload: FlowConfig | null }
     | { type: 'SET_DIRTY'; payload: boolean }
     | { type: 'SET_REACTFLOW_INSTANCE'; payload: ReactFlowInstance | null }
+    | { type: 'OPEN_EDIT_DIALOG'; payload: { nodeId: string; dialogProps: EditNodeDialogProps['dialogProps'] } }
+    | { type: 'CLOSE_EDIT_DIALOG' }
     | { type: 'RESET' }
 
 // ============================================================================
