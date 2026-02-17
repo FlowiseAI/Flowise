@@ -127,5 +127,8 @@
                 }
             ]
         ]
+    },
+    "dependencies": {
+        "@codemirror/view": "^6.39.10"
     }
 }

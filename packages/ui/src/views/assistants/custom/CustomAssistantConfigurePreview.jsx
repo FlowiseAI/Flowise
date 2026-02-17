@@ -2,7 +2,7 @@ import { cloneDeep, set } from 'lodash'
 import { memo, useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
-import { FullPageChat } from 'flowise-embed-react'
+import { FullPageChat } from '@/ui-component/OctobotChat'
 import PropTypes from 'prop-types'
 
 // Hooks

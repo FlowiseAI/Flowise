@@ -243,7 +243,7 @@ const prepareAgent = async (
 
             // Pop the `agent_scratchpad` MessagePlaceHolder
             let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
-            if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
+            if (prompt.promptMessages[prompt.promptMessages.length - 1] instanceof HumanMessagePromptTemplate) {
                 const lastMessage = prompt.promptMessages.pop() as HumanMessagePromptTemplate
                 const template = (lastMessage.prompt as PromptTemplate).template as string
                 const msg = HumanMessagePromptTemplate.fromTemplate([

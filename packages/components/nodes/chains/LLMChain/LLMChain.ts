@@ -215,7 +215,7 @@ const runPrediction = async (
                 msg.inputVariables = chain.prompt.inputVariables
                 chain.prompt = ChatPromptTemplate.fromMessages([msg])
             } else if (chain.prompt instanceof ChatPromptTemplate) {
-                if (chain.prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
+                if (chain.prompt.promptMessages[chain.prompt.promptMessages.length - 1] instanceof HumanMessagePromptTemplate) {
                     const lastMessage = chain.prompt.promptMessages.pop() as HumanMessagePromptTemplate
                     const template = (lastMessage.prompt as PromptTemplate).template as string
                     const msg = HumanMessagePromptTemplate.fromTemplate([

@@ -1,6 +1,7 @@
 {
-    "short_name": "Flowise",
-    "name": "Flowise App",
+    "short_name": "DK-OctoBot",
+    "name": "DK-OctoBot | Build Intelligent OctoBOTs",
+    "description": "DK-OctoBot - The ultimate platform for building intelligent OctoBOTs. Create, deploy, and manage AI-powered automation workflows with ease.",
     "icons": [
         {
             "src": "favicon.ico",
@@ -22,8 +23,8 @@
     ],
     "start_url": ".",
     "display": "standalone",
-    "theme_color": "#000000",
-    "background_color": "#ffffff",
+    "theme_color": "#9c27b0",
+    "background_color": "#190823",
     "orientation": "any",
     "scope": "/",
     "prefer_related_applications": false
