@@ -1471,29 +1471,40 @@ export class AnalyticHandler {
                 const outputs: ICommonObject = {
                     generations: [outputText]
                 }
-                // Include token usage and model info if available
+                // Add usage_metadata and model info to run's extra.metadata for cost tracking
+                // LangSmith requires: usage_metadata (with input_tokens, output_tokens, total_tokens)
+                // and ls_model_name + ls_provider in metadata for automatic cost calculation
                 if (usageMetadata || modelName) {
-                    outputs.llm_output = {}
+                    if (!llmRun.extra) {
+                        llmRun.extra = {}
+                    }
+                    if (!llmRun.extra.metadata) {
+                        llmRun.extra.metadata = {}
+                    }
                     if (usageMetadata) {
-                        const token_usage: ICommonObject = {}
-                        if (usageMetadata.input_tokens !== undefined) {
-                            token_usage.prompt_tokens = usageMetadata.input_tokens
-                        }
-                        if (usageMetadata.output_tokens !== undefined) {
-                            token_usage.completion_tokens = usageMetadata.output_tokens
-                        }
-                        if (usageMetadata.total_tokens !== undefined) {
-                            token_usage.total_tokens = usageMetadata.total_tokens
-                        }
-                        if (Object.keys(token_usage).length > 0) {
-                            outputs.llm_output.token_usage = token_usage
+                        llmRun.extra.metadata.usage_metadata = {
+                            input_tokens: usageMetadata.input_tokens,
+                            output_tokens: usageMetadata.output_tokens,
+                            total_tokens: usageMetadata.total_tokens
                         }
                     }
                     if (modelName) {
-                        outputs.llm_output.model_name = modelName
+                        llmRun.extra.metadata.ls_model_name = modelName
+                        // Extract provider from model name (e.g., "gpt-4" -> "openai", "claude-3" -> "anthropic")
+                        if (modelName.includes('gpt') || modelName.includes('o1') || modelName.includes('o3')) {
+                            llmRun.extra.metadata.ls_provider = 'openai'
+                        } else if (modelName.includes('claude')) {
+                            llmRun.extra.metadata.ls_provider = 'anthropic'
+                        } else if (modelName.includes('gemini')) {
+                            llmRun.extra.metadata.ls_provider = 'google'
+                        } else if (modelName.includes('mistral') || modelName.includes('mixtral')) {
+                            llmRun.extra.metadata.ls_provider = 'mistral'
+                        } else if (modelName.includes('llama') || modelName.includes('codellama')) {
+                            llmRun.extra.metadata.ls_provider = 'meta'
+                        }
                     }
                 }
-                await llmRun.end({ outputs })
+                await llmRun.end(outputs)
                 await llmRun.patchRun()
             }
         }
