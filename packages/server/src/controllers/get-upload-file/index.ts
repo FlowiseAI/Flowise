@@ -19,11 +19,11 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
         const download = req.query.download === 'true' // Check if download parameter is set
 
         // Validate input formats to prevent path traversal attacks
-        if (!isValidUUID(chatflowId)) {
+        if (!chatflowId || !isValidUUID(chatflowId)) {
             return res.status(400).send(`Invalid chatflowId format`)
         }
 
-        if (!isValidUUID(chatId)) {
+        if (!chatId || !isValidUUID(chatId)) {
             return res.status(400).send(`Invalid chatId format`)
         }
 
