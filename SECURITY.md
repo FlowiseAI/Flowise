@@ -70,12 +70,12 @@ We appreciate your efforts in helping us maintain a secure platform and look for
 
 Once the report has been verified, the Flowise team will plan the remediation steps.
 Below is the estimated time to remediate the triaged security reports.
+
 | Triaged Severity | Estimated Time to Remediate |
 | ---------------------- | ---------------- |
 | Critical | 30 business days |
 | High | 60 business days |
 | Medium | 90 business days |
-| Low | 120 business days |
 
 ### Public Disclosure Timeline
 
