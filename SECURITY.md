@@ -58,7 +58,7 @@ Do not discuss or disclose vulnerability information without prior written conse
 We will validate submissions within the below timelines.
 | Vulnerability Severity | Time to Validate |
 | ---------------------- | ---------------- |
-| Critical | 3 business days |
+| Critical | 5 business days |
 | High | 5 business days |
 | Medium | 15 business days |
 | Low | 15 business days |
