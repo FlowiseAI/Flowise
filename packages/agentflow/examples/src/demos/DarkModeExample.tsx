@@ -12,7 +12,7 @@ import { Agentflow } from '@flowise/agentflow'
 import CssBaseline from '@mui/material/CssBaseline'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 const sampleFlow: FlowData = {
     nodes: [
@@ -137,9 +137,9 @@ export function DarkModeExample() {
                 <div style={{ flex: 1 }}>
                     <Agentflow
                         ref={agentflowRef}
-                        instanceUrl={instanceUrl}
+                        apiBaseUrl={apiBaseUrl}
                         token={token ?? undefined}
-                        flow={sampleFlow}
+                        initialFlow={sampleFlow}
                         theme={isDark ? 'dark' : 'light'}
                         showDefaultHeader={false}
                     />
@@ -150,9 +150,9 @@ export function DarkModeExample() {
 }
 
 export const DarkModeExampleProps = {
-    instanceUrl: '{from environment variables}',
+    apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    flow: 'FlowData (sample flow)',
+    initialFlow: 'FlowData (sample flow)',
     theme: '{isDark ? "dark" : "light"}',
     showDefaultHeader: false
 }

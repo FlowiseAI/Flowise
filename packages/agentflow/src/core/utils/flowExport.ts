@@ -1,5 +1,6 @@
 import type { FlowEdge, FlowNode } from '../types'
 
+// TODO: Integrate with save/export flow to strip credentials before persisting
 /**
  * Generate export-friendly flow data (strips sensitive info)
  */

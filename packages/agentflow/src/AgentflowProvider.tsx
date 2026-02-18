@@ -5,8 +5,8 @@ import type { FlowData } from './core/types'
 import { AgentflowStateProvider, ApiProvider, ConfigProvider } from './infrastructure/store'
 
 interface AgentflowProviderProps {
-    /** Base URL of the Flowise server */
-    instanceUrl: string
+    /** Flowise API server endpoint */
+    apiBaseUrl: string
     /** Authentication token for API calls */
     token?: string
     /** Theme override */
@@ -26,7 +26,7 @@ interface AgentflowProviderProps {
  * Sets up all required contexts for API access, configuration, and state management.
  */
 export function AgentflowProvider({
-    instanceUrl,
+    apiBaseUrl,
     token,
     theme = 'system',
     components,
@@ -36,7 +36,7 @@ export function AgentflowProvider({
 }: AgentflowProviderProps) {
     return (
         <ReactFlowProvider>
-            <ApiProvider instanceUrl={instanceUrl} token={token}>
+            <ApiProvider apiBaseUrl={apiBaseUrl} token={token}>
                 <ConfigProvider theme={theme} components={components} readOnly={readOnly}>
                     <AgentflowStateProvider initialFlow={initialFlow}>{children}</AgentflowStateProvider>
                 </ConfigProvider>

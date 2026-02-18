@@ -24,7 +24,7 @@ export interface AgentFlowNodeProps {
  */
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
-    const { instanceUrl } = useApiContext()
+    const { apiBaseUrl } = useApiContext()
     const ref = useRef<HTMLDivElement>(null)
     const updateNodeInternals = useUpdateNodeInternals()
 
@@ -99,7 +99,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
 
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <Box style={{ padding: 10 }}>
-                            <NodeIcon data={data} instanceUrl={instanceUrl} />
+                            <NodeIcon data={data} apiBaseUrl={apiBaseUrl} />
                         </Box>
                         <Box>
                             <Typography

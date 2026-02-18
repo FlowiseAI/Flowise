@@ -16,7 +16,8 @@
         "declarationMap": true,
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            "@test-utils/*": ["./src/__test_utils__/*"]
         }
     },
     "include": ["src"],

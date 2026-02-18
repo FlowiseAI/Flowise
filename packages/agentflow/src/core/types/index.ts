@@ -174,14 +174,14 @@ export interface PaletteRenderProps {
 // ============================================================================
 
 export interface AgentflowProps {
-    /** Base URL of the Flowise server (e.g., "https://flowise-url.com") */
-    instanceUrl: string
+    /** Flowise API server endpoint (e.g., "https://flowise-url.com") */
+    apiBaseUrl: string
 
     /** Authentication token for API calls */
     token?: string
 
     /** Initial flow data to render */
-    flow?: FlowData
+    initialFlow?: FlowData
 
     /** Flow ID for loading existing flow */
     flowId?: string
@@ -253,7 +253,7 @@ export interface AgentFlowInstance {
 
 export interface ApiContextValue {
     client: AxiosInstance
-    instanceUrl: string
+    apiBaseUrl: string
 }
 
 export interface ConfigContextValue {
