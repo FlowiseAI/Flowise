@@ -137,7 +137,7 @@ module.exports = {
     },
     overrides: [
         {
-            files: ['examples/**/*.{js,jsx,ts,tsx}'],
+            files: ['examples/**/*.{js,jsx,ts,tsx}', '**/*.md/**'],
             rules: {
                 'no-console': 'off',
                 '@typescript-eslint/no-non-null-assertion': 'off'

@@ -14,6 +14,7 @@ export interface InputProps {
     sx?: SxProps<Theme>
 }
 
+// TODO: Review if still necessary — NodeInputHandler and MUI TextField are used directly elsewhere
 /**
  * Basic input component for text, password, and number inputs
  */

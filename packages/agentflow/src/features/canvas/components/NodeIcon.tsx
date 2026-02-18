@@ -5,10 +5,10 @@ import { renderNodeIcon } from '../nodeIcons'
 
 export interface NodeIconProps {
     data: NodeData
-    instanceUrl: string
+    apiBaseUrl: string
 }
 
-function NodeIconComponent({ data, instanceUrl }: NodeIconProps) {
+function NodeIconComponent({ data, apiBaseUrl }: NodeIconProps) {
     if (data.color && !data.icon) {
         return (
             <div
@@ -41,7 +41,7 @@ function NodeIconComponent({ data, instanceUrl }: NodeIconProps) {
         >
             <img
                 style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                src={`${instanceUrl}/api/v1/node-icon/${data.name}`}
+                src={`${apiBaseUrl}/api/v1/node-icon/${data.name}`}
                 alt={data.name}
             />
         </div>
