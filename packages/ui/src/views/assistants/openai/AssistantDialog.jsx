@@ -127,8 +127,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     // Sanitize image URL to prevent XSS attacks via javascript:, data:, or blob: schemes
     const sanitizeImageUrl = (url) => {
+        const fallbackUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=fallback`;
         if (!url || typeof url !== 'string') {
-            return `https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`
+            return fallbackUrl;
         }
         try {
             const parsed = new URL(url, window.location.origin)
@@ -140,7 +141,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             // Invalid URL
         }
         // Return default avatar if URL is invalid or uses disallowed protocol
-        return `https://api.dicebear.com/7.x/bottts/svg?seed=${uuidv4()}`
+        return fallbackUrl;
     }
 
     const getSpecificAssistantApi = useApi(assistantsApi.getSpecificAssistant)
