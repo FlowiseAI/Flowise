@@ -15,6 +15,9 @@ import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
 
+/** Width of the node icon container in pixels (theme.spacing(6.25) = 50px) */
+const NODE_ICON_CONTAINER_WIDTH = 50
+
 export interface AgentFlowNodeProps {
     data: NodeData
 }
@@ -91,7 +94,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                     <NodeInputHandle nodeId={data.id} nodeColor={nodeColor} hidden={data.hideInput} />
 
                     <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Box sx={{ width: (theme) => theme.spacing(6.25) }}>
+                        <Box sx={{ width: NODE_ICON_CONTAINER_WIDTH }}>
                             <NodeIcon data={data} apiBaseUrl={apiBaseUrl} />
                         </Box>
                         <Box>

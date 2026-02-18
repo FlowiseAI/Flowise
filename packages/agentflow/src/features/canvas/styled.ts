@@ -21,7 +21,7 @@ export const CardWrapper: ComponentType<MainCardProps> = styled(MainCard)(({ the
 export const StyledNodeToolbar: ComponentType<NodeToolbarProps> = styled(NodeToolbar)(({ theme }) => ({
     backgroundColor: theme.palette.card.main,
     color: theme.palette.text.primary,
-    padding: tokens.spacing.xs + 1,
+    padding: tokens.spacing.xs,
     borderRadius: tokens.spacing.md,
     boxShadow: tokens.shadows.toolbar[theme.palette.mode === 'dark' ? 'dark' : 'light'],
     border: `1px solid ${theme.palette.divider}`
