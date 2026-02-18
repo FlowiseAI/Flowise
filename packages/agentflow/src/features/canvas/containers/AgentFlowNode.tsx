@@ -3,8 +3,9 @@ import { useUpdateNodeInternals } from 'reactflow'
 
 import { Box, Typography } from '@mui/material'
 
-import type { NodeData } from '../../../core/types'
-import { useApiContext, useConfigContext } from '../../../infrastructure/store'
+import type { NodeData, InputParam } from '../../../core/types'
+import { useAgentflowContext, useApiContext, useConfigContext } from '../../../infrastructure/store'
+import { useOpenNodeEditor } from '../hooks'
 import { NodeIcon } from '../components/NodeIcon'
 import { NodeInfoDialog } from '../components/NodeInfoDialog'
 import { NodeInputHandle } from '../components/NodeInputHandle'
@@ -13,6 +14,7 @@ import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutpu
 import { NodeStatusIndicator, NodeWarningIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useNodeColors } from '../hooks/useNodeColors'
+import { useFlowNodes } from '../hooks/useFlowNodes'
 import { CardWrapper } from '../styled'
 
 export interface AgentFlowNodeProps {
@@ -25,8 +27,11 @@ export interface AgentFlowNodeProps {
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
+    const { openEditDialog } = useAgentflowContext()
+    const { availableNodes } = useFlowNodes()
     const ref = useRef<HTMLDivElement>(null)
     const updateNodeInternals = useUpdateNodeInternals()
+    const { openNodeEditor } = useOpenNodeEditor()
 
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
@@ -38,6 +43,10 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
         isDarkMode,
         isHovered
     })
+
+    const handleDoubleClick = () => {
+        openNodeEditor(data.id)
+    }
 
     const outputAnchors = data.outputAnchors ?? []
     const minHeight = getMinimumNodeHeight(outputAnchors.length)
@@ -63,6 +72,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
             ref={ref}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            onDoubleClick={handleDoubleClick}
             style={{ position: 'relative', width: 'fit-content' }}
         >
             <NodeToolbarActions

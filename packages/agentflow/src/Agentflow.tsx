@@ -3,6 +3,7 @@ import ReactFlow, { Background, BackgroundVariant, Controls, MiniMap, ReactFlowP
 
 import { IconSparkles } from '@tabler/icons-react'
 
+import type { Node, Edge } from 'reactflow'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowEdge, FlowNode } from './core/types'
 import {
     AgentflowHeader,
@@ -15,6 +16,7 @@ import {
     useFlowNodes
 } from './features/canvas'
 import { GenerateFlowDialog } from './features/generator'
+import { EditNodeDialog } from './features/node-editor'
 import { AddNodesDrawer, StyledFab } from './features/node-palette'
 import { useAgentflowContext } from './infrastructure/store'
 import { AgentflowProvider } from './AgentflowProvider'
@@ -49,7 +51,7 @@ function AgentflowCanvas({
     renderHeader?: AgentflowProps['renderHeader']
     renderNodePalette?: AgentflowProps['renderNodePalette']
 }) {
-    const { state, setNodes, setEdges, setDirty, setReactFlowInstance } = useAgentflowContext()
+    const { state, setNodes, setEdges, setDirty, setReactFlowInstance, closeEditDialog } = useAgentflowContext()
     const agentflow = useAgentflow()
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
 
@@ -68,6 +70,15 @@ function AgentflowCanvas({
     useEffect(() => {
         setEdges(edges as FlowEdge[])
     }, [edges, setEdges])
+
+    // Sync context state changes back to local ReactFlow state  
+    useEffect(() => {
+        setLocalNodes(state.nodes as Node[])
+    }, [state.nodes, setLocalNodes])
+
+    useEffect(() => {
+        setLocalEdges(state.edges as Edge[])
+    }, [state.edges, setLocalEdges])
 
     // Flow handlers
     const { handleConnect, handleNodesChange, handleEdgesChange, handleAddNode } = useFlowHandlers({
@@ -187,6 +198,9 @@ function AgentflowCanvas({
 
             {/* Generate Flow Dialog */}
             <GenerateFlowDialog open={showGenerateDialog} onClose={() => setShowGenerateDialog(false)} onGenerated={handleFlowGenerated} />
+
+            {/* Edit Node Dialog */}
+            <EditNodeDialog show={state.editingNodeId !== null} dialogProps={state.editDialogProps || {}} onCancel={closeEditDialog} />
         </div>
     )
 }

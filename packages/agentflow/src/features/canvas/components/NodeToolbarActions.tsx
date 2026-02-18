@@ -3,9 +3,11 @@ import { Position } from 'reactflow'
 
 import { ButtonGroup, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCopy, IconInfoCircle, IconTrash } from '@tabler/icons-react'
+import { IconCopy, IconEdit, IconInfoCircle, IconTrash } from '@tabler/icons-react'
 
 import { useAgentflowContext, useConfigContext } from '../../../infrastructure/store'
+import { useOpenNodeEditor } from '../hooks'
+
 import { StyledNodeToolbar } from '../styled'
 
 export interface NodeToolbarActionsProps {
@@ -22,6 +24,12 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
     const theme = useTheme()
     const { isDarkMode } = useConfigContext()
     const { deleteNode, duplicateNode } = useAgentflowContext()
+    const { openNodeEditor } = useOpenNodeEditor()
+
+    const handleEditClick = () => {
+        openNodeEditor(nodeId)
+    }
+
 
     return (
         <StyledNodeToolbar position={Position.Top} offset={5} align='end' isVisible={isVisible}>
@@ -39,6 +47,17 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                         <IconCopy size={20} />
                     </IconButton>
                 )}
+                <IconButton
+                    size='small'
+                    title='Edit'
+                    onClick={handleEditClick}
+                    sx={{
+                        color: isDarkMode ? 'white' : theme.palette.grey[600],
+                        '&:hover': { color: theme.palette.primary.main }
+                    }}
+                >
+                    <IconEdit size={20} />
+                </IconButton>
                 <IconButton
                     size='small'
                     title='Delete'

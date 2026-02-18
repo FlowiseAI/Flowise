@@ -45,12 +45,11 @@ export function NodeInputHandler({
 
     const handleDataChange = useCallback(
         (newValue: unknown) => {
-            if (inputParam && data.inputs) {
-                data.inputs[inputParam.name] = newValue
+            if (inputParam) {
                 onDataChange?.({ inputParam, newValue })
             }
         },
-        [inputParam, data, onDataChange]
+        [inputParam, onDataChange]
     )
 
     useEffect(() => {
