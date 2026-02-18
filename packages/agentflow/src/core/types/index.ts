@@ -195,8 +195,8 @@ export interface AgentflowProps {
     /** Callback when flow is saved */
     onSave?: (flow: FlowData) => void
 
-    /** Theme override */
-    theme?: 'light' | 'dark' | 'system'
+    /** Whether to use dark mode (default: false) */
+    isDarkMode?: boolean
 
     /** Whether the canvas is read-only */
     readOnly?: boolean
@@ -257,10 +257,9 @@ export interface ApiContextValue {
 }
 
 export interface ConfigContextValue {
-    theme: 'light' | 'dark' | 'system'
+    isDarkMode: boolean
     components?: string[]
     readOnly: boolean
-    isDarkMode: boolean
 }
 
 export interface AgentflowState {

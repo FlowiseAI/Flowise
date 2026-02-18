@@ -59,12 +59,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     }, [data.name, data.version, data.warning])
 
     return (
-        <div
-            ref={ref}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            style={{ position: 'relative', width: 'fit-content' }}
-        >
+        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <NodeToolbarActions
                 nodeId={data.id}
                 nodeName={data.name}
@@ -75,7 +70,6 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
             <CardWrapper
                 content={false}
                 sx={{
-                    width: 'max-content',
                     borderColor: stateColor,
                     borderWidth: '1px',
                     boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
@@ -84,7 +78,6 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                     backgroundColor,
                     display: 'flex',
                     alignItems: 'center',
-                    px: '14px',
                     '&:hover': {
                         boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none'
                     }
@@ -94,11 +87,11 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 <NodeStatusIndicator status={data.status} error={data.error} />
                 <NodeWarningIndicator message={warningMessage} />
 
-                <Box sx={{ width: 'max-content', flexShrink: 0 }}>
+                <Box sx={{ width: '100%' }}>
                     <NodeInputHandle nodeId={data.id} nodeColor={nodeColor} hidden={data.hideInput} />
 
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Box style={{ padding: 10 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <Box sx={{ width: (theme) => theme.spacing(6.25) }}>
                             <NodeIcon data={data} apiBaseUrl={apiBaseUrl} />
                         </Box>
                         <Box>
@@ -112,7 +105,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                             </Typography>
                             <NodeModelConfigs inputs={data.inputs} />
                         </Box>
-                    </div>
+                    </Box>
 
                     <NodeOutputHandles
                         outputAnchors={outputAnchors}

@@ -1,8 +1,9 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import ReactFlow, { Background, BackgroundVariant, Controls, MiniMap, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
+import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow'
 
 import { IconSparkles } from '@tabler/icons-react'
 
+import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowEdge, FlowNode } from './core/types'
 import {
     AgentflowHeader,
@@ -16,7 +17,7 @@ import {
 } from './features/canvas'
 import { GenerateFlowDialog } from './features/generator'
 import { AddNodesDrawer, StyledFab } from './features/node-palette'
-import { useAgentflowContext } from './infrastructure/store'
+import { useAgentflowContext, useConfigContext } from './infrastructure/store'
 import { AgentflowProvider } from './AgentflowProvider'
 import { useAgentflow } from './useAgentflow'
 
@@ -50,8 +51,21 @@ function AgentflowCanvas({
     renderNodePalette?: AgentflowProps['renderNodePalette']
 }) {
     const { state, setNodes, setEdges, setDirty, setReactFlowInstance } = useAgentflowContext()
+    const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
+
+    // Memoize ReactFlow colors from theme tokens
+    const reactFlowColors = useMemo(() => {
+        const mode = isDarkMode ? 'dark' : 'light'
+        return {
+            minimapNode: tokens.colors.reactflow.minimap.node[mode],
+            minimapNodeStroke: tokens.colors.reactflow.minimap.nodeStroke[mode],
+            minimapBackground: tokens.colors.reactflow.minimap.background[mode],
+            minimapMask: tokens.colors.reactflow.minimap.mask[mode],
+            backgroundDots: tokens.colors.reactflow.background.dots[mode]
+        }
+    }, [isDarkMode])
 
     const [nodes, setLocalNodes, onNodesChange] = useNodesState(initialFlow?.nodes || [])
     const [edges, setLocalEdges, onEdgesChange] = useEdgesState(initialFlow?.edges || [])
@@ -129,7 +143,7 @@ function AgentflowCanvas({
     }
 
     return (
-        <div className='agentflow-container'>
+        <div className={`agentflow-container${isDarkMode ? ' dark' : ''}`}>
             {/* Header */}
             {renderHeader ? renderHeader(headerProps) : showDefaultHeader ? <AgentflowHeader {...headerProps} readOnly={readOnly} /> : null}
 
@@ -138,13 +152,19 @@ function AgentflowCanvas({
                 {renderNodePalette && renderNodePalette(paletteProps)}
 
                 {/* Canvas */}
-                <div className='agentflow-canvas' ref={reactFlowWrapper} onDragOver={handleDragOver} onDrop={handleDrop}>
-                    {/* Add Nodes Drawer - floating button */}
+                <div
+                    className='agentflow-canvas'
+                    data-dark-mode={isDarkMode}
+                    ref={reactFlowWrapper}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                >
+                    {/* Add Nodes Drawer - positioned at top left */}
                     {!readOnly && showDefaultPalette && (
                         <AddNodesDrawer nodes={availableNodes} onNodeClick={(node) => handleAddNode(node.name)} />
                     )}
 
-                    {/* Generate Flow Button */}
+                    {/* Generate Flow Button - positioned at top left, next to Add Nodes button (v2 style) */}
                     {!readOnly && enableGenerator && (
                         <StyledFab
                             gradient
@@ -154,9 +174,9 @@ function AgentflowCanvas({
                             onClick={() => setShowGenerateDialog(true)}
                             sx={{
                                 position: 'absolute',
-                                left: 70,
+                                left: showDefaultPalette ? 70 : 20, // 70px offset = ~10px gap between buttons
                                 top: 20,
-                                zIndex: 1000
+                                zIndex: 1001
                             }}
                         >
                             <IconSparkles />
@@ -178,9 +198,15 @@ function AgentflowCanvas({
                         nodesConnectable={!readOnly}
                         elementsSelectable={!readOnly}
                     >
-                        <Controls />
-                        <MiniMap />
-                        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+                        <Controls className={isDarkMode ? 'dark-mode-controls' : ''} />
+                        <MiniMap
+                            nodeStrokeWidth={3}
+                            nodeColor={reactFlowColors.minimapNode}
+                            nodeStrokeColor={reactFlowColors.minimapNodeStroke}
+                            maskColor={reactFlowColors.minimapMask}
+                            style={{ backgroundColor: reactFlowColors.minimapBackground }}
+                        />
+                        <Background color={reactFlowColors.backgroundDots} gap={16} />
                     </ReactFlow>
                 </div>
             </div>
@@ -220,7 +246,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         onFlowChange,
         onSave,
         onFlowGenerated,
-        theme = 'system',
+        isDarkMode = false,
         readOnly = false,
         enableGenerator = true,
         renderHeader,
@@ -233,7 +259,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         <AgentflowProvider
             apiBaseUrl={apiBaseUrl}
             token={token}
-            theme={theme}
+            isDarkMode={isDarkMode}
             components={components}
             readOnly={readOnly}
             initialFlow={initialFlow}

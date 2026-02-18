@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { addEdge, Connection, EdgeChange, NodeChange } from 'reactflow'
 
-import { getNodeColor, getUniqueNodeId, initNode, isValidConnectionAgentflowV2 } from '../../../core'
+import { getNodeColor, getUniqueNodeId, getUniqueNodeLabel, initNode, isValidConnectionAgentflowV2 } from '../../../core'
 import type { FlowData, FlowEdge, FlowNode, NodeData } from '../../../core/types'
 import { useAgentflowContext } from '../../../infrastructure/store'
 
@@ -122,12 +122,13 @@ export function useFlowHandlers({
             if (!nodeData) return
 
             const newId = getUniqueNodeId(nodeData, nodes)
+            const newLabel = getUniqueNodeLabel(nodeData, nodes)
             const initializedData = initNode(nodeData, newId, true)
             const newNode: FlowNode = {
                 id: newId,
                 type: 'agentflowNode',
                 position: position || { x: 100, y: 100 },
-                data: initializedData
+                data: { ...initializedData, label: newLabel }
             }
 
             setLocalNodes((nds) => [...nds, newNode])

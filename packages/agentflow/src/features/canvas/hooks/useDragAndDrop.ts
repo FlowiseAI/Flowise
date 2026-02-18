@@ -1,9 +1,14 @@
 import { RefObject, useCallback } from 'react'
 import { useReactFlow } from 'reactflow'
 
-import { getUniqueNodeId, initNode } from '../../../core'
+import { getUniqueNodeId, getUniqueNodeLabel, initNode } from '../../../core'
 import type { FlowNode, NodeData } from '../../../core/types'
 import { useAgentflowContext } from '../../../infrastructure/store'
+
+// Offset to center the dropped node on the cursor position.
+// Approximate half of a typical node's width/height.
+const DROP_OFFSET_X = 100
+const DROP_OFFSET_Y = 50
 
 interface UseDragAndDropProps {
     nodes: FlowNode[]
@@ -39,18 +44,22 @@ export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper }: UseDr
                 const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect()
                 if (!reactFlowBounds) return
 
-                const position = reactFlowInstance.screenToFlowPosition({
-                    x: event.clientX - reactFlowBounds.left,
-                    y: event.clientY - reactFlowBounds.top
+                // project() is used instead of screenToFlowPosition() because
+                // screenToFlowPosition applies viewport transform differently,
+                // causing incorrect drop placement in this context.
+                const position = reactFlowInstance.project({
+                    x: event.clientX - reactFlowBounds.left - DROP_OFFSET_X,
+                    y: event.clientY - reactFlowBounds.top - DROP_OFFSET_Y
                 })
 
                 const newId = getUniqueNodeId(nodeData, nodes)
+                const newLabel = getUniqueNodeLabel(nodeData, nodes)
                 const initializedData = initNode(nodeData, newId, true)
                 const newNode: FlowNode = {
                     id: newId,
                     type: 'agentflowNode',
                     position,
-                    data: initializedData
+                    data: { ...initializedData, label: newLabel }
                 }
 
                 setLocalNodes((nds) => [...nds, newNode])

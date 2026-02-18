@@ -1,5 +1,5 @@
-import type { RefObject } from 'react'
-import { memo } from 'react'
+import type { CSSProperties, RefObject } from 'react'
+import { memo, useMemo } from 'react'
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 
 import { useTheme } from '@mui/material/styles'
@@ -15,13 +15,25 @@ export interface NodeOutputHandlesProps {
     nodeId: string
 }
 
+// Constants for handle dimensions and positioning
+const HANDLE_SIZE = 20
+const HANDLE_OFFSET = -10
+const MIN_NODE_HEIGHT = 60
+const SPACING_PER_OUTPUT = 20
+const BASE_HEIGHT_OFFSET = 40
+const TRANSITION_DURATION = '0.2s'
+
 /**
  * Calculate the minimum height needed for a node based on output anchor count
  */
 export function getMinimumNodeHeight(outputCount: number): number {
-    return Math.max(60, outputCount * 20 + 40)
+    return Math.max(MIN_NODE_HEIGHT, outputCount * SPACING_PER_OUTPUT + BASE_HEIGHT_OFFSET)
 }
 
+/**
+ * Output handles component for agent flow nodes
+ * Note: Uses inline styles because ReactFlow's Handle component doesn't support sx prop
+ */
 function NodeOutputHandlesComponent({ outputAnchors, nodeColor, isHovered, nodeRef, nodeId }: NodeOutputHandlesProps) {
     const theme = useTheme()
     const updateNodeInternals = useUpdateNodeInternals()
@@ -38,47 +50,51 @@ function NodeOutputHandlesComponent({ outputAnchors, nodeColor, isHovered, nodeR
         return anchorPosition
     }
 
+    // Memoize static styles
+    const backgroundCircleStyle: CSSProperties = useMemo(
+        () => ({
+            position: 'absolute',
+            width: HANDLE_SIZE,
+            height: HANDLE_SIZE,
+            borderRadius: '50%',
+            backgroundColor: theme.palette.background.paper,
+            pointerEvents: 'none'
+        }),
+        [theme.palette.background.paper]
+    )
+
+    const iconStyle: CSSProperties = useMemo(
+        () => ({
+            pointerEvents: 'none',
+            position: 'relative',
+            zIndex: 1
+        }),
+        []
+    )
+
     return (
         <>
-            {outputAnchors.map((outputAnchor, index) => (
-                <Handle
-                    type='source'
-                    position={Position.Right}
-                    key={outputAnchor.id}
-                    id={outputAnchor.id}
-                    style={{
-                        height: 20,
-                        width: 20,
-                        top: getAnchorPosition(index),
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        position: 'absolute',
-                        right: -10,
-                        opacity: isHovered ? 1 : 0,
-                        transition: 'opacity 0.2s'
-                    }}
-                >
-                    <div
-                        style={{
-                            position: 'absolute',
-                            width: 20,
-                            height: 20,
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.background.paper,
-                            pointerEvents: 'none'
-                        }}
-                    />
-                    <IconCircleChevronRightFilled
-                        size={20}
-                        color={nodeColor}
-                        style={{
-                            pointerEvents: 'none',
-                            position: 'relative',
-                            zIndex: 1
-                        }}
-                    />
-                </Handle>
-            ))}
+            {outputAnchors.map((outputAnchor, index) => {
+                // Create handle style for each anchor (position is dynamic)
+                const handleStyle: CSSProperties = {
+                    height: HANDLE_SIZE,
+                    width: HANDLE_SIZE,
+                    top: getAnchorPosition(index),
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    position: 'absolute',
+                    right: HANDLE_OFFSET,
+                    opacity: isHovered ? 1 : 0,
+                    transition: `opacity ${TRANSITION_DURATION}`
+                }
+
+                return (
+                    <Handle type='source' position={Position.Right} key={outputAnchor.id} id={outputAnchor.id} style={handleStyle}>
+                        <div style={backgroundCircleStyle} />
+                        <IconCircleChevronRightFilled size={HANDLE_SIZE} color={nodeColor} style={iconStyle} />
+                    </Handle>
+                )
+            })}
         </>
     )
 }
