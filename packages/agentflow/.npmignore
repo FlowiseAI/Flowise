@@ -1,14 +1,17 @@
-# Source files
+# Source & config
 /src
-/tests
-/*.ts
-/*.tsx
+/examples
+*.ts
+!*.d.ts
 tsconfig.json
 vite.config.ts
+jest.config.js
+.eslintrc.js
 
-# Dev files
+# Dev artifacts
 .turbo
 node_modules
+.DS_Store
 
 # Keep dist
 !dist
