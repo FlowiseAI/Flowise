@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import type { AxiosInstance } from 'axios'
-import { NodeInfoDialogProps } from '@/features/canvas/components/NodeInfoDialog'
 import { EditNodeDialogProps } from '@/features/node-editor/EditNodeDialog'
 
 // ============================================================================

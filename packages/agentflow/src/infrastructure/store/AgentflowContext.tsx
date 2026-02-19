@@ -132,14 +132,11 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     // Dialog operations
     const openEditDialog = useCallback(
         (nodeId: string, data: NodeData, inputParams: InputParam[]) => {
-            // Package the data needed by EditNodeDialog
             const dialogProps = {
                 inputParams: inputParams,
                 data: data,
-                disabled: false  // Could be dynamic based on readOnly prop
+                disabled: false 
             }
-
-            // Dispatch action to update state
             dispatch({
                 type: 'OPEN_EDIT_DIALOG',
                 payload: {
@@ -148,7 +145,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 }
             })
         },
-        [] // No dependencies - dispatch is stable
+        [] 
     )
 
     const closeEditDialog = useCallback(() => {
