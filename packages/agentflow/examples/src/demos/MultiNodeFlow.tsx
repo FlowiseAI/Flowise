@@ -149,15 +149,17 @@ export function MultiNodeFlow() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
 
     return (
-        <div style={{ width: '100%', height: '100vh' }}>
-            <Agentflow
-                ref={agentflowRef}
-                apiBaseUrl={apiBaseUrl}
-                token={token ?? undefined}
-                initialFlow={translationFlow}
-                showDefaultHeader={true}
-                onFlowChange={(flow) => console.log('Flow changed:', flow.nodes.length, 'nodes')}
-            />
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1 }}>
+                <Agentflow
+                    ref={agentflowRef}
+                    apiBaseUrl={apiBaseUrl}
+                    token={token ?? undefined}
+                    initialFlow={translationFlow}
+                    showDefaultHeader={true}
+                    onFlowChange={(flow) => console.log('Flow changed:', flow.nodes.length, 'nodes')}
+                />
+            </div>
         </div>
     )
 }

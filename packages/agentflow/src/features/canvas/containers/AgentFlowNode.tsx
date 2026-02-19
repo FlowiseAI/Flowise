@@ -17,6 +17,9 @@ import { useNodeColors } from '../hooks/useNodeColors'
 import { useFlowNodes } from '../hooks/useFlowNodes'
 import { CardWrapper } from '../styled'
 
+/** Width of the node icon container in pixels (theme.spacing(6.25) = 50px) */
+const NODE_ICON_CONTAINER_WIDTH = 50
+
 export interface AgentFlowNodeProps {
     data: NodeData
 }
@@ -72,9 +75,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
             ref={ref}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onDoubleClick={handleDoubleClick}
-            style={{ position: 'relative', width: 'fit-content' }}
-        >
+            onDoubleClick={handleDoubleClick}>
             <NodeToolbarActions
                 nodeId={data.id}
                 nodeName={data.name}
@@ -85,7 +86,6 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
             <CardWrapper
                 content={false}
                 sx={{
-                    width: 'max-content',
                     borderColor: stateColor,
                     borderWidth: '1px',
                     boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
@@ -94,7 +94,6 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                     backgroundColor,
                     display: 'flex',
                     alignItems: 'center',
-                    px: '14px',
                     '&:hover': {
                         boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none'
                     }
@@ -104,11 +103,11 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 <NodeStatusIndicator status={data.status} error={data.error} />
                 <NodeWarningIndicator message={warningMessage} />
 
-                <Box sx={{ width: 'max-content', flexShrink: 0 }}>
+                <Box sx={{ width: '100%' }}>
                     <NodeInputHandle nodeId={data.id} nodeColor={nodeColor} hidden={data.hideInput} />
 
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Box style={{ padding: 10 }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <Box sx={{ width: NODE_ICON_CONTAINER_WIDTH }}>
                             <NodeIcon data={data} apiBaseUrl={apiBaseUrl} />
                         </Box>
                         <Box>
@@ -122,7 +121,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                             </Typography>
                             <NodeModelConfigs inputs={data.inputs} />
                         </Box>
-                    </div>
+                    </Box>
 
                     <NodeOutputHandles
                         outputAnchors={outputAnchors}

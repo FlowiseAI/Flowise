@@ -104,7 +104,7 @@ export function DarkModeExample() {
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
-            <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* Theme Toggle */}
                 <div
                     style={{
@@ -140,7 +140,7 @@ export function DarkModeExample() {
                         apiBaseUrl={apiBaseUrl}
                         token={token ?? undefined}
                         initialFlow={sampleFlow}
-                        theme={isDark ? 'dark' : 'light'}
+                        isDarkMode={isDark}
                         showDefaultHeader={false}
                     />
                 </div>
@@ -153,6 +153,6 @@ export const DarkModeExampleProps = {
     apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
     initialFlow: 'FlowData (sample flow)',
-    theme: '{isDark ? "dark" : "light"}',
+    isDarkMode: '{isDark}',
     showDefaultHeader: false
 }

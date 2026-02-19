@@ -103,12 +103,11 @@ export default function App() {
 | `apiBaseUrl` | `string` | **(required)** | Flowise API server endpoint |
 | `token` | `string` | — | Authentication token for API calls |
 | `initialFlow` | `FlowData` | — | Initial flow data to render (uncontrolled — only used on mount) |
-| `flowId` | `string` | — | Flow ID for loading an existing flow from the API |
 | `components` | `string[]` | — | Restrict which node types appear in the palette |
 | `onFlowChange` | `(flow: FlowData) => void` | — | Called when the flow changes (node/edge add, remove, move) |
 | `onSave` | `(flow: FlowData) => void` | — | Called when the user triggers a save |
 | `onFlowGenerated` | `(flow: FlowData) => void` | — | Called when a flow is generated via AI |
-| `theme` | `'light' \| 'dark' \| 'system'` | `'system'` | Theme override |
+| `isDarkMode` | `boolean` | `false` | Use dark mode theme |
 | `readOnly` | `boolean` | `false` | Disable editing (nodes not draggable/connectable) |
 | `showDefaultHeader` | `boolean` | `true` | Show built-in header (ignored if `renderHeader` provided) |
 | `showDefaultPalette` | `boolean` | `true` | Show built-in node palette |
@@ -125,7 +124,7 @@ export default function App() {
 | `validate()` | `ValidationResult` | Validate the current flow |
 | `fitView()` | `void` | Fit all nodes into view |
 | `clear()` | `void` | Remove all nodes and edges |
-| `addNode(name)` | `void` | Add a node by component name |
+| `addNode(nodeData)` | `void` | Add a node (`Partial<FlowNode>`) |
 
 ### Design Note
 

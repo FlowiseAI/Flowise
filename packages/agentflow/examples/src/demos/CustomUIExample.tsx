@@ -253,21 +253,23 @@ export function CustomUIExample() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
 
     return (
-        <div style={{ width: '100%', height: '100vh' }}>
-            <Agentflow
-                ref={agentflowRef}
-                apiBaseUrl={apiBaseUrl}
-                token={token ?? undefined}
-                initialFlow={initialFlow}
-                renderHeader={(props) => <CustomHeader {...props} />}
-                renderNodePalette={(props) => <CustomPalette {...props} />}
-                showDefaultHeader={false}
-                showDefaultPalette={false}
-                onSave={(flow) => {
-                    console.log('Saving flow:', flow)
-                    alert('Flow saved! Check console.')
-                }}
-            />
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1 }}>
+                <Agentflow
+                    ref={agentflowRef}
+                    apiBaseUrl={apiBaseUrl}
+                    token={token ?? undefined}
+                    initialFlow={initialFlow}
+                    renderHeader={(props) => <CustomHeader {...props} />}
+                    renderNodePalette={(props) => <CustomPalette {...props} />}
+                    showDefaultHeader={false}
+                    showDefaultPalette={false}
+                    onSave={(flow) => {
+                        console.log('Saving flow:', flow)
+                        alert('Flow saved! Check console.')
+                    }}
+                />
+            </div>
         </div>
     )
 }
