@@ -1,44 +1,24 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, ReactNode, useContext, useMemo } from 'react'
 
 import type { ConfigContextValue } from '../../core/types'
 
 const ConfigContext = createContext<ConfigContextValue | null>(null)
 
 interface ConfigProviderProps {
-    theme?: 'light' | 'dark' | 'system'
+    isDarkMode?: boolean
     components?: string[]
     readOnly?: boolean
     children: ReactNode
 }
 
-export function ConfigProvider({ theme = 'system', components, readOnly = false, children }: ConfigProviderProps) {
-    const [isDarkMode, setIsDarkMode] = useState(false)
-
-    // Determine dark mode based on theme setting
-    useEffect(() => {
-        if (theme === 'dark') {
-            setIsDarkMode(true)
-        } else if (theme === 'light') {
-            setIsDarkMode(false)
-        } else {
-            // system preference
-            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-            setIsDarkMode(mediaQuery.matches)
-
-            const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches)
-            mediaQuery.addEventListener('change', handler)
-            return () => mediaQuery.removeEventListener('change', handler)
-        }
-    }, [theme])
-
+export function ConfigProvider({ isDarkMode = false, components, readOnly = false, children }: ConfigProviderProps) {
     const value = useMemo<ConfigContextValue>(
         () => ({
-            theme,
+            isDarkMode,
             components,
-            readOnly,
-            isDarkMode
+            readOnly
         }),
-        [theme, components, readOnly, isDarkMode]
+        [isDarkMode, components, readOnly]
     )
 
     return <ConfigContext.Provider value={value}>{children}</ConfigContext.Provider>

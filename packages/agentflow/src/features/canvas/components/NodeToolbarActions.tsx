@@ -23,8 +23,11 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
     const { isDarkMode } = useConfigContext()
     const { deleteNode, duplicateNode } = useAgentflowContext()
 
+    // ReactFlow's NodeToolbar treats `isVisible={false}` differently from `isVisible={undefined}`.
+    // When `false`, the toolbar is force-hidden; when `undefined`, it falls back to ReactFlow's
+    // internal hover logic. We want force-show (true) or default behavior (undefined), never force-hide.
     return (
-        <StyledNodeToolbar position={Position.Top} offset={5} align='end' isVisible={isVisible}>
+        <StyledNodeToolbar position={Position.Top} offset={5} align='end' isVisible={isVisible || undefined}>
             <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Node actions'>
                 {nodeName !== 'startAgentflow' && (
                     <IconButton
@@ -32,7 +35,7 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                         title='Duplicate'
                         onClick={() => duplicateNode(nodeId)}
                         sx={{
-                            color: isDarkMode ? 'white' : theme.palette.grey[600],
+                            color: isDarkMode ? 'white' : 'inherit',
                             '&:hover': { color: theme.palette.primary.main }
                         }}
                     >
@@ -44,7 +47,7 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                     title='Delete'
                     onClick={() => deleteNode(nodeId)}
                     sx={{
-                        color: isDarkMode ? 'white' : theme.palette.grey[600],
+                        color: isDarkMode ? 'white' : 'inherit',
                         '&:hover': { color: theme.palette.error.main }
                     }}
                 >
@@ -56,7 +59,7 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                         title='Info'
                         onClick={onInfoClick}
                         sx={{
-                            color: isDarkMode ? 'white' : theme.palette.grey[600],
+                            color: isDarkMode ? 'white' : 'inherit',
                             '&:hover': { color: theme.palette.info.main }
                         }}
                     >

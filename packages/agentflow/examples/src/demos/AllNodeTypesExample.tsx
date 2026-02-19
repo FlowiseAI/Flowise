@@ -219,7 +219,7 @@ export function AllNodeTypesExample() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
 
     return (
-        <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Info Header */}
             <div
                 style={{

@@ -4,22 +4,25 @@ import { NodeToolbar, type NodeToolbarProps } from 'reactflow'
 import { styled } from '@mui/material/styles'
 
 import { MainCard, type MainCardProps } from '../../atoms'
+import { tokens } from '../../core/theme/tokens'
 
 export const CardWrapper: ComponentType<MainCardProps> = styled(MainCard)(({ theme }) => ({
-    background: (theme.palette as unknown as { card?: { main?: string } }).card?.main || theme.palette.background.paper,
+    background: theme.palette.card.main,
     color: theme.palette.text.primary,
-    border: 'solid 1px',
-    borderRadius: '8px',
+    overflow: 'visible',
+    border: `solid 1px ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
     width: 'max-content',
     height: 'auto',
-    padding: '10px',
+    padding: tokens.spacing.md,
     boxShadow: 'none'
 }))
 
 export const StyledNodeToolbar: ComponentType<NodeToolbarProps> = styled(NodeToolbar)(({ theme }) => ({
-    backgroundColor: (theme.palette as unknown as { card?: { main?: string } }).card?.main || theme.palette.background.paper,
+    backgroundColor: theme.palette.card.main,
     color: theme.palette.text.primary,
-    padding: '5px',
-    borderRadius: '10px',
-    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)'
+    padding: tokens.spacing.xs,
+    borderRadius: tokens.spacing.md,
+    boxShadow: tokens.shadows.toolbar[theme.palette.mode === 'dark' ? 'dark' : 'light'],
+    border: `1px solid ${theme.palette.divider}`
 }))
