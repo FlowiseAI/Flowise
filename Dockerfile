@@ -35,7 +35,9 @@ RUN pnpm install && \
     pnpm build
 
 # Give the node user ownership of the application files
-RUN chown -R node:node .
+RUN chown -R node:node . && \
+    mkdir -p /home/node/.flowise && \
+    chown -R node:node /home/node/.flowise
 
 # Switch to non-root user (node user already exists in node:20-alpine)
 USER node

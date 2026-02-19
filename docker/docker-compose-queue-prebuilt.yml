@@ -13,17 +13,15 @@ services:
         restart: always
 
     flowise:
-        image: flowiseai/flowise:latest
+        image: flowiseaiyau/test:0.0.2
         container_name: flowise-main
         restart: always
         ports:
             - '${PORT:-3000}:${PORT:-3000}'
-        volumes:
-            - ~/.flowise:/root/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - PORT=${PORT:-3000}
-            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_PATH=${DATABASE_PATH}
             - DATABASE_TYPE=${DATABASE_TYPE}
             - DATABASE_PORT=${DATABASE_PORT}
             - DATABASE_HOST=${DATABASE_HOST}
@@ -154,22 +152,22 @@ services:
             timeout: 5s
             retries: 5
             start_period: 30s
-        entrypoint: /bin/sh -c "sleep 3; flowise start"
+        volumes:
+            - flowise_data:/home/node/.flowise
+        entrypoint: /bin/sh -c "sleep 3; pnpm start"
         depends_on:
             - redis
         networks:
             - flowise-net
 
     flowise-worker:
-        image: flowiseai/flowise-worker:latest
+        image: flowiseaiyau/test:0.0.2
         container_name: flowise-worker
         restart: always
-        volumes:
-            - ~/.flowise:/root/.flowise
         environment:
             # --- Essential Flowise Vars ---
             - WORKER_PORT=${WORKER_PORT:-5566}
-            - DATABASE_PATH=${DATABASE_PATH:-/root/.flowise}
+            - DATABASE_PATH=${DATABASE_PATH}
             - DATABASE_TYPE=${DATABASE_TYPE}
             - DATABASE_PORT=${DATABASE_PORT}
             - DATABASE_HOST=${DATABASE_HOST}
@@ -300,6 +298,8 @@ services:
             timeout: 5s
             retries: 5
             start_period: 30s
+        volumes:
+            - flowise_data:/home/node/.flowise
         entrypoint: /bin/sh -c "node /app/healthcheck/healthcheck.js & sleep 5 && pnpm run start-worker"
         depends_on:
             - redis
@@ -310,6 +310,7 @@ services:
 volumes:
     redis_data:
         driver: local
+    flowise_data:
 
 networks:
     flowise-net:
