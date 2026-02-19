@@ -1,14 +1,16 @@
 import path from 'node:path'
-import { IStorageProvider, FileInfo, StorageResult } from './IStorageProvider'
+import { IStorageProvider, FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 import sanitize from 'sanitize-filename'
 import { getUserHome } from '../utils'
-import { isPathTraversal, isValidUUID } from '../validator'
+import { isPathTraversal, isUnsafeFilePath, isValidUUID } from '../validator'
 import fs from 'node:fs'
 
 export abstract class BaseStorageProvider implements IStorageProvider {
     protected storagePath: string
 
-    constructor() {}
+    constructor() {
+        this.storagePath = this.getStoragePath()
+    }
 
     abstract getStorageType(): string
     abstract getConfig(): any
@@ -30,10 +32,10 @@ export abstract class BaseStorageProvider implements IStorageProvider {
         fileName: string,
         orgId: string
     ): Promise<fs.ReadStream | Buffer | undefined>
-    abstract removeFilesFromStorage(...paths: string[]): Promise<StorageResult>
+    abstract removeFilesFromStorage(...paths: string[]): Promise<StorageSizeResult>
     abstract removeSpecificFileFromUpload(filePath: string): Promise<void>
-    abstract removeSpecificFileFromStorage(...paths: string[]): Promise<StorageResult>
-    abstract removeFolderFromStorage(...paths: string[]): Promise<StorageResult>
+    abstract removeSpecificFileFromStorage(...paths: string[]): Promise<StorageSizeResult>
+    abstract removeFolderFromStorage(...paths: string[]): Promise<StorageSizeResult>
     abstract getStorageSize(orgId: string): Promise<number>
     abstract getMulterStorage(): any
     abstract getLoggerTransports(logType: 'server' | 'error' | 'requests', config?: any): any[]
@@ -42,12 +44,16 @@ export abstract class BaseStorageProvider implements IStorageProvider {
      * Shared utility for sanitizing filenames to prevent path traversal and other issues
      */
     protected sanitizeFilename(filename: string): string {
-        if (filename) {
-            const sanitizedFilename = sanitize(filename)
-            // Remove leading dots to prevent hidden files or relative path jumps
-            return sanitizedFilename.replace(/^\.+/, '')
+        if (!filename || isUnsafeFilePath(filename)) {
+            throw new Error('Invalid or unsafe fileName detected')
         }
-        return ''
+        const sanitizedFilename = sanitize(filename)
+        // Remove leading dots to prevent hidden files or relative path jumps
+        const cleaned = sanitizedFilename.replace(/^\.+/, '')
+        if (!cleaned || cleaned.includes('/') || cleaned.includes('\\')) {
+            throw new Error('Invalid filename after sanitization')
+        }
+        return cleaned
     }
 
     /**
@@ -88,6 +94,7 @@ export abstract class BaseStorageProvider implements IStorageProvider {
      * Shared utility for building a storage path from components
      */
     protected buildPath(...paths: string[]): string {
-        return path.join(this.storagePath, ...paths)
+        const sanitizedPaths = paths.filter((p) => p && typeof p === 'string').map((p) => this.sanitizeFilename(p))
+        return path.join(this.storagePath, ...sanitizedPaths)
     }
 }

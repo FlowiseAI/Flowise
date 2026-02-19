@@ -3,9 +3,25 @@ import multer from 'multer'
 import { MulterAzureStorage } from 'multer-azure-blob-storage'
 import { v4 as uuidv4 } from 'uuid'
 import { BaseStorageProvider } from './BaseStorageProvider'
-import { FileInfo, StorageResult } from './IStorageProvider'
+import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
-const { AzureBlobTransport } = require('winston-azure-blob')
+const { WinstonAzureBlob } = require('winston-azure-blob')
+
+/**
+ * Extends MulterAzureStorage to set file.path from file.blobName after upload.
+ * The server expects file.path (local/GCS) or file.key (S3) but multer-azure-blob-storage
+ * only sets file.blobName. This subclass bridges that gap.
+ */
+class MulterAzureStorageWithPath extends MulterAzureStorage {
+    _handleFile(req: any, file: any, cb: (error?: any, info?: any) => void): Promise<void> {
+        return super._handleFile(req, file, (err: any, info: any) => {
+            if (!err && info) {
+                info.path = info.blobName
+            }
+            cb(err, info)
+        })
+    }
+}
 
 export class AzureBlobStorageProvider extends BaseStorageProvider {
     private containerClient: ContainerClient
@@ -181,7 +197,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
         return filesList
     }
 
-    async removeFilesFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFilesFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         let prefix = paths.reduce((acc, cur) => acc + '/' + cur, '')
         if (prefix.startsWith('/')) {
             prefix = prefix.substring(1)
@@ -205,7 +221,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
         await this.containerClient.deleteBlob(blobName)
     }
 
-    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         let blobName = paths.reduce((acc, cur) => acc + '/' + cur, '')
         if (blobName.startsWith('/')) {
             blobName = blobName.substring(1)
@@ -220,7 +236,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
         return { totalSize: totalSize / 1024 / 1024 }
     }
 
-    async removeFolderFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFolderFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         let prefix = paths.reduce((acc, cur) => acc + '/' + cur, '')
         if (prefix.startsWith('/')) {
             prefix = prefix.substring(1)
@@ -267,7 +283,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
             storageConfig.accessKey = process.env.AZURE_BLOB_STORAGE_ACCOUNT_KEY
         }
 
-        const azureStorage = new MulterAzureStorage(storageConfig)
+        const azureStorage = new MulterAzureStorageWithPath(storageConfig)
         return multer({ storage: azureStorage })
     }
 
@@ -287,25 +303,31 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
 
         if (logType === 'server') {
             return [
-                new AzureBlobTransport({
+                new WinstonAzureBlob({
                     ...baseConfig,
-                    blobName: 'logs/server/server-%DATE%.log',
+                    blobName: 'logs/server/server',
+                    rotatePeriod: 'YYYY-MM-DD',
+                    extension: '.log',
                     level: 'info'
                 })
             ]
         } else if (logType === 'error') {
             return [
-                new AzureBlobTransport({
+                new WinstonAzureBlob({
                     ...baseConfig,
-                    blobName: 'logs/error/server-error-%DATE%.log',
+                    blobName: 'logs/error/server-error',
+                    rotatePeriod: 'YYYY-MM-DD',
+                    extension: '.log',
                     level: 'error'
                 })
             ]
         } else if (logType === 'requests') {
             return [
-                new AzureBlobTransport({
+                new WinstonAzureBlob({
                     ...baseConfig,
-                    blobName: 'logs/requests/server-requests-%DATE%.log.jsonl',
+                    blobName: 'logs/requests/server-requests',
+                    rotatePeriod: 'YYYY-MM-DD',
+                    extension: '.log.jsonl',
                     level: 'debug'
                 })
             ]

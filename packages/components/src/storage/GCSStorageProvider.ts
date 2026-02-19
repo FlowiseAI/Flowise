@@ -3,7 +3,7 @@ import { LoggingWinston } from '@google-cloud/logging-winston'
 import multer from 'multer'
 import { v4 as uuidv4 } from 'uuid'
 import { BaseStorageProvider } from './BaseStorageProvider'
-import { FileInfo, StorageResult } from './IStorageProvider'
+import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
 const MulterGoogleCloudStorage = require('multer-cloud-storage')
 
@@ -247,7 +247,7 @@ export class GCSStorageProvider extends BaseStorageProvider {
         }))
     }
 
-    async removeFilesFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFilesFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         const normalizedPath = paths.map((p) => this.normalizePath(p)).join('/')
         await this.bucket.deleteFiles({ prefix: `${normalizedPath}/` })
 
@@ -259,7 +259,7 @@ export class GCSStorageProvider extends BaseStorageProvider {
         await this.bucket.file(filePath).delete()
     }
 
-    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         const fileName = paths.pop()
         if (fileName) {
             const sanitizedFilename = this.sanitizeFilename(fileName)
@@ -272,7 +272,7 @@ export class GCSStorageProvider extends BaseStorageProvider {
         return { totalSize: totalSize / 1024 / 1024 }
     }
 
-    async removeFolderFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFolderFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         const normalizedPath = paths.map((p) => this.normalizePath(p)).join('/')
         await this.bucket.deleteFiles({ prefix: `${normalizedPath}/` })
 

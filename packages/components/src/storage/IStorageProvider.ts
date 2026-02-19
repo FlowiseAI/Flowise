@@ -7,8 +7,11 @@ export interface FileInfo {
 }
 
 export interface StorageResult {
-    // path is optional as some functions only return totalSize
-    path?: string
+    path: string
+    totalSize: number
+}
+
+export interface StorageSizeResult {
     totalSize: number
 }
 
@@ -61,7 +64,7 @@ export interface IStorageProvider {
     /**
      * Remove multiple files from storage
      */
-    removeFilesFromStorage(...paths: string[]): Promise<StorageResult>
+    removeFilesFromStorage(...paths: string[]): Promise<StorageSizeResult>
 
     /**
      * Remove a specific file from the upload directory
@@ -71,12 +74,12 @@ export interface IStorageProvider {
     /**
      * Remove a specific file from storage
      */
-    removeSpecificFileFromStorage(...paths: string[]): Promise<StorageResult>
+    removeSpecificFileFromStorage(...paths: string[]): Promise<StorageSizeResult>
 
     /**
      * Remove a complete folder and its contents from storage
      */
-    removeFolderFromStorage(...paths: string[]): Promise<StorageResult>
+    removeFolderFromStorage(...paths: string[]): Promise<StorageSizeResult>
 
     /**
      * Calculate the total storage size for an organization

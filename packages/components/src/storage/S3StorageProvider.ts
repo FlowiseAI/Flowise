@@ -13,7 +13,7 @@ import multerS3 from 'multer-s3'
 import { transports } from 'winston'
 import { v4 as uuidv4 } from 'uuid'
 import { BaseStorageProvider } from './BaseStorageProvider'
-import { FileInfo, StorageResult } from './IStorageProvider'
+import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
 const { S3StreamLogger } = require('s3-streamlogger')
 
@@ -363,7 +363,7 @@ export class S3StorageProvider extends BaseStorageProvider {
         }
     }
 
-    async removeFilesFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFilesFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         let Key = paths.reduce((acc, cur) => acc + '/' + cur, '')
         if (Key.startsWith('/')) {
             Key = Key.substring(1)
@@ -383,7 +383,7 @@ export class S3StorageProvider extends BaseStorageProvider {
         await this.deleteS3Folder(Key)
     }
 
-    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         let Key = paths.reduce((acc, cur) => acc + '/' + cur, '')
         if (Key.startsWith('/')) {
             Key = Key.substring(1)
@@ -394,7 +394,7 @@ export class S3StorageProvider extends BaseStorageProvider {
         return { totalSize: totalSize / 1024 / 1024 }
     }
 
-    async removeFolderFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFolderFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         let Key = paths.reduce((acc, cur) => acc + '/' + cur, '')
         if (Key.startsWith('/')) {
             Key = Key.substring(1)

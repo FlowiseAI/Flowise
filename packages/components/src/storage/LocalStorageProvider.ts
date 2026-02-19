@@ -4,7 +4,7 @@ import multer from 'multer'
 import DailyRotateFile from 'winston-daily-rotate-file'
 import { transports } from 'winston'
 import { BaseStorageProvider } from './BaseStorageProvider'
-import { FileInfo, StorageResult } from './IStorageProvider'
+import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
 export class LocalStorageProvider extends BaseStorageProvider {
     constructor() {
@@ -51,7 +51,7 @@ export class LocalStorageProvider extends BaseStorageProvider {
         fileNames: string[],
         ...paths: string[]
     ): Promise<StorageResult> {
-        const dir = this.buildPath(...paths.map((p) => this.sanitizeFilename(p)))
+        const dir = this.buildPath(...paths)
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
         }
@@ -65,7 +65,7 @@ export class LocalStorageProvider extends BaseStorageProvider {
     }
 
     async addSingleFileToStorage(mime: string, bf: Buffer, fileName: string, ...paths: string[]): Promise<StorageResult> {
-        const dir = this.buildPath(...paths.map((p) => this.sanitizeFilename(p)))
+        const dir = this.buildPath(...paths)
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
         }
@@ -229,7 +229,7 @@ export class LocalStorageProvider extends BaseStorageProvider {
         }
     }
 
-    async removeFilesFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFilesFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         const directory = this.buildPath(...paths.map((p) => this.sanitizeFilename(p)))
         await this.deleteLocalFolderRecursive(directory)
 
@@ -243,7 +243,7 @@ export class LocalStorageProvider extends BaseStorageProvider {
         }
     }
 
-    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeSpecificFileFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         const fileName = paths.pop()
         if (fileName) {
             const sanitizedFilename = this.sanitizeFilename(fileName)
@@ -261,7 +261,7 @@ export class LocalStorageProvider extends BaseStorageProvider {
         return { totalSize: totalSize / 1024 / 1024 }
     }
 
-    async removeFolderFromStorage(...paths: string[]): Promise<StorageResult> {
+    async removeFolderFromStorage(...paths: string[]): Promise<StorageSizeResult> {
         const directory = this.buildPath(...paths.map((p) => this.sanitizeFilename(p)))
         await this.deleteLocalFolderRecursive(directory, true)
 
