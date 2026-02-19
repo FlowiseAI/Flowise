@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, Fragment } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import axios from 'axios'
+import parser from 'html-react-parser'
 
 // Material
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
@@ -298,7 +299,21 @@ export const AsyncDropdown = ({
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography variant='h5'>{option.label}</Typography>
                             {option.description && (
-                                <Typography sx={{ color: customization.isDarkMode ? '#9e9e9e' : '' }}>{option.description}</Typography>
+                                <Typography 
+                                    sx={{ 
+                                        color: customization.isDarkMode ? '#9e9e9e' : '',
+                                        '& a': {
+                                            color: theme.palette.primary.main,
+                                            textDecoration: 'none',
+                                            '&:hover': {
+                                                textDecoration: 'underline'
+                                            }
+                                        }
+                                    }}
+                                    component='div'
+                                >
+                                    {parser(option.description)}
+                                </Typography>
                             )}
                         </div>
                     </Box>

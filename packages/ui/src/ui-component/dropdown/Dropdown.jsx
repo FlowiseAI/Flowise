@@ -5,6 +5,7 @@ import { Popper, FormControl, TextField, Box, Typography } from '@mui/material'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { useTheme, styled } from '@mui/material/styles'
 import PropTypes from 'prop-types'
+import parser from 'html-react-parser'
 
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
@@ -92,7 +93,21 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography variant='h5'>{option.label}</Typography>
                             {option.description && (
-                                <Typography sx={{ color: customization.isDarkMode ? '#9e9e9e' : '' }}>{option.description}</Typography>
+                                <Typography 
+                                    sx={{ 
+                                        color: customization.isDarkMode ? '#9e9e9e' : '',
+                                        '& a': {
+                                            color: theme.palette.primary.main,
+                                            textDecoration: 'none',
+                                            '&:hover': {
+                                                textDecoration: 'underline'
+                                            }
+                                        }
+                                    }}
+                                    component='div'
+                                >
+                                    {parser(option.description)}
+                                </Typography>
                             )}
                         </div>
                     </Box>

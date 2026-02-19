@@ -1037,6 +1037,15 @@ export const mapExtToInputField = (ext: string) => {
             return 'docxFile'
         case '.yaml':
             return 'yamlFile'
+        case '.jpg':
+        case '.jpeg':
+        case '.png':
+        case '.gif':
+        case '.bmp':
+        case '.webp':
+        case '.tiff':
+        case '.tif':
+            return 'imageFile'
         default:
             return 'txtFile'
     }
@@ -1079,6 +1088,14 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
         case 'text/x-yaml':
         case 'text/yaml':
             return 'yamlFile'
+        case 'image/jpeg':
+        case 'image/jpg':
+        case 'image/png':
+        case 'image/gif':
+        case 'image/bmp':
+        case 'image/webp':
+        case 'image/tiff':
+            return 'imageFile'
         default:
             return 'txtFile'
     }
