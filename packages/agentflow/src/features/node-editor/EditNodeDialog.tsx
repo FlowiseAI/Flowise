@@ -5,9 +5,9 @@ import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typog
 import { useTheme } from '@mui/material/styles'
 import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-react'
 
-import { NodeInputHandler } from '../../atoms'
-import type { InputParam, NodeData } from '../../core/types'
-import { useAgentflowContext, useConfigContext } from '../../infrastructure/store'
+import { NodeInputHandler } from '@/atoms'
+import type { InputParam, NodeData } from '@/core/types'
+import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 export interface EditNodeDialogProps {
     show: boolean

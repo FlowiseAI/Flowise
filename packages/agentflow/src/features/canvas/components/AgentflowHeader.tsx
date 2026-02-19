@@ -1,4 +1,4 @@
-import type { HeaderRenderProps, ValidationResult } from '../../../core/types'
+import type { HeaderRenderProps, ValidationResult } from '@/core/types'
 
 export interface AgentflowHeaderProps extends HeaderRenderProps {
     readOnly?: boolean

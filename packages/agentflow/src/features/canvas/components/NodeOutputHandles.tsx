@@ -5,7 +5,7 @@ import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 import { useTheme } from '@mui/material/styles'
 import { IconCircleChevronRightFilled } from '@tabler/icons-react'
 
-import type { OutputAnchor } from '../../../core/types'
+import type { OutputAnchor } from '@/core/types'
 
 export interface NodeOutputHandlesProps {
     outputAnchors: OutputAnchor[]
