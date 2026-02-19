@@ -2,7 +2,7 @@ import { makeFlowNode, makeNodeData } from '@test-utils/factories'
 
 import type { NodeData } from '../types'
 
-import { getUniqueNodeId, getUniqueNodeLabel, initializeDefaultNodeData, initNode } from './nodeFactory'
+import { getUniqueNodeId, getUniqueNodeLabel, initNode } from './nodeFactory'
 
 const makeNode = (id: string, name: string, label: string) => makeFlowNode(id, { data: { id, name, label } })
 
@@ -45,31 +45,6 @@ describe('getUniqueNodeLabel', () => {
         const nodeData = { id: '', name: 'llmChain', label: 'LLM Chain' } as NodeData
         const nodes = [makeNode('llmChain_0', 'llmChain', 'LLM Chain 0')]
         expect(getUniqueNodeLabel(nodeData, nodes)).toBe('LLM Chain 1')
-    })
-})
-
-describe('initializeDefaultNodeData', () => {
-    it('should return empty object for empty params', () => {
-        expect(initializeDefaultNodeData([])).toEqual({})
-    })
-
-    it('should use default values when provided', () => {
-        const params = [
-            { name: 'temperature', default: 0.7 },
-            { name: 'maxTokens', default: 1024 }
-        ]
-        expect(initializeDefaultNodeData(params)).toEqual({
-            temperature: 0.7,
-            maxTokens: 1024
-        })
-    })
-
-    it('should use empty string when no default is provided', () => {
-        const params = [{ name: 'apiKey' }, { name: 'model', default: 'gpt-4' }]
-        expect(initializeDefaultNodeData(params)).toEqual({
-            apiKey: '',
-            model: 'gpt-4'
-        })
     })
 })
 
@@ -129,10 +104,9 @@ describe('initNode', () => {
         })
         const result = initNode(nodeData, 'n1')
         expect(result.inputs!['temp']).toBe(0.7)
-        // initNode only sets defaults for params with an explicit `default` value,
-        // unlike initializeDefaultNodeData which falls back to ''. Params without
-        // a default are intentionally omitted so the UI can distinguish "unset" from "empty".
-        expect(result.inputs!['model']).toBeUndefined()
+        // Params without a default fall back to '' (matching agentflow v2 behavior).
+        // This ensures show/hide conditions can evaluate against a defined value.
+        expect(result.inputs!['model']).toBe('')
     })
 
     it('should preserve existing inputs over defaults', () => {

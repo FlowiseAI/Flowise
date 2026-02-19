@@ -1,6 +1,7 @@
 import { memo } from 'react'
 
-import type { NodeData } from '../../../core/types'
+import type { NodeData } from '@/core/types'
+
 import { renderNodeIcon } from '../nodeIcons'
 
 export interface NodeIconProps {

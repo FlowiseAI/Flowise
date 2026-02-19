@@ -3,7 +3,7 @@ import type { ComponentType } from 'react'
 import { Fab, FabProps } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
-import { tokens } from '../../core/theme/tokens'
+import { tokens } from '@/core/theme/tokens'
 
 export interface StyledFabProps extends FabProps {
     gradient?: boolean

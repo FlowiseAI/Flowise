@@ -3,8 +3,9 @@ import { useUpdateNodeInternals } from 'reactflow'
 
 import { Box, Typography } from '@mui/material'
 
-import type { NodeData } from '../../../core/types'
-import { useApiContext, useConfigContext } from '../../../infrastructure/store'
+import type { NodeData } from '@/core/types'
+import { useApiContext, useConfigContext } from '@/infrastructure/store'
+
 import { NodeIcon } from '../components/NodeIcon'
 import { NodeInfoDialog } from '../components/NodeInfoDialog'
 import { NodeInputHandle } from '../components/NodeInputHandle'

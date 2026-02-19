@@ -5,7 +5,8 @@ import { ButtonGroup, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconCopy, IconInfoCircle, IconTrash } from '@tabler/icons-react'
 
-import { useAgentflowContext, useConfigContext } from '../../../infrastructure/store'
+import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
+
 import { StyledNodeToolbar } from '../styled'
 
 export interface NodeToolbarActionsProps {

@@ -25,10 +25,10 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { IconMinus, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
 
-import { MainCard } from '../../atoms'
-import { AGENTFLOW_ICONS } from '../../core'
-import type { NodeData } from '../../core/types'
-import { useApiContext, useConfigContext } from '../../infrastructure/store'
+import { MainCard } from '@/atoms'
+import { AGENTFLOW_ICONS } from '@/core'
+import type { NodeData } from '@/core/types'
+import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { debounce, groupNodesByCategory, searchNodes } from './search'
 import { StyledFab } from './StyledFab'

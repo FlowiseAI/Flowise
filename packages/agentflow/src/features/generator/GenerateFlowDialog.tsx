@@ -19,8 +19,8 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { IconSparkles } from '@tabler/icons-react'
 
-import type { FlowData } from '../../core/types'
-import { useApiContext, useConfigContext } from '../../infrastructure/store'
+import type { FlowData } from '@/core/types'
+import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { defaultSuggestions, SuggestionChips } from './SuggestionChips'
 
