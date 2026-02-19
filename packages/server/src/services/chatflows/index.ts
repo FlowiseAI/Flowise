@@ -361,8 +361,10 @@ const updateChatflow = async (
                 parsed.fullFileUpload.allowedUploadFileTypes = sanitized
                 updateChatFlow.chatbotConfig = JSON.stringify(parsed)
             }
-        } catch {
-            // If parsing fails, leave chatbotConfig unchanged
+        } catch (error) {
+            const message = getErrorMessage(error)
+            logger.error(`[server]: Invalid chatbotConfig JSON in updateChatflow: ${message}`)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid chatbotConfig: ${message}`)
         }
     }
     const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
