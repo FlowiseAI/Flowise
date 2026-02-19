@@ -1,4 +1,4 @@
-import { STSClient, AssumeRoleCommand, AssumeRoleCommandInput } from '@aws-sdk/client-sts'
+import { STSClient, AssumeRoleCommand, AssumeRoleCommandInput, STSClientConfig } from '@aws-sdk/client-sts'
 import { ICommonObject, INodeData } from './Interface'
 import { getCredentialData, getCredentialParam } from './utils'
 
@@ -71,16 +71,11 @@ const AWS_ROLE_ARN_REGEX = /^arn:aws(-[a-z]+(-[a-z]+)?)?:iam::\d{12}:role\/[\w+=
  * @returns {Promise<AWSCredentialConfig>} Resolved credential configuration with optional
  *   `credentials` and `region` fields
  * @throws {Error} If STS AssumeRole fails (e.g., access denied, invalid Role ARN, wrong
- *   External ID) — the error message includes the Role ARN and troubleshooting guidance
+ *   External ID) — The full error is logged server-side.
  */
 export async function getAWSCredentialConfig(nodeData: INodeData, options: ICommonObject, region?: string): Promise<AWSCredentialConfig> {
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const awsRegion = region || DEFAULT_AWS_REGION
-
-    // Handle empty credential data (no credential attached to node)
-    if (!credentialData || Object.keys(credentialData).length === 0) {
-        return { credentials: undefined, region: awsRegion }
-    }
 
     const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
     const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
@@ -92,7 +87,7 @@ export async function getAWSCredentialConfig(nodeData: INodeData, options: IComm
     if (roleArn) {
         if (!AWS_ROLE_ARN_REGEX.test(roleArn)) {
             throw new Error(
-                `Invalid Role ARN format: "${roleArn}". ` + 'Expected format: arn:aws:iam::<12-digit-account-id>:role/<role-name>'
+                'Invalid Role ARN format: Expected format: arn:aws:iam::<12-digit-account-id>:role/<role-name>'
             )
         }
         const assumedCredentials = await assumeRole({
@@ -101,7 +96,8 @@ export async function getAWSCredentialConfig(nodeData: INodeData, options: IComm
             sessionToken,
             roleArn,
             externalId,
-            region: awsRegion
+            region: awsRegion,
+            logger: options.logger
         })
         return { credentials: assumedCredentials, region: awsRegion }
     }
@@ -142,8 +138,7 @@ export async function getAWSCredentialConfig(nodeData: INodeData, options: IComm
  *   `secretAccessKey`, `sessionToken`) from the assumed role
  * @throws {Error} When STS returns incomplete credentials (missing AccessKeyId,
  *   SecretAccessKey, or SessionToken)
- * @throws {Error} When the STS API call fails — the error message includes the Role ARN,
- *   the original error, and troubleshooting guidance
+ * @throws {Error} When the STS API call fails — The full error is logged server-side.
  */
 async function assumeRole(params: {
     accessKeyId?: string
@@ -152,11 +147,12 @@ async function assumeRole(params: {
     roleArn: string
     externalId?: string
     region: string
+    logger?: any
 }): Promise<AWSCredentials> {
-    const { accessKeyId, secretAccessKey, sessionToken, roleArn, externalId, region } = params
+    const { accessKeyId, secretAccessKey, sessionToken, roleArn, externalId, region, logger } = params
 
     // Build STS client config
-    const stsConfig: Record<string, any> = { region }
+    const stsConfig: STSClientConfig = { region }
 
     // Use explicit credentials if provided; otherwise SDK default chain
     if (accessKeyId && secretAccessKey) {
@@ -194,11 +190,16 @@ async function assumeRole(params: {
         if (error instanceof Error && error.message === 'STS AssumeRole returned incomplete credentials') {
             throw error
         }
-        const message = error instanceof Error ? error.message : String(error)
+        const rawMessage = error instanceof Error ? error.message : String(error)
+        // Log full error server-side for operator debugging (includes IAM principal ARNs, account IDs, etc.)
+        if (logger) {
+            logger.error(`[AWS STS] AssumeRole failed for role "${roleArn}": ${rawMessage}`)
+        }
+        // Return sanitized error to user — no raw STS message that may contain internal infrastructure details
         throw new Error(
-            `Failed to assume IAM role "${roleArn}": ${message}. ` +
+            'Failed to assume IAM role. ' +
                 'Verify that the Role ARN is correct, the trust policy allows assumption from these credentials, ' +
-                'and the External ID matches (if required).'
+                'and the External ID matches (if required). Check server logs for details.'
         )
     }
 }
@@ -207,26 +208,23 @@ async function assumeRole(params: {
  * Get AWS credentials from node data (backward-compatible wrapper).
  *
  * This function preserves the original API used by **Pattern A** nodes (AWS SNS,
- * DynamoDB KV Storage) that expect an `AWSCredentials` object. Internally it delegates
- * to {@link getAWSCredentialConfig} and unwraps the credentials.
+ * DynamoDB KV Storage). Internally it delegates to {@link getAWSCredentialConfig}
+ * and unwraps the credentials.
  *
- * **Behavior change in v2.0**: When a `roleArn` is configured, this function now
- * transparently returns temporary credentials from STS AssumeRole instead of throwing.
- * When neither static keys nor a `roleArn` are provided, it throws as before.
+ * **Behavior**:
+ * - When `roleArn` is configured: returns temporary credentials from STS AssumeRole
+ * - When static keys (`awsKey` + `awsSecret`) are provided: returns them directly
+ * - When neither keys nor `roleArn` are provided: returns `undefined`, allowing the
+ *   AWS SDK to use its default credential provider chain (EC2 instance profiles,
+ *   EKS IRSA, environment variables, ~/.aws/credentials, etc.)
  *
  * @param {INodeData} nodeData - Node data containing credential information
  * @param {ICommonObject} options - Options containing appDataSource and databaseEntities
- * @returns {Promise<AWSCredentials>} Resolved credentials (static or from STS AssumeRole)
- * @throws {Error} When no credentials can be resolved (no keys and no roleArn) —
- *   "AWS Access Key ID and Secret Access Key are required"
+ * @returns {Promise<AWSCredentials | undefined>} Resolved credentials (static, from STS AssumeRole, or undefined)
  * @throws {Error} When STS AssumeRole fails (propagated from {@link getAWSCredentialConfig})
  */
-export async function getAWSCredentials(nodeData: INodeData, options: ICommonObject): Promise<AWSCredentials> {
+export async function getAWSCredentials(nodeData: INodeData, options: ICommonObject): Promise<AWSCredentials | undefined> {
     const config = await getAWSCredentialConfig(nodeData, options)
-
-    if (!config.credentials) {
-        throw new Error('AWS Access Key ID and Secret Access Key are required')
-    }
 
     return config.credentials
 }

@@ -17,15 +17,18 @@ const KEY_SEPARATOR = '#'
 const MAX_KEY_LENGTH = 2048 // DynamoDB limit for partition key
 
 // Helper function to create DynamoDB client
-function createDynamoDBClient(credentials: AWSCredentials, region: string): DynamoDBClient {
-    return new DynamoDBClient({
-        region,
-        credentials: {
+function createDynamoDBClient(credentials: AWSCredentials | undefined, region: string): DynamoDBClient {
+    const config: { region: string; credentials?: { accessKeyId: string; secretAccessKey: string; sessionToken?: string } } = { region }
+
+    if (credentials) {
+        config.credentials = {
             accessKeyId: credentials.accessKeyId,
             secretAccessKey: credentials.secretAccessKey,
             ...(credentials.sessionToken && { sessionToken: credentials.sessionToken })
         }
-    })
+    }
+
+    return new DynamoDBClient(config)
 }
 
 // Helper function to build full key with optional prefix

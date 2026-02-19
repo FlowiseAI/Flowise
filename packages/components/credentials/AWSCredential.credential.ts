@@ -11,7 +11,7 @@ class AWSApi implements INodeCredential {
     constructor() {
         this.label = 'AWS security credentials'
         this.name = 'awsApi'
-        this.version = 2.0
+        this.version = 1.1
         this.description =
             'Your <a target="_blank" href="https://docs.aws.amazon.com/IAM/latest/UserGuide/security-creds.html">AWS security credentials</a>. When unspecified, credentials will be sourced from the runtime environment according to the default AWS SDK behavior.'
         this.optional = true

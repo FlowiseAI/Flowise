@@ -1,6 +1,6 @@
 import { flatten } from 'lodash'
 import { AmazonKendraRetriever } from '@langchain/aws'
-import { KendraClient, BatchPutDocumentCommand, BatchDeleteDocumentCommand } from '@aws-sdk/client-kendra'
+import { KendraClient, BatchPutDocumentCommand, BatchDeleteDocumentCommand, KendraClientConfig } from '@aws-sdk/client-kendra'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { FLOWISE_CHATID, parseJsonBody } from '../../../src/utils'
@@ -121,7 +121,7 @@ class Kendra_VectorStores implements INode {
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
             const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
-            let clientConfig: any = { region }
+            let clientConfig: KendraClientConfig = { region }
             if (credentialConfig.credentials) {
                 clientConfig.credentials = credentialConfig.credentials
             }
@@ -182,7 +182,7 @@ class Kendra_VectorStores implements INode {
             const region = nodeData.inputs?.region as string
 
             const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
-            let clientConfig: any = { region }
+            let clientConfig: KendraClientConfig = { region }
             if (credentialConfig.credentials) {
                 clientConfig.credentials = credentialConfig.credentials
             }
@@ -213,7 +213,7 @@ class Kendra_VectorStores implements INode {
         const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
         const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
-        let clientOptions: any = {}
+        let clientOptions: Partial<KendraClientConfig> = {}
 
         if (credentialConfig.credentials) {
             clientOptions.credentials = credentialConfig.credentials
