@@ -36,6 +36,9 @@ export function validateFileMimeTypeAndExtensionMatch(filename: string, mimetype
  */
 export function sanitizeAllowedUploadMimeTypesFromConfig(allowedTypesString: string): string {
     if (typeof allowedTypesString !== 'string') return ''
-    const parts = allowedTypesString.split(',').map((s) => s.trim()).filter(Boolean)
+    const parts = allowedTypesString
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
     return filterAllowedUploadMimeTypes(parts).join(',')
 }

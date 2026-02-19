@@ -357,9 +357,7 @@ const updateChatflow = async (
             const parsed = JSON.parse(updateChatFlow.chatbotConfig) as ICommonObject
             if (parsed?.fullFileUpload?.allowedUploadFileTypes !== undefined) {
                 const current = parsed.fullFileUpload.allowedUploadFileTypes
-                const sanitized = sanitizeAllowedUploadMimeTypesFromConfig(
-                    typeof current === 'string' ? current : String(current ?? '')
-                )
+                const sanitized = sanitizeAllowedUploadMimeTypesFromConfig(typeof current === 'string' ? current : String(current ?? ''))
                 parsed.fullFileUpload.allowedUploadFileTypes = sanitized
                 updateChatFlow.chatbotConfig = JSON.stringify(parsed)
             }

@@ -156,7 +156,5 @@ export const validateMimeTypeAndExtensionMatch = (filename: string, mimetype: st
  */
 export const filterAllowedUploadMimeTypes = (mimeTypes: string[]): string[] => {
     if (!Array.isArray(mimeTypes)) return []
-    return mimeTypes
-        .map((m) => (typeof m === 'string' ? m.trim() : ''))
-        .filter((m) => m !== '' && isAllowedUploadMimeType(m))
+    return mimeTypes.map((m) => (typeof m === 'string' ? m.trim() : '')).filter((m) => m !== '' && isAllowedUploadMimeType(m))
 }
