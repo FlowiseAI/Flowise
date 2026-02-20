@@ -7,7 +7,6 @@ import { IconCopy, IconEdit, IconInfoCircle, IconTrash } from '@tabler/icons-rea
 
 import { useAgentflowContext, useConfigContext } from '../../../infrastructure/store'
 import { useOpenNodeEditor } from '../hooks'
-
 import { StyledNodeToolbar } from '../styled'
 
 export interface NodeToolbarActionsProps {
@@ -29,7 +28,6 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
     const handleEditClick = () => {
         openNodeEditor(nodeId)
     }
-
 
     // ReactFlow's NodeToolbar treats `isVisible={false}` differently from `isVisible={undefined}`.
     // When `false`, the toolbar is force-hidden; when `undefined`, it falls back to ReactFlow's

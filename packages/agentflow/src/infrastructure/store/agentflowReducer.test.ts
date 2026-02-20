@@ -102,15 +102,15 @@ describe('agentflowReducer', () => {
         const state = {
             ...initialState,
             editingNodeId: 'node-123',
-            editDialogProps: { /* ... */ }
+            editDialogProps: {
+                /* ... */
+            }
         }
         const newState = agentflowReducer(state, { type: 'CLOSE_EDIT_DIALOG' })
 
         expect(newState.editingNodeId).toBeNull()
         expect(newState.editDialogProps).toBeNull()
     })
-
-
 
     it('should handle SET_DIRTY', () => {
         const result = agentflowReducer(initialState, { type: 'SET_DIRTY', payload: true })
@@ -132,7 +132,6 @@ describe('agentflowReducer', () => {
             reactFlowInstance: null,
             editingNodeId: null,
             editDialogProps: null
-
         }
         const result = agentflowReducer(dirtyState, { type: 'RESET' })
         expect(result.nodes).toEqual([])

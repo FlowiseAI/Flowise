@@ -130,8 +130,8 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
     const initializedData: NodeData = {
         ...nodeData,
         id: newNodeId,
-        inputs: inputDefinitions,  // Keep parameter definitions
-        inputValues: { ...initialInputValues, ...(nodeData.inputValues || {}) },  // Merge defaults with existing values
+        inputs: inputDefinitions, // Keep parameter definitions
+        inputValues: { ...initialInputValues, ...(nodeData.inputValues || {}) }, // Merge defaults with existing values
         inputAnchors: inputAnchors as NodeData['inputAnchors'],
         outputAnchors: outputAnchors as NodeData['outputAnchors']
     }

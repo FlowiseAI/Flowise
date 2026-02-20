@@ -1,7 +1,7 @@
 import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
-import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, NodeData, InputParam } from '../../core/types'
+import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '../../core/types'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
@@ -130,23 +130,20 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     )
 
     // Dialog operations
-    const openEditDialog = useCallback(
-        (nodeId: string, data: NodeData, inputParams: InputParam[]) => {
-            const dialogProps = {
-                inputParams: inputParams,
-                data: data,
-                disabled: false 
+    const openEditDialog = useCallback((nodeId: string, data: NodeData, inputParams: InputParam[]) => {
+        const dialogProps = {
+            inputParams: inputParams,
+            data: data,
+            disabled: false
+        }
+        dispatch({
+            type: 'OPEN_EDIT_DIALOG',
+            payload: {
+                nodeId,
+                dialogProps
             }
-            dispatch({
-                type: 'OPEN_EDIT_DIALOG',
-                payload: {
-                    nodeId,
-                    dialogProps
-                }
-            })
-        },
-        [] 
-    )
+        })
+    }, [])
 
     const closeEditDialog = useCallback(() => {
         dispatch({ type: 'CLOSE_EDIT_DIALOG' })

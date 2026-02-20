@@ -3,9 +3,8 @@ import { useUpdateNodeInternals } from 'reactflow'
 
 import { Box, Typography } from '@mui/material'
 
-import type { NodeData, InputParam } from '../../../core/types'
+import type { NodeData } from '../../../core/types'
 import { useAgentflowContext, useApiContext, useConfigContext } from '../../../infrastructure/store'
-import { useOpenNodeEditor } from '../hooks'
 import { NodeIcon } from '../components/NodeIcon'
 import { NodeInfoDialog } from '../components/NodeInfoDialog'
 import { NodeInputHandle } from '../components/NodeInputHandle'
@@ -13,8 +12,9 @@ import { NodeModelConfigs } from '../components/NodeModelConfigs'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
 import { NodeStatusIndicator, NodeWarningIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
-import { useNodeColors } from '../hooks/useNodeColors'
+import { useOpenNodeEditor } from '../hooks'
 import { useFlowNodes } from '../hooks/useFlowNodes'
+import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
 
 /** Width of the node icon container in pixels (theme.spacing(6.25) = 50px) */
@@ -71,11 +71,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     }, [data.name, data.version, data.warning])
 
     return (
-        <div
-            ref={ref}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onDoubleClick={handleDoubleClick}>
+        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onDoubleClick={handleDoubleClick}>
             <NodeToolbarActions
                 nodeId={data.id}
                 nodeName={data.name}

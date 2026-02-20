@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import type { AxiosInstance } from 'axios'
+
 import { EditNodeDialogProps } from '@/features/node-editor/EditNodeDialog'
 
 // ============================================================================
@@ -66,8 +67,8 @@ export interface NodeData {
     description?: string
     version?: number
     baseClasses?: string[]
-    inputs?: InputParam[]  // Parameter definitions from API
-    inputValues?: Record<string, unknown>  // Actual values entered by users
+    inputs?: InputParam[] // Parameter definitions from API
+    inputValues?: Record<string, unknown> // Actual values entered by users
     outputs?: NodeOutput[]
     inputAnchors?: InputAnchor[]
     outputAnchors?: OutputAnchor[]

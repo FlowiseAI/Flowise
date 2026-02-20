@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
-import { useAgentflowContext } from '../../../infrastructure/store'
-import { useFlowNodes } from './useFlowNodes'  // ← Add this import
+
 import type { NodeData } from '../../../core/types'
+import { useAgentflowContext } from '../../../infrastructure/store'
+
+import { useFlowNodes } from './useFlowNodes' // ← Add this import
 
 /**
  * Hook to open the node editor dialog
@@ -9,29 +11,32 @@ import type { NodeData } from '../../../core/types'
  */
 export function useOpenNodeEditor() {
     const { state, openEditDialog } = useAgentflowContext()
-    const { availableNodes } = useFlowNodes()  // ← Get availableNodes from here
-    
-    const openNodeEditor = useCallback((nodeId: string) => {
-        // Find the node data
-        const node = state.nodes.find(n => n.id === nodeId)
-        if (!node) return
+    const { availableNodes } = useFlowNodes() // ← Get availableNodes from here
 
-        // Find the node schema from available nodes (contains InputParam[] definitions)
-        const nodeSchema = availableNodes.find(n => n.name === node.data.name)
-        if (!nodeSchema) return
+    const openNodeEditor = useCallback(
+        (nodeId: string) => {
+            // Find the node data
+            const node = state.nodes.find((n) => n.id === nodeId)
+            if (!node) return
 
-        // Get inputParams from schema (API returns 'inputs' property as InputParam[])
-        const inputParams = nodeSchema.inputs || []
+            // Find the node schema from available nodes (contains InputParam[] definitions)
+            const nodeSchema = availableNodes.find((n) => n.name === node.data.name)
+            if (!nodeSchema) return
 
-        // Ensure inputValues object exists for storing user input
-        const nodeDataWithInputValues: NodeData = {
-            ...node.data,
-            inputValues: node.data.inputValues || {}
-        }
+            // Get inputParams from schema (API returns 'inputs' property as InputParam[])
+            const inputParams = nodeSchema.inputs || []
 
-        // Open the dialog
-        openEditDialog(nodeId, nodeDataWithInputValues, inputParams)
-    }, [state.nodes, availableNodes, openEditDialog])
-    
+            // Ensure inputValues object exists for storing user input
+            const nodeDataWithInputValues: NodeData = {
+                ...node.data,
+                inputValues: node.data.inputValues || {}
+            }
+
+            // Open the dialog
+            openEditDialog(nodeId, nodeDataWithInputValues, inputParams)
+        },
+        [state.nodes, availableNodes, openEditDialog]
+    )
+
     return { openNodeEditor }
 }
