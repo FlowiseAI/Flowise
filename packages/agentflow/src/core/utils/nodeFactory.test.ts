@@ -2,7 +2,7 @@ import { makeFlowNode, makeNodeData } from '@test-utils/factories'
 
 import type { NodeData } from '../types'
 
-import { getUniqueNodeId, getUniqueNodeLabel, initializeDefaultNodeData, initNode } from './nodeFactory'
+import { getUniqueNodeId, getUniqueNodeLabel, initNode } from './nodeFactory'
 
 const makeNode = (id: string, name: string, label: string) => makeFlowNode(id, { data: { id, name, label } })
 
@@ -45,31 +45,6 @@ describe('getUniqueNodeLabel', () => {
         const nodeData = { id: '', name: 'llmChain', label: 'LLM Chain' } as NodeData
         const nodes = [makeNode('llmChain_0', 'llmChain', 'LLM Chain 0')]
         expect(getUniqueNodeLabel(nodeData, nodes)).toBe('LLM Chain 1')
-    })
-})
-
-describe('initializeDefaultNodeData', () => {
-    it('should return empty object for empty params', () => {
-        expect(initializeDefaultNodeData([])).toEqual({})
-    })
-
-    it('should use default values when provided', () => {
-        const params = [
-            { name: 'temperature', default: 0.7 },
-            { name: 'maxTokens', default: 1024 }
-        ]
-        expect(initializeDefaultNodeData(params)).toEqual({
-            temperature: 0.7,
-            maxTokens: 1024
-        })
-    })
-
-    it('should use empty string when no default is provided', () => {
-        const params = [{ name: 'apiKey' }, { name: 'model', default: 'gpt-4' }]
-        expect(initializeDefaultNodeData(params)).toEqual({
-            apiKey: '',
-            model: 'gpt-4'
-        })
     })
 })
 

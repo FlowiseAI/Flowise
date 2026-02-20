@@ -6,7 +6,7 @@ import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
 import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
-import type { InputAnchor, InputParam, NodeData } from '../core/types'
+import type { InputAnchor, InputParam, NodeData } from '@/core/types'
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {

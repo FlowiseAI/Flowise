@@ -1,7 +1,7 @@
 import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
-import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '../../core/types'
+import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 

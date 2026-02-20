@@ -2,8 +2,9 @@ import { memo, useRef, useState } from 'react'
 
 import { Box, TextField } from '@mui/material'
 
-import type { NodeData } from '../../../core/types'
-import { useConfigContext } from '../../../infrastructure/store'
+import type { NodeData } from '@/core/types'
+import { useConfigContext } from '@/infrastructure/store'
+
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'

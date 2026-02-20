@@ -1,4 +1,4 @@
-import type { FlowEdge, FlowNode, NodeData } from '../core/types'
+import type { FlowEdge, FlowNode, NodeData } from '@/core/types'
 
 /**
  * Create a {@link FlowNode} with sensible defaults.

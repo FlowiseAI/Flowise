@@ -1,4 +1,4 @@
-import type { AgentflowAction, AgentflowState, FlowNode } from '../../core/types'
+import type { AgentflowAction, AgentflowState, FlowNode } from '@/core/types'
 
 // Node types that size to content; strip stored width/height so they stay content-sized
 const CONTENT_SIZED_NODE_TYPES = new Set(['agentFlow', 'stickyNote'])

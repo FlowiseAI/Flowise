@@ -1,6 +1,6 @@
 import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
 
-import type { AgentflowAction, AgentflowState, FlowNode } from '../../core/types'
+import type { AgentflowAction, AgentflowState, FlowNode } from '@/core/types'
 
 import { agentflowReducer, normalizeNodes } from './agentflowReducer'
 
