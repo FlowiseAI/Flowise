@@ -5,16 +5,17 @@ import { BaseDocumentCompressor } from 'langchain/retrievers/document_compressor
 
 export class CohereRerank extends BaseDocumentCompressor {
     private cohereAPIKey: any
-    private COHERE_API_URL = 'https://api.cohere.ai/v1/rerank'
+    private readonly cohereApiUrl: string
     private readonly model: string
     private readonly k: number
     private readonly maxChunksPerDoc: number
-    constructor(cohereAPIKey: string, model: string, k: number, maxChunksPerDoc: number) {
+    constructor(cohereAPIKey: string, model: string, k: number, maxChunksPerDoc: number, baseURL?: string) {
         super()
         this.cohereAPIKey = cohereAPIKey
         this.model = model
         this.k = k
         this.maxChunksPerDoc = maxChunksPerDoc
+        this.cohereApiUrl = baseURL ? baseURL.replace(/\/+$/, '') : 'https://api.cohere.ai/v1/rerank'
     }
     async compressDocuments(
         documents: Document<Record<string, any>>[],
@@ -41,7 +42,7 @@ export class CohereRerank extends BaseDocumentCompressor {
             documents: documents.map((doc) => doc.pageContent)
         }
         try {
-            let returnedDocs = await axios.post(this.COHERE_API_URL, data, config)
+            let returnedDocs = await axios.post(this.cohereApiUrl, data, config)
             const finalResults: Document<Record<string, any>>[] = []
             returnedDocs.data.results.forEach((result: any) => {
                 const doc = documents[result.index]

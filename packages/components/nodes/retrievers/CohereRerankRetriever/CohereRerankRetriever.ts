@@ -22,7 +22,7 @@ class CohereRerankRetriever_Retrievers implements INode {
     constructor() {
         this.label = 'Cohere Rerank Retriever'
         this.name = 'cohereRerankRetriever'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Cohere Rerank Retriever'
         this.icon = 'Cohere.svg'
         this.category = 'Retrievers'
@@ -86,6 +86,25 @@ class CohereRerankRetriever_Retrievers implements INode {
                 type: 'number',
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Custom Model Name',
+                name: 'customModel',
+                description:
+                    'Custom model name for fine-tuned rerank models. When provided, this overrides the Model Name selection above.',
+                placeholder: 'my-custom-rerank-model-id',
+                type: 'string',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Base URL',
+                name: 'baseURL',
+                description: 'Custom API endpoint URL. If not specified, the default Cohere API (https://api.cohere.ai/v1/rerank) will be used.',
+                placeholder: 'https://api.cohere.ai/v1/rerank',
+                type: 'string',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -112,6 +131,7 @@ class CohereRerankRetriever_Retrievers implements INode {
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const baseRetriever = nodeData.inputs?.baseRetriever as BaseRetriever
         const model = nodeData.inputs?.model as string
+        const customModel = nodeData.inputs?.customModel as string
         const query = nodeData.inputs?.query as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const cohereApiKey = getCredentialParam('cohereApiKey', credentialData, nodeData)
@@ -119,9 +139,12 @@ class CohereRerankRetriever_Retrievers implements INode {
         const k = topK ? parseFloat(topK) : (baseRetriever as VectorStoreRetriever).k ?? 4
         const maxChunksPerDoc = nodeData.inputs?.maxChunksPerDoc as string
         const max_chunks_per_doc = maxChunksPerDoc ? parseFloat(maxChunksPerDoc) : 10
+        const baseURL = nodeData.inputs?.baseURL as string
         const output = nodeData.outputs?.output as string
 
-        const cohereCompressor = new CohereRerank(cohereApiKey, model, k, max_chunks_per_doc)
+        const selectedModel = customModel || model
+
+        const cohereCompressor = new CohereRerank(cohereApiKey, selectedModel, k, max_chunks_per_doc, baseURL)
 
         const retriever = new ContextualCompressionRetriever({
             baseCompressor: cohereCompressor,
