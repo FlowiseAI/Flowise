@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type { NodeData } from '../../../core/types'
 import { useAgentflowContext } from '../../../infrastructure/store'
 
-import { useFlowNodes } from './useFlowNodes' // ← Add this import
+import { useFlowNodes } from './useFlowNodes'
 
 /**
  * Hook to open the node editor dialog
@@ -11,7 +11,7 @@ import { useFlowNodes } from './useFlowNodes' // ← Add this import
  */
 export function useOpenNodeEditor() {
     const { state, openEditDialog } = useAgentflowContext()
-    const { availableNodes } = useFlowNodes() // ← Get availableNodes from here
+    const { availableNodes } = useFlowNodes()
 
     const openNodeEditor = useCallback(
         (nodeId: string) => {

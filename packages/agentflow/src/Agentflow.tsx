@@ -75,6 +75,27 @@ function AgentflowCanvas({
     // Load available nodes
     const { availableNodes } = useFlowNodes()
 
+    // TODO: Refactor bidirectional state sync architecture
+    // Current implementation uses refs and setTimeout to prevent circular updates between
+    // ReactFlow's local state (useNodesState/useEdgesState) and AgentflowContext state.
+    // This approach is brittle and prone to race conditions.
+    //
+    // Problem: We have TWO sources of truth:
+    //   1. ReactFlow local state (nodes/edges) - updated by drag/drop, user interactions
+    //   2. AgentflowContext state - updated by edit dialog, delete, duplicate operations
+    //
+    // Current sync flow:
+    //   - Local ReactFlow → Context (for drag/drop) ✓
+    //   - Context → Local ReactFlow (for edit dialog updates) ⚠️ Brittle with refs/setTimeout
+    //
+    // Better solution (for future refactor):
+    //   Option A: Make context operations (updateNodeData, deleteNode, etc.) also call
+    //             setLocalNodes/setLocalEdges directly, then remove reverse sync entirely.
+    //   Option B: Use deep equality checks (e.g., lodash.isEqual) instead of refs/setTimeout.
+    //   Option C: Consolidate to single source of truth (context only, ReactFlow reads from it).
+    //
+    // See: https://github.com/FlowiseAI/Flowise/pull/XXX for discussion
+    //
     // Use refs to prevent circular sync updates
     const syncingToContext = useRef(false)
     const syncingFromContext = useRef(false)
@@ -117,6 +138,7 @@ function AgentflowCanvas({
             syncingFromContext.current = false
         }, 0)
     }, [state.edges, setLocalEdges])
+    // END TODO: Bidirectional state sync
 
     // Flow handlers
     const { handleConnect, handleNodesChange, handleEdgesChange, handleAddNode } = useFlowHandlers({
