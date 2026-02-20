@@ -194,6 +194,23 @@ const speechToTextProviders = {
                 description: 'Comma-separated list of audio channels to process (e.g., "0,1")',
                 placeholder: '0,1',
                 default: '0,1'
+            },
+            {
+                label: 'Endpoint ID',
+                name: 'endpointId',
+                type: 'string',
+                description:
+                    'Custom Speech endpoint ID for using custom speech models (e.g., custom speech recognition trained for specific languages or domains). This sets the endpoint ID on the transcription request.',
+                optional: true
+            },
+            {
+                label: 'Custom Endpoint',
+                name: 'customEndpoint',
+                type: 'string',
+                description:
+                    'Custom endpoint URL for Azure Speech Services. Use this for private endpoints or sovereign clouds. Overrides the default regional endpoint (e.g., "https://my-custom-endpoint.cognitiveservices.azure.com").',
+                placeholder: 'https://my-custom-endpoint.cognitiveservices.azure.com',
+                optional: true
             }
         ]
     },
