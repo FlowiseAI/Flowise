@@ -21,8 +21,8 @@ import { useTheme } from '@mui/material/styles'
 import { IconMinus, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
 
 import { MainCard } from '@/atoms'
-import type { NodeData } from '@/core/types'
 import { tokens } from '@/core/theme/tokens'
+import type { NodeData } from '@/core/types'
 import { useApiContext } from '@/infrastructure/store'
 
 import { NodeListItem } from './NodeListItem'

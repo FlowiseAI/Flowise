@@ -4,8 +4,8 @@ import { Chip, Divider, ListItem, ListItemAvatar, ListItemButton, ListItemText }
 import { useTheme } from '@mui/material/styles'
 
 import { AGENTFLOW_ICONS } from '@/core'
-import type { NodeData } from '@/core/types'
 import { tokens } from '@/core/theme/tokens'
+import type { NodeData } from '@/core/types'
 
 const NODE_ICON_SIZE = 30
 const NODE_AVATAR_SIZE = 50
@@ -99,9 +99,7 @@ function NodeListItemComponent({ node, apiBaseUrl, isLast, onDragStart, onClick 
                                                 fontWeight: 700,
                                                 fontSize: '0.65rem',
                                                 background:
-                                                    node.badge === 'DEPRECATING'
-                                                        ? theme.palette.warning.main
-                                                        : theme.palette.success.main,
+                                                    node.badge === 'DEPRECATING' ? theme.palette.warning.main : theme.palette.success.main,
                                                 color: node.badge !== 'DEPRECATING' ? 'white' : 'inherit'
                                             }}
                                             size='small'
