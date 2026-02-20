@@ -147,8 +147,9 @@ describe('createAgentflowTheme', () => {
 
         it('should have same typography in both modes', () => {
             const darkTheme = createAgentflowTheme(true)
-            expect(theme.typography.h4.fontSize).toBe(darkTheme.typography.h4.fontSize)
-            expect(theme.typography.h5.fontWeight).toBe(darkTheme.typography.h5.fontWeight)
+            expect(theme.typography.h4).toEqual(darkTheme.typography.h4)
+            expect(theme.typography.h5).toEqual(darkTheme.typography.h5)
+            expect(theme.typography.h6).toEqual(darkTheme.typography.h6)
         })
     })
 

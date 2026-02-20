@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { Chip, Divider, ListItem, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
+import { Box, Chip, Divider, ListItem, ListItemAvatar, ListItemButton, ListItemText } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 import { AGENTFLOW_ICONS } from '@/core'
@@ -37,7 +37,7 @@ function NodeListItemComponent({ node, apiBaseUrl, isLast, onDragStart, onClick 
     }
 
     return (
-        <div onDragStart={handleDragStart} draggable>
+        <Box onDragStart={handleDragStart} draggable>
             <ListItemButton
                 sx={{
                     p: 0,
@@ -50,8 +50,8 @@ function NodeListItemComponent({ node, apiBaseUrl, isLast, onDragStart, onClick 
                 <ListItem alignItems='center'>
                     {node.color && !node.icon ? (
                         <ListItemAvatar>
-                            <div
-                                style={{
+                            <Box
+                                sx={{
                                     width: NODE_AVATAR_SIZE,
                                     height: 'auto',
                                     display: 'flex',
@@ -60,35 +60,36 @@ function NodeListItemComponent({ node, apiBaseUrl, isLast, onDragStart, onClick 
                                 }}
                             >
                                 {renderIcon()}
-                            </div>
+                            </Box>
                         </ListItemAvatar>
                     ) : (
                         <ListItemAvatar>
-                            <div
-                                style={{
+                            <Box
+                                sx={{
                                     width: NODE_AVATAR_SIZE,
                                     height: NODE_AVATAR_SIZE,
                                     borderRadius: '50%',
                                     backgroundColor: 'white'
                                 }}
                             >
-                                <img
-                                    style={{
+                                <Box
+                                    component='img'
+                                    sx={{
                                         width: '100%',
                                         height: '100%',
-                                        padding: 10,
+                                        p: '10px',
                                         objectFit: 'contain'
                                     }}
                                     alt={node.name}
                                     src={`${apiBaseUrl}/api/v1/node-icon/${node.name}`}
                                 />
-                            </div>
+                            </Box>
                         </ListItemAvatar>
                     )}
                     <ListItemText
                         sx={{ ml: 1 }}
                         primary={
-                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <span>{node.label}</span>
                                 {typeof node.badge === 'string' && node.badge && (
                                     <>
@@ -107,14 +108,14 @@ function NodeListItemComponent({ node, apiBaseUrl, isLast, onDragStart, onClick 
                                         />
                                     </>
                                 )}
-                            </div>
+                            </Box>
                         }
                         secondary={node.description}
                     />
                 </ListItem>
             </ListItemButton>
             {!isLast && <Divider />}
-        </div>
+        </Box>
     )
 }
 

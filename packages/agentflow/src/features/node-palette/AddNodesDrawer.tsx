@@ -186,7 +186,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                             sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
-                                ...(drawerMaxHeight ? { maxHeight: drawerMaxHeight } : {}),
+                                maxHeight: drawerMaxHeight,
                                 overflow: 'hidden'
                             }}
                         >
