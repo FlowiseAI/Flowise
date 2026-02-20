@@ -18,7 +18,7 @@ function validateAuth0Domain(domain: string): string | null {
     const trimmed = domain.trim()
 
     // Reject characters that could introduce scheme, port, path, or query
-    if (/[\/\\?#:]/.test(trimmed)) {
+    if (/[/\\?#:]/.test(trimmed)) {
         return null
     }
 
