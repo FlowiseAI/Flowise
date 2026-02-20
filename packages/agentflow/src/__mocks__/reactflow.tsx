@@ -75,8 +75,6 @@ export const getBezierPath = jest.fn(({ sourceX, sourceY, targetX, targetY }: an
     (sourceY + targetY) / 2
 ])
 
-export const EdgeLabelRenderer = ({ children }: { children: React.ReactNode }) => (
-    <div data-testid='edge-label-renderer'>{children}</div>
-)
+export const EdgeLabelRenderer = ({ children }: { children: React.ReactNode }) => <div data-testid='edge-label-renderer'>{children}</div>
 
 export const NodeResizer = () => <div data-testid='node-resizer' />
