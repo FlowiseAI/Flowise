@@ -10,6 +10,32 @@ import axios from 'axios'
 
 const PROVIDER_NAME_AUTH0_SSO = 'Auth0 SSO'
 
+function validateAuth0Domain(domain: string): string | null {
+    if (!domain || typeof domain !== 'string') {
+        return null
+    }
+
+    const trimmed = domain.trim()
+
+    // Reject characters that could introduce scheme, port, path, or query
+    if (/[\/\\?#:]/.test(trimmed)) {
+        return null
+    }
+
+    // Basic hostname validation
+    const hostnameRegex = /^(?=.{1,253}$)([a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}$/
+    if (!hostnameRegex.test(trimmed)) {
+        return null
+    }
+
+    // Restrict to Auth0 domains
+    if (!trimmed.toLowerCase().endsWith('.auth0.com')) {
+        return null
+    }
+
+    return trimmed
+}
+
 class Auth0SSO extends SSOBase {
     static LOGIN_URI = '/api/v1/auth0/login'
     static CALLBACK_URI = '/api/v1/auth0/callback'
@@ -113,13 +139,19 @@ class Auth0SSO extends SSOBase {
     static async testSetup(ssoConfig: any) {
         const { domain, clientID, clientSecret } = ssoConfig
 
+        const validatedDomain = validateAuth0Domain(domain)
+        if (!validatedDomain) {
+            const errorMessage = 'Auth0 Configuration test failed. Invalid Auth0 domain.'
+            return { error: errorMessage }
+        }
+
         try {
             const tokenResponse = await axios.post(
-                `https://${domain}/oauth/token`,
+                `https://${validatedDomain}/oauth/token`,
                 {
                     client_id: clientID,
                     client_secret: clientSecret,
-                    audience: `https://${domain}/api/v2/`,
+                    audience: `https://${validatedDomain}/api/v2/`,
                     grant_type: 'client_credentials'
                 },
                 {
@@ -136,9 +168,15 @@ class Auth0SSO extends SSOBase {
     async refreshToken(ssoRefreshToken: string) {
         const { domain, clientID, clientSecret } = this.ssoConfig
 
+        const validatedDomain = validateAuth0Domain(domain)
+        if (!validatedDomain) {
+            const errorMessage = 'Auth0 Configuration test failed. Invalid Auth0 domain.'
+            return { error: errorMessage }
+        }
+
         try {
             const response = await axios.post(
-                `https://${domain}/oauth/token`,
+                `https://${validatedDomain}/oauth/token`,
                 {
                     client_id: clientID,
                     client_secret: clientSecret,
