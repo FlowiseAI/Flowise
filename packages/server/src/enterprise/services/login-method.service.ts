@@ -71,6 +71,38 @@ export class LoginMethodService {
         return await queryRunner.manager.save(LoginMethod, data)
     }
 
+    private isPlaceholderSecret(value: unknown): boolean {
+        return !value || (typeof value === 'string' && /^\*+$/.test(value))
+    }
+
+    private mergeWithStoredClientSecret(
+        incoming: Record<string, unknown>,
+        existing: Record<string, unknown>
+    ): Record<string, unknown> {
+        const sent = incoming.clientSecret
+        if (this.isPlaceholderSecret(sent) && existing.clientSecret) {
+            return { ...incoming, clientSecret: existing.clientSecret }
+        }
+        return { ...incoming }
+    }
+
+    /**
+     * Returns config with clientSecret filled from stored config when the incoming value is a placeholder (empty or asterisks).
+     * Used for both testing and saving so logic stays in one place.
+     */
+    public async getConfigWithSecrets(
+        organizationId: string,
+        providerName: string,
+        incomingConfig: Record<string, unknown>,
+        queryRunner: QueryRunner
+    ): Promise<Record<string, unknown>> {
+        const methods = await this.readLoginMethodByOrganizationId(organizationId, queryRunner)
+        const existingProvider = methods?.find((m) => m.name === providerName)
+        if (!existingProvider?.config) return { ...incomingConfig }
+        const existing = JSON.parse(await this.decryptLoginMethodConfig(existingProvider.config)) as Record<string, unknown>
+        return this.mergeWithStoredClientSecret(incomingConfig, existing)
+    }
+
     public async createLoginMethod(data: Partial<LoginMethod>) {
         let queryRunner: QueryRunner | undefined
         let newLoginMethod: Partial<LoginMethod>
@@ -121,18 +153,16 @@ export class LoginMethodService {
 
                 const name = provider.providerName
                 const loginMethod = await queryRunner.manager.findOneBy(LoginMethod, { organizationId, name })
-                let configToSave = { ...provider.config }
+                let configToSave: Record<string, unknown>
                 if (loginMethod) {
                     const existing = JSON.parse(await this.decryptLoginMethodConfig(loginMethod.config)) as Record<string, unknown>
-                    const sent = configToSave.clientSecret
-                    if (!sent || (typeof sent === 'string' && /^\*+$/.test(sent))) {
-                        configToSave.clientSecret = existing.clientSecret
-                    }
+                    configToSave = this.mergeWithStoredClientSecret(provider.config, existing)
                     loginMethod.status = provider.status
                     loginMethod.config = await this.encryptLoginMethodConfig(JSON.stringify(configToSave))
                     loginMethod.updatedBy = userId
                     await this.saveLoginMethod(loginMethod, queryRunner)
                 } else {
+                    configToSave = { ...provider.config }
                     const encryptedConfig = await this.encryptLoginMethodConfig(JSON.stringify(configToSave))
                     let newLoginMethod = queryRunner.manager.create(LoginMethod, {
                         organizationId,

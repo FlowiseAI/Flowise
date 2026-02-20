@@ -29,6 +29,11 @@ export class LoginMethodController {
         }
     }
 
+    private async getSafeConfig(encryptedConfig: string): Promise<Record<string, unknown>> {
+        const { clientSecret: _, ...safe } = JSON.parse(await decrypt(encryptedConfig)) as Record<string, unknown>
+        return safe
+    }
+
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
             this.assertEnterprisePlatform()
@@ -106,8 +111,7 @@ export class LoginMethodController {
                 if (loginMethod.organizationId !== user.activeOrganizationId) {
                     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
                 }
-                const { clientSecret: _, ...safe } = JSON.parse(await decrypt(loginMethod.config)) as Record<string, unknown>
-                loginMethod.config = safe
+                loginMethod.config = await this.getSafeConfig(loginMethod.config)
             } else if (query.organizationId) {
                 if (query.organizationId !== user.activeOrganizationId) {
                     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
@@ -115,8 +119,7 @@ export class LoginMethodController {
                 loginMethod = await loginMethodService.readLoginMethodByOrganizationId(query.organizationId, queryRunner)
 
                 for (let method of loginMethod) {
-                    const { clientSecret: _s, ...safe } = JSON.parse(await decrypt(method.config)) as Record<string, unknown>
-                    method.config = safe
+                    method.config = await this.getSafeConfig(method.config)
                 }
                 loginMethodConfig.providers = loginMethod
             } else {
@@ -162,15 +165,7 @@ export class LoginMethodController {
                 queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
                 await queryRunner.connect()
                 const loginMethodService = new LoginMethodService()
-                const existingMethods = await loginMethodService.readLoginMethodByOrganizationId(organizationId, queryRunner)
-                const existingProvider = existingMethods?.find((m) => m.name === providerName)
-                if (existingProvider?.config) {
-                    const existing = JSON.parse(await decrypt(existingProvider.config)) as Record<string, unknown>
-                    const sent = config.clientSecret
-                    if (!sent || (typeof sent === 'string' && /^\*+$/.test(sent))) {
-                        config = { ...config, clientSecret: existing.clientSecret }
-                    }
-                }
+                config = await loginMethodService.getConfigWithSecrets(organizationId, providerName, config, queryRunner)
             }
 
             if (providerName === 'azure') {
