@@ -98,7 +98,7 @@ class CohereRerankRetriever_Retrievers implements INode {
                 optional: true
             },
             {
-                label: 'Base URL',
+                label: 'API Endpoint URL',
                 name: 'baseURL',
                 description: 'Custom API endpoint URL. If not specified, the default Cohere API (https://api.cohere.ai/v1/rerank) will be used.',
                 placeholder: 'https://api.cohere.ai/v1/rerank',
@@ -142,7 +142,7 @@ class CohereRerankRetriever_Retrievers implements INode {
         const baseURL = nodeData.inputs?.baseURL as string
         const output = nodeData.outputs?.output as string
 
-        const selectedModel = customModel || model
+        const selectedModel = customModel?.trim() || model
 
         const cohereCompressor = new CohereRerank(cohereApiKey, selectedModel, k, max_chunks_per_doc, baseURL)
 

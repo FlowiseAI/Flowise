@@ -102,6 +102,18 @@ describe('CohereRerank', () => {
                 expect.any(Object)
             )
         })
+
+        it('should trim leading and trailing whitespace from custom baseURL', async () => {
+            const customURL = '  https://custom-cohere.example.com/v1/rerank  '
+            const reranker = new CohereRerank(mockApiKey, defaultModel, topK, maxChunksPerDoc, customURL)
+            await reranker.compressDocuments(mockDocuments, 'test query')
+
+            expect(mockedAxios.post).toHaveBeenCalledWith(
+                'https://custom-cohere.example.com/v1/rerank',
+                expect.any(Object),
+                expect.any(Object)
+            )
+        })
     })
 
     describe('compressDocuments', () => {

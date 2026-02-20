@@ -15,7 +15,7 @@ export class CohereRerank extends BaseDocumentCompressor {
         this.model = model
         this.k = k
         this.maxChunksPerDoc = maxChunksPerDoc
-        this.cohereApiUrl = baseURL ? baseURL.replace(/\/+$/, '') : 'https://api.cohere.ai/v1/rerank'
+        this.cohereApiUrl = baseURL ? baseURL.trim().replace(/\/+$/, '') : 'https://api.cohere.ai/v1/rerank'
     }
     async compressDocuments(
         documents: Document<Record<string, any>>[],
