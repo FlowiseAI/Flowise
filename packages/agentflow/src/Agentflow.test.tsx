@@ -274,12 +274,24 @@ describe('Agentflow Component', () => {
 
         it('should accept onSave callback', async () => {
             const onSave = jest.fn()
-            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
+            const { container, getByText } = render(<Agentflow {...defaultProps} onSave={onSave} showDefaultHeader={true} />)
 
             await waitFor(() => {
                 expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
             })
-            // Callback should be registered
+
+            // Find and click the save button
+            const saveButton = getByText('Save')
+            fireEvent.click(saveButton)
+
+            // Verify the callback was called
+            expect(onSave).toHaveBeenCalledTimes(1)
+            expect(onSave).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.any(Array),
+                    edges: expect.any(Array)
+                })
+            )
         })
 
         it('should accept onFlowGenerated callback', async () => {
