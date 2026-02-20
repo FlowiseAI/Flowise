@@ -75,10 +75,7 @@ export class LoginMethodService {
         return !value || (typeof value === 'string' && /^\*+$/.test(value))
     }
 
-    private mergeWithStoredClientSecret(
-        incoming: Record<string, unknown>,
-        existing: Record<string, unknown>
-    ): Record<string, unknown> {
+    private mergeWithStoredClientSecret(incoming: Record<string, unknown>, existing: Record<string, unknown>): Record<string, unknown> {
         const sent = incoming.clientSecret
         if (this.isPlaceholderSecret(sent) && existing.clientSecret) {
             return { ...incoming, clientSecret: existing.clientSecret }
