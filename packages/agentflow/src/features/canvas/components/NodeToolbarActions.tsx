@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material/styles'
 import { IconCopy, IconEdit, IconInfoCircle, IconTrash } from '@tabler/icons-react'
 
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
+
 import { useOpenNodeEditor } from '../hooks'
 import { StyledNodeToolbar } from '../styled'
 

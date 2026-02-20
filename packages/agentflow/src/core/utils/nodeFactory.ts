@@ -117,13 +117,8 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
     // Initialize outputs
     const outputAnchors = isAgentflow ? createAgentFlowOutputs(nodeData, newNodeId) : []
 
-    // Initialize default input values from definitions
-    const initialInputValues: Record<string, unknown> = {}
-    for (const param of inputDefinitions) {
-        if (param.default !== undefined) {
-            initialInputValues[param.name] = param.default
-        }
-    }
+    // Initialize default input values from definitions using initializeDefaultNodeData
+    const initialInputValues = initializeDefaultNodeData(inputDefinitions)
 
     // Create initialized node data
     const initializedData: NodeData = {

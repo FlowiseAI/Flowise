@@ -4,7 +4,7 @@ import { useUpdateNodeInternals } from 'reactflow'
 import { Box, Typography } from '@mui/material'
 
 import type { NodeData } from '@/core/types'
-import { useAgentflowContext, useApiContext, useConfigContext } from '@/infrastructure/store'
+import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { NodeIcon } from '../components/NodeIcon'
 import { NodeInfoDialog } from '../components/NodeInfoDialog'
@@ -14,7 +14,6 @@ import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutpu
 import { NodeStatusIndicator, NodeWarningIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useOpenNodeEditor } from '../hooks'
-import { useFlowNodes } from '../hooks/useFlowNodes'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
 
@@ -31,8 +30,6 @@ export interface AgentFlowNodeProps {
 function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
-    const { openEditDialog } = useAgentflowContext()
-    const { availableNodes } = useFlowNodes()
     const ref = useRef<HTMLDivElement>(null)
     const updateNodeInternals = useUpdateNodeInternals()
     const { openNodeEditor } = useOpenNodeEditor()

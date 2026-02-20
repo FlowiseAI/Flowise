@@ -104,10 +104,10 @@ describe('initNode', () => {
         })
         const result = initNode(nodeData, 'n1')
         expect(result.inputValues!['temp']).toBe(0.7)
-        // initNode only sets defaults for params with an explicit `default` value,
-        // unlike initializeDefaultNodeData which falls back to ''. Params without
-        // a default are intentionally omitted so the UI can distinguish "unset" from "empty".
-        expect(result.inputValues!['model']).toBeUndefined()
+        // initNode uses initializeDefaultNodeData which falls back to '' for params
+        // without an explicit default value. This ensures all params have a value
+        // for show/hide condition evaluation.
+        expect(result.inputValues!['model']).toBe('')
     })
 
     it('should preserve existing inputValues over defaults', () => {
