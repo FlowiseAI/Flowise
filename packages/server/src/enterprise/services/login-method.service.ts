@@ -121,14 +121,19 @@ export class LoginMethodService {
 
                 const name = provider.providerName
                 const loginMethod = await queryRunner.manager.findOneBy(LoginMethod, { organizationId, name })
+                let configToSave = { ...provider.config }
                 if (loginMethod) {
-                    /* empty */
+                    const existing = JSON.parse(await this.decryptLoginMethodConfig(loginMethod.config)) as Record<string, unknown>
+                    const sent = configToSave.clientSecret
+                    if (!sent || (typeof sent === 'string' && /^\*+$/.test(sent))) {
+                        configToSave.clientSecret = existing.clientSecret
+                    }
                     loginMethod.status = provider.status
-                    loginMethod.config = await this.encryptLoginMethodConfig(JSON.stringify(provider.config))
+                    loginMethod.config = await this.encryptLoginMethodConfig(JSON.stringify(configToSave))
                     loginMethod.updatedBy = userId
                     await this.saveLoginMethod(loginMethod, queryRunner)
                 } else {
-                    const encryptedConfig = await this.encryptLoginMethodConfig(JSON.stringify(provider.config))
+                    const encryptedConfig = await this.encryptLoginMethodConfig(JSON.stringify(configToSave))
                     let newLoginMethod = queryRunner.manager.create(LoginMethod, {
                         organizationId,
                         name,
