@@ -38,7 +38,8 @@ import {
     IMessage,
     FlowiseMemory,
     IFileUpload,
-    getS3Config
+    getS3Config,
+    getAzureBlobConfig
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
@@ -1951,10 +1952,35 @@ export const getMulterStorage = () => {
                 destination: `uploads/${generateId()}`
             })
         })
+    } else if (storageType === 'azure') {
+        const { containerClient } = getAzureBlobConfig()
+        return multer({
+            storage: {
+                _handleFile(req: any, file: any, cb: any) {
+                    const blobName = `uploads/${generateId()}/${file.originalname}`
+                    const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+                    const chunks: Buffer[] = []
+                    file.stream.on('data', (chunk: Buffer) => chunks.push(chunk))
+                    file.stream.on('end', async () => {
+                        try {
+                            const buffer = Buffer.concat(chunks)
+                            await blockBlobClient.upload(buffer, buffer.length, {
+                                blobHTTPHeaders: { blobContentType: file.mimetype }
+                            })
+                            cb(null, { path: blobName, size: buffer.length })
+                        } catch (err) {
+                            cb(err)
+                        }
+                    })
+                    file.stream.on('error', (err: Error) => cb(err))
+                },
+                _removeFile(req: any, file: any, cb: any) {
+                    const blockBlobClient = containerClient.getBlockBlobClient(file.path)
+                    blockBlobClient.delete().then(() => cb(null)).catch(cb)
+                }
+            } as multer.StorageEngine
+        })
     } else {
-        return multer({ dest: getUploadPath() })
-    }
-}
 
 /**
  * Calculate depth of each node from starting nodes
