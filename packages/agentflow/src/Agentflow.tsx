@@ -75,22 +75,47 @@ function AgentflowCanvas({
     // Load available nodes
     const { availableNodes } = useFlowNodes()
 
-    // Sync local state with context
+    // Use refs to prevent circular sync updates
+    const syncingToContext = useRef(false)
+    const syncingFromContext = useRef(false)
+
+    // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
+        if (syncingFromContext.current) return
+        syncingToContext.current = true
         setNodes(nodes as FlowNode[])
+        // Use setTimeout to reset the flag after the sync completes
+        setTimeout(() => {
+            syncingToContext.current = false
+        }, 0)
     }, [nodes, setNodes])
 
     useEffect(() => {
+        if (syncingFromContext.current) return
+        syncingToContext.current = true
         setEdges(edges as FlowEdge[])
+        setTimeout(() => {
+            syncingToContext.current = false
+        }, 0)
     }, [edges, setEdges])
 
-    // Sync context state changes back to local ReactFlow state
+    // Sync context state back to local ReactFlow (when updated via edit dialog, etc.)
     useEffect(() => {
+        if (syncingToContext.current) return
+        syncingFromContext.current = true
         setLocalNodes(state.nodes)
+        setTimeout(() => {
+            syncingFromContext.current = false
+        }, 0)
     }, [state.nodes, setLocalNodes])
 
     useEffect(() => {
+        if (syncingToContext.current) return
+        syncingFromContext.current = true
         setLocalEdges(state.edges)
+        setTimeout(() => {
+            syncingFromContext.current = false
+        }, 0)
     }, [state.edges, setLocalEdges])
 
     // Flow handlers

@@ -64,11 +64,6 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             setData(dialogProps.data)
             if (dialogProps.data.label) setNodeName(dialogProps.data.label)
         }
-
-        return () => {
-            setInputParams([])
-            setData(null)
-        }
     }, [dialogProps])
 
     if (!show) return null
