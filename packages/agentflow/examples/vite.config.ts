@@ -15,14 +15,7 @@ export default defineConfig({
     server: {
         port: 5174,
         // Watch the parent src directory for changes
-        proxy: {
-    '/api': {
-      target: 'http://localhost:3000',
-      changeOrigin: true,
-      secure: false,
-    },
-  },
-    watch: {
+        watch: {
             // Include the agentflow source directory
             ignored: ['!**/packages/agentflow/src/**']
         }
