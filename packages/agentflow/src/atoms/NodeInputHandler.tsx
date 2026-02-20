@@ -66,7 +66,7 @@ export function NodeInputHandler({
     const renderInput = () => {
         if (!inputParam) return null
 
-        const value = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
+        const value = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
 
         switch (inputParam.type) {
             case 'string':

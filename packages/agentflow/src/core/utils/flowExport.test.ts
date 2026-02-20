@@ -38,14 +38,14 @@ describe('generateExportFlowData', () => {
         const flowData = {
             nodes: [
                 makeNode('a', {
-                    data: { id: 'a', name: 'llm', label: 'LLM', inputs: { model: 'gpt-4' } }
+                    data: { id: 'a', name: 'llm', label: 'LLM', inputValues: { model: 'gpt-4' } }
                 })
             ],
             edges: []
         }
         const result = generateExportFlowData(flowData)
         expect(result.nodes[0].data.name).toBe('llm')
-        expect(result.nodes[0].data.inputs).toEqual({ model: 'gpt-4' })
+        expect(result.nodes[0].data.inputValues).toEqual({ model: 'gpt-4' })
         expect(result.nodes[0].position).toEqual({ x: 0, y: 0 })
     })
 

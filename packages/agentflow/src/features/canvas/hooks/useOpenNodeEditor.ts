@@ -15,22 +15,22 @@ export function useOpenNodeEditor() {
         // Find the node data
         const node = state.nodes.find(n => n.id === nodeId)
         if (!node) return
-        
-        // Find the node schema
+
+        // Find the node schema from available nodes (contains InputParam[] definitions)
         const nodeSchema = availableNodes.find(n => n.name === node.data.name)
         if (!nodeSchema) return
-        
-        // Get inputParams (API returns 'inputs' property)
-        const inputParams = (nodeSchema as any)?.inputs || []
-        
-        // Ensure inputs object exists
-        const nodeDataWithInputs: NodeData = {
+
+        // Get inputParams from schema (API returns 'inputs' property as InputParam[])
+        const inputParams = nodeSchema.inputs || []
+
+        // Ensure inputValues object exists for storing user input
+        const nodeDataWithInputValues: NodeData = {
             ...node.data,
-            inputs: node.data.inputs || {}
+            inputValues: node.data.inputValues || {}
         }
-        
+
         // Open the dialog
-        openEditDialog(nodeId, nodeDataWithInputs, inputParams)
+        openEditDialog(nodeId, nodeDataWithInputValues, inputParams)
     }, [state.nodes, availableNodes, openEditDialog])
     
     return { openNodeEditor }

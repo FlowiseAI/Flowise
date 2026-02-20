@@ -66,11 +66,11 @@ export interface NodeData {
     description?: string
     version?: number
     baseClasses?: string[]
-    inputs?: Record<string, unknown>
+    inputs?: InputParam[]  // Parameter definitions from API
+    inputValues?: Record<string, unknown>  // Actual values entered by users
     outputs?: NodeOutput[]
     inputAnchors?: InputAnchor[]
     outputAnchors?: OutputAnchor[]
-    inputParams?: InputParam[]
     // Visual properties
     color?: string
     icon?: string

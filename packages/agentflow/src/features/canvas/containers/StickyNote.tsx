@@ -19,7 +19,7 @@ function StickyNoteComponent({ data }: StickyNoteProps) {
     const { isDarkMode } = useConfigContext()
     const ref = useRef<HTMLDivElement>(null)
 
-    const [inputParam] = data.inputParams || []
+    const [inputParam] = data.inputs || []
     const [isHovered, setIsHovered] = useState(false)
 
     const { stateColor, backgroundColor } = useNodeColors({
@@ -55,10 +55,10 @@ function StickyNoteComponent({ data }: StickyNoteProps) {
                         multiline
                         rows={3}
                         placeholder={inputParam?.placeholder || 'Add a note...'}
-                        value={data.inputs?.[inputParam?.name || 'note'] ?? inputParam?.default ?? ''}
+                        value={data.inputValues?.[inputParam?.name || 'note'] ?? inputParam?.default ?? ''}
                         onChange={(e) => {
-                            if (data.inputs && inputParam) {
-                                data.inputs[inputParam.name] = e.target.value
+                            if (data.inputValues && inputParam) {
+                                data.inputValues[inputParam.name] = e.target.value
                             }
                         }}
                         sx={{

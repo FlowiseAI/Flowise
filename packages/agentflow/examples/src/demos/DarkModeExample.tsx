@@ -39,7 +39,7 @@ const sampleFlow: FlowData = {
                 label: 'AI Assistant',
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }],
-                inputs: {
+                inputValues: {
                     agentModel: 'chatAnthropic',
                     agentModelConfig: {
                         modelName: 'claude-3-5-sonnet'
