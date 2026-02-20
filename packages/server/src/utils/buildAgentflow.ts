@@ -399,10 +399,18 @@ export const resolveVariables = async (
                 const nodeOutput = nodeData.data['output'] as ICommonObject
                 const actualValue = nodeOutput?.content ?? nodeOutput?.http?.data
                 // For arrays and objects, stringify them to prevent toString() conversion issues
-                const formattedValue =
-                    Array.isArray(actualValue) || (typeof actualValue === 'object' && actualValue !== null)
-                        ? JSON.stringify(actualValue)
-                        : actualValue?.toString() ?? match
+                let formattedValue: any
+                if (actualValue !== undefined && actualValue !== null) {
+                    formattedValue =
+                        Array.isArray(actualValue) || (typeof actualValue === 'object' && actualValue !== null)
+                            ? JSON.stringify(actualValue)
+                            : actualValue.toString()
+                } else if (nodeOutput && typeof nodeOutput === 'object' && Object.keys(nodeOutput).length > 0) {
+                    // Fallback: stringify the entire output when content/http.data are not available
+                    formattedValue = JSON.stringify(nodeOutput)
+                } else {
+                    formattedValue = match
+                }
                 resolvedValue = resolvedValue.replace(match, formattedValue)
             }
         }
