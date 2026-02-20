@@ -102,11 +102,11 @@ export class App {
             logger.info('⏹️ [server]: Abort controllers pool initialized successfully')
 
             // Initialize encryption key
-            const encryptionKey = await getEncryptionKey()
+            await getEncryptionKey()
             logger.info('🔑 [server]: Encryption key initialized successfully')
 
-            // Initialize auth secrets (from env or derived from encryption key)
-            initAuthSecrets(encryptionKey)
+            // Initialize auth secrets (env → AWS Secrets Manager → filesystem)
+            await initAuthSecrets()
             logger.info('🔐 [server]: Auth initialized successfully')
 
             // Initialize Rate Limit
