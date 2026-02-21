@@ -119,7 +119,6 @@ class ChatLmStudio_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ChatLmStudioFields = {
-            temperature: parseFloat(temperature),
             modelName,
             streaming: streaming ?? true,
             configuration: {
@@ -128,6 +127,7 @@ class ChatLmStudio_ChatModels implements INode {
             }
         }
 
+        if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
