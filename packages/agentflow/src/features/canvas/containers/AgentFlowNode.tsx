@@ -13,6 +13,7 @@ import { NodeModelConfigs } from '../components/NodeModelConfigs'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
 import { NodeStatusIndicator, NodeWarningIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
+import { useOpenNodeEditor } from '../hooks'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
 
@@ -31,6 +32,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { apiBaseUrl } = useApiContext()
     const ref = useRef<HTMLDivElement>(null)
     const updateNodeInternals = useUpdateNodeInternals()
+    const { openNodeEditor } = useOpenNodeEditor()
 
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
@@ -42,6 +44,10 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
         isDarkMode,
         isHovered
     })
+
+    const handleDoubleClick = () => {
+        openNodeEditor(data.id)
+    }
 
     const outputAnchors = data.outputAnchors ?? []
     const minHeight = getMinimumNodeHeight(outputAnchors.length)
@@ -63,7 +69,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     }, [data.name, data.version, data.warning])
 
     return (
-        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onDoubleClick={handleDoubleClick}>
             <NodeToolbarActions
                 nodeId={data.id}
                 nodeName={data.name}
@@ -107,7 +113,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                             >
                                 {data.label}
                             </Typography>
-                            <NodeModelConfigs inputs={data.inputs} />
+                            <NodeModelConfigs inputs={data.inputValues} />
                         </Box>
                     </Box>
 

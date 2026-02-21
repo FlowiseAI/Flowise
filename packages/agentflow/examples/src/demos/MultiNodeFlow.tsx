@@ -38,7 +38,7 @@ const translationFlow: FlowData = {
                 label: 'Translator',
                 color: '#64B5F6',
                 outputAnchors: [{ id: 'llmAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }],
-                inputs: {
+                inputValues: {
                     llmModel: 'chatGoogleGenerativeAI',
                     llmModelConfig: {
                         modelName: 'gemini-2.0-flash'

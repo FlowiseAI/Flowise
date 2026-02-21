@@ -54,71 +54,72 @@ describe('initNode', () => {
         expect(result.id).toBe('node_0')
     })
 
-    it('should classify whitelisted input types as inputParams', () => {
+    it('should classify whitelisted input types as inputs (definitions)', () => {
         const nodeData = makeNodeData({
-            inputParams: [
+            inputs: [
                 { id: '', name: 'temp', label: 'Temperature', type: 'number' },
                 { id: '', name: 'model', label: 'Model', type: 'options', default: 'gpt-4' },
                 { id: '', name: 'code', label: 'Code', type: 'code' }
-            ] as NodeData['inputParams']
+            ] as NodeData['inputs']
         })
         const result = initNode(nodeData, 'n1')
-        expect(result.inputParams).toHaveLength(3)
-        result.inputParams!.forEach((p) => {
+        expect(result.inputs).toHaveLength(3)
+        result.inputs!.forEach((p) => {
             expect(p.id).toMatch(/^n1-input-/)
         })
     })
 
     it('should classify non-whitelisted input types as inputAnchors', () => {
         const nodeData = makeNodeData({
-            inputParams: [
+            inputs: [
                 { id: '', name: 'llm', label: 'LLM', type: 'BaseChatModel' },
                 { id: '', name: 'memory', label: 'Memory', type: 'BaseMemory' }
-            ] as NodeData['inputParams']
+            ] as NodeData['inputs']
         })
         const result = initNode(nodeData, 'n1')
         expect(result.inputAnchors).toHaveLength(2)
-        expect(result.inputParams).toHaveLength(0)
+        expect(result.inputs).toHaveLength(0)
     })
 
     it('should split mixed input types between params and anchors', () => {
         const nodeData = makeNodeData({
-            inputParams: [
+            inputs: [
                 { id: '', name: 'temp', label: 'Temperature', type: 'number' },
                 { id: '', name: 'llm', label: 'LLM', type: 'BaseChatModel' },
                 { id: '', name: 'prompt', label: 'Prompt', type: 'string' }
-            ] as NodeData['inputParams']
+            ] as NodeData['inputs']
         })
         const result = initNode(nodeData, 'n1')
-        expect(result.inputParams).toHaveLength(2)
+        expect(result.inputs).toHaveLength(2)
         expect(result.inputAnchors).toHaveLength(1)
         expect(result.inputAnchors![0].name).toBe('llm')
     })
 
     it('should initialize default values for params', () => {
         const nodeData = makeNodeData({
-            inputParams: [
+            inputs: [
                 { id: '', name: 'temp', label: 'Temperature', type: 'number', default: 0.7 },
                 { id: '', name: 'model', label: 'Model', type: 'string' }
-            ] as NodeData['inputParams']
+            ] as NodeData['inputs']
         })
         const result = initNode(nodeData, 'n1')
-        expect(result.inputs!['temp']).toBe(0.7)
-        // Params without a default fall back to '' (matching agentflow v2 behavior).
-        // This ensures show/hide conditions can evaluate against a defined value.
-        expect(result.inputs!['model']).toBe('')
+        expect(result.inputValues!['temp']).toBe(0.7)
+        // initNode uses initializeDefaultNodeData which falls back to '' for params
+        // without an explicit default value. This ensures all params have a value
+        // for show/hide condition evaluation.
+        expect(result.inputValues!['model']).toBe('')
     })
 
-    it('should preserve existing inputs over defaults', () => {
+    it('should preserve existing inputValues over defaults', () => {
         const nodeData = makeNodeData({
-            inputs: { temp: 0.9 },
-            inputParams: [{ id: '', name: 'temp', label: 'Temperature', type: 'number', default: 0.7 }] as NodeData['inputParams']
+            inputValues: { temp: 0.9 },
+            inputs: [{ id: '', name: 'temp', label: 'Temperature', type: 'number', default: 0.7 }] as NodeData['inputs']
         })
         const result = initNode(nodeData, 'n1')
-        expect(result.inputs!['temp']).toBe(0.9)
+        expect(result.inputValues!['temp']).toBe(0.9)
     })
 
-    it('should fall back to inputAnchors when inputParams is absent', () => {
+    it('should fall back to inputAnchors when inputs is absent', () => {
         const nodeData = makeNodeData({
             inputAnchors: [{ id: '', name: 'llm', label: 'LLM', type: 'BaseChatModel' }] as NodeData['inputAnchors']
         })

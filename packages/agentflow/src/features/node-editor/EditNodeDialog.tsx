@@ -47,13 +47,13 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const onCustomDataChange = ({ inputParam, newValue }: { inputParam: InputParam; newValue: unknown }) => {
         if (!data) return
 
-        const updatedInputs = {
-            ...data.inputs,
+        const updatedInputValues = {
+            ...data.inputValues,
             [inputParam.name]: newValue
         }
 
-        updateNodeData(data.id, { inputs: updatedInputs })
-        setData({ ...data, inputs: updatedInputs })
+        updateNodeData(data.id, { inputValues: updatedInputValues })
+        setData({ ...data, inputValues: updatedInputValues })
     }
 
     useEffect(() => {
@@ -63,11 +63,6 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
         if (dialogProps.data) {
             setData(dialogProps.data)
             if (dialogProps.data.label) setNodeName(dialogProps.data.label)
-        }
-
-        return () => {
-            setInputParams([])
-            setData(null)
         }
     }, [dialogProps])
 
