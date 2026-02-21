@@ -29,7 +29,8 @@ class LmStudio_LLMs implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['lmStudioApi']
+            credentialNames: ['lmStudioApi'],
+            optional: true
         }
         this.inputs = [
             {
@@ -143,7 +144,6 @@ class LmStudio_LLMs implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: Partial<LmStudioInput> & BaseLLMParams & { configuration?: ClientOptions } = {
-            temperature: parseFloat(temperature),
             modelName,
             streaming: streaming ?? true,
             configuration: {
@@ -152,6 +152,7 @@ class LmStudio_LLMs implements INode {
             }
         }
 
+        if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
