@@ -377,6 +377,12 @@ export async function start(): Promise<void> {
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
 
+    // Allow long-running operations (e.g. vector store upserts) to complete without
+    // hitting Node.js's built-in request timeout, which would surface as a 504 when
+    // Cloudflare or another reverse-proxy sits in front of Flowise.
+    // Operators can override via SERVER_TIMEOUT_MS (0 = no timeout).
+    server.requestTimeout = parseInt(process.env.SERVER_TIMEOUT_MS || '0', 10)
+
     await serverApp.initDatabase()
     await serverApp.config()
 
