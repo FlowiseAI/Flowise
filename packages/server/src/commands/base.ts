@@ -183,6 +183,14 @@ export abstract class BaseCommand extends Command {
     async init(): Promise<void> {
         await super.init()
 
+        const [major] = process.versions.node.split('.').map(Number)
+        if (major < 20) {
+            console.error(
+                `Error: Flowise requires Node.js v20 or later. You are running Node.js v${process.versions.node}.\nPlease upgrade Node.js: https://nodejs.org/`
+            )
+            process.exit(1)
+        }
+
         process.on('SIGTERM', this.onTerminate())
         process.on('SIGINT', this.onTerminate())
 
