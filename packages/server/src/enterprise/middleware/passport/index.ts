@@ -30,8 +30,17 @@ const jwtAudience = process.env.JWT_AUDIENCE || 'AUDIENCE'
 const jwtIssuer = process.env.JWT_ISSUER || 'ISSUER'
 
 const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 'true'
-const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET || 'auth_token'
-const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_AUTH_TOKEN_SECRET || 'refresh_token'
+
+const normalizeSecret = (value: string | undefined, fallback: string) => {
+    const trimmed = value?.trim()
+    return trimmed && trimmed.length > 0 ? trimmed : fallback
+}
+
+const jwtAuthTokenSecret = normalizeSecret(process.env.JWT_AUTH_TOKEN_SECRET, 'auth_token')
+const jwtRefreshSecret = normalizeSecret(process.env.JWT_REFRESH_TOKEN_SECRET, jwtAuthTokenSecret || 'refresh_token')
+
+process.env.JWT_AUTH_TOKEN_SECRET = jwtAuthTokenSecret
+process.env.JWT_REFRESH_TOKEN_SECRET = jwtRefreshSecret
 
 // Allow explicit override of cookie security settings
 // This is useful when running behind a reverse proxy/load balancer that terminates SSL
