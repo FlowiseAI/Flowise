@@ -27,21 +27,76 @@ const DEFAULT_DENY_LIST = [
 ]
 
 /**
- * Gets the HTTP deny list from environment variable or returns default
+ * Gets the HTTP deny list from environment variable or returns default.
+ * When HTTP_DENY_LIST is explicitly set (even to empty string), it overrides the default.
  * @returns Array of denied IP addresses/CIDR ranges
  */
 function getHttpDenyList(): string[] {
     const httpDenyListString = process.env.HTTP_DENY_LIST
-    return httpDenyListString ? httpDenyListString.split(',').map((s) => s.trim()) : DEFAULT_DENY_LIST
+    if (httpDenyListString === undefined) return DEFAULT_DENY_LIST
+    return httpDenyListString.length > 0 ? httpDenyListString.split(',').map((s) => s.trim()) : []
 }
 
 /**
- * Checks if an IP address is in the deny list
+ * Gets the HTTP allow list from environment variable.
+ * Entries in the allow list take precedence over the deny list.
+ * @returns Array of allowed IP addresses/CIDR ranges/hostnames
+ */
+function getHttpAllowList(): string[] {
+    const httpAllowListString = process.env.HTTP_ALLOW_LIST
+    return httpAllowListString ? httpAllowListString.split(',').map((s) => s.trim()) : []
+}
+
+/**
+ * Checks if an IP address matches the allow list.
+ * @param ip - IP address to check
+ * @param allowList - Array of allowed IP addresses/CIDR ranges
+ * @returns true if the IP is in the allow list
+ */
+function isAllowedIP(ip: string, allowList: string[]): boolean {
+    if (allowList.length === 0) return false
+    try {
+        const parsedIp = ipaddr.parse(ip)
+        for (const entry of allowList) {
+            if (entry.includes('/')) {
+                try {
+                    const [range] = entry.split('/')
+                    const parsedRange = ipaddr.parse(range)
+                    if (parsedIp.kind() === parsedRange.kind() && parsedIp.match(ipaddr.parseCIDR(entry))) {
+                        return true
+                    }
+                } catch {
+                    // Skip invalid CIDR entries
+                }
+            } else if (ip === entry) {
+                return true
+            }
+        }
+    } catch {
+        // ip is not a valid IP address
+    }
+    return false
+}
+
+/**
+ * Checks if a hostname matches the allow list (for non-IP hostnames).
+ * @param hostname - Hostname to check
+ * @param allowList - Array of allowed hostnames/IPs/CIDR ranges
+ * @returns true if the hostname is explicitly allowed
+ */
+function isAllowedHostname(hostname: string, allowList: string[]): boolean {
+    return allowList.includes(hostname)
+}
+
+/**
+ * Checks if an IP address is in the deny list, respecting the allow list.
  * @param ip - IP address to check
  * @param denyList - Array of denied IP addresses/CIDR ranges
- * @throws Error if IP is in deny list
+ * @param allowList - Array of allowed IP addresses/CIDR ranges (takes precedence over deny list)
+ * @throws Error if IP is in deny list and not in allow list
  */
-export function isDeniedIP(ip: string, denyList: string[]): void {
+export function isDeniedIP(ip: string, denyList: string[], allowList: string[] = []): void {
+    if (isAllowedIP(ip, allowList)) return
     const parsedIp = ipaddr.parse(ip)
     for (const entry of denyList) {
         if (entry.includes('/')) {
@@ -63,22 +118,26 @@ export function isDeniedIP(ip: string, denyList: string[]): void {
 }
 
 /**
- * Checks if a URL is allowed based on HTTP_DENY_LIST environment variable.
+ * Checks if a URL is allowed based on HTTP_DENY_LIST and HTTP_ALLOW_LIST environment variables.
+ * Entries in HTTP_ALLOW_LIST take precedence over HTTP_DENY_LIST.
  * @param url - URL to check
  * @throws Error if URL hostname resolves to a denied IP
  */
 export async function checkDenyList(url: string): Promise<void> {
     const httpDenyList = getHttpDenyList()
+    const httpAllowList = getHttpAllowList()
 
     const urlObj = new URL(url)
     const hostname = urlObj.hostname
 
+    if (isAllowedHostname(hostname, httpAllowList)) return
+
     if (ipaddr.isValid(hostname)) {
-        isDeniedIP(hostname, httpDenyList)
+        isDeniedIP(hostname, httpDenyList, httpAllowList)
     } else {
         const addresses = await dns.lookup(hostname, { all: true })
         for (const address of addresses) {
-            isDeniedIP(address.address, httpDenyList)
+            isDeniedIP(address.address, httpDenyList, httpAllowList)
         }
     }
 }
@@ -215,13 +274,37 @@ type ResolvedTarget = {
 
 async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     const denyList = getHttpDenyList()
+    const allowList = getHttpAllowList()
 
     const u = new URL(url)
     const hostname = u.hostname
     const protocol: 'http' | 'https' = u.protocol === 'https:' ? 'https' : 'http'
 
+    if (isAllowedHostname(hostname, allowList)) {
+        // Hostname is explicitly allowed; resolve without deny-list checks
+        if (ipaddr.isValid(hostname)) {
+            return {
+                hostname,
+                ip: hostname,
+                family: hostname.includes(':') ? 6 : 4,
+                protocol
+            }
+        }
+        const records = await dns.lookup(hostname, { all: true })
+        if (records.length === 0) {
+            throw new Error(`DNS resolution failed for ${hostname}`)
+        }
+        const chosen = records.find((r) => r.family === 4) ?? records[0]
+        return {
+            hostname,
+            ip: chosen.address,
+            family: chosen.family as 4 | 6,
+            protocol
+        }
+    }
+
     if (ipaddr.isValid(hostname)) {
-        isDeniedIP(hostname, denyList)
+        isDeniedIP(hostname, denyList, allowList)
 
         return {
             hostname,
@@ -237,7 +320,7 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     }
 
     for (const r of records) {
-        isDeniedIP(r.address, denyList)
+        isDeniedIP(r.address, denyList, allowList)
     }
 
     const chosen = records.find((r) => r.family === 4) ?? records[0]
