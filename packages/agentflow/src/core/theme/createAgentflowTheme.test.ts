@@ -127,6 +127,32 @@ describe('createAgentflowTheme', () => {
         })
     })
 
+    describe('Typography', () => {
+        const theme = createAgentflowTheme(false)
+
+        it('should set h4 to 1rem / 600 weight', () => {
+            expect(theme.typography.h4.fontSize).toBe('1rem')
+            expect(theme.typography.h4.fontWeight).toBe(600)
+        })
+
+        it('should set h5 to 0.875rem / 600 weight', () => {
+            expect(theme.typography.h5.fontSize).toBe('0.875rem')
+            expect(theme.typography.h5.fontWeight).toBe(600)
+        })
+
+        it('should set h6 to 0.75rem / 500 weight', () => {
+            expect(theme.typography.h6.fontSize).toBe('0.75rem')
+            expect(theme.typography.h6.fontWeight).toBe(500)
+        })
+
+        it('should have same typography in both modes', () => {
+            const darkTheme = createAgentflowTheme(true)
+            expect(theme.typography.h4).toEqual(darkTheme.typography.h4)
+            expect(theme.typography.h5).toEqual(darkTheme.typography.h5)
+            expect(theme.typography.h6).toEqual(darkTheme.typography.h6)
+        })
+    })
+
     describe('MUI Theme Integration', () => {
         const theme = createAgentflowTheme(false)
 
