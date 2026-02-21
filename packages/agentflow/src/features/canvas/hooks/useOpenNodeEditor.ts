@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
-import type { NodeData } from '@core/types'
-import { useAgentflowContext } from '@infrastructure/store'
+import type { NodeData } from '@/core/types'
+import { useAgentflowContext } from '@/infrastructure/store'
 
 import { useFlowNodes } from './useFlowNodes'
 
