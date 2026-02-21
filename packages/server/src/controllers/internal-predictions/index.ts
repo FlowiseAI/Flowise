@@ -47,6 +47,10 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         }
 
         const apiResponse = await utilBuildChatflow(req, true)
+        if (apiResponse.text) {
+            sseStreamer.streamStartEvent(apiResponse.chatId, apiResponse.text)
+            sseStreamer.streamTokenEvent(apiResponse.chatId, apiResponse.text)
+        }
         sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
     } catch (error) {
         if (chatId) {
