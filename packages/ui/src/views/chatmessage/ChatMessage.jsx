@@ -189,6 +189,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const customization = useSelector((state) => state.customization)
 
     const ps = useRef()
+    const abortControllerRef = useRef(null)
 
     const dispatch = useDispatch()
     const { onAgentflowNodeStatusUpdate, clearAgentflowNodeStatus } = useContext(flowContext)
@@ -1078,100 +1079,120 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         const chatId = params.chatId
         const input = params.question
         params.streaming = true
-        await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
-            openWhenHidden: true,
-            method: 'POST',
-            body: JSON.stringify(params),
-            headers: {
-                'Content-Type': 'application/json',
-                'x-request-from': 'internal'
-            },
-            async onopen(response) {
-                if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
-                    //console.log('EventSource Open')
+
+        // Cancel any in-flight stream before starting a new one
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort()
+        }
+        abortControllerRef.current = new AbortController()
+
+        try {
+            await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
+                signal: abortControllerRef.current.signal,
+                openWhenHidden: true,
+                method: 'POST',
+                body: JSON.stringify(params),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-request-from': 'internal'
+                },
+                async onopen(response) {
+                    if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
+                        //console.log('EventSource Open')
+                    }
+                },
+                async onmessage(ev) {
+                    const payload = JSON.parse(ev.data)
+                    switch (payload.event) {
+                        case 'start':
+                            setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+                            break
+                        case 'token':
+                            updateLastMessage(payload.data)
+                            break
+                        case 'sourceDocuments':
+                            updateLastMessageSourceDocuments(payload.data)
+                            break
+                        case 'usedTools':
+                            updateLastMessageUsedTools(payload.data)
+                            break
+                        case 'calledTools':
+                            updateLastMessageCalledTools(payload.data)
+                            break
+                        case 'fileAnnotations':
+                            updateLastMessageFileAnnotations(payload.data)
+                            break
+                        case 'agentReasoning':
+                            updateLastMessageAgentReasoning(payload.data)
+                            break
+                        case 'agentFlowEvent':
+                            updateAgentFlowEvent(payload.data)
+                            break
+                        case 'agentFlowExecutedData':
+                            updateAgentFlowExecutedData(payload.data)
+                            break
+                        case 'artifacts':
+                            updateLastMessageArtifacts(payload.data)
+                            break
+                        case 'action':
+                            updateLastMessageAction(payload.data)
+                            break
+                        case 'nextAgent':
+                            updateLastMessageNextAgent(payload.data)
+                            break
+                        case 'nextAgentFlow':
+                            updateLastMessageNextAgentFlow(payload.data)
+                            break
+                        case 'metadata':
+                            updateMetadata(payload.data, input)
+                            break
+                        case 'error':
+                            updateErrorMessage(payload.data)
+                            break
+                        case 'abort':
+                            abortMessage(payload.data)
+                            closeResponse()
+                            // Abort to prevent fetchEventSource from retrying
+                            abortControllerRef.current?.abort()
+                            break
+                        case 'tts_start':
+                            handleTTSStart(payload.data)
+                            break
+                        case 'tts_data':
+                            handleTTSDataChunk(payload.data.audioChunk)
+                            break
+                        case 'tts_end':
+                            handleTTSEnd()
+                            break
+                        case 'tts_abort':
+                            handleTTSAbort(payload.data)
+                            break
+                        case 'end':
+                            cleanupCalledTools()
+                            setLocalStorageChatflow(chatflowid, chatId)
+                            closeResponse()
+                            // Abort to prevent fetchEventSource from retrying after stream ends
+                            abortControllerRef.current?.abort()
+                            break
+                    }
+                },
+                async onclose() {
+                    cleanupCalledTools()
+                    closeResponse()
+                },
+                async onerror(err) {
+                    console.error('EventSource Error: ', err)
+                    closeResponse()
+                    throw err
                 }
-            },
-            async onmessage(ev) {
-                const payload = JSON.parse(ev.data)
-                switch (payload.event) {
-                    case 'start':
-                        setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
-                        break
-                    case 'token':
-                        updateLastMessage(payload.data)
-                        break
-                    case 'sourceDocuments':
-                        updateLastMessageSourceDocuments(payload.data)
-                        break
-                    case 'usedTools':
-                        updateLastMessageUsedTools(payload.data)
-                        break
-                    case 'calledTools':
-                        updateLastMessageCalledTools(payload.data)
-                        break
-                    case 'fileAnnotations':
-                        updateLastMessageFileAnnotations(payload.data)
-                        break
-                    case 'agentReasoning':
-                        updateLastMessageAgentReasoning(payload.data)
-                        break
-                    case 'agentFlowEvent':
-                        updateAgentFlowEvent(payload.data)
-                        break
-                    case 'agentFlowExecutedData':
-                        updateAgentFlowExecutedData(payload.data)
-                        break
-                    case 'artifacts':
-                        updateLastMessageArtifacts(payload.data)
-                        break
-                    case 'action':
-                        updateLastMessageAction(payload.data)
-                        break
-                    case 'nextAgent':
-                        updateLastMessageNextAgent(payload.data)
-                        break
-                    case 'nextAgentFlow':
-                        updateLastMessageNextAgentFlow(payload.data)
-                        break
-                    case 'metadata':
-                        updateMetadata(payload.data, input)
-                        break
-                    case 'error':
-                        updateErrorMessage(payload.data)
-                        break
-                    case 'abort':
-                        abortMessage(payload.data)
-                        closeResponse()
-                        break
-                    case 'tts_start':
-                        handleTTSStart(payload.data)
-                        break
-                    case 'tts_data':
-                        handleTTSDataChunk(payload.data.audioChunk)
-                        break
-                    case 'tts_end':
-                        handleTTSEnd()
-                        break
-                    case 'tts_abort':
-                        handleTTSAbort(payload.data)
-                        break
-                    case 'end':
-                        cleanupCalledTools()
-                        setLocalStorageChatflow(chatflowid, chatId)
-                        closeResponse()
-                        break
-                }
-            },
-            async onclose() {
-                cleanupCalledTools()
-                closeResponse()
-            },
-            async onerror(err) {
-                console.error('EventSource Error: ', err)
-                closeResponse()
+            })
+        } catch (err) {
+            // Ignore AbortError — it is raised intentionally when we abort the stream
+            // (e.g. after receiving the 'end' event or when the component unmounts)
+            if (err.name !== 'AbortError') {
                 throw err
             }
-        })
+        }
     }
 
     const closeResponse = () => {
@@ -1509,6 +1530,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
 
         return () => {
+            // Abort any in-flight event stream so it does not retry or update
+            // state after the chat has been closed / the chatflow has changed.
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort()
+                abortControllerRef.current = null
+            }
             setUserInput('')
             setUploadedFiles([])
             setLoading(false)

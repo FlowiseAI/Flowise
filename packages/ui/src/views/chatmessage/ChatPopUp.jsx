@@ -15,6 +15,7 @@ import ChatExpandDialog from './ChatExpandDialog'
 
 // api
 import chatmessageApi from '@/api/chatmessage'
+import executionsApi from '@/api/executions'
 
 // Hooks
 import useConfirm from '@/hooks/useConfirm'
@@ -98,6 +99,25 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 const objChatDetails = getLocalStorageChatflow(chatflowid)
                 if (!objChatDetails.chatId) return
                 await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' })
+
+                // For agent canvas flows, also delete executions tied to this session
+                // so they are not re-loaded when the chat dialog is reopened.
+                if (isAgentCanvas) {
+                    try {
+                        const executionsRes = await executionsApi.getAllExecutions({
+                            agentflowId: chatflowid,
+                            sessionId: objChatDetails.chatId,
+                            limit: 100
+                        })
+                        const executions = executionsRes.data?.data ?? []
+                        if (executions.length > 0) {
+                            await executionsApi.deleteExecutions(executions.map((e) => e.id))
+                        }
+                    } catch (_) {
+                        // Non-fatal: execution deletion is best-effort
+                    }
+                }
+
                 removeLocalStorageChatHistory(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({
