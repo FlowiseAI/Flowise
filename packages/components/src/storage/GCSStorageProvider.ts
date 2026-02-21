@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { BaseStorageProvider } from './BaseStorageProvider'
 import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
-const MulterGoogleCloudStorage = require('multer-cloud-storage')
+import MulterGoogleCloudStorage from 'multer-cloud-storage'
 
 export class GCSStorageProvider extends BaseStorageProvider {
     private bucket: Bucket
@@ -75,7 +75,7 @@ export class GCSStorageProvider extends BaseStorageProvider {
         const sanitizedFilename = this.sanitizeFilename(filename)
         const normalizedChatflowid = this.normalizePath(chatflowid)
         const normalizedFilename = this.normalizePath(sanitizedFilename)
-        const filePath = `${normalizedChatflowid}/${normalizedFilename}`
+        const filePath = `${orgId}/${normalizedChatflowid}/${normalizedFilename}`
 
         const file = this.bucket.file(filePath)
         await new Promise<void>((resolve, reject) => {
