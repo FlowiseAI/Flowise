@@ -156,6 +156,14 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         }
     }
 
+    const handleBackClick = () => {
+        if (window.history.state && window.history.state.idx > 0) {
+            navigate(-1)
+        } else {
+            navigate('/', { replace: true })
+        }
+    }
+
     const onUploadFile = (file) => {
         setSettingsOpen(false)
         handleLoadFlow(file)
@@ -253,17 +261,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
                 <Stack flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
                     <Box>
-                        <ButtonBase
-                            title='Back'
-                            sx={{ borderRadius: '50%' }}
-                            onClick={() => {
-                                if (window.history.state && window.history.state.idx > 0) {
-                                    navigate(-1)
-                                } else {
-                                    navigate('/', { replace: true })
-                                }
-                            }}
-                        >
+                        <ButtonBase title='Back' sx={{ borderRadius: '50%' }} onClick={handleBackClick}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
