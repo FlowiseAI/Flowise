@@ -59,3 +59,22 @@ export const useReactFlow = () => ({
     getNode: jest.fn(),
     getEdge: jest.fn()
 })
+
+// Hook to update node internals (used for dynamic handle positioning)
+export const useUpdateNodeInternals = () => jest.fn()
+
+// Hook to access ReactFlow store state
+export const useStore = (selector?: any) => (selector ? selector({}) : {})
+
+// Edge utilities
+export const addEdge = (connection: any, edges: any[]) => [...edges, connection]
+
+export const getBezierPath = jest.fn(({ sourceX, sourceY, targetX, targetY }: any) => [
+    `M ${sourceX},${sourceY} L ${targetX},${targetY}`,
+    (sourceX + targetX) / 2,
+    (sourceY + targetY) / 2
+])
+
+export const EdgeLabelRenderer = ({ children }: { children: React.ReactNode }) => <div data-testid='edge-label-renderer'>{children}</div>
+
+export const NodeResizer = () => <div data-testid='node-resizer' />

@@ -16,6 +16,7 @@ import {
     useFlowNodes
 } from './features/canvas'
 import { GenerateFlowDialog } from './features/generator'
+import { EditNodeDialog } from './features/node-editor'
 import { AddNodesDrawer, StyledFab } from './features/node-palette'
 import { useAgentflowContext, useConfigContext } from './infrastructure/store'
 import { AgentflowProvider } from './AgentflowProvider'
@@ -50,7 +51,7 @@ function AgentflowCanvas({
     renderHeader?: AgentflowProps['renderHeader']
     renderNodePalette?: AgentflowProps['renderNodePalette']
 }) {
-    const { state, setNodes, setEdges, setDirty, setReactFlowInstance } = useAgentflowContext()
+    const { state, setNodes, setEdges, setDirty, setReactFlowInstance, closeEditDialog } = useAgentflowContext()
     const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
@@ -74,14 +75,70 @@ function AgentflowCanvas({
     // Load available nodes
     const { availableNodes } = useFlowNodes()
 
-    // Sync local state with context
+    // TODO: Refactor bidirectional state sync architecture
+    // Current implementation uses refs and setTimeout to prevent circular updates between
+    // ReactFlow's local state (useNodesState/useEdgesState) and AgentflowContext state.
+    // This approach is brittle and prone to race conditions.
+    //
+    // Problem: We have TWO sources of truth:
+    //   1. ReactFlow local state (nodes/edges) - updated by drag/drop, user interactions
+    //   2. AgentflowContext state - updated by edit dialog, delete, duplicate operations
+    //
+    // Current sync flow:
+    //   - Local ReactFlow → Context (for drag/drop) ✓
+    //   - Context → Local ReactFlow (for edit dialog updates) ⚠️ Brittle with refs/setTimeout
+    //
+    // Better solution (for future refactor):
+    //   Option A: Make context operations (updateNodeData, deleteNode, etc.) also call
+    //             setLocalNodes/setLocalEdges directly, then remove reverse sync entirely.
+    //   Option B: Use deep equality checks (e.g., lodash.isEqual) instead of refs/setTimeout.
+    //   Option C: Consolidate to single source of truth (context only, ReactFlow reads from it).
+    //
+    // See: https://github.com/FlowiseAI/Flowise/pull/XXX for discussion
+    //
+    // Use refs to prevent circular sync updates
+    const syncingToContext = useRef(false)
+    const syncingFromContext = useRef(false)
+
+    // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
+        if (syncingFromContext.current) return
+        syncingToContext.current = true
         setNodes(nodes as FlowNode[])
+        // Use setTimeout to reset the flag after the sync completes
+        setTimeout(() => {
+            syncingToContext.current = false
+        }, 0)
     }, [nodes, setNodes])
 
     useEffect(() => {
+        if (syncingFromContext.current) return
+        syncingToContext.current = true
         setEdges(edges as FlowEdge[])
+        setTimeout(() => {
+            syncingToContext.current = false
+        }, 0)
     }, [edges, setEdges])
+
+    // Sync context state back to local ReactFlow (when updated via edit dialog, etc.)
+    useEffect(() => {
+        if (syncingToContext.current) return
+        syncingFromContext.current = true
+        setLocalNodes(state.nodes)
+        setTimeout(() => {
+            syncingFromContext.current = false
+        }, 0)
+    }, [state.nodes, setLocalNodes])
+
+    useEffect(() => {
+        if (syncingToContext.current) return
+        syncingFromContext.current = true
+        setLocalEdges(state.edges)
+        setTimeout(() => {
+            syncingFromContext.current = false
+        }, 0)
+    }, [state.edges, setLocalEdges])
+    // END TODO: Bidirectional state sync
 
     // Flow handlers
     const { handleConnect, handleNodesChange, handleEdgesChange, handleAddNode } = useFlowHandlers({
@@ -213,6 +270,9 @@ function AgentflowCanvas({
 
             {/* Generate Flow Dialog */}
             <GenerateFlowDialog open={showGenerateDialog} onClose={() => setShowGenerateDialog(false)} onGenerated={handleFlowGenerated} />
+
+            {/* Edit Node Dialog */}
+            <EditNodeDialog show={state.editingNodeId !== null} dialogProps={state.editDialogProps || {}} onCancel={closeEditDialog} />
         </div>
     )
 }

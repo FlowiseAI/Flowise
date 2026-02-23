@@ -1,9 +1,9 @@
 import { RefObject, useCallback } from 'react'
 import { useReactFlow } from 'reactflow'
 
-import { getUniqueNodeId, getUniqueNodeLabel, initNode } from '../../../core'
-import type { FlowNode, NodeData } from '../../../core/types'
-import { useAgentflowContext } from '../../../infrastructure/store'
+import { getUniqueNodeId, getUniqueNodeLabel, initNode } from '@/core'
+import type { FlowNode, NodeData } from '@/core/types'
+import { useAgentflowContext } from '@/infrastructure/store'
 
 // Offset to center the dropped node on the cursor position.
 // Approximate half of a typical node's width/height.

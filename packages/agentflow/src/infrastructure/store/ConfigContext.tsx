@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useMemo } from 'react'
 
-import type { ConfigContextValue } from '../../core/types'
+import type { ConfigContextValue } from '@/core/types'
 
 const ConfigContext = createContext<ConfigContextValue | null>(null)
 

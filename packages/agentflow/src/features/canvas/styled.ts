@@ -3,8 +3,8 @@ import { NodeToolbar, type NodeToolbarProps } from 'reactflow'
 
 import { styled } from '@mui/material/styles'
 
-import { MainCard, type MainCardProps } from '../../atoms'
-import { tokens } from '../../core/theme/tokens'
+import { MainCard, type MainCardProps } from '@/atoms'
+import { tokens } from '@/core/theme/tokens'
 
 export const CardWrapper: ComponentType<MainCardProps> = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,

@@ -1,4 +1,4 @@
-import type { AgentflowAction, AgentflowState, FlowNode } from '../../core/types'
+import type { AgentflowAction, AgentflowState, FlowNode } from '@/core/types'
 
 // Node types that size to content; strip stored width/height so they stay content-sized
 const CONTENT_SIZED_NODE_TYPES = new Set(['agentFlow', 'stickyNote'])
@@ -18,7 +18,9 @@ export const initialState: AgentflowState = {
     edges: [],
     chatflow: null,
     isDirty: false,
-    reactFlowInstance: null
+    reactFlowInstance: null,
+    editingNodeId: null,
+    editDialogProps: null
 }
 
 export function agentflowReducer(state: AgentflowState, action: AgentflowAction): AgentflowState {
@@ -33,6 +35,18 @@ export function agentflowReducer(state: AgentflowState, action: AgentflowAction)
             return { ...state, isDirty: action.payload }
         case 'SET_REACTFLOW_INSTANCE':
             return { ...state, reactFlowInstance: action.payload }
+        case 'OPEN_EDIT_DIALOG':
+            return {
+                ...state,
+                editingNodeId: action.payload.nodeId,
+                editDialogProps: action.payload.dialogProps
+            }
+        case 'CLOSE_EDIT_DIALOG':
+            return {
+                ...state,
+                editingNodeId: null,
+                editDialogProps: null
+            }
         case 'RESET':
             return initialState
         default:
