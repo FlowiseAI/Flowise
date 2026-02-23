@@ -43,10 +43,10 @@
         "*.css"
     ],
     "scripts": {
-        "build": "tsc && vite build",
+        "build": "tsc && NODE_ENV=production vite build",
         "clean": "rimraf dist",
-        "dev": "vite",
-        "dev:example": "vite --config examples/vite.config.ts",
+        "dev": "NODE_ENV=development vite",
+        "dev:example": "NODE_ENV=development vite --config examples/vite.config.ts",
         "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx,json,md}\"",
