@@ -1,4 +1,4 @@
-import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer } from 'react'
+import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer, useRef } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
@@ -32,6 +32,9 @@ export interface AgentflowContextValue {
     //Dialog operations
     openEditDialog: (nodeId: string, data: NodeData, inputParams: InputParam[]) => void
     closeEditDialog: () => void
+
+    // Register ReactFlow local state setters
+    registerLocalStateSetters: (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -47,6 +50,18 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         nodes: normalizeNodes(initialFlow?.nodes || []),
         edges: initialFlow?.edges || []
     })
+
+    // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
+    const localNodesSetterRef = useRef<((nodes: FlowNode[]) => void) | null>(null)
+    const localEdgesSetterRef = useRef<((edges: FlowEdge[]) => void) | null>(null)
+
+    const registerLocalStateSetters = useCallback(
+        (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => {
+            localNodesSetterRef.current = setLocalNodes
+            localEdgesSetterRef.current = setLocalEdges
+        },
+        []
+    )
 
     // Convenience setters
     const setNodes = useCallback((nodes: FlowNode[]) => {
@@ -74,9 +89,19 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         (nodeId: string) => {
             const newNodes = state.nodes.filter((node) => node.id !== nodeId)
             const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
+
+            //Update context state
             dispatch({ type: 'SET_NODES', payload: newNodes })
             dispatch({ type: 'SET_EDGES', payload: newEdges })
             dispatch({ type: 'SET_DIRTY', payload: true })
+
+            //Update ReactFlow's local state
+            if (localNodesSetterRef.current) {
+                localNodesSetterRef.current(newNodes)
+            }
+            if (localEdgesSetterRef.current) {
+                localEdgesSetterRef.current(newEdges)
+            }
         },
         [state.nodes, state.edges]
     )
@@ -96,8 +121,16 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 data: { ...nodeToDuplicate.data }
             }
 
-            dispatch({ type: 'SET_NODES', payload: [...state.nodes, newNode] })
+            const newNodes = [...state.nodes, newNode]
+
+            // Update context state
+            dispatch({ type: 'SET_NODES', payload: newNodes })
             dispatch({ type: 'SET_DIRTY', payload: true })
+
+            // Update ReactFlow's local state
+            if (localNodesSetterRef.current) {
+                localNodesSetterRef.current(newNodes)
+            }
         },
         [state.nodes]
     )
@@ -113,8 +146,15 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 }
                 return node
             })
+
+            // Update context state
             dispatch({ type: 'SET_NODES', payload: newNodes })
             dispatch({ type: 'SET_DIRTY', payload: true })
+
+            // Update ReactFlow's local state
+            if (localNodesSetterRef.current) {
+                localNodesSetterRef.current(newNodes)
+            }
         },
         [state.nodes]
     )
@@ -123,8 +163,15 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     const deleteEdge = useCallback(
         (edgeId: string) => {
             const newEdges = state.edges.filter((edge) => edge.id !== edgeId)
+
+            // Update context state
             dispatch({ type: 'SET_EDGES', payload: newEdges })
             dispatch({ type: 'SET_DIRTY', payload: true })
+
+            // Update ReactFlow's local state
+            if (localEdgesSetterRef.current) {
+                localEdgesSetterRef.current(newEdges)
+            }
         },
         [state.edges]
     )
@@ -179,7 +226,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         openEditDialog,
         closeEditDialog,
         getFlowData,
-        reset
+        reset,
+        registerLocalStateSetters
     }
 
     return <AgentflowContext.Provider value={value}>{children}</AgentflowContext.Provider>
