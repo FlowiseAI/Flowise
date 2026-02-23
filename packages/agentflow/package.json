@@ -1,5 +1,5 @@
 {
-    "name": "@flowise/agentflow",
+    "name": "@flowiseai/agentflow",
     "version": "0.0.0-dev.1",
     "description": "Embeddable React component for building and visualizing AI agent workflows",
     "license": "Apache-2.0",
@@ -14,6 +14,7 @@
     },
     "keywords": [
         "flowise",
+        "flowiseai",
         "agentflow",
         "react",
         "llm",
