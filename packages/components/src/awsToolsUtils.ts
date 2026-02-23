@@ -86,9 +86,7 @@ export async function getAWSCredentialConfig(nodeData: INodeData, options: IComm
     // --- AssumeRole flow ---
     if (roleArn) {
         if (!AWS_ROLE_ARN_REGEX.test(roleArn)) {
-            throw new Error(
-                'Invalid Role ARN format: Expected format: arn:aws:iam::<12-digit-account-id>:role/<role-name>'
-            )
+            throw new Error('Invalid Role ARN format: Expected format: arn:aws:iam::<12-digit-account-id>:role/<role-name>')
         }
         const assumedCredentials = await assumeRole({
             accessKeyId,
