@@ -6,6 +6,7 @@
             "outputs": ["dist/**"]
         },
         "test": {},
+        "test:coverage": {},
         "dev": {
             "cache": false
         }

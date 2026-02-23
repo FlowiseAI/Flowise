@@ -107,7 +107,7 @@ export class MCPToolkit extends BaseToolkit {
             return await MCPTool({
                 toolkit: this,
                 name: tool.name,
-                description: tool.description || '',
+                description: tool.description || tool.name,
                 argsSchema: createSchemaModel(tool.inputSchema)
             })
         })
@@ -246,7 +246,7 @@ export const validateCommandInjection = (args: string[]): void => {
 }
 
 export const validateEnvironmentVariables = (env: Record<string, any>): void => {
-    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH']
+    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'NODE_OPTIONS']
 
     for (const [key, value] of Object.entries(env)) {
         if (dangerousEnvVars.includes(key)) {
