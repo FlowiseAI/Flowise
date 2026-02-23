@@ -46,7 +46,8 @@ module.exports = {
                 argsIgnorePattern: '^_'
             }
         ],
-        'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+        // Console logging can expose sensitive data in prod.  Log from @/core/logger to keep this data out of production.
+        'no-console': 'error',
         'react/prop-types': 'off',
         'react/react-in-jsx-scope': 'off',
         'simple-import-sort/imports': [
