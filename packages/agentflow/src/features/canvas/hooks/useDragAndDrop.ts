@@ -2,6 +2,7 @@ import { RefObject, useCallback } from 'react'
 import { useReactFlow } from 'reactflow'
 
 import { getUniqueNodeId, getUniqueNodeLabel, initNode } from '@/core'
+import { error as logError } from '@/core/logger'
 import type { FlowNode, NodeData } from '@/core/types'
 import { useAgentflowContext } from '@/infrastructure/store'
 
@@ -65,7 +66,7 @@ export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper }: UseDr
                 setLocalNodes((nds) => [...nds, newNode])
                 setDirty(true)
             } catch (error) {
-                console.error('[Agentflow] Failed to parse dropped node data:', error)
+                logError('PARSE_DROPPED_NODE', error)
             }
         },
         [nodes, reactFlowInstance, setLocalNodes, setDirty, reactFlowWrapper]

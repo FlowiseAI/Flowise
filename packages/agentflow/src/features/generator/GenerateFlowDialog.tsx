@@ -19,6 +19,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { IconSparkles } from '@tabler/icons-react'
 
+import { error as logError } from '@/core/logger'
 import type { FlowData } from '@/core/types'
 import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
@@ -107,7 +108,7 @@ function GenerateFlowDialogComponent({ open, onClose, onGenerated }: GenerateFlo
                 setSelectedModel(models[0].name)
             }
         } catch (err) {
-            console.error('Failed to load chat models:', err)
+            logError('LOAD_CHAT_MODELS', err)
             setError('Failed to load chat models. Please try again.')
         } finally {
             setLoadingModels(false)

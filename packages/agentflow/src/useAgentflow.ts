@@ -10,18 +10,20 @@ import { useAgentflowContext } from './infrastructure/store'
  *
  * @example
  * ```tsx
+ * import { log, error } from '@/core/logger'
+ *
  * function ControlPanel() {
  *   const agentflow = useAgentflow()
  *
  *   const handleSave = () => {
  *     const flow = agentflow.getFlow()
- *     console.log('Saving flow:', flow)
+ *     log('Saving flow:', flow)
  *   }
  *
  *   const handleValidate = () => {
  *     const result = agentflow.validate()
  *     if (!result.valid) {
- *       console.error('Validation errors:', result.errors)
+ *       error('VALIDATION_ERRORS', result.errors)
  *     }
  *   }
  *

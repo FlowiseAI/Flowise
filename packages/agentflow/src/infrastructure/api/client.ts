@@ -1,5 +1,7 @@
 import axios, { AxiosInstance } from 'axios'
 
+import { error as logError } from '../../core/logger'
+
 /**
  * Creates a configured axios client for API calls
  * @param apiBaseUrl - Base URL of the Flowise server
@@ -32,7 +34,7 @@ export function createApiClient(apiBaseUrl: string, token?: string): AxiosInstan
         (response) => response,
         (error) => {
             if (error.response?.status === 401) {
-                console.error('[Agentflow] 401 Authentication error:', {
+                logError('AUTH_401', {
                     url: error.config?.url,
                     message: error.response?.data?.message || error.message,
                     hasToken: !!token,

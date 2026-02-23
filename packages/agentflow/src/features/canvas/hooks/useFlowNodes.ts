@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { error as logError } from '@/core/logger'
 import type { NodeData } from '@/core/types'
 import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
@@ -24,7 +25,7 @@ export function useFlowNodes() {
                 // Filter to only agentflow nodes
                 agentflowNodes = allNodes.filter((node) => node.category === 'Agent Flows')
             } catch (err) {
-                console.warn('[Agentflow] Failed to load nodes from API:', err)
+                logError('LOAD_NODES', err)
                 setError(err instanceof Error ? err : new Error('Failed to load nodes'))
             }
 
