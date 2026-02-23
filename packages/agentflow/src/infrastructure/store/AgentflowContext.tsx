@@ -1,49 +1,9 @@
 import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
-import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode } from '../../core/types'
+import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
 
-// Initial state
-const initialState: AgentflowState = {
-    nodes: [],
-    edges: [],
-    chatflow: null,
-    isDirty: false,
-    reactFlowInstance: null
-}
-
-// Node types that size to content; strip stored width/height so they stay content-sized
-const CONTENT_SIZED_NODE_TYPES = new Set(['agentFlow', 'stickyNote'])
-
-function normalizeNodes(nodes: FlowNode[]): FlowNode[] {
-    return nodes.map((node) => {
-        if (CONTENT_SIZED_NODE_TYPES.has(node.type)) {
-            const { width: _width, height: _height, ...rest } = node
-            return rest as FlowNode
-        }
-        return node
-    })
-}
-
-// Reducer
-function agentflowReducer(state: AgentflowState, action: AgentflowAction): AgentflowState {
-    switch (action.type) {
-        case 'SET_NODES':
-            return { ...state, nodes: normalizeNodes(action.payload) }
-        case 'SET_EDGES':
-            return { ...state, edges: action.payload }
-        case 'SET_CHATFLOW':
-            return { ...state, chatflow: action.payload }
-        case 'SET_DIRTY':
-            return { ...state, isDirty: action.payload }
-        case 'SET_REACTFLOW_INSTANCE':
-            return { ...state, reactFlowInstance: action.payload }
-        case 'RESET':
-            return initialState
-        default:
-            return state
-    }
-}
+import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
 // Context value interface
 export interface AgentflowContextValue {
@@ -68,6 +28,10 @@ export interface AgentflowContextValue {
     // Flow operations
     getFlowData: () => FlowData
     reset: () => void
+
+    //Dialog operations
+    openEditDialog: (nodeId: string, data: NodeData, inputParams: InputParam[]) => void
+    closeEditDialog: () => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -165,6 +129,26 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         [state.edges]
     )
 
+    // Dialog operations
+    const openEditDialog = useCallback((nodeId: string, data: NodeData, inputParams: InputParam[]) => {
+        const dialogProps = {
+            inputParams: inputParams,
+            data: data,
+            disabled: false
+        }
+        dispatch({
+            type: 'OPEN_EDIT_DIALOG',
+            payload: {
+                nodeId,
+                dialogProps
+            }
+        })
+    }, [])
+
+    const closeEditDialog = useCallback(() => {
+        dispatch({ type: 'CLOSE_EDIT_DIALOG' })
+    }, [])
+
     // Get flow data
     const getFlowData = useCallback((): FlowData => {
         const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
@@ -192,6 +176,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         duplicateNode,
         updateNodeData,
         deleteEdge,
+        openEditDialog,
+        closeEditDialog,
         getFlowData,
         reset
     }

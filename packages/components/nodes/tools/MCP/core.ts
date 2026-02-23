@@ -107,7 +107,7 @@ export class MCPToolkit extends BaseToolkit {
             return await MCPTool({
                 toolkit: this,
                 name: tool.name,
-                description: tool.description || '',
+                description: tool.description || tool.name,
                 argsSchema: createSchemaModel(tool.inputSchema)
             })
         })

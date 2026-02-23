@@ -18,6 +18,7 @@ const ConfirmContext = createContext<ConfirmContextValue | null>(null)
 
 let resolveCallback: (value: boolean) => void
 
+// TODO: Integrate with destructive actions (node deletion, canvas clear, discard unsaved changes)
 /**
  * Hook to show confirmation dialogs
  * @example

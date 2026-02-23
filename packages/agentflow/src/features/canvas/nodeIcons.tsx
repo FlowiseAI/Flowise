@@ -1,7 +1,7 @@
 import { IconBrandGoogle, IconBrowserCheck, IconCode, IconPhoto, IconWorldWww } from '@tabler/icons-react'
 
-import { AGENTFLOW_ICONS } from '../../core'
-import type { NodeData } from '../../core/types'
+import { AGENTFLOW_ICONS } from '@/core'
+import type { NodeData } from '@/core/types'
 
 /**
  * Renders the icon for an agentflow node based on its name

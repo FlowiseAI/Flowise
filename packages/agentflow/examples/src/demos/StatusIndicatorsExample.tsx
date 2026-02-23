@@ -13,7 +13,7 @@ import { useRef, useState } from 'react'
 import type { AgentFlowInstance, FlowData, FlowNode } from '@flowise/agentflow'
 import { Agentflow } from '@flowise/agentflow'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 const createFlowWithStatuses = (): FlowData => ({
     nodes: [
@@ -190,7 +190,7 @@ export function StatusIndicatorsExample() {
     }
 
     return (
-        <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Controls */}
             <div
                 style={{
@@ -237,9 +237,9 @@ export function StatusIndicatorsExample() {
             <div style={{ flex: 1 }}>
                 <Agentflow
                     ref={agentflowRef}
-                    instanceUrl={instanceUrl}
+                    apiBaseUrl={apiBaseUrl}
                     token={token ?? undefined}
-                    flow={flow}
+                    initialFlow={flow}
                     showDefaultHeader={false}
                     readOnly={true}
                 />
@@ -249,9 +249,9 @@ export function StatusIndicatorsExample() {
 }
 
 export const StatusIndicatorsExampleProps = {
-    instanceUrl: '{from environment variables}',
+    apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    flow: 'FlowData (status indicators)',
+    initialFlow: 'FlowData (status indicators)',
     showDefaultHeader: false,
     readOnly: true
 }

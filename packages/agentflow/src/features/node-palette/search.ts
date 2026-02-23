@@ -1,5 +1,5 @@
-import type { NodeData } from '../../core'
-import { groupNodesByCategory } from '../../core'
+import type { NodeData } from '@/core'
+import { groupNodesByCategory } from '@/core'
 
 export { groupNodesByCategory }
 

@@ -2,7 +2,7 @@ import { memo } from 'react'
 
 import { Box, Typography } from '@mui/material'
 
-import { useApiContext, useConfigContext } from '../../../infrastructure/store'
+import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 interface ModelConfig {
     model?: string
@@ -17,7 +17,7 @@ export interface NodeModelConfigsProps {
  * Displays model configuration badges on a node
  */
 function NodeModelConfigsComponent({ inputs }: NodeModelConfigsProps) {
-    const { instanceUrl } = useApiContext()
+    const { apiBaseUrl } = useApiContext()
     const { isDarkMode } = useConfigContext()
 
     if (!inputs) return null
@@ -51,7 +51,7 @@ function NodeModelConfigsComponent({ inputs }: NodeModelConfigsProps) {
                     >
                         <img
                             style={{ width: 20, height: 20, objectFit: 'contain' }}
-                            src={`${instanceUrl}/api/v1/node-icon/${item.model}`}
+                            src={`${apiBaseUrl}/api/v1/node-icon/${item.model}`}
                             alt={item.model as string}
                         />
                         <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>{item.config?.modelName || item.config?.model}</Typography>
