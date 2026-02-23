@@ -1,6 +1,6 @@
 import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
 
-import type { AgentflowAction, AgentflowState, FlowNode } from '../../core/types'
+import type { AgentflowAction, AgentflowState, FlowNode } from '@/core/types'
 
 import { agentflowReducer, normalizeNodes } from './agentflowReducer'
 
@@ -13,7 +13,9 @@ const initialState: AgentflowState = {
     edges: [],
     chatflow: null,
     isDirty: false,
-    reactFlowInstance: null
+    reactFlowInstance: null,
+    editingNodeId: null,
+    editDialogProps: null
 }
 
 describe('normalizeNodes', () => {
@@ -77,6 +79,39 @@ describe('agentflowReducer', () => {
         expect(result.chatflow).toBeNull()
     })
 
+    it('should open edit dialog with nodeId and dialogProps', () => {
+        const state = initialState
+        const action: AgentflowAction = {
+            type: 'OPEN_EDIT_DIALOG',
+            payload: {
+                nodeId: 'node-123',
+                dialogProps: {
+                    inputParams: [],
+                    data: { id: 'node-123', name: 'sendResponse', label: 'Send Response 1' },
+                    disabled: false
+                }
+            }
+        }
+        const newState = agentflowReducer(state, action)
+
+        expect(newState.editingNodeId).toBe('node-123')
+        expect(newState.editDialogProps).toEqual(action.payload.dialogProps)
+    })
+
+    it('should close edit dialog and clear state', () => {
+        const state = {
+            ...initialState,
+            editingNodeId: 'node-123',
+            editDialogProps: {
+                /* ... */
+            }
+        }
+        const newState = agentflowReducer(state, { type: 'CLOSE_EDIT_DIALOG' })
+
+        expect(newState.editingNodeId).toBeNull()
+        expect(newState.editDialogProps).toBeNull()
+    })
+
     it('should handle SET_DIRTY', () => {
         const result = agentflowReducer(initialState, { type: 'SET_DIRTY', payload: true })
         expect(result.isDirty).toBe(true)
@@ -94,7 +129,9 @@ describe('agentflowReducer', () => {
             edges: [makeEdge('a', 'b')],
             chatflow: { id: '1', name: 'Test' },
             isDirty: true,
-            reactFlowInstance: null
+            reactFlowInstance: null,
+            editingNodeId: null,
+            editDialogProps: null
         }
         const result = agentflowReducer(dirtyState, { type: 'RESET' })
         expect(result.nodes).toEqual([])

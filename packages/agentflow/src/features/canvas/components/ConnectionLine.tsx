@@ -3,7 +3,7 @@ import { EdgeLabelRenderer, getBezierPath, Position, useStore } from 'reactflow'
 
 import { useTheme } from '@mui/material/styles'
 
-import { AGENTFLOW_ICONS } from '../../../core'
+import { AGENTFLOW_ICONS } from '@/core'
 
 interface EdgeLabelProps {
     transform: string
