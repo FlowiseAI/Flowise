@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import type { Chatflow, FlowData } from '../../core/types'
+import type { Chatflow, FlowData } from '@/core/types'
 
 /**
  * Create chatflows API functions bound to a client instance
