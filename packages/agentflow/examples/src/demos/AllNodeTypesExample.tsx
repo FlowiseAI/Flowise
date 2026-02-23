@@ -7,8 +7,8 @@
 
 import { useRef } from 'react'
 
-import type { AgentFlowInstance, FlowData } from '@flowise/agentflow'
-import { Agentflow } from '@flowise/agentflow'
+import type { AgentFlowInstance, FlowData } from '@flowiseai/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 
 import { apiBaseUrl, token } from '../config'
 
