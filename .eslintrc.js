@@ -14,7 +14,7 @@ module.exports = {
         }
     },
     parser: '@typescript-eslint/parser',
-    ignorePatterns: ['**/node_modules', '**/dist', '**/build', '**/package-lock.json'],
+    ignorePatterns: ['**/node_modules', '**/dist', '**/build', '**/coverage', '**/package-lock.json'],
     plugins: ['unused-imports'],
     rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -24,6 +24,6 @@ module.exports = {
         'no-undef': 'off',
         'no-console': [process.env.CI ? 'error' : 'warn', { allow: ['warn', 'error', 'info'] }],
         'prettier/prettier': 'error',
-        'no-control-regex': 0 // Disable no-control-regex to allow control characters in regex patterns, which is required for vector store path validation
+        'no-control-regex': 0 // Used to match control regex's in user input
     }
 }
