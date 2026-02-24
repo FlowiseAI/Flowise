@@ -65,6 +65,17 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         []
     )
 
+    // Helper function to generate unique copy IDs
+    const getUniqueCopyId = useCallback((baseId: string, nodes: FlowNode[]): string => {
+        let i = 1
+        let newId: string
+        do {
+            newId = `${baseId}_copy_${i}`
+            i++
+        } while (nodes.some((node) => node.id === newId))
+        return newId
+    }, [])
+
     // Helper function to synchronize state updates between context and ReactFlow
     const syncStateUpdate = useCallback(({ nodes, edges }: { nodes?: FlowNode[]; edges?: FlowEdge[] }) => {
         if (nodes !== undefined) {
@@ -132,7 +143,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const nodeToDuplicate = state.nodes.find((node) => node.id === nodeId)
             if (!nodeToDuplicate) return
 
-            const newNodeId = `${nodeToDuplicate.id}_copy_${Date.now()}`
+            const newNodeId = getUniqueCopyId(nodeToDuplicate.id, state.nodes)
             const newNode: FlowNode = {
                 ...nodeToDuplicate,
                 id: newNodeId,
@@ -149,7 +160,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const newNodes = [...state.nodes, newNode]
             syncStateUpdate({ nodes: newNodes })
         },
-        [state.nodes, syncStateUpdate]
+        [state.nodes, syncStateUpdate, getUniqueCopyId]
     )
 
     const updateNodeData = useCallback(
