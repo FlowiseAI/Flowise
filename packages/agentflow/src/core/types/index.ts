@@ -46,6 +46,9 @@ export interface FlowData {
     viewport?: Viewport
 }
 
+/** Callback type for flow data events (change, save, generate) */
+export type FlowDataCallback = (flow: FlowData) => void
+
 export interface FlowConfig {
     id?: string
     name?: string
@@ -192,10 +195,10 @@ export interface AgentflowProps {
     components?: string[]
 
     /** Callback when flow changes */
-    onFlowChange?: (flow: FlowData) => void
+    onFlowChange?: FlowDataCallback
 
     /** Callback when flow is saved */
-    onSave?: (flow: FlowData) => void
+    onSave?: FlowDataCallback
 
     /** Whether to use dark mode (default: false) */
     isDarkMode?: boolean
@@ -219,7 +222,7 @@ export interface AgentflowProps {
     enableGenerator?: boolean
 
     /** Callback when flow is generated via AI */
-    onFlowGenerated?: (flow: FlowData) => void
+    onFlowGenerated?: FlowDataCallback
 }
 
 // ============================================================================
