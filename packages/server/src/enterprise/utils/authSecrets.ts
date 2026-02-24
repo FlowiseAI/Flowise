@@ -29,13 +29,15 @@ export async function initAuthSecrets(): Promise<void> {
     tokenHashSecret = await getOrCreateStoredSecret({
         envKey: 'TOKEN_HASH_SECRET',
         fileName: 'token_hash_secret.key',
-        awsSecretIdSuffix: 'TokenHashSecret'
+        awsSecretIdSuffix: 'TokenHashSecret',
+        weakDefault: WEAK_DEFAULTS.TOKEN_HASH_SECRET
     })
 
     expressSessionSecret = await getOrCreateStoredSecret({
         envKey: 'EXPRESS_SESSION_SECRET',
         fileName: 'express_session_secret.key',
-        awsSecretIdSuffix: 'ExpressSessionSecret'
+        awsSecretIdSuffix: 'ExpressSessionSecret',
+        weakDefault: WEAK_DEFAULTS.EXPRESS_SESSION_SECRET
     })
 
     jwtAuthTokenSecret = await getOrCreateStoredSecret({
