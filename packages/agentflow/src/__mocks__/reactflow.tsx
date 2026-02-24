@@ -66,6 +66,10 @@ export const useUpdateNodeInternals = () => jest.fn()
 // Hook to access ReactFlow store state
 export const useStore = (selector?: any) => (selector ? selector({}) : {})
 
+// Change utilities - apply changes by returning the original array (sufficient for tests)
+export const applyNodeChanges = (changes: any[], nodes: any[]) => nodes
+export const applyEdgeChanges = (changes: any[], edges: any[]) => edges
+
 // Edge utilities
 export const addEdge = (connection: any, edges: any[]) => [...edges, connection]
 
