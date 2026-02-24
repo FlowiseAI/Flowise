@@ -97,7 +97,7 @@ export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirect
     }
 
     let redirects = 0
-    let currentConfig = { ...config, maxRedirects: 0 } // Disable automatic redirects
+    let currentConfig = { ...config, maxRedirects: 0, validateStatus: () => true } // Disable automatic redirects, accept all status codes
 
     while (redirects <= maxRedirects) {
         const target = await resolveAndValidate(currentUrl)
