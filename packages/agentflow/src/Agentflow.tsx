@@ -80,7 +80,7 @@ function AgentflowCanvas({
         registerLocalStateSetters(setLocalNodes, setLocalEdges)
     }, [registerLocalStateSetters, setLocalNodes, setLocalEdges])
 
-    // ONE-WAY SYNC: Local ReactFlow → Context (for drag/drop and canvas interactions)
+    // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
         setNodes(nodes as FlowNode[])
     }, [nodes, setNodes])
