@@ -4,7 +4,7 @@ import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesSt
 import { IconSparkles } from '@tabler/icons-react'
 
 import { tokens } from './core/theme'
-import type { AgentFlowInstance, AgentflowProps, FlowData, FlowEdge, FlowNode } from './core/types'
+import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
 import {
     AgentflowHeader,
     ConnectionLine,
@@ -42,9 +42,9 @@ function AgentflowCanvas({
 }: {
     initialFlow?: FlowData
     readOnly?: boolean
-    onFlowChange?: (flow: FlowData) => void
-    onSave?: (flow: FlowData) => void
-    onFlowGenerated?: (flow: FlowData) => void
+    onFlowChange?: FlowDataCallback
+    onSave?: FlowDataCallback
+    onFlowGenerated?: FlowDataCallback
     showDefaultHeader?: boolean
     showDefaultPalette?: boolean
     enableGenerator?: boolean
@@ -98,7 +98,7 @@ function AgentflowCanvas({
     }, [edges, syncEdgesFromReactFlow])
 
     // Flow handlers
-    const { handleConnect, handleNodesChange, handleEdgesChange, handleAddNode } = useFlowHandlers({
+    const { handleConnect, handleNodesChange, handleNodeDragStop, handleEdgesChange, handleAddNode } = useFlowHandlers({
         nodes: nodes as FlowNode[],
         edges: edges as FlowEdge[],
         setLocalNodes: setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>,
@@ -138,8 +138,21 @@ function AgentflowCanvas({
     const handleSave = useCallback(() => {
         if (onSave) {
             onSave(agentflow.getFlow())
+            setDirty(false)
         }
-    }, [onSave, agentflow])
+    }, [onSave, agentflow, setDirty])
+
+    // Keyboard shortcut: Cmd+S / Ctrl+S to save
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault()
+                handleSave()
+            }
+        }
+        document.addEventListener('keydown', onKeyDown)
+        return () => document.removeEventListener('keydown', onKeyDown)
+    }, [handleSave])
 
     // Header props
     const headerProps = createHeaderProps(
@@ -203,6 +216,7 @@ function AgentflowCanvas({
                         onNodesChange={handleNodesChange}
                         onEdgesChange={handleEdgesChange}
                         onConnect={handleConnect}
+                        onNodeDragStop={handleNodeDragStop}
                         onInit={setReactFlowInstance}
                         nodeTypes={nodeTypes}
                         edgeTypes={edgeTypes}
@@ -308,9 +322,9 @@ const AgentflowCanvasWithRef = forwardRef<
     {
         initialFlow?: FlowData
         readOnly?: boolean
-        onFlowChange?: (_flow: FlowData) => void
-        onSave?: (_flow: FlowData) => void
-        onFlowGenerated?: (_flow: FlowData) => void
+        onFlowChange?: FlowDataCallback
+        onSave?: FlowDataCallback
+        onFlowGenerated?: FlowDataCallback
         showDefaultHeader?: boolean
         showDefaultPalette?: boolean
         enableGenerator?: boolean

@@ -1,8 +1,8 @@
 import { useCallback, useRef } from 'react'
-import { addEdge, Connection, EdgeChange, NodeChange } from 'reactflow'
+import { addEdge, applyEdgeChanges, applyNodeChanges, Connection, EdgeChange, Node, NodeChange } from 'reactflow'
 
 import { getNodeColor, getUniqueNodeId, getUniqueNodeLabel, initNode, isValidConnectionAgentflowV2 } from '@/core'
-import type { FlowData, FlowEdge, FlowNode, NodeData } from '@/core/types'
+import type { FlowDataCallback, FlowEdge, FlowNode, NodeData } from '@/core/types'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 interface UseFlowHandlersProps {
@@ -12,7 +12,7 @@ interface UseFlowHandlersProps {
     setLocalEdges: React.Dispatch<React.SetStateAction<FlowEdge[]>>
     onNodesChange: (changes: NodeChange[]) => void
     onEdgesChange: (changes: EdgeChange[]) => void
-    onFlowChange?: (flow: FlowData) => void
+    onFlowChange?: FlowDataCallback
     availableNodes: NodeData[]
 }
 
@@ -29,11 +29,16 @@ export function useFlowHandlers({
     onFlowChange,
     availableNodes
 }: UseFlowHandlersProps) {
-    const { setDirty } = useAgentflowContext()
+    const { state, setDirty } = useAgentflowContext()
 
     // Ref to store onFlowChange callback to avoid stale closures
     const onFlowChangeRef = useRef(onFlowChange)
     onFlowChangeRef.current = onFlowChange
+
+    /** Get the current viewport from the ReactFlow instance, with a fallback */
+    const getViewport = useCallback(() => {
+        return state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+    }, [state.reactFlowInstance])
 
     // Handle connection
     const handleConnect = useCallback(
@@ -51,46 +56,70 @@ export function useFlowHandlers({
             const sourceColor = getNodeColor(sourceNode?.data?.name || '')
             const targetColor = getNodeColor(targetNode?.data?.name || '')
 
-            setLocalEdges(
-                (eds) =>
-                    addEdge(
-                        {
-                            ...params,
-                            type: 'agentflowEdge',
-                            data: {
-                                sourceColor,
-                                targetColor
-                            }
-                        },
-                        eds
-                    ) as FlowEdge[]
-            )
+            const newEdge = {
+                ...params,
+                type: 'agentflowEdge',
+                data: {
+                    sourceColor,
+                    targetColor
+                }
+            }
+            // Use functional updater to avoid stale edge state from rapid sequential connections
+            let updatedEdges: FlowEdge[] = []
+            setLocalEdges((currentEdges) => {
+                updatedEdges = addEdge(newEdge, currentEdges) as FlowEdge[]
+                return updatedEdges
+            })
             setDirty(true)
+
+            // Notify parent of flow change
+            onFlowChangeRef.current?.({
+                nodes,
+                edges: updatedEdges,
+                viewport: getViewport()
+            })
         },
-        [nodes, edges, setLocalEdges, setDirty]
+        [nodes, edges, setLocalEdges, setDirty, getViewport]
     )
 
     // Handle node changes
     const handleNodesChange = useCallback(
         (changes: NodeChange[]) => {
             onNodesChange(changes)
-            // Only set dirty and notify for meaningful changes (not selection or internal dimension updates)
-            const meaningfulChanges = changes.filter((c) => c.type !== 'select' && c.type !== 'dimensions')
+            // Only set dirty and notify for meaningful changes
+            // Skip: selection, dimension updates, and position changes (handled by onNodeDragStop)
+            const meaningfulChanges = changes.filter((c) => c.type !== 'select' && c.type !== 'dimensions' && c.type !== 'position')
             if (meaningfulChanges.length > 0) {
                 setDirty(true)
-                // Use setTimeout to ensure state has updated before notifying
-                setTimeout(
-                    () =>
-                        onFlowChangeRef.current?.({
-                            nodes,
-                            edges,
-                            viewport: { x: 0, y: 0, zoom: 1 }
-                        }),
-                    0
-                )
+                // Compute the updated nodes by applying changes to current state
+                const updatedNodes = applyNodeChanges(changes, nodes) as FlowNode[]
+                onFlowChangeRef.current?.({
+                    nodes: updatedNodes,
+                    edges,
+                    viewport: getViewport()
+                })
             }
         },
-        [onNodesChange, setDirty, nodes, edges]
+        [onNodesChange, setDirty, nodes, edges, getViewport]
+    )
+
+    // Handle node drag stop — fires onFlowChange once when drag ends (instead of on every frame)
+    const handleNodeDragStop = useCallback(
+        (_event: React.MouseEvent, _node: Node, draggedNodes: Node[]) => {
+            if (draggedNodes.length === 0) return
+            // Apply final positions to current nodes
+            const updatedNodes = nodes.map((n) => {
+                const dragged = draggedNodes.find((d) => d.id === n.id)
+                return dragged ? { ...n, position: dragged.position } : n
+            })
+            setDirty(true)
+            onFlowChangeRef.current?.({
+                nodes: updatedNodes as FlowNode[],
+                edges,
+                viewport: getViewport()
+            })
+        },
+        [nodes, edges, setDirty, getViewport]
     )
 
     // Handle edge changes
@@ -101,18 +130,16 @@ export function useFlowHandlers({
             const meaningfulChanges = changes.filter((c) => c.type !== 'select')
             if (meaningfulChanges.length > 0) {
                 setDirty(true)
-                setTimeout(
-                    () =>
-                        onFlowChangeRef.current?.({
-                            nodes,
-                            edges,
-                            viewport: { x: 0, y: 0, zoom: 1 }
-                        }),
-                    0
-                )
+                // Compute the updated edges by applying changes to current state
+                const updatedEdges = applyEdgeChanges(changes, edges) as FlowEdge[]
+                onFlowChangeRef.current?.({
+                    nodes,
+                    edges: updatedEdges,
+                    viewport: getViewport()
+                })
             }
         },
-        [onEdgesChange, setDirty, nodes, edges]
+        [onEdgesChange, setDirty, nodes, edges, getViewport]
     )
 
     // Handle add node from palette
@@ -131,15 +158,28 @@ export function useFlowHandlers({
                 data: { ...initializedData, label: newLabel }
             }
 
-            setLocalNodes((nds) => [...nds, newNode])
+            // Use functional updater to avoid stale node state from rapid sequential additions
+            let updatedNodes: FlowNode[] = []
+            setLocalNodes((currentNodes) => {
+                updatedNodes = [...currentNodes, newNode]
+                return updatedNodes
+            })
             setDirty(true)
+
+            // Notify parent of flow change
+            onFlowChangeRef.current?.({
+                nodes: updatedNodes,
+                edges,
+                viewport: getViewport()
+            })
         },
-        [availableNodes, nodes, setLocalNodes, setDirty]
+        [availableNodes, nodes, edges, setLocalNodes, setDirty, getViewport]
     )
 
     return {
         handleConnect,
         handleNodesChange,
+        handleNodeDragStop,
         handleEdgesChange,
         handleAddNode
     }

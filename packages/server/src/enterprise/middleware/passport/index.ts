@@ -35,8 +35,11 @@ const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT
 
 // Allow explicit override of cookie security settings
 // This is useful when running behind a reverse proxy/load balancer that terminates SSL
+// In production, always enforce secure cookies to prevent clear-text transmission of session data.
 const secureCookie =
-    process.env.SECURE_COOKIES === 'false'
+    process.env.NODE_ENV === 'production'
+        ? true
+        : process.env.SECURE_COOKIES === 'false'
         ? false
         : process.env.SECURE_COOKIES === 'true'
         ? true
