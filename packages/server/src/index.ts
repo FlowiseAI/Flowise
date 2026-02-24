@@ -39,6 +39,7 @@ declare global {
         interface User extends LoggedInUser {}
         interface Request {
             user?: LoggedInUser
+            rawBody?: string
         }
         namespace Multer {
             interface File {
@@ -155,7 +156,13 @@ export class App {
     async config() {
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
-        this.app.use(express.json({ limit: flowise_file_size_limit }))
+        const saveRawBody = (req: Request, _res: Response, buf: Buffer) => {
+            if (req.path.startsWith('/api/v1/channel-webhooks/')) {
+                req.rawBody = buf.toString('utf8')
+            }
+        }
+
+        this.app.use(express.json({ limit: flowise_file_size_limit, verify: saveRawBody }))
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
 
         // Enhanced trust proxy settings for load balancer
@@ -213,31 +220,54 @@ export class App {
         await initializeJwtCookieMiddleware(this.app, this.identityManager)
 
         this.app.use(async (req, res, next) => {
+            const isChannelWebhookPath = req.path.startsWith('/api/v1/channel-webhooks/')
+            const channelWebhookDebug = process.env.CHANNEL_WEBHOOK_DEBUG === 'true'
+            const logChannelWebhookAuthReject = (reason: string) => {
+                if (isChannelWebhookPath) {
+                    logger.warn(`[channel-webhook-auth] rejected path=${req.path} method=${req.method} reason=${reason}`)
+                }
+            }
             // Step 1: Check if the req path contains /api/v1 regardless of case
             if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
                 // Step 2: Check if the req path is casesensitive
                 if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
                     // Step 3: Check if the req path is in the whitelist
                     const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                    if (isChannelWebhookPath) {
+                        logger.info(
+                            `[channel-webhook-auth] path=${req.path} method=${req.method} whitelisted=${isWhitelisted} debug=${channelWebhookDebug}`
+                        )
+                    }
+                    if (channelWebhookDebug && isChannelWebhookPath) {
+                        logger.info(
+                            `[channel-webhook-debug] auth-gate path=${req.path} method=${req.method} whitelisted=${isWhitelisted}`
+                        )
+                    }
                     if (isWhitelisted) {
                         next()
                     } else if (req.headers['x-request-from'] === 'internal') {
+                        if (channelWebhookDebug && isChannelWebhookPath) {
+                            logger.info(`[channel-webhook-debug] auth-gate internal request path=${req.path}`)
+                        }
                         verifyToken(req, res, next)
                     } else {
                         const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
                         if (isAPIKeyBlacklistedURLS) {
+                            logChannelWebhookAuthReject('api-key-blacklisted-url')
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
                         // Only check license validity for non-open-source platforms
                         if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
                             if (!this.identityManager.isLicenseValid()) {
+                                logChannelWebhookAuthReject('license-invalid')
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
                         }
 
                         const { isValid, apiKey } = await validateAPIKey(req)
                         if (!isValid || !apiKey) {
+                            logChannelWebhookAuthReject('api-key-invalid-or-missing')
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
@@ -246,6 +276,7 @@ export class App {
                             where: { id: apiKey.workspaceId }
                         })
                         if (!workspace) {
+                            logChannelWebhookAuthReject('workspace-not-found')
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
@@ -255,6 +286,7 @@ export class App {
                             where: { id: activeOrganizationId }
                         })
                         if (!org) {
+                            logChannelWebhookAuthReject('organization-not-found')
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
                         const subscriptionId = org.subscriptionId as string
@@ -276,6 +308,7 @@ export class App {
                         next()
                     }
                 } else {
+                    logChannelWebhookAuthReject('api-v1-path-case-mismatch')
                     return res.status(401).json({ error: 'Unauthorized Access' })
                 }
             } else {
