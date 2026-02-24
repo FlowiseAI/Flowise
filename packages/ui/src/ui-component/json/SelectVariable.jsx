@@ -159,6 +159,45 @@ const SelectVariable = ({ availableNodesForVariable, disabled = false, onSelectA
                                         />
                                     </ListItem>
                                 </ListItemButton>
+                                <ListItemButton
+                                    sx={{
+                                        p: 0,
+                                        borderRadius: `${customization.borderRadius}px`,
+                                        boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+                                        mb: 1
+                                    }}
+                                    disabled={disabled}
+                                    onClick={() => onSelectOutputResponseClick(null, 'file_attachment_bin')}
+                                >
+                                    <ListItem alignItems='center'>
+                                        <ListItemAvatar>
+                                            <div
+                                                style={{
+                                                    width: 50,
+                                                    height: 50,
+                                                    borderRadius: '50%',
+                                                    backgroundColor: 'white'
+                                                }}
+                                            >
+                                                <img
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        padding: 10,
+                                                        objectFit: 'contain'
+                                                    }}
+                                                    alt='fileAttachmentBinary'
+                                                    src={fileAttachmentPNG}
+                                                />
+                                            </div>
+                                        </ListItemAvatar>
+                                        <ListItemText
+                                            sx={{ ml: 1 }}
+                                            primary='file_attachment_bin'
+                                            secondary={`Files uploaded from the chat as Base64 binary JSON`}
+                                        />
+                                    </ListItem>
+                                </ListItemButton>
                                 {availableNodesForVariable &&
                                     availableNodesForVariable.length > 0 &&
                                     availableNodesForVariable.map((node, index) => {
