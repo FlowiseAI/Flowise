@@ -1,4 +1,4 @@
-import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer } from 'react'
+import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer, useRef } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
 import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
@@ -32,6 +32,9 @@ export interface AgentflowContextValue {
     //Dialog operations
     openEditDialog: (nodeId: string, data: NodeData, inputParams: InputParam[]) => void
     closeEditDialog: () => void
+
+    // Register ReactFlow local state setters
+    registerLocalStateSetters: (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -47,6 +50,34 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         nodes: normalizeNodes(initialFlow?.nodes || []),
         edges: initialFlow?.edges || []
     })
+
+    // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
+    const localNodesSetterRef = useRef<((nodes: FlowNode[]) => void) | null>(null)
+    const localEdgesSetterRef = useRef<((edges: FlowEdge[]) => void) | null>(null)
+
+    const registerLocalStateSetters = useCallback(
+        (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => {
+            localNodesSetterRef.current = setLocalNodes
+            localEdgesSetterRef.current = setLocalEdges
+        },
+        []
+    )
+
+    // Helper function to synchronize state updates between context and ReactFlow
+    const syncStateUpdate = useCallback(({ nodes, edges }: { nodes?: FlowNode[]; edges?: FlowEdge[] }) => {
+        if (nodes !== undefined) {
+            const normalizedNodes = normalizeNodes(nodes)
+            dispatch({ type: 'SET_NODES', payload: normalizedNodes })
+            localNodesSetterRef.current?.(normalizedNodes)
+        }
+        if (edges !== undefined) {
+            dispatch({ type: 'SET_EDGES', payload: edges })
+            localEdgesSetterRef.current?.(edges)
+        }
+        if (nodes !== undefined || edges !== undefined) {
+            dispatch({ type: 'SET_DIRTY', payload: true })
+        }
+    }, [])
 
     // Convenience setters
     const setNodes = useCallback((nodes: FlowNode[]) => {
@@ -74,11 +105,10 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         (nodeId: string) => {
             const newNodes = state.nodes.filter((node) => node.id !== nodeId)
             const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
-            dispatch({ type: 'SET_NODES', payload: newNodes })
-            dispatch({ type: 'SET_EDGES', payload: newEdges })
-            dispatch({ type: 'SET_DIRTY', payload: true })
+
+            syncStateUpdate({ nodes: newNodes, edges: newEdges })
         },
-        [state.nodes, state.edges]
+        [state.nodes, state.edges, syncStateUpdate]
     )
 
     const duplicateNode = useCallback(
@@ -96,10 +126,10 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 data: { ...nodeToDuplicate.data }
             }
 
-            dispatch({ type: 'SET_NODES', payload: [...state.nodes, newNode] })
-            dispatch({ type: 'SET_DIRTY', payload: true })
+            const newNodes = [...state.nodes, newNode]
+            syncStateUpdate({ nodes: newNodes })
         },
-        [state.nodes]
+        [state.nodes, syncStateUpdate]
     )
 
     const updateNodeData = useCallback(
@@ -113,20 +143,19 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 }
                 return node
             })
-            dispatch({ type: 'SET_NODES', payload: newNodes })
-            dispatch({ type: 'SET_DIRTY', payload: true })
+
+            syncStateUpdate({ nodes: newNodes })
         },
-        [state.nodes]
+        [state.nodes, syncStateUpdate]
     )
 
     // Edge operations
     const deleteEdge = useCallback(
         (edgeId: string) => {
             const newEdges = state.edges.filter((edge) => edge.id !== edgeId)
-            dispatch({ type: 'SET_EDGES', payload: newEdges })
-            dispatch({ type: 'SET_DIRTY', payload: true })
+            syncStateUpdate({ edges: newEdges })
         },
-        [state.edges]
+        [state.edges, syncStateUpdate]
     )
 
     // Dialog operations
@@ -179,7 +208,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         openEditDialog,
         closeEditDialog,
         getFlowData,
-        reset
+        reset,
+        registerLocalStateSetters
     }
 
     return <AgentflowContext.Provider value={value}>{children}</AgentflowContext.Provider>
