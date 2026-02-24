@@ -5,33 +5,33 @@ import 'react-datepicker/dist/react-datepicker.css'
 // material-ui
 import {
     Box,
-    Stack,
-    TextField,
-    MenuItem,
     Button,
-    Grid,
-    FormControl,
-    InputLabel,
-    Select,
     Dialog,
     DialogActions,
     DialogContent,
     DialogContentText,
     DialogTitle,
+    FormControl,
+    Grid,
     IconButton,
+    InputLabel,
+    MenuItem,
+    Select,
+    Stack,
+    TextField,
     Tooltip,
     useTheme
 } from '@mui/material'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import MainCard from '@/ui-component/cards/MainCard'
 import { Available } from '@/ui-component/rbac/available'
 
 // API
-import useApi from '@/hooks/useApi'
 import executionsApi from '@/api/executions'
+import useApi from '@/hooks/useApi'
 import { useSelector } from 'react-redux'
 
 // icons
@@ -39,10 +39,10 @@ import execution_empty from '@/assets/images/executions_empty.svg'
 import { IconTrash } from '@tabler/icons-react'
 
 // const
-import { ExecutionsListTable } from '@/ui-component/table/ExecutionsListTable'
-import { ExecutionDetails } from './ExecutionDetails'
-import { omit } from 'lodash'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
+import { ExecutionsListTable } from '@/ui-component/table/ExecutionsListTable'
+import { omit } from 'lodash'
+import { ExecutionDetails } from './ExecutionDetails'
 
 // ==============================|| AGENT EXECUTIONS ||============================== //
 
@@ -91,11 +91,12 @@ const AgentExecutions = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
+    const [pageLimit, setPageLimit] = useState(parseInt(localStorage.getItem('executionsPageSize') || DEFAULT_ITEMS_PER_PAGE))
     const [total, setTotal] = useState(0)
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
+        localStorage.setItem('executionsPageSize', pageLimit)
         applyFilters(page, pageLimit)
     }
 
