@@ -23,10 +23,7 @@ export function getSecureAppUrl(path?: string): string {
     }
 
     const isLocalhost =
-        urlObj.hostname === 'localhost' ||
-        urlObj.hostname === '127.0.0.1' ||
-        urlObj.hostname === '[::1]' ||
-        urlObj.hostname === '0.0.0.0'
+        urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1' || urlObj.hostname === '[::1]' || urlObj.hostname === '0.0.0.0'
 
     // If URL is HTTP and NOT localhost, convert to HTTPS for security.
     // Keep HTTP for localhost/development URLs to avoid issues with self-signed certs.
