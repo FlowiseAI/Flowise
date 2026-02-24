@@ -752,8 +752,8 @@ export const streamStorageFile = async (
         throw new Error('Invalid chatflowId format - must be a valid UUID')
     }
 
-    if (!chatId || !isValidUUID(chatId)) {
-        throw new Error('Invalid chatId format - must be a valid UUID')
+    if (!chatId) {
+        throw new Error('chatId is missing')
     }
 
     if (isPathTraversal(chatflowId) || isPathTraversal(chatId)) {

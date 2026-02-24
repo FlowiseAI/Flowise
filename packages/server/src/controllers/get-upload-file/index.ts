@@ -23,8 +23,8 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
             return res.status(400).send(`Invalid chatflowId format`)
         }
 
-        if (!chatId || !isValidUUID(chatId)) {
-            return res.status(400).send(`Invalid chatId format`)
+        if (!chatId) {
+            return res.status(400).send(`chatId is missing`)
         }
 
         // Check for path traversal and unsafe characters in fileName
