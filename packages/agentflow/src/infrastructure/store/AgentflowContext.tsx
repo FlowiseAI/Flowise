@@ -66,14 +66,17 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     // Helper function to synchronize state updates between context and ReactFlow
     const syncStateUpdate = useCallback(({ nodes, edges }: { nodes?: FlowNode[]; edges?: FlowEdge[] }) => {
         if (nodes !== undefined) {
-            dispatch({ type: 'SET_NODES', payload: nodes })
-            localNodesSetterRef.current?.(nodes)
+            const normalizedNodes = normalizeNodes(nodes)
+            dispatch({ type: 'SET_NODES', payload: normalizedNodes })
+            localNodesSetterRef.current?.(normalizedNodes)
         }
         if (edges !== undefined) {
             dispatch({ type: 'SET_EDGES', payload: edges })
             localEdgesSetterRef.current?.(edges)
         }
-        dispatch({ type: 'SET_DIRTY', payload: true })
+        if (nodes !== undefined || edges !== undefined) {
+            dispatch({ type: 'SET_DIRTY', payload: true })
+        }
     }, [])
 
     // Convenience setters
