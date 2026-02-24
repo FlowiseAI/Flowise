@@ -397,7 +397,6 @@ describe('AgentflowContext - duplicateNode', () => {
             wrapper: createWrapper(initialFlow)
         })
 
-        // Duplicate different nodes to avoid timestamp collision
         act(() => {
             result.current.duplicateNode('node-1')
         })
