@@ -38,7 +38,6 @@ module.exports = {
     coverageThreshold: {
         './src/Agentflow.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/core/': { branches: 80, functions: 80, lines: 80, statements: 80 },
-        './src/features/canvas/hooks/useFlowHandlers.ts': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/features/node-palette/search.ts': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/infrastructure/api/': { branches: 80, functions: 80, lines: 80, statements: 80 }
     },

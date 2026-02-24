@@ -100,7 +100,7 @@ function LoadingFallback() {
 
 export default function App() {
     const [selectedExample, setSelectedExample] = useState<ExampleId>('basic')
-    const [showProps, setShowProps] = useState(false)
+    const [showProps, setShowProps] = useState(true)
     // Config loaded from environment variables
 
     const currentExample = examples.find((e) => e.id === selectedExample)

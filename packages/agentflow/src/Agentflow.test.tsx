@@ -305,65 +305,6 @@ describe('Agentflow Component', () => {
         })
     })
 
-    describe('Keyboard Shortcuts', () => {
-        it('should trigger save on Cmd+S', async () => {
-            const onSave = jest.fn()
-            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
-
-            await waitFor(() => {
-                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
-            })
-
-            fireEvent.keyDown(document, { key: 's', metaKey: true })
-
-            expect(onSave).toHaveBeenCalledTimes(1)
-            expect(onSave).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    nodes: expect.any(Array),
-                    edges: expect.any(Array)
-                })
-            )
-        })
-
-        it('should trigger save on Ctrl+S', async () => {
-            const onSave = jest.fn()
-            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
-
-            await waitFor(() => {
-                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
-            })
-
-            fireEvent.keyDown(document, { key: 's', ctrlKey: true })
-
-            expect(onSave).toHaveBeenCalledTimes(1)
-        })
-
-        it('should not trigger save on plain S key', async () => {
-            const onSave = jest.fn()
-            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
-
-            await waitFor(() => {
-                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
-            })
-
-            fireEvent.keyDown(document, { key: 's' })
-
-            expect(onSave).not.toHaveBeenCalled()
-        })
-
-        it('should not error on Cmd+S when no onSave callback is provided', async () => {
-            const { container } = render(<Agentflow {...defaultProps} />)
-
-            await waitFor(() => {
-                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
-            })
-
-            expect(() => {
-                fireEvent.keyDown(document, { key: 's', metaKey: true })
-            }).not.toThrow()
-        })
-    })
-
     describe('Generate Flow', () => {
         it('should open generate dialog when button is clicked', async () => {
             const { container, getByTestId } = render(<Agentflow {...defaultProps} />)

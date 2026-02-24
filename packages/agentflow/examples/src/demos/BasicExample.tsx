@@ -1,17 +1,15 @@
 /**
  * Basic Example
  *
- * Demonstrates basic @flowiseai/agentflow usage with imperative methods,
- * onFlowChange tracking, and save flow functionality.
+ * Demonstrates basic @flowiseai/agentflow usage with imperative methods.
  */
 
-import { useCallback, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import type { AgentFlowInstance, FlowData, ValidationResult } from '@flowiseai/agentflow'
 import { Agentflow } from '@flowiseai/agentflow'
 
 import { apiBaseUrl, token } from '../config'
-import { FlowStatePanel } from '../FlowStatePanel'
 
 // Example flow data
 const initialFlow: FlowData = {
@@ -35,22 +33,18 @@ const initialFlow: FlowData = {
 }
 
 export function BasicExample() {
+    // Config loaded from environment variables
     const agentflowRef = useRef<AgentFlowInstance>(null)
     const [validationResult, setValidationResult] = useState<ValidationResult | null>(null)
-    const [currentFlow, setCurrentFlow] = useState<FlowData | null>(null)
-    const [savedFlow, setSavedFlow] = useState<FlowData | null>(null)
-    const [changeCount, setChangeCount] = useState(0)
 
-    const handleFlowChange = useCallback((flow: FlowData) => {
-        setCurrentFlow(flow)
-        setChangeCount((c) => c + 1)
-        console.log('onFlowChange:', flow)
-    }, [])
+    const handleFlowChange = (flow: FlowData) => {
+        console.log('Flow changed:', flow)
+    }
 
-    const handleSave = useCallback((flow: FlowData) => {
-        setSavedFlow(flow)
-        console.log('onSave:', flow)
-    }, [])
+    const handleSave = (flow: FlowData) => {
+        console.log('Flow saved:', flow)
+        alert('Flow saved! Check console for data.')
+    }
 
     const handleValidate = () => {
         if (agentflowRef.current) {
@@ -104,20 +98,17 @@ export function BasicExample() {
                 )}
             </div>
 
-            {/* Canvas + Flow State Panel */}
-            <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
-                <div style={{ flex: 1 }}>
-                    <Agentflow
-                        ref={agentflowRef}
-                        apiBaseUrl={apiBaseUrl}
-                        token={token ?? undefined}
-                        initialFlow={initialFlow}
-                        onFlowChange={handleFlowChange}
-                        onSave={handleSave}
-                        showDefaultHeader={true}
-                    />
-                </div>
-                <FlowStatePanel currentFlow={currentFlow} savedFlow={savedFlow} changeCount={changeCount} />
+            {/* Canvas */}
+            <div style={{ flex: 1 }}>
+                <Agentflow
+                    ref={agentflowRef}
+                    apiBaseUrl={apiBaseUrl}
+                    token={token ?? undefined}
+                    initialFlow={initialFlow}
+                    onFlowChange={handleFlowChange}
+                    onSave={handleSave}
+                    showDefaultHeader={true}
+                />
             </div>
         </div>
     )

@@ -260,11 +260,11 @@ export function CustomUIExample() {
                     apiBaseUrl={apiBaseUrl}
                     token={token ?? undefined}
                     initialFlow={initialFlow}
-                    renderHeader={(props: HeaderRenderProps) => <CustomHeader {...props} />}
-                    renderNodePalette={(props: PaletteRenderProps) => <CustomPalette {...props} />}
+                    renderHeader={(props) => <CustomHeader {...props} />}
+                    renderNodePalette={(props) => <CustomPalette {...props} />}
                     showDefaultHeader={false}
                     showDefaultPalette={false}
-                    onSave={(flow: FlowData) => {
+                    onSave={(flow) => {
                         console.log('Saving flow:', flow)
                         alert('Flow saved! Check console.')
                     }}
