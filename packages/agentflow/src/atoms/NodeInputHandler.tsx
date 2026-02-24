@@ -6,7 +6,7 @@ import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
 import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
-import type { InputAnchor, InputParam, NodeData } from '../core/types'
+import type { InputAnchor, InputParam, NodeData } from '@/core/types'
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -45,12 +45,11 @@ export function NodeInputHandler({
 
     const handleDataChange = useCallback(
         (newValue: unknown) => {
-            if (inputParam && data.inputs) {
-                data.inputs[inputParam.name] = newValue
+            if (inputParam) {
                 onDataChange?.({ inputParam, newValue })
             }
         },
-        [inputParam, data, onDataChange]
+        [inputParam, onDataChange]
     )
 
     useEffect(() => {
@@ -67,7 +66,7 @@ export function NodeInputHandler({
     const renderInput = () => {
         if (!inputParam) return null
 
-        const value = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
+        const value = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
 
         switch (inputParam.type) {
             case 'string':

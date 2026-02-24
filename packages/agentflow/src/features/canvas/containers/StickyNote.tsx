@@ -2,8 +2,9 @@ import { memo, useRef, useState } from 'react'
 
 import { Box, TextField } from '@mui/material'
 
-import type { NodeData } from '../../../core/types'
-import { useConfigContext } from '../../../infrastructure/store'
+import type { NodeData } from '@/core/types'
+import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
+
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
@@ -17,9 +18,10 @@ export interface StickyNoteProps {
  */
 function StickyNoteComponent({ data }: StickyNoteProps) {
     const { isDarkMode } = useConfigContext()
+    const { updateNodeData } = useAgentflowContext()
     const ref = useRef<HTMLDivElement>(null)
 
-    const [inputParam] = data.inputParams || []
+    const [inputParam] = data.inputs || []
     const [isHovered, setIsHovered] = useState(false)
 
     const { stateColor, backgroundColor } = useNodeColors({
@@ -55,10 +57,14 @@ function StickyNoteComponent({ data }: StickyNoteProps) {
                         multiline
                         rows={3}
                         placeholder={inputParam?.placeholder || 'Add a note...'}
-                        value={data.inputs?.[inputParam?.name || 'note'] ?? inputParam?.default ?? ''}
+                        value={data.inputValues?.[inputParam?.name || 'note'] ?? inputParam?.default ?? ''}
                         onChange={(e) => {
-                            if (data.inputs && inputParam) {
-                                data.inputs[inputParam.name] = e.target.value
+                            if (inputParam) {
+                                const updatedInputValues = {
+                                    ...data.inputValues,
+                                    [inputParam.name]: e.target.value
+                                }
+                                updateNodeData(data.id, { inputValues: updatedInputValues })
                             }
                         }}
                         sx={{

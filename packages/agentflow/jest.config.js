@@ -26,6 +26,7 @@ module.exports = {
         '!src/**/*.d.ts',
         '!src/**/index.ts',
         '!src/__mocks__/**',
+        '!src/__test_utils__/**',
         // Potentially deprecated — exclude until resolved (see TESTS.md)
         '!src/infrastructure/api/hooks/useApi.ts'
     ],
@@ -35,9 +36,10 @@ module.exports = {
     // 80% floor to catch regressions without blocking active development.
     // Add new paths here as more modules gain test coverage.
     coverageThreshold: {
+        './src/Agentflow.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/core/': { branches: 80, functions: 80, lines: 80, statements: 80 },
-        './src/infrastructure/api/': { branches: 80, functions: 80, lines: 80, statements: 80 },
-        './src/features/node-palette/search.ts': { branches: 80, functions: 80, lines: 80, statements: 80 }
+        './src/features/node-palette/search.ts': { branches: 80, functions: 80, lines: 80, statements: 80 },
+        './src/infrastructure/api/': { branches: 80, functions: 80, lines: 80, statements: 80 }
     },
     projects: [
         // .test.ts → node (fast, no DOM)
@@ -51,17 +53,12 @@ module.exports = {
         {
             ...baseConfig,
             displayName: 'components',
-            testEnvironment: 'jsdom',
+            testEnvironment: '<rootDir>/src/__test_utils__/jest-environment-jsdom.js',
             testEnvironmentOptions: {
                 customExportConditions: ['']
             },
             testMatch: ['<rootDir>/src/**/*.test.tsx'],
-            setupFilesAfterEnv: ['@testing-library/jest-dom'],
-            moduleNameMapper: {
-                ...baseConfig.moduleNameMapper,
-                // jsdom tries to load native canvas module which isn't built — mock it
-                '^canvas$': '<rootDir>/src/__mocks__/styleMock.js'
-            }
+            setupFilesAfterEnv: ['@testing-library/jest-dom']
         }
     ]
 }

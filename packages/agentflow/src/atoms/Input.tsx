@@ -3,7 +3,7 @@ import { ChangeEvent, useState } from 'react'
 import { IconButton, InputAdornment, SxProps, TextField, Theme } from '@mui/material'
 import { IconEye, IconEyeOff } from '@tabler/icons-react'
 
-import type { InputParam } from '../core/types'
+import type { InputParam } from '@/core/types'
 
 export interface InputProps {
     inputParam?: InputParam

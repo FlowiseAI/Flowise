@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
-import type { NodeData } from '../../../core/types'
-import { useApiContext, useConfigContext } from '../../../infrastructure/store'
+import type { NodeData } from '@/core/types'
+import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 /**
  * Hook for loading and filtering available agentflow nodes from the API

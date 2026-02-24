@@ -1,6 +1,6 @@
-# @flowise/agentflow
+# @flowiseai/agentflow
 
-[![Version](https://img.shields.io/npm/v/@flowise/agentflow)](https://www.npmjs.com/package/@flowise/agentflow)
+[![Version](https://img.shields.io/npm/v/@flowiseai/agentflow)](https://www.npmjs.com/package/@flowiseai/agentflow)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md)
 
 > Embeddable React component for building and visualizing AI agent workflows
@@ -19,12 +19,12 @@
 
 ## Overview
 
-`@flowise/agentflow` is a React-based flow editor for creating AI agent workflows. It provides a visual canvas built on ReactFlow for connecting AI agents, LLMs, tools, and logic nodes.
+`@flowiseai/agentflow` is a React-based flow editor for creating AI agent workflows. It provides a visual canvas built on ReactFlow for connecting AI agents, LLMs, tools, and logic nodes.
 
 ## Installation
 
 ```bash
-pnpm add @flowise/agentflow
+pnpm add @flowiseai/agentflow
 ```
 
 **Peer Dependencies:**
@@ -36,9 +36,9 @@ pnpm add react react-dom @mui/material @mui/icons-material @emotion/react @emoti
 ## Basic Usage
 
 ```tsx
-import { Agentflow } from '@flowise/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 
-import '@flowise/agentflow/flowise.css'
+import '@flowiseai/agentflow/flowise.css'
 
 export default function App() {
     return (
@@ -54,9 +54,9 @@ export default function App() {
 ```tsx
 import { useRef } from 'react'
 
-import { Agentflow, type AgentFlowInstance, type FlowData } from '@flowise/agentflow'
+import { Agentflow, type AgentFlowInstance, type FlowData } from '@flowiseai/agentflow'
 
-import '@flowise/agentflow/flowise.css'
+import '@flowiseai/agentflow/flowise.css'
 
 export default function App() {
     const ref = useRef<AgentFlowInstance>(null)
@@ -98,34 +98,33 @@ export default function App() {
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `apiBaseUrl` | `string` | **(required)** | Flowise API server endpoint |
-| `token` | `string` | — | Authentication token for API calls |
-| `initialFlow` | `FlowData` | — | Initial flow data to render (uncontrolled — only used on mount) |
-| `flowId` | `string` | — | Flow ID for loading an existing flow from the API |
-| `components` | `string[]` | — | Restrict which node types appear in the palette |
-| `onFlowChange` | `(flow: FlowData) => void` | — | Called when the flow changes (node/edge add, remove, move) |
-| `onSave` | `(flow: FlowData) => void` | — | Called when the user triggers a save |
-| `onFlowGenerated` | `(flow: FlowData) => void` | — | Called when a flow is generated via AI |
-| `theme` | `'light' \| 'dark' \| 'system'` | `'system'` | Theme override |
-| `readOnly` | `boolean` | `false` | Disable editing (nodes not draggable/connectable) |
-| `showDefaultHeader` | `boolean` | `true` | Show built-in header (ignored if `renderHeader` provided) |
-| `showDefaultPalette` | `boolean` | `true` | Show built-in node palette |
-| `enableGenerator` | `boolean` | `true` | Show the AI flow generator button |
-| `renderHeader` | `(props: HeaderRenderProps) => ReactNode` | — | Custom header renderer |
-| `renderNodePalette` | `(props: PaletteRenderProps) => ReactNode` | — | Custom node palette renderer |
+| Prop                 | Type                                       | Default        | Description                                                     |
+| -------------------- | ------------------------------------------ | -------------- | --------------------------------------------------------------- |
+| `apiBaseUrl`         | `string`                                   | **(required)** | Flowise API server endpoint                                     |
+| `token`              | `string`                                   | —              | Authentication token for API calls                              |
+| `initialFlow`        | `FlowData`                                 | —              | Initial flow data to render (uncontrolled — only used on mount) |
+| `components`         | `string[]`                                 | —              | Restrict which node types appear in the palette                 |
+| `onFlowChange`       | `(flow: FlowData) => void`                 | —              | Called when the flow changes (node/edge add, remove, move)      |
+| `onSave`             | `(flow: FlowData) => void`                 | —              | Called when the user triggers a save                            |
+| `onFlowGenerated`    | `(flow: FlowData) => void`                 | —              | Called when a flow is generated via AI                          |
+| `isDarkMode`         | `boolean`                                  | `false`        | Use dark mode theme                                             |
+| `readOnly`           | `boolean`                                  | `false`        | Disable editing (nodes not draggable/connectable)               |
+| `showDefaultHeader`  | `boolean`                                  | `true`         | Show built-in header (ignored if `renderHeader` provided)       |
+| `showDefaultPalette` | `boolean`                                  | `true`         | Show built-in node palette                                      |
+| `enableGenerator`    | `boolean`                                  | `true`         | Show the AI flow generator button                               |
+| `renderHeader`       | `(props: HeaderRenderProps) => ReactNode`  | —              | Custom header renderer                                          |
+| `renderNodePalette`  | `(props: PaletteRenderProps) => ReactNode` | —              | Custom node palette renderer                                    |
 
 ### Imperative Methods (via `ref`)
 
-| Method | Return Type | Description |
-|--------|-------------|-------------|
-| `getFlow()` | `FlowData` | Get current flow data |
-| `toJSON()` | `string` | Export flow as JSON string |
-| `validate()` | `ValidationResult` | Validate the current flow |
-| `fitView()` | `void` | Fit all nodes into view |
-| `clear()` | `void` | Remove all nodes and edges |
-| `addNode(name)` | `void` | Add a node by component name |
+| Method              | Return Type        | Description                      |
+| ------------------- | ------------------ | -------------------------------- |
+| `getFlow()`         | `FlowData`         | Get current flow data            |
+| `toJSON()`          | `string`           | Export flow as JSON string       |
+| `validate()`        | `ValidationResult` | Validate the current flow        |
+| `fitView()`         | `void`             | Fit all nodes into view          |
+| `clear()`           | `void`             | Remove all nodes and edges       |
+| `addNode(nodeData)` | `void`             | Add a node (`Partial<FlowNode>`) |
 
 ### Design Note
 
@@ -179,7 +178,7 @@ npm publish --dry-run
 ### Publish
 
 ```bash
-# Prerelease — tagged so `npm install @flowise/agentflow` won't pick it up
+# Prerelease — tagged so `npm install @flowiseai/agentflow` won't pick it up
 npm publish --tag dev
 
 # Stable release — gets the `latest` tag

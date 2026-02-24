@@ -4,8 +4,9 @@ import { Background, NodeResizer, NodeToolbar, useUpdateNodeInternals } from 're
 import { Box, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
-import type { NodeData } from '../../../core/types'
-import { useAgentflowContext, useApiContext, useConfigContext } from '../../../infrastructure/store'
+import type { NodeData } from '@/core/types'
+import { useAgentflowContext, useApiContext, useConfigContext } from '@/infrastructure/store'
+
 import { NodeIcon } from '../components/NodeIcon'
 import { NodeInfoDialog } from '../components/NodeInfoDialog'
 import { NodeInputHandle } from '../components/NodeInputHandle'

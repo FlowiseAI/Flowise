@@ -7,8 +7,8 @@
 
 import { useRef } from 'react'
 
-import type { AgentFlowInstance, FlowData } from '@flowise/agentflow'
-import { Agentflow } from '@flowise/agentflow'
+import type { AgentFlowInstance, FlowData } from '@flowiseai/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 
 import { apiBaseUrl, token } from '../config'
 
@@ -38,7 +38,7 @@ const translationFlow: FlowData = {
                 label: 'Translator',
                 color: '#64B5F6',
                 outputAnchors: [{ id: 'llmAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }],
-                inputs: {
+                inputValues: {
                     llmModel: 'chatGoogleGenerativeAI',
                     llmModelConfig: {
                         modelName: 'gemini-2.0-flash'
@@ -149,15 +149,17 @@ export function MultiNodeFlow() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
 
     return (
-        <div style={{ width: '100%', height: '100vh' }}>
-            <Agentflow
-                ref={agentflowRef}
-                apiBaseUrl={apiBaseUrl}
-                token={token ?? undefined}
-                initialFlow={translationFlow}
-                showDefaultHeader={true}
-                onFlowChange={(flow) => console.log('Flow changed:', flow.nodes.length, 'nodes')}
-            />
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1 }}>
+                <Agentflow
+                    ref={agentflowRef}
+                    apiBaseUrl={apiBaseUrl}
+                    token={token ?? undefined}
+                    initialFlow={translationFlow}
+                    showDefaultHeader={true}
+                    onFlowChange={(flow) => console.log('Flow changed:', flow.nodes.length, 'nodes')}
+                />
+            </div>
         </div>
     )
 }

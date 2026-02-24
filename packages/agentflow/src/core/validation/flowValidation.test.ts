@@ -108,8 +108,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
-                inputs: {}
+                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
+                inputValues: {}
             }
         }
         const errors = validateNode(node, [])
@@ -123,8 +123,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputParams: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: true }],
-                inputs: {}
+                inputs: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: true }],
+                inputValues: {}
             }
         }
         const errors = validateNode(node, [])

@@ -7,8 +7,8 @@
 
 import { useRef, useState } from 'react'
 
-import type { AgentFlowInstance, FlowData } from '@flowise/agentflow'
-import { Agentflow } from '@flowise/agentflow'
+import type { AgentFlowInstance, FlowData } from '@flowiseai/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 import CssBaseline from '@mui/material/CssBaseline'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 
@@ -39,7 +39,7 @@ const sampleFlow: FlowData = {
                 label: 'AI Assistant',
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }],
-                inputs: {
+                inputValues: {
                     agentModel: 'chatAnthropic',
                     agentModelConfig: {
                         modelName: 'claude-3-5-sonnet'
@@ -104,7 +104,7 @@ export function DarkModeExample() {
     return (
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
-            <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* Theme Toggle */}
                 <div
                     style={{
@@ -140,7 +140,7 @@ export function DarkModeExample() {
                         apiBaseUrl={apiBaseUrl}
                         token={token ?? undefined}
                         initialFlow={sampleFlow}
-                        theme={isDark ? 'dark' : 'light'}
+                        isDarkMode={isDark}
                         showDefaultHeader={false}
                     />
                 </div>
@@ -153,6 +153,6 @@ export const DarkModeExampleProps = {
     apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
     initialFlow: 'FlowData (sample flow)',
-    theme: '{isDark ? "dark" : "light"}',
+    isDarkMode: '{isDark}',
     showDefaultHeader: false
 }
