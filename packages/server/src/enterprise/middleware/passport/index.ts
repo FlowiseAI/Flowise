@@ -287,7 +287,12 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                     })
                 })
             } catch (error: any) {
-                return next ? next(error) : res.status(401).json(error)
+                if (next) {
+                    return next(error)
+                }
+
+                console.error('Error during login: ', error)
+                return res.status(401).json({ message: 'Login failed' })
             }
         })(req, res, next)
     })

@@ -42,7 +42,7 @@ const getChatflowStats = async (req: Request, res: Response, next: NextFunction)
                     feedbackTypeFilters = undefined
                 }
             } catch (e) {
-                return res.status(500).send(e)
+                return next(e)
             }
         }
         const apiResponse = await statsService.getChatflowStats(
