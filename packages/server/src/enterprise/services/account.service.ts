@@ -30,8 +30,11 @@ import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
 
-type AccountDTO = {
-    user: Partial<User>
+/** Optional referral field for Stripe referral tracking in CLOUD; not a User entity column. */
+type RegistrationUser = Partial<User> & { referral?: string }
+
+export type AccountDTO = {
+    user: RegistrationUser
     organization: Partial<Organization>
     organizationUser: Partial<OrganizationUser>
     workspace: Partial<Workspace>
@@ -139,7 +142,6 @@ export class AccountService {
                 const { customerId, subscriptionId } = await this.identityManager.createStripeUserAndSubscribe({
                     email: data.user.email,
                     userPlan: UserPlan.FREE,
-                    // @ts-ignore
                     referral: data.user.referral || ''
                 })
                 data.organization.customerId = customerId

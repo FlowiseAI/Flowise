@@ -2196,16 +2196,8 @@
             "name": "googleGenerativeAiEmbeddings",
             "models": [
                 {
-                    "label": "embedding-001",
-                    "name": "embedding-001"
-                },
-                {
-                    "label": "text-embedding-004",
-                    "name": "text-embedding-004"
-                },
-                {
-                    "label": "gemini-embedding-exp-03-07",
-                    "name": "gemini-embedding-exp-03-07"
+                    "label": "gemini-embedding-001",
+                    "name": "gemini-embedding-001"
                 }
             ]
         },

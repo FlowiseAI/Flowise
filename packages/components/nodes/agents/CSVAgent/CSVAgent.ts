@@ -5,6 +5,7 @@ import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from 
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { LoadPyodide, finalSystemPrompt, systemPrompt } from './core'
+import { validatePythonCodeForDataFrame } from '../../../src/pythonCodeValidator'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { getFileFromStorage } from '../../../src'
@@ -143,6 +144,14 @@ class CSV_Agents implements INode {
         // For example using titanic.csv: {'PassengerId': 'int64', 'Survived': 'int64', 'Pclass': 'int64', 'Name': 'object', 'Sex': 'object', 'Age': 'float64', 'SibSp': 'int64', 'Parch': 'int64', 'Ticket': 'object', 'Fare': 'float64', 'Cabin': 'object', 'Embarked': 'object'}
         let dataframeColDict = ''
         let customReadCSVFunc = _customReadCSV ? _customReadCSV : 'read_csv(csv_data)'
+        const csvReadValidation = validatePythonCodeForDataFrame(customReadCSVFunc)
+        if (!csvReadValidation.valid) {
+            throw new Error(
+                `Custom read_csv code was rejected for security reasons (${
+                    csvReadValidation.reason ?? 'unsafe construct'
+                }). Please use only safe pandas read_csv operations.`
+            )
+        }
         try {
             const code = `import pandas as pd
 import base64
@@ -183,9 +192,17 @@ json.dumps(my_dict)`
             pythonCode = pythonCode.replace(/^```[a-z]+\n|\n```$/gm, '')
         }
 
-        // Then run the code using Pyodide
+        // Then run the code using Pyodide (only after validating to prevent RCE)
         let finalResult = ''
         if (pythonCode) {
+            const validation = validatePythonCodeForDataFrame(pythonCode)
+            if (!validation.valid) {
+                throw new Error(
+                    `Generated code was rejected for security reasons (${
+                        validation.reason ?? 'unsafe construct'
+                    }). Please rephrase your question to use only pandas DataFrame operations.`
+                )
+            }
             try {
                 const code = `import pandas as pd\n${pythonCode}`
                 // TODO: get print console output
