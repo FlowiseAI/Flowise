@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { StructuredTool, ToolParams } from '@langchain/core/tools'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
-import { executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
+import { executeJavaScriptCode, createCodeExecutionSandbox, parseWithTypeConversion } from '../../../src/utils'
 import { ICommonObject } from '../../../src/Interface'
 
 class ToolInputParsingException extends Error {
@@ -68,7 +68,7 @@ export class DynamicStructuredTool<
         }
         let parsed
         try {
-            parsed = await this.schema.parseAsync(arg)
+            parsed = await parseWithTypeConversion(this.schema, arg)
         } catch (e) {
             throw new ToolInputParsingException(`Received tool input did not match expected schema`, JSON.stringify(arg))
         }
@@ -124,9 +124,11 @@ export class DynamicStructuredTool<
 
         const sandbox = createCodeExecutionSandbox('', this.variables || [], flow, additionalSandbox)
 
-        const response = await executeJavaScriptCode(this.code, sandbox, {
-            timeout: 10000
-        })
+        let response = await executeJavaScriptCode(this.code, sandbox)
+
+        if (typeof response === 'object') {
+            response = JSON.stringify(response)
+        }
 
         return response
     }

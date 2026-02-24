@@ -104,7 +104,7 @@ const OrganizationSetupPage = () => {
     const getBasicAuthApi = useApi(accountApi.getBasicAuth)
     const navigate = useNavigate()
 
-    const getDefaultProvidersApi = useApi(loginMethodApi.getLoginMethods)
+    const getDefaultProvidersApi = useApi(loginMethodApi.getDefaultLoginMethods)
     const [configuredSsoProviders, setConfiguredSsoProviders] = useState([])
 
     const register = async (event) => {
@@ -145,7 +145,6 @@ const OrganizationSetupPage = () => {
                 user: {
                     name: username,
                     email: email,
-                    type: 'pro',
                     credential: password
                 }
             }
@@ -225,7 +224,7 @@ const OrganizationSetupPage = () => {
             setLoading(false)
             store.dispatch(loginSuccess(loginApi.data))
             localStorage.setItem('username', loginApi.data.name)
-            navigate(location.state?.path || '/chatflows')
+            navigate(location.state?.path || '/')
             //navigate(0)
         }
 

@@ -17,7 +17,6 @@ export class IUser {
     role: string
     lastLogin: Date
     activeWorkspaceId: string
-    isApiKeyValidated?: boolean
     loginMode?: string
     activeOrganizationId?: string
 }
@@ -73,8 +72,7 @@ export type LoggedInUser = {
     activeWorkspaceId: string
     activeWorkspace: string
     assignedWorkspaces: IAssignedWorkspace[]
-    isApiKeyValidated: boolean
-    permissions?: string[]
+    permissions: string[]
     features?: Record<string, string>
     ssoRefreshToken?: string
     ssoToken?: string
@@ -104,6 +102,7 @@ export const OrgSetupSchema = z
         password: z
             .string()
             .min(8, 'Password must be at least 8 characters')
+            .max(128, 'Password must not be more than 128 characters')
             .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
             .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
             .regex(/\d/, 'Password must contain at least one digit')
@@ -124,6 +123,7 @@ export const RegisterUserSchema = z
         password: z
             .string()
             .min(8, 'Password must be at least 8 characters')
+            .max(128, 'Password must not be more than 128 characters')
             .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
             .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
             .regex(/\d/, 'Password must contain at least one digit')

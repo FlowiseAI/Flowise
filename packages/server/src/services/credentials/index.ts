@@ -1,14 +1,14 @@
-import { omit } from 'lodash'
 import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Credential } from '../../database/entities/Credential'
-import { transformToCredentialEntity, decryptCredentialData } from '../../utils'
+import { omit } from 'lodash'
 import { ICredentialReturnResponse } from '../../Interface'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
+import { Credential } from '../../database/entities/Credential'
 import { WorkspaceShared } from '../../enterprise/database/entities/EnterpriseEntities'
 import { WorkspaceService } from '../../enterprise/services/workspace.service'
+import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
+import { decryptCredentialData, transformToCredentialEntity } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 const createCredential = async (requestBody: any) => {
     try {
@@ -31,10 +31,10 @@ const createCredential = async (requestBody: any) => {
 }
 
 // Delete all credentials from chatflowid
-const deleteCredentials = async (credentialId: string): Promise<any> => {
+const deleteCredentials = async (credentialId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Credential).delete({ id: credentialId })
+        const dbResponse = await appServer.AppDataSource.getRepository(Credential).delete({ id: credentialId, workspaceId: workspaceId })
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
         }
@@ -47,10 +47,10 @@ const deleteCredentials = async (credentialId: string): Promise<any> => {
     }
 }
 
-const getAllCredentials = async (paramCredentialName: any, workspaceId?: string) => {
+const getAllCredentials = async (paramCredentialName: any, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
-        let dbResponse = []
+        let dbResponse: any[] = []
         if (paramCredentialName) {
             if (Array.isArray(paramCredentialName)) {
                 for (let i = 0; i < paramCredentialName.length; i += 1) {
@@ -83,14 +83,14 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
                                 if (sharedItem.credentialName === name) {
                                     // @ts-ignore
                                     sharedItem.shared = true
-                                    dbResponse.push(sharedItem)
+                                    dbResponse.push(omit(sharedItem, ['encryptedData']))
                                 }
                             }
                         } else {
                             if (sharedItem.credentialName === paramCredentialName) {
                                 // @ts-ignore
                                 sharedItem.shared = true
-                                dbResponse.push(sharedItem)
+                                dbResponse.push(omit(sharedItem, ['encryptedData']))
                             }
                         }
                     }
@@ -110,7 +110,7 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
                     for (const sharedItem of sharedItems) {
                         // @ts-ignore
                         sharedItem.shared = true
-                        dbResponse.push(sharedItem)
+                        dbResponse.push(omit(sharedItem, ['encryptedData']))
                     }
                 }
             }
@@ -124,11 +124,12 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId?: string)
     }
 }
 
-const getCredentialById = async (credentialId: string, workspaceId?: string): Promise<any> => {
+const getCredentialById = async (credentialId: string, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
+            id: credentialId,
+            workspaceId: workspaceId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
@@ -165,11 +166,12 @@ const getCredentialById = async (credentialId: string, workspaceId?: string): Pr
     }
 }
 
-const updateCredential = async (credentialId: string, requestBody: any): Promise<any> => {
+const updateCredential = async (credentialId: string, requestBody: any, workspaceId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
+            id: credentialId,
+            workspaceId: workspaceId
         })
         if (!credential) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found`)
@@ -177,6 +179,7 @@ const updateCredential = async (credentialId: string, requestBody: any): Promise
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         requestBody.plainDataObj = { ...decryptedCredentialData, ...requestBody.plainDataObj }
         const updateCredential = await transformToCredentialEntity(requestBody)
+        updateCredential.workspaceId = workspaceId
         await appServer.AppDataSource.getRepository(Credential).merge(credential, updateCredential)
         const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
         return dbResponse

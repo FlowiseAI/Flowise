@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "3.0.5",
+    "version": "3.0.13",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -24,6 +24,7 @@
         "user:windows": "cd packages/server/bin && run user",
         "user:default": "cd packages/server/bin && ./run user",
         "test": "turbo run test",
+        "test:coverage": "turbo run test:coverage",
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -51,7 +52,7 @@
         "eslint-plugin-react-hooks": "^4.6.0",
         "eslint-plugin-unused-imports": "^2.0.0",
         "husky": "^8.0.1",
-        "kill-port": "^2.0.1",
+        "kill-port": "2.0.1",
         "lint-staged": "^13.0.3",
         "prettier": "^2.7.1",
         "pretty-quick": "^3.1.3",
@@ -66,7 +67,7 @@
             "sqlite3"
         ],
         "overrides": {
-            "axios": "1.10.0",
+            "axios": "1.12.0",
             "body-parser": "2.0.2",
             "braces": "3.0.3",
             "cross-spawn": "7.0.6",
@@ -90,7 +91,7 @@
     },
     "engines": {
         "node": ">=18.15.0 <19.0.0 || ^20",
-        "pnpm": ">=9"
+        "pnpm": "^10.26.0"
     },
     "resolutions": {
         "@google/generative-ai": "^0.24.0",

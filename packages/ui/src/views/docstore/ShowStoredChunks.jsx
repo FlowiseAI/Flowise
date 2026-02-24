@@ -26,6 +26,7 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 import { useAuth } from '@/hooks/useAuth'
+import { getFileName } from '@/utils/genericHelper'
 
 // store
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
@@ -76,6 +77,7 @@ const ShowStoredChunks = () => {
     const [showExpandedChunkDialog, setShowExpandedChunkDialog] = useState(false)
     const [expandedChunkDialogProps, setExpandedChunkDialogProps] = useState({})
     const [fileNames, setFileNames] = useState([])
+    const [loaderDisplayName, setLoaderDisplayName] = useState('')
 
     const chunkSelected = (chunkId) => {
         const selectedChunk = documentChunks.find((chunk) => chunk.id === chunkId)
@@ -212,13 +214,32 @@ const ShowStoredChunks = () => {
             setCurrentPage(data.currentPage)
             setStart(data.currentPage * 50 - 49)
             setEnd(data.currentPage * 50 > data.count ? data.count : data.currentPage * 50)
+
+            // Build the loader display name in format "LoaderName (sourceName)"
+            const loaderName = data.file?.loaderName || data.storeName || ''
+            let sourceName = ''
+
             if (data.file?.files && data.file.files.length > 0) {
                 const fileNames = []
                 for (const attachedFile of data.file.files) {
                     fileNames.push(attachedFile.name)
                 }
                 setFileNames(fileNames)
+                sourceName = fileNames.join(', ')
+            } else if (data.file?.source) {
+                const source = data.file.source
+                if (typeof source === 'string' && source.includes('base64')) {
+                    sourceName = getFileName(source)
+                } else if (typeof source === 'string' && source.startsWith('[') && source.endsWith(']')) {
+                    sourceName = JSON.parse(source).join(', ')
+                } else if (typeof source === 'string') {
+                    sourceName = source
+                }
             }
+
+            // Set display name in format "LoaderName (sourceName)" or just "LoaderName"
+            const displayName = sourceName ? `${loaderName} (${sourceName})` : loaderName
+            setLoaderDisplayName(displayName)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -234,7 +255,7 @@ const ShowStoredChunks = () => {
                         <ViewHeader
                             isBackButton={true}
                             search={false}
-                            title={getChunksApi.data?.file?.loaderName || getChunksApi.data?.storeName}
+                            title={loaderDisplayName}
                             description={getChunksApi.data?.file?.splitterName || getChunksApi.data?.description}
                             onBack={() => navigate(-1)}
                         ></ViewHeader>

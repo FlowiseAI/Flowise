@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { secureFetch } from '../../../src/httpSecurity'
+import { parseJsonBody } from '../../../src/utils'
 
 export const desc = `Use this when you want to execute a PUT request to update or replace a resource.`
 
@@ -27,7 +28,7 @@ const createRequestsPutSchema = (bodySchema?: string) => {
     // If bodySchema is provided, parse it and add dynamic body params
     if (bodySchema) {
         try {
-            const parsedSchema = JSON.parse(bodySchema)
+            const parsedSchema = parseJsonBody(bodySchema)
             const bodyParamsObject: Record<string, z.ZodTypeAny> = {}
 
             Object.entries(parsedSchema).forEach(([key, config]: [string, any]) => {

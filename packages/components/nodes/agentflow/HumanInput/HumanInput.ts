@@ -208,7 +208,7 @@ class HumanInput_Agentflow implements INode {
                 humanInputDescription = (nodeData.inputs?.humanInputDescription as string) || 'Do you want to proceed?'
                 const messages = [...pastChatHistory, ...runtimeChatHistory]
                 // Find the last message in the messages array
-                const lastMessage = (messages[messages.length - 1] as any).content || ''
+                const lastMessage = messages.length > 0 ? (messages[messages.length - 1] as any).content || '' : ''
                 humanInputDescription = `${lastMessage}\n\n${humanInputDescription}`
                 if (isStreamable) {
                     const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
@@ -241,8 +241,11 @@ class HumanInput_Agentflow implements INode {
                     if (isStreamable) {
                         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
                         for await (const chunk of await llmNodeInstance.stream(messages)) {
-                            sseStreamer.streamTokenEvent(chatId, chunk.content.toString())
-                            response = response.concat(chunk)
+                            const content = typeof chunk === 'string' ? chunk : chunk.content.toString()
+                            sseStreamer.streamTokenEvent(chatId, content)
+
+                            const messageChunk = typeof chunk === 'string' ? new AIMessageChunk(chunk) : chunk
+                            response = response.concat(messageChunk)
                         }
                         humanInputDescription = response.content as string
                     } else {

@@ -104,7 +104,7 @@ const Credentials = () => {
         setSearch(event.target.value)
     }
     function filterCredentials(data) {
-        return data.credentialName.toLowerCase().indexOf(search.toLowerCase()) > -1
+        return data.name.toLowerCase().indexOf(search.toLowerCase()) > -1
     }
 
     const listCredential = () => {

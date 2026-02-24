@@ -16,7 +16,7 @@ import { FetchResponse, Index, Pinecone, ScoredPineconeRecord } from '@pinecone-
 import { flatten } from 'lodash'
 import { Document as LCDocument } from 'langchain/document'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { flattenObject, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { flattenObject, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 
 class PineconeLlamaIndex_VectorStores implements INode {
     label: string
@@ -31,6 +31,8 @@ class PineconeLlamaIndex_VectorStores implements INode {
     inputs: INodeParams[]
     credential: INodeParams
     outputs: INodeOutputsValue[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Pinecone'
@@ -42,6 +44,8 @@ class PineconeLlamaIndex_VectorStores implements INode {
         this.description = `Upsert embedded data and perform similarity search upon query using Pinecone, a leading fully managed hosted vector database`
         this.baseClasses = [this.type, 'VectorIndexRetriever']
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -176,7 +180,7 @@ class PineconeLlamaIndex_VectorStores implements INode {
 
         let metadatafilter = {}
         if (pineconeMetadataFilter) {
-            metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
+            metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : parseJsonBody(pineconeMetadataFilter)
             obj.queryFilter = metadatafilter
         }
 

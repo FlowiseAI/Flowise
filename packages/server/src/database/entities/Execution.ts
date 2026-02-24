@@ -42,6 +42,6 @@ export class Execution implements IExecution {
     @JoinColumn({ name: 'agentflowId' })
     agentflow: ChatFlow
 
-    @Column({ nullable: true, type: 'text' })
-    workspaceId?: string
+    @Column({ nullable: false, type: 'text' })
+    workspaceId: string
 }

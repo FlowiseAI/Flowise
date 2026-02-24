@@ -7,10 +7,13 @@ import {
     mapExtToInputField,
     mapMimeTypeToInputField,
     removeSpecificFileFromUpload,
+    removeSpecificFileFromStorage,
     isValidUUID,
     isPathTraversal
 } from 'flowise-components'
 import { getRunningExpressApp } from './getRunningExpressApp'
+import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
+import logger from './logger'
 import { getErrorMessage } from '../errors/utils'
 import { checkStorage, updateStorageUsage } from './quotaUsage'
 import { ChatFlow } from '../database/entities/ChatFlow'
@@ -27,14 +30,14 @@ export const createFileAttachment = async (req: Request) => {
     const appServer = getRunningExpressApp()
 
     const chatflowid = req.params.chatflowId
+    const chatId = req.params.chatId
+
     if (!chatflowid || !isValidUUID(chatflowid)) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatflowId format - must be a valid UUID')
     }
-    if (isPathTraversal(chatflowid)) {
+    if (isPathTraversal(chatflowid) || (chatId && isPathTraversal(chatId))) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid path characters detected')
     }
-
-    const chatId = req.params.chatId
 
     // Validate chatflow exists and check API key
     const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
@@ -75,21 +78,38 @@ export const createFileAttachment = async (req: Request) => {
         usage: 'perPage',
         legacyBuild: false
     }
+    let allowedFileTypes: string[] = []
+    let fileUploadEnabled = false
 
     if (chatflow.chatbotConfig) {
         try {
             const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
-            if (chatbotConfig?.fullFileUpload?.pdfFile) {
-                if (chatbotConfig.fullFileUpload.pdfFile.usage) {
-                    pdfConfig.usage = chatbotConfig.fullFileUpload.pdfFile.usage
+            if (chatbotConfig?.fullFileUpload) {
+                fileUploadEnabled = chatbotConfig.fullFileUpload.status
+
+                // Get allowed file types from configuration
+                if (chatbotConfig.fullFileUpload.allowedUploadFileTypes) {
+                    allowedFileTypes = chatbotConfig.fullFileUpload.allowedUploadFileTypes.split(',')
                 }
-                if (chatbotConfig.fullFileUpload.pdfFile.legacyBuild !== undefined) {
-                    pdfConfig.legacyBuild = chatbotConfig.fullFileUpload.pdfFile.legacyBuild
+
+                // PDF specific configuration
+                if (chatbotConfig.fullFileUpload.pdfFile) {
+                    if (chatbotConfig.fullFileUpload.pdfFile.usage) {
+                        pdfConfig.usage = chatbotConfig.fullFileUpload.pdfFile.usage
+                    }
+                    if (chatbotConfig.fullFileUpload.pdfFile.legacyBuild !== undefined) {
+                        pdfConfig.legacyBuild = chatbotConfig.fullFileUpload.pdfFile.legacyBuild
+                    }
                 }
             }
         } catch (e) {
-            // Use default PDF config if parsing fails
+            // Use default config if parsing fails
         }
+    }
+
+    // Check if file upload is enabled
+    if (!fileUploadEnabled) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'File upload is not enabled for this chatflow')
     }
 
     // Find FileLoader node
@@ -109,6 +129,26 @@ export const createFileAttachment = async (req: Request) => {
     if (files.length) {
         const isBase64 = req.body.base64
         for (const file of files) {
+            if (!allowedFileTypes.length) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `File type '${file.mimetype}' is not allowed. Allowed types: ${allowedFileTypes.join(', ')}`
+                )
+            }
+
+            // Validate file type against allowed types
+            if (allowedFileTypes.length > 0 && !allowedFileTypes.includes(file.mimetype)) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `File type '${file.mimetype}' is not allowed. Allowed types: ${allowedFileTypes.join(', ')}`
+                )
+            }
+
+            // Security fix: Verify file extension matches the declared MIME type
+            // This prevents MIME type spoofing attacks (e.g., uploading .js file with text/plain MIME type)
+            // This addresses the vulnerability (CVE-2025-61687)
+            validateFileMimeTypeAndExtensionMatch(file.originalname, file.mimetype)
+
             await checkStorage(orgId, subscriptionId, appServer.usageCacheManager)
 
             const fileBuffer = await getFileFromUpload(file.path ?? file.key)
@@ -142,6 +182,9 @@ export const createFileAttachment = async (req: Request) => {
 
             await removeSpecificFileFromUpload(file.path ?? file.key)
 
+            // Track sanitized filename for cleanup if processing fails
+            const sanitizedFilename = fileNames.length > 0 ? fileNames[0] : undefined
+
             try {
                 const nodeData = {
                     inputs: {
@@ -172,6 +215,23 @@ export const createFileAttachment = async (req: Request) => {
                     content
                 })
             } catch (error) {
+                // Security: Clean up storage if processing failed, which includes invalid file type or content detacted from loader
+                if (sanitizedFilename) {
+                    logger.info(`Clean up storage for ${file.originalname} (${sanitizedFilename}). Reason: ${getErrorMessage(error)}`)
+                    try {
+                        const { totalSize: newTotalSize } = await removeSpecificFileFromStorage(
+                            orgId,
+                            chatflowid,
+                            chatId,
+                            sanitizedFilename
+                        )
+                        await updateStorageUsage(orgId, workspaceId, newTotalSize, appServer.usageCacheManager)
+                    } catch (cleanupError) {
+                        logger.error(
+                            `Failed to cleanup storage for ${file.originalname} (${sanitizedFilename}) - ${getErrorMessage(cleanupError)}`
+                        )
+                    }
+                }
                 throw new Error(`Failed createFileAttachment: ${file.originalname} (${file.mimetype} - ${getErrorMessage(error)}`)
             }
         }

@@ -1,40 +1,38 @@
-import express, { Request, Response } from 'express'
-import path from 'path'
-import cors from 'cors'
-import http from 'http'
+import { ExpressAdapter } from '@bull-board/express'
 import cookieParser from 'cookie-parser'
-import { DataSource, IsNull } from 'typeorm'
-import { MODE, Platform } from './Interface'
-import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
-import logger, { expressRequestLogger } from './utils/logger'
-import { getDataSource } from './DataSource'
-import { NodesPool } from './NodesPool'
-import { ChatFlow } from './database/entities/ChatFlow'
-import { CachePool } from './CachePool'
+import cors from 'cors'
+import express, { Request, Response } from 'express'
+import 'global-agent/bootstrap'
+import http from 'http'
+import path from 'path'
+import { DataSource } from 'typeorm'
 import { AbortControllerPool } from './AbortControllerPool'
-import { RateLimiterManager } from './utils/rateLimit'
-import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
-import { Telemetry } from './utils/telemetry'
-import flowiseApiV1Router from './routes'
-import errorHandlerMiddleware from './middlewares/errors'
-import { WHITELIST_URLS } from './utils/constants'
-import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
-import { IdentityManager } from './IdentityManager'
-import { SSEStreamer } from './utils/SSEStreamer'
-import { validateAPIKey } from './utils/validateKey'
+import { CachePool } from './CachePool'
+import { ChatFlow } from './database/entities/ChatFlow'
+import { getDataSource } from './DataSource'
+import { Organization } from './enterprise/database/entities/organization.entity'
+import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
+import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
+import { IdentityManager } from './IdentityManager'
+import { MODE, Platform } from './Interface'
 import { IMetricsProvider } from './Interface.Metrics'
-import { Prometheus } from './metrics/Prometheus'
 import { OpenTelemetry } from './metrics/OpenTelemetry'
+import { Prometheus } from './metrics/Prometheus'
+import errorHandlerMiddleware from './middlewares/errors'
+import { NodesPool } from './NodesPool'
 import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
-import 'global-agent/bootstrap'
+import flowiseApiV1Router from './routes'
 import { UsageCacheManager } from './UsageCacheManager'
-import { Workspace } from './enterprise/database/entities/workspace.entity'
-import { Organization } from './enterprise/database/entities/organization.entity'
-import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
-import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
-import { ExpressAdapter } from '@bull-board/express'
+import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
+import { API_KEY_BLACKLIST_URLS, WHITELIST_URLS } from './utils/constants'
+import logger, { expressRequestLogger } from './utils/logger'
+import { RateLimiterManager } from './utils/rateLimit'
+import { SSEStreamer } from './utils/SSEStreamer'
+import { Telemetry } from './utils/telemetry'
+import { validateAPIKey } from './utils/validateKey'
+import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 
 declare global {
     namespace Express {
@@ -73,6 +71,7 @@ export class App {
     queueManager: QueueManager
     redisSubscriber: RedisEventSubscriber
     usageCacheManager: UsageCacheManager
+    sessionStore: any
 
     constructor() {
         this.app = express()
@@ -147,9 +146,6 @@ export class App {
                 logger.info('🔗 [server]: Redis event subscriber connected successfully')
             }
 
-            // TODO: Remove this by end of 2025
-            await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager.getPlatformType())
-
             logger.info('🎉 [server]: All initialization steps completed successfully!')
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
@@ -163,7 +159,19 @@ export class App {
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
 
         // Enhanced trust proxy settings for load balancer
-        this.app.set('trust proxy', true) // Trust all proxies
+        let trustProxy: string | boolean | number | undefined = process.env.TRUST_PROXY
+        if (typeof trustProxy === 'undefined' || trustProxy.trim() === '' || trustProxy === 'true') {
+            // Default to trust all proxies
+            trustProxy = true
+        } else if (trustProxy === 'false') {
+            // Disable trust proxy
+            trustProxy = false
+        } else if (!isNaN(Number(trustProxy))) {
+            // Number: Trust specific number of proxies
+            trustProxy = Number(trustProxy)
+        }
+
+        this.app.set('trust proxy', trustProxy)
 
         // Allow access from specified domains
         this.app.use(cors(getCorsOptions()))
@@ -216,6 +224,11 @@ export class App {
                     } else if (req.headers['x-request-from'] === 'internal') {
                         verifyToken(req, res, next)
                     } else {
+                        const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
+                        if (isAPIKeyBlacklistedURLS) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+
                         // Only check license validity for non-open-source platforms
                         if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
                             if (!this.identityManager.isLicenseValid()) {
@@ -223,24 +236,16 @@ export class App {
                             }
                         }
 
-                        const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
-                        if (!isValid) {
+                        const { isValid, apiKey } = await validateAPIKey(req)
+                        if (!isValid || !apiKey) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
                         // Find workspace
                         const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
-                            where: { id: apiKeyWorkSpaceId }
+                            where: { id: apiKey.workspaceId }
                         })
                         if (!workspace) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
-                        }
-
-                        // Find owner role
-                        const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
-                            where: { name: GeneralRole.OWNER, organizationId: IsNull() }
-                        })
-                        if (!ownerRole) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
@@ -256,19 +261,17 @@ export class App {
                         const customerId = org.customerId as string
                         const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
                         const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
-
                         // @ts-ignore
                         req.user = {
-                            permissions: [...JSON.parse(ownerRole.permissions)],
+                            permissions: apiKey.permissions,
                             features,
                             activeOrganizationId: activeOrganizationId,
                             activeOrganizationSubscriptionId: subscriptionId,
                             activeOrganizationCustomerId: customerId,
                             activeOrganizationProductId: productId,
-                            isOrganizationAdmin: true,
-                            activeWorkspaceId: apiKeyWorkSpaceId!,
-                            activeWorkspace: workspace.name,
-                            isApiKeyValidated: true
+                            isOrganizationAdmin: false,
+                            activeWorkspaceId: workspace.id,
+                            activeWorkspace: workspace.name
                         }
                         next()
                     }
@@ -319,7 +322,17 @@ export class App {
         })
 
         if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true' && !this.identityManager.isCloud()) {
-            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+            // Initialize admin queues rate limiter
+            const id = 'bullmq_admin_dashboard'
+            await this.rateLimiterManager.addRateLimiter(
+                id,
+                60,
+                100,
+                process.env.ADMIN_RATE_LIMIT_MESSAGE || 'Too many requests to admin dashboard, please try again later.'
+            )
+
+            const rateLimiter = this.rateLimiterManager.getRateLimiterById(id)
+            this.app.use('/admin/queues', rateLimiter, verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
