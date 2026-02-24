@@ -1,5 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { updateFlowState } from '../utils'
+import { processTemplateVariables } from '../../../src/utils'
 import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import zodToJsonSchema from 'zod-to-json-schema'
@@ -28,7 +29,7 @@ class Tool_Agentflow implements INode {
     constructor() {
         this.label = 'Tool'
         this.name = 'toolAgentflow'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'Tool'
         this.category = 'Agent Flows'
         this.description = 'Tools allow LLM to interact with external systems'
@@ -79,8 +80,7 @@ class Tool_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
@@ -330,14 +330,7 @@ class Tool_Agentflow implements INode {
                 sseStreamer.streamTokenEvent(chatId, toolOutput)
             }
 
-            // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', toolOutput)
-                    }
-                }
-            }
+            newState = processTemplateVariables(newState, toolOutput)
 
             const returnOutput = {
                 id: nodeData.id,

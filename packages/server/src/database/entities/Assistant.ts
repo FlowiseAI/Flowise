@@ -27,6 +27,6 @@ export class Assistant implements IAssistant {
     @UpdateDateColumn()
     updatedDate: Date
 
-    @Column({ nullable: true, type: 'text' })
-    workspaceId?: string
+    @Column({ nullable: false, type: 'text' })
+    workspaceId: string
 }

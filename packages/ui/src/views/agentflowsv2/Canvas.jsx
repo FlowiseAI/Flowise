@@ -42,7 +42,7 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
+import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
 
 // utils
 import {
@@ -101,6 +101,7 @@ const AgentflowCanvas = () => {
     const [editNodeDialogOpen, setEditNodeDialogOpen] = useState(false)
     const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
     const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
+    const [isBackgroundEnabled, setIsBackgroundEnabled] = useState(true)
 
     const reactFlowWrapper = useRef(null)
 
@@ -742,6 +743,16 @@ const AgentflowCanvas = () => {
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsBackgroundEnabled(!isBackgroundEnabled)
+                                        }}
+                                        title='toggle background'
+                                        aria-label='toggle background'
+                                    >
+                                        {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
+                                    </button>
                                 </Controls>
                                 <MiniMap
                                     nodeStrokeWidth={3}
@@ -752,7 +763,7 @@ const AgentflowCanvas = () => {
                                         backgroundColor: customization.isDarkMode ? theme.palette.background.default : '#fff'
                                     }}
                                 />
-                                <Background color='#aaa' gap={16} />
+                                {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
                                 <AddNodes
                                     isAgentCanvas={true}
                                     isAgentflowv2={true}

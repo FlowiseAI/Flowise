@@ -1,4 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { parseJsonBody } from '../../../src/utils'
 
 class Iteration_Agentflow implements INode {
     label: string
@@ -41,10 +42,10 @@ class Iteration_Agentflow implements INode {
         // Helper function to clean JSON strings with redundant backslashes
         const safeParseJson = (str: string): string => {
             try {
-                return JSON.parse(str)
+                return parseJsonBody(str)
             } catch {
                 // Try parsing after cleaning
-                return JSON.parse(str.replace(/\\(["'[\]{}])/g, '$1'))
+                return parseJsonBody(str.replace(/\\(["'[\]{}])/g, '$1'))
             }
         }
 

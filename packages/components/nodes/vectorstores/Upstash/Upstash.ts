@@ -80,7 +80,8 @@ class Upstash_VectorStores implements INode {
                 name: 'upstashMetadataFilter',
                 type: 'string',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                acceptVariable: true
             },
             {
                 label: 'Top K',
@@ -186,7 +187,11 @@ class Upstash_VectorStores implements INode {
                     const vectorStoreName = UPSTASH_VECTOR_REST_URL
                     await recordManager.createSchema()
                     ;(recordManager as any).namespace = (recordManager as any).namespace + '_' + vectorStoreName
-                    const keys: string[] = await recordManager.listKeys({})
+                    const filterKeys: ICommonObject = {}
+                    if (options.docId) {
+                        filterKeys.docId = options.docId
+                    }
+                    const keys: string[] = await recordManager.listKeys(filterKeys)
 
                     await upstashStore.delete({ ids: keys })
                     await recordManager.deleteKeys(keys)

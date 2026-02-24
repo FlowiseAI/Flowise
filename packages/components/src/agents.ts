@@ -30,6 +30,16 @@ export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n
 export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
 export const TOOL_ARGS_PREFIX = '\n\n----FLOWISE_TOOL_ARGS----\n\n'
 
+/**
+ * Utility function to format tool error messages with parameters for debugging
+ * @param errorMessage - The base error message
+ * @param params - The parameters that were passed to the tool
+ * @returns Formatted error message with tool arguments appended
+ */
+export const formatToolError = (errorMessage: string, params: any): string => {
+    return errorMessage + TOOL_ARGS_PREFIX + JSON.stringify(params)
+}
+
 export type AgentFinish = {
     returnValues: Record<string, any>
     log: string
@@ -1011,7 +1021,7 @@ export class JsonOutputToolsParser extends BaseLLMOutputParser<ParsedToolCall[]>
         const parsedToolCalls = []
 
         if (!toolCalls) {
-            // @ts-expect-error name and arguemnts are defined by Object.defineProperty
+            // @ts-expect-error name and arguments are defined by Object.defineProperty
             const parsedToolCall: ParsedToolCall = {
                 type: 'undefined',
                 args: {}
@@ -1037,7 +1047,7 @@ export class JsonOutputToolsParser extends BaseLLMOutputParser<ParsedToolCall[]>
         const clonedToolCalls = JSON.parse(JSON.stringify(toolCalls))
         for (const toolCall of clonedToolCalls) {
             if (toolCall.function !== undefined) {
-                // @ts-expect-error name and arguemnts are defined by Object.defineProperty
+                // @ts-expect-error name and arguments are defined by Object.defineProperty
                 const parsedToolCall: ParsedToolCall = {
                     type: toolCall.function.name,
                     args: JSON.parse(toolCall.function.arguments)

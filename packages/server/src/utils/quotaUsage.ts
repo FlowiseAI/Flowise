@@ -70,7 +70,7 @@ export const checkUsageLimit = async (
     if (limit === -1) return
 
     if (currentUsage > limit) {
-        throw new InternalFlowiseError(StatusCodes.TOO_MANY_REQUESTS, `Limit exceeded: ${type}`)
+        throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, `Limit exceeded: ${type}`)
     }
 }
 
@@ -135,7 +135,7 @@ export const checkPredictions = async (orgId: string, subscriptionId: string, us
     if (predictionsLimit === -1) return
 
     if (currentPredictions >= predictionsLimit) {
-        throw new InternalFlowiseError(StatusCodes.TOO_MANY_REQUESTS, 'Predictions limit exceeded')
+        throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, 'Predictions limit exceeded')
     }
 
     return {
@@ -161,7 +161,7 @@ export const checkStorage = async (orgId: string, subscriptionId: string, usageC
     if (storageLimit === -1) return
 
     if (currentStorageUsage >= storageLimit) {
-        throw new InternalFlowiseError(StatusCodes.TOO_MANY_REQUESTS, 'Storage limit exceeded')
+        throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, 'Storage limit exceeded')
     }
 
     return {

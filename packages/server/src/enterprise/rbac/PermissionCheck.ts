@@ -7,7 +7,7 @@ export const checkPermission = (permission: string) => {
         const user = req.user
         // if the user is not logged in, return forbidden
         if (user) {
-            if (user.isApiKeyValidated || user.isOrganizationAdmin) {
+            if (user.isOrganizationAdmin) {
                 return next()
             }
             const permissions = user.permissions
@@ -26,7 +26,7 @@ export const checkAnyPermission = (permissionsString: string) => {
         const user = req.user
         // if the user is not logged in, return forbidden
         if (user) {
-            if (user.isApiKeyValidated || user.isOrganizationAdmin) {
+            if (user.isOrganizationAdmin) {
                 return next()
             }
             const permissions = user.permissions

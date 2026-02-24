@@ -1,15 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
-import bcrypt from 'bcryptjs'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
-import { User, UserStatus } from '../database/entities/user.entity'
-import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
 import { DataSource, ILike, QueryRunner } from 'typeorm'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
-import { getHash } from '../utils/encryption.util'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { sanitizeUser } from '../../utils/sanitize.util'
+import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
+import { User, UserStatus } from '../database/entities/user.entity'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { compareHash, getHash } from '../utils/encryption.util'
+import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
 
 export const enum UserErrorMessage {
     EXPIRED_TEMP_TOKEN = 'Expired Temporary Token',
@@ -24,7 +24,8 @@ export const enum UserErrorMessage {
     USER_EMAIL_UNVERIFIED = 'User Email Unverified',
     USER_NOT_FOUND = 'User Not Found',
     USER_FOUND_MULTIPLE = 'User Found Multiple',
-    INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password'
+    INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password',
+    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match'
 }
 export class UserService {
     private telemetry: Telemetry
@@ -87,17 +88,29 @@ export class UserService {
         if (data.status) this.validateUserStatus(data.status)
 
         data.id = generateId()
-        if (data.createdBy) {
-            const createdBy = await this.readUserById(data.createdBy, queryRunner)
-            if (!createdBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-            data.createdBy = createdBy.id
+        const createdById = data.createdBy
+        if (createdById) {
+            const createdByUser = await this.readUserById(createdById, queryRunner)
+            if (!createdByUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+            data.createdBy = createdByUser.id
             data.updatedBy = data.createdBy
         } else {
             data.createdBy = data.id
             data.updatedBy = data.id
         }
 
-        return queryRunner.manager.create(User, data)
+        const userObj = queryRunner.manager.create(User, data)
+
+        this.telemetry.sendTelemetry(
+            TelemetryEventType.USER_CREATED,
+            {
+                userId: userObj.id,
+                createdBy: userObj.createdBy
+            },
+            userObj.id
+        )
+
+        return userObj
     }
 
     public async saveUser(data: Partial<User>, queryRunner: QueryRunner) {
@@ -120,19 +133,10 @@ export class UserService {
             await queryRunner.release()
         }
 
-        this.telemetry.sendTelemetry(
-            TelemetryEventType.USER_CREATED,
-            {
-                userId: newUser.id,
-                createdBy: newUser.createdBy
-            },
-            newUser.id
-        )
-
         return newUser
     }
 
-    public async updateUser(newUserData: Partial<User> & { password?: string }) {
+    public async updateUser(newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string }) {
         let queryRunner: QueryRunner | undefined
         let updatedUser: Partial<User>
         try {
@@ -156,11 +160,18 @@ export class UserService {
                 this.validateUserStatus(newUserData.status)
             }
 
-            if (newUserData.password) {
-                const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
-                // @ts-ignore
-                const hash = bcrypt.hashSync(newUserData.password, salt)
-                newUserData.credential = hash
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
+                if (!oldUserData.credential) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_CREDENTIAL)
+                }
+                // verify old password
+                if (!compareHash(newUserData.oldPassword, oldUserData.credential)) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_CREDENTIAL)
+                }
+                if (newUserData.newPassword !== newUserData.confirmPassword) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.PASSWORDS_DO_NOT_MATCH)
+                }
+                newUserData.credential = this.encryptUserCredential(newUserData.newPassword)
                 newUserData.tempToken = ''
                 newUserData.tokenExpiry = undefined
             }
@@ -169,6 +180,11 @@ export class UserService {
             await queryRunner.startTransaction()
             await this.saveUser(updatedUser, queryRunner)
             await queryRunner.commitTransaction()
+
+            // Invalidate all sessions for this user if password was changed
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
+                await destroyAllSessionsForUser(updatedUser.id as string)
+            }
         } catch (error) {
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             throw error

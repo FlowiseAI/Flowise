@@ -238,7 +238,7 @@ export function filterConversationHistory(
 export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) => {
     const messages: BaseMessage[] = []
     for (const message of state.messages as unknown as BaseMessage[]) {
-        // Sometimes Anthropic can return a message with content types of array, ignore that EXECEPT when tool calls are present
+        // Sometimes Anthropic can return a message with content types of array, ignore that EXCEPT when tool calls are present
         if ((message as any).tool_calls?.length && message.content !== '') {
             message.content = JSON.stringify(message.content)
         }
@@ -396,9 +396,7 @@ export const checkMessageHistory = async (
         const sandbox = createCodeExecutionSandbox('', variables, flow)
 
         try {
-            const response = await executeJavaScriptCode(messageHistory, sandbox, {
-                timeout: 10000
-            })
+            const response = await executeJavaScriptCode(messageHistory, sandbox)
 
             if (!Array.isArray(response)) throw new Error('Returned message history must be an array')
             if (sysPrompt) {

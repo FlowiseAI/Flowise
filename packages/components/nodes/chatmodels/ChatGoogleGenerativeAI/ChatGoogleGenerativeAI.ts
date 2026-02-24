@@ -175,6 +175,18 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Thinking Budget',
+                name: 'thinkingBudget',
+                type: 'number',
+                description: 'Guides the number of thinking tokens. -1 for dynamic, 0 to disable, or positive integer (Gemini 2.5 models).',
+                step: 1,
+                optional: true,
+                additionalParams: true,
+                show: {
+                    modelName: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
+                }
+            },
+            {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
@@ -216,6 +228,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const streaming = nodeData.inputs?.streaming as boolean
         const baseUrl = nodeData.inputs?.baseUrl as string | undefined
+        const thinkingBudget = nodeData.inputs?.thinkingBudget as string
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
@@ -235,6 +248,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
         if (cache) obj.cache = cache
         if (temperature) obj.temperature = parseFloat(temperature)
         if (baseUrl) obj.baseUrl = baseUrl
+        if (thinkingBudget) obj.thinkingBudget = parseInt(thinkingBudget, 10)
 
         let safetySettings: SafetySetting[] = []
         if (_safetySettings) {

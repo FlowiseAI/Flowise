@@ -273,10 +273,9 @@ class AzureChatOpenAI_ChatModels implements INode {
                 console.error('Error parsing base options', exception)
             }
         }
-        if (modelName === 'o3-mini' || modelName.includes('o1')) {
+        if (modelName.includes('o1') || modelName.includes('o3') || modelName.includes('gpt-5')) {
             delete obj.temperature
-        }
-        if (modelName.includes('o1') || modelName.includes('o3')) {
+            delete obj.stop
             const reasoning: OpenAIClient.Reasoning = {}
             if (reasoningEffort) {
                 reasoning.effort = reasoningEffort
@@ -285,6 +284,11 @@ class AzureChatOpenAI_ChatModels implements INode {
                 reasoning.summary = reasoningSummary
             }
             obj.reasoning = reasoning
+
+            if (maxTokens) {
+                delete obj.maxTokens
+                obj.maxCompletionTokens = parseInt(maxTokens, 10)
+            }
         }
 
         const multiModalOption: IMultiModalOption = {

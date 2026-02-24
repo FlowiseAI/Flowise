@@ -264,7 +264,7 @@ export class WorkspaceService {
         const itemIds = sharedItems.map((item) => item.sharedItemId)
         if (itemType === 'credential') {
             return await this.dataSource.getRepository(Credential).find({
-                select: ['id', 'name', 'credentialName'],
+                select: ['id', 'name', 'credentialName', 'createdDate', 'updatedDate', 'workspaceId'],
                 where: { id: In(itemIds) }
             })
         } else if (itemType === 'custom_template') {

@@ -21,16 +21,18 @@ import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
+import { randomBytes } from 'crypto'
 import {
+    addImageArtifactsToMessages,
+    extractArtifactsFromResponse,
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
     replaceBase64ImagesWithFileReferences,
+    replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { addSingleFileToStorage } from '../../../src/storageUtils'
-import fetch from 'node-fetch'
+import { convertMultiOptionsToStringArray, processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
 
 interface ITool {
     agentSelectedTool: string
@@ -64,6 +66,27 @@ interface ISimpliefiedTool {
     }
 }
 
+/**
+ * Sanitizes a string to be used as a tool name.
+ * Restricts to ASCII characters [a-z0-9_-] for LLM API compatibility (OpenAI, Anthropic, Gemini).
+ * Non-ASCII titles (Korean, Chinese, Japanese, etc.) will use auto-generated fallback names.
+ * This prevents 'Invalid tools[0].function.name: empty string' errors.
+ */
+const sanitizeToolName = (name: string): string => {
+    const sanitized = name
+        .toLowerCase()
+        .replace(/ /g, '_')
+        .replace(/[^a-z0-9_-]/g, '') // ASCII only for LLM API compatibility
+
+    // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
+    if (!sanitized) {
+        return `tool_${Date.now()}_${randomBytes(4).toString('hex').slice(0, 5)}`
+    }
+
+    // Enforce 64 character limit common for tool names
+    return sanitized.slice(0, 64)
+}
+
 class Agent_Agentflow implements INode {
     label: string
     name: string
@@ -81,7 +104,7 @@ class Agent_Agentflow implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'agentAgentflow'
-        this.version = 2.0
+        this.version = 3.2
         this.type = 'Agent'
         this.category = 'Agent Flows'
         this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
@@ -159,6 +182,61 @@ class Agent_Agentflow implements INode {
                 ],
                 show: {
                     agentModel: 'chatOpenAI'
+                }
+            },
+            {
+                label: 'Gemini Built-in Tools',
+                name: 'agentToolsBuiltInGemini',
+                type: 'multiOptions',
+                optional: true,
+                options: [
+                    {
+                        label: 'URL Context',
+                        name: 'urlContext',
+                        description: 'Extract content from given URLs'
+                    },
+                    {
+                        label: 'Google Search',
+                        name: 'googleSearch',
+                        description: 'Search real-time web content'
+                    },
+                    {
+                        label: 'Code Execution',
+                        name: 'codeExecution',
+                        description: 'Write and run Python code in a sandboxed environment'
+                    }
+                ],
+                show: {
+                    agentModel: 'chatGoogleGenerativeAI'
+                }
+            },
+            {
+                label: 'Anthropic Built-in Tools',
+                name: 'agentToolsBuiltInAnthropic',
+                type: 'multiOptions',
+                optional: true,
+                options: [
+                    {
+                        label: 'Web Search',
+                        name: 'web_search_20250305',
+                        description: 'Search the web for the latest information'
+                    },
+                    {
+                        label: 'Web Fetch',
+                        name: 'web_fetch_20250910',
+                        description: 'Retrieve full content from specified web pages'
+                    }
+                    /*
+                    * Not supported yet as we need to get bash_code_execution_tool_result from content:
+                    https://docs.claude.com/en/docs/agents-and-tools/tool-use/code-execution-tool#retrieve-generated-files
+                    {
+                        label: 'Code Interpreter',
+                        name: 'code_execution_20250825',
+                        description: 'Write and run Python code in a sandboxed environment'
+                    }*/
+                ],
+                show: {
+                    agentModel: 'chatAnthropic'
                 }
             },
             {
@@ -345,6 +423,108 @@ class Agent_Agentflow implements INode {
                 default: 'userMessage'
             },
             {
+                label: 'JSON Structured Output',
+                name: 'agentStructuredOutput',
+                description: 'Instruct the Agent to give output in a JSON structured schema',
+                type: 'array',
+                optional: true,
+                acceptVariable: true,
+                array: [
+                    {
+                        label: 'Key',
+                        name: 'key',
+                        type: 'string'
+                    },
+                    {
+                        label: 'Type',
+                        name: 'type',
+                        type: 'options',
+                        options: [
+                            {
+                                label: 'String',
+                                name: 'string'
+                            },
+                            {
+                                label: 'String Array',
+                                name: 'stringArray'
+                            },
+                            {
+                                label: 'Number',
+                                name: 'number'
+                            },
+                            {
+                                label: 'Boolean',
+                                name: 'boolean'
+                            },
+                            {
+                                label: 'Enum',
+                                name: 'enum'
+                            },
+                            {
+                                label: 'JSON Array',
+                                name: 'jsonArray'
+                            }
+                        ]
+                    },
+                    {
+                        label: 'Enum Values',
+                        name: 'enumValues',
+                        type: 'string',
+                        placeholder: 'value1, value2, value3',
+                        description: 'Enum values. Separated by comma',
+                        optional: true,
+                        show: {
+                            'agentStructuredOutput[$index].type': 'enum'
+                        }
+                    },
+                    {
+                        label: 'JSON Schema',
+                        name: 'jsonSchema',
+                        type: 'code',
+                        placeholder: `{
+    "answer": {
+        "type": "string",
+        "description": "Value of the answer"
+    },
+    "reason": {
+        "type": "string",
+        "description": "Reason for the answer"
+    },
+    "optional": {
+        "type": "boolean"
+    },
+    "count": {
+        "type": "number"
+    },
+    "children": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string",
+                    "description": "Value of the children's answer"
+                }
+            }
+        }
+    }
+}`,
+                        description: 'JSON schema for the structured output',
+                        optional: true,
+                        hideCodeExecute: true,
+                        show: {
+                            'agentStructuredOutput[$index].type': 'jsonArray'
+                        }
+                    },
+                    {
+                        label: 'Description',
+                        name: 'description',
+                        type: 'string',
+                        placeholder: 'Description of the key'
+                    }
+                ]
+            },
+            {
                 label: 'Update Flow State',
                 name: 'agentUpdateState',
                 description: 'Update runtime state during the execution of the workflow',
@@ -356,8 +536,7 @@ class Agent_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys',
-                        freeSolo: true
+                        loadMethod: 'listRuntimeStateKeys'
                     },
                     {
                         label: 'Value',
@@ -600,10 +779,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: storeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(storeName),
                             description: knowledgeBase.docStoreDescription,
                             retriever: docStoreVectorInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -620,10 +796,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: storeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(storeName),
                         description: knowledgeBase.docStoreDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -681,10 +854,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: knowledgeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(knowledgeName),
                             description: knowledgeBase.knowledgeDescription,
                             retriever: vectorStoreInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -701,10 +871,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: knowledgeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(knowledgeName),
                         description: knowledgeBase.knowledgeDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -720,6 +887,7 @@ class Agent_Agentflow implements INode {
             const memoryType = nodeData.inputs?.agentMemoryType as string
             const userMessage = nodeData.inputs?.agentUserMessage as string
             const _agentUpdateState = nodeData.inputs?.agentUpdateState
+            const _agentStructuredOutput = nodeData.inputs?.agentStructuredOutput
             const agentMessages = (nodeData.inputs?.agentMessages as unknown as ILLMMessage[]) ?? []
 
             // Extract runtime state and history
@@ -745,6 +913,8 @@ class Agent_Agentflow implements INode {
             const llmWithoutToolsBind = (await newLLMNodeInstance.init(newNodeData, '', options)) as BaseChatModel
             let llmNodeInstance = llmWithoutToolsBind
 
+            const isStructuredOutput = _agentStructuredOutput && Array.isArray(_agentStructuredOutput) && _agentStructuredOutput.length > 0
+
             const agentToolsBuiltInOpenAI = convertMultiOptionsToStringArray(nodeData.inputs?.agentToolsBuiltInOpenAI)
             if (agentToolsBuiltInOpenAI && agentToolsBuiltInOpenAI.length > 0) {
                 for (const tool of agentToolsBuiltInOpenAI) {
@@ -753,6 +923,60 @@ class Agent_Agentflow implements INode {
                     }
                     if (tool === 'code_interpreter') {
                         builtInTool.container = { type: 'auto' }
+                    }
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
+                }
+            }
+
+            const agentToolsBuiltInGemini = convertMultiOptionsToStringArray(nodeData.inputs?.agentToolsBuiltInGemini)
+            if (agentToolsBuiltInGemini && agentToolsBuiltInGemini.length > 0) {
+                for (const tool of agentToolsBuiltInGemini) {
+                    const builtInTool: ICommonObject = {
+                        [tool]: {}
+                    }
+                    ;(toolsInstance as any).push(builtInTool)
+                    ;(availableTools as any).push({
+                        name: tool,
+                        toolNode: {
+                            label: tool,
+                            name: tool
+                        }
+                    })
+                }
+            }
+
+            const agentToolsBuiltInAnthropic = convertMultiOptionsToStringArray(nodeData.inputs?.agentToolsBuiltInAnthropic)
+            if (agentToolsBuiltInAnthropic && agentToolsBuiltInAnthropic.length > 0) {
+                for (const tool of agentToolsBuiltInAnthropic) {
+                    // split _ to get the tool name by removing the last part (date)
+                    const toolName = tool.split('_').slice(0, -1).join('_')
+
+                    if (tool === 'code_execution_20250825') {
+                        ;(llmNodeInstance as any).clientOptions = {
+                            defaultHeaders: {
+                                'anthropic-beta': ['code-execution-2025-08-25', 'files-api-2025-04-14']
+                            }
+                        }
+                    }
+
+                    if (tool === 'web_fetch_20250910') {
+                        ;(llmNodeInstance as any).clientOptions = {
+                            defaultHeaders: {
+                                'anthropic-beta': ['web-fetch-2025-09-10']
+                            }
+                        }
+                    }
+
+                    const builtInTool: ICommonObject = {
+                        type: tool,
+                        name: toolName
                     }
                     ;(toolsInstance as any).push(builtInTool)
                     ;(availableTools as any).push({
@@ -849,19 +1073,13 @@ class Agent_Agentflow implements INode {
             // Initialize response and determine if streaming is possible
             let response: AIMessageChunk = new AIMessageChunk('')
             const isLastNode = options.isLastNode as boolean
-            const isStreamable = isLastNode && options.sseStreamer !== undefined && modelConfig?.streaming !== false
+            const isStreamable = isLastNode && options.sseStreamer !== undefined && modelConfig?.streaming !== false && !isStructuredOutput
 
             // Start analytics
             if (analyticHandlers && options.parentTraceIds) {
                 const llmLabel = options?.componentNodes?.[model]?.label || model
                 llmIds = await analyticHandlers.onLLMStart(llmLabel, messages, options.parentTraceIds)
             }
-
-            // Track execution time
-            const startTime = Date.now()
-
-            // Get initial response from LLM
-            const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
             // Handle tool calls with support for recursion
             let usedTools: IUsedTool[] = []
@@ -875,11 +1093,23 @@ class Agent_Agentflow implements INode {
             const messagesBeforeToolCalls = [...messages]
             let _toolCallMessages: BaseMessageLike[] = []
 
+            /**
+             * Add image artifacts from previous assistant responses as user messages
+             * Images are converted from FILE-STORAGE::<image_path> to base 64 image_url format
+             */
+            await addImageArtifactsToMessages(messages, options)
+
             // Check if this is hummanInput for tool calls
             const _humanInput = nodeData.inputs?.humanInput
             const humanInput: IHumanInput = typeof _humanInput === 'string' ? JSON.parse(_humanInput) : _humanInput
             const humanInputAction = options.humanInputAction
             const iterationContext = options.iterationContext
+
+            // Track execution time
+            const startTime = Date.now()
+
+            // Get initial response from LLM
+            const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
             if (humanInput) {
                 if (humanInput.type !== 'proceed' && humanInput.type !== 'reject') {
@@ -898,7 +1128,8 @@ class Agent_Agentflow implements INode {
                     llmWithoutToolsBind,
                     isStreamable,
                     isLastNode,
-                    iterationContext
+                    iterationContext,
+                    isStructuredOutput
                 })
 
                 response = result.response
@@ -927,7 +1158,14 @@ class Agent_Agentflow implements INode {
                 }
             } else {
                 if (isStreamable) {
-                    response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+                    response = await this.handleStreamingResponse(
+                        sseStreamer,
+                        llmNodeInstance,
+                        messages,
+                        chatId,
+                        abortController,
+                        isStructuredOutput
+                    )
                 } else {
                     response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
                 }
@@ -949,7 +1187,8 @@ class Agent_Agentflow implements INode {
                     llmNodeInstance,
                     isStreamable,
                     isLastNode,
-                    iterationContext
+                    iterationContext,
+                    isStructuredOutput
                 })
 
                 response = result.response
@@ -976,11 +1215,20 @@ class Agent_Agentflow implements INode {
                         sseStreamer.streamArtifactsEvent(chatId, flatten(artifacts))
                     }
                 }
-            } else if (!humanInput && !isStreamable && isLastNode && sseStreamer) {
+            } else if (!humanInput && !isStreamable && isLastNode && sseStreamer && !isStructuredOutput) {
                 // Stream whole response back to UI if not streaming and no tool calls
+                // Skip this if structured output is enabled - it will be streamed after conversion
                 let finalResponse = ''
                 if (response.content && Array.isArray(response.content)) {
-                    finalResponse = response.content.map((item: any) => item.text).join('\n')
+                    finalResponse = response.content
+                        .map((item: any) => {
+                            if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                                return item.text
+                            }
+                            return ''
+                        })
+                        .filter((text: string) => text)
+                        .join('\n')
                 } else if (response.content && typeof response.content === 'string') {
                     finalResponse = response.content
                 } else {
@@ -1009,9 +1257,53 @@ class Agent_Agentflow implements INode {
             // Prepare final response and output object
             let finalResponse = ''
             if (response.content && Array.isArray(response.content)) {
-                finalResponse = response.content.map((item: any) => item.text).join('\n')
+                // Process items and concatenate consecutive text items
+                const processedParts: string[] = []
+                let currentTextBuffer = ''
+
+                for (const item of response.content) {
+                    const itemAny = item as any
+                    const isTextItem = (itemAny.text && !itemAny.type) || (itemAny.type === 'text' && itemAny.text)
+
+                    if (isTextItem) {
+                        // Accumulate consecutive text items
+                        currentTextBuffer += itemAny.text
+                    } else {
+                        // Flush accumulated text before processing other types
+                        if (currentTextBuffer) {
+                            processedParts.push(currentTextBuffer)
+                            currentTextBuffer = ''
+                        }
+
+                        // Process non-text items
+                        if (itemAny.type === 'executableCode' && itemAny.executableCode) {
+                            // Format executable code as a code block
+                            const language = itemAny.executableCode.language?.toLowerCase() || 'python'
+                            processedParts.push(`\n\`\`\`${language}\n${itemAny.executableCode.code}\n\`\`\`\n`)
+                        } else if (itemAny.type === 'codeExecutionResult' && itemAny.codeExecutionResult) {
+                            // Format code execution result
+                            const outcome = itemAny.codeExecutionResult.outcome || 'OUTCOME_OK'
+                            const output = itemAny.codeExecutionResult.output || ''
+                            if (outcome === 'OUTCOME_OK' && output) {
+                                processedParts.push(`**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`)
+                            } else if (outcome !== 'OUTCOME_OK') {
+                                processedParts.push(`**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`)
+                            }
+                        }
+                    }
+                }
+
+                // Flush any remaining text
+                if (currentTextBuffer) {
+                    processedParts.push(currentTextBuffer)
+                }
+
+                finalResponse = processedParts.filter((text) => text).join('\n')
             } else if (response.content && typeof response.content === 'string') {
                 finalResponse = response.content
+            } else if (response.content === '') {
+                // Empty response content, this could happen when there is only image data
+                finalResponse = ''
             } else {
                 finalResponse = JSON.stringify(response, null, 2)
             }
@@ -1027,10 +1319,13 @@ class Agent_Agentflow implements INode {
                 }
             }
 
-            // Extract artifacts from annotations in response metadata
+            // Extract artifacts from annotations in response metadata and replace inline data
             if (response.response_metadata) {
-                const { artifacts: extractedArtifacts, fileAnnotations: extractedFileAnnotations } =
-                    await this.extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
+                const {
+                    artifacts: extractedArtifacts,
+                    fileAnnotations: extractedFileAnnotations,
+                    savedInlineImages
+                } = await extractArtifactsFromResponse(response.response_metadata, newNodeData, options)
                 if (extractedArtifacts.length > 0) {
                     artifacts = [...artifacts, ...extractedArtifacts]
 
@@ -1048,11 +1343,33 @@ class Agent_Agentflow implements INode {
                         sseStreamer.streamFileAnnotationsEvent(chatId, fileAnnotations)
                     }
                 }
+
+                // Replace inlineData base64 with file references in the response
+                if (savedInlineImages && savedInlineImages.length > 0) {
+                    replaceInlineDataWithFileReferences(response, savedInlineImages)
+                }
             }
 
             // Replace sandbox links with proper download URLs. Example: [Download the script](sandbox:/mnt/data/dummy_bar_graph.py)
             if (finalResponse.includes('sandbox:/')) {
                 finalResponse = await this.processSandboxLinks(finalResponse, options.baseURL, options.chatflowid, chatId)
+            }
+
+            // If is structured output, then invoke LLM again with structured output at the very end after all tool calls
+            if (isStructuredOutput) {
+                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _agentStructuredOutput)
+                const prompt = 'Convert the following response to the structured output format: ' + finalResponse
+                response = await llmNodeInstance.invoke(prompt, { signal: abortController?.signal })
+
+                if (typeof response === 'object') {
+                    finalResponse = '```json\n' + JSON.stringify(response, null, 2) + '\n```'
+                } else {
+                    finalResponse = response
+                }
+
+                if (isLastNode && sseStreamer) {
+                    sseStreamer.streamTokenEvent(chatId, finalResponse)
+                }
             }
 
             const output = this.prepareOutputObject(
@@ -1067,7 +1384,8 @@ class Agent_Agentflow implements INode {
                 artifacts,
                 additionalTokens,
                 isWaitingForHumanInput,
-                fileAnnotations
+                fileAnnotations,
+                isStructuredOutput
             )
 
             // End analytics tracking
@@ -1086,17 +1404,19 @@ class Agent_Agentflow implements INode {
             }
 
             // Process template variables in state
-            if (newState && Object.keys(newState).length > 0) {
-                for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replaceAll('{{ output }}', finalResponse)
-                    }
-                }
-            }
+            const outputForStateProcessing =
+                isStructuredOutput && typeof response === 'object' ? JSON.stringify(response, null, 2) : finalResponse
+            newState = processTemplateVariables(newState, outputForStateProcessing)
+
+            /**
+             * Remove the temporarily added image artifact messages before storing
+             * This is to avoid storing the actual base64 data into database
+             */
+            const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
 
             // Replace the actual messages array with one that includes the file references for images instead of base64 data
             const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messages,
+                messagesToStore,
                 runtimeImageMessagesWithFileRef,
                 pastImageMessagesWithFileRef
             )
@@ -1183,50 +1503,133 @@ class Agent_Agentflow implements INode {
             return builtInUsedTools
         }
 
-        const { output, tools } = response.response_metadata
+        const { output, tools, groundingMetadata, urlContextMetadata } = response.response_metadata
 
-        if (!output || !Array.isArray(output) || output.length === 0 || !tools || !Array.isArray(tools) || tools.length === 0) {
-            return builtInUsedTools
-        }
+        // Handle OpenAI built-in tools
+        if (output && Array.isArray(output) && output.length > 0 && tools && Array.isArray(tools) && tools.length > 0) {
+            for (const outputItem of output) {
+                if (outputItem.type && outputItem.type.endsWith('_call')) {
+                    let toolInput = outputItem.action ?? outputItem.code
+                    let toolOutput = outputItem.status === 'completed' ? 'Success' : outputItem.status
 
-        for (const outputItem of output) {
-            if (outputItem.type && outputItem.type.endsWith('_call')) {
-                let toolInput = outputItem.action ?? outputItem.code
-                let toolOutput = outputItem.status === 'completed' ? 'Success' : outputItem.status
+                    // Handle image generation calls specially
+                    if (outputItem.type === 'image_generation_call') {
+                        // Create input summary for image generation
+                        toolInput = {
+                            prompt: outputItem.revised_prompt || 'Image generation request',
+                            size: outputItem.size || '1024x1024',
+                            quality: outputItem.quality || 'standard',
+                            output_format: outputItem.output_format || 'png'
+                        }
 
-                // Handle image generation calls specially
-                if (outputItem.type === 'image_generation_call') {
-                    // Create input summary for image generation
-                    toolInput = {
-                        prompt: outputItem.revised_prompt || 'Image generation request',
-                        size: outputItem.size || '1024x1024',
-                        quality: outputItem.quality || 'standard',
-                        output_format: outputItem.output_format || 'png'
+                        // Check if image has been processed (base64 replaced with file path)
+                        if (outputItem.result && !outputItem.result.startsWith('data:') && !outputItem.result.includes('base64')) {
+                            toolOutput = `Image generated and saved`
+                        } else {
+                            toolOutput = `Image generated (base64)`
+                        }
                     }
 
-                    // Check if image has been processed (base64 replaced with file path)
-                    if (outputItem.result && !outputItem.result.startsWith('data:') && !outputItem.result.includes('base64')) {
-                        toolOutput = `Image generated and saved`
-                    } else {
-                        toolOutput = `Image generated (base64)`
+                    // Remove "_call" suffix to get the base tool name
+                    const baseToolName = outputItem.type.replace('_call', '')
+
+                    // Find matching tool that includes the base name in its type
+                    const matchingTool = tools.find((tool) => tool.type && tool.type.includes(baseToolName))
+
+                    if (matchingTool) {
+                        // Check for duplicates
+                        if (builtInUsedTools.find((tool) => tool.tool === matchingTool.type)) {
+                            continue
+                        }
+
+                        builtInUsedTools.push({
+                            tool: matchingTool.type,
+                            toolInput,
+                            toolOutput
+                        })
                     }
                 }
+            }
+        }
 
-                // Remove "_call" suffix to get the base tool name
-                const baseToolName = outputItem.type.replace('_call', '')
+        // Handle Gemini googleSearch tool
+        if (groundingMetadata && groundingMetadata.webSearchQueries && Array.isArray(groundingMetadata.webSearchQueries)) {
+            // Check for duplicates
+            const isDuplicate = builtInUsedTools.find(
+                (tool) =>
+                    tool.tool === 'googleSearch' &&
+                    JSON.stringify((tool.toolInput as any)?.queries) === JSON.stringify(groundingMetadata.webSearchQueries)
+            )
+            if (!isDuplicate) {
+                builtInUsedTools.push({
+                    tool: 'googleSearch',
+                    toolInput: {
+                        queries: groundingMetadata.webSearchQueries
+                    },
+                    toolOutput: `Searched for: ${groundingMetadata.webSearchQueries.join(', ')}`
+                })
+            }
+        }
 
-                // Find matching tool that includes the base name in its type
-                const matchingTool = tools.find((tool) => tool.type && tool.type.includes(baseToolName))
+        // Handle Gemini urlContext tool
+        if (urlContextMetadata && urlContextMetadata.urlMetadata && Array.isArray(urlContextMetadata.urlMetadata)) {
+            // Check for duplicates
+            const isDuplicate = builtInUsedTools.find(
+                (tool) =>
+                    tool.tool === 'urlContext' &&
+                    JSON.stringify((tool.toolInput as any)?.urlMetadata) === JSON.stringify(urlContextMetadata.urlMetadata)
+            )
+            if (!isDuplicate) {
+                builtInUsedTools.push({
+                    tool: 'urlContext',
+                    toolInput: {
+                        urlMetadata: urlContextMetadata.urlMetadata
+                    },
+                    toolOutput: `Processed ${urlContextMetadata.urlMetadata.length} URL(s)`
+                })
+            }
+        }
 
-                if (matchingTool) {
+        // Handle Gemini codeExecution tool
+        if (response.content && Array.isArray(response.content)) {
+            for (let i = 0; i < response.content.length; i++) {
+                const item = response.content[i]
+
+                if (item.type === 'executableCode' && item.executableCode) {
+                    const language = item.executableCode.language || 'PYTHON'
+                    const code = item.executableCode.code || ''
+                    let toolOutput = ''
+
                     // Check for duplicates
-                    if (builtInUsedTools.find((tool) => tool.tool === matchingTool.type)) {
+                    const isDuplicate = builtInUsedTools.find(
+                        (tool) =>
+                            tool.tool === 'codeExecution' &&
+                            (tool.toolInput as any)?.language === language &&
+                            (tool.toolInput as any)?.code === code
+                    )
+                    if (isDuplicate) {
                         continue
                     }
 
+                    // Check the next item for the output
+                    const nextItem = i + 1 < response.content.length ? response.content[i + 1] : null
+
+                    if (nextItem) {
+                        if (nextItem.type === 'codeExecutionResult' && nextItem.codeExecutionResult) {
+                            const outcome = nextItem.codeExecutionResult.outcome
+                            const output = nextItem.codeExecutionResult.output || ''
+                            toolOutput = outcome === 'OUTCOME_OK' ? output : `Error: ${output}`
+                        } else if (nextItem.type === 'inlineData') {
+                            toolOutput = 'Generated image data'
+                        }
+                    }
+
                     builtInUsedTools.push({
-                        tool: matchingTool.type,
-                        toolInput,
+                        tool: 'codeExecution',
+                        toolInput: {
+                            language,
+                            code
+                        },
                         toolOutput
                     })
                 }
@@ -1234,44 +1637,6 @@ class Agent_Agentflow implements INode {
         }
 
         return builtInUsedTools
-    }
-
-    /**
-     * Saves base64 image data to storage and returns file information
-     */
-    private async saveBase64Image(
-        outputItem: any,
-        options: ICommonObject
-    ): Promise<{ filePath: string; fileName: string; totalSize: number } | null> {
-        try {
-            if (!outputItem.result) {
-                return null
-            }
-
-            // Extract base64 data and create buffer
-            const base64Data = outputItem.result
-            const imageBuffer = Buffer.from(base64Data, 'base64')
-
-            // Determine file extension and MIME type
-            const outputFormat = outputItem.output_format || 'png'
-            const fileName = `generated_image_${outputItem.id || Date.now()}.${outputFormat}`
-            const mimeType = outputFormat === 'png' ? 'image/png' : 'image/jpeg'
-
-            // Save the image using the existing storage utility
-            const { path, totalSize } = await addSingleFileToStorage(
-                mimeType,
-                imageBuffer,
-                fileName,
-                options.orgId,
-                options.chatflowid,
-                options.chatId
-            )
-
-            return { filePath: path, fileName, totalSize }
-        } catch (error) {
-            console.error('Error saving base64 image:', error)
-            return null
-        }
     }
 
     /**
@@ -1436,32 +1801,62 @@ class Agent_Agentflow implements INode {
         llmNodeInstance: BaseChatModel,
         messages: BaseMessageLike[],
         chatId: string,
-        abortController: AbortController
+        abortController: AbortController,
+        isStructuredOutput: boolean = false
     ): Promise<AIMessageChunk> {
         let response = new AIMessageChunk('')
 
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
-                if (sseStreamer) {
+                if (sseStreamer && !isStructuredOutput) {
                     let content = ''
-                    if (Array.isArray(chunk.content) && chunk.content.length > 0) {
-                        const contents = chunk.content as MessageContentText[]
-                        content = contents.map((item) => item.text).join('')
-                    } else {
+
+                    if (typeof chunk === 'string') {
+                        content = chunk
+                    } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
+                        content = chunk.content
+                            .map((item: any) => {
+                                if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                                    return item.text
+                                } else if (item.type === 'executableCode' && item.executableCode) {
+                                    const language = item.executableCode.language?.toLowerCase() || 'python'
+                                    return `\n\`\`\`${language}\n${item.executableCode.code}\n\`\`\`\n`
+                                } else if (item.type === 'codeExecutionResult' && item.codeExecutionResult) {
+                                    const outcome = item.codeExecutionResult.outcome || 'OUTCOME_OK'
+                                    const output = item.codeExecutionResult.output || ''
+                                    if (outcome === 'OUTCOME_OK' && output) {
+                                        return `**Code Output:**\n\`\`\`\n${output}\n\`\`\`\n`
+                                    } else if (outcome !== 'OUTCOME_OK') {
+                                        return `**Code Execution Error:**\n\`\`\`\n${output}\n\`\`\`\n`
+                                    }
+                                }
+                                return ''
+                            })
+                            .filter((text: string) => text)
+                            .join('')
+                    } else if (chunk.content) {
                         content = chunk.content.toString()
                     }
                     sseStreamer.streamTokenEvent(chatId, content)
                 }
 
-                response = response.concat(chunk)
+                const messageChunk = typeof chunk === 'string' ? new AIMessageChunk(chunk) : chunk
+                response = response.concat(messageChunk)
             }
         } catch (error) {
             console.error('Error during streaming:', error)
             throw error
         }
+
+        // Only convert to string if all content items are text (no inlineData or other special types)
         if (Array.isArray(response.content) && response.content.length > 0) {
-            const responseContents = response.content as MessageContentText[]
-            response.content = responseContents.map((item) => item.text).join('')
+            const hasNonTextContent = response.content.some(
+                (item: any) => item.type === 'inlineData' || item.type === 'executableCode' || item.type === 'codeExecutionResult'
+            )
+            if (!hasNonTextContent) {
+                const responseContents = response.content as MessageContentText[]
+                response.content = responseContents.map((item) => item.text).join('')
+            }
         }
         return response
     }
@@ -1481,7 +1876,8 @@ class Agent_Agentflow implements INode {
         artifacts: any[],
         additionalTokens: number = 0,
         isWaitingForHumanInput: boolean = false,
-        fileAnnotations: any[] = []
+        fileAnnotations: any[] = [],
+        isStructuredOutput: boolean = false
     ): any {
         const output: any = {
             content: finalResponse,
@@ -1514,6 +1910,15 @@ class Agent_Agentflow implements INode {
 
         if (response.response_metadata) {
             output.responseMetadata = response.response_metadata
+        }
+
+        if (isStructuredOutput && typeof response === 'object') {
+            const structuredOutput = response as Record<string, any>
+            for (const key in structuredOutput) {
+                if (structuredOutput[key] !== undefined && structuredOutput[key] !== null) {
+                    output[key] = structuredOutput[key]
+                }
+            }
         }
 
         // Add used tools, source documents and artifacts to output
@@ -1551,7 +1956,12 @@ class Agent_Agentflow implements INode {
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
 
         if (response.tool_calls) {
-            sseStreamer.streamCalledToolsEvent(chatId, response.tool_calls)
+            const formattedToolCalls = response.tool_calls.map((toolCall: any) => ({
+                tool: toolCall.name || 'tool',
+                toolInput: toolCall.args,
+                toolOutput: ''
+            }))
+            sseStreamer.streamCalledToolsEvent(chatId, flatten(formattedToolCalls))
         }
 
         if (response.usage_metadata) {
@@ -1576,7 +1986,8 @@ class Agent_Agentflow implements INode {
         llmNodeInstance,
         isStreamable,
         isLastNode,
-        iterationContext
+        iterationContext,
+        isStructuredOutput = false
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -1590,6 +2001,7 @@ class Agent_Agentflow implements INode {
         isStreamable: boolean
         isLastNode: boolean
         iterationContext: ICommonObject
+        isStructuredOutput?: boolean
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -1600,6 +2012,10 @@ class Agent_Agentflow implements INode {
     }> {
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
+        const usedTools: IUsedTool[] = []
+        let sourceDocuments: Array<any> = []
+        let artifacts: any[] = []
+        let isWaitingForHumanInput: boolean | undefined
 
         if (!response.tool_calls || response.tool_calls.length === 0) {
             return { response, usedTools: [], sourceDocuments: [], artifacts: [], totalTokens }
@@ -1607,7 +2023,30 @@ class Agent_Agentflow implements INode {
 
         // Stream tool calls if available
         if (sseStreamer) {
-            sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
+            const formattedToolCalls = response.tool_calls.map((toolCall: any) => ({
+                tool: toolCall.name || 'tool',
+                toolInput: toolCall.args,
+                toolOutput: ''
+            }))
+            sseStreamer.streamCalledToolsEvent(chatId, flatten(formattedToolCalls))
+        }
+
+        // Remove tool calls with no id
+        const toBeRemovedToolCalls = []
+        for (let i = 0; i < response.tool_calls.length; i++) {
+            const toolCall = response.tool_calls[i]
+            if (!toolCall.id) {
+                toBeRemovedToolCalls.push(toolCall)
+                usedTools.push({
+                    tool: toolCall.name || 'tool',
+                    toolInput: toolCall.args,
+                    toolOutput: response.content
+                })
+            }
+        }
+
+        for (const toolCall of toBeRemovedToolCalls) {
+            response.tool_calls.splice(response.tool_calls.indexOf(toolCall), 1)
         }
 
         // Add LLM response with tool calls to messages
@@ -1618,11 +2057,6 @@ class Agent_Agentflow implements INode {
             tool_calls: response.tool_calls,
             usage_metadata: response.usage_metadata
         })
-
-        const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
-        let isWaitingForHumanInput: boolean | undefined
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -1647,7 +2081,9 @@ class Agent_Agentflow implements INode {
                     const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
                     const responseContent = response.content + `\nAttempting to use tool:\n${toolCallDetails}`
                     response.content = responseContent
-                    sseStreamer?.streamTokenEvent(chatId, responseContent)
+                    if (!isStructuredOutput) {
+                        sseStreamer?.streamTokenEvent(chatId, responseContent)
+                    }
                     return { response, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput: true }
                 }
 
@@ -1723,9 +2159,20 @@ class Agent_Agentflow implements INode {
                     }
 
                     console.error('Error invoking tool:', e)
+                    const errMsg = getErrorMessage(e)
+                    let toolInput = toolCall.args
+                    if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                        const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                        try {
+                            toolInput = JSON.parse(args)
+                        } catch (e) {
+                            console.error('Error parsing tool input from tool:', e)
+                        }
+                    }
+
                     usedTools.push({
                         tool: selectedTool.name,
-                        toolInput: toolCall.args,
+                        toolInput,
                         toolOutput: '',
                         error: getErrorMessage(e)
                     })
@@ -1742,7 +2189,7 @@ class Agent_Agentflow implements INode {
                 const lastToolOutput = usedTools[0]?.toolOutput || ''
                 const lastToolOutputString = typeof lastToolOutput === 'string' ? lastToolOutput : JSON.stringify(lastToolOutput, null, 2)
 
-                if (sseStreamer) {
+                if (sseStreamer && !isStructuredOutput) {
                     sseStreamer.streamTokenEvent(chatId, lastToolOutputString)
                 }
 
@@ -1756,16 +2203,34 @@ class Agent_Agentflow implements INode {
             }
         }
 
+        if (response.tool_calls.length === 0) {
+            const responseContent = typeof response.content === 'string' ? response.content : JSON.stringify(response.content, null, 2)
+            return {
+                response: new AIMessageChunk(responseContent),
+                usedTools,
+                sourceDocuments,
+                artifacts,
+                totalTokens
+            }
+        }
+
         // Get LLM response after tool calls
         let newResponse: AIMessageChunk
 
         if (isStreamable) {
-            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+            newResponse = await this.handleStreamingResponse(
+                sseStreamer,
+                llmNodeInstance,
+                messages,
+                chatId,
+                abortController,
+                isStructuredOutput
+            )
         } else {
             newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
-            if (isLastNode && sseStreamer) {
+            if (isLastNode && sseStreamer && !isStructuredOutput) {
                 let responseContent = JSON.stringify(newResponse, null, 2)
                 if (typeof newResponse.content === 'string') {
                     responseContent = newResponse.content
@@ -1800,7 +2265,8 @@ class Agent_Agentflow implements INode {
                 llmNodeInstance,
                 isStreamable,
                 isLastNode,
-                iterationContext
+                iterationContext,
+                isStructuredOutput
             })
 
             // Merge results from recursive tool calls
@@ -1831,7 +2297,8 @@ class Agent_Agentflow implements INode {
         llmWithoutToolsBind,
         isStreamable,
         isLastNode,
-        iterationContext
+        iterationContext,
+        isStructuredOutput = false
     }: {
         humanInput: IHumanInput
         humanInputAction: Record<string, any> | undefined
@@ -1846,6 +2313,7 @@ class Agent_Agentflow implements INode {
         isStreamable: boolean
         isLastNode: boolean
         iterationContext: ICommonObject
+        isStructuredOutput?: boolean
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -1855,6 +2323,10 @@ class Agent_Agentflow implements INode {
         isWaitingForHumanInput?: boolean
     }> {
         let llmNodeInstance = llmWithoutToolsBind
+        const usedTools: IUsedTool[] = []
+        let sourceDocuments: Array<any> = []
+        let artifacts: any[] = []
+        let isWaitingForHumanInput: boolean | undefined
 
         const lastCheckpointMessages = humanInputAction?.data?.input?.messages ?? []
         if (!lastCheckpointMessages.length) {
@@ -1877,7 +2349,30 @@ class Agent_Agentflow implements INode {
 
         // Stream tool calls if available
         if (sseStreamer) {
-            sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
+            const formattedToolCalls = response.tool_calls.map((toolCall: any) => ({
+                tool: toolCall.name || 'tool',
+                toolInput: toolCall.args,
+                toolOutput: ''
+            }))
+            sseStreamer.streamCalledToolsEvent(chatId, flatten(formattedToolCalls))
+        }
+
+        // Remove tool calls with no id
+        const toBeRemovedToolCalls = []
+        for (let i = 0; i < response.tool_calls.length; i++) {
+            const toolCall = response.tool_calls[i]
+            if (!toolCall.id) {
+                toBeRemovedToolCalls.push(toolCall)
+                usedTools.push({
+                    tool: toolCall.name || 'tool',
+                    toolInput: toolCall.args,
+                    toolOutput: response.content
+                })
+            }
+        }
+
+        for (const toolCall of toBeRemovedToolCalls) {
+            response.tool_calls.splice(response.tool_calls.indexOf(toolCall), 1)
         }
 
         // Add LLM response with tool calls to messages
@@ -1888,11 +2383,6 @@ class Agent_Agentflow implements INode {
             tool_calls: response.tool_calls,
             usage_metadata: response.usage_metadata
         })
-
-        const usedTools: IUsedTool[] = []
-        let sourceDocuments: Array<any> = []
-        let artifacts: any[] = []
-        let isWaitingForHumanInput: boolean | undefined
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -1995,9 +2485,20 @@ class Agent_Agentflow implements INode {
                         }
 
                         console.error('Error invoking tool:', e)
+                        const errMsg = getErrorMessage(e)
+                        let toolInput = toolCall.args
+                        if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                            const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                            try {
+                                toolInput = JSON.parse(args)
+                            } catch (e) {
+                                console.error('Error parsing tool input from tool:', e)
+                            }
+                        }
+
                         usedTools.push({
                             tool: selectedTool.name,
-                            toolInput: toolCall.args,
+                            toolInput,
                             toolOutput: '',
                             error: getErrorMessage(e)
                         })
@@ -2015,7 +2516,7 @@ class Agent_Agentflow implements INode {
                 const lastToolOutput = usedTools[0]?.toolOutput || ''
                 const lastToolOutputString = typeof lastToolOutput === 'string' ? lastToolOutput : JSON.stringify(lastToolOutput, null, 2)
 
-                if (sseStreamer) {
+                if (sseStreamer && !isStructuredOutput) {
                     sseStreamer.streamTokenEvent(chatId, lastToolOutputString)
                 }
 
@@ -2046,12 +2547,19 @@ class Agent_Agentflow implements INode {
         }
 
         if (isStreamable) {
-            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+            newResponse = await this.handleStreamingResponse(
+                sseStreamer,
+                llmNodeInstance,
+                messages,
+                chatId,
+                abortController,
+                isStructuredOutput
+            )
         } else {
             newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
             // Stream non-streaming response if this is the last node
-            if (isLastNode && sseStreamer) {
+            if (isLastNode && sseStreamer && !isStructuredOutput) {
                 let responseContent = JSON.stringify(newResponse, null, 2)
                 if (typeof newResponse.content === 'string') {
                     responseContent = newResponse.content
@@ -2086,7 +2594,8 @@ class Agent_Agentflow implements INode {
                 llmNodeInstance,
                 isStreamable,
                 isLastNode,
-                iterationContext
+                iterationContext,
+                isStructuredOutput
             })
 
             // Merge results from recursive tool calls
@@ -2099,190 +2608,6 @@ class Agent_Agentflow implements INode {
         }
 
         return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput }
-    }
-
-    /**
-     * Extracts artifacts from response metadata (both annotations and built-in tools)
-     */
-    private async extractArtifactsFromResponse(
-        responseMetadata: any,
-        modelNodeData: INodeData,
-        options: ICommonObject
-    ): Promise<{ artifacts: any[]; fileAnnotations: any[] }> {
-        const artifacts: any[] = []
-        const fileAnnotations: any[] = []
-
-        if (!responseMetadata?.output || !Array.isArray(responseMetadata.output)) {
-            return { artifacts, fileAnnotations }
-        }
-
-        for (const outputItem of responseMetadata.output) {
-            // Handle container file citations from annotations
-            if (outputItem.type === 'message' && outputItem.content && Array.isArray(outputItem.content)) {
-                for (const contentItem of outputItem.content) {
-                    if (contentItem.annotations && Array.isArray(contentItem.annotations)) {
-                        for (const annotation of contentItem.annotations) {
-                            if (annotation.type === 'container_file_citation' && annotation.file_id && annotation.filename) {
-                                try {
-                                    // Download and store the file content
-                                    const downloadResult = await this.downloadContainerFile(
-                                        annotation.container_id,
-                                        annotation.file_id,
-                                        annotation.filename,
-                                        modelNodeData,
-                                        options
-                                    )
-
-                                    if (downloadResult) {
-                                        const fileType = this.getArtifactTypeFromFilename(annotation.filename)
-
-                                        if (fileType === 'png' || fileType === 'jpeg' || fileType === 'jpg') {
-                                            const artifact = {
-                                                type: fileType,
-                                                data: downloadResult.filePath
-                                            }
-
-                                            artifacts.push(artifact)
-                                        } else {
-                                            fileAnnotations.push({
-                                                filePath: downloadResult.filePath,
-                                                fileName: annotation.filename
-                                            })
-                                        }
-                                    }
-                                } catch (error) {
-                                    console.error('Error processing annotation:', error)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Handle built-in tool artifacts (like image generation)
-            if (outputItem.type === 'image_generation_call' && outputItem.result) {
-                try {
-                    const savedImageResult = await this.saveBase64Image(outputItem, options)
-                    if (savedImageResult) {
-                        // Replace the base64 result with the file path in the response metadata
-                        outputItem.result = savedImageResult.filePath
-
-                        // Create artifact in the same format as other image artifacts
-                        const fileType = this.getArtifactTypeFromFilename(savedImageResult.fileName)
-                        artifacts.push({
-                            type: fileType,
-                            data: savedImageResult.filePath
-                        })
-                    }
-                } catch (error) {
-                    console.error('Error processing image generation artifact:', error)
-                }
-            }
-        }
-
-        return { artifacts, fileAnnotations }
-    }
-
-    /**
-     * Downloads file content from container file citation
-     */
-    private async downloadContainerFile(
-        containerId: string,
-        fileId: string,
-        filename: string,
-        modelNodeData: INodeData,
-        options: ICommonObject
-    ): Promise<{ filePath: string; totalSize: number } | null> {
-        try {
-            const credentialData = await getCredentialData(modelNodeData.credential ?? '', options)
-            const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, modelNodeData)
-
-            if (!openAIApiKey) {
-                console.warn('No OpenAI API key available for downloading container file')
-                return null
-            }
-
-            // Download the file using OpenAI Container API
-            const response = await fetch(`https://api.openai.com/v1/containers/${containerId}/files/${fileId}/content`, {
-                method: 'GET',
-                headers: {
-                    Accept: '*/*',
-                    Authorization: `Bearer ${openAIApiKey}`
-                }
-            })
-
-            if (!response.ok) {
-                console.warn(
-                    `Failed to download container file ${fileId} from container ${containerId}: ${response.status} ${response.statusText}`
-                )
-                return null
-            }
-
-            // Extract the binary data from the Response object
-            const data = await response.arrayBuffer()
-            const dataBuffer = Buffer.from(data)
-            const mimeType = this.getMimeTypeFromFilename(filename)
-
-            // Store the file using the same storage utility as OpenAIAssistant
-            const { path, totalSize } = await addSingleFileToStorage(
-                mimeType,
-                dataBuffer,
-                filename,
-                options.orgId,
-                options.chatflowid,
-                options.chatId
-            )
-
-            return { filePath: path, totalSize }
-        } catch (error) {
-            console.error('Error downloading container file:', error)
-            return null
-        }
-    }
-
-    /**
-     * Gets MIME type from filename extension
-     */
-    private getMimeTypeFromFilename(filename: string): string {
-        const extension = filename.toLowerCase().split('.').pop()
-        const mimeTypes: { [key: string]: string } = {
-            png: 'image/png',
-            jpg: 'image/jpeg',
-            jpeg: 'image/jpeg',
-            gif: 'image/gif',
-            pdf: 'application/pdf',
-            txt: 'text/plain',
-            csv: 'text/csv',
-            json: 'application/json',
-            html: 'text/html',
-            xml: 'application/xml'
-        }
-        return mimeTypes[extension || ''] || 'application/octet-stream'
-    }
-
-    /**
-     * Gets artifact type from filename extension for UI rendering
-     */
-    private getArtifactTypeFromFilename(filename: string): string {
-        const extension = filename.toLowerCase().split('.').pop()
-        const artifactTypes: { [key: string]: string } = {
-            png: 'png',
-            jpg: 'jpeg',
-            jpeg: 'jpeg',
-            html: 'html',
-            htm: 'html',
-            md: 'markdown',
-            markdown: 'markdown',
-            json: 'json',
-            js: 'javascript',
-            javascript: 'javascript',
-            tex: 'latex',
-            latex: 'latex',
-            txt: 'text',
-            csv: 'text',
-            pdf: 'text'
-        }
-        return artifactTypes[extension || ''] || 'text'
     }
 
     /**

@@ -351,6 +351,22 @@ export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
 
     const isAgentFlowV2 = newComponentNodeData.category === 'Agent Flows'
 
+    // Helper to compare handle/anchor IDs while ignoring trailing base-class/type suffixes
+    // Example:
+    //   azureChatOpenAI_0-output-azureChatOpenAI-A|B|C  vs  azureChatOpenAI_0-output-azureChatOpenAI-A|B
+    // We compare by stripping the last "-..." segment if it contains pipes.
+    const handlesEqual = (a, b) => {
+        if (a === b) return true
+        const stripPipeSuffix = (s) => {
+            if (!s) return s
+            const lastDash = s.lastIndexOf('-')
+            if (lastDash === -1) return s
+            const suffix = s.substring(lastDash + 1)
+            return suffix.includes('|') ? s.substring(0, lastDash) : s
+        }
+        return stripPipeSuffix(a) === stripPipeSuffix(b)
+    }
+
     for (const edge of edges) {
         const targetNodeId = edge.targetHandle.split('-')[0]
         const sourceNodeId = edge.sourceHandle.split('-')[0]
@@ -362,8 +378,8 @@ export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
                 }
             } else {
                 // Check if targetHandle is in inputParams or inputAnchors
-                const inputParam = newComponentNodeData.inputParams.find((param) => param.id === edge.targetHandle)
-                const inputAnchor = newComponentNodeData.inputAnchors.find((param) => param.id === edge.targetHandle)
+                const inputParam = newComponentNodeData.inputParams.find((param) => handlesEqual(param.id, edge.targetHandle))
+                const inputAnchor = newComponentNodeData.inputAnchors.find((param) => handlesEqual(param.id, edge.targetHandle))
 
                 if (!inputParam && !inputAnchor) {
                     removedEdges.push(edge)
@@ -379,11 +395,11 @@ export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
                 for (const outputAnchor of newComponentNodeData.outputAnchors) {
                     const outputAnchorType = outputAnchor.type
                     if (outputAnchorType === 'options') {
-                        if (!outputAnchor.options.find((outputOption) => outputOption.id === edge.sourceHandle)) {
+                        if (!outputAnchor.options.find((outputOption) => handlesEqual(outputOption.id, edge.sourceHandle))) {
                             removedEdges.push(edge)
                         }
                     } else {
-                        if (outputAnchor.id !== edge.sourceHandle) {
+                        if (!handlesEqual(outputAnchor.id, edge.sourceHandle)) {
                             removedEdges.push(edge)
                         }
                     }

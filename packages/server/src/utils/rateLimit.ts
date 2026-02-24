@@ -134,6 +134,14 @@ export class RateLimiterManager {
         }
     }
 
+    public getRateLimiterById(id: string): (req: Request, res: Response, next: NextFunction) => void {
+        return (req: Request, res: Response, next: NextFunction) => {
+            if (!this.rateLimiters[id]) return next()
+            const idRateLimiter = this.rateLimiters[id]
+            return idRateLimiter(req, res, next)
+        }
+    }
+
     public async updateRateLimiter(chatFlow: IChatFlow, isInitialized?: boolean): Promise<void> {
         if (!chatFlow.apiConfig) return
         const apiConfig = JSON.parse(chatFlow.apiConfig)
