@@ -9,6 +9,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { FlowData } from '@flowiseai/agentflow'
 
+type FlowStatePanelTab = 'live' | 'saved'
+
 interface FlowStatePanelProps {
     currentFlow: FlowData | null
     savedFlow: FlowData | null
@@ -16,7 +18,7 @@ interface FlowStatePanelProps {
 }
 
 export function FlowStatePanel({ currentFlow, savedFlow, changeCount }: FlowStatePanelProps) {
-    const [tab, setTab] = useState<'live' | 'saved'>('live')
+    const [tab, setTab] = useState<FlowStatePanelTab>('live')
     const [copied, setCopied] = useState(false)
     const [width, setWidth] = useState(300)
     const dragging = useRef(false)
