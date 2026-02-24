@@ -44,10 +44,10 @@
         "*.css"
     ],
     "scripts": {
-        "build": "tsc && cross-env NODE_ENV=production vite build",
+        "build": "tsc && vite build --mode production",
         "clean": "rimraf dist",
-        "dev": "cross-env NODE_ENV=development vite",
-        "dev:example": "cross-env NODE_ENV=development vite --config examples/vite.config.ts",
+        "dev": "vite --mode development",
+        "dev:example": "vite --config examples/vite.config.ts --mode development",
         "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx,json,md}\"",
