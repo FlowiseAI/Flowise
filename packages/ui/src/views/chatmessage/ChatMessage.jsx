@@ -980,14 +980,14 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
         if (typeof selectedInput === 'string') {
             if (selectedInput !== undefined && selectedInput.trim() !== '') input = selectedInput
-
-            if (input.trim()) {
-                inputHistory.addToHistory(input)
-            }
         } else if (typeof selectedInput === 'object') {
             input = Object.entries(selectedInput)
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n')
+        }
+
+        if (input.trim()) {
+            inputHistory.addToHistory(input)
         }
 
         setLoading(true)
