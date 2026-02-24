@@ -148,6 +148,7 @@ const initEndingNode = async ({
     incomingInput,
     flowConfig,
     uploadedFilesContent,
+    uploadedFilesBinaryContent,
     availableVariables,
     apiOverrideStatus,
     nodeOverrides,
@@ -159,6 +160,7 @@ const initEndingNode = async ({
     incomingInput: IncomingInput
     flowConfig: IFlowConfig
     uploadedFilesContent: string
+    uploadedFilesBinaryContent: string
     availableVariables: IVariable[]
     apiOverrideStatus: boolean
     nodeOverrides: INodeOverrides
@@ -189,7 +191,8 @@ const initEndingNode = async ({
         flowConfig,
         uploadedFilesContent,
         availableVariables,
-        variableOverrides
+        variableOverrides,
+        uploadedFilesBinaryContent
     )
 
     logger.debug(`[server]: Running ${reactFlowNodeData.label} (${reactFlowNodeData.id})`)
@@ -624,6 +627,7 @@ export const executeFlow = async ({
         componentNodes,
         question,
         uploadedFilesContent,
+        uploadedFilesBinaryContent,
         chatHistory,
         chatId,
         sessionId,
@@ -800,6 +804,7 @@ export const executeFlow = async ({
             incomingInput,
             flowConfig,
             uploadedFilesContent,
+            uploadedFilesBinaryContent,
             availableVariables,
             apiOverrideStatus,
             nodeOverrides,
@@ -823,6 +828,7 @@ export const executeFlow = async ({
             usageCacheManager,
             analytic: chatflow.analytic,
             uploads,
+            fileAttachmentBin: uploadedFilesBinaryContent,
             prependMessages,
             ...(isStreamValid && { sseStreamer, shouldStreamResponse: isStreamValid }),
             evaluationRunId,
@@ -873,6 +879,7 @@ export const executeFlow = async ({
                         sessionId,
                         chatId,
                         input: question,
+                        fileAttachmentBin: uploadedFilesBinaryContent,
                         postProcessing: {
                             rawOutput: resultText,
                             chatHistory: cloneDeep(chatHistory),
