@@ -11,11 +11,12 @@ module.exports = {
     testPathIgnorePatterns: ['/node_modules/', '/dist/'],
     moduleNameMapper: {
         '^../../../src/(.*)$': '<rootDir>/src/$1',
-        // @modelcontextprotocol/sdk and @langchain/core are ESM-only packages.
-        // They cannot be require()'d in Jest's CJS environment and crash the worker.
+        // @modelcontextprotocol/sdk is ESM-only (type:module, no exports map, no CJS builds).
+        // It cannot be require()'d in Jest's CJS environment and crashes the worker.
         // The MCP core tests only exercise pure validation functions that don't
         // use these imports, so stubbing them out is safe.
-        '^@modelcontextprotocol/sdk/(.*)$': '<rootDir>/test/__mocks__/esm-stub.js',
-        '^@langchain/core/(.*)$': '<rootDir>/test/__mocks__/esm-stub.js'
+        // Note: @langchain/core is NOT stubbed here because it ships CJS builds
+        // (e.g. tools.cjs) that Jest can require() normally.
+        '^@modelcontextprotocol/sdk/(.*)$': '<rootDir>/test/__mocks__/esm-stub.js'
     }
 }
