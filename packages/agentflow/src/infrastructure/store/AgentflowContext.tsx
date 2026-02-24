@@ -13,6 +13,8 @@ export interface AgentflowContextValue {
     // Convenience methods
     setNodes: (nodes: FlowNode[]) => void
     setEdges: (edges: FlowEdge[]) => void
+    syncNodesFromReactFlow: (nodes: FlowNode[]) => void
+    syncEdgesFromReactFlow: (edges: FlowEdge[]) => void
     setChatflow: (chatflow: FlowConfig | null) => void
     setDirty: (dirty: boolean) => void
     setReactFlowInstance: (instance: ReactFlowInstance | null) => void
@@ -80,11 +82,25 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     }, [])
 
     // Convenience setters
-    const setNodes = useCallback((nodes: FlowNode[]) => {
-        dispatch({ type: 'SET_NODES', payload: nodes })
+    const setNodes = useCallback(
+        (nodes: FlowNode[]) => {
+            syncStateUpdate({ nodes: nodes })
+        },
+        [syncStateUpdate]
+    )
+
+    const setEdges = useCallback(
+        (edges: FlowEdge[]) => {
+            syncStateUpdate({ edges: edges })
+        },
+        [syncStateUpdate]
+    )
+
+    const syncNodesFromReactFlow = useCallback((nodes: FlowNode[]) => {
+        dispatch({ type: 'SET_NODES', payload: normalizeNodes(nodes) })
     }, [])
 
-    const setEdges = useCallback((edges: FlowEdge[]) => {
+    const syncEdgesFromReactFlow = useCallback((edges: FlowEdge[]) => {
         dispatch({ type: 'SET_EDGES', payload: edges })
     }, [])
 
@@ -202,6 +218,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         dispatch,
         setNodes,
         setEdges,
+        syncNodesFromReactFlow,
+        syncEdgesFromReactFlow,
         setChatflow,
         setDirty,
         setReactFlowInstance,

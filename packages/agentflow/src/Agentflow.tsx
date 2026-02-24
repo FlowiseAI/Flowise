@@ -51,7 +51,15 @@ function AgentflowCanvas({
     renderHeader?: AgentflowProps['renderHeader']
     renderNodePalette?: AgentflowProps['renderNodePalette']
 }) {
-    const { state, setNodes, setEdges, setDirty, setReactFlowInstance, closeEditDialog, registerLocalStateSetters } = useAgentflowContext()
+    const {
+        state,
+        syncNodesFromReactFlow,
+        syncEdgesFromReactFlow,
+        setDirty,
+        setReactFlowInstance,
+        closeEditDialog,
+        registerLocalStateSetters
+    } = useAgentflowContext()
     const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
@@ -82,12 +90,12 @@ function AgentflowCanvas({
 
     // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
-        setNodes(nodes as FlowNode[])
-    }, [nodes, setNodes])
+        syncNodesFromReactFlow(nodes as FlowNode[])
+    }, [nodes, syncNodesFromReactFlow])
 
     useEffect(() => {
-        setEdges(edges as FlowEdge[])
-    }, [edges, setEdges])
+        syncEdgesFromReactFlow(edges as FlowEdge[])
+    }, [edges, syncEdgesFromReactFlow])
 
     // Flow handlers
     const { handleConnect, handleNodesChange, handleEdgesChange, handleAddNode } = useFlowHandlers({
