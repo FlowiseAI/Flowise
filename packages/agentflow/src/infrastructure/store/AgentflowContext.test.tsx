@@ -246,3 +246,262 @@ describe('AgentflowContext - deleteNode', () => {
         expect(result.current.state.edges[0].id).toBe('edge-3-4')
     })
 })
+
+describe('AgentflowContext - duplicateNode', () => {
+    it('should create a duplicate node with unique ID', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1'), makeNode('node-2')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Initial state should have 2 nodes
+        expect(result.current.state.nodes).toHaveLength(2)
+
+        // Duplicate node-1
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        // Should have 3 nodes
+        expect(result.current.state.nodes).toHaveLength(3)
+
+        // Find the duplicated node
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+
+        expect(duplicatedNode).toBeDefined()
+        expect(duplicatedNode?.id).toMatch(/^node-1_copy_\d+$/)
+    })
+
+    it('should position duplicate with +50 offset', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const originalNode = initialFlow.nodes[0]
+        originalNode.position = { x: 100, y: 200 }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Duplicate the node
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        // Find the duplicated node
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+
+        expect(duplicatedNode?.position.x).toBe(150)
+        expect(duplicatedNode?.position.y).toBe(250)
+    })
+
+    it('should preserve all node data properties', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('node-1', {
+                    type: 'customType',
+                    data: {
+                        id: 'node-1',
+                        name: 'testNode',
+                        label: 'Test Node',
+                        color: '#FF0000',
+                        category: 'test',
+                        description: 'Test description'
+                    }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Duplicate the node
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        // Find the duplicated node
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+
+        // Should preserve data properties (except id)
+        expect(duplicatedNode?.data.name).toBe('testNode')
+        expect(duplicatedNode?.data.label).toBe('Test Node')
+        expect(duplicatedNode?.data.color).toBe('#FF0000')
+        expect(duplicatedNode?.data.category).toBe('test')
+        expect(duplicatedNode?.data.description).toBe('Test description')
+    })
+
+    it('should preserve node type', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1', 'stickyNote')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Duplicate the node
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        // Find the duplicated node
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+
+        expect(duplicatedNode?.type).toBe('stickyNote')
+    })
+
+    it('should mark state as dirty after duplication', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Initial state should not be dirty
+        expect(result.current.state.isDirty).toBe(false)
+
+        // Duplicate a node
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        // State should be marked as dirty
+        expect(result.current.state.isDirty).toBe(true)
+    })
+
+    it('should preserve original node unchanged', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const originalNode = initialFlow.nodes[0]
+        originalNode.position = { x: 100, y: 200 }
+        originalNode.data.label = 'Original Label'
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Duplicate the node
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        // Find the original node
+        const originalNodeAfter = result.current.state.nodes.find((n) => n.id === 'node-1')
+
+        // Original should be unchanged
+        expect(originalNodeAfter?.position.x).toBe(100)
+        expect(originalNodeAfter?.position.y).toBe(200)
+        expect(originalNodeAfter?.data.label).toBe('Original Label')
+        expect(originalNodeAfter?.data.id).toBe('node-1')
+    })
+
+    it('should handle multiple sequential duplications with unique IDs', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1'), makeNode('node-2')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Duplicate different nodes to avoid timestamp collision
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        act(() => {
+            result.current.duplicateNode('node-2')
+        })
+
+        // Should have 4 nodes (2 originals + 2 duplicates)
+        expect(result.current.state.nodes).toHaveLength(4)
+
+        // All IDs should be unique
+        const ids = result.current.state.nodes.map((n) => n.id)
+        const uniqueIds = new Set(ids)
+        expect(uniqueIds.size).toBe(4)
+
+        // Should have one duplicate of each original
+        const node1Duplicates = result.current.state.nodes.filter((n) => n.id.startsWith('node-1_copy_'))
+        const node2Duplicates = result.current.state.nodes.filter((n) => n.id.startsWith('node-2_copy_'))
+
+        expect(node1Duplicates).toHaveLength(1)
+        expect(node2Duplicates).toHaveLength(1)
+
+        // Each duplicate should have matching node.id and data.id
+        expect(node1Duplicates[0].id).toBe(node1Duplicates[0].data.id)
+        expect(node2Duplicates[0].id).toBe(node2Duplicates[0].data.id)
+    })
+
+    it('should NOT duplicate connected edges', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1'), makeNode('node-2'), makeNode('node-3')],
+            edges: [makeEdge('node-1', 'node-2', { id: 'edge-1-2' }), makeEdge('node-2', 'node-3', { id: 'edge-2-3' })]
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Initial state should have 2 edges
+        expect(result.current.state.edges).toHaveLength(2)
+
+        // Duplicate node-2 (which has incoming and outgoing edges)
+        act(() => {
+            result.current.duplicateNode('node-2')
+        })
+
+        // Should still have only 2 edges (edges not duplicated)
+        expect(result.current.state.edges).toHaveLength(2)
+        expect(result.current.state.edges[0].id).toBe('edge-1-2')
+        expect(result.current.state.edges[1].id).toBe('edge-2-3')
+    })
+
+    it('should generate time-based unique IDs for duplicates', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        const beforeTimestamp = Date.now()
+
+        // Duplicate the node
+        act(() => {
+            result.current.duplicateNode('node-1')
+        })
+
+        const afterTimestamp = Date.now()
+
+        // Find the duplicated node
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+
+        // Extract timestamp from ID
+        const timestampMatch = duplicatedNode?.id.match(/_copy_(\d+)$/)
+        expect(timestampMatch).toBeTruthy()
+
+        const timestamp = parseInt(timestampMatch![1], 10)
+        expect(timestamp).toBeGreaterThanOrEqual(beforeTimestamp)
+        expect(timestamp).toBeLessThanOrEqual(afterTimestamp)
+    })
+})
