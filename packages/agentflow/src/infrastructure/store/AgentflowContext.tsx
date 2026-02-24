@@ -63,6 +63,19 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         []
     )
 
+    // Helper function to synchronize state updates between context and ReactFlow
+    const syncStateUpdate = useCallback(({ nodes, edges }: { nodes?: FlowNode[]; edges?: FlowEdge[] }) => {
+        if (nodes !== undefined) {
+            dispatch({ type: 'SET_NODES', payload: nodes })
+            localNodesSetterRef.current?.(nodes)
+        }
+        if (edges !== undefined) {
+            dispatch({ type: 'SET_EDGES', payload: edges })
+            localEdgesSetterRef.current?.(edges)
+        }
+        dispatch({ type: 'SET_DIRTY', payload: true })
+    }, [])
+
     // Convenience setters
     const setNodes = useCallback((nodes: FlowNode[]) => {
         dispatch({ type: 'SET_NODES', payload: nodes })
@@ -90,20 +103,9 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const newNodes = state.nodes.filter((node) => node.id !== nodeId)
             const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
 
-            //Update context state
-            dispatch({ type: 'SET_NODES', payload: newNodes })
-            dispatch({ type: 'SET_EDGES', payload: newEdges })
-            dispatch({ type: 'SET_DIRTY', payload: true })
-
-            //Update ReactFlow's local state
-            if (localNodesSetterRef.current) {
-                localNodesSetterRef.current(newNodes)
-            }
-            if (localEdgesSetterRef.current) {
-                localEdgesSetterRef.current(newEdges)
-            }
+            syncStateUpdate({ nodes: newNodes, edges: newEdges })
         },
-        [state.nodes, state.edges]
+        [state.nodes, state.edges, syncStateUpdate]
     )
 
     const duplicateNode = useCallback(
@@ -122,17 +124,9 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             }
 
             const newNodes = [...state.nodes, newNode]
-
-            // Update context state
-            dispatch({ type: 'SET_NODES', payload: newNodes })
-            dispatch({ type: 'SET_DIRTY', payload: true })
-
-            // Update ReactFlow's local state
-            if (localNodesSetterRef.current) {
-                localNodesSetterRef.current(newNodes)
-            }
+            syncStateUpdate({ nodes: newNodes })
         },
-        [state.nodes]
+        [state.nodes, syncStateUpdate]
     )
 
     const updateNodeData = useCallback(
@@ -147,33 +141,18 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 return node
             })
 
-            // Update context state
-            dispatch({ type: 'SET_NODES', payload: newNodes })
-            dispatch({ type: 'SET_DIRTY', payload: true })
-
-            // Update ReactFlow's local state
-            if (localNodesSetterRef.current) {
-                localNodesSetterRef.current(newNodes)
-            }
+            syncStateUpdate({ nodes: newNodes })
         },
-        [state.nodes]
+        [state.nodes, syncStateUpdate]
     )
 
     // Edge operations
     const deleteEdge = useCallback(
         (edgeId: string) => {
             const newEdges = state.edges.filter((edge) => edge.id !== edgeId)
-
-            // Update context state
-            dispatch({ type: 'SET_EDGES', payload: newEdges })
-            dispatch({ type: 'SET_DIRTY', payload: true })
-
-            // Update ReactFlow's local state
-            if (localEdgesSetterRef.current) {
-                localEdgesSetterRef.current(newEdges)
-            }
+            syncStateUpdate({ edges: newEdges })
         },
-        [state.edges]
+        [state.edges, syncStateUpdate]
     )
 
     // Dialog operations
