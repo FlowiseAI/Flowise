@@ -336,7 +336,7 @@ export class GCSStorageProvider extends BaseStorageProvider {
         })
     }
 
-    getLoggerTransports(logType: 'server' | 'error' | 'requests', config?: any): any[] {
+    getLoggerTransports(logType: 'server' | 'error' | 'requests'): any[] {
         const gcsConfig = {
             projectId: this.projectId,
             keyFilename: this.keyFilename,

@@ -267,12 +267,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
 
         let storageConfig: any = {
             containerName: this.containerName,
-            containerAccessLevel: 'blob',
-            blobName: (req: any, file: any) => {
-                return new Promise((resolve, reject) => {
-                    resolve(`uploads/${uuidv4()}/${file.originalname}`)
-                })
-            }
+            blobName: async (_req: any, file: any) => `uploads/${uuidv4()}/${file.originalname}`
         }
 
         // Use connection string if available, otherwise use account name/key
@@ -287,7 +282,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
         return multer({ storage: azureStorage })
     }
 
-    getLoggerTransports(logType: 'server' | 'error' | 'requests', config?: any): any[] {
+    getLoggerTransports(logType: 'server' | 'error' | 'requests'): any[] {
         const connectionString = process.env.AZURE_BLOB_STORAGE_CONNECTION_STRING
         const accountName = process.env.AZURE_BLOB_STORAGE_ACCOUNT_NAME
         const accountKey = process.env.AZURE_BLOB_STORAGE_ACCOUNT_KEY

@@ -190,8 +190,7 @@ export class LocalStorageProvider extends BaseStorageProvider {
                         if (stat && stat.isDirectory()) {
                             readDirectory(filePath)
                         } else {
-                            const sizeInMB = stat.size / (1024 * 1024)
-                            results.push({ name: file, path: filePath, size: sizeInMB })
+                            results.push({ name: file, path: filePath, size: stat.size })
                         }
                     } catch (error) {
                         console.error(`Error processing file ${filePath}:`, error)

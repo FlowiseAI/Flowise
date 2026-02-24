@@ -172,9 +172,8 @@ export class S3StorageProvider extends BaseStorageProvider {
                 return Buffer.from(streamToString, 'base64')
             }
         }
-        // @ts-ignore
-        const buffer = Buffer.concat(response.Body.toArray())
-        return buffer
+        const byteArray = await response.Body!.transformToByteArray()
+        return Buffer.from(byteArray)
     }
 
     async getFileFromStorage(file: string, ...paths: string[]): Promise<Buffer> {
@@ -199,9 +198,8 @@ export class S3StorageProvider extends BaseStorageProvider {
                     return Buffer.from(streamToString, 'base64')
                 }
             }
-            // @ts-ignore
-            const buffer = Buffer.concat(response.Body.toArray())
-            return buffer
+            const byteArray = await response.Body!.transformToByteArray()
+            return Buffer.from(byteArray)
         } catch (error) {
             // Fallback: Check if file exists without the first path element (likely orgId)
             if (paths.length > 1) {
@@ -226,12 +224,12 @@ export class S3StorageProvider extends BaseStorageProvider {
                         if (streamToString) {
                             fileContent = Buffer.from(streamToString, 'base64')
                         } else {
-                            // @ts-ignore
-                            fileContent = Buffer.concat(fallbackBody.toArray())
+                            const byteArray = await fallbackBody.transformToByteArray()
+                            fileContent = Buffer.from(byteArray)
                         }
                     } else {
-                        // @ts-ignore
-                        fileContent = Buffer.concat(fallbackBody.toArray())
+                        const byteArray = await fallbackBody!.transformToByteArray()
+                        fileContent = Buffer.from(byteArray)
                     }
 
                     // Move to correct location with orgId
@@ -306,8 +304,8 @@ export class S3StorageProvider extends BaseStorageProvider {
                         const blob = await fallbackBody.transformToByteArray()
                         fileContent = Buffer.from(blob)
                     } else {
-                        // @ts-ignore
-                        fileContent = Buffer.concat(fallbackBody.toArray())
+                        const byteArray = await fallbackBody.transformToByteArray()
+                        fileContent = Buffer.from(byteArray)
                     }
 
                     // Move to correct location with orgId
@@ -509,7 +507,7 @@ export class S3StorageProvider extends BaseStorageProvider {
         })
     }
 
-    getLoggerTransports(logType: 'server' | 'error' | 'requests', config?: any): any[] {
+    getLoggerTransports(logType: 'server' | 'error' | 'requests'): any[] {
         if (logType === 'server') {
             const s3ServerStream = new S3StreamLogger({
                 bucket: this.bucket,
