@@ -249,11 +249,11 @@ class AWSDynamoDBKVStorage_Tools implements INode {
         ]
     }
 
-    loadMethods: Record<string, (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>> = {
-        listTables: async (nodeData: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> => {
+    loadMethods: Record<string, (_nodeData: INodeData, _options?: ICommonObject) => Promise<INodeOptionsValue[]>> = {
+        listTables: async (_nodeData: INodeData, _options?: ICommonObject): Promise<INodeOptionsValue[]> => {
             try {
-                const credentials = await getAWSCredentials(nodeData, options ?? {})
-                const region = (nodeData.inputs?.region as string) || DEFAULT_AWS_REGION
+                const credentials = await getAWSCredentials(_nodeData, _options ?? {})
+                const region = (_nodeData.inputs?.region as string) || DEFAULT_AWS_REGION
                 const dynamoClient = createDynamoDBClient(credentials, region)
 
                 const listCommand = new ListTablesCommand({})
