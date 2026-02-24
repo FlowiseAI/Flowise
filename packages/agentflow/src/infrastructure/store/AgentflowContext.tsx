@@ -54,8 +54,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     })
 
     // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
-    const localNodesSetterRef = useRef<((nodes: FlowNode[]) => void) | null>(null)
-    const localEdgesSetterRef = useRef<((edges: FlowEdge[]) => void) | null>(null)
+    const localNodesSetterRef = useRef<((_nodes: FlowNode[]) => void) | null>(null)
+    const localEdgesSetterRef = useRef<((_edges: FlowEdge[]) => void) | null>(null)
 
     const registerLocalStateSetters = useCallback(
         (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => {

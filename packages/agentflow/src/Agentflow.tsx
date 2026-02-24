@@ -308,9 +308,9 @@ const AgentflowCanvasWithRef = forwardRef<
     {
         initialFlow?: FlowData
         readOnly?: boolean
-        onFlowChange?: (flow: FlowData) => void
-        onSave?: (flow: FlowData) => void
-        onFlowGenerated?: (flow: FlowData) => void
+        onFlowChange?: (_flow: FlowData) => void
+        onSave?: (_flow: FlowData) => void
+        onFlowGenerated?: (_flow: FlowData) => void
         showDefaultHeader?: boolean
         showDefaultPalette?: boolean
         enableGenerator?: boolean
