@@ -190,7 +190,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                     </Stack>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Typography sx={{ fontWeight: 500 }}>Links</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>Links ({selectedLinks.length})</Typography>
                     <Box sx={{ width: 'auto', flexGrow: 1 }}>
                         <IconButton
                             sx={{ height: 30, width: 30, marginLeft: '8px' }}
