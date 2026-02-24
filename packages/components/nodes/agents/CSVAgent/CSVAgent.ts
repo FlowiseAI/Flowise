@@ -144,6 +144,14 @@ class CSV_Agents implements INode {
         // For example using titanic.csv: {'PassengerId': 'int64', 'Survived': 'int64', 'Pclass': 'int64', 'Name': 'object', 'Sex': 'object', 'Age': 'float64', 'SibSp': 'int64', 'Parch': 'int64', 'Ticket': 'object', 'Fare': 'float64', 'Cabin': 'object', 'Embarked': 'object'}
         let dataframeColDict = ''
         let customReadCSVFunc = _customReadCSV ? _customReadCSV : 'read_csv(csv_data)'
+        const csvReadValidation = validatePythonCodeForDataFrame(customReadCSVFunc)
+        if (!csvReadValidation.valid) {
+            throw new Error(
+                `Custom read_csv code was rejected for security reasons (${
+                    csvReadValidation.reason ?? 'unsafe construct'
+                }). Please use only safe pandas read_csv operations.`
+            )
+        }
         try {
             const code = `import pandas as pd
 import base64

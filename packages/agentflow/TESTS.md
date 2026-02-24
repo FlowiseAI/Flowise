@@ -1,4 +1,4 @@
-# @flowise/agentflow Test Plan
+# @flowiseai/agentflow Test Plan
 
 ## Running Tests
 
