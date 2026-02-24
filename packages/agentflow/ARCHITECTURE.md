@@ -1,6 +1,6 @@
-# @flowise/agentflow - Architecture
+# @flowiseai/agentflow - Architecture
 
-This document describes the internal architecture of the `@flowise/agentflow` package.
+This document describes the internal architecture of the `@flowiseai/agentflow` package.
 
 ## Overview
 

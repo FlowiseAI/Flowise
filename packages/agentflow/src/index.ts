@@ -1,5 +1,5 @@
 // ===========================================
-// @flowise/agentflow - Public API
+// @flowiseai/agentflow - Public API
 // ===========================================
 
 // Main component
