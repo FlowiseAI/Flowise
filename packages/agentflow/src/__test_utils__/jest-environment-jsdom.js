@@ -10,9 +10,7 @@
  * do not support ESM.
  */
 
-const jestJsdom = require('jest-environment-jsdom')
-
-const JSDOMEnvironment = jestJsdom.default ?? jestJsdom
+const JSDOMEnvironment = require('jest-environment-jsdom').default
 
 // Mock canvas before jsdom tries to load it.
 // NOTE: This overrides Module.prototype.require globally for the entire test process.

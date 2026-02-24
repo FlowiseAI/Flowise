@@ -6,7 +6,7 @@ const baseConfig = {
         '^.+\\.tsx?$': [
             'ts-jest',
             {
-                tsconfig: 'tsconfig.test.json'
+                tsconfig: 'tsconfig.json'
             }
         ]
     },
