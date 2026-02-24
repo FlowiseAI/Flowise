@@ -24,6 +24,10 @@ on:
                 required: true
                 default: 'latest'
 
+permissions:
+    contents: read  # Required for checkout
+    id-token: write # Required for AWS OIDC
+
 jobs:
     docker:
         runs-on: ubuntu-latest
@@ -45,11 +49,21 @@ jobs:
               uses: docker/setup-buildx-action@v3.0.0
 
             - name: Configure AWS Credentials
+              if: ${{ inputs.environment != 'prod' }}
               uses: aws-actions/configure-aws-credentials@v3
               with:
                   aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   aws-region: ${{ secrets.AWS_REGION }}
+
+            - name: Configure AWS OIDC Credentials
+              if: ${{ inputs.environment == 'prod' }}
+              uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+              with:
+                  aws-region: ${{ secrets.AWS_REGION }}
+                  role-to-assume: ${{ secrets.AWS_OIDC_IAM_ROLE }}
+                  mask-aws-account-id: true
+                  unset-current-credentials: true
 
             - name: Login to Amazon ECR
               uses: aws-actions/amazon-ecr-login@v1
