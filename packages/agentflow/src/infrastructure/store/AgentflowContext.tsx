@@ -67,13 +67,15 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
 
     // Helper function to generate unique copy IDs
     const getUniqueCopyId = useCallback((baseId: string, nodes: FlowNode[]): string => {
+        const existingIds = new Set(nodes.map((node) => node.id))
         let i = 1
-        let newId: string
-        do {
-            newId = `${baseId}_copy_${i}`
+        while (true) {
+            const newId = `${baseId}_copy_${i}`
+            if (!existingIds.has(newId)) {
+                return newId
+            }
             i++
-        } while (nodes.some((node) => node.id === newId))
-        return newId
+        }
     }, [])
 
     // Helper function to synchronize state updates between context and ReactFlow
