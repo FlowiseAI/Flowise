@@ -116,14 +116,18 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const nodeToDuplicate = state.nodes.find((node) => node.id === nodeId)
             if (!nodeToDuplicate) return
 
+            const newNodeId = `${nodeToDuplicate.id}_copy_${Date.now()}`
             const newNode: FlowNode = {
                 ...nodeToDuplicate,
-                id: `${nodeToDuplicate.id}_copy_${Date.now()}`,
+                id: newNodeId,
                 position: {
                     x: nodeToDuplicate.position.x + 50,
                     y: nodeToDuplicate.position.y + 50
                 },
-                data: { ...nodeToDuplicate.data }
+                data: {
+                    ...nodeToDuplicate.data,
+                    id: newNodeId
+                }
             }
 
             const newNodes = [...state.nodes, newNode]
