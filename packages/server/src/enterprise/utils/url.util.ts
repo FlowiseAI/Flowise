@@ -14,33 +14,37 @@ export function getSecureAppUrl(path?: string): string {
         throw new Error('APP_URL environment variable is not configured')
     }
 
-    let secureUrl = appUrl
-
-    // If URL is HTTP and NOT localhost, convert to HTTPS for security
-    // Keep using HTTP for localhost and development URLs to avoid issues with self-signed certs and local testing
-    if (appUrl.startsWith('http://')) {
-        const urlObj = new URL(appUrl)
-        const isLocalhost =
-            urlObj.hostname === 'localhost' ||
-            urlObj.hostname === '127.0.0.1' ||
-            urlObj.hostname === '[::1]' ||
-            urlObj.hostname === '0.0.0.0'
-
-        if (!isLocalhost) {
-            // Convert HTTP to HTTPS for production/remote URLs
-            secureUrl = appUrl.replace(/^http:\/\//i, 'https://')
-            logger.warn(
-                `APP_URL uses insecure HTTP protocol for non-localhost URL. ` +
-                    `Automatically converting to HTTPS for security. ` +
-                    `Please update APP_URL to use HTTPS: ${secureUrl}`
-            )
-        }
+    // Validate that APP_URL is a well-formed URL (e.g. catches bare "example.com" without a protocol)
+    let urlObj: URL
+    try {
+        urlObj = new URL(appUrl)
+    } catch {
+        throw new Error(`APP_URL environment variable is not a valid URL: "${appUrl}"`)
     }
+
+    const isLocalhost =
+        urlObj.hostname === 'localhost' ||
+        urlObj.hostname === '127.0.0.1' ||
+        urlObj.hostname === '[::1]' ||
+        urlObj.hostname === '0.0.0.0'
+
+    // If URL is HTTP and NOT localhost, convert to HTTPS for security.
+    // Keep HTTP for localhost/development URLs to avoid issues with self-signed certs.
+    if (urlObj.protocol === 'http:' && !isLocalhost) {
+        urlObj.protocol = 'https:'
+        const newUrlString = urlObj.toString().replace(/\/$/, '')
+        logger.warn(
+            `APP_URL uses insecure HTTP protocol for non-localhost URL. ` +
+                `Automatically converting to HTTPS for security. ` +
+                `Please update APP_URL to use HTTPS: ${newUrlString}`
+        )
+    }
+
+    // Always strip trailing slash for consistency, whether or not a path is appended
+    const secureUrl = urlObj.toString().replace(/\/$/, '')
 
     // Append path if provided
     if (path) {
-        // Remove trailing slash from base URL and leading slash from path
-        secureUrl = secureUrl.replace(/\/$/, '')
         const cleanPath = path.startsWith('/') ? path : `/${path}`
         return `${secureUrl}${cleanPath}`
     }

@@ -18,6 +18,11 @@ describe('URL Security Utilities', () => {
             expect(() => getSecureAppUrl()).toThrow('APP_URL environment variable is not configured')
         })
 
+        it('should throw error if APP_URL is not a valid URL', () => {
+            process.env.APP_URL = 'example.com'
+            expect(() => getSecureAppUrl()).toThrow('APP_URL environment variable is not a valid URL: "example.com"')
+        })
+
         it('should return HTTPS URL unchanged', () => {
             process.env.APP_URL = 'https://example.com'
             expect(getSecureAppUrl()).toBe('https://example.com')
