@@ -83,6 +83,12 @@ export const suggestionOptions = (
                 description: 'Files uploaded from the chat',
                 category: 'Chat Context'
             },
+            {
+                id: 'file_attachment_bin',
+                mentionLabel: 'file_attachment_bin',
+                description: 'Files uploaded from the chat as Base64 binary JSON',
+                category: 'Chat Context'
+            },
             { id: '$flow.sessionId', mentionLabel: '$flow.sessionId', description: 'Current session ID', category: 'Flow Variables' },
             { id: '$flow.chatId', mentionLabel: '$flow.chatId', description: 'Current chat ID', category: 'Flow Variables' },
             { id: '$flow.chatflowId', mentionLabel: '$flow.chatflowId', description: 'Current chatflow ID', category: 'Flow Variables' }

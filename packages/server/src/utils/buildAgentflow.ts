@@ -35,6 +35,7 @@ import {
     RUNTIME_MESSAGES_LENGTH_VAR_PREFIX,
     CHAT_HISTORY_VAR_PREFIX,
     databaseEntities,
+    FILE_ATTACHMENT_BIN_PREFIX,
     FILE_ATTACHMENT_PREFIX,
     getAppVersion,
     getGlobalVariable,
@@ -124,6 +125,7 @@ interface IExecuteNodeParams {
     nodeOverrides?: INodeOverrides
     variableOverrides?: IVariableOverride[]
     uploadedFilesContent?: string
+    uploadedFilesBinaryContent?: string
     fileUploads?: IFileUpload[]
     humanInput?: IHumanInput
     agentFlowExecutedData?: IAgentflowExecutedData[]
@@ -220,6 +222,7 @@ export const resolveVariables = async (
     availableVariables: Variable[],
     variableOverrides: IVariableOverride[],
     uploadedFilesContent: string,
+    uploadedFilesBinaryContent: string,
     chatHistory: IMessage[],
     componentNodes: IComponentNodes,
     agentFlowExecutedData?: IAgentflowExecutedData[],
@@ -281,6 +284,10 @@ export const resolveVariables = async (
 
             if (variableFullPath === FILE_ATTACHMENT_PREFIX) {
                 resolvedValue = resolvedValue.replace(match, uploadedFilesContent)
+            }
+
+            if (variableFullPath === FILE_ATTACHMENT_BIN_PREFIX) {
+                resolvedValue = resolvedValue.replace(match, uploadedFilesBinaryContent)
             }
 
             if (variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
@@ -1024,6 +1031,7 @@ const executeNode = async ({
     nodeOverrides = {},
     variableOverrides = [],
     uploadedFilesContent = '',
+    uploadedFilesBinaryContent = '',
     fileUploads,
     humanInput,
     agentFlowExecutedData = [],
@@ -1110,6 +1118,7 @@ const executeNode = async ({
             availableVariables,
             variableOverrides,
             uploadedFilesContent,
+            uploadedFilesBinaryContent,
             chatHistory,
             componentNodes,
             agentFlowExecutedData,
@@ -1255,6 +1264,7 @@ const executeNode = async ({
                             baseURL,
                             isInternal,
                             uploadedFilesContent,
+                            uploadedFilesBinaryContent,
                             fileUploads,
                             signal: abortController,
                             isRecursive: true,
@@ -1485,6 +1495,7 @@ export const executeAgentFlow = async ({
     baseURL,
     isInternal,
     uploadedFilesContent,
+    uploadedFilesBinaryContent,
     fileUploads,
     signal: abortController,
     isRecursive = false,
@@ -1956,6 +1967,7 @@ export const executeAgentFlow = async ({
                 nodeOverrides,
                 variableOverrides,
                 uploadedFilesContent,
+                uploadedFilesBinaryContent,
                 fileUploads,
                 humanInput: currentHumanInput,
                 agentFlowExecutedData,
