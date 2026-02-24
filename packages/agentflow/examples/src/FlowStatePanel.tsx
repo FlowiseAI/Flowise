@@ -5,7 +5,7 @@
  * in a dark-themed, resizable side panel with copy support.
  */
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { FlowData } from '@flowiseai/agentflow'
 
@@ -22,37 +22,50 @@ export function FlowStatePanel({ currentFlow, savedFlow, changeCount }: FlowStat
     const dragging = useRef(false)
     const flow = tab === 'live' ? currentFlow : savedFlow
 
+    const startX = useRef(0)
+    const startWidth = useRef(0)
+
     const resizeBy = useCallback((delta: number) => {
         setWidth((w) => Math.max(200, Math.min(800, w + delta)))
     }, [])
+
+    const onMouseMove = useCallback((moveEvent: MouseEvent) => {
+        if (!dragging.current) return
+        const newWidth = Math.max(200, Math.min(800, startWidth.current + (startX.current - moveEvent.clientX)))
+        setWidth(newWidth)
+    }, [])
+
+    const onMouseUp = useCallback(() => {
+        dragging.current = false
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+        document.body.style.cursor = ''
+        document.body.style.userSelect = ''
+    }, [onMouseMove])
+
+    // Clean up global listeners on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            document.removeEventListener('mousemove', onMouseMove)
+            document.removeEventListener('mouseup', onMouseUp)
+            document.body.style.cursor = ''
+            document.body.style.userSelect = ''
+        }
+    }, [onMouseMove, onMouseUp])
 
     const handleMouseDown = useCallback(
         (e: React.MouseEvent) => {
             e.preventDefault()
             dragging.current = true
-            const startX = e.clientX
-            const startWidth = width
-
-            const onMouseMove = (moveEvent: MouseEvent) => {
-                if (!dragging.current) return
-                const newWidth = Math.max(200, Math.min(800, startWidth + (startX - moveEvent.clientX)))
-                setWidth(newWidth)
-            }
-
-            const onMouseUp = () => {
-                dragging.current = false
-                document.removeEventListener('mousemove', onMouseMove)
-                document.removeEventListener('mouseup', onMouseUp)
-                document.body.style.cursor = ''
-                document.body.style.userSelect = ''
-            }
+            startX.current = e.clientX
+            startWidth.current = width
 
             document.addEventListener('mousemove', onMouseMove)
             document.addEventListener('mouseup', onMouseUp)
             document.body.style.cursor = 'col-resize'
             document.body.style.userSelect = 'none'
         },
-        [width]
+        [width, onMouseMove, onMouseUp]
     )
 
     const handleKeyDown = useCallback(
