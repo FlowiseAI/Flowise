@@ -90,7 +90,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         }
 
         if (body.evaluationType === 'llm') {
-            const lLMEvaluators = body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+            const lLMEvaluators = body.selectedLLMEvaluators && body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
 
             if (!Array.isArray(lLMEvaluators)) {
                 throw new Error('selectedLLMEvaluators must be a valid array')
