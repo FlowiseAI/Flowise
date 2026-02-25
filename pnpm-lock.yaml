@@ -171,9 +171,6 @@ importers:
             '@vitejs/plugin-react':
                 specifier: ^4.2.0
                 version: 4.2.1(vite@5.1.6(@types/node@22.16.3)(sass@1.71.1)(terser@5.29.1))
-            cross-env:
-                specifier: ^7.0.3
-                version: 7.0.3
             eslint-plugin-import:
                 specifier: ^2.29.0
                 version: 2.29.1(@typescript-eslint/parser@8.55.0(eslint@8.57.0)(typescript@5.5.2))(eslint@8.57.0)
@@ -1296,7 +1293,7 @@ importers:
                 version: 4.2.1(vite@5.1.6(@types/node@22.16.3)(sass@1.71.1)(terser@5.29.1))
             pretty-quick:
                 specifier: ^3.1.3
-                version: 3.3.1(prettier@3.2.5)
+                version: 3.3.1(prettier@2.8.8)
             react-scripts:
                 specifier: ^5.0.1
                 version: 5.0.1(@babel/plugin-syntax-flow@7.23.3(@babel/core@7.24.0))(@babel/plugin-transform-react-jsx@7.25.9(@babel/core@7.24.0))(@swc/core@1.4.6)(@types/babel__core@7.20.5)(bufferutil@4.0.8)(canvas@2.11.2(encoding@0.1.13))(eslint@8.57.0)(react@18.2.0)(sass@1.71.1)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@22.16.3)(typescript@5.5.2))(type-fest@4.40.1)(typescript@5.5.2)(utf-8-validate@6.0.4)(vue-template-compiler@2.7.16)
@@ -5285,7 +5282,7 @@ packages:
     '@mui/base@5.0.0-beta.27':
         resolution: { integrity: sha512-duL37qxihT1N0pW/gyXVezP7SttLkF+cLAs/y6g6ubEFmVadjbnZ45SeF12/vAiKzqwf5M0uFH1cczIPXFZygA== }
         engines: { node: '>=12.0.0' }
-        deprecated: This package has been replaced by @base-ui-components/react
+        deprecated: This package has been replaced by @base-ui/react
         peerDependencies:
             '@types/react': ^17.0.0 || ^18.0.0
             react: ^17.0.0 || ^18.0.0
@@ -5297,7 +5294,7 @@ packages:
     '@mui/base@5.0.0-beta.40':
         resolution: { integrity: sha512-I/lGHztkCzvwlXpjD2+SNmvNQvB4227xBXhISPjEaJUXGImOQ9f3D2Yj/T3KasSI/h0MLWy74X0J6clhPmsRbQ== }
         engines: { node: '>=12.0.0' }
-        deprecated: This package has been replaced by @base-ui-components/react
+        deprecated: This package has been replaced by @base-ui/react
         peerDependencies:
             '@types/react': ^17.0.0 || ^18.0.0
             react: ^17.0.0 || ^18.0.0
@@ -11811,7 +11808,7 @@ packages:
 
     glob@7.2.3:
         resolution: { integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q== }
-        deprecated: Glob versions prior to v9 are no longer supported
+        deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
     global-agent@3.0.0:
         resolution: { integrity: sha512-PT6XReJ+D07JvGoxQMkT6qji/jVNfX/h364XHZOWeRzy64sSFr+xJ5OX7LI3b4MPQzdL4H8Y8M0xzPpsVMwA8Q== }
@@ -15651,6 +15648,7 @@ packages:
     prebuild-install@7.1.2:
         resolution: { integrity: sha512-UnNke3IQb6sgarcZIDU3gbMeTp/9SSU1DAIkil7PrqG1vZlBtY5msYccSKSHDqa3hNg436IXK+SNImReuA1wEQ== }
         engines: { node: '>=10' }
+        deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
         hasBin: true
 
     prelude-ls@1.1.2:
@@ -17438,6 +17436,7 @@ packages:
     tar@6.2.0:
         resolution: { integrity: sha512-/Wo7DcT0u5HUV486xg675HtjNd3BXZ6xDbzsCUZPt5iw8bTQ63bP0Raut3mvro9u+CUyq7YQd8Cx55fsZXxqLQ== }
         engines: { node: '>=10' }
+        deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
     tdigest@0.1.2:
         resolution: { integrity: sha512-+G0LLgjjo9BZX2MfdvPfH+MKLCrxlXSYec5DaPYP1fe6Iyhf0/fSmJ0bFiZ1F8BT6cGXl2LpltQptzjXKWEkKA== }
@@ -38648,17 +38647,6 @@ snapshots:
             picocolors: 1.0.0
             picomatch: 3.0.1
             prettier: 2.8.8
-            tslib: 2.6.2
-
-    pretty-quick@3.3.1(prettier@3.2.5):
-        dependencies:
-            execa: 4.1.0
-            find-up: 4.1.0
-            ignore: 5.3.1
-            mri: 1.2.0
-            picocolors: 1.0.0
-            picomatch: 3.0.1
-            prettier: 3.2.5
             tslib: 2.6.2
 
     prism-react-renderer@1.3.5(react@18.2.0):
