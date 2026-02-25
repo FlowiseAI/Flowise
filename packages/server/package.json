@@ -47,7 +47,8 @@
         "cypress:run": "cypress run",
         "e2e": "start-server-and-test dev http://localhost:3000 cypress:run",
         "cypress:ci": "START_SERVER_AND_TEST_INSECURE=1 start-server-and-test start https-get://localhost:3000 cypress:run",
-        "test": "jest --runInBand --detectOpenHandles --forceExit"
+        "test": "jest --runInBand --detectOpenHandles --forceExit",
+        "test:coverage": "jest --runInBand --detectOpenHandles --forceExit --coverage"
     },
     "keywords": [],
     "homepage": "https://flowiseai.com",
