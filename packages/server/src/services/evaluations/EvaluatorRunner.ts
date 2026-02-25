@@ -10,11 +10,6 @@ interface EvaluatorReturnType {
     result: 'Pass' | 'Fail' | 'Error'
 }
 
-// Limit maximum array sizes to prevent DoS attacks
-const MAX_OUTPUTS = 10000
-const MAX_EVALUATORS = 1000
-const MAX_SPLIT_VALUES = 1000
-
 export const runAdditionalEvaluators = async (
     metricsArray: ICommonObject[],
     actualOutputArray: string[],
