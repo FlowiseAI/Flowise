@@ -10,6 +10,11 @@ interface EvaluatorReturnType {
     result: 'Pass' | 'Fail' | 'Error'
 }
 
+// Limit maximum array sizes to prevent DoS attacks
+const MAX_OUTPUTS = 10000
+const MAX_EVALUATORS = 1000
+const MAX_SPLIT_VALUES = 1000
+
 export const runAdditionalEvaluators = async (
     metricsArray: ICommonObject[],
     actualOutputArray: string[],
@@ -20,6 +25,14 @@ export const runAdditionalEvaluators = async (
     // Validate inputs are arrays and enforce size limits
     if (!Array.isArray(actualOutputArray) || !Array.isArray(selectedEvaluators)) {
         throw new Error('Invalid input: expected arrays')
+    }
+
+    if (actualOutputArray.length > MAX_OUTPUTS) {
+        throw new Error(`Too many outputs: maximum allowed is ${MAX_OUTPUTS}`)
+    }
+
+    if (selectedEvaluators.length > MAX_EVALUATORS) {
+        throw new Error(`Too many evaluators: maximum allowed is ${MAX_EVALUATORS}`)
     }
 
     const evaluationResults: any[] = []
@@ -108,6 +121,10 @@ export const runAdditionalEvaluators = async (
                         case 'ContainsAny':
                             passed = false
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
+                            // Limit split values to prevent unbounded iteration
+                            if (splitValues.length > MAX_SPLIT_VALUES) {
+                                throw new Error(`Too many split values: maximum allowed is ${MAX_SPLIT_VALUES}`)
+                            }
 
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (actualOutput.includes(splitValues[i])) {
@@ -123,6 +140,10 @@ export const runAdditionalEvaluators = async (
                         case 'ContainsAll':
                             passed = true
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
+                            // Limit split values to prevent unbounded iteration
+                            if (splitValues.length > MAX_SPLIT_VALUES) {
+                                throw new Error(`Too many split values: maximum allowed is ${MAX_SPLIT_VALUES}`)
+                            }
 
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (!actualOutput.includes(splitValues[i])) {
@@ -138,6 +159,10 @@ export const runAdditionalEvaluators = async (
                         case 'DoesNotContainAny':
                             passed = true
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
+                            // Limit split values to prevent unbounded iteration
+                            if (splitValues.length > MAX_SPLIT_VALUES) {
+                                throw new Error(`Too many split values: maximum allowed is ${MAX_SPLIT_VALUES}`)
+                            }
 
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (actualOutput.includes(splitValues[i])) {
@@ -153,6 +178,10 @@ export const runAdditionalEvaluators = async (
                         case 'DoesNotContainAll':
                             passed = true
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
+                            // Limit split values to prevent unbounded iteration
+                            if (splitValues.length > MAX_SPLIT_VALUES) {
+                                throw new Error(`Too many split values: maximum allowed is ${MAX_SPLIT_VALUES}`)
+                            }
 
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (actualOutput.includes(splitValues[i])) {

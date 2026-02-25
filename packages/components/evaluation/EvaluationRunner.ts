@@ -94,9 +94,19 @@ export class EvaluationRunner {
             throw new Error('chatflowId must be a valid array')
         }
 
+        const MAX_CHATFLOWS = 1000
+        if (chatflowIds.length > MAX_CHATFLOWS) {
+            throw new Error(`Cannot evaluate more than ${MAX_CHATFLOWS} chatflows at once`)
+        }
+
         // Validate dataset.rows is an actual array to prevent DoS attacks
         if (!data.dataset || !Array.isArray(data.dataset.rows)) {
             throw new Error('dataset.rows must be a valid array')
+        }
+
+        const MAX_ROWS = 1000
+        if (data.dataset.rows.length > MAX_ROWS) {
+            throw new Error(`Dataset cannot exceed ${MAX_ROWS} rows`)
         }
 
         const returnData: ICommonObject = {}

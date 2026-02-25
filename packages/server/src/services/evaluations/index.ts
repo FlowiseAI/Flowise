@@ -78,9 +78,19 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
             throw new Error('chatflowType must be a valid array')
         }
 
+        const MAX_CHATFLOW_TYPES = 1000
+        if (chatflowTypes.length > MAX_CHATFLOW_TYPES) {
+            throw new Error(`Cannot evaluate more than ${MAX_CHATFLOW_TYPES} chatflow types at once`)
+        }
+
         const simpleEvaluators = body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
         if (!Array.isArray(simpleEvaluators)) {
             throw new Error('selectedSimpleEvaluators must be a valid array')
+        }
+
+        const MAX_EVALUATORS = 1000
+        if (simpleEvaluators.length > MAX_EVALUATORS) {
+            throw new Error(`Cannot use more than ${MAX_EVALUATORS} simple evaluators at once`)
         }
 
         const additionalConfig: ICommonObject = {
@@ -93,6 +103,10 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
             const lLMEvaluators = body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
             if (!Array.isArray(lLMEvaluators)) {
                 throw new Error('selectedLLMEvaluators must be a valid array')
+            }
+
+            if (lLMEvaluators.length > MAX_EVALUATORS) {
+                throw new Error(`Cannot use more than ${MAX_EVALUATORS} LLM evaluators at once`)
             }
 
             additionalConfig.lLMEvaluators = lLMEvaluators
@@ -143,6 +157,11 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         // Validate chatflowIds is an actual array to prevent DoS attacks
         if (!Array.isArray(chatflowIds)) {
             throw new Error('chatflowId must be a valid array')
+        }
+
+        const MAX_CHATFLOWS_EVAL = 100
+        if (chatflowIds.length > MAX_CHATFLOWS_EVAL) {
+            throw new Error(`Cannot evaluate more than ${MAX_CHATFLOWS_EVAL} chatflows at once`)
         }
 
         for (let i = 0; i < chatflowIds.length; i++) {
