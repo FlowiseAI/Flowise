@@ -5,8 +5,12 @@
             "dependsOn": ["^build"],
             "outputs": ["dist/**"]
         },
-        "test": {},
-        "test:coverage": {},
+        "test": {
+            "dependsOn": ["^build"]
+        },
+        "test:coverage": {
+            "dependsOn": ["^build"]
+        },
         "dev": {
             "cache": false
         }
