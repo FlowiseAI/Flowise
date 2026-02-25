@@ -224,9 +224,13 @@ describe('AgentflowContext - deleteNode', () => {
 })
 
 describe('AgentflowContext - duplicateNode', () => {
-    it('should create a duplicate node with unique ID', () => {
+    it('should create a duplicate node with unique ID using getUniqueNodeId', () => {
         const initialFlow: FlowData = {
-            nodes: [makeNode('node-1'), makeNode('node-2')],
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: { id: 'agentflow_0', name: 'agentflow', label: 'Agent 1', outputAnchors: [] }
+                })
+            ],
             edges: []
         }
 
@@ -234,47 +238,103 @@ describe('AgentflowContext - duplicateNode', () => {
             wrapper: createWrapper(initialFlow)
         })
 
-        // Initial state should have 2 nodes
-        expect(result.current.state.nodes).toHaveLength(2)
-
-        // Duplicate node-1
-        act(() => {
-            result.current.duplicateNode('node-1')
-        })
-
-        // Should have 3 nodes
-        expect(result.current.state.nodes).toHaveLength(3)
-
-        // Find the duplicated node
-        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
-
-        expect(duplicatedNode).toBeDefined()
-        expect(duplicatedNode?.id).toBe('node-1_copy_1')
-    })
-
-    it('should position duplicate with +50 offset', () => {
-        const initialFlow: FlowData = {
-            nodes: [makeNode('node-1')],
-            edges: []
-        }
-
-        const originalNode = initialFlow.nodes[0]
-        originalNode.position = { x: 100, y: 200 }
-
-        const { result } = renderHook(() => useAgentflowContext(), {
-            wrapper: createWrapper(initialFlow)
-        })
+        // Initial state should have 1 node
+        expect(result.current.state.nodes).toHaveLength(1)
 
         // Duplicate the node
         act(() => {
-            result.current.duplicateNode('node-1')
+            result.current.duplicateNode('agentflow_0')
+        })
+
+        // Should have 2 nodes
+        expect(result.current.state.nodes).toHaveLength(2)
+
+        // Find the duplicated node - should use getUniqueNodeId format (agentflow_1, not agentflow_0_copy_1)
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+
+        expect(duplicatedNode).toBeDefined()
+        expect(duplicatedNode?.id).toBe('agentflow_1')
+        expect(duplicatedNode?.data.id).toBe('agentflow_1')
+    })
+
+    it('should position duplicate using width + distance formula', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    position: { x: 100, y: 200 },
+                    width: 300,
+                    data: { id: 'agentflow_0', name: 'agentflow', label: 'Agent 1', outputAnchors: [] }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Duplicate the node with default distance (50)
+        act(() => {
+            result.current.duplicateNode('agentflow_0')
         })
 
         // Find the duplicated node
-        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
 
-        expect(duplicatedNode?.position.x).toBe(150)
-        expect(duplicatedNode?.position.y).toBe(250)
+        // Position should be: original.x + width + distance = 100 + 300 + 50 = 450
+        expect(duplicatedNode?.position.x).toBe(450)
+        expect(duplicatedNode?.position.y).toBe(200) // Y unchanged
+    })
+
+    it('should support custom distance parameter', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    position: { x: 100, y: 200 },
+                    width: 300,
+                    data: { id: 'agentflow_0', name: 'agentflow', label: 'Agent 1', outputAnchors: [] }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Duplicate with custom distance of 100
+        act(() => {
+            result.current.duplicateNode('agentflow_0', 100)
+        })
+
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+
+        // Position: 100 + 300 + 100 = 500
+        expect(duplicatedNode?.position.x).toBe(500)
+    })
+
+    it('should set label with number suffix format', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: { id: 'agentflow_0', name: 'agentflow', label: 'Agent 1', outputAnchors: [] }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        act(() => {
+            result.current.duplicateNode('agentflow_0')
+        })
+
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+
+        // Label should be "Agent 1 (1)" - extracted from agentflow_1
+        expect(duplicatedNode?.data.label).toBe('Agent 1 (1)')
     })
 
     it('should preserve all node data properties', () => {
@@ -288,7 +348,8 @@ describe('AgentflowContext - duplicateNode', () => {
                         label: 'Test Node',
                         color: '#FF0000',
                         category: 'test',
-                        description: 'Test description'
+                        description: 'Test description',
+                        outputAnchors: []
                     }
                 })
             ],
@@ -305,11 +366,11 @@ describe('AgentflowContext - duplicateNode', () => {
         })
 
         // Find the duplicated node
-        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id === 'testNode_0')
 
-        // Should preserve data properties (except id)
+        // Should preserve data properties
         expect(duplicatedNode?.data.name).toBe('testNode')
-        expect(duplicatedNode?.data.label).toBe('Test Node')
+        expect(duplicatedNode?.data.label).toBe('Test Node (0)') // Label gets suffix
         expect(duplicatedNode?.data.color).toBe('#FF0000')
         expect(duplicatedNode?.data.category).toBe('test')
         expect(duplicatedNode?.data.description).toBe('Test description')
@@ -317,7 +378,12 @@ describe('AgentflowContext - duplicateNode', () => {
 
     it('should preserve node type', () => {
         const initialFlow: FlowData = {
-            nodes: [makeNode('node-1', 'stickyNote')],
+            nodes: [
+                makeFlowNode('stickyNote_0', {
+                    type: 'stickyNote',
+                    data: { id: 'stickyNote_0', name: 'stickyNote', label: 'Note', outputAnchors: [] }
+                })
+            ],
             edges: []
         }
 
@@ -327,11 +393,11 @@ describe('AgentflowContext - duplicateNode', () => {
 
         // Duplicate the node
         act(() => {
-            result.current.duplicateNode('node-1')
+            result.current.duplicateNode('stickyNote_0')
         })
 
         // Find the duplicated node
-        const duplicatedNode = result.current.state.nodes.find((n) => n.id.startsWith('node-1_copy_'))
+        const duplicatedNode = result.current.state.nodes.find((n) => n.id === 'stickyNote_1')
 
         expect(duplicatedNode?.type).toBe('stickyNote')
     })
@@ -360,13 +426,20 @@ describe('AgentflowContext - duplicateNode', () => {
 
     it('should preserve original node unchanged', () => {
         const initialFlow: FlowData = {
-            nodes: [makeNode('node-1')],
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    position: { x: 100, y: 200 },
+                    data: {
+                        id: 'agentflow_0',
+                        name: 'agentflow',
+                        label: 'Original Label',
+                        inputAnchors: [{ id: 'agentflow_0-input-model-LLM', name: 'model', label: 'Model', type: 'LLM' }],
+                        outputAnchors: []
+                    }
+                })
+            ],
             edges: []
         }
-
-        const originalNode = initialFlow.nodes[0]
-        originalNode.position = { x: 100, y: 200 }
-        originalNode.data.label = 'Original Label'
 
         const { result } = renderHook(() => useAgentflowContext(), {
             wrapper: createWrapper(initialFlow)
@@ -374,22 +447,31 @@ describe('AgentflowContext - duplicateNode', () => {
 
         // Duplicate the node
         act(() => {
-            result.current.duplicateNode('node-1')
+            result.current.duplicateNode('agentflow_0')
         })
 
         // Find the original node
-        const originalNodeAfter = result.current.state.nodes.find((n) => n.id === 'node-1')
+        const originalNodeAfter = result.current.state.nodes.find((n) => n.id === 'agentflow_0')
 
-        // Original should be unchanged
+        // Original should be completely unchanged
         expect(originalNodeAfter?.position.x).toBe(100)
         expect(originalNodeAfter?.position.y).toBe(200)
         expect(originalNodeAfter?.data.label).toBe('Original Label')
-        expect(originalNodeAfter?.data.id).toBe('node-1')
+        expect(originalNodeAfter?.data.id).toBe('agentflow_0')
+        // Verify nested objects aren't mutated
+        expect(originalNodeAfter?.data.inputAnchors?.[0]?.id).toBe('agentflow_0-input-model-LLM')
     })
 
     it('should handle multiple sequential duplications with unique IDs', () => {
         const initialFlow: FlowData = {
-            nodes: [makeNode('node-1'), makeNode('node-2')],
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: { id: 'agentflow_0', name: 'agentflow', label: 'Agent 1', outputAnchors: [] }
+                }),
+                makeFlowNode('tool_0', {
+                    data: { id: 'tool_0', name: 'tool', label: 'Tool 1', outputAnchors: [] }
+                })
+            ],
             edges: []
         }
 
@@ -398,11 +480,11 @@ describe('AgentflowContext - duplicateNode', () => {
         })
 
         act(() => {
-            result.current.duplicateNode('node-1')
+            result.current.duplicateNode('agentflow_0')
         })
 
         act(() => {
-            result.current.duplicateNode('node-2')
+            result.current.duplicateNode('tool_0')
         })
 
         // Should have 4 nodes (2 originals + 2 duplicates)
@@ -413,16 +495,179 @@ describe('AgentflowContext - duplicateNode', () => {
         const uniqueIds = new Set(ids)
         expect(uniqueIds.size).toBe(4)
 
-        // Should have one duplicate of each original
-        const node1Duplicates = result.current.state.nodes.filter((n) => n.id.startsWith('node-1_copy_'))
-        const node2Duplicates = result.current.state.nodes.filter((n) => n.id.startsWith('node-2_copy_'))
+        // Should have the correct IDs
+        expect(result.current.state.nodes.find((n) => n.id === 'agentflow_0')).toBeDefined()
+        expect(result.current.state.nodes.find((n) => n.id === 'agentflow_1')).toBeDefined()
+        expect(result.current.state.nodes.find((n) => n.id === 'tool_0')).toBeDefined()
+        expect(result.current.state.nodes.find((n) => n.id === 'tool_1')).toBeDefined()
 
-        expect(node1Duplicates).toHaveLength(1)
-        expect(node2Duplicates).toHaveLength(1)
+        // Each node should have matching node.id and data.id
+        result.current.state.nodes.forEach((node) => {
+            expect(node.id).toBe(node.data.id)
+        })
+    })
 
-        // Each duplicate should have matching node.id and data.id
-        expect(node1Duplicates[0].id).toBe(node1Duplicates[0].data.id)
-        expect(node2Duplicates[0].id).toBe(node2Duplicates[0].data.id)
+    it('should update anchor IDs to match new node ID', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: {
+                        id: 'agentflow_0',
+                        name: 'agentflow',
+                        label: 'Agent 1',
+                        inputs: [{ id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string' }],
+                        inputAnchors: [{ id: 'agentflow_0-input-llm-LLM', name: 'llm', label: 'LLM', type: 'LLM' }],
+                        outputAnchors: [{ id: 'agentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
+                    }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        act(() => {
+            result.current.duplicateNode('agentflow_0')
+        })
+
+        const original = result.current.state.nodes.find((n) => n.id === 'agentflow_0')
+        const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+
+        // Original node IDs should be unchanged
+        expect(original?.data.inputs?.[0]?.id).toBe('agentflow_0-input-model-string')
+        expect(original?.data.inputAnchors?.[0]?.id).toBe('agentflow_0-input-llm-LLM')
+        expect(original?.data.outputAnchors?.[0]?.id).toBe('agentflow_0-output-0')
+
+        // Duplicate node IDs should be updated to use new node ID
+        expect(duplicate?.data.inputs?.[0]?.id).toBe('agentflow_1-input-model-string')
+        expect(duplicate?.data.inputAnchors?.[0]?.id).toBe('agentflow_1-input-llm-LLM')
+        expect(duplicate?.data.outputAnchors?.[0]?.id).toBe('agentflow_1-output-0')
+    })
+
+    it('should clear connected input values (string connections)', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: {
+                        id: 'agentflow_0',
+                        name: 'agentflow',
+                        label: 'Agent 1',
+                        inputs: [{ id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string' }],
+                        inputValues: {
+                            model: '{{agent_upstream.data.instance}}', // Connection reference
+                            temperature: '0.7', // Regular value
+                            apiKey: 'sk-1234' // Regular value
+                        },
+                        outputAnchors: []
+                    }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        act(() => {
+            result.current.duplicateNode('agentflow_0')
+        })
+
+        const original = result.current.state.nodes.find((n) => n.id === 'agentflow_0')
+        const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+
+        // Original should still have the connection
+        expect(original?.data.inputValues?.model).toBe('{{agent_upstream.data.instance}}')
+        expect(original?.data.inputValues?.temperature).toBe('0.7')
+        expect(original?.data.inputValues?.apiKey).toBe('sk-1234')
+
+        // Duplicate should have connection cleared but regular values preserved
+        expect(duplicate?.data.inputValues?.model).toBe('') // Cleared (no default)
+        expect(duplicate?.data.inputValues?.temperature).toBe('0.7') // Preserved
+        expect(duplicate?.data.inputValues?.apiKey).toBe('sk-1234') // Preserved
+    })
+
+    it('should reset connected input values to parameter defaults', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: {
+                        id: 'agentflow_0',
+                        name: 'agentflow',
+                        label: 'Agent 1',
+                        inputs: [
+                            { id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string', default: 'gpt-4' },
+                            { id: 'agentflow_0-input-temp-number', name: 'temperature', label: 'Temp', type: 'number', default: 0.7 }
+                        ],
+                        inputValues: {
+                            model: '{{agent_upstream.data.instance}}', // Connection
+                            temperature: '{{agent_upstream.data.temperature}}' // Connection
+                        },
+                        outputAnchors: []
+                    }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        act(() => {
+            result.current.duplicateNode('agentflow_0')
+        })
+
+        const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+
+        // Should reset to parameter defaults
+        expect(duplicate?.data.inputValues?.model).toBe('gpt-4')
+        expect(duplicate?.data.inputValues?.temperature).toBe(0.7)
+    })
+
+    it('should filter connection strings from array input values', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: {
+                        id: 'agentflow_0',
+                        name: 'agentflow',
+                        label: 'Agent 1',
+                        inputValues: {
+                            tools: ['{{agent_tool1.data.instance}}', '{{agent_tool2.data.instance}}', 'regularValue'],
+                            models: ['gpt-4', 'gpt-3.5'] // No connections
+                        },
+                        outputAnchors: []
+                    }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        act(() => {
+            result.current.duplicateNode('agentflow_0')
+        })
+
+        const original = result.current.state.nodes.find((n) => n.id === 'agentflow_0')
+        const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+
+        // Original should be unchanged
+        expect(original?.data.inputValues?.tools).toEqual([
+            '{{agent_tool1.data.instance}}',
+            '{{agent_tool2.data.instance}}',
+            'regularValue'
+        ])
+        expect(original?.data.inputValues?.models).toEqual(['gpt-4', 'gpt-3.5'])
+
+        // Duplicate should filter out connection strings but keep regular values
+        expect(duplicate?.data.inputValues?.tools).toEqual(['regularValue'])
+        expect(duplicate?.data.inputValues?.models).toEqual(['gpt-4', 'gpt-3.5'])
     })
 
     it('should NOT duplicate connected edges', () => {
@@ -451,7 +696,11 @@ describe('AgentflowContext - duplicateNode', () => {
 
     it('should generate sequential unique IDs for duplicates', () => {
         const initialFlow: FlowData = {
-            nodes: [makeNode('node-1')],
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: { id: 'agentflow_0', name: 'agentflow', label: 'Agent 1', outputAnchors: [] }
+                })
+            ],
             edges: []
         }
 
@@ -461,24 +710,63 @@ describe('AgentflowContext - duplicateNode', () => {
 
         // Duplicate the node once
         act(() => {
-            result.current.duplicateNode('node-1')
+            result.current.duplicateNode('agentflow_0')
         })
 
         // Find the first duplicated node
-        const firstDuplicate = result.current.state.nodes.find((n) => n.id === 'node-1_copy_1')
+        const firstDuplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
         expect(firstDuplicate).toBeDefined()
+        expect(firstDuplicate?.data.label).toBe('Agent 1 (1)')
 
         // Duplicate the original node again
         act(() => {
-            result.current.duplicateNode('node-1')
+            result.current.duplicateNode('agentflow_0')
         })
 
         // Find the second duplicated node
-        const secondDuplicate = result.current.state.nodes.find((n) => n.id === 'node-1_copy_2')
+        const secondDuplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_2')
         expect(secondDuplicate).toBeDefined()
+        expect(secondDuplicate?.data.label).toBe('Agent 1 (2)')
 
         // Should have 3 nodes total (original + 2 duplicates)
         expect(result.current.state.nodes).toHaveLength(3)
+    })
+
+    it('should deep clone to avoid mutating original node', () => {
+        const initialFlow: FlowData = {
+            nodes: [
+                makeFlowNode('agentflow_0', {
+                    data: {
+                        id: 'agentflow_0',
+                        name: 'agentflow',
+                        label: 'Agent 1',
+                        inputAnchors: [{ id: 'agentflow_0-input-model-LLM', name: 'model', label: 'Model', type: 'LLM' }],
+                        outputAnchors: [{ id: 'agentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
+                    }
+                })
+            ],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        act(() => {
+            result.current.duplicateNode('agentflow_0')
+        })
+
+        const original = result.current.state.nodes.find((n) => n.id === 'agentflow_0')
+
+        // Original node's nested objects should NOT be mutated
+        expect(original?.data.inputAnchors?.[0]?.id).toBe('agentflow_0-input-model-LLM')
+        expect(original?.data.outputAnchors?.[0]?.id).toBe('agentflow_0-output-0')
+        expect(original?.data.label).toBe('Agent 1')
+
+        // Verify the duplicate has different IDs (proves deep clone worked)
+        const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
+        expect(duplicate?.data.inputAnchors?.[0]?.id).toBe('agentflow_1-input-model-LLM')
+        expect(duplicate?.data.outputAnchors?.[0]?.id).toBe('agentflow_1-output-0')
     })
 })
 
@@ -1055,6 +1343,6 @@ describe('AgentflowContext - state synchronization', () => {
         expect(result.current.state.nodes).toHaveLength(3)
         expect(result.current.state.nodes.find((n) => n.id === 'node-1')).toBeDefined()
         expect(result.current.state.nodes.find((n) => n.id === 'node-2')?.data.label).toBe('Updated Node 2')
-        expect(result.current.state.nodes.find((n) => n.id === 'node-1_copy_1')).toBeDefined()
+        expect(result.current.state.nodes.find((n) => n.id === 'Node 1_0')).toBeDefined()
     })
 })
