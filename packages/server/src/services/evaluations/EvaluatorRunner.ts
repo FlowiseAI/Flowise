@@ -17,11 +17,6 @@ export const runAdditionalEvaluators = async (
     selectedEvaluators: string[],
     workspaceId: string
 ) => {
-    // Validate inputs are arrays and enforce size limits
-    if (!Array.isArray(actualOutputArray) || !Array.isArray(selectedEvaluators)) {
-        throw new Error('Invalid input: expected arrays')
-    }
-
     const evaluationResults: any[] = []
     const evaluatorDict: any = {}
 
@@ -108,7 +103,6 @@ export const runAdditionalEvaluators = async (
                         case 'ContainsAny':
                             passed = false
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
-
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (actualOutput.includes(splitValues[i])) {
                                     passed = true
@@ -123,7 +117,6 @@ export const runAdditionalEvaluators = async (
                         case 'ContainsAll':
                             passed = true
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
-
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (!actualOutput.includes(splitValues[i])) {
                                     passed = false
@@ -138,7 +131,6 @@ export const runAdditionalEvaluators = async (
                         case 'DoesNotContainAny':
                             passed = true
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
-
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (actualOutput.includes(splitValues[i])) {
                                     passed = false
@@ -153,7 +145,6 @@ export const runAdditionalEvaluators = async (
                         case 'DoesNotContainAll':
                             passed = true
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
-
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (actualOutput.includes(splitValues[i])) {
                                     passed = false
