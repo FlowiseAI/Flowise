@@ -78,7 +78,8 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
             throw new Error('chatflowType must be a valid array')
         }
 
-        const simpleEvaluators = body.selectedSimpleEvaluators && body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
+        const simpleEvaluators =
+            body.selectedSimpleEvaluators && body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
         if (!Array.isArray(simpleEvaluators)) {
             throw new Error('selectedSimpleEvaluators must be a valid array')
         }
@@ -90,7 +91,8 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         }
 
         if (body.evaluationType === 'llm') {
-            const lLMEvaluators = body.selectedLLMEvaluators && body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+            const lLMEvaluators =
+                body.selectedLLMEvaluators && body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
 
             if (!Array.isArray(lLMEvaluators)) {
                 throw new Error('selectedLLMEvaluators must be a valid array')

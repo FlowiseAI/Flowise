@@ -17,7 +17,7 @@ export const runAdditionalEvaluators = async (
     selectedEvaluators: string[],
     workspaceId: string
 ) => {
-    // Validate inputs are arrays and enforce size limits
+    // Validate that inputs are arrays
     if (!Array.isArray(actualOutputArray) || !Array.isArray(selectedEvaluators)) {
         throw new Error('Invalid input: expected arrays')
     }
