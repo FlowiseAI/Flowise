@@ -482,6 +482,230 @@ describe('AgentflowContext - duplicateNode', () => {
     })
 })
 
+describe('AgentflowContext - openEditDialog & closeEditDialog', () => {
+    it('should open edit dialog with node data and input params', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        // Initial state should have no editing node
+        expect(result.current.state.editingNodeId).toBeNull()
+        expect(result.current.state.editDialogProps).toBeNull()
+
+        const nodeData = {
+            id: 'node-1',
+            name: 'testNode',
+            label: 'Test Node',
+            outputAnchors: []
+        }
+
+        const inputParams = [
+            {
+                id: 'param-1',
+                name: 'param1',
+                label: 'Parameter 1',
+                type: 'string'
+            }
+        ]
+
+        // Open edit dialog
+        act(() => {
+            result.current.openEditDialog('node-1', nodeData, inputParams)
+        })
+
+        // Should set editingNodeId
+        expect(result.current.state.editingNodeId).toBe('node-1')
+
+        // Should set editDialogProps
+        expect(result.current.state.editDialogProps).toEqual({
+            inputParams: inputParams,
+            data: nodeData,
+            disabled: false
+        })
+    })
+
+    it('should close edit dialog and clear state', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        const nodeData = {
+            id: 'node-1',
+            name: 'testNode',
+            label: 'Test Node',
+            outputAnchors: []
+        }
+
+        const inputParams = [
+            {
+                id: 'param-1',
+                name: 'param1',
+                label: 'Parameter 1',
+                type: 'string'
+            }
+        ]
+
+        // First open the dialog
+        act(() => {
+            result.current.openEditDialog('node-1', nodeData, inputParams)
+        })
+
+        // Verify dialog is open
+        expect(result.current.state.editingNodeId).toBe('node-1')
+        expect(result.current.state.editDialogProps).not.toBeNull()
+
+        // Close the dialog
+        act(() => {
+            result.current.closeEditDialog()
+        })
+
+        // Should clear editingNodeId
+        expect(result.current.state.editingNodeId).toBeNull()
+
+        // Should clear editDialogProps
+        expect(result.current.state.editDialogProps).toBeNull()
+    })
+
+    it('should handle opening dialog for different nodes', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1'), makeNode('node-2')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        const nodeData1 = {
+            id: 'node-1',
+            name: 'testNode1',
+            label: 'Test Node 1',
+            outputAnchors: []
+        }
+
+        const nodeData2 = {
+            id: 'node-2',
+            name: 'testNode2',
+            label: 'Test Node 2',
+            outputAnchors: []
+        }
+
+        const inputParams = [
+            {
+                id: 'param-1',
+                name: 'param1',
+                label: 'Parameter 1',
+                type: 'string'
+            }
+        ]
+
+        // Open dialog for node-1
+        act(() => {
+            result.current.openEditDialog('node-1', nodeData1, inputParams)
+        })
+
+        expect(result.current.state.editingNodeId).toBe('node-1')
+        expect(result.current.state.editDialogProps).not.toBeNull()
+        expect(result.current.state.editDialogProps!.data).toBeDefined()
+        expect(result.current.state.editDialogProps!.data!.label).toBe('Test Node 1')
+
+        // Open dialog for node-2 (should replace node-1)
+        act(() => {
+            result.current.openEditDialog('node-2', nodeData2, inputParams)
+        })
+
+        expect(result.current.state.editingNodeId).toBe('node-2')
+        expect(result.current.state.editDialogProps).not.toBeNull()
+        expect(result.current.state.editDialogProps!.data).toBeDefined()
+        expect(result.current.state.editDialogProps!.data!.label).toBe('Test Node 2')
+    })
+
+    it('should set disabled to false in dialog props', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        const nodeData = {
+            id: 'node-1',
+            name: 'testNode',
+            label: 'Test Node',
+            outputAnchors: []
+        }
+
+        act(() => {
+            result.current.openEditDialog('node-1', nodeData, [])
+        })
+
+        // disabled should always be false
+        expect(result.current.state.editDialogProps?.disabled).toBe(false)
+    })
+
+    it('should preserve inputParams in dialog props', () => {
+        const initialFlow: FlowData = {
+            nodes: [makeNode('node-1')],
+            edges: []
+        }
+
+        const { result } = renderHook(() => useAgentflowContext(), {
+            wrapper: createWrapper(initialFlow)
+        })
+
+        const nodeData = {
+            id: 'node-1',
+            name: 'testNode',
+            label: 'Test Node',
+            outputAnchors: []
+        }
+
+        const inputParams = [
+            {
+                id: 'param-1',
+                name: 'param1',
+                label: 'Parameter 1',
+                type: 'string',
+                optional: true
+            },
+            {
+                id: 'param-2',
+                name: 'param2',
+                label: 'Parameter 2',
+                type: 'number',
+                default: 42
+            }
+        ]
+
+        act(() => {
+            result.current.openEditDialog('node-1', nodeData, inputParams)
+        })
+
+        // Should preserve all input params with their properties
+        expect(result.current.state.editDialogProps).not.toBeNull()
+        expect(result.current.state.editDialogProps!.inputParams).toEqual(inputParams)
+        expect(result.current.state.editDialogProps!.inputParams).toHaveLength(2)
+
+        const params = result.current.state.editDialogProps!.inputParams!
+        expect(params[0]).toBeDefined()
+        expect(params[0]!.optional).toBe(true)
+        expect(params[1]).toBeDefined()
+        expect(params[1]!.default).toBe(42)
+    })
+})
+
 describe('AgentflowContext - state synchronization', () => {
     it('should call local state setters for setNodes', () => {
         const initialFlow: FlowData = {

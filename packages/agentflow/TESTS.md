@@ -34,7 +34,7 @@ These modules carry the highest risk. Test in the same PR when modifying.
 | `src/infrastructure/api/client.ts` | `createApiClient` — headers, auth token, 401 interceptor | ✅ Done |
 | `src/infrastructure/api/chatflows.ts` | All CRUD + `generateAgentflow` + `getChatModels`, FlowData serialization | ✅ Done |
 | `src/infrastructure/api/nodes.ts` | `getAllNodes`, `getNodeByName`, `getNodeIconUrl` | ✅ Done |
-| `src/infrastructure/store/AgentflowContext.tsx` | `agentflowReducer` (all actions), `normalizeNodes`. Remaining: `deleteNode()`, `duplicateNode()`, `updateNodeData()`, `getFlowData()` | 🟡 Partial |
+| `src/infrastructure/store/AgentflowContext.tsx` | `agentflowReducer` (all actions), `normalizeNodes`, `deleteNode()`, `duplicateNode()`. Remaining:  `updateNodeData()`, `getFlowData()` | 🟡 Partial|
 | `src/useAgentflow.ts` | `getFlow()`, `toJSON()`, `validate()`, `addNode()`, `clear()` | ⬜ Not yet — thin wrapper |
 | `src/features/canvas/hooks/useFlowHandlers.ts` | `handleConnect`, `handleNodesChange`, `handleEdgesChange`, `handleAddNode` — synchronous `onFlowChange` callbacks, dirty tracking, viewport resolution, change filtering | ✅ Done |
 
@@ -130,6 +130,7 @@ Key features:
     -   `./src/features/canvas/hooks/useFlowHandlers.ts`
     -   `./src/features/node-palette/search.ts`
     -   `./src/infrastructure/api/`
+    -   ⏳ `./src/infrastructure/store/AgentflowContext.tsx` — will be added when coverage reaches 80%
 -   **Coverage exclusions**:
     -   `src/__test_utils__/**` — test utilities
     -   `src/__mocks__/**` — module mocks
