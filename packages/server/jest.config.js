@@ -17,8 +17,7 @@ module.exports = {
 
     // Stub ESM-only MCP SDK imports for Jest's CJS runtime.
     moduleNameMapper: {
-        '^@modelcontextprotocol/sdk$': '<rootDir>/../components/test/__mocks__/esm-stub.js',
-        '^@modelcontextprotocol/sdk/(.*)$': '<rootDir>/../components/test/__mocks__/esm-stub.js'
+        '^@modelcontextprotocol/sdk(/.*)?$': '<rootDir>/../components/test/__mocks__/esm-stub.js'
     },
 
     // File extensions to recognize in module resolution
