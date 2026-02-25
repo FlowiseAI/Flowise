@@ -16,7 +16,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Chat NVIDIA NIM'
+        this.label = 'Nvidia NIM'
         this.name = 'chatNvidiaNIM'
         this.version = 1.1
         this.type = 'ChatNvidiaNIM'

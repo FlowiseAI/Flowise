@@ -25,7 +25,7 @@ class AzureChatOpenAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Azure ChatOpenAI'
+        this.label = 'Azure OpenAI'
         this.name = 'azureChatOpenAI'
         this.version = 7.1
         this.type = 'AzureChatOpenAI'
@@ -110,17 +110,19 @@ class AzureChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
+                label: 'Base Path',
                 name: 'basepath',
                 type: 'string',
                 optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
                 additionalParams: true
             },
             {
-                label: 'BaseOptions',
+                label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
+                description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             },
             {
@@ -131,29 +133,6 @@ class AzureChatOpenAI_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
-            },
-            {
-                label: 'Image Resolution',
-                description: 'This parameter controls the resolution in which the model views the image.',
-                name: 'imageResolution',
-                type: 'options',
-                options: [
-                    {
-                        label: 'Low',
-                        name: 'low'
-                    },
-                    {
-                        label: 'High',
-                        name: 'high'
-                    },
-                    {
-                        label: 'Auto',
-                        name: 'auto'
-                    }
-                ],
-                default: 'low',
-                optional: false,
-                additionalParams: true
             },
             {
                 label: 'Reasoning',
@@ -244,7 +223,6 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-        const imageResolution = nodeData.inputs?.imageResolution as string
 
         const obj: ChatOpenAIFields & Partial<AzureOpenAIInput> = {
             temperature: parseFloat(temperature),
@@ -293,8 +271,7 @@ class AzureChatOpenAI_ChatModels implements INode {
 
         const multiModalOption: IMultiModalOption = {
             image: {
-                allowImageUploads: allowImageUploads ?? false,
-                imageResolution
+                allowImageUploads: allowImageUploads ?? false
             }
         }
 

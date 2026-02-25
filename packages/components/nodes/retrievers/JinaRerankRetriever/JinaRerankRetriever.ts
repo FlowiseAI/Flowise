@@ -1,5 +1,5 @@
 import { BaseRetriever } from '@langchain/core/retrievers'
-import { ContextualCompressionRetriever } from 'langchain/retrievers/contextual_compression'
+import { ContextualCompressionRetriever } from '@langchain/classic/retrievers/contextual_compression'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { JinaRerank } from './JinaRerank'

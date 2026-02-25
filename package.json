@@ -93,12 +93,14 @@
         "pnpm": "^10.26.0"
     },
     "resolutions": {
+        "@anthropic-ai/sdk": "^0.73.0",
         "@google/generative-ai": "^0.24.0",
         "@grpc/grpc-js": "^1.10.10",
-        "@langchain/core": "0.3.61",
+        "@langchain/core": "1.1.20",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "openai": "4.96.0",
-        "protobufjs": "7.4.0"
+        "openai": "6.19.0",
+        "protobufjs": "7.4.0",
+        "uuid": "^10.0.0"
     },
     "eslintIgnore": [
         "**/dist",

@@ -15,6 +15,8 @@ class Cohere_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Cohere'
@@ -24,6 +26,8 @@ class Cohere_LLMs implements INode {
         this.icon = 'Cohere.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around Cohere large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use Cohere Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(Cohere)]
         this.credential = {
             label: 'Connect Credential',

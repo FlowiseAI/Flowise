@@ -1,11 +1,12 @@
 import { flatten } from 'lodash'
+import type { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep } from '@langchain/core/agents'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { Tool } from '@langchain/core/tools'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
-import { formatLogToMessage } from 'langchain/agents/format_scratchpad/log_to_message'
+import { formatLogToMessage } from '@langchain/classic/agents/format_scratchpad/log_to_message'
 import { getBaseClasses, transformBracesWithColon } from '../../../src/utils'
 import {
     FlowiseMemory,
@@ -246,7 +247,9 @@ const prepareAgent = async (
         throw new Error(`Provided prompt is missing required input variables: ${JSON.stringify(missingVariables)}`)
     }
 
-    const llmWithStop = model.bind({ stop: ['</tool_input>', '</final_answer>'] })
+    const llmWithStop = (model as BaseLanguageModel).withConfig({
+        stop: ['</tool_input>', '</final_answer>']
+    })
 
     const messages = (await memory.getChatMessages(flowObj.sessionId, false, prependMessages)) as IMessage[]
     let chatHistoryMsgTxt = ''

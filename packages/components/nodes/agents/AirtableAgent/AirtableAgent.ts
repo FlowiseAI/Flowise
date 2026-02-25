@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { AgentExecutor } from 'langchain/agents'
-import { LLMChain } from 'langchain/chains'
+import { AgentExecutor } from '@langchain/classic/agents'
+import { LLMChain } from '@langchain/classic/chains'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
@@ -21,6 +21,8 @@ class Airtable_Agents implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    deprecateMessage: string
+    badge: string
 
     constructor() {
         this.label = 'Airtable Agent'
@@ -30,6 +32,8 @@ class Airtable_Agents implements INode {
         this.category = 'Agents'
         this.icon = 'airtable.svg'
         this.description = 'Agent used to answer queries on Airtable table'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Airtable Agent is deprecated and will be removed in a future release. Use Agent from AgentFlow instead.'
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.credential = {
             label: 'Connect Credential',

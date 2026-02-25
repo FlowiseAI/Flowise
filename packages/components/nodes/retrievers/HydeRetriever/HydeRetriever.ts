@@ -1,7 +1,7 @@
 import { VectorStore } from '@langchain/core/vectorstores'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { PromptTemplate } from '@langchain/core/prompts'
-import { HydeRetriever, HydeRetrieverOptions, PromptKey } from 'langchain/retrievers/hyde'
+import { HydeRetriever, HydeRetrieverOptions, PromptKey } from '@langchain/classic/retrievers/hyde'
 import { handleEscapeCharacters } from '../../../src/utils'
 import { INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
@@ -175,11 +175,11 @@ Passage:`
         retriever.filter = vectorStore?.lc_kwargs?.filter ?? (vectorStore as any).filter
 
         if (output === 'retriever') return retriever
-        else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
+        else if (output === 'document') return await retriever._getRelevantDocuments(query ? query : input)
         else if (output === 'text') {
             let finaltext = ''
 
-            const docs = await retriever.getRelevantDocuments(query ? query : input)
+            const docs = await retriever._getRelevantDocuments(query ? query : input)
 
             for (const doc of docs) finaltext += `${doc.pageContent}\n`
 

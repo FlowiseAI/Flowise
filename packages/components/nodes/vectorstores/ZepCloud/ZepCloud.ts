@@ -1,11 +1,11 @@
 import { flatten } from 'lodash'
 import { ZepClient } from '@getzep/zep-cloud'
-import { IZepConfig, ZepVectorStore } from '@getzep/zep-cloud/langchain'
-import { Document } from 'langchain/document'
+import { ZepCloudVectorStore, IZepCloudConfig } from '@langchain/community/vectorstores/zep_cloud'
+import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
-import { FakeEmbeddings } from 'langchain/embeddings/fake'
+import { FakeEmbeddings } from '@langchain/classic/embeddings/fake'
 import { Embeddings } from '@langchain/core/embeddings'
 
 class Zep_CloudVectorStores implements INode {
@@ -82,7 +82,7 @@ class Zep_CloudVectorStores implements INode {
             {
                 label: 'Zep Vector Store',
                 name: 'vectorStore',
-                baseClasses: [this.type, ...getBaseClasses(ZepVectorStore)]
+                baseClasses: [this.type, ...getBaseClasses(ZepCloudVectorStore)]
             }
         ]
     }
@@ -110,7 +110,7 @@ class Zep_CloudVectorStores implements INode {
                 client
             }
             try {
-                await ZepVectorStore.fromDocuments(finalDocs, new FakeEmbeddings(), zepConfig)
+                await ZepCloudVectorStore.fromDocuments(finalDocs, new FakeEmbeddings(), zepConfig)
                 return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
@@ -124,7 +124,7 @@ class Zep_CloudVectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
 
-        const zepConfig: IZepConfig & Partial<ZepFilter> = {
+        const zepConfig: IZepCloudConfig & Partial<ZepFilter> = {
             apiKey,
             collectionName: zepCollection
         }
@@ -143,17 +143,17 @@ interface ZepFilter {
     filter: Record<string, any>
 }
 
-class ZepExistingVS extends ZepVectorStore {
+class ZepExistingVS extends ZepCloudVectorStore {
     filter?: Record<string, any>
-    args?: IZepConfig & Partial<ZepFilter>
+    args?: IZepCloudConfig & Partial<ZepFilter>
 
-    constructor(embeddings: Embeddings, args: IZepConfig & Partial<ZepFilter>) {
+    constructor(embeddings: Embeddings, args: IZepCloudConfig & Partial<ZepFilter>) {
         super(embeddings, args)
         this.filter = args.filter
         this.args = args
     }
 
-    static async fromExistingIndex(embeddings: Embeddings, dbConfig: IZepConfig & Partial<ZepFilter>): Promise<ZepVectorStore> {
+    static async fromExistingIndex(embeddings: Embeddings, dbConfig: IZepCloudConfig & Partial<ZepFilter>): Promise<ZepCloudVectorStore> {
         return new this(embeddings, dbConfig)
     }
 }

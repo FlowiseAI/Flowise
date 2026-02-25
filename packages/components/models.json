@@ -4,6 +4,20 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-opus-4-6-v1",
+                    "name": "anthropic.claude-opus-4-6-v1",
+                    "description": "Claude 4.6 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "anthropic.claude-sonnet-4-6",
+                    "name": "anthropic.claude-sonnet-4-6",
+                    "description": "Claude 4.6 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
                     "label": "anthropic.claude-opus-4-5-20251101-v1:0",
                     "name": "anthropic.claude-opus-4-5-20251101-v1:0",
                     "description": "Claude 4.5 Opus",
@@ -537,6 +551,20 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-opus-4-6",
+                    "name": "claude-opus-4-6",
+                    "description": "Claude 4.6 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "claude-sonnet-4-6",
+                    "name": "claude-sonnet-4-6",
+                    "description": "Claude 4.6 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
                     "label": "claude-opus-4-5",
                     "name": "claude-opus-4-5",
                     "description": "Claude 4.5 Opus",
@@ -666,6 +694,12 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
+                    "label": "gemini-3.1-pro-preview",
+                    "name": "gemini-3.1-pro-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
+                {
                     "label": "gemini-3-pro-preview",
                     "name": "gemini-3-pro-preview",
                     "input_cost": 0.00002,
@@ -754,6 +788,12 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
+                    "label": "gemini-3.1-pro-preview",
+                    "name": "gemini-3.1-pro-preview",
+                    "input_cost": 0.00002,
+                    "output_cost": 0.00012
+                },
+                {
                     "label": "gemini-3-pro-preview",
                     "name": "gemini-3-pro-preview",
                     "input_cost": 0.00002,
@@ -830,6 +870,20 @@
                     "name": "gemini-1.0-pro-vision",
                     "input_cost": 1.25e-7,
                     "output_cost": 3.75e-7
+                },
+                {
+                    "label": "claude-opus-4-6",
+                    "name": "claude-opus-4-6",
+                    "description": "Claude 4.6 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "claude-sonnet-4-6",
+                    "name": "claude-sonnet-4-6",
+                    "description": "Claude 4.6 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-opus-4-5@20251101",

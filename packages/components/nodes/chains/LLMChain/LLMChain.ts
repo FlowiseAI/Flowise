@@ -2,8 +2,8 @@ import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core
 import { BaseLLMOutputParser, BaseOutputParser } from '@langchain/core/output_parsers'
 import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, FewShotPromptTemplate, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
-import { OutputFixingParser } from 'langchain/output_parsers'
-import { LLMChain } from 'langchain/chains'
+import { OutputFixingParser } from '@langchain/classic/output_parsers'
+import { LLMChain } from '@langchain/classic/chains'
 import {
     IVisionChatModal,
     ICommonObject,

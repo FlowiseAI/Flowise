@@ -1,7 +1,7 @@
 import { flatten } from 'lodash'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
-import { CouchbaseVectorStore, CouchbaseVectorStoreArgs } from '@langchain/community/vectorstores/couchbase'
+import { CouchbaseSearchVectorStore, CouchbaseSearchVectorStoreArgs } from '@langchain/community/vectorstores/couchbase_search'
 import { Cluster } from 'couchbase'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
@@ -118,7 +118,7 @@ class Couchbase_VectorStores implements INode {
             {
                 label: 'Couchbase Vector Store',
                 name: 'vectorStore',
-                baseClasses: [this.type, ...getBaseClasses(CouchbaseVectorStore)]
+                baseClasses: [this.type, ...getBaseClasses(CouchbaseSearchVectorStore)]
             }
         ]
     }
@@ -156,7 +156,7 @@ class Couchbase_VectorStores implements INode {
                 configProfile: 'wanDevelopment'
             })
 
-            const couchbaseConfig: CouchbaseVectorStoreArgs = {
+            const couchbaseConfig: CouchbaseSearchVectorStoreArgs = {
                 cluster: couchbaseClient,
                 bucketName: bucketName,
                 scopeName: scopeName,
@@ -170,7 +170,7 @@ class Couchbase_VectorStores implements INode {
                 if (!textKey || textKey === '') couchbaseConfig.textKey = 'text'
                 if (!embeddingKey || embeddingKey === '') couchbaseConfig.embeddingKey = 'embedding'
 
-                await CouchbaseVectorStore.fromDocuments(finalDocs, embeddings, couchbaseConfig)
+                await CouchbaseSearchVectorStore.fromDocuments(finalDocs, embeddings, couchbaseConfig)
                 return { numAdded: finalDocs.length, addedDocs: finalDocs }
             } catch (e) {
                 throw new Error(e)
@@ -200,7 +200,7 @@ class Couchbase_VectorStores implements INode {
             configProfile: 'wanDevelopment'
         })
 
-        const couchbaseConfig: CouchbaseVectorStoreArgs = {
+        const couchbaseConfig: CouchbaseSearchVectorStoreArgs = {
             cluster: couchbaseClient,
             bucketName: bucketName,
             scopeName: scopeName,
@@ -219,7 +219,7 @@ class Couchbase_VectorStores implements INode {
                     typeof couchbaseMetadataFilter === 'object' ? couchbaseMetadataFilter : parseJsonBody(couchbaseMetadataFilter)
             }
 
-            const vectorStore = await CouchbaseVectorStore.initialize(embeddings, couchbaseConfig)
+            const vectorStore = await CouchbaseSearchVectorStore.initialize(embeddings, couchbaseConfig)
 
             return resolveVectorStoreOrRetriever(nodeData, vectorStore, metadatafilter)
         } catch (e) {

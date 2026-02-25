@@ -17,7 +17,7 @@ class ChatMistral_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatMistralAI'
+        this.label = 'MistralAI'
         this.name = 'chatMistralAI'
         this.version = 4.0
         this.type = 'ChatMistralAI'

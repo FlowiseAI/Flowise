@@ -17,7 +17,7 @@ class ChatCometAPI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatCometAPI'
+        this.label = 'Comet'
         this.name = 'chatCometAPI'
         this.version = 1.0
         this.type = 'ChatCometAPI'

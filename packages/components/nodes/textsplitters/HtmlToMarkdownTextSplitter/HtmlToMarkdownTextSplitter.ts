@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { MarkdownTextSplitter, MarkdownTextSplitterParams } from 'langchain/text_splitter'
+import { MarkdownTextSplitter, MarkdownTextSplitterParams } from '@langchain/textsplitters'
 import { NodeHtmlMarkdown } from 'node-html-markdown'
 
 class HtmlToMarkdownTextSplitter_TextSplitters implements INode {

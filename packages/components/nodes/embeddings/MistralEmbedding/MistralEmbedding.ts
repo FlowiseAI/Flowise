@@ -16,7 +16,7 @@ class MistralEmbedding_Embeddings implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'MistralAI Embeddings'
+        this.label = 'MistralAI Embedding'
         this.name = 'mistralAIEmbeddings'
         this.version = 2.0
         this.type = 'MistralAIEmbeddings'

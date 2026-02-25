@@ -14,6 +14,8 @@ class HuggingFaceInference_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'HuggingFace Inference'
@@ -23,6 +25,8 @@ class HuggingFaceInference_LLMs implements INode {
         this.icon = 'HuggingFace.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around HuggingFace large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use HuggingFace Inference Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(HuggingFaceInference)]
         this.credential = {
             label: 'Connect Credential',

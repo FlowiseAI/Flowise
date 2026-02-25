@@ -1029,7 +1029,7 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
         }
 
         const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${question}` : question
-        let humanMsg: { messages: HumanMessage[] | ToolMessage[] } | null = {
+        let humanMsg: { messages: BaseMessage[] } | null = {
             messages: [...prependMessages, new HumanMessage({ content: finalQuestion })]
         }
 

@@ -18,7 +18,7 @@ class ChatOllama_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatOllama'
+        this.label = 'Ollama'
         this.name = 'chatOllama'
         this.version = 5.0
         this.type = 'ChatOllama'
@@ -63,6 +63,14 @@ class ChatOllama_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -70,14 +78,6 @@ class ChatOllama_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
-            },
-            {
-                label: 'Streaming',
-                name: 'streaming',
-                type: 'boolean',
-                default: true,
-                optional: true,
-                additionalParams: true
             },
             {
                 label: 'JSON Mode',

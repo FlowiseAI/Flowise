@@ -1,5 +1,5 @@
 import { convertSchemaToZod, ICommonObject } from 'flowise-components'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -27,7 +27,9 @@ export class LLMEvaluationRunner {
                     const llmEvaluator = llmEvaluatorMap[i]
                     let evaluator = llmEvaluator.evaluator
                     const schema = z.object(convertSchemaToZod(JSON.stringify(evaluator.outputSchema)))
-                    const modelWithStructuredOutput = this.llm.withStructuredOutput(schema)
+                    const modelWithStructuredOutput = this.llm.withStructuredOutput(schema, {
+                        method: 'functionCalling'
+                    })
                     const llmExecutor = RunnableSequence.from([
                         PromptTemplate.fromTemplate(evaluator.prompt as string),
                         modelWithStructuredOutput

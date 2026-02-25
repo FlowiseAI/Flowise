@@ -1,5 +1,5 @@
 import { flatten } from 'lodash'
-import { AgentExecutor } from 'langchain/agents'
+import { AgentExecutor } from '@langchain/classic/agents'
 import { ChatPromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { Tool } from '@langchain/core/tools'
 import type { PromptTemplate } from '@langchain/core/prompts'
@@ -24,6 +24,8 @@ class ReActAgentChat_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
+    badge: string
+    deprecateMessage: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'ReAct Agent for Chat Models'
@@ -33,6 +35,9 @@ class ReActAgentChat_Agents implements INode {
         this.category = 'Agents'
         this.icon = 'agent.svg'
         this.description = 'Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage =
+            'ReAct Agent for Chat Models is deprecated and will be removed in a future release. Use Agent from AgentFlow instead.'
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
             {

@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { Embeddings } from '@langchain/core/embeddings'
-import { WebBrowser } from 'langchain/tools/webbrowser'
+import { WebBrowser } from '@langchain/classic/tools/webbrowser'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 

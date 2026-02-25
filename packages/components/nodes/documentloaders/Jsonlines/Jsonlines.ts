@@ -1,9 +1,9 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import jsonpointer from 'jsonpointer'
 import { getFileFromStorage, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
-import { BaseDocumentLoader } from 'langchain/document_loaders/base'
+import { BaseDocumentLoader } from '@langchain/classic/document_loaders/base'
 import { Document } from '@langchain/core/documents'
 import type { readFile as ReadFileT } from 'node:fs/promises'
 
@@ -141,7 +141,7 @@ class Jsonlines_DocumentLoaders implements INode {
             for (const file of files) {
                 if (!file) continue
                 const fileData = await getFileFromStorage(file, orgId, chatflowid)
-                const blob = new Blob([fileData])
+                const blob = new Blob([new Uint8Array(fileData)])
                 const loader = new JSONLinesLoader(blob, pointer, metadata)
 
                 if (textSplitter) {

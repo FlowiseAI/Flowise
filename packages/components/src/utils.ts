@@ -3,7 +3,7 @@ import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { cloneDeep, omit, get } from 'lodash'
 import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
@@ -15,8 +15,8 @@ import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
-import { TextSplitter } from 'langchain/text_splitter'
-import { DocumentLoader } from 'langchain/document_loaders/base'
+import { TextSplitter } from '@langchain/textsplitters'
+import { DocumentLoader } from '@langchain/classic/document_loaders/base'
 import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
@@ -2057,7 +2057,9 @@ export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, struct
         const structuredOutputSchema = z.object(zodObj)
 
         // @ts-ignore
-        return llmNodeInstance.withStructuredOutput(structuredOutputSchema)
+        return llmNodeInstance.withStructuredOutput(structuredOutputSchema, {
+            method: 'functionCalling'
+        })
     } catch (exception) {
         console.error(exception)
         return llmNodeInstance

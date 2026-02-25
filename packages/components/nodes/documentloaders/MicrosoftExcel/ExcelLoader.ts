@@ -1,5 +1,5 @@
 import { Document } from '@langchain/core/documents'
-import { BufferLoader } from 'langchain/document_loaders/fs/buffer'
+import { BufferLoader } from '@langchain/classic/document_loaders/fs/buffer'
 import { read, utils } from 'xlsx'
 
 /**

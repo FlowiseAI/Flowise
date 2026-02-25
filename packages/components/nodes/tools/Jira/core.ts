@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import fetch from 'node-fetch'
 import * as https from 'https'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'

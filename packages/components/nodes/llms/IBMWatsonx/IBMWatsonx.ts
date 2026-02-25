@@ -15,6 +15,8 @@ class IBMWatsonx_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'IBMWatsonx'
@@ -24,6 +26,8 @@ class IBMWatsonx_LLMs implements INode {
         this.icon = 'ibm.png'
         this.category = 'LLMs'
         this.description = 'Wrapper around IBM watsonx.ai foundation models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use IBM Watsonx Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(WatsonxLLM)]
         this.credential = {
             label: 'Connect Credential',

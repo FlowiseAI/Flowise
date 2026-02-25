@@ -1,6 +1,6 @@
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { omit } from 'lodash'
-import { CheerioWebBaseLoader, WebBaseLoaderParams } from '@langchain/community/document_loaders/web/cheerio'
+import { CheerioWebBaseLoader, CheerioWebBaseLoaderParams } from '@langchain/community/document_loaders/web/cheerio'
 import { test } from 'linkifyjs'
 import { parse } from 'css-what'
 import { SelectorType } from 'cheerio'
@@ -140,7 +140,7 @@ class Cheerio_DocumentLoaders implements INode {
 
         const selector: SelectorType = nodeData.inputs?.selector as SelectorType
 
-        let params: WebBaseLoaderParams = {}
+        let params: CheerioWebBaseLoaderParams = {}
         if (selector) {
             parse(selector) // comes with cheerio - will throw error if invalid
             params['selector'] = selector

@@ -22,6 +22,8 @@ class AzureOpenAI_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Azure OpenAI'
@@ -31,6 +33,8 @@ class AzureOpenAI_LLMs implements INode {
         this.icon = 'Azure.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around Azure OpenAI large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use Azure OpenAI Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(AzureOpenAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -110,10 +114,11 @@ class AzureOpenAI_LLMs implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
+                label: 'Base Path',
                 name: 'basepath',
                 type: 'string',
                 optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
                 additionalParams: true
             }
         ]
@@ -165,7 +170,7 @@ class AzureOpenAI_LLMs implements INode {
         if (cache) obj.cache = cache
         if (basePath) obj.azureOpenAIBasePath = basePath
 
-        const model = new AzureOpenAI(obj)
+        const model = new AzureOpenAI(obj as ConstructorParameters<typeof AzureOpenAI>[0])
         return model
     }
 }

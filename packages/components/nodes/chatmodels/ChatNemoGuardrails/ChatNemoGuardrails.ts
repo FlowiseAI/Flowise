@@ -82,7 +82,7 @@ class ChatNemoGuardrailsChatModel implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Chat Nemo Guardrails'
+        this.label = 'Nemo Guardrails'
         this.name = 'chatNemoGuardrails'
         this.version = 1.0
         this.type = 'ChatNemoGuardrails'

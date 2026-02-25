@@ -16,7 +16,7 @@ class ChatFireworks_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatFireworks'
+        this.label = 'Fireworks AI'
         this.name = 'chatFireworks'
         this.version = 2.0
         this.type = 'ChatFireworks'

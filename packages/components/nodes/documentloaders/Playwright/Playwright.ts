@@ -5,7 +5,7 @@ import {
     PlaywrightWebBaseLoaderOptions
 } from '@langchain/community/document_loaders/web/playwright'
 import { Document } from '@langchain/core/documents'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { test } from 'linkifyjs'
 import { omit } from 'lodash'
 import { handleEscapeCharacters, INodeOutputsValue, webCrawl, xmlScrape } from '../../../src'

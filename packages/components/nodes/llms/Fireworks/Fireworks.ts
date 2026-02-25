@@ -13,6 +13,8 @@ class Fireworks_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Fireworks'
@@ -22,6 +24,8 @@ class Fireworks_LLMs implements INode {
         this.icon = 'fireworks.png'
         this.category = 'LLMs'
         this.description = 'Wrapper around Fireworks API for large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use Fireworks Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(Fireworks)]
         this.credential = {
             label: 'Connect Credential',

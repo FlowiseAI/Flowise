@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { BraveSearch } from '@langchain/community/tools/brave_search'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { Document } from '@langchain/core/documents'

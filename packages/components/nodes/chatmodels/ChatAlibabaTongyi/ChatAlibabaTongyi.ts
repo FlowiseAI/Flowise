@@ -17,7 +17,7 @@ class ChatAlibabaTongyi_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatAlibabaTongyi'
+        this.label = 'Alibaba Tongyi'
         this.name = 'chatAlibabaTongyi'
         this.version = 2.0
         this.type = 'ChatAlibabaTongyi'

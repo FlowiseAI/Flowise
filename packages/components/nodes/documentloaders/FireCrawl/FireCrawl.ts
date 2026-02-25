@@ -1,10 +1,10 @@
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { Document, DocumentInterface } from '@langchain/core/documents'
-import { BaseDocumentLoader } from 'langchain/document_loaders/base'
+import { BaseDocumentLoader } from '@langchain/classic/document_loaders/base'
 import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import axios, { AxiosResponse, AxiosRequestHeaders } from 'axios'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 // FirecrawlApp interfaces
 interface FirecrawlAppConfig {

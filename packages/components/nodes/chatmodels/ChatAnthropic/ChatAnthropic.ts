@@ -19,7 +19,7 @@ class ChatAnthropic_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatAnthropic'
+        this.label = 'Anthropic Claude'
         this.name = 'chatAnthropic'
         this.version = 8.0
         this.type = 'ChatAnthropic'
@@ -64,6 +64,87 @@ class ChatAnthropic_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            /*  The manual thinking: {type: "enabled", budget_tokens: N} configuration is deprecated on Opus 4.6 and will be removed in a future model release */
+            {
+                label: 'Extended Thinking',
+                name: 'extendedThinking',
+                type: 'boolean',
+                description: 'Enable extended thinking for reasoning model such as Claude Sonnet 3.7 and Claude 4',
+                optional: true,
+                additionalParams: true,
+                hide: {
+                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                }
+            },
+            {
+                label: 'Budget Tokens',
+                name: 'budgetTokens',
+                type: 'number',
+                step: 1,
+                default: '1024',
+                description: 'Maximum number of tokens Claude is allowed use for its internal reasoning process',
+                optional: true,
+                additionalParams: true,
+                show: {
+                    extendedThinking: true
+                },
+                hide: {
+                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                }
+            },
+            {
+                label: 'Adaptive Thinking',
+                description:
+                    'Claude evaluates the complexity of each request and determines whether and how much to use extended thinking.',
+                name: 'adaptiveThinking',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                additionalParams: true,
+                show: {
+                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                }
+            },
+            {
+                label: 'Thinking Effort',
+                description: 'Control how eager Claude is about spending tokens when responding to requests',
+                name: 'thinkingEffort',
+                type: 'options',
+                optional: true,
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'Medium',
+                        name: 'medium'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    },
+                    {
+                        label: 'Max',
+                        name: 'max',
+                        description: 'Absolute maximum capability with no constraints on token spending. Opus 4.6 only'
+                    }
+                ],
+                additionalParams: true,
+                show: {
+                    adaptiveThinking: true,
+                    modelName: ['claude-opus-4-6', 'claude-sonnet-4-6']
+                }
+            },
+            {
                 label: 'Max Tokens',
                 name: 'maxTokensToSample',
                 type: 'number',
@@ -86,33 +167,6 @@ class ChatAnthropic_ChatModels implements INode {
                 step: 0.1,
                 optional: true,
                 additionalParams: true
-            },
-            {
-                label: 'Extended Thinking',
-                name: 'extendedThinking',
-                type: 'boolean',
-                description: 'Enable extended thinking for reasoning model such as Claude Sonnet 3.7 and Claude 4',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Budget Tokens',
-                name: 'budgetTokens',
-                type: 'number',
-                step: 1,
-                default: 1024,
-                description: 'Maximum number of tokens Claude is allowed use for its internal reasoning process',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Allow Image Uploads',
-                name: 'allowImageUploads',
-                type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
-                default: false,
-                optional: true
             }
         ]
     }
@@ -134,6 +188,8 @@ class ChatAnthropic_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const extendedThinking = nodeData.inputs?.extendedThinking as boolean
         const budgetTokens = nodeData.inputs?.budgetTokens as string
+        const adaptiveThinking = nodeData.inputs?.adaptiveThinking as boolean
+        const thinkingEffort = nodeData.inputs?.thinkingEffort as 'low' | 'medium' | 'high' | 'max'
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
@@ -151,11 +207,24 @@ class ChatAnthropic_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache
-        if (extendedThinking) {
+
+        if (adaptiveThinking) {
+            obj.thinking = {
+                type: 'adaptive'
+            }
+            if (thinkingEffort) {
+                obj.outputConfig = {
+                    effort: thinkingEffort
+                }
+            }
+
+            delete obj.temperature
+        } else if (extendedThinking) {
             obj.thinking = {
                 type: 'enabled',
-                budget_tokens: parseInt(budgetTokens, 10)
+                budget_tokens: parseInt(budgetTokens ?? '1024', 10)
             }
+
             delete obj.temperature
         }
 

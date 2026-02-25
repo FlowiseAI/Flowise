@@ -11,7 +11,8 @@ import {
     IServerSideEventStreamer,
     IUsedTool
 } from '../../../src/Interface'
-import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
+import { ContentBlock } from 'langchain'
+import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { AnalyticHandler } from '../../../src/handler'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { ILLMMessage } from '../Interface.Agentflow'
@@ -1111,6 +1112,8 @@ class Agent_Agentflow implements INode {
             // Get initial response from LLM
             const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
+            console.log('messages', messages)
+
             if (humanInput) {
                 if (humanInput.type !== 'proceed' && humanInput.type !== 'reject') {
                     throw new Error(`Invalid human input type. Expected 'proceed' or 'reject', but got '${humanInput.type}'`)
@@ -1170,6 +1173,8 @@ class Agent_Agentflow implements INode {
                     response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
                 }
             }
+
+            console.log('response', response)
 
             // Address built in tools (after artifacts are processed)
             const builtInUsedTools: IUsedTool[] = await this.extractBuiltInUsedTools(response, [])
@@ -1503,7 +1508,12 @@ class Agent_Agentflow implements INode {
             return builtInUsedTools
         }
 
-        const { output, tools, groundingMetadata, urlContextMetadata } = response.response_metadata
+        const { output, tools, groundingMetadata, urlContextMetadata } = response.response_metadata as {
+            output?: any[]
+            tools?: any[]
+            groundingMetadata?: { webSearchQueries?: string[] }
+            urlContextMetadata?: { urlMetadata?: any[] }
+        }
 
         // Handle OpenAI built-in tools
         if (output && Array.isArray(output) && output.length > 0 && tools && Array.isArray(tools) && tools.length > 0) {
@@ -1596,8 +1606,9 @@ class Agent_Agentflow implements INode {
                 const item = response.content[i]
 
                 if (item.type === 'executableCode' && item.executableCode) {
-                    const language = item.executableCode.language || 'PYTHON'
-                    const code = item.executableCode.code || ''
+                    const executableCode = item.executableCode as { language?: string; code?: string }
+                    const language = executableCode.language || 'PYTHON'
+                    const code = executableCode.code || ''
                     let toolOutput = ''
 
                     // Check for duplicates
@@ -1616,8 +1627,9 @@ class Agent_Agentflow implements INode {
 
                     if (nextItem) {
                         if (nextItem.type === 'codeExecutionResult' && nextItem.codeExecutionResult) {
-                            const outcome = nextItem.codeExecutionResult.outcome
-                            const output = nextItem.codeExecutionResult.output || ''
+                            const codeExecutionResult = nextItem.codeExecutionResult as { outcome?: string; output?: string }
+                            const outcome = codeExecutionResult.outcome
+                            const output = codeExecutionResult.output || ''
                             toolOutput = outcome === 'OUTCOME_OK' ? output : `Error: ${output}`
                         } else if (nextItem.type === 'inlineData') {
                             toolOutput = 'Generated image data'
@@ -1810,7 +1822,7 @@ class Agent_Agentflow implements INode {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
                 if (sseStreamer && !isStructuredOutput) {
                     let content = ''
-
+                    console.log('chunk.contentBlocks', chunk.contentBlocks)
                     if (typeof chunk === 'string') {
                         content = chunk
                     } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
@@ -1854,7 +1866,7 @@ class Agent_Agentflow implements INode {
                 (item: any) => item.type === 'inlineData' || item.type === 'executableCode' || item.type === 'codeExecutionResult'
             )
             if (!hasNonTextContent) {
-                const responseContents = response.content as MessageContentText[]
+                const responseContents = response.content as ContentBlock.Text[]
                 response.content = responseContents.map((item) => item.text).join('')
             }
         }

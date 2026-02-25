@@ -7,11 +7,7 @@ import { IFlowState } from './Interface.Agentflow'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
 import fetch from 'node-fetch'
 
-export const addImagesToMessages = async (
-    options: ICommonObject,
-    allowImageUploads: boolean,
-    imageResolution?: 'auto' | 'low' | 'high'
-): Promise<MessageContentImageUrl[]> => {
+export const addImagesToMessages = async (options: ICommonObject, allowImageUploads: boolean): Promise<MessageContentImageUrl[]> => {
     const imageContent: MessageContentImageUrl[] = []
 
     if (allowImageUploads && options?.uploads && options?.uploads.length > 0) {
@@ -27,16 +23,14 @@ export const addImagesToMessages = async (
                 imageContent.push({
                     type: 'image_url',
                     image_url: {
-                        url: bf,
-                        detail: imageResolution ?? 'low'
+                        url: bf
                     }
                 })
             } else if (upload.type == 'url' && bf) {
                 imageContent.push({
                     type: 'image_url',
                     image_url: {
-                        url: bf,
-                        detail: imageResolution ?? 'low'
+                        url: bf
                     }
                 })
             }
@@ -102,8 +96,7 @@ export const processMessagesWithImages = async (
                         imageContents.push({
                             type: 'image_url',
                             image_url: {
-                                url: base64Data,
-                                detail: item.imageResolution ?? 'low'
+                                url: base64Data
                             }
                         })
                     } catch (error) {
@@ -240,7 +233,7 @@ export const replaceBase64ImagesWithFileReferences = (
  * Get unique image messages from uploads
  * @param options Common options object containing uploads
  * @param messages Array of messages to check for existing images
- * @param modelConfig Model configuration object containing allowImageUploads and imageResolution
+ * @param modelConfig Model configuration object containing allowImageUploads
  * @returns Object containing imageMessageWithFileRef and imageMessageWithBase64
  */
 export const getUniqueImageMessages = async (
@@ -251,7 +244,7 @@ export const getUniqueImageMessages = async (
     if (!options.uploads) return undefined
 
     // Get images from uploads
-    const images = await addImagesToMessages(options, modelConfig?.allowImageUploads, modelConfig?.imageResolution)
+    const images = await addImagesToMessages(options, modelConfig?.allowImageUploads)
 
     // Filter out images that are already in previous messages
     const uniqueImages = images.filter((image) => {
@@ -280,8 +273,7 @@ export const getUniqueImageMessages = async (
         content: options.uploads.map((upload: IFileUpload) => ({
             type: upload.type,
             name: upload.name,
-            mime: upload.mime,
-            imageResolution: modelConfig?.imageResolution
+            mime: upload.mime
         }))
     }
 

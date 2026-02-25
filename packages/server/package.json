@@ -125,7 +125,7 @@
         "mysql2": "^3.11.3",
         "nanoid": "3",
         "nodemailer": "^7.0.7",
-        "openai": "^4.96.0",
+        "openai": "6.19.0",
         "passport": "^0.7.0",
         "passport-auth0": "^1.4.4",
         "passport-cookie": "^1.0.9",

@@ -1,11 +1,10 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
+import { ChatDeepSeek, ChatDeepSeekInput } from '@langchain/deepseek'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class Deepseek_ChatModels implements INode {
-    readonly baseURL: string = 'https://api.deepseek.com'
     label: string
     name: string
     version: number
@@ -18,14 +17,14 @@ class Deepseek_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatDeepseek'
+        this.label = 'Deepseek'
         this.name = 'chatDeepseek'
         this.version = 1.0
         this.type = 'chatDeepseek'
         this.icon = 'deepseek.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Deepseek large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(ChatDeepSeek)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -149,7 +148,7 @@ class Deepseek_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: ChatOpenAIFields = {
+        const obj: ChatDeepSeekInput = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -168,27 +167,18 @@ class Deepseek_ChatModels implements INode {
             obj.stop = stopSequenceArray
         }
 
-        let parsedBaseOptions: any | undefined = undefined
-
         if (baseOptions) {
             try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
-                if (parsedBaseOptions.baseURL) {
-                    console.warn("The 'baseURL' parameter is not allowed when using the ChatDeepseek node.")
-                    parsedBaseOptions.baseURL = undefined
+                const parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                obj.configuration = {
+                    defaultHeaders: parsedBaseOptions
                 }
             } catch (exception) {
                 throw new Error('Invalid JSON in the BaseOptions: ' + exception)
             }
         }
 
-        const model = new ChatOpenAI({
-            ...obj,
-            configuration: {
-                baseURL: this.baseURL,
-                ...parsedBaseOptions
-            }
-        })
+        const model = new ChatDeepSeek(obj)
         return model
     }
 }

@@ -1,5 +1,5 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
-import { BedrockEmbeddings, BedrockEmbeddingsParams } from '@langchain/community/embeddings/bedrock'
+import { BedrockEmbeddings, BedrockEmbeddingsParams } from '@langchain/aws'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
@@ -17,7 +17,7 @@ class AWSBedrockEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'AWS Bedrock Embeddings'
+        this.label = 'AWS Bedrock Embedding'
         this.name = 'AWSBedrockEmbeddings'
         this.version = 5.0
         this.type = 'AWSBedrockEmbeddings'

@@ -1,4 +1,4 @@
-import { ConversationChain } from 'langchain/chains'
+import { ConversationChain } from '@langchain/classic/chains'
 import {
     ChatPromptTemplate,
     HumanMessagePromptTemplate,

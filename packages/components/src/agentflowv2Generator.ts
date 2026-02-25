@@ -1,5 +1,5 @@
 import { ICommonObject } from './Interface'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
 import { isEqual, get, cloneDeep } from 'lodash'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'

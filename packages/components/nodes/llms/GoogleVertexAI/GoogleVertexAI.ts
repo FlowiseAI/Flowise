@@ -16,6 +16,8 @@ class GoogleVertexAI_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'GoogleVertexAI'
@@ -25,6 +27,8 @@ class GoogleVertexAI_LLMs implements INode {
         this.icon = 'GoogleVertex.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around GoogleVertexAI large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use GoogleVertexAI Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(VertexAI)]
         this.credential = {
             label: 'Connect Credential',

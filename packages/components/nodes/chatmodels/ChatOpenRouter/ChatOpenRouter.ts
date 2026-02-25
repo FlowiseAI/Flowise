@@ -17,7 +17,7 @@ class ChatOpenRouter_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatOpenRouter'
+        this.label = 'OpenRouter'
         this.name = 'chatOpenRouter'
         this.version = 1.0
         this.type = 'ChatOpenRouter'
@@ -102,18 +102,20 @@ class ChatOpenRouter_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
+                label: 'Base Path',
                 name: 'basepath',
                 type: 'string',
                 optional: true,
                 default: 'https://openrouter.ai/api/v1',
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
                 additionalParams: true
             },
             {
-                label: 'BaseOptions',
+                label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
+                description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             },
             {
@@ -124,31 +126,6 @@ class ChatOpenRouter_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
-            },
-            {
-                label: 'Image Resolution',
-                description: 'This parameter controls the resolution in which the model views the image.',
-                name: 'imageResolution',
-                type: 'options',
-                options: [
-                    {
-                        label: 'Low',
-                        name: 'low'
-                    },
-                    {
-                        label: 'High',
-                        name: 'high'
-                    },
-                    {
-                        label: 'Auto',
-                        name: 'auto'
-                    }
-                ],
-                default: 'low',
-                optional: false,
-                show: {
-                    allowImageUploads: true
-                }
             }
         ]
     }
@@ -166,7 +143,6 @@ class ChatOpenRouter_ChatModels implements INode {
         const baseOptions = nodeData.inputs?.baseOptions
         const cache = nodeData.inputs?.cache as BaseCache
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-        const imageResolution = nodeData.inputs?.imageResolution as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openRouterApiKey = getCredentialParam('openRouterApiKey', credentialData, nodeData)
@@ -205,8 +181,7 @@ class ChatOpenRouter_ChatModels implements INode {
 
         const multiModalOption: IMultiModalOption = {
             image: {
-                allowImageUploads: allowImageUploads ?? false,
-                imageResolution
+                allowImageUploads: allowImageUploads ?? false
             }
         }
 

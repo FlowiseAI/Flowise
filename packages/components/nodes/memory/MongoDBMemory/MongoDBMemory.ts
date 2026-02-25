@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb'
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from '@langchain/classic/memory'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
 import {
     convertBaseMessagetoIMessage,

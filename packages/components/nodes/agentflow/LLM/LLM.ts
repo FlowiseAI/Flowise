@@ -1,6 +1,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ICommonObject, IMessage, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
-import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
+import { ContentBlock } from 'langchain'
+import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { AnalyticHandler } from '../../../src/handler'
 import { ILLMMessage } from '../Interface.Agentflow'
@@ -456,6 +457,8 @@ class LLM_Agentflow implements INode {
              */
             await addImageArtifactsToMessages(messages, options)
 
+            console.log('messages', messages[0])
+
             // Configure structured output if specified
             const isStructuredOutput = _llmStructuredOutput && Array.isArray(_llmStructuredOutput) && _llmStructuredOutput.length > 0
             if (isStructuredOutput) {
@@ -499,6 +502,7 @@ class LLM_Agentflow implements INode {
                     sseStreamer.streamTokenEvent(chatId, finalResponse)
                 }
             }
+            console.log('response.contentBlocks', response.contentBlocks)
 
             // Calculate execution time
             const endTime = Date.now()
@@ -844,10 +848,12 @@ class LLM_Agentflow implements INode {
                 if (sseStreamer) {
                     let content = ''
 
+                    console.log('chunk.contentBlocks', chunk.contentBlocks)
+
                     if (typeof chunk === 'string') {
                         content = chunk
                     } else if (Array.isArray(chunk.content) && chunk.content.length > 0) {
-                        const contents = chunk.content as MessageContentText[]
+                        const contents = chunk.content as ContentBlock.Text[]
                         content = contents.map((item) => item.text).join('')
                     } else if (chunk.content) {
                         content = chunk.content.toString()
@@ -863,7 +869,7 @@ class LLM_Agentflow implements INode {
             throw error
         }
         if (Array.isArray(response.content) && response.content.length > 0) {
-            const responseContents = response.content as MessageContentText[]
+            const responseContents = response.content as ContentBlock.Text[]
             response.content = responseContents.map((item) => item.text).join('')
         }
         return response

@@ -23,16 +23,14 @@ export const addImagesToMessages = async (
                     imageContent.push({
                         type: 'image_url',
                         image_url: {
-                            url: bf,
-                            detail: multiModalOption.image.imageResolution ?? 'low'
+                            url: bf
                         }
                     })
                 } else if (upload.type == 'url' && bf) {
                     imageContent.push({
                         type: 'image_url',
                         image_url: {
-                            url: bf,
-                            detail: multiModalOption.image.imageResolution ?? 'low'
+                            url: bf
                         }
                     })
                 }

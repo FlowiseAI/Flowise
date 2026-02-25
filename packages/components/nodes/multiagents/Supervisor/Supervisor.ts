@@ -13,7 +13,7 @@ import {
     MessageContentImageUrl
 } from '../../../src/Interface'
 import { Moderation } from '../../moderation/Moderation'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { StructuredTool } from '@langchain/core/tools'
 import { AgentExecutor, JsonOutputToolsParser, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { ChatMistralAI } from '@langchain/mistralai'
@@ -164,9 +164,7 @@ class Supervisor_MultiAgents implements INode {
                 multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force Mistral to use tool
-                // @ts-ignore
-                const modelWithTool = llm.bind({
-                    tools: [tool],
+                const modelWithTool = llm.bindTools([tool]).withConfig({
                     tool_choice: 'any',
                     signal: abortControllerSignal ? abortControllerSignal.signal : undefined
                 })
@@ -256,8 +254,7 @@ class Supervisor_MultiAgents implements INode {
                 multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force OpenAI to use tool
-                const modelWithTool = llm.bind({
-                    tools: [tool],
+                const modelWithTool = llm.bindTools([tool]).withConfig({
                     tool_choice: { type: 'function', function: { name: routerToolName } },
                     signal: abortControllerSignal ? abortControllerSignal.signal : undefined
                 })
@@ -417,9 +414,7 @@ class Supervisor_MultiAgents implements INode {
                 multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force Mistral to use tool
-                // @ts-ignore
-                const modelWithTool = llm.bind({
-                    tools: [tool],
+                const modelWithTool = llm.bindTools([tool]).withConfig({
                     tool_choice: 'any',
                     signal: abortControllerSignal ? abortControllerSignal.signal : undefined
                 })
@@ -514,8 +509,7 @@ class Supervisor_MultiAgents implements INode {
                 multiModalMessageContent = messages.multiModalMessageContent
 
                 // Force OpenAI to use tool
-                const modelWithTool = llm.bind({
-                    tools: [tool],
+                const modelWithTool = llm.bindTools([tool]).withConfig({
                     tool_choice: { type: 'function', function: { name: routerToolName } },
                     signal: abortControllerSignal ? abortControllerSignal.signal : undefined
                 })

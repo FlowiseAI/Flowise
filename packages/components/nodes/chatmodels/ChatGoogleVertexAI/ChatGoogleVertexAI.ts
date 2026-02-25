@@ -64,7 +64,7 @@ class GoogleVertexAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatGoogleVertexAI'
+        this.label = 'Google VertexAI'
         this.name = 'chatGoogleVertexAI'
         this.version = 5.3
         this.type = 'ChatGoogleVertexAI'
@@ -120,6 +120,14 @@ class GoogleVertexAI_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -127,14 +135,6 @@ class GoogleVertexAI_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
-            },
-            {
-                label: 'Streaming',
-                name: 'streaming',
-                type: 'boolean',
-                default: true,
-                optional: true,
-                additionalParams: true
             },
             {
                 label: 'Max Output Tokens',

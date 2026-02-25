@@ -16,7 +16,7 @@ class OpenAIEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'OpenAI Embeddings'
+        this.label = 'OpenAI Embedding'
         this.name = 'openAIEmbeddings'
         this.version = 4.0
         this.type = 'OpenAIEmbeddings'
@@ -60,10 +60,19 @@ class OpenAIEmbedding_Embeddings implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
+                label: 'Base Path',
                 name: 'basepath',
                 type: 'string',
                 optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
+                additionalParams: true
+            },
+            {
+                label: 'Base Options',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             },
             {
@@ -88,6 +97,7 @@ class OpenAIEmbedding_Embeddings implements INode {
         const batchSize = nodeData.inputs?.batchSize as string
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basepath as string
+        const baseOptions = nodeData.inputs?.baseOptions
         const modelName = nodeData.inputs?.modelName as string
         const dimensions = nodeData.inputs?.dimensions as string
 
@@ -107,9 +117,20 @@ class OpenAIEmbedding_Embeddings implements INode {
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (dimensions) obj.dimensions = parseInt(dimensions, 10)
 
-        if (basePath) {
+        let parsedBaseOptions: any | undefined = undefined
+
+        if (baseOptions) {
+            try {
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the OpenAIEmbedding's BaseOptions: " + exception)
+            }
+        }
+
+        if (basePath || parsedBaseOptions) {
             obj.configuration = {
-                baseURL: basePath
+                baseURL: basePath,
+                defaultHeaders: parsedBaseOptions
             }
         }
 

@@ -4,7 +4,7 @@ import {
     RecursiveCharacterTextSplitter,
     RecursiveCharacterTextSplitterParams,
     SupportedTextSplitterLanguage
-} from 'langchain/text_splitter'
+} from '@langchain/textsplitters'
 
 class CodeTextSplitter_TextSplitters implements INode {
     label: string
