@@ -5,14 +5,20 @@ import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, F
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
+// Local state setter types
+type NodesSetter = (nodes: FlowNode[]) => void
+type EdgesSetter = (edges: FlowEdge[]) => void
+
 // Context value interface
 export interface AgentflowContextValue {
     state: AgentflowState
     dispatch: Dispatch<AgentflowAction>
 
     // Convenience methods
-    setNodes: (nodes: FlowNode[]) => void
-    setEdges: (edges: FlowEdge[]) => void
+    setNodes: NodesSetter
+    setEdges: EdgesSetter
+    syncNodesFromReactFlow: NodesSetter
+    syncEdgesFromReactFlow: EdgesSetter
     setChatflow: (chatflow: FlowConfig | null) => void
     setDirty: (dirty: boolean) => void
     setReactFlowInstance: (instance: ReactFlowInstance | null) => void
@@ -34,7 +40,7 @@ export interface AgentflowContextValue {
     closeEditDialog: () => void
 
     // Register ReactFlow local state setters
-    registerLocalStateSetters: (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => void
+    registerLocalStateSetters: (setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -52,16 +58,26 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     })
 
     // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
-    const localNodesSetterRef = useRef<((nodes: FlowNode[]) => void) | null>(null)
-    const localEdgesSetterRef = useRef<((edges: FlowEdge[]) => void) | null>(null)
+    const localNodesSetterRef = useRef<NodesSetter | null>(null)
+    const localEdgesSetterRef = useRef<EdgesSetter | null>(null)
 
-    const registerLocalStateSetters = useCallback(
-        (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => {
-            localNodesSetterRef.current = setLocalNodes
-            localEdgesSetterRef.current = setLocalEdges
-        },
-        []
-    )
+    const registerLocalStateSetters = useCallback((setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => {
+        localNodesSetterRef.current = setLocalNodes
+        localEdgesSetterRef.current = setLocalEdges
+    }, [])
+
+    // Helper function to generate unique copy IDs
+    const getUniqueCopyId = useCallback((baseId: string, nodes: FlowNode[]): string => {
+        const existingIds = new Set(nodes.map((node) => node.id))
+        for (let i = 1; i < Number.MAX_SAFE_INTEGER; i++) {
+            const newId = `${baseId}_copy_${i}`
+            if (!existingIds.has(newId)) {
+                return newId
+            }
+        }
+        //Fallback
+        return `${baseId}_copy_${Date.now()}`
+    }, [])
 
     // Helper function to synchronize state updates between context and ReactFlow
     const syncStateUpdate = useCallback(({ nodes, edges }: { nodes?: FlowNode[]; edges?: FlowEdge[] }) => {
@@ -80,11 +96,25 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     }, [])
 
     // Convenience setters
-    const setNodes = useCallback((nodes: FlowNode[]) => {
-        dispatch({ type: 'SET_NODES', payload: nodes })
+    const setNodes = useCallback<NodesSetter>(
+        (nodes) => {
+            syncStateUpdate({ nodes: nodes })
+        },
+        [syncStateUpdate]
+    )
+
+    const setEdges = useCallback<EdgesSetter>(
+        (edges) => {
+            syncStateUpdate({ edges: edges })
+        },
+        [syncStateUpdate]
+    )
+
+    const syncNodesFromReactFlow = useCallback<NodesSetter>((nodes) => {
+        dispatch({ type: 'SET_NODES', payload: normalizeNodes(nodes) })
     }, [])
 
-    const setEdges = useCallback((edges: FlowEdge[]) => {
+    const syncEdgesFromReactFlow = useCallback<EdgesSetter>((edges) => {
         dispatch({ type: 'SET_EDGES', payload: edges })
     }, [])
 
@@ -116,20 +146,24 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const nodeToDuplicate = state.nodes.find((node) => node.id === nodeId)
             if (!nodeToDuplicate) return
 
+            const newNodeId = getUniqueCopyId(nodeToDuplicate.id, state.nodes)
             const newNode: FlowNode = {
                 ...nodeToDuplicate,
-                id: `${nodeToDuplicate.id}_copy_${Date.now()}`,
+                id: newNodeId,
                 position: {
                     x: nodeToDuplicate.position.x + 50,
                     y: nodeToDuplicate.position.y + 50
                 },
-                data: { ...nodeToDuplicate.data }
+                data: {
+                    ...nodeToDuplicate.data,
+                    id: newNodeId
+                }
             }
 
             const newNodes = [...state.nodes, newNode]
             syncStateUpdate({ nodes: newNodes })
         },
-        [state.nodes, syncStateUpdate]
+        [state.nodes, syncStateUpdate, getUniqueCopyId]
     )
 
     const updateNodeData = useCallback(
@@ -198,6 +232,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         dispatch,
         setNodes,
         setEdges,
+        syncNodesFromReactFlow,
+        syncEdgesFromReactFlow,
         setChatflow,
         setDirty,
         setReactFlowInstance,
