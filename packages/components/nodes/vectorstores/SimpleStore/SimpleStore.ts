@@ -1,9 +1,8 @@
-import path from 'path'
 import { flatten } from 'lodash'
 import { storageContextFromDefaults, serviceContextFromDefaults, VectorStoreIndex, Document } from 'llamaindex'
 import { Document as LCDocument } from 'langchain/document'
 import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getUserHome } from '../../../src'
+import { validateVectorStorePath } from '../../../src/validator'
 
 class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
     label: string
@@ -89,10 +88,6 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
             const embeddings = nodeData.inputs?.embeddings
             const model = nodeData.inputs?.model
 
-            let filePath = ''
-            if (!basePath) filePath = path.join(getUserHome(), '.flowise', 'llamaindex')
-            else filePath = basePath
-
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
             for (let i = 0; i < flattenDocs.length; i += 1) {
@@ -105,6 +100,8 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
             }
 
             const serviceContext = serviceContextFromDefaults({ llm: model, embedModel: embeddings })
+            // Validate and sanitize the base path to prevent path traversal attacks
+            const filePath = validateVectorStorePath(basePath)
             const storageContext = await storageContextFromDefaults({ persistDir: filePath })
 
             try {
@@ -123,9 +120,8 @@ class SimpleStoreUpsert_LlamaIndex_VectorStores implements INode {
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
-        let filePath = ''
-        if (!basePath) filePath = path.join(getUserHome(), '.flowise', 'llamaindex')
-        else filePath = basePath
+        // Validate and sanitize the base path to prevent path traversal attacks
+        const filePath = validateVectorStorePath(basePath)
 
         const serviceContext = serviceContextFromDefaults({ llm: model, embedModel: embeddings })
         const storageContext = await storageContextFromDefaults({ persistDir: filePath })
