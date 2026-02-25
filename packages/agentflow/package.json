@@ -69,7 +69,7 @@
     },
     "dependencies": {
         "axios": "^1.7.2",
-        "lodash": "^4.17.21",
+        "lodash": "^4.17.23",
         "@tabler/icons-react": "^3.7.0",
         "uuid": "^9.0.1"
     },
@@ -92,7 +92,7 @@
         "rimraf": "^5.0.5",
         "ts-jest": "^29.3.2",
         "typescript": "^5.4.5",
-        "vite": "^5.0.2",
+        "vite": "^5.4.21",
         "vite-plugin-dts": "^3.7.0"
     }
 }
