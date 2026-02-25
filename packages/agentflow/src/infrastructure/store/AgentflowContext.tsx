@@ -150,15 +150,15 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const newNode: FlowNode = {
                 ...nodeToDuplicate,
                 id: newNodeId,
-                selected: false,
                 position: {
-                    x: nodeToDuplicate.position.x + 50,
-                    y: nodeToDuplicate.position.y + 50
+                    x: nodeToDuplicate.position.x + 150,
+                    y: nodeToDuplicate.position.y
                 },
                 data: {
                     ...nodeToDuplicate.data,
                     id: newNodeId
-                }
+                },
+                selected: false
             }
 
             const newNodes = [...state.nodes, newNode]
