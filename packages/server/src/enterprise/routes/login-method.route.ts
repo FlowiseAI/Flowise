@@ -5,7 +5,7 @@ import { checkPermission } from '../rbac/PermissionCheck'
 const router = express.Router()
 const loginMethodController = new LoginMethodController()
 
-router.get('/', loginMethodController.read)
+router.get('/', checkPermission('sso:manage'), loginMethodController.read)
 
 router.get('/default', loginMethodController.defaultMethods)
 

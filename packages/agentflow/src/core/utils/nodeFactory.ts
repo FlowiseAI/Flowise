@@ -72,13 +72,14 @@ function createAgentFlowOutputs(nodeData: NodeData, newNodeId: string): Array<{ 
 
 /**
  * Initialize a node with proper anchors and default values
+ * Converts API response (with inputs as definitions) to canvas node format
  */
 export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = true): NodeData {
     const inputAnchors: Array<{ id: string; name: string; label: string; type: string }> = []
-    const inputParams: Array<{ id: string; name: string; label: string; type: string; default?: unknown; optional?: boolean }> = []
+    const inputDefinitions: Array<{ id: string; name: string; label: string; type: string; default?: unknown; optional?: boolean }> = []
 
-    // Get input definitions from inputParams if available, otherwise use inputAnchors
-    const inputDefs = nodeData.inputParams || nodeData.inputAnchors || []
+    // Get input definitions from API response (nodeData.inputs contains InputParam[] from API)
+    const inputDefs = nodeData.inputs || nodeData.inputAnchors || []
 
     const whitelistTypes = [
         'asyncOptions',
@@ -100,14 +101,14 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
         'conditionFunction'
     ]
 
-    // Process inputs
+    // Process input definitions - separate into anchors vs parameters
     for (const input of inputDefs) {
         const newInput = {
             ...input,
             id: `${newNodeId}-input-${input.name}-${input.type}`
         }
         if (whitelistTypes.includes(input.type)) {
-            inputParams.push(newInput)
+            inputDefinitions.push(newInput)
         } else {
             inputAnchors.push(newInput)
         }
@@ -116,16 +117,16 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
     // Initialize outputs
     const outputAnchors = isAgentflow ? createAgentFlowOutputs(nodeData, newNodeId) : []
 
-    // Initialize default input values (matches agentflow v2 — falls back to '' for show/hide conditions)
-    const initialInputs = initializeDefaultNodeData(inputParams)
+    // Initialize default input values from definitions using initializeDefaultNodeData
+    const initialInputValues = initializeDefaultNodeData(inputDefinitions)
 
     // Create initialized node data
     const initializedData: NodeData = {
         ...nodeData,
         id: newNodeId,
-        inputs: { ...initialInputs, ...(nodeData.inputs || {}) },
+        inputs: inputDefinitions, // Keep parameter definitions
+        inputValues: { ...initialInputValues, ...(nodeData.inputValues || {}) }, // Merge defaults with existing values
         inputAnchors: inputAnchors as NodeData['inputAnchors'],
-        inputParams: inputParams as NodeData['inputParams'],
         outputAnchors: outputAnchors as NodeData['outputAnchors']
     }
 

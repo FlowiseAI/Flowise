@@ -1,5 +1,5 @@
 {
-    "name": "@flowise/agentflow",
+    "name": "@flowiseai/agentflow",
     "version": "0.0.0-dev.1",
     "description": "Embeddable React component for building and visualizing AI agent workflows",
     "license": "Apache-2.0",
@@ -14,6 +14,7 @@
     },
     "keywords": [
         "flowise",
+        "flowiseai",
         "agentflow",
         "react",
         "llm",
@@ -43,10 +44,10 @@
         "*.css"
     ],
     "scripts": {
-        "build": "tsc && vite build",
+        "build": "tsc && cross-env NODE_ENV=production vite build",
         "clean": "rimraf dist",
-        "dev": "vite",
-        "dev:example": "vite --config examples/vite.config.ts",
+        "dev": "cross-env NODE_ENV=development vite",
+        "dev:example": "cross-env NODE_ENV=development vite --config examples/vite.config.ts",
         "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx,json,md}\"",
@@ -88,6 +89,7 @@
         "eslint-plugin-simple-import-sort": "^12.0.0",
         "jest": "^29.7.0",
         "jest-environment-jsdom": "^29.7.0",
+        "cross-env": "^7.0.3",
         "rimraf": "^5.0.5",
         "ts-jest": "^29.3.2",
         "typescript": "^5.4.5",

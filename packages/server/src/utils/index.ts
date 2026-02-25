@@ -1666,6 +1666,81 @@ export const generateEncryptKey = (): string => {
 }
 
 /**
+ * Returns the directory where auth secrets are stored (same as encryption key directory).
+ * Used for file-based storage of TOKEN_HASH_SECRET, EXPRESS_SESSION_SECRET, JWT_*, etc.
+ */
+export const getAuthSecretsDirectory = (): string => {
+    return process.env.SECRETKEY_PATH ? process.env.SECRETKEY_PATH : path.join(getUserHome(), '.flowise')
+}
+
+/**
+ * Generate a 32-byte auth secret (OWASP recommendation).
+ * Used for auth secrets only; encryption key remains 24 bytes.
+ */
+export const generateAuthSecret = (): string => {
+    return randomBytes(32).toString('base64')
+}
+
+export interface GetOrCreateStoredSecretOptions {
+    envKey: string
+    fileName: string
+    awsSecretIdSuffix: string
+    /** When generating a new secret, use this value instead of random (e.g. 'flowise' for JWT_ISSUER/JWT_AUDIENCE) */
+    defaultValueForNew?: string
+    /** If env is set to this value, treat as unset (backwards compat for weak defaults) */
+    weakDefault?: string
+}
+
+/**
+ * Resolve an auth secret: env (backwards compat) → AWS Secrets Manager → filesystem (read or generate+write).
+ * Used by initAuthSecrets() for each of the six auth secrets.
+ */
+export const getOrCreateStoredSecret = async (options: GetOrCreateStoredSecretOptions): Promise<string> => {
+    const { envKey, fileName, awsSecretIdSuffix, defaultValueForNew, weakDefault } = options
+    const envVal = process.env[envKey]
+    const useEnv = envVal && envVal.trim() !== '' && (weakDefault === undefined || envVal !== weakDefault)
+    if (useEnv) {
+        return envVal!.trim()
+    }
+
+    if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
+        const prefix = process.env.SECRETKEY_AWS_AUTH_PREFIX || 'Flowise'
+        const secretId = prefix + awsSecretIdSuffix
+        try {
+            const command = new GetSecretValueCommand({ SecretId: secretId })
+            const response = await secretsManagerClient.send(command)
+            if (response.SecretString) {
+                return response.SecretString
+            }
+        } catch (error: any) {
+            if (error.name === 'ResourceNotFoundException') {
+                const newValue = defaultValueForNew !== undefined ? defaultValueForNew : generateAuthSecret()
+                const createCommand = new CreateSecretCommand({
+                    Name: secretId,
+                    SecretString: newValue
+                })
+                await secretsManagerClient.send(createCommand)
+                return newValue
+            }
+            throw error
+        }
+    }
+
+    const dir = getAuthSecretsDirectory()
+    const filePath = path.join(dir, fileName)
+    try {
+        return await fs.promises.readFile(filePath, 'utf8')
+    } catch {
+        const value = defaultValueForNew !== undefined ? defaultValueForNew : generateAuthSecret()
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true })
+        }
+        await fs.promises.writeFile(filePath, value)
+        return value
+    }
+}
+
+/**
  * Transform ICredentialBody from req to Credential entity
  * @param {ICredentialReqBody} body
  * @returns {Credential}

@@ -1,4 +1,4 @@
-# @flowise/agentflow Test Plan
+# @flowiseai/agentflow Test Plan
 
 ## Running Tests
 
@@ -36,7 +36,7 @@ These modules carry the highest risk. Test in the same PR when modifying.
 | `src/infrastructure/api/nodes.ts` | `getAllNodes`, `getNodeByName`, `getNodeIconUrl` | ✅ Done |
 | `src/infrastructure/store/AgentflowContext.tsx` | `agentflowReducer` (all actions), `normalizeNodes`. Remaining: `deleteNode()`, `duplicateNode()`, `updateNodeData()`, `getFlowData()` | 🟡 Partial |
 | `src/useAgentflow.ts` | `getFlow()`, `toJSON()`, `validate()`, `addNode()`, `clear()` | ⬜ Not yet — thin wrapper |
-| `src/features/canvas/hooks/useFlowHandlers.ts` | `onConnect`, `onNodesChange`, `onEdgesChange`, `onAddNode` | ⬜ Not yet — coupled to ReactFlow |
+| `src/features/canvas/hooks/useFlowHandlers.ts` | `handleConnect`, `handleNodesChange`, `handleEdgesChange`, `handleAddNode` — synchronous `onFlowChange` callbacks, dirty tracking, viewport resolution, change filtering | ✅ Done |
 
 ### Tier 2 — Feature Hooks & Dialogs
 
@@ -70,7 +70,7 @@ Mostly JSX with minimal logic. Only add tests if business logic is introduced.
 | `src/atoms/NodeInputHandler.tsx` | If input rendering or position calculation logic changes | ⬜ Not yet |
 | `src/features/canvas/components/ConnectionLine.tsx` | If edge label determination logic becomes more complex | ⬜ Not yet |
 | `src/features/canvas/components/NodeStatusIndicator.tsx` | If status-to-color/icon mapping expands | ⬜ Not yet |
-| `src/Agentflow.tsx` | Integration test — dark mode, ThemeProvider, CSS variables, header rendering, generate flow dialog, imperative ref | ✅ Done |
+| `src/Agentflow.tsx` | Integration test — dark mode, ThemeProvider, CSS variables, header rendering, keyboard shortcuts (Cmd+S / Ctrl+S save), generate flow dialog, imperative ref | ✅ Done |
 
 Files that are pure styling or data constants (`styled.ts`, `nodeIcons.ts`, `MainCard.tsx`, `Input.tsx`, etc.) do not need dedicated tests.
 
@@ -127,6 +127,7 @@ Key features:
 -   **Coverage thresholds**: uniform 80% floor (`branches`, `functions`, `lines`, `statements`) enforced per-path:
     -   `./src/Agentflow.tsx`
     -   `./src/core/`
+    -   `./src/features/canvas/hooks/useFlowHandlers.ts`
     -   `./src/features/node-palette/search.ts`
     -   `./src/infrastructure/api/`
 -   **Coverage exclusions**:

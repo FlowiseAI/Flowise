@@ -274,12 +274,24 @@ describe('Agentflow Component', () => {
 
         it('should accept onSave callback', async () => {
             const onSave = jest.fn()
-            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
+            const { container, getByText } = render(<Agentflow {...defaultProps} onSave={onSave} showDefaultHeader={true} />)
 
             await waitFor(() => {
                 expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
             })
-            // Callback should be registered
+
+            // Find and click the save button
+            const saveButton = getByText('Save')
+            fireEvent.click(saveButton)
+
+            // Verify the callback was called
+            expect(onSave).toHaveBeenCalledTimes(1)
+            expect(onSave).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.any(Array),
+                    edges: expect.any(Array)
+                })
+            )
         })
 
         it('should accept onFlowGenerated callback', async () => {
@@ -290,6 +302,65 @@ describe('Agentflow Component', () => {
                 expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
             })
             // Callback should be registered
+        })
+    })
+
+    describe('Keyboard Shortcuts', () => {
+        it('should trigger save on Cmd+S', async () => {
+            const onSave = jest.fn()
+            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            fireEvent.keyDown(document, { key: 's', metaKey: true })
+
+            expect(onSave).toHaveBeenCalledTimes(1)
+            expect(onSave).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.any(Array),
+                    edges: expect.any(Array)
+                })
+            )
+        })
+
+        it('should trigger save on Ctrl+S', async () => {
+            const onSave = jest.fn()
+            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            fireEvent.keyDown(document, { key: 's', ctrlKey: true })
+
+            expect(onSave).toHaveBeenCalledTimes(1)
+        })
+
+        it('should not trigger save on plain S key', async () => {
+            const onSave = jest.fn()
+            const { container } = render(<Agentflow {...defaultProps} onSave={onSave} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            fireEvent.keyDown(document, { key: 's' })
+
+            expect(onSave).not.toHaveBeenCalled()
+        })
+
+        it('should not error on Cmd+S when no onSave callback is provided', async () => {
+            const { container } = render(<Agentflow {...defaultProps} />)
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            expect(() => {
+                fireEvent.keyDown(document, { key: 's', metaKey: true })
+            }).not.toThrow()
         })
     })
 

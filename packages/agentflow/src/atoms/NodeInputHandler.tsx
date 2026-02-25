@@ -45,12 +45,11 @@ export function NodeInputHandler({
 
     const handleDataChange = useCallback(
         (newValue: unknown) => {
-            if (inputParam && data.inputs) {
-                data.inputs[inputParam.name] = newValue
+            if (inputParam) {
                 onDataChange?.({ inputParam, newValue })
             }
         },
-        [inputParam, data, onDataChange]
+        [inputParam, onDataChange]
     )
 
     useEffect(() => {
@@ -67,7 +66,7 @@ export function NodeInputHandler({
     const renderInput = () => {
         if (!inputParam) return null
 
-        const value = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
+        const value = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
 
         switch (inputParam.type) {
             case 'string':

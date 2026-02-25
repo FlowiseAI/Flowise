@@ -7,8 +7,8 @@
 
 import { useRef, useState } from 'react'
 
-import type { AgentFlowInstance, FlowData } from '@flowise/agentflow'
-import { Agentflow } from '@flowise/agentflow'
+import type { AgentFlowInstance, FlowData } from '@flowiseai/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 import CssBaseline from '@mui/material/CssBaseline'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 
@@ -39,7 +39,7 @@ const sampleFlow: FlowData = {
                 label: 'AI Assistant',
                 color: '#4DD0E1',
                 outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }],
-                inputs: {
+                inputValues: {
                     agentModel: 'chatAnthropic',
                     agentModelConfig: {
                         modelName: 'claude-3-5-sonnet'

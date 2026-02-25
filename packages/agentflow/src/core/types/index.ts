@@ -3,6 +3,8 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import type { AxiosInstance } from 'axios'
 
+import { EditNodeDialogProps } from '@/features/node-editor/EditNodeDialog'
+
 // ============================================================================
 // Flow Data Types
 // ============================================================================
@@ -44,6 +46,9 @@ export interface FlowData {
     viewport?: Viewport
 }
 
+/** Callback type for flow data events (change, save, generate) */
+export type FlowDataCallback = (flow: FlowData) => void
+
 export interface FlowConfig {
     id?: string
     name?: string
@@ -65,11 +70,11 @@ export interface NodeData {
     description?: string
     version?: number
     baseClasses?: string[]
-    inputs?: Record<string, unknown>
+    inputs?: InputParam[] // Parameter definitions from API
+    inputValues?: Record<string, unknown> // Actual values entered by users
     outputs?: NodeOutput[]
     inputAnchors?: InputAnchor[]
     outputAnchors?: OutputAnchor[]
-    inputParams?: InputParam[]
     // Visual properties
     color?: string
     icon?: string
@@ -190,10 +195,10 @@ export interface AgentflowProps {
     components?: string[]
 
     /** Callback when flow changes */
-    onFlowChange?: (flow: FlowData) => void
+    onFlowChange?: FlowDataCallback
 
     /** Callback when flow is saved */
-    onSave?: (flow: FlowData) => void
+    onSave?: FlowDataCallback
 
     /** Whether to use dark mode (default: false) */
     isDarkMode?: boolean
@@ -217,7 +222,7 @@ export interface AgentflowProps {
     enableGenerator?: boolean
 
     /** Callback when flow is generated via AI */
-    onFlowGenerated?: (flow: FlowData) => void
+    onFlowGenerated?: FlowDataCallback
 }
 
 // ============================================================================
@@ -268,6 +273,8 @@ export interface AgentflowState {
     chatflow: FlowConfig | null
     isDirty: boolean
     reactFlowInstance: ReactFlowInstance | null
+    editingNodeId: string | null
+    editDialogProps: EditNodeDialogProps['dialogProps'] | null
 }
 
 export type AgentflowAction =
@@ -276,6 +283,8 @@ export type AgentflowAction =
     | { type: 'SET_CHATFLOW'; payload: FlowConfig | null }
     | { type: 'SET_DIRTY'; payload: boolean }
     | { type: 'SET_REACTFLOW_INSTANCE'; payload: ReactFlowInstance | null }
+    | { type: 'OPEN_EDIT_DIALOG'; payload: { nodeId: string; dialogProps: EditNodeDialogProps['dialogProps'] } }
+    | { type: 'CLOSE_EDIT_DIALOG' }
     | { type: 'RESET' }
 
 // ============================================================================

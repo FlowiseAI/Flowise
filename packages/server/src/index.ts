@@ -14,6 +14,7 @@ import { Organization } from './enterprise/database/entities/organization.entity
 import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
 import { initializeJwtCookieMiddleware, verifyToken, verifyTokenForBullMQDashboard } from './enterprise/middleware/passport'
+import { initAuthSecrets } from './enterprise/utils/authSecrets'
 import { IdentityManager } from './IdentityManager'
 import { MODE, Platform } from './Interface'
 import { IMetricsProvider } from './Interface.Metrics'
@@ -104,6 +105,10 @@ export class App {
             // Initialize encryption key
             await getEncryptionKey()
             logger.info('🔑 [server]: Encryption key initialized successfully')
+
+            // Initialize auth secrets (env → AWS Secrets Manager → filesystem)
+            await initAuthSecrets()
+            logger.info('🔐 [server]: Auth initialized successfully')
 
             // Initialize Rate Limit
             this.rateLimiterManager = RateLimiterManager.getInstance()
