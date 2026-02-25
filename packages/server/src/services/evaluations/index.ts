@@ -78,7 +78,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
             throw new Error('chatflowType must be a valid array')
         }
 
-        const simpleEvaluators = body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
+        const simpleEvaluators = body.selectedSimpleEvaluators && body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
         if (!Array.isArray(simpleEvaluators)) {
             throw new Error('selectedSimpleEvaluators must be a valid array')
         }
