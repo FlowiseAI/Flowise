@@ -16,6 +16,7 @@ import { getErrorMessage } from '../../errors/utils'
 import documentStoreService from '../../services/documentstore'
 import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
@@ -359,7 +360,7 @@ const updateChatflow = async (
 }
 
 // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
-// Safe as public endpoint as chatbotConfig doesn't contain sensitive credential, do not return dbResponse.flowData as it does have sensitive data
+// flowData is sanitized before returning — password, file, folder inputs and credential references are stripped
 const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -388,7 +389,12 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
                 }
                 delete parsedConfig.allowedOrigins
                 delete parsedConfig.allowedOriginsError
-                return { ...parsedConfig, uploads: uploadsConfig, isTTSEnabled }
+                return {
+                    ...parsedConfig,
+                    uploads: uploadsConfig,
+                    flowData: sanitizeFlowDataForPublicEndpoint(dbResponse.flowData),
+                    isTTSEnabled
+                }
             } catch (e) {
                 throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
             }
