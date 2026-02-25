@@ -19,6 +19,13 @@ import { OrganizationUserErrorMessage, OrganizationUserService } from '../../ser
 import { OrganizationService } from '../../services/organization.service'
 import { RoleErrorMessage, RoleService } from '../../services/role.service'
 import { WorkspaceUserService } from '../../services/workspace-user.service'
+import {
+    getExpressSessionSecret,
+    getJWTAudience,
+    getJWTAuthTokenSecret,
+    getJWTIssuer,
+    getJWTRefreshTokenSecret
+} from '../../utils/authSecrets'
 import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
 import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
@@ -26,12 +33,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 const localStrategy = require('passport-local').Strategy
 
-const jwtAudience = process.env.JWT_AUDIENCE || 'AUDIENCE'
-const jwtIssuer = process.env.JWT_ISSUER || 'ISSUER'
-
 const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 'true'
-const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET || 'auth_token'
-const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_AUTH_TOKEN_SECRET || 'refresh_token'
 
 // Allow explicit override of cookie security settings
 // This is useful when running behind a reverse proxy/load balancer that terminates SSL
@@ -46,16 +48,11 @@ const secureCookie =
         : process.env.APP_URL?.startsWith('https')
         ? true
         : false
-const jwtOptions = {
-    secretOrKey: jwtAuthTokenSecret,
-    audience: jwtAudience,
-    issuer: jwtIssuer
-}
 
 const _initializePassportMiddleware = async (app: express.Application) => {
     // Configure session middleware
     let options: any = {
-        secret: process.env.EXPRESS_SESSION_SECRET || 'flowise',
+        secret: getExpressSessionSecret(),
         resave: false,
         saveUninitialized: false,
         cookie: {
@@ -101,6 +98,11 @@ const _initializePassportMiddleware = async (app: express.Application) => {
 export const initializeJwtCookieMiddleware = async (app: express.Application, identityManager: IdentityManager) => {
     await _initializePassportMiddleware(app)
 
+    const jwtOptions = {
+        secretOrKey: getJWTAuthTokenSecret(),
+        audience: getJWTAudience(),
+        issuer: getJWTIssuer()
+    }
     const strategy = getAuthStrategy(jwtOptions)
     passport.use(strategy)
     passport.use(
@@ -234,7 +236,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         const refreshToken = req.cookies.refreshToken
         if (!refreshToken) return res.sendStatus(401)
 
-        jwt.verify(refreshToken, jwtRefreshSecret, async (err: any, payload: any) => {
+        jwt.verify(refreshToken, getJWTRefreshTokenSecret(), async (err: any, payload: any) => {
             if (err || !payload) return res.status(401).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
             // @ts-ignore
             const loggedInUser = req.user as LoggedInUser
@@ -368,7 +370,7 @@ export const generateJwtAuthToken = (user: any) => {
     if (expiryInMinutes === -1) {
         expiryInMinutes = process.env.JWT_TOKEN_EXPIRY_IN_MINUTES ? parseInt(process.env.JWT_TOKEN_EXPIRY_IN_MINUTES) : 60
     }
-    return _generateJwtToken(user, expiryInMinutes, jwtAuthTokenSecret)
+    return _generateJwtToken(user, expiryInMinutes, getJWTAuthTokenSecret())
 }
 
 export const generateJwtRefreshToken = (user: any) => {
@@ -390,17 +392,17 @@ export const generateJwtRefreshToken = (user: any) => {
             ? parseInt(process.env.JWT_REFRESH_TOKEN_EXPIRY_IN_MINUTES)
             : 129600 // 90 days
     }
-    return _generateJwtToken(user, expiryInMinutes, jwtRefreshSecret)
+    return _generateJwtToken(user, expiryInMinutes, getJWTRefreshTokenSecret())
 }
 
 const _generateJwtToken = (user: Partial<LoggedInUser>, expiryInMinutes: number, secret: string) => {
     const encryptedUserInfo = encryptToken(user?.id + ':' + user?.activeWorkspaceId)
-    return sign({ id: user?.id, username: user?.name, meta: encryptedUserInfo }, secret!, {
+    return sign({ id: user?.id, username: user?.name, meta: encryptedUserInfo }, secret, {
         expiresIn: expiryInMinutes + 'm', // Expiry in minutes
         notBefore: '0', // Cannot use before now, can be configured to be deferred.
         algorithm: 'HS256', // HMAC using SHA-256 hash algorithm
-        audience: jwtAudience, // The audience of the token
-        issuer: jwtIssuer // The issuer of the token
+        audience: getJWTAudience(),
+        issuer: getJWTIssuer()
     })
 }
 
