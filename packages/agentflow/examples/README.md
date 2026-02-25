@@ -1,6 +1,6 @@
-# @flowise/agentflow Examples
+# @flowiseai/agentflow Examples
 
-This folder demonstrates various usage patterns of the `@flowise/agentflow` package.
+This folder demonstrates various usage patterns of the `@flowiseai/agentflow` package.
 
 ## Setup
 
@@ -36,10 +36,10 @@ The examples app uses environment variables for configuration. To set up:
     cp .env.example .env
     ```
 
-2. Edit `.env` to configure your Flowise instance:
+2. Edit `.env` to configure your Flowise API server:
 
     ```bash
-    # Flowise Instance Configuration
+    # Flowise API Base URL
     VITE_INSTANCE_URL=http://localhost:3000
 
     # API Key (required for authenticated endpoints)
@@ -62,7 +62,7 @@ The examples app uses environment variables for configuration. To set up:
 
 **Environment Variables:**
 
--   `VITE_INSTANCE_URL`: Base URL of your Flowise instance (default: `http://localhost:3000`)
+-   `VITE_INSTANCE_URL`: Flowise API server endpoint (maps to `apiBaseUrl` prop, default: `http://localhost:3000`)
 -   `VITE_API_TOKEN`: Flowise API Key for programmatic access (required for authenticated endpoints)
 
 **Note**: The `.env` file is gitignored and will not be committed to version control. Add your actual API key to `.env`, not `.env.example`.
@@ -94,11 +94,12 @@ Common causes:
 
 ## Examples
 
-### Basic Usage (`App.tsx`)
+### Basic Usage (`BasicExample.tsx`)
 
-The default export shows:
+Demonstrates core usage:
 
 -   Basic canvas rendering with `<Agentflow>` component
+-   Passing `apiBaseUrl` and `initialFlow` props
 -   Using the `ref` to access imperative methods (`validate`, `fitView`, `getFlow`, `clear`)
 -   Handling `onFlowChange` and `onSave` callbacks
 

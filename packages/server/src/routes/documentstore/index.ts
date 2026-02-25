@@ -79,6 +79,6 @@ router.get('/components/recordmanager', checkPermission('documentStores:upsert-c
 router.post('/vectorstore/update', checkPermission('documentStores:upsert-config'), documentStoreController.updateVectorStoreConfigOnly)
 
 // generate docstore tool description
-router.post('/generate-tool-desc/:id', documentStoreController.generateDocStoreToolDesc)
+router.post('/generate-tool-desc/:id', checkPermission('documentStores:view'), documentStoreController.generateDocStoreToolDesc)
 
 export default router

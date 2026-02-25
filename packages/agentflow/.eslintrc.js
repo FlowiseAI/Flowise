@@ -137,10 +137,22 @@ module.exports = {
     },
     overrides: [
         {
-            files: ['examples/**/*.{js,jsx,ts,tsx}'],
+            files: ['examples/**/*.{js,jsx,ts,tsx}', '**/*.md/**'],
             rules: {
                 'no-console': 'off',
                 '@typescript-eslint/no-non-null-assertion': 'off'
+            }
+        },
+        {
+            files: ['src/__mocks__/**/*.{ts,tsx}'],
+            rules: {
+                '@typescript-eslint/no-explicit-any': 'off'
+            }
+        },
+        {
+            files: ['src/__test_utils__/**/*.js'],
+            rules: {
+                '@typescript-eslint/no-require-imports': 'off'
             }
         }
     ]

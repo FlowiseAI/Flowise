@@ -2,7 +2,7 @@ import { memo } from 'react'
 
 import { Box, Button } from '@mui/material'
 
-import { useConfigContext } from '../../infrastructure/store'
+import { useConfigContext } from '@/infrastructure/store'
 
 export interface Suggestion {
     text: string

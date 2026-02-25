@@ -2,10 +2,10 @@ import axios, { AxiosInstance } from 'axios'
 
 /**
  * Creates a configured axios client for API calls
- * @param instanceUrl - Base URL of the Flowise server
+ * @param apiBaseUrl - Base URL of the Flowise server
  * @param token - Authentication token (optional)
  */
-export function createApiClient(instanceUrl: string, token?: string): AxiosInstance {
+export function createApiClient(apiBaseUrl: string, token?: string): AxiosInstance {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json'
     }
@@ -15,7 +15,7 @@ export function createApiClient(instanceUrl: string, token?: string): AxiosInsta
     }
 
     const client = axios.create({
-        baseURL: `${instanceUrl}/api/v1`,
+        baseURL: `${apiBaseUrl}/api/v1`,
         headers
     })
 

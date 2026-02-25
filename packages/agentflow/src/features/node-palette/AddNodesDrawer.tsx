@@ -6,16 +6,11 @@ import {
     AccordionDetails,
     AccordionSummary,
     Box,
-    Chip,
     ClickAwayListener,
     Divider,
     Fade,
     InputAdornment,
     List,
-    ListItem,
-    ListItemAvatar,
-    ListItemButton,
-    ListItemText,
     OutlinedInput,
     Paper,
     Popper,
@@ -25,13 +20,17 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { IconMinus, IconPlus, IconSearch, IconX } from '@tabler/icons-react'
 
-import { MainCard } from '../../atoms'
-import { AGENTFLOW_ICONS } from '../../core'
-import type { NodeData } from '../../core/types'
-import { useApiContext, useConfigContext } from '../../infrastructure/store'
+import { MainCard } from '@/atoms'
+import { tokens } from '@/core/theme/tokens'
+import type { NodeData } from '@/core/types'
+import { useApiContext } from '@/infrastructure/store'
 
+import { NodeListItem } from './NodeListItem'
 import { debounce, groupNodesByCategory, searchNodes } from './search'
 import { StyledFab } from './StyledFab'
+import { useDrawerMaxHeight } from './useDrawerMaxHeight'
+
+const Z_INDEX_DRAWER = 1000
 
 export interface AddNodesDrawerProps {
     /** Available nodes to display */
@@ -47,8 +46,7 @@ export interface AddNodesDrawerProps {
  */
 function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDrawerProps) {
     const theme = useTheme()
-    const { instanceUrl } = useApiContext()
-    const { isDarkMode: _isDarkMode } = useConfigContext()
+    const { apiBaseUrl } = useApiContext()
 
     const [searchValue, setSearchValue] = useState('')
     const [filteredNodes, setFilteredNodes] = useState<Record<string, NodeData[]>>({})
@@ -56,7 +54,9 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
     const [categoryExpanded, setCategoryExpanded] = useState<Record<string, boolean>>({})
 
     const anchorRef = useRef<HTMLButtonElement>(null)
+    const paperRef = useRef<HTMLDivElement>(null)
     const prevOpen = useRef(open)
+    const drawerMaxHeight = useDrawerMaxHeight(open, paperRef)
 
     // Group nodes by category
     const groupNodes = useCallback((nodeList: NodeData[], expandAll = false) => {
@@ -119,22 +119,11 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
     }
 
     const handleDragStart = (event: React.DragEvent, node: NodeData) => {
-        event.dataTransfer.setData('application/reactflow', JSON.stringify(node))
-        event.dataTransfer.effectAllowed = 'move'
         onDragStart?.(event, node)
     }
 
     const handleNodeClick = (node: NodeData) => {
         onNodeClick?.(node)
-    }
-
-    const renderIcon = (node: NodeData) => {
-        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.name)
-        if (foundIcon) {
-            const IconComponent = foundIcon.icon
-            return <IconComponent size={30} color={node.color} />
-        }
-        return null
     }
 
     // Initialize nodes on mount
@@ -165,42 +154,51 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                     position: 'absolute',
                     left: 20,
                     top: 20,
-                    zIndex: 1000
+                    zIndex: Z_INDEX_DRAWER
                 }}
             >
                 {open ? <IconMinus /> : <IconPlus />}
             </StyledFab>
 
             <Popper
-                placement='bottom-start'
+                placement='bottom-end'
                 open={open}
                 anchorEl={anchorRef.current}
                 role={undefined}
                 transition
                 disablePortal
-                modifiers={[
-                    {
-                        name: 'offset',
-                        options: {
-                            offset: [0, 14]
+                popperOptions={{
+                    modifiers: [
+                        {
+                            name: 'offset',
+                            options: {
+                                offset: [-40, 14]
+                            }
                         }
-                    }
-                ]}
-                sx={{ zIndex: 1000 }}
+                    ]
+                }}
+                sx={{ zIndex: Z_INDEX_DRAWER }}
             >
                 {({ TransitionProps }) => (
                     <Fade {...TransitionProps} timeout={200}>
-                        <Paper elevation={16}>
+                        <Paper
+                            ref={paperRef}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                maxHeight: drawerMaxHeight,
+                                overflow: 'hidden'
+                            }}
+                        >
                             <ClickAwayListener onClickAway={handleClose}>
                                 <MainCard
                                     border={false}
-                                    sx={{
-                                        boxShadow: theme.shadows[16],
-                                        width: 370,
-                                        maxWidth: '90vw'
-                                    }}
+                                    content={false}
+                                    boxShadow
+                                    shadow={theme.shadows[16]}
+                                    sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
                                 >
-                                    <Box sx={{ p: 2 }}>
+                                    <Box sx={{ p: 2, flexShrink: 0 }}>
                                         <Stack>
                                             <Typography variant='h4'>Add Nodes</Typography>
                                         </Stack>
@@ -243,7 +241,8 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
 
                                     <Box
                                         sx={{
-                                            maxHeight: 'calc(100vh - 300px)',
+                                            flex: 1,
+                                            minHeight: 0,
                                             overflowY: 'auto',
                                             overflowX: 'hidden'
                                         }}
@@ -252,8 +251,9 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                                             <List
                                                 sx={{
                                                     width: '100%',
+                                                    maxWidth: 370,
                                                     py: 0,
-                                                    borderRadius: '10px',
+                                                    borderRadius: tokens.borderRadius.lg,
                                                     '& .MuiListItemSecondaryAction-root': {
                                                         top: 22
                                                     },
@@ -284,104 +284,14 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                                                             </AccordionSummary>
                                                             <AccordionDetails sx={{ p: 0 }}>
                                                                 {filteredNodes[category].map((node, index) => (
-                                                                    <div
+                                                                    <NodeListItem
                                                                         key={node.name}
-                                                                        onDragStart={(event) => handleDragStart(event, node)}
-                                                                        draggable
-                                                                    >
-                                                                        <ListItemButton
-                                                                            sx={{
-                                                                                p: 0,
-                                                                                borderRadius: '8px',
-                                                                                cursor: 'grab',
-                                                                                '&:active': { cursor: 'grabbing' }
-                                                                            }}
-                                                                            onClick={() => handleNodeClick(node)}
-                                                                        >
-                                                                            <ListItem alignItems='center'>
-                                                                                {node.color && !node.icon ? (
-                                                                                    <ListItemAvatar>
-                                                                                        <div
-                                                                                            style={{
-                                                                                                width: 50,
-                                                                                                height: 'auto',
-                                                                                                display: 'flex',
-                                                                                                alignItems: 'center',
-                                                                                                justifyContent: 'center'
-                                                                                            }}
-                                                                                        >
-                                                                                            {renderIcon(node)}
-                                                                                        </div>
-                                                                                    </ListItemAvatar>
-                                                                                ) : (
-                                                                                    <ListItemAvatar>
-                                                                                        <div
-                                                                                            style={{
-                                                                                                width: 50,
-                                                                                                height: 50,
-                                                                                                borderRadius: '50%',
-                                                                                                backgroundColor: 'white'
-                                                                                            }}
-                                                                                        >
-                                                                                            <img
-                                                                                                style={{
-                                                                                                    width: '100%',
-                                                                                                    height: '100%',
-                                                                                                    padding: 10,
-                                                                                                    objectFit: 'contain'
-                                                                                                }}
-                                                                                                alt={node.name}
-                                                                                                src={`${instanceUrl}/api/v1/node-icon/${node.name}`}
-                                                                                            />
-                                                                                        </div>
-                                                                                    </ListItemAvatar>
-                                                                                )}
-                                                                                <ListItemText
-                                                                                    sx={{ ml: 1 }}
-                                                                                    primary={
-                                                                                        <div
-                                                                                            style={{
-                                                                                                display: 'flex',
-                                                                                                flexDirection: 'row',
-                                                                                                alignItems: 'center'
-                                                                                            }}
-                                                                                        >
-                                                                                            <span>{node.label}</span>
-                                                                                            {typeof node.badge === 'string' &&
-                                                                                                node.badge && (
-                                                                                                    <>
-                                                                                                        &nbsp;
-                                                                                                        <Chip
-                                                                                                            sx={{
-                                                                                                                width: 'max-content',
-                                                                                                                fontWeight: 700,
-                                                                                                                fontSize: '0.65rem',
-                                                                                                                background:
-                                                                                                                    node.badge ===
-                                                                                                                    'DEPRECATING'
-                                                                                                                        ? theme.palette
-                                                                                                                              .warning.main
-                                                                                                                        : theme.palette
-                                                                                                                              .success.main,
-                                                                                                                color:
-                                                                                                                    node.badge !==
-                                                                                                                    'DEPRECATING'
-                                                                                                                        ? 'white'
-                                                                                                                        : 'inherit'
-                                                                                                            }}
-                                                                                                            size='small'
-                                                                                                            label={node.badge}
-                                                                                                        />
-                                                                                                    </>
-                                                                                                )}
-                                                                                        </div>
-                                                                                    }
-                                                                                    secondary={node.description}
-                                                                                />
-                                                                            </ListItem>
-                                                                        </ListItemButton>
-                                                                        {index === filteredNodes[category].length - 1 ? null : <Divider />}
-                                                                    </div>
+                                                                        node={node}
+                                                                        apiBaseUrl={apiBaseUrl}
+                                                                        isLast={index === filteredNodes[category].length - 1}
+                                                                        onDragStart={handleDragStart}
+                                                                        onClick={handleNodeClick}
+                                                                    />
                                                                 ))}
                                                             </AccordionDetails>
                                                         </Accordion>

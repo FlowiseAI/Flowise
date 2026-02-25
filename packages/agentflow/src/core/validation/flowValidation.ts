@@ -135,6 +135,7 @@ function detectCycle(nodes: FlowNode[], edges: FlowEdge[]): boolean {
     return false
 }
 
+// TODO: Integrate with per-node inline validation to surface errors on individual nodes in the canvas
 /**
  * Check if a specific node is valid
  */
@@ -151,9 +152,9 @@ export function validateNode(node: FlowNode, _edges: FlowEdge[]): ValidationErro
     }
 
     // Check required inputs (if defined)
-    const inputParams = node.data.inputParams || []
+    const inputParams = node.data.inputs || []
     for (const param of inputParams) {
-        if (!param.optional && !node.data.inputs?.[param.name]) {
+        if (!param.optional && !node.data.inputValues?.[param.name]) {
             errors.push({
                 nodeId: node.id,
                 message: `Required input "${param.label || param.name}" is missing`,

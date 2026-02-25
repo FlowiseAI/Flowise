@@ -138,6 +138,18 @@ importers:
                 specifier: ^9.0.1
                 version: 9.0.1
         devDependencies:
+            '@testing-library/jest-dom':
+                specifier: ^6.6.3
+                version: 6.9.1
+            '@testing-library/react':
+                specifier: ^14.3.1
+                version: 14.3.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+            '@testing-library/user-event':
+                specifier: ^14.5.2
+                version: 14.6.1(@testing-library/dom@9.3.4)
+            '@types/jest':
+                specifier: ^29.5.14
+                version: 29.5.14
             '@types/lodash':
                 specifier: ^4.14.195
                 version: 4.17.20
@@ -159,15 +171,27 @@ importers:
             '@vitejs/plugin-react':
                 specifier: ^4.2.0
                 version: 4.2.1(vite@5.1.6(@types/node@22.16.3)(sass@1.71.1)(terser@5.29.1))
+            cross-env:
+                specifier: ^7.0.3
+                version: 7.0.3
             eslint-plugin-import:
                 specifier: ^2.29.0
                 version: 2.29.1(@typescript-eslint/parser@8.55.0(eslint@8.57.0)(typescript@5.5.2))(eslint@8.57.0)
             eslint-plugin-simple-import-sort:
                 specifier: ^12.0.0
                 version: 12.1.1(eslint@8.57.0)
+            jest:
+                specifier: ^29.7.0
+                version: 29.7.0(@types/node@22.16.3)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@22.16.3)(typescript@5.5.2))
+            jest-environment-jsdom:
+                specifier: ^29.7.0
+                version: 29.7.0(bufferutil@4.0.8)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.4)
             rimraf:
                 specifier: ^5.0.5
                 version: 5.0.5
+            ts-jest:
+                specifier: ^29.3.2
+                version: 29.3.2(@babel/core@7.24.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.0))(jest@29.7.0(@types/node@22.16.3)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@22.16.3)(typescript@5.5.2)))(typescript@5.5.2)
             typescript:
                 specifier: ^5.4.5
                 version: 5.5.2
@@ -1302,6 +1326,9 @@ packages:
 
     '@adobe/css-tools@4.3.3':
         resolution: { integrity: sha512-rE0Pygv0sEZ4vBWHlAgJLGDU7Pm8xoO6p3wsEceb7GYAjScrOHpEo8KK/eVkAcnSM+slAEtXjA2JpdjLp4fJQQ== }
+
+    '@adobe/css-tools@4.4.4':
+        resolution: { integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg== }
 
     '@ai-sdk/openai@3.0.2':
         resolution: { integrity: sha512-GONwavgSWtcWO+t9+GpGK8l7nIYh+zNtCL/NYDSeHxHiw6ksQS9XMRWrZyE5NpJ0EXNxSAWCHIDmb1WvTqhq9Q== }
@@ -7361,8 +7388,19 @@ packages:
         resolution: { integrity: sha512-ynmNeT7asXyH3aSVv4vvX4Rb+0qjOhdNHnO/3vuZNqPmhDpV/+rCSGwQ7bLcmU2cJ4dvoheIO85LQj0IbJHEtg== }
         engines: { node: '>=8', npm: '>=6', yarn: '>=1' }
 
+    '@testing-library/jest-dom@6.9.1':
+        resolution: { integrity: sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA== }
+        engines: { node: '>=14', npm: '>=6', yarn: '>=1' }
+
     '@testing-library/react@14.2.1':
         resolution: { integrity: sha512-sGdjws32ai5TLerhvzThYFbpnF9XtL65Cjf+gB0Dhr29BGqK+mAeN7SURSdu+eqgET4ANcWoC7FQpkaiGvBr+A== }
+        engines: { node: '>=14' }
+        peerDependencies:
+            react: ^18.0.0
+            react-dom: ^18.0.0
+
+    '@testing-library/react@14.3.1':
+        resolution: { integrity: sha512-H99XjUhWQw0lTgyMN05W3xQG1Nh4lq574D8keFf1dDoNTJgp66VbJozRaczoF+wsiaPJNt/TcnfpLGufGxSrZQ== }
         engines: { node: '>=14' }
         peerDependencies:
             react: ^18.0.0
@@ -7371,6 +7409,12 @@ packages:
     '@testing-library/user-event@12.8.3':
         resolution: { integrity: sha512-IR0iWbFkgd56Bu5ZI/ej8yQwrkCv8Qydx6RzwbKz9faXazR/+5tvYKsZQgyXJiwgpcva127YO6JcWy7YlCfofQ== }
         engines: { node: '>=10', npm: '>=6' }
+        peerDependencies:
+            '@testing-library/dom': '>=7.21.4'
+
+    '@testing-library/user-event@14.6.1':
+        resolution: { integrity: sha512-vq7fv0rnt+QTXgPxr5Hjc210p6YKq2kmdziLgnsZGgLJ9e6VAShx1pACLuRjd/AS/sr7phAR58OIIpf0LlmQNw== }
+        engines: { node: '>=12', npm: '>=6' }
         peerDependencies:
             '@testing-library/dom': '>=7.21.4'
 
@@ -7805,6 +7849,9 @@ packages:
 
     '@types/js-yaml@4.0.9':
         resolution: { integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg== }
+
+    '@types/jsdom@20.0.1':
+        resolution: { integrity: sha512-d0r18sZPmMQr1eG35u12FZfhIXNrnsPU/g5wvRKCUf/tOGilKKwYMYGqh33BNR6ba+2gkHw1EUiHoN3mn7E5IQ== }
 
     '@types/jsdom@21.1.6':
         resolution: { integrity: sha512-/7kkMsC+/kMs7gAYmmBR9P0vGTnOoLhQhyhQJSlXGI5bzTHp6xdo0TtKWQAsz6pmSAeVqKSbqeyP6hytqr9FDw== }
@@ -10523,6 +10570,9 @@ packages:
     dom-accessibility-api@0.5.16:
         resolution: { integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg== }
 
+    dom-accessibility-api@0.6.3:
+        resolution: { integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w== }
+
     dom-converter@0.2.0:
         resolution: { integrity: sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA== }
 
@@ -11752,11 +11802,12 @@ packages:
     glob@10.3.10:
         resolution: { integrity: sha512-fa46+tv1Ak0UPK1TOy/pZrIybNNt4HCv7SDzwyfiOZkvZLEbjsZkJBPtDHVshZjbecAoAGSC20MjLDG/qr679g== }
         engines: { node: '>=16 || 14 >=14.17' }
+        deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
         hasBin: true
 
     glob@7.1.6:
         resolution: { integrity: sha512-LwaxwyZ72Lk7vZINtNNrywX0ZuLyStrdDtabefZKAY5ZGJhVtgdznluResxNmPitE0SAO+O26sWTHeKSI2wMBA== }
-        deprecated: Glob versions prior to v9 are no longer supported
+        deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
     glob@7.2.3:
         resolution: { integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q== }
@@ -12785,6 +12836,15 @@ packages:
     jest-environment-jsdom@27.5.1:
         resolution: { integrity: sha512-TFBvkTC1Hnnnrka/fUb56atfDtJ9VMZ94JkjTbggl1PEpwrYtUBKMezB3inLmWqQsXYLcMwNoDQwoBTAvFfsfw== }
         engines: { node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0 }
+
+    jest-environment-jsdom@29.7.0:
+        resolution: { integrity: sha512-k9iQbsf9OyOfdzWH8HDmrRT0gSIcX+FLNW7IQq94tFX0gynPwqDTW0Ho6iMVNjGz/nb+l/vW3dWM2bbLLpkbXA== }
+        engines: { node: ^14.15.0 || ^16.10.0 || >=18.0.0 }
+        peerDependencies:
+            canvas: ^2.5.0
+        peerDependenciesMeta:
+            canvas:
+                optional: true
 
     jest-environment-node@27.5.1:
         resolution: { integrity: sha512-Jt4ZUnxdOsTGwSRAfKEnE6BcwsSPNOijjwifq5sDFSA2kesnXTvNqKHYgM0hDq3549Uf/KzdXNYn4wMZJPlFLw== }
@@ -18493,10 +18553,12 @@ packages:
 
     whatwg-encoding@1.0.5:
         resolution: { integrity: sha512-b5lim54JOPN9HtzvK9HFXvBma/rnfFeqsic0hSpjtDbVxR3dJKLc+KB4V6GgiGOvl7CY/KNh8rxSo9DKQrnUEw== }
+        deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
     whatwg-encoding@2.0.0:
         resolution: { integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg== }
         engines: { node: '>=12' }
+        deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
     whatwg-fetch@3.6.20:
         resolution: { integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg== }
@@ -18931,6 +18993,8 @@ snapshots:
     '@aashutoshrathi/word-wrap@1.2.6': {}
 
     '@adobe/css-tools@4.3.3': {}
+
+    '@adobe/css-tools@4.4.4': {}
 
     '@ai-sdk/openai@3.0.2(zod@3.22.4)':
         dependencies:
@@ -28028,6 +28092,15 @@ snapshots:
             lodash: 4.17.21
             redent: 3.0.0
 
+    '@testing-library/jest-dom@6.9.1':
+        dependencies:
+            '@adobe/css-tools': 4.4.4
+            aria-query: 5.3.0
+            css.escape: 1.5.1
+            dom-accessibility-api: 0.6.3
+            picocolors: 1.1.1
+            redent: 3.0.0
+
     '@testing-library/react@14.2.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
         dependencies:
             '@babel/runtime': 7.24.0
@@ -28036,9 +28109,21 @@ snapshots:
             react: 18.2.0
             react-dom: 18.2.0(react@18.2.0)
 
+    '@testing-library/react@14.3.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
+        dependencies:
+            '@babel/runtime': 7.26.10
+            '@testing-library/dom': 9.3.4
+            '@types/react-dom': 18.2.21
+            react: 18.2.0
+            react-dom: 18.2.0(react@18.2.0)
+
     '@testing-library/user-event@12.8.3(@testing-library/dom@9.3.4)':
         dependencies:
             '@babel/runtime': 7.24.0
+            '@testing-library/dom': 9.3.4
+
+    '@testing-library/user-event@14.6.1(@testing-library/dom@9.3.4)':
+        dependencies:
             '@testing-library/dom': 9.3.4
 
     '@tiptap/core@2.12.0(@tiptap/pm@2.12.0)':
@@ -28541,6 +28626,12 @@ snapshots:
             pretty-format: 29.7.0
 
     '@types/js-yaml@4.0.9': {}
+
+    '@types/jsdom@20.0.1':
+        dependencies:
+            '@types/node': 22.16.3
+            '@types/tough-cookie': 4.0.5
+            parse5: 7.1.2
 
     '@types/jsdom@21.1.6':
         dependencies:
@@ -31723,6 +31814,8 @@ snapshots:
 
     dom-accessibility-api@0.5.16: {}
 
+    dom-accessibility-api@0.6.3: {}
+
     dom-converter@0.2.0:
         dependencies:
             utila: 0.4.0
@@ -32919,9 +33012,9 @@ snapshots:
         dependencies:
             pend: 1.2.0
 
-    fdir@6.4.6(picomatch@4.0.2):
+    fdir@6.4.6(picomatch@4.0.3):
         optionalDependencies:
-            picomatch: 4.0.2
+            picomatch: 4.0.3
 
     fdir@6.5.0(picomatch@4.0.3):
         optionalDependencies:
@@ -33484,7 +33577,7 @@ snapshots:
         dependencies:
             basic-ftp: 5.0.5
             data-uri-to-buffer: 6.0.2
-            debug: 4.4.1(supports-color@8.1.1)
+            debug: 4.4.3
             fs-extra: 11.2.0
         transitivePeerDependencies:
             - supports-color
@@ -34654,7 +34747,7 @@ snapshots:
 
     istanbul-lib-source-maps@4.0.1:
         dependencies:
-            debug: 4.4.1(supports-color@8.1.1)
+            debug: 4.4.3
             istanbul-lib-coverage: 3.2.2
             source-map: 0.6.1
         transitivePeerDependencies:
@@ -34905,6 +34998,23 @@ snapshots:
         transitivePeerDependencies:
             - bufferutil
             - canvas
+            - supports-color
+            - utf-8-validate
+
+    jest-environment-jsdom@29.7.0(bufferutil@4.0.8)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.4):
+        dependencies:
+            '@jest/environment': 29.7.0
+            '@jest/fake-timers': 29.7.0
+            '@jest/types': 29.6.3
+            '@types/jsdom': 20.0.1
+            '@types/node': 22.16.3
+            jest-mock: 29.7.0
+            jest-util: 29.7.0
+            jsdom: 20.0.3(bufferutil@4.0.8)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.4)
+        optionalDependencies:
+            canvas: 2.11.2(encoding@0.1.13)
+        transitivePeerDependencies:
+            - bufferutil
             - supports-color
             - utf-8-validate
 
@@ -40978,8 +41088,8 @@ snapshots:
 
     tinyglobby@0.2.14:
         dependencies:
-            fdir: 6.4.6(picomatch@4.0.2)
-            picomatch: 4.0.2
+            fdir: 6.4.6(picomatch@4.0.3)
+            picomatch: 4.0.3
 
     tinyglobby@0.2.15:
         dependencies:

@@ -41,13 +41,14 @@ export const MainCard = forwardRef<HTMLDivElement, MainCardProps>(function MainC
         sx = {},
         title,
         border,
-        ..._others
+        ...others
     },
     ref
 ) {
     return (
         <Card
             ref={ref}
+            {...others}
             sx={{
                 background: 'transparent',
                 ':hover': {

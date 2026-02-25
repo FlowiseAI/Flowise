@@ -13,37 +13,37 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    background: #fff;
-    border-bottom: 1px solid #e0e0e0;
+    padding: var(--agentflow-spacing-md) var(--agentflow-spacing-lg);
+    background: var(--agentflow-header-bg);
+    border-bottom: 1px solid var(--agentflow-border);
     min-height: 56px;
 }
 
 .agentflow-title {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--agentflow-text-primary);
 }
 
 .agentflow-header-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--agentflow-spacing-sm);
 }
 
 .agentflow-header-actions button {
-    padding: 8px 16px;
-    border: 1px solid #e0e0e0;
+    padding: var(--agentflow-spacing-sm) var(--agentflow-spacing-lg);
+    border: 1px solid var(--agentflow-border);
     border-radius: 4px;
-    background: #fff;
-    color: #333;
+    background: var(--agentflow-card-bg);
+    color: var(--agentflow-text-primary);
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .agentflow-header-actions button:hover {
-    background: #f5f5f5;
-    border-color: #bdbdbd;
+    background: var(--agentflow-card-bg-hover);
+    border-color: var(--agentflow-border-hover);
 }
 
 .agentflow-header-actions button:disabled {
@@ -61,42 +61,43 @@
 /* Node Palette */
 .agentflow-palette {
     width: 240px;
-    background: #fafafa;
-    border-right: 1px solid #e0e0e0;
+    background: var(--agentflow-palette-bg);
+    border-right: 1px solid var(--agentflow-border);
     overflow-y: auto;
-    padding: 16px 0;
+    padding: var(--agentflow-spacing-lg) 0;
 }
 
 .agentflow-palette-title {
-    padding: 0 16px 12px;
+    padding: 0 var(--agentflow-spacing-lg) var(--agentflow-spacing-md);
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    color: #757575;
+    color: var(--agentflow-text-tertiary);
 }
 
 .agentflow-palette-item {
-    padding: 10px 16px;
-    margin: 0 8px 4px;
-    background: #fff;
-    border: 1px solid #e0e0e0;
+    padding: var(--agentflow-spacing-md) var(--agentflow-spacing-lg);
+    margin: 0 var(--agentflow-spacing-sm) 4px;
+    background: var(--agentflow-card-bg);
+    border: 1px solid var(--agentflow-border);
     border-left-width: 4px;
     border-radius: 4px;
     font-size: 13px;
-    color: #333;
+    color: var(--agentflow-text-primary);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .agentflow-palette-item:hover {
-    background: #f5f5f5;
-    border-color: #bdbdbd;
+    background: var(--agentflow-card-bg-hover);
+    border-color: var(--agentflow-border-hover);
 }
 
 /* Canvas */
 .agentflow-canvas {
+    position: relative; /* Required for absolute positioning of FAB buttons */
     flex: 1;
-    background: #f8f9fa;
+    background: var(--agentflow-canvas-bg);
 }
 
 .agentflow-canvas .react-flow {
@@ -104,19 +105,21 @@
     height: 100%;
 }
 
-/* ReactFlow customizations */
+/* ReactFlow customizations - overflow visible so NodeToolbar renders above the node */
 .agentflow-canvas .react-flow__node {
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: visible;
 }
 
-/* Content-sized nodes: width/height follow content (no fixed size) */
+/*
+ * IMPORTANT: These !important declarations are NECESSARY.
+ * ReactFlow sets inline width/height on nodes based on measured dimensions.
+ * We need !important to force content-based sizing for card nodes.
+ * Without this, nodes would have fixed dimensions and content could overflow.
+ */
 .agentflow-canvas .react-flow__node-agentflowNode,
 .agentflow-canvas .react-flow__node-stickyNote {
-    width: fit-content !important;
-    height: fit-content !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
+    width: max-content !important;
+    height: max-content !important;
 }
 
 .agentflow-canvas .react-flow__edge-path {
@@ -124,86 +127,76 @@
 }
 
 .agentflow-canvas .react-flow__controls {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    box-shadow: var(--agentflow-shadow-controls);
+    border-radius: var(--agentflow-radius-md);
     overflow: hidden;
 }
 
 .agentflow-canvas .react-flow__minimap {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    box-shadow: var(--agentflow-shadow-minimap);
+    border-radius: var(--agentflow-radius-md);
     overflow: hidden;
+    bottom: var(--agentflow-spacing-xl);
 }
 
 .agentflow-canvas .react-flow__background {
-    background: #f8f9fa;
+    background: var(--agentflow-canvas-bg);
 }
 
-/* Dark theme support */
-.agentflow-container.dark {
-    background: #1a1a1a;
+/* Dark mode controls - Enhanced for visibility */
+.dark-mode-controls .react-flow__controls-button {
+    background-color: var(--agentflow-card-bg);
+    border-color: var(--agentflow-border);
+    color: var(--agentflow-text-primary);
+    transition: all 0.2s ease;
 }
 
-.agentflow-container.dark .agentflow-header {
-    background: #2d2d2d;
-    border-color: #404040;
+.dark-mode-controls .react-flow__controls-button:hover:not(:disabled) {
+    background-color: var(--agentflow-border-hover);
+    border-color: var(--agentflow-border-hover);
 }
 
-.agentflow-container.dark .agentflow-title {
-    color: #fff;
+.dark-mode-controls .react-flow__controls-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
-.agentflow-container.dark .agentflow-header-actions button {
-    background: #2d2d2d;
-    border-color: #404040;
-    color: #fff;
+.dark-mode-controls .react-flow__controls-button svg {
+    fill: currentColor;
 }
 
-.agentflow-container.dark .agentflow-header-actions button:hover {
-    background: #404040;
+/* Ensure controls have proper box styling in dark mode */
+.dark-mode-controls {
+    background-color: var(--agentflow-card-bg);
+    border: 1px solid var(--agentflow-border);
 }
 
-.agentflow-container.dark .agentflow-palette {
-    background: #252525;
-    border-color: #404040;
+/* Dark mode minimap */
+.agentflow-canvas[data-dark-mode='true'] .react-flow__minimap {
+    background-color: var(--agentflow-minimap-bg);
+    border: 1px solid var(--agentflow-border);
 }
 
-.agentflow-container.dark .agentflow-palette-title {
-    color: #9e9e9e;
+.agentflow-canvas[data-dark-mode='true'] .react-flow__minimap-mask {
+    fill: var(--agentflow-card-bg);
 }
 
-.agentflow-container.dark .agentflow-palette-item {
-    background: #2d2d2d;
-    border-color: #404040;
-    color: #fff;
-}
-
-.agentflow-container.dark .agentflow-palette-item:hover {
-    background: #404040;
-}
-
-.agentflow-container.dark .agentflow-canvas {
-    background: #1a1a1a;
-}
-
-.agentflow-container.dark .react-flow__background {
-    background: #1a1a1a;
-}
+/* Dark theme support is now handled by CSS variables injected via AgentflowProvider */
 
 /* Node styles (placeholder - will be enhanced with actual components) */
 .agentflow-node {
-    padding: 12px;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    padding: var(--agentflow-spacing-md);
+    background: var(--agentflow-card-bg);
+    border: 1px solid var(--agentflow-border);
+    border-radius: var(--agentflow-radius-md);
     min-width: 180px;
 }
 
 .agentflow-node-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: var(--agentflow-spacing-sm);
+    margin-bottom: var(--agentflow-spacing-sm);
 }
 
 .agentflow-node-icon {
@@ -218,12 +211,12 @@
 .agentflow-node-label {
     font-size: 14px;
     font-weight: 500;
-    color: #333;
+    color: var(--agentflow-text-primary);
 }
 
 .agentflow-node-content {
     font-size: 12px;
-    color: #666;
+    color: var(--agentflow-text-secondary);
 }
 
 /* Handles */
@@ -231,13 +224,13 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: #fff;
-    border: 2px solid #9e9e9e;
+    background: var(--agentflow-card-bg);
+    border: 2px solid var(--agentflow-text-secondary);
 }
 
 .agentflow-handle-connected {
-    border-color: #4caf50;
-    background: #4caf50;
+    border-color: var(--agentflow-success);
+    background: var(--agentflow-success);
 }
 
 /* Edge styles */
@@ -247,16 +240,16 @@
 
 .agentflow-edge-label {
     font-size: 11px;
-    fill: #666;
+    fill: var(--agentflow-text-secondary);
 }
 
 /* Sticky note */
 .agentflow-sticky-note {
-    padding: 12px;
-    background: #fee440;
+    padding: var(--agentflow-spacing-md);
+    background: var(--agentflow-sticky-note-bg);
     border: none;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--agentflow-shadow-sticky-note);
     min-width: 150px;
     min-height: 100px;
 }
@@ -274,9 +267,9 @@
 /* Iteration node */
 .agentflow-iteration-node {
     background: rgba(156, 137, 184, 0.1);
-    border: 2px dashed #9c89b8;
-    border-radius: 12px;
-    padding: 20px;
+    border: 2px dashed var(--agentflow-iteration-border);
+    border-radius: var(--agentflow-radius-lg);
+    padding: var(--agentflow-spacing-xl);
     min-width: 300px;
     min-height: 200px;
 }
@@ -316,7 +309,7 @@
     }
 
     .agentflow-palette-item {
-        padding: 8px 12px;
+        padding: var(--agentflow-spacing-sm) var(--agentflow-spacing-md);
         font-size: 12px;
     }
 }
