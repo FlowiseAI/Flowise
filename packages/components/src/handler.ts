@@ -1499,6 +1499,7 @@ export class AnalyticHandler {
                         let normalized = provider.toLowerCase()
                         if (normalized.startsWith('chat')) normalized = normalized.slice(4)
                         if (normalized.endsWith('chat')) normalized = normalized.slice(0, -4)
+                        if (normalized.includes('bedrock')) normalized = 'amazon_bedrock'
                         llmRun.extra.metadata.ls_provider = normalized
                     }
                 }
