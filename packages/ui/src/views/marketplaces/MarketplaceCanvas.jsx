@@ -14,6 +14,7 @@ import { useTheme } from '@mui/material/styles'
 import MarketplaceCanvasNode from './MarketplaceCanvasNode'
 import MarketplaceCanvasHeader from './MarketplaceCanvasHeader'
 import StickyNote from '../canvas/StickyNote'
+import { normalizeStickyNoteNodes } from '@/utils/genericHelper'
 
 // icons
 import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
@@ -45,7 +46,7 @@ const MarketplaceCanvas = () => {
     useEffect(() => {
         if (flowData) {
             const initialFlow = JSON.parse(flowData)
-            setNodes(initialFlow.nodes || [])
+            setNodes(normalizeStickyNoteNodes(initialFlow.nodes || []))
             setEdges(initialFlow.edges || [])
         }
 
