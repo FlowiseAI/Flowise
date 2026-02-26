@@ -1,0 +1,179 @@
+import { InternalFlowiseError } from './errors/internalFlowiseError'
+import logger from './utils/logger'
+import { MODE } from './Interface'
+import { Redis } from 'ioredis'
+import { StatusCodes } from 'http-status-codes'
+
+/**
+ * Class used to initialize and connect to Redis instance.
+ *
+ * Sync usage:
+ *   const connector = new RedisConnector()
+ *   const redis = connector.getRedisClient()
+ *
+ * Async usage:
+ *   const connector = new RedisConnector()
+ *   await connector.ready() // fully waits for Redis init
+ *   const redis = connector.getRedisClient()
+ */
+export class RedisConnector {
+    /**
+     * @type {Redis}
+     */
+    private redis!: Redis
+
+    /**
+     * @type {Record<string, unknown>}
+     */
+    private connection!: Record<string, unknown>
+
+    /**
+     * @type {Promise<void>}
+     */
+    private initPromise: Promise<void> | null = null
+
+    /**
+     * Sync constructor
+     *
+     * @constructor
+     */
+    constructor() {}
+
+    /**
+     * Initializes Redis lazily (runs once).
+     *
+     * @returns {Promise<void>}
+     */
+    private async init(): Promise<void> {
+        if (this.initPromise) return this.initPromise
+
+        this.initPromise = (async () => {
+            const keepAlive =
+                process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                    ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                    : 0
+
+            const tlsOptions =
+                process.env.REDIS_TLS === 'true'
+                    ? {
+                          cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
+                          key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
+                          ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+                      }
+                    : {}
+
+            switch (process.env.MODE) {
+                case MODE.QUEUE:
+                    await this.initializeQueueMode(keepAlive, tlsOptions)
+                    break
+
+                case MODE.MAIN:
+                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR,
+                        `[server]: MODE ${process.env.MODE} not implemented`
+                    )
+
+                default:
+                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR,
+                        `Unrecognized MODE - ${process.env.MODE}`
+                    )
+            }
+        })()
+
+        return this.initPromise
+    }
+
+    /**
+     * Queue mode initialization.
+     *
+     * @param {number} keepAlive - Keep alive in milliseconds (see https://redis.github.io/ioredis/index.html#RedisOptions)
+     * @param {Record<string, unknown>} tlsOptions - Record with key-value pairs (see https://redis.github.io/ioredis/index.html#RedisOptions)
+     */
+    private async initializeQueueMode(keepAlive: number, tlsOptions: Record<string, unknown>): Promise<void> {
+        if (process.env.REDIS_URL) {
+            logger.info('[server] Queue mode using REDIS_URL.')
+
+            tlsOptions.rejectUnauthorized =
+                !(process.env.REDIS_URL.startsWith('rediss://') && process.env.REDIS_TLS !== 'true')
+
+            this.connection = {
+                keepAlive,
+                tls: tlsOptions,
+                enableReadyCheck: true,
+                reconnectOnError: this.connectOnError.bind(this)
+            }
+
+            this.redis = new Redis(process.env.REDIS_URL, this.connection)
+
+        } else {
+            logger.info('[server] Queue mode using HOST or localhost.')
+
+            this.connection = {
+                host: process.env.REDIS_HOST ?? 'localhost',
+                port: parseInt(process.env.REDIS_PORT || '6379'),
+                username: process.env.REDIS_USERNAME || undefined,
+                password: process.env.REDIS_PASSWORD || undefined,
+                keepAlive,
+                tls: tlsOptions,
+                enableReadyCheck: true,
+                reconnectOnError: this.connectOnError.bind(this)
+            }
+
+            this.redis = new Redis(this.connection)
+        }
+
+        try {
+            await this.redis.connect()
+        } catch (err: any) {
+            logger.error(`[server]: Redis connection failed - ${err.message}`)
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, err.message)
+        }
+    }
+
+    /**
+     * Function to handle Redis failure, used as callback.
+     * https://redis.github.io/ioredis/interfaces/CommonRedisOptions.html#reconnectOnError
+     * @param {Error} err
+     * @returns {number} 1 - Always reconnect to Redis in case of errors (does not retry the failed command)
+     * @see https://redis.github.io/ioredis/interfaces/CommonRedisOptions.html#reconnectOnError
+     */
+    private connectOnError(err: Error): number {
+        logger.error(`[server]: Redis connection error - ${err.message}`)
+        return 1
+    }
+
+    /**
+     * Sync-safe access:
+     *  - If Redis isn't initialized: triggers async initialization.
+     *  - Always returns the Redis instance synchronously.
+     *
+     * @returns {Redis}
+     */
+    public getRedisClient(): Redis {
+        // Trigger async init if not yet started
+        void this.init()
+        return this.redis
+    }
+
+    /**
+     * Fully async safe usage:
+     *  await connector.ready()
+     *
+     * @returns {Promise<void>}
+     */
+    public async ready(): Promise<void> {
+        await this.init()
+    }
+
+    /**
+     * Sync-safe access
+     *
+     * @returns {Record<string, unknown>}
+     */
+    public getRedisConnection(): Record<string, unknown> {
+        // Trigger async init if not yet started
+        void this.init()
+        return this.connection
+    }
+}
+
+export default RedisConnector
