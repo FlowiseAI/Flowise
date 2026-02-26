@@ -22,6 +22,19 @@ const getHasChatflowChanged = (id, lastUpdatedDateTime) => client.get(`/chatflow
 
 const generateAgentflow = (body) => client.post(`/agentflowv2-generator/generate`, body)
 
+// Versioning APIs
+const getAllVersions = (id) => client.get(`/chatflows/${id}/versions`)
+
+const getVersion = (id, version) => client.get(`/chatflows/${id}/versions/${version}`)
+
+const createVersion = (id, body) => client.post(`/chatflows/${id}/versions`, body)
+
+const updateVersion = (id, version, body) => client.put(`/chatflows/${id}/versions/${version}`, body)
+
+const setActiveVersion = (id, version) => client.put(`/chatflows/${id}/active-version`, { version })
+
+const deleteVersion = (id, version) => client.delete(`/chatflows/${id}/versions/${version}`)
+
 export default {
     getAllChatflows,
     getAllAgentflows,
@@ -33,5 +46,12 @@ export default {
     getIsChatflowStreaming,
     getAllowChatflowUploads,
     getHasChatflowChanged,
-    generateAgentflow
+    generateAgentflow,
+    // Versioning
+    getAllVersions,
+    getVersion,
+    createVersion,
+    updateVersion,
+    setActiveVersion,
+    deleteVersion
 }

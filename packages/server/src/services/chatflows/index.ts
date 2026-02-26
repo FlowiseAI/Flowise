@@ -17,6 +17,11 @@ import documentStoreService from '../../services/documentstore'
 import { constructGraphs, getAppVersion, getEndingNodes, getTelemetryFlowObj, isFlowValidForStream } from '../../utils'
 import { sanitizeAllowedUploadMimeTypesFromConfig } from '../../utils/fileValidation'
 import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import {
+    createVersioningRecordsForChatflow,
+    fetchAndMergeActiveVersion,
+    fetchAndMergeActiveVersionsBatch
+} from '../../utils/getChatflowWithActiveVersion'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
@@ -36,13 +41,14 @@ export function validateChatflowType(type: ChatflowType | undefined) {
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        //**
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
             id: chatflowId
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
+
+        await fetchAndMergeActiveVersion(chatflow)
 
         /* Check for post-processing settings, if available isStreamValid is always false */
         let chatflowConfig: ICommonObject = {}
@@ -166,6 +172,9 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
         if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
         const [data, total] = await queryBuilder.getManyAndCount()
 
+        // Merge active version data for each chatflow
+        await fetchAndMergeActiveVersionsBatch(data)
+
         if (page > 0 && limit > 0) {
             return { data, total }
         } else {
@@ -258,6 +267,10 @@ const getChatflowById = async (chatflowId: string, workspaceId?: string): Promis
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found in the database!`)
         }
+
+        // Merge active version data into the chatflow response
+        await fetchAndMergeActiveVersion(dbResponse)
+
         return dbResponse
     } catch (error) {
         if (error instanceof InternalFlowiseError) {
@@ -306,6 +319,9 @@ const saveChatflow = async (
         const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
         dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
     }
+
+    // Create ChatFlowMaster and initial ChatFlowVersion for versioning support
+    await createVersioningRecordsForChatflow(dbResponse, appServer.AppDataSource.manager)
 
     const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
 
@@ -385,6 +401,9 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
+
+        await fetchAndMergeActiveVersion(dbResponse)
+
         const uploadsConfig = await utilGetUploadsConfig(chatflowId)
         // even if chatbotConfig is not set but uploads are enabled
         // send uploadsConfig to the chatbot

@@ -12,6 +12,7 @@ import {
 } from '../../utils'
 import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { fetchAndMergeActiveVersion } from '../../utils/getChatflowWithActiveVersion'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { IDepthQueue, IReactFlowNode } from '../../Interface'
 import { ICommonObject, INodeData } from 'flowise-components'
@@ -34,6 +35,9 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
+
+    // Merge active version data into the chatflow
+    await fetchAndMergeActiveVersion(chatflow)
 
     const chatId = _chatId || uuidv4()
     const apiMessageId = _apiMessageId || uuidv4()

@@ -73,6 +73,37 @@ export interface IChatFlow {
     workspaceId: string
 }
 
+export interface IChatFlowMaster {
+    id: string
+    name: string
+    type?: ChatflowType
+    workspaceId: string
+    category?: string
+    isPublic?: boolean
+    createdDate: Date
+    updatedDate: Date
+}
+
+export interface IChatFlowVersion {
+    id: string
+    masterId: string
+    version: number
+    isActive: boolean
+    flowData: string
+    apikeyid?: string
+    chatbotConfig?: string
+    apiConfig?: string
+    analytic?: string
+    speechToText?: string
+    textToSpeech?: string
+    followUpPrompts?: string
+    changeDescription?: string
+    sourceVersion?: number
+    createdBy?: string
+    createdDate: Date
+    updatedDate: Date
+}
+
 export interface IChatMessage {
     id: string
     role: MessageType

@@ -66,6 +66,7 @@ import { utilAddChatMessage } from './addChatMesage'
 import { checkPredictions, checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
+import { fetchAndMergeActiveVersion } from './getChatflowWithActiveVersion'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
 import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
@@ -990,12 +991,20 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
     const chatflowid = req.params.id
 
-    // Check if chatflow exists
-    const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-        id: chatflowid
-    })
+    // Check if a versioned chatflow was already prepared by the controller (for version-specific predictions)
+    let chatflow = (req as any).versionedChatflow
+
     if (!chatflow) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+        // Check if chatflow exists
+        chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowid
+        })
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+        }
+
+        // Merge active version data into the chatflow
+        await fetchAndMergeActiveVersion(chatflow)
     }
 
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
