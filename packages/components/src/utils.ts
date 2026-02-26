@@ -1236,7 +1236,7 @@ export const isAllowedUploadMimeType = (mime: string): boolean => {
 
 // remove invalid markdown image pattern: ![<some-string>](<some-string>)
 export const removeInvalidImageMarkdown = (output: string): string => {
-    return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
+    return typeof output === 'string' ? output.replace(/!\[[^\]]*\]\((?!https?:\/\/)[^)]*\)/g, '') : output
 }
 
 /**
@@ -1443,7 +1443,7 @@ export const stripHTMLFromToolInput = (input: string) => {
 }
 
 // Helper function to convert require statements to ESM imports
-const convertRequireToImport = (requireLine: string): string | null => {
+export const convertRequireToImport = (requireLine: string): string | null => {
     // Remove leading/trailing whitespace and get the indentation
     const indent = requireLine.match(/^(\s*)/)?.[1] || ''
     const trimmed = requireLine.trim()
@@ -1456,7 +1456,7 @@ const convertRequireToImport = (requireLine: string): string | null => {
     }
 
     // Match patterns like: const { name1, name2 } = require('module')
-    const destructureMatch = trimmed.match(/^(const|let|var)\s+\{\s*([^}]+)\s*\}\s*=\s*require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/)
+    const destructureMatch = trimmed.match(/^(const|let|var)\s+\{([^}]+)\}\s*=\s*require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/)
     if (destructureMatch) {
         const [, , destructuredVars, moduleName] = destructureMatch
         return `${indent}import { ${destructuredVars.trim()} } from '${moduleName}';`
@@ -1576,7 +1576,7 @@ export const executeJavaScriptCode = async (
                     importLines.push(line)
                 }
                 // Check for CommonJS require statements and convert them to ESM imports
-                else if (/^(const|let|var)\s+.*=\s*require\s*\(/.test(trimmedLine)) {
+                else if (/^(const|let|var)\s+\S[^=]*=\s*require\s*\(/.test(trimmedLine)) {
                     const convertedImport = convertRequireToImport(trimmedLine)
                     if (convertedImport) {
                         importLines.push(convertedImport)
@@ -1593,7 +1593,7 @@ export const executeJavaScriptCode = async (
 
             // Auto-detect required libraries from code
             // Extract required modules from import/require statements
-            const importRegex = /(?:import\s+.*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
+            const importRegex = /(?:import\s+\S[^\n]*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
             let match
             while ((match = importRegex.exec(code)) !== null) {
                 const moduleName = match[1] || match[2]
