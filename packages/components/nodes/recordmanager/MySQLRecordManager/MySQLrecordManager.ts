@@ -223,7 +223,7 @@ class MySQLRecordManager implements RecordManagerInterface {
                 `SELECT COUNT(1) ColumnExists FROM INFORMATION_SCHEMA.COLUMNS 
                     WHERE table_schema=DATABASE() AND table_name='${tableName}' AND column_name='doc_id';`
             )
-            if (checkColumn[0].ColumnExists === 0) {
+            if (Number(checkColumn[0].ColumnExists) === 0) {
                 await queryRunner.manager.query(`ALTER TABLE \`${tableName}\` ADD COLUMN \`doc_id\` longtext;`)
             }
 
@@ -234,9 +234,26 @@ class MySQLRecordManager implements RecordManagerInterface {
                     `SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS 
                         WHERE table_schema=DATABASE() AND table_name='${tableName}' AND index_name='${column}_index';`
                 )
-                if (Check[0].IndexIsThere === 0)
-                    await queryRunner.manager.query(`CREATE INDEX \`${column}_index\`
+
+                if (Number(Check[0].IndexIsThere) === 0) {
+                    // Check column data type to determine if prefix length is needed
+                    const columnTypeCheck = await queryRunner.manager.query(
+                        `SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS 
+                            WHERE table_schema=DATABASE() AND table_name='${tableName}' AND column_name='${column}';`
+                    )
+
+                    // For TEXT/BLOB columns, use prefix length of 255
+                    if (columnTypeCheck.length > 0) {
+                        const dataType = columnTypeCheck[0].DATA_TYPE.toLowerCase()
+                        if (dataType.includes('text') || dataType.includes('blob')) {
+                            await queryRunner.manager.query(`CREATE INDEX \`${column}_index\`
+        ON \`${tableName}\` (\`${column}\`(255));`)
+                        } else {
+                            await queryRunner.manager.query(`CREATE INDEX \`${column}_index\`
         ON \`${tableName}\` (\`${column}\`);`)
+                        }
+                    }
+                }
             }
 
             await queryRunner.release()

@@ -1198,6 +1198,42 @@ export const mapMimeTypeToExt = (mimeType: string) => {
     }
 }
 
+/**
+ * MIME types allowed for full file upload (chatflow config).
+ * Server validates stored allowedUploadFileTypes against this list to prevent
+ * malicious clients from allowing executables or other dangerous types.
+ * Uses a Set for O(1) lookups and to make the unique allowed set explicit.
+ */
+export const ALLOWED_UPLOAD_MIME_TYPES: ReadonlySet<string> = new Set([
+    'text/css',
+    'text/csv',
+    'text/html',
+    'application/json',
+    'text/markdown',
+    'application/x-yaml',
+    'application/pdf',
+    'application/sql',
+    'text/plain',
+    'application/xml',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+])
+
+/**
+ * Returns true if the MIME type is allowed for file upload config.
+ * Must be in ALLOWED_UPLOAD_MIME_TYPES and have a mapping in mapMimeTypeToExt.
+ * @param {string} mime
+ * @returns {boolean}
+ */
+export const isAllowedUploadMimeType = (mime: string): boolean => {
+    if (!mime || typeof mime !== 'string') return false
+    const trimmed = mime.trim()
+    if (!trimmed) return false
+    return ALLOWED_UPLOAD_MIME_TYPES.has(trimmed) && mapMimeTypeToExt(trimmed) !== ''
+}
+
 // remove invalid markdown image pattern: ![<some-string>](<some-string>)
 export const removeInvalidImageMarkdown = (output: string): string => {
     return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
