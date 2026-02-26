@@ -5,6 +5,13 @@
  * The templates provide consistent styling and behavior for success and error pages.
  */
 
+/**
+ * Escapes HTML special characters to prevent XSS attacks
+ */
+const escapeHtml = (unsafe: string): string => {
+    return unsafe.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;')
+}
+
 export interface OAuth2PageOptions {
     title: string
     statusIcon: string
@@ -20,11 +27,18 @@ export interface OAuth2PageOptions {
 export const generateOAuth2ResponsePage = (options: OAuth2PageOptions): string => {
     const { title, statusIcon, statusText, statusColor, message, details, postMessageType, postMessageData, autoCloseDelay } = options
 
+    // Escape all user-controlled content to prevent XSS
+    const safeTitle = escapeHtml(title)
+    const safeStatusIcon = escapeHtml(statusIcon)
+    const safeStatusText = escapeHtml(statusText)
+    const safeMessage = escapeHtml(message)
+    const safeDetails = details ? escapeHtml(details) : undefined
+
     return `
         <!DOCTYPE html>
         <html>
         <head>
-            <title>${title}</title>
+            <title>${safeTitle}</title>
             <style>
                 body {
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -65,9 +79,9 @@ export const generateOAuth2ResponsePage = (options: OAuth2PageOptions): string =
         </head>
         <body>
             <div class="container">
-                <div class="status">${statusIcon} ${statusText}</div>
-                <div class="message">${message}</div>
-                ${details ? `<div class="details">${details}</div>` : ''}
+                <div class="status">${safeStatusIcon} ${safeStatusText}</div>
+                <div class="message">${safeMessage}</div>
+                ${safeDetails ? `<div class="details">${safeDetails}</div>` : ''}
             </div>
             <script>
                 // Notify parent window
@@ -81,7 +95,7 @@ export const generateOAuth2ResponsePage = (options: OAuth2PageOptions): string =
                 } catch (error) {
                     console.log('Could not notify parent window:', error);
                 }
-                
+
                 // Close window after delay
                 setTimeout(function() {
                     window.close();

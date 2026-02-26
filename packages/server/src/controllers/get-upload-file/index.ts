@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import fs from 'fs'
 import contentDisposition from 'content-disposition'
-import { streamStorageFile } from 'flowise-components'
+import { isUnsafeFilePath, isValidUUID, streamStorageFile } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -17,6 +17,20 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
         const chatId = req.query.chatId as string
         const fileName = req.query.fileName as string
         const download = req.query.download === 'true' // Check if download parameter is set
+
+        // Validate input formats to prevent path traversal attacks
+        if (!chatflowId || !isValidUUID(chatflowId)) {
+            return res.status(400).send(`Invalid chatflowId format`)
+        }
+
+        if (!chatId) {
+            return res.status(400).send(`chatId is missing`)
+        }
+
+        // Check for path traversal and unsafe characters in fileName
+        if (isUnsafeFilePath(fileName)) {
+            return res.status(400).send(`Invalid path characters detected in filename`)
+        }
 
         const appServer = getRunningExpressApp()
 

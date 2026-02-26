@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import type { NodeData } from '../../core/types'
+import type { NodeData } from '@/core/types'
 
 /**
  * Create nodes API functions bound to a client instance

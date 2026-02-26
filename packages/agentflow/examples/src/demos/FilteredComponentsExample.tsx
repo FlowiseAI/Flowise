@@ -7,10 +7,10 @@
 
 import { useRef, useState } from 'react'
 
-import type { AgentFlowInstance, FlowData } from '@flowise/agentflow'
-import { Agentflow } from '@flowise/agentflow'
+import type { AgentFlowInstance, FlowData } from '@flowiseai/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 const initialFlow: FlowData = {
     nodes: [
@@ -77,7 +77,7 @@ export function FilteredComponentsExample() {
     const currentPreset = presets[selectedPreset]
 
     return (
-        <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Preset Selector */}
             <div
                 style={{
@@ -142,9 +142,9 @@ export function FilteredComponentsExample() {
             <div style={{ flex: 1 }} key={key}>
                 <Agentflow
                     ref={agentflowRef}
-                    instanceUrl={instanceUrl}
+                    apiBaseUrl={apiBaseUrl}
                     token={token ?? undefined}
-                    flow={initialFlow}
+                    initialFlow={initialFlow}
                     components={currentPreset.components}
                     showDefaultHeader={false}
                 />
@@ -154,9 +154,9 @@ export function FilteredComponentsExample() {
 }
 
 export const FilteredComponentsExampleProps = {
-    instanceUrl: '{from environment variables}',
+    apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    flow: 'FlowData',
+    initialFlow: 'FlowData',
     components: 'string[] (preset-based)',
     showDefaultHeader: false
 }

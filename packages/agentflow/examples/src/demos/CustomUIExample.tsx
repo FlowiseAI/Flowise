@@ -7,10 +7,10 @@
 
 import { useRef, useState } from 'react'
 
-import type { AgentFlowInstance, FlowData, HeaderRenderProps, PaletteRenderProps } from '@flowise/agentflow'
-import { Agentflow } from '@flowise/agentflow'
+import type { AgentFlowInstance, FlowData, HeaderRenderProps, PaletteRenderProps } from '@flowiseai/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 const initialFlow: FlowData = {
     nodes: [
@@ -253,29 +253,31 @@ export function CustomUIExample() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
 
     return (
-        <div style={{ width: '100%', height: '100vh' }}>
-            <Agentflow
-                ref={agentflowRef}
-                instanceUrl={instanceUrl}
-                token={token ?? undefined}
-                flow={initialFlow}
-                renderHeader={(props) => <CustomHeader {...props} />}
-                renderNodePalette={(props) => <CustomPalette {...props} />}
-                showDefaultHeader={false}
-                showDefaultPalette={false}
-                onSave={(flow) => {
-                    console.log('Saving flow:', flow)
-                    alert('Flow saved! Check console.')
-                }}
-            />
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1 }}>
+                <Agentflow
+                    ref={agentflowRef}
+                    apiBaseUrl={apiBaseUrl}
+                    token={token ?? undefined}
+                    initialFlow={initialFlow}
+                    renderHeader={(props: HeaderRenderProps) => <CustomHeader {...props} />}
+                    renderNodePalette={(props: PaletteRenderProps) => <CustomPalette {...props} />}
+                    showDefaultHeader={false}
+                    showDefaultPalette={false}
+                    onSave={(flow: FlowData) => {
+                        console.log('Saving flow:', flow)
+                        alert('Flow saved! Check console.')
+                    }}
+                />
+            </div>
         </div>
     )
 }
 
 export const CustomUIExampleProps = {
-    instanceUrl: '{from environment variables}',
+    apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    flow: 'FlowData',
+    initialFlow: 'FlowData',
     renderHeader: '(props: HeaderRenderProps) => ReactNode',
     renderNodePalette: '(props: PaletteRenderProps) => ReactNode',
     showDefaultHeader: false,

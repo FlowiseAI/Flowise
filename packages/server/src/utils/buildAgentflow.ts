@@ -361,7 +361,7 @@ export const resolveVariables = async (
                 // Extract nodeId and outputPath from the match
                 const [, nodeIdPart, outputPath] = outputMatch
                 // Clean nodeId (handle escaped underscores)
-                const cleanNodeId = nodeIdPart.replace('\\', '')
+                const cleanNodeId = nodeIdPart.replace(/\\/g, '')
 
                 // Find the last (most recent) matching node data instead of the first one
                 const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId)
@@ -389,7 +389,7 @@ export const resolveVariables = async (
 
             // Find node data in executed data
             // sometimes turndown value returns a backslash like `llmAgentflow\_1`, remove the backslash
-            const cleanNodeId = variableFullPath.replace('\\', '')
+            const cleanNodeId = variableFullPath.replace(/\\/g, '')
             // Find the last (most recent) matching node data instead of the first one
             const nodeData = agentFlowExecutedData
                 ? [...agentFlowExecutedData].reverse().find((data) => data.nodeId === cleanNodeId)

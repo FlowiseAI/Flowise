@@ -18,6 +18,8 @@ import {
     IconWorld
 } from '@tabler/icons-react'
 
+import { tokens } from '../theme/tokens'
+
 // Using 'any' for icon props to be compatible with tabler-icons
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type IconComponent = ComponentType<any>
@@ -32,77 +34,77 @@ export const AGENTFLOW_ICONS: AgentflowIcon[] = [
     {
         name: 'conditionAgentflow',
         icon: IconArrowsSplit,
-        color: '#FFB938'
+        color: tokens.colors.nodes.condition
     },
     {
         name: 'startAgentflow',
         icon: IconPlayerPlayFilled,
-        color: '#7EE787'
+        color: tokens.colors.nodes.start
     },
     {
         name: 'llmAgentflow',
         icon: IconSparkles,
-        color: '#64B5F6'
+        color: tokens.colors.nodes.llm
     },
     {
         name: 'agentAgentflow',
         icon: IconRobot,
-        color: '#4DD0E1'
+        color: tokens.colors.nodes.agent
     },
     {
         name: 'humanInputAgentflow',
         icon: IconReplaceUser,
-        color: '#6E6EFD'
+        color: tokens.colors.nodes.humanInput
     },
     {
         name: 'loopAgentflow',
         icon: IconRepeat,
-        color: '#FFA07A'
+        color: tokens.colors.nodes.loop
     },
     {
         name: 'directReplyAgentflow',
         icon: IconMessageCircleFilled,
-        color: '#4DDBBB'
+        color: tokens.colors.nodes.directReply
     },
     {
         name: 'customFunctionAgentflow',
         icon: IconFunctionFilled,
-        color: '#E4B7FF'
+        color: tokens.colors.nodes.customFunction
     },
     {
         name: 'toolAgentflow',
         icon: IconTools,
-        color: '#d4a373'
+        color: tokens.colors.nodes.tool
     },
     {
         name: 'retrieverAgentflow',
         icon: IconLibrary,
-        color: '#b8bedd'
+        color: tokens.colors.nodes.retriever
     },
     {
         name: 'conditionAgentAgentflow',
         icon: IconSubtask,
-        color: '#ff8fab'
+        color: tokens.colors.nodes.conditionAgent
     },
     {
         name: 'stickyNoteAgentflow',
         icon: IconNote,
-        color: '#fee440'
+        color: tokens.colors.nodes.stickyNote
     },
     {
         name: 'httpAgentflow',
         icon: IconWorld,
-        color: '#FF7F7F'
+        color: tokens.colors.nodes.http
     },
     {
         name: 'iterationAgentflow',
         icon: IconRelationOneToManyFilled,
-        color: '#9C89B8'
+        color: tokens.colors.nodes.iteration
     },
     {
         name: 'executeFlowAgentflow',
         icon: IconVectorBezier2,
-        color: '#a3b18a'
+        color: tokens.colors.nodes.executeFlow
     }
 ]
 

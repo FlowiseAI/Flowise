@@ -3,8 +3,8 @@ import { EdgeLabelRenderer, getBezierPath, Position } from 'reactflow'
 
 import { IconX } from '@tabler/icons-react'
 
-import type { EdgeData } from '../../../core/types'
-import { useAgentflowContext } from '../../../infrastructure/store'
+import type { EdgeData } from '@/core/types'
+import { useAgentflowContext } from '@/infrastructure/store'
 
 interface EdgeLabelProps {
     transform: string
