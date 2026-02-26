@@ -1434,12 +1434,16 @@ export class AnalyticHandler {
         return returnIds
     }
 
-    async onLLMEnd(returnIds: ICommonObject, output: string | ICommonObject) {
+    async onLLMEnd(
+        returnIds: ICommonObject,
+        output: string | ICommonObject,
+        { model, provider }: { model?: string; provider?: string } = {}
+    ) {
         // Extract content, usage metadata, and model name from output
         // Support both string (backward compatible) and structured object formats
         let outputText: string
         let usageMetadata: ICommonObject | undefined
-        let modelName: string | undefined
+        let modelName = model
 
         if (typeof output === 'string') {
             outputText = output
@@ -1460,7 +1464,7 @@ export class AnalyticHandler {
 
             // Extract model name from response metadata
             const responseMetadata = output.responseMetadata ?? output.response_metadata
-            if (responseMetadata) {
+            if (!model && responseMetadata) {
                 modelName = responseMetadata.model ?? responseMetadata.model_name ?? responseMetadata.modelId
             }
         }
@@ -1490,21 +1494,17 @@ export class AnalyticHandler {
                     }
                     if (modelName) {
                         llmRun.extra.metadata.ls_model_name = modelName
-                        // Extract provider from model name (e.g., "gpt-4" -> "openai", "claude-3" -> "anthropic")
-                        if (modelName.includes('gpt') || modelName.includes('o1') || modelName.includes('o3')) {
-                            llmRun.extra.metadata.ls_provider = 'openai'
-                        } else if (modelName.includes('claude')) {
-                            llmRun.extra.metadata.ls_provider = 'anthropic'
-                        } else if (modelName.includes('gemini')) {
-                            llmRun.extra.metadata.ls_provider = 'google'
-                        } else if (modelName.includes('mistral') || modelName.includes('mixtral')) {
-                            llmRun.extra.metadata.ls_provider = 'mistral'
-                        } else if (modelName.includes('llama') || modelName.includes('codellama')) {
-                            llmRun.extra.metadata.ls_provider = 'meta'
-                        }
+                    }
+                    if (provider) {
+                        let normalized = provider.toLowerCase()
+                        if (normalized.startsWith('chat')) normalized = normalized.slice(4)
+                        if (normalized.endsWith('chat')) normalized = normalized.slice(0, -4)
+                        llmRun.extra.metadata.ls_provider = normalized
                     }
                 }
-                await llmRun.end(outputs)
+                await llmRun.end({
+                    outputs
+                })
                 await llmRun.patchRun()
             }
         }

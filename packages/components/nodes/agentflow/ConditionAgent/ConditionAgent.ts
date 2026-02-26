@@ -259,6 +259,8 @@ class ConditionAgent_Agentflow implements INode {
             if (!model) {
                 throw new Error('Model is required')
             }
+            const modelName = modelConfig?.model ?? modelConfig?.modelName
+
             const conditionAgentInput = nodeData.inputs?.conditionAgentInput as string
             let input = conditionAgentInput || question
             const conditionAgentInstructions = nodeData.inputs?.conditionAgentInstructions as string
@@ -389,7 +391,7 @@ class ConditionAgent_Agentflow implements INode {
                 if (response.response_metadata) {
                     analyticsOutput.responseMetadata = response.response_metadata
                 }
-                await analyticHandlers.onLLMEnd(llmIds, analyticsOutput)
+                await analyticHandlers.onLLMEnd(llmIds, analyticsOutput, { model: modelName, provider: model })
             }
 
             let calledOutputName: string

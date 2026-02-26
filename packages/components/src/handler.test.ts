@@ -58,11 +58,11 @@ describe('URL Handling For Phoenix Tracer', () => {
  * implemented as pure function tests that verify the extraction logic.
  */
 describe('onLLMEnd Usage Metadata Extraction Logic', () => {
-    // Helper function that mirrors the extraction logic in handler.ts onLLMEnd
-    const extractOutputData = (output: string | Record<string, any>) => {
+    // Helper function that mirrors the extraction logic in handler.ts onLLMEnd (lines 1437-1465)
+    const extractOutputData = (output: string | Record<string, any>, model?: string) => {
         let outputText: string
         let usageMetadata: Record<string, any> | undefined
-        let modelName: string | undefined
+        let modelName: string | undefined = model
 
         if (typeof output === 'string') {
             outputText = output
@@ -77,7 +77,7 @@ describe('onLLMEnd Usage Metadata Extraction Logic', () => {
                 }
             }
             const responseMetadata = output.responseMetadata ?? output.response_metadata
-            if (responseMetadata) {
+            if (!model && responseMetadata) {
                 modelName = responseMetadata.model ?? responseMetadata.model_name ?? responseMetadata.modelId
             }
         }
@@ -230,6 +230,17 @@ describe('onLLMEnd Usage Metadata Extraction Logic', () => {
                 }
             })
             expect(result.modelName).toBe('preferred-model')
+        })
+
+        it('should prefer explicit model param over responseMetadata', () => {
+            const result = extractOutputData(
+                {
+                    content: 'Test',
+                    responseMetadata: { model: 'from-response-metadata' }
+                },
+                'explicit-model-param'
+            )
+            expect(result.modelName).toBe('explicit-model-param')
         })
     })
 
