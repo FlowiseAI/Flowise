@@ -31,72 +31,6 @@ function updateAnchorIds(items: unknown, oldId: string, newId: string): void {
     }
 }
 
-/**
- * Clean up input values in nodes connected to a deleted node
- */
-function deleteConnectedInput(deletedNodeId: string, nodes: FlowNode[], edges: FlowEdge[]): FlowNode[] {
-    // Find all edges where the deleted node is the source
-    const connectedEdges = edges.filter((edge) => edge.source === deletedNodeId)
-
-    return nodes.map((node) => {
-        // Check if this node is a target of any connected edge
-        const affectedEdge = connectedEdges.find((edge) => edge.target === node.id)
-        if (!affectedEdge) return node
-
-        // Extract the input name from the target handle (format: nodeId-input-inputName-type)
-        const targetInput = affectedEdge.targetHandle?.split('-')[2]
-        if (!targetInput || !node.data.inputValues) return node
-
-        // Clean up the input value
-        const currentValue = node.data.inputValues[targetInput]
-        let newValue: unknown
-
-        // Check if this is a list input (array of connections)
-        const inputAnchor = node.data.inputAnchors?.find((anchor) => anchor.name === targetInput)
-        const inputParam = node.data.inputs?.find((param) => param.name === targetInput)
-
-        if (inputAnchor && (inputAnchor as { list?: boolean }).list) {
-            // For list inputs, filter out connections to the deleted node
-            const values = (currentValue as string[]) || []
-            newValue = values.filter((item) => !item.includes(deletedNodeId))
-        } else if (inputParam && (inputParam as { acceptVariable?: boolean }).acceptVariable) {
-            // For variable inputs, remove the variable reference
-            newValue = ((currentValue as string) || '').replace(`{{${deletedNodeId}.data.instance}}`, '') || ''
-        } else {
-            // Default: clear the value
-            newValue = ''
-        }
-
-        return {
-            ...node,
-            data: {
-                ...node.data,
-                inputValues: {
-                    ...node.data.inputValues,
-                    [targetInput]: newValue
-                }
-            }
-        }
-    })
-}
-
-/**
- * Recursively collect all descendant nodes of a parent
- */
-function collectDescendants(parentId: string, nodes: FlowNode[]): Set<string> {
-    const nodesToDelete = new Set<string>()
-    const childNodes = nodes.filter((node) => node.parentNode === parentId)
-
-    childNodes.forEach((childNode) => {
-        nodesToDelete.add(childNode.id)
-        // Recursively collect descendants of this child
-        const descendants = collectDescendants(childNode.id, nodes)
-        descendants.forEach((id) => nodesToDelete.add(id))
-    })
-
-    return nodesToDelete
-}
-
 // ========================================
 // Types
 // ========================================
@@ -216,26 +150,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     // Node operations
     const deleteNode = useCallback(
         (nodeId: string) => {
-            // Collect all nodes to be deleted (parent and all descendants)
-            const nodesToDelete = new Set<string>()
-            nodesToDelete.add(nodeId)
-            const descendants = collectDescendants(nodeId, state.nodes)
-            descendants.forEach((id) => nodesToDelete.add(id))
-
-            // Clean up connected inputs for the parent node first
-            let updatedNodes = deleteConnectedInput(nodeId, state.nodes, state.edges)
-
-            // Clean up connected inputs for each descendant
-            descendants.forEach((id) => {
-                updatedNodes = deleteConnectedInput(id, updatedNodes, state.edges)
-            })
-
-            // Remove all nodes in the deletion set
-            const newNodes = updatedNodes.filter((node) => !nodesToDelete.has(node.id))
-
-            // Remove all edges connected to any deleted node
-            const newEdges = state.edges.filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target))
-
+            const newNodes = state.nodes.filter((node) => node.id !== nodeId)
+            const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
             syncStateUpdate({ nodes: newNodes, edges: newEdges })
         },
         [state.nodes, state.edges, syncStateUpdate]
