@@ -20,13 +20,23 @@ export class NodesPool {
         await this.initializeCredentials()
     }
 
+    private async initializeNodes() {
+        const mainPath = path.join(getNodeModulesPackagePath('flowise-components'), 'dist', 'nodes')
+        const additionalPaths = process.env.COMPONENTS_PATH?.split(path.delimiter) ?? []
+
+        // Load sequentially to ensure custom nodes override default ones
+        for (const nodesPath of [mainPath, ...additionalPaths]) {
+            if (nodesPath !== '') {
+                await this.initializeNodesFromPath(nodesPath)
+            }
+        }
+    }
+
     /**
      * Initialize nodes
      */
-    private async initializeNodes() {
+    private async initializeNodesFromPath(nodesPath: string) {
         const disabled_nodes = process.env.DISABLED_NODES ? process.env.DISABLED_NODES.split(',') : []
-        const packagePath = getNodeModulesPackagePath('flowise-components')
-        const nodesPath = path.join(packagePath, 'dist', 'nodes')
         const nodeFiles = await this.getFiles(nodesPath)
         return Promise.all(
             nodeFiles.map(async (file) => {
