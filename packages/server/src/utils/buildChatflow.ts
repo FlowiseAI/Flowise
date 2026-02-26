@@ -1084,7 +1084,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             logger.debug(`[server]: [${orgId}/${chatflow.id}/${chatId}]: Job added to queue: ${job.id}`)
 
             const queueEvents = predictionQueue.getQueueEvents()
-            const result = await job.waitUntilFinished(queueEvents)
+            const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+            const result = await job.waitUntilFinished(queueEvents, jobTimeout)
             appServer.abortControllerPool.remove(abortControllerId)
             if (!result) {
                 throw new Error('Job execution failed')

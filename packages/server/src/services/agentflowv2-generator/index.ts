@@ -210,7 +210,8 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
             })
             logger.debug(`[server]: Generated Agentflowv2 Job added to queue: ${job.id}`)
             const queueEvents = predictionQueue.getQueueEvents()
-            response = await job.waitUntilFinished(queueEvents)
+            const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+            response = await job.waitUntilFinished(queueEvents, jobTimeout)
         } else {
             response = await generateAgentflowv2_json(
                 { prompt, componentNodes: getRunningExpressApp().nodesPool.componentNodes, toolNodes, selectedChatModel },

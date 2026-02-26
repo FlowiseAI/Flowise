@@ -690,7 +690,8 @@ const previewChunksMiddleware = async (
             logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
-            const result = await job.waitUntilFinished(queueEvents)
+            const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+            const result = await job.waitUntilFinished(queueEvents, jobTimeout)
 
             if (!result) {
                 throw new Error('Job execution failed')
@@ -898,7 +899,8 @@ const processLoaderMiddleware = async (
             }
 
             const queueEvents = upsertQueue.getQueueEvents()
-            const result = await job.waitUntilFinished(queueEvents)
+            const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+            const result = await job.waitUntilFinished(queueEvents, jobTimeout)
 
             if (!result) {
                 throw new Error('Job execution failed')
@@ -1311,7 +1313,8 @@ const insertIntoVectorStoreMiddleware = async (
             logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
-            const result = await job.waitUntilFinished(queueEvents)
+            const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+            const result = await job.waitUntilFinished(queueEvents, jobTimeout)
 
             if (!result) {
                 throw new Error('Job execution failed')
@@ -2041,7 +2044,8 @@ const upsertDocStoreMiddleware = async (
             logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
-            const result = await job.waitUntilFinished(queueEvents)
+            const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+            const result = await job.waitUntilFinished(queueEvents, jobTimeout)
 
             if (!result) {
                 throw new Error('Job execution failed')
@@ -2116,7 +2120,8 @@ const refreshDocStoreMiddleware = async (
             logger.debug(`[server]: [${orgId}]: Job added to queue: ${job.id}`)
 
             const queueEvents = upsertQueue.getQueueEvents()
-            const result = await job.waitUntilFinished(queueEvents)
+            const jobTimeout = process.env.JOB_TIMEOUT ? parseInt(process.env.JOB_TIMEOUT, 10) : 300000 // 5 minutes default
+            const result = await job.waitUntilFinished(queueEvents, jobTimeout)
 
             if (!result) {
                 throw new Error('Job execution failed')
