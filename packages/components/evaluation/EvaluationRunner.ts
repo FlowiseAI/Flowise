@@ -88,6 +88,15 @@ export class EvaluationRunner {
 
     public async runEvaluations(data: ICommonObject) {
         const chatflowIds = JSON.parse(data.chatflowId)
+
+        if (!Array.isArray(chatflowIds)) {
+            throw new Error('chatflowId must be a valid array')
+        }
+
+        if (!data.dataset || !Array.isArray(data.dataset.rows)) {
+            throw new Error('dataset.rows must be a valid array')
+        }
+
         const returnData: ICommonObject = {}
         returnData.evaluationId = data.evaluationId
         returnData.runDate = new Date()
