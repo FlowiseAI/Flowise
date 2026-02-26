@@ -49,6 +49,7 @@ import useNotifier from '@/utils/useNotifier'
 import { useAuth } from '@/hooks/useAuth'
 import { getFileName } from '@/utils/genericHelper'
 import useConfirm from '@/hooks/useConfirm'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // icons
 import { IconPlus, IconRefresh, IconX, IconVectorBezier2 } from '@tabler/icons-react'
@@ -130,6 +131,8 @@ const DocumentStoreDetails = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { hasAssignedWorkspace } = useAuth()
+    const { goTo } = useOverlay()
+
     useNotifier()
     const { confirm } = useConfirm()
 
@@ -172,6 +175,7 @@ const DocumentStoreDetails = () => {
     const onDocLoaderSelected = (docLoaderComponentName) => {
         setShowDocumentLoaderListDialog(false)
         navigate('/document-stores/' + storeId + '/' + docLoaderComponentName)
+        goTo('docstore:api-loader-name-input')
     }
 
     const showVectorStore = (id) => {
@@ -184,6 +188,7 @@ const DocumentStoreDetails = () => {
         }
         setDocumentLoaderListDialogProps(dialogProp)
         setShowDocumentLoaderListDialog(true)
+        goTo('docstore:api-loader')
     }
 
     const deleteVectorStoreDataFromStore = async (storeId, docId) => {
@@ -498,6 +503,7 @@ const DocumentStoreDetails = () => {
                                 sx={{ ml: 2, minWidth: 200, borderRadius: 2, height: '100%', color: 'white' }}
                                 startIcon={<IconPlus />}
                                 onClick={listLoaders}
+                                data-onboarding='add-docstore-loader-button'
                             >
                                 Add Document Loader
                             </StyledPermissionButton>

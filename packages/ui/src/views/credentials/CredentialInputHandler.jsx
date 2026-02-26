@@ -40,7 +40,7 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
     }
 
     return (
-        <div ref={ref}>
+        <div data-onboarding='credential-api-key' ref={ref}>
             {inputParam && (
                 <>
                     <Box sx={{ p: 2 }}>

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
 // material-ui
@@ -51,9 +51,11 @@ import marketplacesApi from '@/api/marketplaces'
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 import { useAuth } from '@/hooks/useAuth'
+import useMarketplaceExplorationGuide from '@/hooks/onboarding/useMarketplaceExplorationGuide'
 
 // Utils
 import useNotifier from '@/utils/useNotifier'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // const
 import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
@@ -76,10 +78,13 @@ const MenuProps = {
 const Marketplace = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
+    const location = useLocation()
     useNotifier()
 
     const theme = useTheme()
     const { error, setError } = useError()
+    const { startGuide } = useMarketplaceExplorationGuide()
+    const { goTo } = useOverlay()
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
@@ -347,6 +352,7 @@ const Marketplace = () => {
         } else {
             navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
         }
+        goTo('marketplace:completion')
     }
 
     useEffect(() => {
@@ -412,6 +418,19 @@ const Marketplace = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllTemplatesMarketplacesApi.error])
 
+    // Auto-start guide when navigating from QuickStart
+    useEffect(() => {
+        const state = location.state
+        if (state?.startGuide && state?.guideType === 'explore_templates') {
+            // Clear state to prevent re-triggering
+            navigate('.', { replace: true, state: undefined })
+            // Start guide after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                startGuide()
+            }, 500)
+        }
+    }, [location.state, navigate, startGuide])
+
     useEffect(() => {
         setLoading(getAllCustomTemplatesApi.loading)
     }, [getAllCustomTemplatesApi.loading])
@@ -476,6 +495,7 @@ const Marketplace = () => {
                             filters={
                                 <>
                                     <FormControl
+                                        data-onboarding='marketplace-filter-badge-label'
                                         sx={{
                                             borderRadius: 2,
                                             display: 'flex',
@@ -512,6 +532,7 @@ const Marketplace = () => {
                                         </Select>
                                     </FormControl>
                                     <FormControl
+                                        data-onboarding='marketplace-filter-type-label'
                                         sx={{
                                             borderRadius: 2,
                                             display: 'flex',
@@ -548,6 +569,7 @@ const Marketplace = () => {
                                         </Select>
                                     </FormControl>
                                     <FormControl
+                                        data-onboarding='marketplace-filter-fw-label'
                                         sx={{
                                             borderRadius: 2,
                                             display: 'flex',
@@ -626,7 +648,13 @@ const Marketplace = () => {
                         </ViewHeader>
                         {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
                             <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
-                                <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
+                                <Tabs
+                                    data-onboarding='marketplace-tabs'
+                                    value={activeTabValue}
+                                    onChange={handleTabChange}
+                                    textColor='primary'
+                                    aria-label='tabs'
+                                >
                                     <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
                                     <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
                                 </Tabs>
@@ -714,7 +742,12 @@ const Marketplace = () => {
                                                 <Skeleton variant='rounded' height={160} />
                                             </Box>
                                         ) : (
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                            <Box
+                                                data-onboarding='marketplace-templates-grid'
+                                                display='grid'
+                                                gridTemplateColumns='repeat(3, 1fr)'
+                                                gap={gridSpacing}
+                                            >
                                                 {getAllTemplatesMarketplacesApi.data
                                                     ?.filter(filterByBadge)
                                                     .filter(filterByType)

@@ -778,7 +778,7 @@ const NodeInputHandler = ({
     }, [data.id, position, updateNodeInternals])
 
     return (
-        <div ref={ref}>
+        <div data-onboarding={inputParam?.name} ref={ref}>
             {inputAnchor && (
                 <>
                     <CustomWidthTooltip placement='left' title={inputAnchor.type}>

@@ -202,7 +202,7 @@ const AgentFlowNode = ({ data }) => {
     }, [canvas.componentNodes, data.name, data.version])
 
     return (
-        <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div data-onboarding={data.name} ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <StyledNodeToolbar>
                 <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
                     {data.name !== 'startAgentflow' && (

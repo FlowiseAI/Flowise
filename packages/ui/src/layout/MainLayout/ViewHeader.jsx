@@ -35,7 +35,7 @@ const ViewHeader = ({
     useSearchShortcut(searchInputRef)
 
     return (
-        <Box sx={{ flexGrow: 1, py: 1.25, width: '100%' }}>
+        <Box data-onboarding='view-header-container' sx={{ flexGrow: 1, py: 1.25, width: '100%' }}>
             <Toolbar
                 disableGutters={true}
                 sx={{
@@ -98,6 +98,7 @@ const ViewHeader = ({
                         <OutlinedInput
                             inputRef={searchInputRef}
                             size='small'
+                            data-onboarding='view-header-search-input'
                             sx={{
                                 width: '325px',
                                 height: '100%',
