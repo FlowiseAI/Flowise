@@ -4,21 +4,10 @@ import { z } from 'zod'
  * This parser safely handles Zod schema strings without allowing arbitrary code execution
  */
 export class SecureZodSchemaParser {
-    private static readonly ALLOWED_TYPES = [
-        'string',
-        'number',
-        'int',
-        'boolean',
-        'date',
-        'object',
-        'array',
-        'enum',
-        'optional',
-        'max',
-        'min',
-        'describe',
-        'default'
-    ]
+    // Base primitives this parser can build via the switch in buildZodType
+    private static readonly ALLOWED_BASE_TYPES = ['string', 'number', 'boolean', 'date', 'enum'] as const
+    // Safe method modifiers supported by applyModifiers
+    private static readonly ALLOWED_MODIFIERS = ['int', 'optional', 'max', 'min', 'describe', 'default', 'array'] as const
 
     /**
      * Safely parse a Zod schema string into a Zod schema object
@@ -58,8 +47,18 @@ export class SecureZodSchemaParser {
         // This is a simplified parser that handles common Zod patterns safely
         // It does NOT use eval/Function and only handles predefined safe patterns
 
+        if (schema.startsWith('z.array(')) {
+            // Top-level array
+            return this.parseZodType(schema)
+        }
+
+        if (schema.startsWith('z.union(')) {
+            // Top-level union
+            return this.parseZodType(schema)
+        }
+
         if (!schema.startsWith('z.object(')) {
-            throw new Error('Schema must start with z.object()')
+            throw new Error('Schema must start with z.object(), z.array(), z.union()')
         }
 
         // Extract the object content
@@ -186,6 +185,16 @@ export class SecureZodSchemaParser {
             return this.parseArray(typeStr)
         }
 
+        // Check if this is a union
+        if (typeStr.startsWith('z.union(')) {
+            return this.parseUnion(typeStr)
+        }
+
+        // Check if this is a literal
+        if (typeStr.startsWith('z.literal(')) {
+            return this.parseLiteral(typeStr)
+        }
+
         const type: { base: string; modifiers: any[]; baseArgs?: any[] } = { base: '', modifiers: [] }
 
         // Handle chained methods like z.string().max(500).optional()
@@ -272,6 +281,321 @@ export class SecureZodSchemaParser {
         }
     }
 
+    private static parseUnion(typeStr: string): any {
+        // Check if there are modifiers after the union
+        const unionWithModifiers = this.extractUnionWithModifiers(typeStr)
+
+        // Extract the content inside union([...])
+        const unionMatch = unionWithModifiers.unionPart.match(/z\.union\(\s*\[([\s\S]*)\]\s*\)$/)
+        if (!unionMatch) {
+            throw new Error('Invalid union syntax - must be z.union([type1, type2, ...])')
+        }
+
+        const unionContent = unionMatch[1].trim()
+
+        // Split union members by comma, handling nested structures
+        const members = this.splitUnionMembers(unionContent)
+
+        if (members.length < 2) {
+            throw new Error('Union must have at least 2 members')
+        }
+
+        // Parse each union member
+        const parsedMembers = members.map((member) => this.parseZodType(member.trim()))
+
+        // Validate each member
+        for (const member of parsedMembers) {
+            this.validateTypeInfo(member)
+        }
+
+        const result: any = {
+            isUnion: true,
+            members: parsedMembers
+        }
+
+        // Add modifiers if present
+        if (unionWithModifiers.hasModifiers) {
+            result.modifiers = unionWithModifiers.modifiers
+        }
+
+        return result
+    }
+
+    private static parseLiteral(typeStr: string): any {
+        // Check if there are modifiers after the literal
+        const literalWithModifiers = this.extractLiteralWithModifiers(typeStr)
+
+        // Extract the content inside literal(...)
+        const literalMatch = literalWithModifiers.literalPart.match(/z\.literal\(\s*([\s\S]*?)\s*\)$/)
+        if (!literalMatch) {
+            throw new Error('Invalid literal syntax - must be z.literal(value)')
+        }
+
+        const literalContent = literalMatch[1].trim()
+
+        // Parse the literal value (string, number, or boolean)
+        let literalValue: string | number | boolean
+
+        if (literalContent.startsWith('"') && literalContent.endsWith('"')) {
+            // String literal
+            literalValue = literalContent.slice(1, -1)
+        } else if (literalContent.startsWith("'") && literalContent.endsWith("'")) {
+            // String literal with single quotes
+            literalValue = literalContent.slice(1, -1)
+        } else if (literalContent === 'true') {
+            literalValue = true
+        } else if (literalContent === 'false') {
+            literalValue = false
+        } else if (literalContent.match(/^-?\d+$/)) {
+            // Integer literal
+            literalValue = parseInt(literalContent, 10)
+        } else if (literalContent.match(/^-?\d+\.\d+$/)) {
+            // Float literal
+            literalValue = parseFloat(literalContent)
+        } else {
+            throw new Error(`Invalid literal value: ${literalContent}`)
+        }
+
+        const result: any = {
+            isLiteral: true,
+            value: literalValue
+        }
+
+        // Add modifiers if present
+        if (literalWithModifiers.hasModifiers) {
+            result.modifiers = literalWithModifiers.modifiers
+        }
+
+        return result
+    }
+
+    private static extractLiteralWithModifiers(typeStr: string): { literalPart: string; modifiers: any[]; hasModifiers: boolean } {
+        // Find the matching closing parenthesis for z.literal(...)
+        let depth = 1
+        let literalEndIndex = -1
+        const literalStartIndex = typeStr.indexOf('z.literal(')
+        if (literalStartIndex === -1) {
+            return { literalPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+        let startIndex = literalStartIndex + 'z.literal('.length
+
+        let inString = false
+        let stringChar = ''
+
+        for (let i = startIndex; i < typeStr.length; i++) {
+            const char = typeStr[i]
+
+            if (inString) {
+                if (char === stringChar && typeStr[i - 1] !== '\\') {
+                    inString = false
+                }
+            } else if (char === '"' || char === "'") {
+                inString = true
+                stringChar = char
+            } else if (char === '(') {
+                depth++
+            } else if (char === ')') {
+                depth--
+                if (depth === 0) {
+                    literalEndIndex = i + 1
+                    break
+                }
+            }
+        }
+
+        if (literalEndIndex === -1) {
+            return { literalPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        const literalPart = typeStr.substring(0, literalEndIndex)
+        const remainingPart = typeStr.substring(literalEndIndex)
+
+        if (!remainingPart.startsWith('.')) {
+            return { literalPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        // Parse modifiers (handles nested args and quoted strings)
+        const modifiers: any[] = []
+        let i = 1 // skip leading '.'
+        while (i < remainingPart.length) {
+            const nameMatch = remainingPart.substring(i).match(/^(\w+)/)
+            if (!nameMatch) break
+            const modName = nameMatch[1]
+            i += modName.length
+            let modArgs: any[] = []
+            if (i < remainingPart.length && remainingPart[i] === '(') {
+                let depth = 0,
+                    inStr = false,
+                    strCh = '',
+                    start = i
+                for (let j = i; j < remainingPart.length; j++) {
+                    const ch = remainingPart[j]
+                    if (inStr) {
+                        // Count consecutive backslashes before the quote
+                        let backslashCount = 0
+                        for (let k = j - 1; k >= 0 && remainingPart[k] === '\\'; k--) {
+                            backslashCount++
+                        }
+                        // If even number of backslashes (including 0), the quote is not escaped
+                        if (ch === strCh && backslashCount % 2 === 0) inStr = false
+                    } else if (ch === '"' || ch === "'") {
+                        inStr = true
+                        strCh = ch
+                    } else if (ch === '(') depth++
+                    else if (ch === ')') {
+                        depth--
+                        if (depth === 0) {
+                            const argsStr = remainingPart.substring(start, j + 1)
+                            // Allow object defaults and complex args
+                            modArgs = this.parseComplexArguments(argsStr)
+                            i = j + 1
+                            break
+                        }
+                    }
+                }
+            }
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
+                throw new Error(`Unsupported modifier: ${modName}`)
+            }
+            modifiers.push({ name: modName, args: modArgs })
+            if (i < remainingPart.length && remainingPart[i] === '.') i++
+        }
+
+        return { literalPart, modifiers, hasModifiers: true }
+    }
+
+    private static splitUnionMembers(content: string): string[] {
+        const members: string[] = []
+        let current = ''
+        let depth = 0
+        let inString = false
+        let stringChar = ''
+
+        for (let i = 0; i < content.length; i++) {
+            const char = content[i]
+
+            if (!inString && (char === '"' || char === "'")) {
+                inString = true
+                stringChar = char
+            } else if (inString && char === stringChar && content[i - 1] !== '\\') {
+                inString = false
+            } else if (!inString) {
+                if (char === '(' || char === '[' || char === '{') {
+                    depth++
+                } else if (char === ')' || char === ']' || char === '}') {
+                    depth--
+                } else if (char === ',' && depth === 0) {
+                    members.push(current.trim())
+                    current = ''
+                    continue
+                }
+            }
+
+            current += char
+        }
+
+        if (current.trim()) {
+            members.push(current.trim())
+        }
+
+        return members
+    }
+
+    private static extractUnionWithModifiers(typeStr: string): { unionPart: string; modifiers: any[]; hasModifiers: boolean } {
+        // Find the matching closing bracket and parenthesis for z.union([...])
+        let depth = 1
+        let unionEndIndex = -1
+        const unionStartIndex = typeStr.indexOf('z.union(')
+        if (unionStartIndex === -1) {
+            return { unionPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+        let startIndex = unionStartIndex + 'z.union('.length
+
+        let inString = false
+        let stringChar = ''
+
+        for (let i = startIndex; i < typeStr.length; i++) {
+            const char = typeStr[i]
+
+            if (inString) {
+                if (char === stringChar && typeStr[i - 1] !== '\\') {
+                    inString = false
+                }
+            } else if (char === '"' || char === "'") {
+                inString = true
+                stringChar = char
+            } else if (char === '(' || char === '[') {
+                depth++
+            } else if (char === ')' || char === ']') {
+                depth--
+                if (depth === 0) {
+                    unionEndIndex = i + 1
+                    break
+                }
+            }
+        }
+
+        if (unionEndIndex === -1) {
+            return { unionPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        const unionPart = typeStr.substring(0, unionEndIndex)
+        const remainingPart = typeStr.substring(unionEndIndex)
+
+        if (!remainingPart.startsWith('.')) {
+            return { unionPart: typeStr, modifiers: [], hasModifiers: false }
+        }
+
+        // Parse modifiers (handles nested args and quoted strings)
+        const modifiers: any[] = []
+        let i = 1 // skip leading '.'
+        while (i < remainingPart.length) {
+            const nameMatch = remainingPart.substring(i).match(/^(\w+)/)
+            if (!nameMatch) break
+            const modName = nameMatch[1]
+            i += modName.length
+            let modArgs: any[] = []
+            if (i < remainingPart.length && remainingPart[i] === '(') {
+                let depth = 0,
+                    inStr = false,
+                    strCh = '',
+                    start = i
+                for (let j = i; j < remainingPart.length; j++) {
+                    const ch = remainingPart[j]
+                    if (inStr) {
+                        // Count consecutive backslashes before the quote
+                        let backslashCount = 0
+                        for (let k = j - 1; k >= 0 && remainingPart[k] === '\\'; k--) {
+                            backslashCount++
+                        }
+                        // If even number of backslashes (including 0), the quote is not escaped
+                        if (ch === strCh && backslashCount % 2 === 0) inStr = false
+                    } else if (ch === '"' || ch === "'") {
+                        inStr = true
+                        strCh = ch
+                    } else if (ch === '(') depth++
+                    else if (ch === ')') {
+                        depth--
+                        if (depth === 0) {
+                            const argsStr = remainingPart.substring(start, j + 1)
+                            // Allow object defaults and complex args
+                            modArgs = this.parseComplexArguments(argsStr)
+                            i = j + 1
+                            break
+                        }
+                    }
+                }
+            }
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
+                throw new Error(`Unsupported modifier: ${modName}`)
+            }
+            modifiers.push({ name: modName, args: modArgs })
+            if (i < remainingPart.length && remainingPart[i] === '.') i++
+        }
+
+        return { unionPart, modifiers, hasModifiers: true }
+    }
+
     private static validateTypeInfo(typeInfo: any): void {
         // If it's a nested object or array of objects, validate each property
         if (typeInfo.isNestedObject || typeInfo.isArrayOfObjects) {
@@ -287,14 +611,27 @@ export class SecureZodSchemaParser {
             return
         }
 
+        // If it's a union, validate each member
+        if (typeInfo.isUnion) {
+            for (const member of typeInfo.members) {
+                this.validateTypeInfo(member)
+            }
+            return
+        }
+
+        // If it's a literal, no further validation needed
+        if (typeInfo.isLiteral) {
+            return
+        }
+
         // Validate base type
-        if (!this.ALLOWED_TYPES.includes(typeInfo.base)) {
+        if (!this.ALLOWED_BASE_TYPES.includes(typeInfo.base)) {
             throw new Error(`Unsupported type: ${typeInfo.base}`)
         }
 
         // Validate modifiers
         for (const modifier of typeInfo.modifiers || []) {
-            if (!this.ALLOWED_TYPES.includes(modifier.name)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modifier.name)) {
                 throw new Error(`Unsupported modifier: ${modifier.name}`)
             }
         }
@@ -399,7 +736,7 @@ export class SecureZodSchemaParser {
             const modName = modMatch[1]
             const modArgs = modMatch[2] ? this.parseArguments(modMatch[2]) : []
 
-            if (!this.ALLOWED_TYPES.includes(modName)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
                 throw new Error(`Unsupported modifier: ${modName}`)
             }
 
@@ -477,7 +814,7 @@ export class SecureZodSchemaParser {
                 }
             }
 
-            if (!this.ALLOWED_TYPES.includes(modName)) {
+            if (!this.ALLOWED_MODIFIERS.includes(modName as any)) {
                 throw new Error(`Unsupported modifier: ${modName}`)
             }
 
@@ -543,7 +880,13 @@ export class SecureZodSchemaParser {
         return obj
     }
 
-    private static buildZodSchema(parsed: Record<string, any>): z.ZodObject<any> {
+    private static buildZodSchema(parsed: Record<string, any> | any): z.ZodTypeAny {
+        // If parsed is not a plain object with string keys, it's a top-level non-object schema
+        if (parsed.isArrayOfObjects || parsed.isSimpleArray || parsed.isUnion || parsed.isLiteral) {
+            return this.buildZodType(parsed)
+        }
+
+        // Otherwise, build a z.object
         const schemaObj: Record<string, z.ZodTypeAny> = {}
 
         for (const [key, typeInfo] of Object.entries(parsed)) {
@@ -583,6 +926,43 @@ export class SecureZodSchemaParser {
         if (typeInfo.isSimpleArray) {
             const innerZodType = this.buildZodType(typeInfo.innerType)
             let zodType: z.ZodTypeAny = z.array(innerZodType)
+
+            // Apply modifiers if present
+            if (typeInfo.modifiers) {
+                zodType = this.applyModifiers(zodType, typeInfo.modifiers)
+            }
+
+            return zodType
+        }
+
+        // Special case for unions
+        if (typeInfo.isUnion) {
+            // Build each union member
+            const builtMembers = typeInfo.members.map((member: any) => this.buildZodType(member))
+
+            // z.union requires at least 2 members and a tuple type
+            if (builtMembers.length < 2) {
+                throw new Error('Union must have at least 2 members')
+            }
+
+            // Create the union with proper tuple typing
+            let zodType: z.ZodTypeAny = z.union([builtMembers[0], builtMembers[1], ...builtMembers.slice(2)] as [
+                z.ZodTypeAny,
+                z.ZodTypeAny,
+                ...z.ZodTypeAny[]
+            ])
+
+            // Apply modifiers if present
+            if (typeInfo.modifiers) {
+                zodType = this.applyModifiers(zodType, typeInfo.modifiers)
+            }
+
+            return zodType
+        }
+
+        // Special case for literals
+        if (typeInfo.isLiteral) {
+            let zodType: z.ZodTypeAny = z.literal(typeInfo.value)
 
             // Apply modifiers if present
             if (typeInfo.modifiers) {
