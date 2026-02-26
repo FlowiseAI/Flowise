@@ -77,9 +77,7 @@ router.post('/authorize/:credentialId', async (req: Request, res: Response, next
         const credentialRepository = appServer.AppDataSource.getRepository(Credential)
 
         // Find credential by ID
-        const credential = await credentialRepository.findOneBy({
-            id: credentialId
-        })
+        const credential = await credentialRepository.findOneBy({ id: credentialId })
 
         if (!credential) {
             return res.status(404).json({
@@ -93,13 +91,18 @@ router.post('/authorize/:credentialId', async (req: Request, res: Response, next
 
         const {
             clientId,
+            clientSecret,
             authorizationUrl,
+            accessTokenUrl,
             redirect_uri,
             scope,
             response_type = 'code',
             response_mode = 'query',
             additionalParameters = ''
         } = decryptedData
+
+        // Support both "grant_type" and "grantType"
+        const grantType: string = (decryptedData.grant_type || decryptedData.grantType || '').toString()
 
         if (!clientId) {
             return res.status(400).json({
@@ -108,6 +111,69 @@ router.post('/authorize/:credentialId', async (req: Request, res: Response, next
             })
         }
 
+        // === Client Credentials flow (no browser redirect) ===
+        if (grantType === 'client_credentials') {
+            if (!clientSecret) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Missing clientSecret in credential data'
+                })
+            }
+            if (!accessTokenUrl) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'No Access Token URL specified in credential data'
+                })
+            }
+
+            // Build token request
+            const tokenRequestData: Record<string, string> = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'client_credentials'
+            }
+
+            // Include scope if provided
+            if (scope) tokenRequestData.scope = scope
+
+            // Also merge additionalParameters (e.g., "scope=https://graph.microsoft.com/.default" or "resource=...")
+            if (additionalParameters) {
+                const ap = new URLSearchParams(additionalParameters.toString())
+                ap.forEach((value, key) => {
+                    if (!(key in tokenRequestData)) tokenRequestData[key] = value
+                })
+            }
+            // Exchange for token
+            const tokenResponse = await axios.post(accessTokenUrl, new URLSearchParams(tokenRequestData).toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }
+            })
+
+            const tokenData = tokenResponse.data
+            // Update credential data
+            const updatedCredentialData: any = {
+                ...decryptedData,
+                ...tokenData,
+                token_received_at: new Date().toISOString()
+            }
+            if (tokenData.expires_in) {
+                const expiryTime = new Date(Date.now() + tokenData.expires_in * 1000)
+                updatedCredentialData.expires_at = expiryTime.toISOString()
+            }
+
+            const encryptedData = await encryptCredentialData(updatedCredentialData)
+            await credentialRepository.update(credential.id, { encryptedData, updatedDate: new Date() })
+
+            // For client_credentials we return success immediately (no redirect URL)
+            return res.json({
+                success: true,
+                message: 'Client credentials token obtained successfully',
+                credentialId,
+                authorizationUrl: '#',
+                redirectUri: '#'
+            })
+        }
+
+        // === Authorization Code flow (original behavior) ===
         if (!authorizationUrl) {
             return res.status(400).json({
                 success: false,
@@ -126,12 +192,9 @@ router.post('/authorize/:credentialId', async (req: Request, res: Response, next
             redirect_uri: finalRedirectUri
         })
 
-        if (scope) {
-            authParams.append('scope', scope)
-        }
+        if (scope) authParams.append('scope', scope)
 
         let fullAuthorizationUrl = `${authorizationUrl}?${authParams.toString()}`
-
         if (additionalParameters) {
             fullAuthorizationUrl += `&${additionalParameters.toString()}`
         }
