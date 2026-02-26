@@ -1,5 +1,5 @@
 import path from 'path'
-import { mapMimeTypeToExt, getUserHome } from './utils'
+import { getUserHome, isAllowedUploadMimeType, mapMimeTypeToExt } from './utils'
 
 /**
  * Validates if a string is a valid UUID v4
@@ -147,6 +147,17 @@ export const validateMimeTypeAndExtensionMatch = (filename: string, mimetype: st
             `MIME type mismatch: file extension "${normalizedExt}" does not match declared MIME type "${mimetype}". Expected: ${expectedExt}`
         )
     }
+}
+
+/**
+ * Filters an array of MIME type strings to only those allowed for file upload config.
+ * Used when sanitizing chatbotConfig.allowedUploadFileTypes to prevent malicious values.
+ * @param {string[]} mimeTypes Raw MIME types (e.g. from splitting comma-separated config)
+ * @returns {string[]} Only MIME types that pass isAllowedUploadMimeType
+ */
+export const filterAllowedUploadMimeTypes = (mimeTypes: string[]): string[] => {
+    if (!Array.isArray(mimeTypes)) return []
+    return mimeTypes.map((m) => (typeof m === 'string' ? m.trim() : '')).filter((m) => m !== '' && isAllowedUploadMimeType(m))
 }
 
 /**
