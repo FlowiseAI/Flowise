@@ -1,6 +1,6 @@
 import { AmazonKnowledgeBaseRetriever } from '@langchain/aws'
 import { ICommonObject, INode, INodeData, INodeParams, INodeOptionsValue } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { RetrievalFilter } from '@aws-sdk/client-bedrock-agent-runtime'
 import { MODEL_TYPE, getRegions } from '../../../src/modelLoader'
 
@@ -108,29 +108,15 @@ class AWSBedrockKBRetriever_Retrievers implements INode {
         const topK = nodeData.inputs?.topK as number
         const overrideSearchType = (nodeData.inputs?.searchType != '' ? nodeData.inputs?.searchType : undefined) as 'HYBRID' | 'SEMANTIC'
         const filter = (nodeData.inputs?.filter != '' ? JSON.parse(nodeData.inputs?.filter) : undefined) as RetrievalFilter
-        let credentialApiKey = ''
-        let credentialApiSecret = ''
-        let credentialApiSession = ''
-
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        if (credentialData && Object.keys(credentialData).length !== 0) {
-            credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
-            credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
-            credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
-        }
-
+        const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
         const retriever = new AmazonKnowledgeBaseRetriever({
-            topK: topK,
+            topK,
             knowledgeBaseId: knoledgeBaseID,
-            region: region,
+            region,
             filter,
             overrideSearchType,
             clientOptions: {
-                credentials: {
-                    accessKeyId: credentialApiKey,
-                    secretAccessKey: credentialApiSecret,
-                    sessionToken: credentialApiSession
-                }
+                ...(credentialConfig.credentials && { credentials: credentialConfig.credentials })
             }
         })
 
