@@ -89,12 +89,10 @@ export class EvaluationRunner {
     public async runEvaluations(data: ICommonObject) {
         const chatflowIds = JSON.parse(data.chatflowId)
 
-        // Validate chatflowIds is an actual array to prevent DoS attacks
         if (!Array.isArray(chatflowIds)) {
             throw new Error('chatflowId must be a valid array')
         }
 
-        // Validate dataset.rows is an actual array to prevent DoS attacks
         if (!data.dataset || !Array.isArray(data.dataset.rows)) {
             throw new Error('dataset.rows must be a valid array')
         }

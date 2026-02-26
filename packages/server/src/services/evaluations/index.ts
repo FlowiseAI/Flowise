@@ -72,7 +72,6 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         const row = appServer.AppDataSource.getRepository(Evaluation).create(newEval)
         row.average_metrics = JSON.stringify({})
 
-        // Parse and validate evaluator arrays to prevent DoS attacks
         const chatflowTypes = body.chatflowType ? JSON.parse(body.chatflowType) : []
         if (!Array.isArray(chatflowTypes)) {
             throw new Error('chatflowType must be a valid array')
@@ -143,7 +142,6 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         const apiKeys: { chatflowId: string; apiKey: string }[] = []
         const chatflowIds = JSON.parse(body.chatflowId)
 
-        // Validate chatflowIds is an actual array to prevent DoS attacks
         if (!Array.isArray(chatflowIds)) {
             throw new Error('chatflowId must be a valid array')
         }
