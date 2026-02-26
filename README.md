@@ -24,6 +24,7 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 ## 📚 Table of Contents
 
 -   [⚡ Quick Start](#-quick-start)
+-   [✨ Features](#-features)
 -   [🐳 Docker](#-docker)
 -   [👨‍💻 Developers](#-developers)
 -   [🌱 Env Variables](#-env-variables)
@@ -49,6 +50,14 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
+
+## ✨ Features
+
+### Agentflow disconnected node tolerance
+
+-   **Purpose / What it does:** Allows Agentflow executions to ignore nodes on the canvas that are not connected to the Start node, so unfinished ideas can remain while testing.
+-   **Usage example:** Leave experimental Agent or Condition nodes detached from Start and run the flow—only the connected graph executes.
+-   **Dependencies / breaking changes:** None.
 
 ## 🐳 Docker
 
