@@ -34,6 +34,7 @@ import {
     updateFlowState
 } from '../utils'
 import { convertMultiOptionsToStringArray, processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
+import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 
 interface ITool {
     agentSelectedTool: string
@@ -1428,6 +1429,13 @@ class Agent_Agentflow implements INode {
             const reasonContentObj =
                 reasonContent !== undefined && reasonContent !== '' ? { thinking: reasonContent, thinkingDuration } : undefined
 
+            const costMetadata = await this.calculateUsageCost(
+                model,
+                modelConfig?.modelName as string | undefined,
+                response.usage_metadata,
+                additionalTokens
+            )
+
             const output = this.prepareOutputObject(
                 response,
                 availableTools,
@@ -1442,7 +1450,8 @@ class Agent_Agentflow implements INode {
                 isWaitingForHumanInput,
                 fileAnnotations,
                 isStructuredOutput,
-                reasonContentObj
+                reasonContentObj,
+                costMetadata
             )
 
             // End analytics tracking
@@ -1963,6 +1972,49 @@ class Agent_Agentflow implements INode {
     }
 
     /**
+     * Calculates input/output and total cost from usage metadata using model pricing from models.json.
+     * Also returns the model's base (per-token) input and output costs.
+     */
+    private async calculateUsageCost(
+        provider: string | undefined,
+        modelName: string | undefined,
+        usageMetadata: Record<string, any> | undefined,
+        additionalTokens: number = 0
+    ): Promise<
+        | {
+              input_cost: number
+              output_cost: number
+              total_cost: number
+              base_input_cost: number
+              base_output_cost: number
+          }
+        | undefined
+    > {
+        if (!provider || !modelName) return undefined
+        const inputTokens = (usageMetadata?.input_tokens ?? 0) as number
+        const outputTokens = ((usageMetadata?.output_tokens ?? 0) as number) + additionalTokens
+        try {
+            const modelConfig = await getModelConfigByModelName(MODEL_TYPE.CHAT, provider, modelName)
+            if (!modelConfig) return undefined
+            const baseInputCost = Number(modelConfig.input_cost) || 0
+            const baseOutputCost = Number(modelConfig.output_cost) || 0
+            const inputCost = inputTokens * baseInputCost
+            const outputCost = outputTokens * baseOutputCost
+            const totalCost = inputCost + outputCost
+            if (inputCost === 0 && outputCost === 0) return undefined
+            return {
+                input_cost: inputCost,
+                output_cost: outputCost,
+                total_cost: totalCost,
+                base_input_cost: baseInputCost,
+                base_output_cost: baseOutputCost
+            }
+        } catch {
+            return undefined
+        }
+    }
+
+    /**
      * Prepares the output object with response and metadata
      */
     private prepareOutputObject(
@@ -1979,7 +2031,14 @@ class Agent_Agentflow implements INode {
         isWaitingForHumanInput: boolean = false,
         fileAnnotations: any[] = [],
         isStructuredOutput: boolean = false,
-        reasonContent?: { thinking: string; thinkingDuration?: number }
+        reasonContent?: { thinking: string; thinkingDuration?: number },
+        costMetadata?: {
+            input_cost: number
+            output_cost: number
+            total_cost: number
+            base_input_cost: number
+            base_output_cost: number
+        }
     ): any {
         const output: any = {
             content: finalResponse,
@@ -2008,6 +2067,14 @@ class Agent_Agentflow implements INode {
                 total_tokens: additionalTokens,
                 tool_call_tokens: additionalTokens
             }
+        }
+
+        if (costMetadata && output.usageMetadata) {
+            output.usageMetadata.input_cost = costMetadata.input_cost
+            output.usageMetadata.output_cost = costMetadata.output_cost
+            output.usageMetadata.total_cost = costMetadata.total_cost
+            output.usageMetadata.base_input_cost = costMetadata.base_input_cost
+            output.usageMetadata.base_output_cost = costMetadata.base_output_cost
         }
 
         if (response.response_metadata) {
