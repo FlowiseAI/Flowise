@@ -465,7 +465,11 @@ class LLM_Agentflow implements INode {
             // Initialize response and determine if streaming is possible
             let response: AIMessageChunk = new AIMessageChunk('')
             const isLastNode = options.isLastNode as boolean
-            const isStreamable = isLastNode && options.sseStreamer !== undefined && modelConfig?.streaming !== false && !isStructuredOutput
+            const streamingInput = newLLMNodeInstance.inputs?.find((i: INodeParams) => i.name === 'streaming')
+            const streamingDefault = streamingInput?.default ?? true
+            const streamingConfig = modelConfig?.streaming
+            const effectiveStreaming = streamingConfig === '' || streamingConfig === undefined ? streamingDefault : streamingConfig
+            const isStreamable = isLastNode && options.sseStreamer !== undefined && effectiveStreaming !== false && !isStructuredOutput
 
             // Start analytics
             if (analyticHandlers && options.parentTraceIds) {
