@@ -4,22 +4,15 @@
  * Displays Agentflow component props in an expandable accordion format
  */
 
-import { useEffect, useState } from 'react'
-
 interface PropsDisplayProps {
     exampleName: string
     props: Record<string, string | boolean>
     exampleId: string
+    showProps: boolean
+    onToggleProps: (show: boolean) => void
 }
 
-export function PropsDisplay({ exampleName, props, exampleId }: PropsDisplayProps) {
-    const [showProps, setShowProps] = useState(false)
-
-    // Auto-expand props when example changes
-    useEffect(() => {
-        setShowProps(true)
-    }, [exampleId])
-
+export function PropsDisplay({ exampleName, props, exampleId, showProps, onToggleProps }: PropsDisplayProps) {
     return (
         <div
             key={exampleId}
@@ -31,7 +24,7 @@ export function PropsDisplay({ exampleName, props, exampleId }: PropsDisplayProp
         >
             {/* Accordion Header */}
             <button
-                onClick={() => setShowProps(!showProps)}
+                onClick={() => onToggleProps(!showProps)}
                 style={{
                     width: '100%',
                     padding: '12px 16px',

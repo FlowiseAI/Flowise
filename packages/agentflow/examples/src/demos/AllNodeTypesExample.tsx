@@ -7,10 +7,10 @@
 
 import { useRef } from 'react'
 
-import type { AgentFlowInstance, FlowData } from '@flowise/agentflow'
-import { Agentflow } from '@flowise/agentflow'
+import type { AgentFlowInstance, FlowData } from '@flowiseai/agentflow'
+import { Agentflow } from '@flowiseai/agentflow'
 
-import { instanceUrl, token } from '../config'
+import { apiBaseUrl, token } from '../config'
 
 // Showcase all node types in a grid layout
 const allNodesFlow: FlowData = {
@@ -219,7 +219,7 @@ export function AllNodeTypesExample() {
     const agentflowRef = useRef<AgentFlowInstance>(null)
 
     return (
-        <div style={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
             {/* Info Header */}
             <div
                 style={{
@@ -238,9 +238,9 @@ export function AllNodeTypesExample() {
             <div style={{ flex: 1 }}>
                 <Agentflow
                     ref={agentflowRef}
-                    instanceUrl={instanceUrl}
+                    apiBaseUrl={apiBaseUrl}
                     token={token ?? undefined}
-                    flow={allNodesFlow}
+                    initialFlow={allNodesFlow}
                     showDefaultHeader={false}
                     readOnly={true}
                 />
@@ -250,9 +250,9 @@ export function AllNodeTypesExample() {
 }
 
 export const AllNodeTypesExampleProps = {
-    instanceUrl: instanceUrl,
+    apiBaseUrl: apiBaseUrl,
     token: token,
-    flow: 'FlowData (15 node types)',
+    initialFlow: 'FlowData (15 node types)',
     readOnly: true,
     showDefaultHeader: false,
     enableGenerator: false

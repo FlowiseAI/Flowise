@@ -3,6 +3,8 @@ import type { ComponentType } from 'react'
 import { Fab, FabProps } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
+import { tokens } from '@/core/theme/tokens'
+
 export interface StyledFabProps extends FabProps {
     gradient?: boolean
 }
@@ -18,13 +20,13 @@ export const StyledFab: ComponentType<StyledFabProps> = styled(Fab, {
     backgroundColor: gradient
         ? undefined
         : theme.palette[color as 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success']?.main || theme.palette.primary.main,
-    background: gradient ? 'linear-gradient(45deg, #FF6B6B 30%, #FF8E53 90%)' : undefined,
+    background: gradient ? tokens.colors.gradients.generate.default : undefined,
     '&:hover': {
         backgroundColor: gradient
             ? undefined
             : theme.palette[color as 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success']?.main ||
               theme.palette.primary.main,
-        background: gradient ? 'linear-gradient(45deg, #FF8E53 30%, #FF6B6B 90%)' : undefined,
+        background: gradient ? tokens.colors.gradients.generate.hover : undefined,
         backgroundImage: gradient ? undefined : 'linear-gradient(rgb(0 0 0/10%) 0 0)'
     }
 }))

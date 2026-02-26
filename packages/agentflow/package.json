@@ -1,8 +1,31 @@
 {
-    "name": "@flowise/agentflow",
+    "name": "@flowiseai/agentflow",
     "version": "0.0.0-dev.1",
-    "description": "Embeddable Agentflow component for React applications",
-    "license": "SEE LICENSE IN LICENSE.md",
+    "description": "Embeddable React component for building and visualizing AI agent workflows",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/FlowiseAI/Flowise.git",
+        "directory": "packages/agentflow"
+    },
+    "homepage": "https://github.com/FlowiseAI/Flowise/tree/main/packages/agentflow#readme",
+    "bugs": {
+        "url": "https://github.com/FlowiseAI/Flowise/issues"
+    },
+    "keywords": [
+        "flowise",
+        "flowiseai",
+        "agentflow",
+        "react",
+        "llm",
+        "ai",
+        "agent",
+        "workflow"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
     "main": "./dist/index.umd.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -27,12 +50,13 @@
         "dev:example": "vite --config examples/vite.config.ts",
         "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-        "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx}\"",
-        "lint:fix": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx}\" --fix",
+        "lint": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx,json,md}\"",
+        "lint:fix": "eslint \"{src,examples/src}/**/*.{js,jsx,ts,tsx,json,md}\" --fix",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage",
-        "nuke": "rimraf dist node_modules .turbo"
+        "nuke": "rimraf dist node_modules .turbo",
+        "prepublishOnly": "npm run clean && npm run build"
     },
     "peerDependencies": {
         "react": "^18.2.0",

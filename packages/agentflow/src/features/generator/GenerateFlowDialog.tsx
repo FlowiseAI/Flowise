@@ -19,8 +19,8 @@ import {
 import { useTheme } from '@mui/material/styles'
 import { IconSparkles } from '@tabler/icons-react'
 
-import type { FlowData } from '../../core/types'
-import { useApiContext, useConfigContext } from '../../infrastructure/store'
+import type { FlowData } from '@/core/types'
+import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { defaultSuggestions, SuggestionChips } from './SuggestionChips'
 
@@ -44,7 +44,7 @@ interface ChatModel {
  */
 function GenerateFlowDialogComponent({ open, onClose, onGenerated }: GenerateFlowDialogProps) {
     const theme = useTheme()
-    const { chatflowsApi, instanceUrl } = useApiContext()
+    const { chatflowsApi, apiBaseUrl } = useApiContext()
     const { isDarkMode: _isDarkMode } = useConfigContext()
 
     const [prompt, setPrompt] = useState('')
@@ -235,7 +235,7 @@ function GenerateFlowDialogComponent({ open, onClose, onGenerated }: GenerateFlo
                                     <MenuItem key={model.name} value={model.name}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <img
-                                                src={`${instanceUrl}/api/v1/node-icon/${model.name}`}
+                                                src={`${apiBaseUrl}/api/v1/node-icon/${model.name}`}
                                                 alt={model.label}
                                                 style={{ width: 24, height: 24, borderRadius: '50%' }}
                                                 onError={(e) => {
