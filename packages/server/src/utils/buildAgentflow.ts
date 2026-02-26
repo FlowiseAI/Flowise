@@ -2263,6 +2263,7 @@ export const executeAgentFlow = async ({
     if (lastNodeOutput?.usedTools) apiMessage.usedTools = JSON.stringify(lastNodeOutput.usedTools)
     if (lastNodeOutput?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(lastNodeOutput.fileAnnotations)
     if (lastNodeOutput?.artifacts) apiMessage.artifacts = JSON.stringify(lastNodeOutput.artifacts)
+    if (lastNodeOutput?.reasonContent) apiMessage.reasonContent = JSON.stringify(lastNodeOutput.reasonContent)
     if (chatflow.followUpPrompts) {
         const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
         const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {

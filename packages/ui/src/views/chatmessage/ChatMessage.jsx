@@ -56,6 +56,7 @@ import ChatFeedbackContentDialog from '@/ui-component/dialog/ChatFeedbackContent
 import StarterPromptsCard from '@/ui-component/cards/StarterPromptsCard'
 import AgentReasoningCard from './AgentReasoningCard'
 import AgentExecutedDataCard from './AgentExecutedDataCard'
+import ThinkingCard from './ThinkingCard'
 import { ImageButton, ImageSrc, ImageBackdrop, ImageMarked } from '@/ui-component/button/ImageButton'
 import CopyToClipboardButton from '@/ui-component/button/CopyToClipboardButton'
 import ThumbsUpButton from '@/ui-component/button/ThumbsUpButton'
@@ -225,6 +226,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     // follow-up prompts
     const [followUpPromptsStatus, setFollowUpPromptsStatus] = useState(false)
     const [followUpPrompts, setFollowUpPrompts] = useState([])
+
+    // thinking/reasoning state
+    const [isThinking, setIsThinking] = useState(false)
 
     // drag & drop and file input
     const imgUploadRef = useRef(null)
@@ -616,6 +620,45 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             allMessages[allMessages.length - 1].agentReasoning = agentReasoning
             return allMessages
         })
+    }
+
+    const handleThinkingEvent = (data, duration) => {
+        if (data && duration === undefined) {
+            // Still thinking - append content
+            setIsThinking(true)
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+                const lastMessage = allMessages[allMessages.length - 1]
+                lastMessage.thinking = (lastMessage.thinking || '') + data
+                lastMessage.isThinking = true
+                return allMessages
+            })
+        } else if (data === '' && duration !== undefined) {
+            // Thinking finished - set duration
+            setIsThinking(false)
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+                const lastMessage = allMessages[allMessages.length - 1]
+                lastMessage.thinkingDuration = duration
+                lastMessage.isThinking = false
+                return allMessages
+            })
+        }
+    }
+
+    const finalizeThinking = () => {
+        // Clean up thinking state if stream ends unexpectedly
+        if (isThinking) {
+            setIsThinking(false)
+            setMessages((prevMessages) => {
+                let allMessages = [...cloneDeep(prevMessages)]
+                if (allMessages[allMessages.length - 1].type === 'userMessage') return allMessages
+                allMessages[allMessages.length - 1].isThinking = false
+                return allMessages
+            })
+        }
     }
 
     const updateAgentFlowEvent = (event) => {
@@ -1094,6 +1137,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     case 'agentReasoning':
                         updateLastMessageAgentReasoning(payload.data)
                         break
+                    case 'thinking':
+                        handleThinkingEvent(payload.data, payload.duration)
+                        break
                     case 'agentFlowEvent':
                         updateAgentFlowEvent(payload.data)
                         break
@@ -1136,6 +1182,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                         break
                     case 'end':
                         cleanupCalledTools()
+                        finalizeThinking()
                         setLocalStorageChatflow(chatflowid, chatId)
                         closeResponse()
                         break
@@ -1258,6 +1305,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 if (message.calledTools) obj.calledTools = message.calledTools
                 if (message.fileAnnotations) obj.fileAnnotations = message.fileAnnotations
                 if (message.agentReasoning) obj.agentReasoning = message.agentReasoning
+                if (message.reasonContent && typeof message.reasonContent === 'object') {
+                    obj.thinking = message.reasonContent.thinking
+                    obj.thinkingDuration = message.reasonContent.thinkingDuration
+                }
                 if (message.action) obj.action = message.action
                 if (message.artifacts) {
                     obj.artifacts = message.artifacts
@@ -2444,6 +2495,14 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                     return <>{renderFileUploads(item, index)}</>
                                                 })}
                                             </div>
+                                        )}
+                                        {message.thinking && (
+                                            <ThinkingCard
+                                                thinking={message.thinking}
+                                                thinkingDuration={message.thinkingDuration}
+                                                isThinking={message.isThinking}
+                                                customization={customization}
+                                            />
                                         )}
                                         {message.agentReasoning && message.agentReasoning.length > 0 && (
                                             <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>

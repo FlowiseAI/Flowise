@@ -50,6 +50,7 @@ import { MultiDropdown } from '@/ui-component/dropdown/MultiDropdown'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import StatsCard from '@/ui-component/cards/StatsCard'
 import Feedback from '@/ui-component/extended/Feedback'
+import ThinkingCard from '@/views/chatmessage/ThinkingCard'
 
 // store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
@@ -509,6 +510,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.usedTools) obj.usedTools = chatmsg.usedTools
             if (chatmsg.fileAnnotations) obj.fileAnnotations = chatmsg.fileAnnotations
             if (chatmsg.agentReasoning) obj.agentReasoning = chatmsg.agentReasoning
+            if (chatmsg.reasonContent && typeof chatmsg.reasonContent === 'object') {
+                obj.thinking = chatmsg.reasonContent.thinking
+                obj.thinkingDuration = chatmsg.reasonContent.thinkingDuration
+            }
             if (chatmsg.artifacts) {
                 obj.artifacts = chatmsg.artifacts
                 obj.artifacts.forEach((artifact) => {
@@ -1225,6 +1230,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                             return <>{renderFileUploads(item, index)}</>
                                                                         })}
                                                                     </div>
+                                                                )}
+                                                                {message.thinking && (
+                                                                    <ThinkingCard
+                                                                        thinking={message.thinking}
+                                                                        thinkingDuration={message.thinkingDuration}
+                                                                        isThinking={message.isThinking}
+                                                                        customization={customization}
+                                                                    />
                                                                 )}
                                                                 {message.agentReasoning && (
                                                                     <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>

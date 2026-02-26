@@ -111,6 +111,16 @@ class Deepseek_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Thinking',
+                name: 'thinking',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                additionalParams: true,
+                description:
+                    'Enable deep thinking mode for complex reasoning tasks. When enabled, the model will use extended thinking before responding.'
+            },
+            {
                 label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
@@ -138,6 +148,7 @@ class Deepseek_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const stopSequence = nodeData.inputs?.stopSequence as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const thinking = nodeData.inputs?.thinking as boolean
         const baseOptions = nodeData.inputs?.baseOptions
 
         if (nodeData.inputs?.credentialId) {
@@ -165,6 +176,12 @@ class Deepseek_ChatModels implements INode {
         if (stopSequence) {
             const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
             obj.stop = stopSequenceArray
+        }
+        if (thinking) {
+            obj.modelKwargs = {
+                ...obj.modelKwargs,
+                thinking: { type: 'enabled' }
+            }
         }
 
         if (baseOptions) {

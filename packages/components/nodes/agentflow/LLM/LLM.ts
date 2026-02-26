@@ -457,8 +457,6 @@ class LLM_Agentflow implements INode {
              */
             await addImageArtifactsToMessages(messages, options)
 
-            console.log('messages', messages[0])
-
             // Configure structured output if specified
             const isStructuredOutput = _llmStructuredOutput && Array.isArray(_llmStructuredOutput) && _llmStructuredOutput.length > 0
             if (isStructuredOutput) {
@@ -484,7 +482,15 @@ class LLM_Agentflow implements INode {
              * Invoke LLM
              */
             if (isStreamable) {
-                response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+                response = await this.handleStreamingResponse(
+                    sseStreamer,
+                    llmNodeInstance,
+                    messages,
+                    chatId,
+                    abortController,
+                    isStructuredOutput,
+                    isLastNode
+                )
             } else {
                 response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
@@ -502,7 +508,6 @@ class LLM_Agentflow implements INode {
                     sseStreamer.streamTokenEvent(chatId, finalResponse)
                 }
             }
-            console.log('response.contentBlocks', response.contentBlocks)
 
             // Calculate execution time
             const endTime = Date.now()
@@ -555,6 +560,31 @@ class LLM_Agentflow implements INode {
                 }
             }
 
+            // Extract reason content from response (reasoning_content/reasoning_duration or contentBlocks)
+            let reasonContent = (response.additional_kwargs?.reasoning_content as string) || ''
+            let thinkingDuration: number | undefined =
+                typeof response.additional_kwargs?.reasoning_duration === 'number'
+                    ? response.additional_kwargs.reasoning_duration
+                    : undefined
+            if (!reasonContent && response.contentBlocks?.length && isLastNode && sseStreamer && !isStructuredOutput) {
+                for (const block of response.contentBlocks) {
+                    if (block.type === 'reasoning' && (block as { reasoning?: string }).reasoning) {
+                        reasonContent += (block as { reasoning: string }).reasoning
+                    }
+                    if ((block as any).type === 'thinking' && (block as any).thinking) {
+                        reasonContent += (block as any).thinking
+                    }
+                }
+                if (reasonContent) {
+                    sseStreamer.streamThinkingEvent(chatId, reasonContent)
+                    const reasoningTokens = response.usage_metadata?.output_token_details?.reasoning || 0
+                    thinkingDuration = reasoningTokens > 0 ? Math.round(reasoningTokens / 50) : 2
+                    sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
+                }
+            }
+            const reasonContentObj =
+                reasonContent !== undefined && reasonContent !== '' ? { thinking: reasonContent, thinkingDuration } : undefined
+
             // Prepare final response and output object
             let finalResponse = ''
             if (response.content && Array.isArray(response.content)) {
@@ -575,7 +605,8 @@ class LLM_Agentflow implements INode {
                 timeDelta,
                 isStructuredOutput,
                 artifacts,
-                fileAnnotations
+                fileAnnotations,
+                reasonContentObj
             )
 
             // End analytics tracking
@@ -839,16 +870,43 @@ class LLM_Agentflow implements INode {
         llmNodeInstance: BaseChatModel,
         messages: BaseMessageLike[],
         chatId: string,
-        abortController: AbortController
+        abortController: AbortController,
+        isStructuredOutput: boolean = false,
+        isLastNode: boolean = false
     ): Promise<AIMessageChunk> {
         let response = new AIMessageChunk('')
+        let reasonContent = ''
+        let thinkingDuration: number | undefined
+        let thinkingStartTime: number | null = null
+        let wasThinking = false
+        let sentLastThinkingEvent = false
 
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
-                if (sseStreamer) {
+                if (sseStreamer && !isStructuredOutput) {
                     let content = ''
 
-                    console.log('chunk.contentBlocks', chunk.contentBlocks)
+                    if (chunk.contentBlocks?.length) {
+                        for (const block of chunk.contentBlocks) {
+                            if (isLastNode) {
+                                // As soon as we see the first non-reasoning block, send last thinking event with duration (only when isLastNode)
+                                if (block.type !== 'reasoning' && wasThinking && !sentLastThinkingEvent && thinkingStartTime != null) {
+                                    thinkingDuration = Math.round((Date.now() - thinkingStartTime) / 1000)
+                                    sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
+                                    sentLastThinkingEvent = true
+                                }
+                                if (block.type === 'reasoning' && (block as { reasoning?: string }).reasoning) {
+                                    if (!thinkingStartTime) {
+                                        thinkingStartTime = Date.now()
+                                    }
+                                    wasThinking = true
+                                    const reasoningContent = (block as { reasoning: string }).reasoning
+                                    sseStreamer.streamThinkingEvent(chatId, reasoningContent)
+                                    reasonContent += reasoningContent
+                                }
+                            }
+                        }
+                    }
 
                     if (typeof chunk === 'string') {
                         content = chunk
@@ -868,10 +926,26 @@ class LLM_Agentflow implements INode {
             console.error('Error during streaming:', error)
             throw error
         }
+
+        // Only convert to string if all content items are text (no inlineData or other special types)
         if (Array.isArray(response.content) && response.content.length > 0) {
-            const responseContents = response.content as ContentBlock.Text[]
-            response.content = responseContents.map((item) => item.text).join('')
+            const hasNonTextContent = response.content.some(
+                (item: any) => item.type === 'inlineData' || item.type === 'executableCode' || item.type === 'codeExecutionResult'
+            )
+            if (!hasNonTextContent) {
+                const responseContents = response.content as ContentBlock.Text[]
+                response.content = responseContents.map((item) => item.text).join('')
+            }
         }
+
+        if (reasonContent.length > 0) {
+            response.additional_kwargs = {
+                ...response.additional_kwargs,
+                reasoning_content: reasonContent,
+                reasoning_duration: thinkingDuration
+            }
+        }
+
         return response
     }
 
@@ -886,7 +960,8 @@ class LLM_Agentflow implements INode {
         timeDelta: number,
         isStructuredOutput: boolean,
         artifacts: any[] = [],
-        fileAnnotations: any[] = []
+        fileAnnotations: any[] = [],
+        reasonContent?: { thinking: string; thinkingDuration?: number }
     ): any {
         const output: any = {
             content: finalResponse,
@@ -924,6 +999,10 @@ class LLM_Agentflow implements INode {
 
         if (fileAnnotations && fileAnnotations.length > 0) {
             output.fileAnnotations = fileAnnotations
+        }
+
+        if (reasonContent) {
+            output.reasonContent = reasonContent
         }
 
         return output

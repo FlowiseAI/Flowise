@@ -336,6 +336,9 @@ const parseAPIResponse = (apiResponse: ChatMessage | ChatMessage[]): ChatMessage
             if (parsedResponse.agentReasoning) {
                 parsedResponse.agentReasoning = JSON.parse(parsedResponse.agentReasoning)
             }
+            if (parsedResponse.reasonContent) {
+                parsedResponse.reasonContent = JSON.parse(parsedResponse.reasonContent)
+            }
             if (parsedResponse.fileUploads) {
                 parsedResponse.fileUploads = JSON.parse(parsedResponse.fileUploads)
             }

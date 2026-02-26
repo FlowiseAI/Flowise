@@ -102,7 +102,7 @@ export class RedisEventSubscriber {
     private handleEvent(message: string) {
         // Parse the message from Redis
         const event = JSON.parse(message)
-        const { eventType, chatId, chatMessageId, data } = event
+        const { eventType, chatId, chatMessageId, data, duration } = event
 
         // Stream the event to the client
         switch (eventType) {
@@ -111,6 +111,9 @@ export class RedisEventSubscriber {
                 break
             case 'token':
                 this.sseStreamer.streamTokenEvent(chatId, data)
+                break
+            case 'thinking':
+                this.sseStreamer.streamThinkingEvent(chatId, data, duration)
                 break
             case 'sourceDocuments':
                 this.sseStreamer.streamSourceDocumentsEvent(chatId, data)
