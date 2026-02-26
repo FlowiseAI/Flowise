@@ -8,9 +8,9 @@ import removeMarkdown from 'remove-markdown'
  */
 const unescapeRegexPattern = (escaped: string): string => {
     return escaped
-        .replace(/\\\\/g, '\0')              // Preserve intentional backslashes
-        .replace(/\\([[\]*])/g, '$1')        // Unescape only: [ ] *
-        .replace(/\0/g, '\\')                // Restore preserved backslashes
+        .replace(/\\\\/g, '\0') // Preserve intentional backslashes
+        .replace(/\\([[\]*])/g, '$1') // Unescape only: [ ] *
+        .replace(/\0/g, '\\') // Restore preserved backslashes
 }
 
 class Condition_Agentflow implements INode {
