@@ -125,6 +125,21 @@ const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
 export const defaultAllowBuiltInDep = ['assert', 'buffer', 'crypto', 'events', 'path', 'querystring', 'timers', 'url', 'zlib']
 
 /**
+ * Return true if the model name likely supports the `stop` parameter.
+ * Some newer OpenAI models (for example gpt-5-nano) do not accept the `stop` parameter
+ * and will return an HTTP 400 when it is provided. Add model names here as needed.
+ */
+export const modelSupportsStop = (modelName?: string): boolean => {
+    if (!modelName) return true
+    const lower = modelName.toLowerCase()
+    // Treat all gpt-5*, o1*, and o3* models as not supporting `stop`
+    // to avoid 400 Unsupported parameter errors.
+    const unsupportedPrefixes = ['gpt-5', 'o1', 'o3']
+    if (unsupportedPrefixes.some((prefix) => lower.startsWith(prefix))) return false
+    return true
+}
+
+/**
  * Get base classes of components
  *
  * @export
