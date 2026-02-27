@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="100%" style="stop-color:#16213e"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <g transform="translate(10, 12) scale(0.7)">
+    <!-- Bird body -->
+    <path d="M32 52 C20 52 10 44 8 32 C6 20 14 10 26 8 C30 7 34 8 37 10 L42 6 C43 5 45 5 45 7 L43 13 C48 18 50 25 48 32 C46 44 40 52 32 52Z" fill="#e94560"/>
+    <!-- Wing -->
+    <path d="M20 28 C24 22 32 20 38 24 C34 22 28 24 24 30 C22 34 22 38 24 42 C20 38 18 32 20 28Z" fill="#c73659" opacity="0.8"/>
+    <!-- Eye -->
+    <circle cx="30" cy="20" r="3.5" fill="white"/>
+    <circle cx="31" cy="19.5" r="2" fill="#1a1a2e"/>
+    <circle cx="32" cy="18.5" r="0.8" fill="white"/>
+    <!-- Beak -->
+    <path d="M37 22 L46 20 L38 26Z" fill="#f5a623"/>
+  </g>
+</svg>
