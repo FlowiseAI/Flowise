@@ -17,8 +17,7 @@ export const findBestScenarioIndex = (scenarios: ConditionScenario[], calledOutp
     if (matchedScenarioIndex === -1) {
         matchedScenarioIndex = scenarios.findIndex(
             (scenario) =>
-                scenario.scenario.toLowerCase().includes(normalizedOutput) ||
-                normalizedOutput.includes(scenario.scenario.toLowerCase())
+                scenario.scenario.toLowerCase().includes(normalizedOutput) || normalizedOutput.includes(scenario.scenario.toLowerCase())
         )
     }
 
