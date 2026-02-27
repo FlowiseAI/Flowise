@@ -185,11 +185,6 @@ describe('CommonJS detection regex (utils.ts line 1579 pattern)', () => {
     })
 })
 
-// ---------------------------------------------------------------------------
-// Import extraction regex  (inline at utils.ts line 1596)
-// Tests the pattern used to extract module names in executeJavaScriptCode
-// ---------------------------------------------------------------------------
-
 describe('Import extraction regex (utils.ts line 1596 pattern)', () => {
     const extractModules = (code: string): string[] => {
         const results: string[] = []
