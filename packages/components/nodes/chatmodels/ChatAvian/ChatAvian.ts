@@ -145,17 +145,16 @@ class ChatAvian_ChatModels implements INode {
         const avianApiKey = getCredentialParam('avianApiKey', credentialData, nodeData)
 
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
-            openAIApiKey: avianApiKey,
             apiKey: avianApiKey,
             streaming: streaming ?? true
         }
 
+        if (temperature !== undefined && temperature !== null && temperature !== '') obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
+        if (topP !== undefined && topP !== null && topP !== '') obj.topP = parseFloat(topP)
+        if (frequencyPenalty !== undefined && frequencyPenalty !== null && frequencyPenalty !== '') obj.frequencyPenalty = parseFloat(frequencyPenalty)
+        if (presencePenalty !== undefined && presencePenalty !== null && presencePenalty !== '') obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
         if (stopSequence) {
