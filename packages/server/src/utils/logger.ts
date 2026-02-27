@@ -104,7 +104,7 @@ if (!fs.existsSync(logDir)) {
 }
 
 const logger = createLogger({
-    level: config.logging.server.level ?? 'info',
+    level: config.logging.server.level,
     format: combine(
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         format.json(),
@@ -168,7 +168,7 @@ const logger = createLogger({
 })
 
 requestLogger = createLogger({
-    level: config.logging.express.level ?? 'debug',
+    level: process.env.LOG_LEVEL ?? 'debug',
     format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
     defaultMeta: {
         package: 'server'
