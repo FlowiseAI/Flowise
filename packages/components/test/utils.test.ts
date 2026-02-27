@@ -1,8 +1,4 @@
-import { removeInvalidImageMarkdown, convertRequireToImport } from './utils'
-
-// ---------------------------------------------------------------------------
-// removeInvalidImageMarkdown  (line 1239)
-// ---------------------------------------------------------------------------
+import { removeInvalidImageMarkdown, convertRequireToImport, COMMONJS_REQUIRE_REGEX, IMPORT_EXTRACTION_REGEX } from '../src/utils'
 
 describe('removeInvalidImageMarkdown', () => {
     describe('strips non-http/https image markdown', () => {
@@ -162,8 +158,7 @@ describe('convertRequireToImport', () => {
 // ---------------------------------------------------------------------------
 
 describe('CommonJS detection regex (utils.ts line 1579 pattern)', () => {
-    // Mirrors the fixed regex at line 1579 of utils.ts
-    const commonJsDetectionRegex = /^(const|let|var)\s+\S[^=]*=\s*require\s*\(/
+    const commonJsDetectionRegex = COMMONJS_REQUIRE_REGEX
 
     it('matches a const default require', () => {
         expect(commonJsDetectionRegex.test("const foo = require('x')")).toBe(true)
@@ -196,12 +191,9 @@ describe('CommonJS detection regex (utils.ts line 1579 pattern)', () => {
 // ---------------------------------------------------------------------------
 
 describe('Import extraction regex (utils.ts line 1596 pattern)', () => {
-    // Mirrors the fixed regex at line 1596 of utils.ts
-    const importExtractionRegex = /(?:import\s+\S[^\n]*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
-
     const extractModules = (code: string): string[] => {
         const results: string[] = []
-        const re = new RegExp(importExtractionRegex.source, importExtractionRegex.flags)
+        const re = new RegExp(IMPORT_EXTRACTION_REGEX.source, 'g')
         let m: RegExpExecArray | null
         while ((m = re.exec(code)) !== null) {
             results.push(m[1] ?? m[2])

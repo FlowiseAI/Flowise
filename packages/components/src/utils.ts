@@ -1235,8 +1235,35 @@ export const isAllowedUploadMimeType = (mime: string): boolean => {
 }
 
 // remove invalid markdown image pattern: ![<some-string>](<some-string>)
+// Uses indexOf instead of a global regex to avoid O(n²) backtracking when the
+// input contains many '![' sequences (polynomial ReDoS with the g flag).
 export const removeInvalidImageMarkdown = (output: string): string => {
-    return typeof output === 'string' ? output.replace(/!\[[^\]]*\]\((?!https?:\/\/)[^)]*\)/g, '') : output
+    if (typeof output !== 'string') return output
+    let result = ''
+    let pos = 0
+    while (pos < output.length) {
+        const start = output.indexOf('![', pos)
+        if (start === -1) {
+            result += output.slice(pos)
+            break
+        }
+        result += output.slice(pos, start)
+        const closeBracket = output.indexOf(']', start + 2)
+        if (closeBracket === -1 || output[closeBracket + 1] !== '(') {
+            result += '!['
+            pos = start + 2
+            continue
+        }
+        const closeParen = output.indexOf(')', closeBracket + 2)
+        if (closeParen === -1) {
+            result += output.slice(start)
+            break
+        }
+        const url = output.slice(closeBracket + 2, closeParen)
+        if (/^https?:\/\//.test(url)) result += output.slice(start, closeParen + 1)
+        pos = closeParen + 1
+    }
+    return result
 }
 
 /**
@@ -1442,6 +1469,10 @@ export const stripHTMLFromToolInput = (input: string) => {
     return cleanedInput
 }
 
+// Regex constants exported for testability
+export const COMMONJS_REQUIRE_REGEX = /^(const|let|var)\s+\S[^=]*=\s*require\s*\(/
+export const IMPORT_EXTRACTION_REGEX = /(?:import\s+\S[^\n]*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/
+
 // Helper function to convert require statements to ESM imports
 export const convertRequireToImport = (requireLine: string): string | null => {
     // Remove leading/trailing whitespace and get the indentation
@@ -1576,7 +1607,7 @@ export const executeJavaScriptCode = async (
                     importLines.push(line)
                 }
                 // Check for CommonJS require statements and convert them to ESM imports
-                else if (/^(const|let|var)\s+\S[^=]*=\s*require\s*\(/.test(trimmedLine)) {
+                else if (COMMONJS_REQUIRE_REGEX.test(trimmedLine)) {
                     const convertedImport = convertRequireToImport(trimmedLine)
                     if (convertedImport) {
                         importLines.push(convertedImport)
@@ -1593,7 +1624,7 @@ export const executeJavaScriptCode = async (
 
             // Auto-detect required libraries from code
             // Extract required modules from import/require statements
-            const importRegex = /(?:import\s+\S[^\n]*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
+            const importRegex = new RegExp(IMPORT_EXTRACTION_REGEX.source, 'g')
             let match
             while ((match = importRegex.exec(code)) !== null) {
                 const moduleName = match[1] || match[2]
