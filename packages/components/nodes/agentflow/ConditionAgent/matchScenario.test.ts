@@ -1,11 +1,7 @@
 import { findBestScenarioIndex } from './matchScenario'
 
 describe('findBestScenarioIndex', () => {
-    const scenarios = [
-        { scenario: 'billing issue' },
-        { scenario: 'technical support' },
-        { scenario: 'other' }
-    ]
+    const scenarios = [{ scenario: 'billing issue' }, { scenario: 'technical support' }, { scenario: 'other' }]
 
     it('matches exact scenario (case-insensitive)', () => {
         expect(findBestScenarioIndex(scenarios, 'Technical Support')).toBe(1)
