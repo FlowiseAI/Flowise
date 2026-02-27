@@ -348,6 +348,7 @@ class LLM_Agentflow implements INode {
             if (!model) {
                 throw new Error('Model is required')
             }
+            const modelName = modelConfig?.model ?? modelConfig?.modelName
 
             // Extract memory and configuration options
             const enableMemory = nodeData.inputs?.llmEnableMemory as boolean
@@ -576,7 +577,7 @@ class LLM_Agentflow implements INode {
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
-                await analyticHandlers.onLLMEnd(llmIds, finalResponse)
+                await analyticHandlers.onLLMEnd(llmIds, output, { model: modelName, provider: model })
             }
 
             // Send additional streaming events if needed

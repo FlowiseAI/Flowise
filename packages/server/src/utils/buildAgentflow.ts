@@ -1904,8 +1904,9 @@ export const executeAgentFlow = async ({
                 chatId
             })
             await analyticHandlers.init()
+            const flowName = chatflow.name || 'Agentflow'
             parentTraceIds = await analyticHandlers.onChainStart(
-                'Agentflow',
+                flowName,
                 form && Object.keys(form).length > 0 ? JSON.stringify(form) : question || ''
             )
         }
