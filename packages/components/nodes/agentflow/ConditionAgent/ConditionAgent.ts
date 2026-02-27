@@ -9,6 +9,7 @@ import {
 } from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { findBestScenarioIndex } from './matchScenario'
 
 class ConditionAgent_Agentflow implements INode {
     label: string
@@ -406,10 +407,7 @@ class ConditionAgent_Agentflow implements INode {
                 }
             }
 
-            // Find the first exact match
-            const matchedScenarioIndex = _conditionAgentScenarios.findIndex(
-                (scenario) => calledOutputName.toLowerCase() === scenario.scenario.toLowerCase()
-            )
+            const matchedScenarioIndex = findBestScenarioIndex(_conditionAgentScenarios, calledOutputName)
 
             const conditions = _conditionAgentScenarios.map((scenario, index) => {
                 return {

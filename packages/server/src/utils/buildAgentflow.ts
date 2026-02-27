@@ -769,12 +769,20 @@ async function determineNodesToIgnore(
     if (isDecisionNode && result.output?.conditions) {
         const outputConditions: ICondition[] = result.output.conditions
 
+        // safety net: if no conditions were fulfilled, don't ignore ALL children
+        // treat the last condition as an else/default fallback
+        const anyFulfilled = outputConditions.some((c) => c.isFulfilled === true)
+        if (!anyFulfilled && outputConditions.length > 0) {
+            // mark the last condition as fulfilled so at least one branch executes
+            outputConditions[outputConditions.length - 1].isFulfilled = true
+        }
+
         // Find indexes of unfulfilled conditions
         const unfulfilledIndexes = outputConditions
-            .map((condition: any, index: number) =>
+            .map((condition, index) =>
                 condition.isFulfilled === false || !Object.prototype.hasOwnProperty.call(condition, 'isFulfilled') ? index : -1
             )
-            .filter((index: number) => index !== -1)
+            .filter((index) => index !== -1)
 
         // Find nodes to ignore based on unfulfilled conditions
         for (const index of unfulfilledIndexes) {
