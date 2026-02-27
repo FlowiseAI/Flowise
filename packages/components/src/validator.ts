@@ -32,17 +32,20 @@ export const isValidURL = (url: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isPathTraversal = (path: string): boolean => {
-    // Check for common path traversal patterns
+    // Allow absolute paths in Linux containers (e.g., /data/...)
+    // but block directory traversal attempts and other dangerous patterns
     const dangerousPatterns = [
-        '..', // Directory traversal
-        '/', // Root directory
-        '\\', // Windows root directory
-        '%2e', // URL encoded .
-        '%2f', // URL encoded /
-        '%5c' // URL encoded \
+        /\.\./, // Directory traversal (..)
+        /%2e%2e/i, // URL encoded ..
+        /%2f/i, // URL encoded /
+        /%5c/i, // URL encoded \ (Windows path)
+        /\0/, // Null bytes
+        /^[a-zA-Z]:\\/, // Windows absolute paths (C:\) - not allowed in Linux containers
+        /^\\\\[^\\]/, // UNC paths (\\server\) - not allowed in Linux containers
+        /%00/i // URL encoded null byte
     ]
 
-    return dangerousPatterns.some((pattern) => path.toLowerCase().includes(pattern))
+    return dangerousPatterns.some((pattern) => pattern.test(path))
 }
 
 /**
