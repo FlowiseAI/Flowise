@@ -27,10 +27,10 @@ describe('useOpenNodeEditor', () => {
         jest.clearAllMocks()
         mockNodes = [
             makeFlowNode('node-1', {
-                data: { name: 'llmAgentflow', label: 'LLM', inputValues: { model: 'gpt-4' } }
+                data: { id: 'node-1', name: 'llmAgentflow', label: 'LLM', inputValues: { model: 'gpt-4' } }
             }),
             makeFlowNode('node-2', {
-                data: { name: 'toolAgentflow', label: 'Tool' }
+                data: { id: 'node-2', name: 'toolAgentflow', label: 'Tool' }
             })
         ]
         mockAvailableNodes = [
