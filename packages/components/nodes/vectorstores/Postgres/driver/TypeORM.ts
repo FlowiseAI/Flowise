@@ -74,9 +74,25 @@ export class TypeORMDriver extends VectorStoreDriver {
     }
 
     sanitizeDocuments(documents: Document[]) {
-        // Remove NULL characters which triggers error on PG
+        // Remove problematic characters that trigger PostgreSQL errors
         for (var i in documents) {
-            documents[i].pageContent = documents[i].pageContent.replace(/\0/g, '')
+            let content = documents[i].pageContent
+
+            // Remove NULL characters (0x00) - PostgreSQL doesn't allow these
+            content = content.replace(/\0/g, '')
+
+            // Remove soft hyphens (U+00AD) - common in PDF extraction, can cause encoding issues
+            content = content.replace(/\u00AD/g, '')
+
+            // Remove other control characters (0x00-0x1F except tab, newline, carriage return)
+            // and DEL (0x7F), which can cause issues
+            // eslint-disable-next-line no-control-regex
+            content = content.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+
+            // Remove零-width and other invisible Unicode characters that can cause issues
+            content = content.replace(/[\u200B-\u200D\uFEFF]/g, '')
+
+            documents[i].pageContent = content
         }
 
         return documents
