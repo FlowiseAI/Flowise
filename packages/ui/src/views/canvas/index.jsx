@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useContext } from 'react'
+import { useEffect, useRef, useState, useCallback, useContext, useMemo } from 'react'
 import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -23,10 +23,17 @@ import ButtonEdge from './ButtonEdge'
 import StickyNote from './StickyNote'
 import CanvasHeader from './CanvasHeader'
 import AddNodes from './AddNodes'
+import Avatars from './Avatars'
+import CursorOverlay from './CursorOverlay'
+import WebSocketStatusBanner from '@/views/canvas/WebSocketStatusBanner'
+import { ConnectionStatusNotification, ConnectionStatusIndicator } from '@/views/canvas/ConnectionStatusNotification'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ChatPopUp from '@/views/chatmessage/ChatPopUp'
 import VectorStorePopUp from '@/views/vectorstore/VectorStorePopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
+import { CanvasPresenceProvider } from '@/contexts/CanvasPresenceContext'
+import { useNodePresenceSync } from '@/hooks/useNodePresenceSync'
+import { CanvasPresenceContext } from '@/contexts/CanvasPresenceContext'
 
 // API
 import nodesApi from '@/api/nodes'
@@ -36,6 +43,8 @@ import chatflowsApi from '@/api/chatflows'
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 import { useAuth } from '@/hooks/useAuth'
+import { useCollaboration } from '@/hooks/useCollaboration'
+import { useWebSocketContext } from '@/contexts/WebSocketContext'
 
 // icons
 import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
@@ -51,6 +60,7 @@ import {
 } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import { usePrompt } from '@/utils/usePrompt'
+import { throttle } from '@/utils/throttle'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
@@ -76,12 +86,21 @@ const Canvas = () => {
 
     const { confirm } = useConfirm()
 
+    const currentUser = useSelector((state) => state.auth.user)
+    const { remoteChanges, remoteCursors, snapshotSync, updateNode, updateEdge, sendCursorMove, updateUserColor } = useCollaboration()
+    const { hasJoined, sessionId, activeUsers, joinChatflow, leaveChatflow, sendNodePresence } = useContext(CanvasPresenceContext)
+    const { healthStatus } = useWebSocketContext()
+
+    // Sync node presence with WebSocket
+    useNodePresenceSync(chatflowId, sessionId)
+
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
     const { reactFlowInstance, setReactFlowInstance } = useContext(flowContext)
+    const [isCollaborativeMode, setIsCollaborativeMode] = useState(false)
 
     // ==============================|| Snackbar ||============================== //
 
@@ -101,10 +120,102 @@ const Canvas = () => {
     const [isBackgroundEnabled, setIsBackgroundEnabled] = useState(true)
 
     const reactFlowWrapper = useRef(null)
+    const pendingNodeChanges = useRef([]) // Data structure: [{ id: nodeId, type: changeType, node: nodeData (for 'add' type) }]
+    const pendingEdgeChanges = useRef([])
+    const changeTimeout = useRef(null)
+    const hasJoinedRef = useRef(false) // Track if user has joined to ensure cleanup on unmount
 
     const [lastUpdatedDateTime, setLasUpdatedDateTime] = useState('')
     const [chatflowName, setChatflowName] = useState('')
     const [flowData, setFlowData] = useState('')
+
+    // ==============================|| WebSocket Debounced Updates ||============================== //
+
+    const sendPendingChanges = useCallback(() => {
+        if (!hasJoined || !chatflowId) return
+
+        // Send node changes
+        if (pendingNodeChanges.current.length > 0) {
+            pendingNodeChanges.current.forEach((change) => {
+                // For 'add', 'remove' operations, use the node data stored in the change object
+                // For other operations, look up the current node from the nodes array
+                const node = change.node || nodes.find((n) => n.id === change.id)
+                if (node) {
+                    updateNode(node, change.type)
+                }
+            })
+            pendingNodeChanges.current = []
+        }
+
+        // Send all edge changes
+        if (pendingEdgeChanges.current.length > 0) {
+            pendingEdgeChanges.current.forEach((change) => {
+                // Use stored edge data if available, otherwise look up current edge
+                const edge = change.edge || edges.find((e) => e.id === change.id)
+                if (edge) {
+                    updateEdge(edge, change.type)
+                }
+            })
+            pendingEdgeChanges.current = []
+        }
+    }, [hasJoined, chatflowId, nodes, updateNode, edges, updateEdge])
+
+    const debouncedSendChanges = useCallback(() => {
+        if (changeTimeout.current) {
+            clearTimeout(changeTimeout.current)
+        }
+        changeTimeout.current = setTimeout(() => {
+            sendPendingChanges()
+        }, 1000) // 1 second debounce
+    }, [sendPendingChanges])
+
+    // Handle remote changes from other users
+    useEffect(() => {
+        if (!hasJoined || !remoteChanges) return
+        if (remoteChanges.node) {
+            if (remoteChanges.changeType === 'add') {
+                setNodes((nds) => [...nds, remoteChanges.node])
+            } else if (remoteChanges.changeType === 'remove') {
+                setNodes((nds) => nds.filter((node) => node.id !== remoteChanges.node.id))
+            } else {
+                setNodes((nds) => nds.map((node) => (node.id === remoteChanges.node.id ? remoteChanges.node : node)))
+            }
+        }
+        if (remoteChanges.edge) {
+            if (remoteChanges.changeType === 'add') {
+                setEdges((eds) => [...eds, remoteChanges.edge])
+            } else if (remoteChanges.changeType === 'remove') {
+                setEdges((eds) => eds.filter((edge) => edge.id !== remoteChanges.edge.id))
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [hasJoined, remoteChanges])
+
+    // Handle snapshot sync when joining a chatflow (sync latest state to avoid stale API data)
+    useEffect(() => {
+        if (!snapshotSync) return
+        // Update nodes and edges from the server snapshot
+        if (snapshotSync.nodes) {
+            setNodes(snapshotSync.nodes)
+        }
+        if (snapshotSync.edges) {
+            setEdges(snapshotSync.edges)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [snapshotSync])
+
+    // Handle the component unmounting: send user leave presence
+    useEffect(() => {
+        return () => {
+            // Always check the ref to ensure we leave if user had joined
+            if (hasJoinedRef.current && chatflowId && sessionId) {
+                leaveChatflow(chatflowId, sessionId)
+                hasJoinedRef.current = false
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     // ==============================|| Chatflow API ||============================== //
 
@@ -130,7 +241,9 @@ const Canvas = () => {
         setNodes((nds) =>
             nds.map((node) => {
                 if (node.id === targetNodeId) {
-                    setTimeout(() => setDirty(), 0)
+                    if (!isCollaborativeMode) {
+                        setTimeout(() => setDirty(), 0)
+                    }
                     let value
                     const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
                     const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
@@ -161,6 +274,41 @@ const Canvas = () => {
         )
 
         setEdges((eds) => addEdge(newEdge, eds))
+        pendingEdgeChanges.current.push({ id: newEdge.id, type: 'add', edge: newEdge })
+        debouncedSendChanges()
+    }
+
+    const handleNodesChange = (changes) => {
+        onNodesChange(changes)
+        // Track changes that should be sent to other users
+        changes.forEach((change) => {
+            if (['position', 'dimensions', 'select'].includes(change.type) && change.dragging === false) {
+                // Only track completed changes (not during drag)
+                const existingIndex = pendingNodeChanges.current.findIndex((c) => c.id === change.id)
+                if (existingIndex >= 0) {
+                    pendingNodeChanges.current[existingIndex] = change
+                } else {
+                    pendingNodeChanges.current.push(change)
+                }
+                debouncedSendChanges()
+            }
+        })
+    }
+
+    const handleEdgesChange = (changes) => {
+        onEdgesChange(changes)
+        // Track changes that should be sent to other users
+        changes.forEach((change) => {
+            if (['reset'].includes(change.type)) {
+                const existingIndex = pendingEdgeChanges.current.findIndex((c) => c.id === change.id)
+                if (existingIndex >= 0) {
+                    pendingEdgeChanges.current[existingIndex] = change.item
+                } else {
+                    pendingEdgeChanges.current.push(change.item)
+                }
+                debouncedSendChanges()
+            }
+        })
     }
 
     const handleLoadFlow = (file) => {
@@ -316,11 +464,19 @@ const Canvas = () => {
                     return node
                 })
             )
-            setTimeout(() => setDirty(), 0)
+            if (!isCollaborativeMode) {
+                setTimeout(() => setDirty(), 0)
+            }
+            pendingNodeChanges.current.push({
+                id: newNode.id,
+                type: 'add',
+                node: { ...newNode, absolutePosition: position, width: 300 }
+            })
+            debouncedSendChanges()
         },
 
         // eslint-disable-next-line
-        [reactFlowInstance]
+        [reactFlowInstance, debouncedSendChanges]
     )
 
     const syncNodes = () => {
@@ -381,6 +537,82 @@ const Canvas = () => {
     const setDirty = () => {
         dispatch({ type: SET_DIRTY })
     }
+
+    const handleCollaborativeModeChange = (newValue) => {
+        setIsCollaborativeMode(newValue)
+        if (newValue) {
+            joinChatflow(chatflowId, currentUser)
+            hasJoinedRef.current = true
+        } else {
+            leaveChatflow(chatflowId, sessionId)
+            hasJoinedRef.current = false
+        }
+    }
+
+    // Adaptive throttling based on server health
+    // Critical: 200ms (~5 updates/sec), Warning: 100ms (~10 updates/sec), Healthy: 40ms (~25 updates/sec)
+    const getThrottleDelay = useCallback(() => {
+        if (healthStatus?.status === 'critical') return 200
+        if (healthStatus?.status === 'warning') return 100
+        return 40
+    }, [healthStatus])
+
+    // Get current throttle delay
+    const throttleDelay = getThrottleDelay()
+
+    // Throttled cursor movement handler with adaptive throttling
+    // Recreate throttled function when delay changes to adapt to server health
+    const throttledSendCursor = useMemo(
+        () =>
+            throttle((x, y) => {
+                if (isCollaborativeMode && hasJoined) {
+                    sendCursorMove(x, y)
+                }
+            }, throttleDelay),
+        [throttleDelay, isCollaborativeMode, hasJoined, sendCursorMove]
+    )
+
+    // Track cursor movement on canvas
+    useEffect(() => {
+        if (!isCollaborativeMode || !reactFlowWrapper.current) return
+
+        const handleMouseMove = (e) => {
+            const rect = reactFlowWrapper.current.getBoundingClientRect()
+            const x = e.clientX - rect.left
+            const y = e.clientY - rect.top
+
+            // Only send if cursor is within canvas bounds
+            if (x >= 0 && y >= 0 && x <= rect.width && y <= rect.height) {
+                throttledSendCursor(x, y)
+            }
+        }
+
+        const canvas = reactFlowWrapper.current
+        canvas.addEventListener('mousemove', handleMouseMove)
+
+        return () => {
+            canvas.removeEventListener('mousemove', handleMouseMove)
+        }
+    }, [isCollaborativeMode, throttledSendCursor])
+
+    // Node presence handlers
+    const onNodeMouseEnter = useCallback(
+        (event, node) => {
+            if (isCollaborativeMode && hasJoined) {
+                sendNodePresence(node.id, 'enter')
+            }
+        },
+        [isCollaborativeMode, hasJoined, sendNodePresence]
+    )
+
+    const onNodeMouseLeave = useCallback(
+        (event, node) => {
+            if (isCollaborativeMode && hasJoined) {
+                sendNodePresence(node.id, 'leave')
+            }
+        },
+        [isCollaborativeMode, hasJoined, sendNodePresence]
+    )
 
     const checkIfUpsertAvailable = (nodes, edges) => {
         const upsertNodeDetails = getUpsertDetails(nodes, edges)
@@ -556,11 +788,23 @@ const Canvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
 
-    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (changeTimeout.current) {
+                clearTimeout(changeTimeout.current)
+            }
+        }
+    }, [])
+
+    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty && !isCollaborativeMode)
 
     return (
         <>
             <Box>
+                <ConnectionStatusNotification />
+                {isCollaborativeMode && <ConnectionStatusIndicator />}
+                {isCollaborativeMode && <WebSocketStatusBanner />}
                 <AppBar
                     enableColorOnDark
                     position='fixed'
@@ -577,6 +821,8 @@ const Canvas = () => {
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={isAgentCanvas}
+                            isCollaborativeMode={isCollaborativeMode}
+                            onCollaborativeModeChange={handleCollaborativeModeChange}
                         />
                     </Toolbar>
                 </AppBar>
@@ -586,9 +832,11 @@ const Canvas = () => {
                             <ReactFlow
                                 nodes={nodes}
                                 edges={edges}
-                                onNodesChange={onNodesChange}
+                                onNodesChange={handleNodesChange}
                                 onNodeClick={onNodeClick}
-                                onEdgesChange={onEdgesChange}
+                                onNodeMouseEnter={onNodeMouseEnter}
+                                onNodeMouseLeave={onNodeMouseLeave}
+                                onEdgesChange={handleEdgesChange}
                                 onDrop={onDrop}
                                 onDragOver={onDragOver}
                                 onNodeDragStop={setDirty}
@@ -634,6 +882,9 @@ const Canvas = () => {
                                     </button>
                                 </Controls>
                                 {isBackgroundEnabled && <Background color='#aaa' gap={16} />}
+                                {isCollaborativeMode && (
+                                    <Avatars activeUsers={activeUsers} currentUser={currentUser} onColorChange={updateUserColor} />
+                                )}
                                 <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                                 {isSyncNodesButtonEnabled && (
                                     <Fab
@@ -658,6 +909,7 @@ const Canvas = () => {
                                 {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
                                 <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
                             </ReactFlow>
+                            {isCollaborativeMode && <CursorOverlay cursors={remoteCursors} />}
                         </div>
                     </div>
                 </Box>
@@ -667,4 +919,11 @@ const Canvas = () => {
     )
 }
 
-export default Canvas
+// Wrap Canvas with NodePresenceProvider
+const CanvasWithPresence = () => (
+    <CanvasPresenceProvider>
+        <Canvas />
+    </CanvasPresenceProvider>
+)
+
+export default CanvasWithPresence
