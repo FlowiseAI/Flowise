@@ -116,7 +116,7 @@
         "jsonwebtoken": "^9.0.2",
         "jwt-decode": "^4.0.0",
         "langchainhub": "^0.0.11",
-        "lodash": "^4.17.21",
+        "lodash": "^4.17.23",
         "moment": "^2.29.3",
         "moment-timezone": "^0.5.34",
         "multer": "^2.0.2",
@@ -144,7 +144,7 @@
         "sqlite3": "^5.1.6",
         "stripe": "^15.6.0",
         "turndown": "^7.2.0",
-        "typeorm": "^0.3.6",
+        "typeorm": "^0.3.26",
         "uuid": "^9.0.1",
         "winston": "^3.9.0",
         "winston-daily-rotate-file": "^5.0.0"
