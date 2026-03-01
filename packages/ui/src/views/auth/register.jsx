@@ -32,6 +32,7 @@ import AzureSSOLoginIcon from '@/assets/images/microsoft-azure.svg'
 import { store } from '@/store'
 import { loginSuccess } from '@/store/reducers/authSlice'
 import { IconCircleCheck, IconExclamationCircle } from '@tabler/icons-react'
+import config from '@/config'
 
 // ==============================|| Register ||============================== //
 
@@ -178,7 +179,7 @@ const RegisterPage = () => {
 
     const signInWithSSO = (ssoProvider) => {
         //ssoLoginApi.request(ssoProvider)
-        window.location.href = `/api/v1/${ssoProvider}/login`
+        window.location.href = `${config.basename}/api/v1/${ssoProvider}/login`
     }
 
     useEffect(() => {
