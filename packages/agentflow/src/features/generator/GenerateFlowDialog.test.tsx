@@ -62,9 +62,10 @@ describe('GenerateFlowDialog', () => {
         expect(screen.queryByText('What would you like to build?')).not.toBeInTheDocument()
     })
 
-    it('should render dialog when open is true', () => {
+    it('should render dialog when open is true', async () => {
         render(<GenerateFlowDialog {...defaultProps} />)
         expect(screen.getByText('What would you like to build?')).toBeInTheDocument()
+        await waitFor(() => expect(mockGetChatModels).toHaveBeenCalled())
     })
 
     it('should load chat models on open', async () => {
@@ -208,8 +209,9 @@ describe('GenerateFlowDialog', () => {
         expect(input.value).toBe('')
     })
 
-    it('should show cancel button when not loading', () => {
+    it('should show cancel button when not loading', async () => {
         render(<GenerateFlowDialog {...defaultProps} />)
+        await waitFor(() => expect(mockGetChatModels).toHaveBeenCalled())
         const cancelBtn = screen.getByRole('button', { name: /cancel/i })
         expect(cancelBtn).toBeInTheDocument()
         fireEvent.click(cancelBtn)
