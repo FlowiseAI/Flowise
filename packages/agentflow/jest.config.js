@@ -27,8 +27,7 @@ module.exports = {
         '!src/**/index.ts',
         '!src/__mocks__/**',
         '!src/__test_utils__/**',
-        // Potentially deprecated — exclude until resolved (see TESTS.md)
-        '!src/infrastructure/api/hooks/useApi.ts'
+        '!src/infrastructure/api/hooks/**'
     ],
     // text: per-folder table, text-summary: totals, lcov: HTML report at coverage/lcov-report/
     coverageReporters: ['text', 'text-summary', 'lcov'],
@@ -36,6 +35,7 @@ module.exports = {
     // 80% floor to catch regressions without blocking active development.
     // Add new paths here as more modules gain test coverage.
     coverageThreshold: {
+        './src/*.ts': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/Agentflow.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/core/': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/features/canvas/hooks/useFlowHandlers.ts': { branches: 80, functions: 80, lines: 80, statements: 80 },
