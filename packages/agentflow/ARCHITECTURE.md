@@ -30,8 +30,6 @@ src/
 ```
 atoms/
 ├── MainCard.tsx            # Styled card wrapper
-├── Input.tsx               # Basic input component
-├── ConfirmDialog.tsx       # Confirmation dialog with context
 ├── NodeInputHandler.tsx    # Form input for node properties
 └── index.ts                # Central export
 ```
@@ -157,14 +155,12 @@ infrastructure/
 │   ├── client.ts           # Axios factory
 │   ├── nodes.ts            # Nodes API endpoints
 │   ├── chatflows.ts        # Chatflows API endpoints
-│   ├── hooks/
-│   │   └── useApi.ts       # API hook (co-located)
 │   └── index.ts
 │
 └── store/                  # State management
+    ├── AgentflowContext.tsx # Flow state context
     ├── ApiContext.tsx      # API client context
     ├── ConfigContext.tsx   # Configuration context
-    ├── AgentflowContext.tsx # Flow state context
     ├── useFlowInstance.ts  # ReactFlow instance hook
     └── index.ts
 ```
