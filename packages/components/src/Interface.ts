@@ -25,7 +25,7 @@ export type NodeParamsType =
 
 export type CommonType = string | number | boolean | undefined | null
 
-export type MessageType = 'apiMessage' | 'userMessage'
+export type MessageType = 'apiMessage' | 'userMessage' | 'summaryMessage'
 
 export type ImageDetail = 'auto' | 'low' | 'high'
 

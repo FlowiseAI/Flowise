@@ -14,7 +14,7 @@ import { CachePool } from './CachePool'
 import { Telemetry } from './utils/telemetry'
 import { UsageCacheManager } from './UsageCacheManager'
 
-export type MessageType = 'apiMessage' | 'userMessage'
+export type MessageType = 'apiMessage' | 'userMessage' | 'summaryMessage'
 
 export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT' | 'AGENTFLOW'
 
