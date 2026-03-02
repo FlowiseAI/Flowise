@@ -21,6 +21,11 @@ describe('validatePythonCodeForDataFrame', () => {
             expect(result.valid).toBe(false)
         })
 
+        it('should block if import is stated more than once', () => {
+            const result = validatePythonCodeForDataFrame('import import')
+            expect(result.valid).toBe(false)
+        })
+
         it('should block "import sys"', () => {
             const result = validatePythonCodeForDataFrame('import sys')
             expect(result.valid).toBe(false)
