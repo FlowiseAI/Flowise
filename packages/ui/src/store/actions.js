@@ -25,6 +25,13 @@ export const REMOVE_SNACKBAR = 'REMOVE_SNACKBAR'
 export const SHOW_CONFIRM = 'SHOW_CONFIRM'
 export const HIDE_CONFIRM = 'HIDE_CONFIRM'
 
+// action - onboarding reducer
+export const SET_ONBOARDING_STATUS = '@onboarding/SET_STATUS'
+export const COMPLETE_STEP = '@onboarding/COMPLETE_STEP'
+export const SKIP_ONBOARDING = '@onboarding/SKIP'
+export const SET_ONBOARDING_LOADING = '@onboarding/SET_LOADING'
+export const SET_ONBOARDING_ERROR = '@onboarding/SET_ERROR'
+
 export const enqueueSnackbar = (notification) => {
     const key = notification.options && notification.options.key
 

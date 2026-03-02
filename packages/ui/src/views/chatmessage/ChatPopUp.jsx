@@ -20,6 +20,7 @@ import chatmessageApi from '@/api/chatmessage'
 import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 import { flowContext } from '@/store/context/ReactFlowContext'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // Const
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
@@ -32,6 +33,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const { clearAgentflowNodeStatus } = useContext(flowContext)
+    const { isActive, getCurrentStep, next } = useOverlay()
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -45,6 +47,14 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
 
+    // Store overlay functions in ref to avoid stale closures in long-running SSE streams
+    const overlayRef = useRef({ isActive, getCurrentStep, next })
+
+    // Update ref whenever overlay functions change
+    useEffect(() => {
+        overlayRef.current = { isActive, getCurrentStep, next }
+    }, [isActive, getCurrentStep, next])
+
     const handleClose = (event) => {
         if (anchorRef.current && anchorRef.current.contains(event.target)) {
             return
@@ -57,6 +67,19 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
         const newOpenState = !open
         setOpen(newOpenState)
         if (onOpenChange) onOpenChange(newOpenState)
+
+        // Auto-advance when opening chat during onboarding
+        // Use ref to get latest overlay functions
+        const { isActive, getCurrentStep, next } = overlayRef.current
+
+        if (newOpenState && isActive()) {
+            const currentStep = getCurrentStep()
+            if (currentStep?.id === 'chatflow-creation:test-flow' || currentStep?.id === 'agent-creation:test-flow') {
+                setTimeout(() => {
+                    next()
+                }, 300)
+            }
+        }
     }
 
     const expandChat = () => {
@@ -82,6 +105,21 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
             }
             setExpandDialogProps(resetProps)
         }, 500)
+    }
+
+    const handlePredictionComplete = () => {
+        // Auto-advance to completion step after first successful prediction
+        // Use ref to get latest overlay functions (avoids stale closures in long SSE streams)
+        const { isActive, getCurrentStep, next } = overlayRef.current
+
+        if (isActive()) {
+            const currentStep = getCurrentStep()
+            if (currentStep?.id === 'chatflow-creation:testing-flow' || currentStep?.id === 'agent-creation:testing-flow') {
+                setTimeout(() => {
+                    next()
+                }, 1000)
+            }
+        }
     }
 
     const clearChat = async () => {
@@ -150,6 +188,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 aria-label='chat'
                 title='Chat'
                 onClick={handleToggle}
+                data-onboarding='chat-button'
             >
                 {open ? <IconX /> : <IconMessage />}
             </StyledFab>
@@ -215,6 +254,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                                         open={open}
                                         previews={previews}
                                         setPreviews={setPreviews}
+                                        onPredictionComplete={handlePredictionComplete}
                                     />
                                 </MainCard>
                             </ClickAwayListener>
@@ -230,6 +270,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 onCancel={() => setShowExpandDialog(false)}
                 previews={previews}
                 setPreviews={setPreviews}
+                onPredictionComplete={handlePredictionComplete}
             ></ChatExpandDialog>
         </>
     )

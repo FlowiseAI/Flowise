@@ -17,6 +17,7 @@ import validationApi from '@/api/validation'
 
 // Hooks
 import useNotifier from '@/utils/useNotifier'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // Const
 import { enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
@@ -31,6 +32,8 @@ const ValidationPopUp = ({ chatflowid, hidden }) => {
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+
+    const { getCurrentStep, goTo } = useOverlay()
 
     const [open, setOpen] = useState(false)
     const [previews, setPreviews] = useState([])
@@ -48,6 +51,7 @@ const ValidationPopUp = ({ chatflowid, hidden }) => {
 
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen)
+        handleOnboardingOnOpen()
     }
 
     const validateFlow = async () => {
@@ -67,6 +71,7 @@ const ValidationPopUp = ({ chatflowid, hidden }) => {
                         autoHideDuration: 3000
                     }
                 })
+                handleOnboardingOnCheck()
             }
         } catch (error) {
             console.error(error)
@@ -80,6 +85,34 @@ const ValidationPopUp = ({ chatflowid, hidden }) => {
             })
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleOnboardingOnOpen = () => {
+        const currentStep = getCurrentStep()
+        if (currentStep) {
+            setTimeout(() => {
+                switch (currentStep.id) {
+                    case 'agent-creation:open-validation':
+                    case 'agent-creation:openning-validation':
+                        goTo('agent-creation:validate-flow')
+                        break
+                    default:
+                        break
+                }
+            }, 200)
+        }
+    }
+
+    const handleOnboardingOnCheck = () => {
+        const currentStep = getCurrentStep()
+        switch (currentStep.id) {
+            case 'agent-creation:validate-flow':
+            case 'agent-creation:validating-flow':
+                goTo('agent-creation:validation-no-issue')
+                break
+            default:
+                break
         }
     }
 
@@ -148,6 +181,7 @@ const ValidationPopUp = ({ chatflowid, hidden }) => {
                     aria-label='validation'
                     title='Validate Nodes'
                     onClick={handleToggle}
+                    data-onboarding='validate-nodes-button'
                 >
                     {open ? <IconX /> : <IconChecklist />}
                 </StyledFab>
@@ -279,6 +313,7 @@ const ValidationPopUp = ({ chatflowid, hidden }) => {
                                             disabled={loading}
                                             startIcon={loading ? null : <IconCheckbox size={18} />}
                                             sx={{ color: 'white', minWidth: '120px' }}
+                                            data-onboarding='validate-nodes-confirm-button'
                                         >
                                             {loading ? 'Validating...' : 'Validate Flow'}
                                         </Button>

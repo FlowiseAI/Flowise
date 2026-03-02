@@ -95,7 +95,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
         <div>
             {inputParam && (
                 <>
-                    <Box sx={{ p: 2 }}>
+                    <Box data-onboarding={`docstore-input-${inputParam?.name}`} sx={{ p: 2 }}>
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
                                 {inputParam.label}
