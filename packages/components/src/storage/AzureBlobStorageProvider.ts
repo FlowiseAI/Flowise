@@ -4,8 +4,7 @@ import { MulterAzureStorage } from 'multer-azure-blob-storage'
 import { v4 as uuidv4 } from 'uuid'
 import { BaseStorageProvider } from './BaseStorageProvider'
 import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
-
-const { WinstonAzureBlob } = require('winston-azure-blob')
+import { winstonAzureBlob } from 'winston-azure-blob'
 
 /**
  * Extends MulterAzureStorage to set file.path from file.blobName after upload.
@@ -298,7 +297,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
 
         if (logType === 'server') {
             return [
-                new WinstonAzureBlob({
+                winstonAzureBlob({
                     ...baseConfig,
                     blobName: 'logs/server/server',
                     rotatePeriod: 'YYYY-MM-DD',
@@ -308,7 +307,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
             ]
         } else if (logType === 'error') {
             return [
-                new WinstonAzureBlob({
+                winstonAzureBlob({
                     ...baseConfig,
                     blobName: 'logs/error/server-error',
                     rotatePeriod: 'YYYY-MM-DD',
@@ -318,7 +317,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
             ]
         } else if (logType === 'requests') {
             return [
-                new WinstonAzureBlob({
+                winstonAzureBlob({
                     ...baseConfig,
                     blobName: 'logs/requests/server-requests',
                     rotatePeriod: 'YYYY-MM-DD',
