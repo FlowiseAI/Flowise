@@ -6,15 +6,16 @@ export function sanitizeMiddleware(req: Request, res: Response, next: NextFuncti
     // decoding is necessary as the url is encoded by the browser
     const decodedURI = decodeURI(req.url)
     req.url = sanitizeHtml(decodedURI)
-    for (let p in req.query) {
-        if (Array.isArray(req.query[p])) {
-            const sanitizedQ = []
-            for (const q of req.query[p] as string[]) {
-                sanitizedQ.push(sanitizeHtml(q))
+    for (const p in req.query) {
+        const val = req.query[p]
+        if (Array.isArray(val)) {
+            const sanitizedQ: string[] = []
+            for (const q of val) {
+                sanitizedQ.push(sanitizeHtml(String(q)))
             }
             req.query[p] = sanitizedQ
-        } else {
-            req.query[p] = sanitizeHtml(req.query[p] as string)
+        } else if (typeof val === 'string') {
+            req.query[p] = sanitizeHtml(val)
         }
     }
     next()
