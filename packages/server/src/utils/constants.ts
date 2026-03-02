@@ -40,6 +40,7 @@ export const WHITELIST_URLS = [
     '/api/v1/oauth2-credential/refresh',
     '/api/v1/text-to-speech/generate',
     '/api/v1/text-to-speech/abort',
+    '/api/v1/channel-webhooks/',
     AzureSSO.LOGIN_URI,
     AzureSSO.LOGOUT_URI,
     AzureSSO.CALLBACK_URI,
