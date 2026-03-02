@@ -108,7 +108,7 @@ const AccountSettings = () => {
         if (currentUser) {
             getUserByIdApi.request(currentUser.id)
         } else {
-            window.location.href = '/login'
+            navigate('/login')
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser])

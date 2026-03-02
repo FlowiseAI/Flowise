@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { store } from '@/store'
 import { logoutSuccess } from '@/store/reducers/authSlice'
 import { ErrorMessage } from '../constant'
+import config from '@/config'
 
 const ErrorContext = createContext()
 
@@ -48,7 +49,11 @@ export const ErrorProvider = ({ children }) => {
                     })
                 } else {
                     const currentPath = window.location.pathname
-                    if (currentPath !== '/signin' && currentPath !== '/login') {
+                    const isAuthPage = currentPath === `${config.basename}/signin` ||
+                                       currentPath === `${config.basename}/login` ||
+                                       currentPath.endsWith('/signin') ||
+                                       currentPath.endsWith('/login')
+                    if (!isAuthPage) {
                         store.dispatch(logoutSuccess())
                         navigate('/login')
                     }

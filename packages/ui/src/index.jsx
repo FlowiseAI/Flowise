@@ -14,6 +14,7 @@ import ConfirmContextProvider from '@/store/context/ConfirmContextProvider'
 import { ReactFlowContext } from '@/store/context/ReactFlowContext'
 import { ConfigProvider } from '@/store/context/ConfigContext'
 import { ErrorProvider } from '@/store/context/ErrorContext'
+import config from '@/config'
 
 const container = document.getElementById('root')
 const root = createRoot(container)
@@ -21,7 +22,7 @@ const root = createRoot(container)
 root.render(
     <React.StrictMode>
         <Provider store={store}>
-            <BrowserRouter>
+            <BrowserRouter basename={config.basename}>
                 <SnackbarProvider>
                     <ConfigProvider>
                         <ErrorProvider>

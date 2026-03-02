@@ -73,9 +73,11 @@ export class App {
     redisSubscriber: RedisEventSubscriber
     usageCacheManager: UsageCacheManager
     sessionStore: any
+    basePath: string
 
     constructor() {
         this.app = express()
+        this.basePath = process.env.FLOWISE_BASE_PATH || ''
     }
 
     async initDatabase() {
@@ -134,7 +136,7 @@ export class App {
             if (process.env.MODE === MODE.QUEUE) {
                 this.queueManager = QueueManager.getInstance()
                 const serverAdapter = new ExpressAdapter()
-                serverAdapter.setBasePath('/admin/queues')
+                serverAdapter.setBasePath(`${this.basePath}/admin/queues`)
                 this.queueManager.setupAllQueues({
                     componentNodes: this.nodesPool.componentNodes,
                     telemetry: this.telemetry,
@@ -211,9 +213,12 @@ export class App {
         })
 
         const denylistURLs = process.env.DENYLIST_URLS ? process.env.DENYLIST_URLS.split(',') : []
-        const whitelistURLs = WHITELIST_URLS.filter((url) => !denylistURLs.includes(url))
-        const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
-        const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
+        const whitelistURLs = WHITELIST_URLS.filter((url) => !denylistURLs.includes(url)).map((url) => this.basePath + url)
+        const apiKeyBlacklistURLs = API_KEY_BLACKLIST_URLS.map((url) => this.basePath + url)
+        // Escape special regex characters in basePath to prevent incorrect URL matching
+        const escapedBasePath = this.basePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const URL_CASE_INSENSITIVE_REGEX: RegExp = new RegExp(`${escapedBasePath}/api/v1/`, 'i')
+        const URL_CASE_SENSITIVE_REGEX: RegExp = new RegExp(`${escapedBasePath}/api/v1/`)
 
         await initializeJwtCookieMiddleware(this.app, this.identityManager)
 
@@ -229,7 +234,7 @@ export class App {
                     } else if (req.headers['x-request-from'] === 'internal') {
                         verifyToken(req, res, next)
                     } else {
-                        const isAPIKeyBlacklistedURLS = API_KEY_BLACKLIST_URLS.some((url) => req.path.startsWith(url))
+                        const isAPIKeyBlacklistedURLS = apiKeyBlacklistURLs.some((url) => req.path.startsWith(url))
                         if (isAPIKeyBlacklistedURLS) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
@@ -314,12 +319,12 @@ export class App {
             }
         }
 
-        this.app.use('/api/v1', flowiseApiV1Router)
+        this.app.use(`${this.basePath}/api/v1`, flowiseApiV1Router)
 
         // ----------------------------------------
         // Configure number of proxies in Host Environment
         // ----------------------------------------
-        this.app.get('/api/v1/ip', (request, response) => {
+        this.app.get(`${this.basePath}/api/v1/ip`, (request, response) => {
             response.send({
                 ip: request.ip,
                 msg: 'Check returned IP address in the response. If it matches your current IP address ( which you can get by going to http://ip.nfriedly.com/ or https://api.ipify.org/ ), then the number of proxies is correct and the rate limiter should now work correctly. If not, increase the number of proxies by 1 and restart Cloud-Hosted Flowise until the IP address matches your own. Visit https://docs.flowiseai.com/configuration/rate-limit#cloud-hosted-rate-limit-setup-guide for more information.'
@@ -337,7 +342,7 @@ export class App {
             )
 
             const rateLimiter = this.rateLimiterManager.getRateLimiterById(id)
-            this.app.use('/admin/queues', rateLimiter, verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
+            this.app.use(`${this.basePath}/admin/queues`, rateLimiter, verifyTokenForBullMQDashboard, this.queueManager.getBullBoardRouter())
         }
 
         // ----------------------------------------
@@ -348,12 +353,32 @@ export class App {
         const uiBuildPath = path.join(packagePath, 'build')
         const uiHtmlPath = path.join(packagePath, 'build', 'index.html')
 
-        this.app.use('/', express.static(uiBuildPath))
+        this.app.use(this.basePath || '/', express.static(uiBuildPath))
 
-        // All other requests not handled will return React app
-        this.app.use((req: Request, res: Response) => {
-            res.sendFile(uiHtmlPath)
-        })
+        // Redirect root to basePath if basePath is set
+        if (this.basePath) {
+            this.app.get('/', (req: Request, res: Response) => {
+                res.redirect(this.basePath)
+            })
+
+            // SPA fallback for routes under basePath only
+            this.app.get(`${this.basePath}/*`, (req: Request, res: Response) => {
+                res.sendFile(uiHtmlPath)
+            })
+        } else {
+            // SPA fallback for all routes when no basePath
+            // Only serve index.html for routes that don't look like file requests
+            this.app.get('*', (req: Request, res: Response, next) => {
+                // Skip if it looks like a file request (has extension)
+                const ext = path.extname(req.path)
+                if (ext) {
+                    // It's a file request, let it 404 naturally
+                    return next()
+                }
+                // Otherwise serve the SPA
+                res.sendFile(uiHtmlPath)
+            })
+        }
 
         // Error handling
         this.app.use(errorHandlerMiddleware)

@@ -88,6 +88,7 @@ export class AccountController {
 
     public async logout(req: Request, res: Response, next: NextFunction) {
         try {
+            const basePath = process.env.FLOWISE_BASE_PATH || ''
             if (req.user) {
                 const accountService = new AccountService()
                 await accountService.logout(req.user)
@@ -107,10 +108,10 @@ export class AccountController {
                     res.clearCookie('connect.sid') // Clear the session cookie
                     res.clearCookie('token') // Clear the JWT cookie
                     res.clearCookie('refreshToken') // Clear the JWT cookie
-                    return res.redirect('/login') // Redirect to the login page
+                    return res.redirect(`${basePath}/login`) // Redirect to the login page
                 }
             }
-            return res.status(200).json({ message: 'logged_out', redirectTo: `/login` })
+            return res.status(200).json({ message: 'logged_out', redirectTo: `${basePath}/login` })
         } catch (error) {
             next(error)
         }
