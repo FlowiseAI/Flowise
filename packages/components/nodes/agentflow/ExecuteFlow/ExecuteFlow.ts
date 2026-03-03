@@ -158,7 +158,6 @@ class ExecuteFlow_Agentflow implements INode {
     }
 
     async run(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        console.log('I am here')
         const baseURL = (nodeData.inputs?.executeFlowBaseURL as string) || (options.baseURL as string)
         const selectedFlowId = nodeData.inputs?.executeFlowSelectedFlow as string
         const flowInput = nodeData.inputs?.executeFlowInput as string
