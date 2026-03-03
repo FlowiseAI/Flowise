@@ -2,6 +2,13 @@ import { ClientOptions, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langch
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
+const parseOptionalInt = (value?: string | number): number | undefined => {
+    if (value === undefined || value === null || value === '') return undefined
+
+    const parsedValue = Number.parseInt(String(value), 10)
+    return Number.isNaN(parsedValue) ? undefined : parsedValue
+}
+
 class LMStudioEmbedding_Embeddings implements INode {
     label: string
     name: string
@@ -78,9 +85,9 @@ class LMStudioEmbedding_Embeddings implements INode {
         const baseUrl = nodeData.inputs?.baseUrl as string
         const modelName = nodeData.inputs?.modelName as string
         const stripNewLines = nodeData.inputs?.stripNewLines as boolean
-        const batchSize = nodeData.inputs?.batchSize as string
-        const timeout = nodeData.inputs?.timeout as string
-        const dimensions = nodeData.inputs?.dimensions as string
+        const batchSize = nodeData.inputs?.batchSize as string | number
+        const timeout = nodeData.inputs?.timeout as string | number
+        const dimensions = nodeData.inputs?.dimensions as string | number
 
         if (nodeData.inputs?.credentialId) {
             nodeData.credential = nodeData.inputs?.credentialId
@@ -96,9 +103,14 @@ class LMStudioEmbedding_Embeddings implements INode {
 
         if (lmStudioApiKey) obj.openAIApiKey = lmStudioApiKey
         if (stripNewLines !== undefined) obj.stripNewLines = stripNewLines
-        if (batchSize) obj.batchSize = parseInt(batchSize, 10)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (dimensions) obj.dimensions = parseInt(dimensions, 10)
+
+        const parsedBatchSize = parseOptionalInt(batchSize)
+        const parsedTimeout = parseOptionalInt(timeout)
+        const parsedDimensions = parseOptionalInt(dimensions)
+
+        if (parsedBatchSize !== undefined) obj.batchSize = parsedBatchSize
+        if (parsedTimeout !== undefined) obj.timeout = parsedTimeout
+        if (parsedDimensions !== undefined) obj.dimensions = parsedDimensions
 
         if (baseUrl) {
             obj.configuration = {
