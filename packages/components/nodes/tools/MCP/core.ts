@@ -5,7 +5,7 @@ import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
-import { checkDenyList } from '../../../src/httpSecurity'
+import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -73,8 +73,10 @@ export class MCPToolkit extends BaseToolkit {
                         },
                         eventSourceInit: {
                             fetch: async (url, init) => {
-                                await checkDenyList(url.toString())
-                                return fetch(url, { ...init, headers: this.serverParams.headers })
+                                return secureFetch(url.toString(), {
+                                    ...(init as any),
+                                    headers: this.serverParams.headers
+                                }) as any
                             }
                         }
                     })
@@ -82,8 +84,7 @@ export class MCPToolkit extends BaseToolkit {
                     transport = new SSEClientTransport(baseUrl, {
                         eventSourceInit: {
                             fetch: async (url, init) => {
-                                await checkDenyList(url.toString())
-                                return fetch(url, init)
+                                return secureFetch(url.toString(), init as any) as any
                             }
                         }
                     })
