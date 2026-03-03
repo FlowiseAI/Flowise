@@ -42,9 +42,18 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         res.setHeader('X-Accel-Buffering', 'no') //nginx config: https://serverfault.com/a/801629
         res.flushHeaders()
 
-        if (process.env.MODE === MODE.QUEUE) {
+        const isQueueMode = process.env.MODE === MODE.QUEUE
+        if (isQueueMode) {
             getRunningExpressApp().redisSubscriber.subscribe(chatId)
         }
+
+        // Detect client disconnect (browser close, network timeout, ALB idle timeout)
+        res.on('close', () => {
+            sseStreamer.removeClient(chatId)
+            if (isQueueMode) {
+                getRunningExpressApp().redisSubscriber.unsubscribe(chatId)
+            }
+        })
 
         const apiResponse = await utilBuildChatflow(req, true)
         sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
@@ -55,6 +64,9 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         next(error)
     } finally {
         sseStreamer.removeClient(chatId)
+        if (process.env.MODE === MODE.QUEUE) {
+            getRunningExpressApp().redisSubscriber.unsubscribe(chatId)
+        }
     }
 }
 export default {
