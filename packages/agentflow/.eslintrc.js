@@ -7,8 +7,10 @@ const crossFeatureRules = features.map((feature) => ({
 }))
 
 module.exports = {
+    root: true,
     extends: [
         'eslint:recommended',
+        'plugin:markdown/recommended',
         'plugin:react/recommended',
         'plugin:react/jsx-runtime',
         'plugin:react-hooks/recommended',
