@@ -281,6 +281,32 @@ describe('ArrayInput', () => {
         expect(deleteButtons[1]).toBeDisabled()
     })
 
+    // Test 11: itemParameters prop overrides inputParam.array display flags
+    it('should use itemParameters prop for field visibility when provided, ignoring inputParam.array display flags', () => {
+        // inputParam.array has both fields with no display flag (both would show)
+        const dataWithItem: NodeData = {
+            ...mockNodeData,
+            inputValues: { testArray: [{ field1: 'value', field2: 10 }] }
+        } as NodeData
+
+        // Parent (EditNodeDialog) has evaluated field2 as hidden
+        const itemParameters: InputParam[][] = [
+            [
+                { id: 'field1', name: 'field1', label: 'Field 1', type: 'string', display: true } as InputParam,
+                { id: 'field2', name: 'field2', label: 'Field 2', type: 'number', display: false } as InputParam
+            ]
+        ]
+
+        render(
+            <ArrayInput inputParam={mockInputParam} data={dataWithItem} onDataChange={mockOnDataChange} itemParameters={itemParameters} />
+        )
+
+        // field1 visible per itemParameters
+        expect(screen.getByTestId('input-handler-field1')).toBeInTheDocument()
+        // field2 hidden per itemParameters even though inputParam.array has no display flag
+        expect(screen.queryByTestId('input-handler-field2')).not.toBeInTheDocument()
+    })
+
     // Test reading minItems from inputParam
     it('should read minItems from inputParam', () => {
         const inputParamWithMinItems: InputParam = {

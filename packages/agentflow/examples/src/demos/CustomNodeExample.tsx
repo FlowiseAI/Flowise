@@ -127,7 +127,7 @@ const customNodeInputParams: InputParam[] = [
                 name: 'value',
                 label: 'Value',
                 type: 'string',
-                hide: { operation: 'isEmpty' }
+                hide: { 'conditions[$index].operation': 'isEmpty' }
             }
         ]
     },

@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateNodeInternals } from 'reactflow'
 
 import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typography } from '@mui/material'
@@ -30,6 +30,22 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const [data, setData] = useState<NodeData | null>(null)
     const [isEditingNodeName, setEditingNodeName] = useState(false)
     const [nodeName, setNodeName] = useState('')
+    const [arrayItemParameters, setArrayItemParameters] = useState<Record<string, InputParam[][]>>({})
+
+    // Evaluate field visibility for each item in every array-type param.
+    const computeArrayItemParameters = useCallback(
+        (params: InputParam[], inputValues: Record<string, unknown>): Record<string, InputParam[][]> => {
+            const result: Record<string, InputParam[][]> = {}
+            for (const param of params) {
+                if (param.type === 'array' && param.array) {
+                    const items = (inputValues[param.name] as Record<string, unknown>[]) || []
+                    result[param.name] = items.map((_, index) => evaluateFieldVisibility(param.array!, inputValues, index))
+                }
+            }
+            return result
+        },
+        []
+    )
 
     const onNodeLabelChange = () => {
         if (!data || !nodeNameRef.current) return
@@ -50,6 +66,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
 
         const updatedParams = evaluateFieldVisibility(inputParams, updatedInputValues)
         setInputParams(updatedParams)
+        setArrayItemParameters(computeArrayItemParameters(inputParams, updatedInputValues))
         // Keep full inputValues in state — hidden field values are preserved so they
         // can be restored when visibility conditions change (e.g. toggling provider back).
         // Stripping should only happen on save/export, not on every keystroke.
@@ -62,12 +79,13 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             const initialValues = dialogProps.data?.inputValues || {}
             const evaluatedParams = evaluateFieldVisibility(dialogProps.inputParams, initialValues)
             setInputParams(evaluatedParams)
+            setArrayItemParameters(computeArrayItemParameters(dialogProps.inputParams, initialValues))
         }
         if (dialogProps.data) {
             setData(dialogProps.data)
             if (dialogProps.data.label) setNodeName(dialogProps.data.label)
         }
-    }, [dialogProps])
+    }, [dialogProps, computeArrayItemParameters])
 
     if (!show) return null
 
@@ -233,6 +251,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                     data={data}
                                     isAdditionalParams={true}
                                     onDataChange={onCustomDataChange}
+                                    itemParameters={inputParam.type === 'array' ? arrayItemParameters[inputParam.name] : undefined}
                                 />
                             )
                         })}

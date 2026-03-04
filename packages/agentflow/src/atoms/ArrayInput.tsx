@@ -5,7 +5,6 @@ import { useTheme } from '@mui/material/styles'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 
 import type { InputParam, NodeData } from '@/core/types'
-import { evaluateFieldVisibility } from '@/core/utils/fieldVisibility'
 
 import { NodeInputHandler } from './NodeInputHandler'
 
@@ -14,17 +13,10 @@ export interface ArrayInputProps {
     data: NodeData
     disabled?: boolean
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
+    itemParameters?: InputParam[][]
 }
 
-/**
- * Array input component for managing lists of structured data
- *
- * @param inputParam - Array field definition with structure
- * @param data - Node data containing inputValues
- * @param onDataChange - Callback invoked when array is modified
- * @param disabled - Whether the input is disabled
- */
-export function ArrayInput({ inputParam, data, disabled = false, onDataChange }: ArrayInputProps) {
+export function ArrayInput({ inputParam, data, disabled = false, onDataChange, itemParameters: itemParametersProp }: ArrayInputProps) {
     const theme = useTheme()
 
     // Derive array items directly from props (single source of truth)
@@ -34,10 +26,11 @@ export function ArrayInput({ inputParam, data, disabled = false, onDataChange }:
         [data.inputValues, inputParam.name]
     )
 
-    // Derive item parameters for each array item
-    const itemParameters = useMemo(
-        () => arrayItems.map((itemValues, index) => evaluateFieldVisibility(inputParam.array || [], itemValues, index)),
-        [arrayItems, inputParam.array]
+    // Use pre-computed itemParameters
+    // Falls back to raw field definitions for nested arrays without show/hide conditions.
+    const itemParameters = useMemo<InputParam[][]>(
+        () => itemParametersProp ?? arrayItems.map(() => inputParam.array || []),
+        [itemParametersProp, arrayItems, inputParam.array]
     )
 
     // Handle changes to individual fields within array items

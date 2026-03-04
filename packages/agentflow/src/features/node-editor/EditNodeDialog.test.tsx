@@ -27,18 +27,20 @@ jest.mock('@/atoms', () => ({
     NodeInputHandler: ({
         inputParam,
         onDataChange,
-        data
+        data,
+        itemParameters
     }: {
         inputParam: InputParam
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+        itemParameters?: InputParam[][]
     }) => {
         // Handle array type inputs differently
         if (inputParam.type === 'array') {
             const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
 
             return (
-                <div data-testid={`input-handler-${inputParam.name}`}>
+                <div data-testid={`input-handler-${inputParam.name}`} data-item-params-count={itemParameters?.length ?? 'none'}>
                     <button
                         data-testid={`add-${inputParam.name}`}
                         onClick={() => {
@@ -425,6 +427,38 @@ describe('EditNodeDialog', () => {
             expect(lastCall[1]).toHaveProperty('inputValues')
             expect(lastCall[1].inputValues).toHaveProperty('connections')
             expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
+        })
+
+        it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {
+            const arrayParams: InputParam[] = [
+                {
+                    name: 'items',
+                    label: 'Item',
+                    type: 'array',
+                    array: [
+                        { name: 'type', label: 'Type', type: 'string' } as InputParam,
+                        { name: 'detail', label: 'Detail', type: 'string', show: { 'items[$index].type': 'special' } } as InputParam
+                    ]
+                } as InputParam
+            ]
+
+            const propsWithArrayData = {
+                ...defaultProps,
+                dialogProps: {
+                    ...defaultProps.dialogProps,
+                    inputParams: arrayParams,
+                    data: {
+                        ...nodeData,
+                        inputValues: { items: [{ type: 'normal' }, { type: 'special' }] }
+                    }
+                }
+            }
+
+            render(<EditNodeDialog {...propsWithArrayData} />)
+
+            // itemParameters should have one entry per array item (2 items → count = 2)
+            const handler = screen.getByTestId('input-handler-items')
+            expect(handler).toHaveAttribute('data-item-params-count', '2')
         })
     })
 })

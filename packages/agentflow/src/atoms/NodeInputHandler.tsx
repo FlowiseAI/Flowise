@@ -24,6 +24,7 @@ export interface NodeInputHandlerProps {
     isAdditionalParams?: boolean
     disablePadding?: boolean
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
+    itemParameters?: InputParam[][]
 }
 
 /**
@@ -37,7 +38,8 @@ export function NodeInputHandler({
     disabled = false,
     isAdditionalParams = false,
     disablePadding = false,
-    onDataChange
+    onDataChange,
+    itemParameters
 }: NodeInputHandlerProps) {
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
@@ -119,7 +121,15 @@ export function NodeInputHandler({
                     </Select>
                 )
             case 'array':
-                return <ArrayInput inputParam={inputParam} data={data} disabled={disabled} onDataChange={onDataChange} />
+                return (
+                    <ArrayInput
+                        inputParam={inputParam}
+                        data={data}
+                        disabled={disabled}
+                        onDataChange={onDataChange}
+                        itemParameters={itemParameters}
+                    />
+                )
 
             default:
                 // For unsupported types, render a basic text field
