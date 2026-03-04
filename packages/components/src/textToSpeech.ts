@@ -196,9 +196,9 @@ export const convertTextToSpeechStream = async (
                                                     onChunk(audioChunk)
                                                 }
 
-                                                // status === 2 means the stream is complete;
-                                                // continue processing remaining lines in the buffer
-                                                // rather than breaking early to avoid missing audio data
+                                                if (eventData.data?.status === 2) {
+                                                    break
+                                                }
                                             } catch {
                                                 // Skip malformed JSON
                                             }
