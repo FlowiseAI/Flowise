@@ -36,6 +36,6 @@ export class ChatMiniMax extends LangchainChatAnthropic {
 
     revertToOriginalModel(): void {
         this.modelName = this.configuredModel
-        this.maxTokens = this.configuredMaxToken as number
+        this.maxTokens = this.configuredMaxToken
     }
 }

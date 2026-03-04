@@ -100,12 +100,12 @@ class ChatMiniMax_ChatModels implements INode {
         const miniMaxApiKey = getCredentialParam('miniMaxApiKey', credentialData, nodeData)
 
         const obj: ChatMiniMaxInput = {
-            temperature: parseFloat(temperature),
             modelName,
             miniMaxApiKey,
             streaming: streaming ?? true
         }
 
+        if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (cache) obj.cache = cache
