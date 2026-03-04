@@ -1,4 +1,4 @@
-import { getCredentialData, getCredentialParam, type ICommonObject, type INodeData } from '.'
+import { getCredentialData, getCredentialParam, safeJsonParse, type ICommonObject, type INodeData } from '.'
 import type { ChatVertexAIInput, VertexAIInput } from '@langchain/google-vertexai'
 
 type SupportedAuthOptions = ChatVertexAIInput['authOptions'] | VertexAIInput['authOptions']
@@ -19,8 +19,10 @@ export const buildGoogleCredentials = async (nodeData: INodeData, options: IComm
             )
 
         if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
-        else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
-            authOptions.credentials = JSON.parse(googleApplicationCredential)
+        else if (!googleApplicationCredentialFilePath && googleApplicationCredential) {
+            const parsedCredential = safeJsonParse(googleApplicationCredential)
+            authOptions.credentials = parsedCredential ?? googleApplicationCredential
+        }
 
         if (projectID) authOptions.projectId = projectID
     }

@@ -124,6 +124,15 @@ const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
 
 export const defaultAllowBuiltInDep = ['assert', 'buffer', 'crypto', 'events', 'path', 'querystring', 'timers', 'url', 'zlib']
 
+export function safeJsonParse(input: string) {
+    if (!input || input.trim() === '') return null
+    try {
+        return JSON.parse(input)
+    } catch {
+        return null
+    }
+}
+
 /**
  * Get base classes of components
  *

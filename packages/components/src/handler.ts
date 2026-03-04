@@ -25,7 +25,7 @@ import { ChainValues } from '@langchain/core/utils/types'
 import { AgentAction } from '@langchain/core/agents'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
-import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
+import { getCredentialData, getCredentialParam, getEnvironmentVariable, safeJsonParse } from './utils'
 import { EvaluationRunTracer } from '../evaluation/EvaluationRunTracer'
 import { EvaluationRunTracerLlama } from '../evaluation/EvaluationRunTracerLlama'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
@@ -517,7 +517,8 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
     try {
         if (!options.analytic) return []
 
-        const analytic = JSON.parse(options.analytic)
+        const analytic = safeJsonParse(options.analytic ?? '')
+        if (!analytic || typeof analytic !== 'object' || Array.isArray(analytic)) return []
         const callbacks: any = []
 
         for (const provider in analytic) {
@@ -776,7 +777,8 @@ export class AnalyticHandler {
         try {
             if (!this.options.analytic) return
 
-            const analytic = JSON.parse(this.options.analytic)
+            const analytic = safeJsonParse(this.options.analytic ?? '')
+            if (!analytic || typeof analytic !== 'object' || Array.isArray(analytic)) return
             for (const provider in analytic) {
                 const providerStatus = analytic[provider].status as boolean
                 if (providerStatus) {
