@@ -576,6 +576,8 @@ export class AccountService {
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
 
             const tokenExpiry = user.tokenExpiry
+            if (!tokenExpiry) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+
             const now = moment()
             const expiryInMins = process.env.PASSWORD_RESET_TOKEN_EXPIRY_IN_MINUTES
                 ? parseInt(process.env.PASSWORD_RESET_TOKEN_EXPIRY_IN_MINUTES)
