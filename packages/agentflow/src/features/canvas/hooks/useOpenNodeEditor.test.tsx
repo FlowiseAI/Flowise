@@ -31,6 +31,15 @@ describe('useOpenNodeEditor', () => {
             }),
             makeFlowNode('node-2', {
                 data: { id: 'node-2', name: 'toolAgentflow', label: 'Tool' }
+            }),
+            makeFlowNode('node-3', {
+                data: {
+                    id: 'node-3',
+                    name: 'customNode',
+                    label: 'Custom',
+                    inputs: [{ id: 'customField', name: 'customField', label: 'Custom Field', type: 'string' }],
+                    inputValues: { customField: 'hello' }
+                }
             })
         ]
         mockAvailableNodes = [
@@ -66,19 +75,52 @@ describe('useOpenNodeEditor', () => {
         expect(mockOpenEditDialog).not.toHaveBeenCalled()
     })
 
-    it('should not call openEditDialog when node schema is not found', () => {
+    it('should fall back to node.data.inputs when API schema is not found', () => {
         mockAvailableNodes = [] // no schemas
         const { result } = renderHook(() => useOpenNodeEditor())
-        result.current.openNodeEditor('node-1')
+        result.current.openNodeEditor('node-3')
 
-        expect(mockOpenEditDialog).not.toHaveBeenCalled()
+        expect(mockOpenEditDialog).toHaveBeenCalledWith(
+            'node-3',
+            expect.objectContaining({ name: 'customNode', inputValues: { customField: 'hello' } }),
+            [{ id: 'customField', name: 'customField', label: 'Custom Field', type: 'string' }]
+        )
     })
 
-    it('should default inputs to empty array when schema has no inputs', () => {
+    it('should open dialog with empty inputs when neither API schema nor data.inputs exist', () => {
+        mockAvailableNodes = [] // no schemas
+        const { result } = renderHook(() => useOpenNodeEditor())
+        result.current.openNodeEditor('node-1') // node-1 has no data.inputs
+
+        expect(mockOpenEditDialog).toHaveBeenCalledWith(
+            'node-1',
+            expect.objectContaining({ name: 'llmAgentflow', inputValues: { model: 'gpt-4' } }),
+            []
+        )
+    })
+
+    it('should prioritize API schema inputs over node.data.inputs', () => {
+        // node-3 has data.inputs, but let's also add an API schema for it
+        mockAvailableNodes.push({ name: 'customNode', inputs: [{ name: 'apiField' }] })
+        const { result } = renderHook(() => useOpenNodeEditor())
+        result.current.openNodeEditor('node-3')
+
+        expect(mockOpenEditDialog).toHaveBeenCalledWith(
+            'node-3',
+            expect.objectContaining({ name: 'customNode' }),
+            [{ name: 'apiField' }] // API schema wins over data.inputs
+        )
+    })
+
+    it('should open dialog with empty inputs when schema has no inputs', () => {
         mockAvailableNodes = [{ name: 'llmAgentflow' }] // no inputs property
         const { result } = renderHook(() => useOpenNodeEditor())
         result.current.openNodeEditor('node-1')
 
-        expect(mockOpenEditDialog).toHaveBeenCalledWith('node-1', expect.anything(), [])
+        expect(mockOpenEditDialog).toHaveBeenCalledWith(
+            'node-1',
+            expect.objectContaining({ name: 'llmAgentflow', inputValues: { model: 'gpt-4' } }),
+            []
+        )
     })
 })
