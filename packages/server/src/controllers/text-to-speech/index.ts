@@ -3,6 +3,7 @@ import { convertTextToSpeechStream } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import chatflowsService from '../../services/chatflows'
+import credentialsService from '../../services/credentials'
 import textToSpeechService from '../../services/text-to-speech'
 import { databaseEntities } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
@@ -56,6 +57,17 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             voice = providerConfig.voice
             model = providerConfig.model
         } else {
+            // Body-supplied credentials require the caller to be authenticated
+            const workspaceId = req.user?.activeWorkspaceId
+            if (!workspaceId) {
+                return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Authentication required' })
+            }
+            if (!bodyCredentialId) {
+                return res.status(StatusCodes.BAD_REQUEST).json({ message: 'credentialId not provided' })
+            }
+            // Verify the credential belongs to the authenticated user's workspace —
+            // throws NOT_FOUND if the credential doesn't exist or belongs to another workspace
+            await credentialsService.getCredentialById(bodyCredentialId, workspaceId)
             // Use TTS config from request body
             provider = bodyProvider
             credentialId = bodyCredentialId
@@ -80,8 +92,6 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
         res.setHeader('Content-Type', 'text/event-stream')
         res.setHeader('Cache-Control', 'no-cache')
         res.setHeader('Connection', 'keep-alive')
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Headers', 'Cache-Control')
 
         const appServer = getRunningExpressApp()
         const options = {
