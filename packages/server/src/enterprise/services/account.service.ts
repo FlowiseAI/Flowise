@@ -517,7 +517,7 @@ export class AccountService {
             const user = await this.userService.readUserByToken(data.user.tempToken, queryRunner)
             if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
             data.user = user
-            data.user.tempToken = ''
+            data.user.tempToken = null
             data.user.tokenExpiry = null
             data.user.status = UserStatus.ACTIVE
             data.user = await this.userService.saveUser(data.user, queryRunner)
