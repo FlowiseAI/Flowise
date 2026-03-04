@@ -7,8 +7,8 @@ import { useAgentflowContext } from '@/infrastructure/store'
 
 // Offset to center the dropped node on the cursor position.
 // Approximate half of a typical node's width/height.
-const DROP_OFFSET_X = 100
-const DROP_OFFSET_Y = 50
+export const DROP_OFFSET_X = 100
+export const DROP_OFFSET_Y = 50
 
 interface UseDragAndDropProps {
     nodes: FlowNode[]

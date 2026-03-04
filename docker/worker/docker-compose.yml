@@ -132,6 +132,7 @@ services:
             - CUSTOM_MCP_SECURITY_CHECK=${CUSTOM_MCP_SECURITY_CHECK}
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
+            - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
             - TRUST_PROXY=${TRUST_PROXY}
         ports:
             - '${WORKER_PORT}:${WORKER_PORT}'

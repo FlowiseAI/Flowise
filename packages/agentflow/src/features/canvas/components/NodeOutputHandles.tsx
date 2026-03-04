@@ -1,5 +1,5 @@
 import type { CSSProperties, RefObject } from 'react'
-import { memo, useMemo } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 
 import { useTheme } from '@mui/material/styles'
@@ -37,17 +37,32 @@ export function getMinimumNodeHeight(outputCount: number): number {
 function NodeOutputHandlesComponent({ outputAnchors, nodeColor, isHovered, nodeRef, nodeId }: NodeOutputHandlesProps) {
     const theme = useTheme()
     const updateNodeInternals = useUpdateNodeInternals()
+    const [nodeHeight, setNodeHeight] = useState(0)
+
+    // Track actual node height via ResizeObserver so we re-render once layout is done
+    useEffect(() => {
+        const el = nodeRef.current
+        if (!el) return
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const height = entry.contentRect.height
+                setNodeHeight((prev) => {
+                    if (prev !== height) {
+                        updateNodeInternals(nodeId)
+                        return height
+                    }
+                    return prev
+                })
+            }
+        })
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [nodeRef, nodeId, updateNodeInternals])
 
     const getAnchorPosition = (index: number) => {
-        const currentHeight = nodeRef.current?.clientHeight || 0
-        const spacing = currentHeight / (outputAnchors.length + 1)
-        const anchorPosition = spacing * (index + 1)
-
-        if (anchorPosition > 0) {
-            updateNodeInternals(nodeId)
-        }
-
-        return anchorPosition
+        const spacing = nodeHeight / (outputAnchors.length + 1)
+        return spacing * (index + 1)
     }
 
     // Memoize static styles

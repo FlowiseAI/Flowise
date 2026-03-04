@@ -686,6 +686,7 @@ class Agent_Agentflow implements INode {
             if (!model) {
                 throw new Error('Model is required')
             }
+            const modelName = modelConfig?.model ?? modelConfig?.modelName
 
             // Extract tools
             const tools = nodeData.inputs?.agentTools as ITool[]
@@ -1073,7 +1074,12 @@ class Agent_Agentflow implements INode {
             // Initialize response and determine if streaming is possible
             let response: AIMessageChunk = new AIMessageChunk('')
             const isLastNode = options.isLastNode as boolean
-            const isStreamable = isLastNode && options.sseStreamer !== undefined && modelConfig?.streaming !== false && !isStructuredOutput
+            const streamingConfig = modelConfig?.streaming
+            const useDefault = streamingConfig == null || streamingConfig === ''
+            const effectiveStreaming = useDefault
+                ? newLLMNodeInstance.inputs?.find((i: INodeParams) => i.name === 'streaming')?.default ?? true
+                : streamingConfig
+            const isStreamable = isLastNode && options.sseStreamer !== undefined && effectiveStreaming !== false && !isStructuredOutput
 
             // Start analytics
             if (analyticHandlers && options.parentTraceIds) {
@@ -1390,7 +1396,7 @@ class Agent_Agentflow implements INode {
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
-                await analyticHandlers.onLLMEnd(llmIds, finalResponse)
+                await analyticHandlers.onLLMEnd(llmIds, output, { model: modelName, provider: model })
             }
 
             // Send additional streaming events if needed

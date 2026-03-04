@@ -3,8 +3,6 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import type { AxiosInstance } from 'axios'
 
-import { EditNodeDialogProps } from '@/features/node-editor/EditNodeDialog'
-
 // ============================================================================
 // Flow Data Types
 // ============================================================================
@@ -45,6 +43,9 @@ export interface FlowData {
     edges: FlowEdge[]
     viewport?: Viewport
 }
+
+/** Callback type for flow data events (change, save, generate) */
+export type FlowDataCallback = (flow: FlowData) => void
 
 export interface FlowConfig {
     id?: string
@@ -192,10 +193,10 @@ export interface AgentflowProps {
     components?: string[]
 
     /** Callback when flow changes */
-    onFlowChange?: (flow: FlowData) => void
+    onFlowChange?: FlowDataCallback
 
     /** Callback when flow is saved */
-    onSave?: (flow: FlowData) => void
+    onSave?: FlowDataCallback
 
     /** Whether to use dark mode (default: false) */
     isDarkMode?: boolean
@@ -219,7 +220,7 @@ export interface AgentflowProps {
     enableGenerator?: boolean
 
     /** Callback when flow is generated via AI */
-    onFlowGenerated?: (flow: FlowData) => void
+    onFlowGenerated?: FlowDataCallback
 }
 
 // ============================================================================
@@ -264,6 +265,13 @@ export interface ConfigContextValue {
     readOnly: boolean
 }
 
+/** Props passed to the edit node dialog (defined here to avoid core → features import) */
+export interface EditDialogProps {
+    inputParams?: InputParam[]
+    data?: NodeData
+    disabled?: boolean
+}
+
 export interface AgentflowState {
     nodes: FlowNode[]
     edges: FlowEdge[]
@@ -271,7 +279,7 @@ export interface AgentflowState {
     isDirty: boolean
     reactFlowInstance: ReactFlowInstance | null
     editingNodeId: string | null
-    editDialogProps: EditNodeDialogProps['dialogProps'] | null
+    editDialogProps: EditDialogProps | null
 }
 
 export type AgentflowAction =
@@ -280,7 +288,7 @@ export type AgentflowAction =
     | { type: 'SET_CHATFLOW'; payload: FlowConfig | null }
     | { type: 'SET_DIRTY'; payload: boolean }
     | { type: 'SET_REACTFLOW_INSTANCE'; payload: ReactFlowInstance | null }
-    | { type: 'OPEN_EDIT_DIALOG'; payload: { nodeId: string; dialogProps: EditNodeDialogProps['dialogProps'] } }
+    | { type: 'OPEN_EDIT_DIALOG'; payload: { nodeId: string; dialogProps: EditDialogProps } }
     | { type: 'CLOSE_EDIT_DIALOG' }
     | { type: 'RESET' }
 

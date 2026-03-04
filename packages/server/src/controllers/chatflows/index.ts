@@ -181,7 +181,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         }
         const chatflow = await chatflowsService.getChatflowById(req.params.id, workspaceId)
         if (!chatflow) {
-            return res.status(404).send(`Chatflow ${req.params.id} not found`)
+            return res.status(404).send('Chatflow not found')
         }
         const orgId = req.user?.activeOrganizationId
         if (!orgId) {

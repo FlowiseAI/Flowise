@@ -7,8 +7,10 @@ const crossFeatureRules = features.map((feature) => ({
 }))
 
 module.exports = {
+    root: true,
     extends: [
         'eslint:recommended',
+        'plugin:markdown/recommended',
         'plugin:react/recommended',
         'plugin:react/jsx-runtime',
         'plugin:react-hooks/recommended',
@@ -27,6 +29,11 @@ module.exports = {
     settings: {
         react: {
             version: 'detect'
+        },
+        'import/resolver': {
+            typescript: {
+                project: './tsconfig.json'
+            }
         }
     },
     plugins: ['react', 'react-hooks', '@typescript-eslint', 'unused-imports', 'jsx-a11y', 'simple-import-sort', 'import'],
@@ -75,6 +82,21 @@ module.exports = {
         'import/newline-after-import': 'error',
         'import/no-duplicates': 'error',
         'prettier/prettier': 'error',
+        // Ban @/features alias — features use relative imports internally, and no other
+        // layer should import from features (enforced by import/no-restricted-paths below).
+        // This catches any remaining edge case where the alias would bypass zone checks.
+        'no-restricted-imports': [
+            'error',
+            {
+                patterns: [
+                    {
+                        group: ['@/features', '@/features/*'],
+                        message:
+                            '@/features alias is not allowed. Features use relative imports internally; other layers cannot import from features.'
+                    }
+                ]
+            }
+        ],
         // Architectural boundary enforcement
         'import/no-restricted-paths': [
             'error',

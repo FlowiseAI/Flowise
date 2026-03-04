@@ -88,7 +88,7 @@ const updateVariable = async (req: Request, res: Response, next: NextFunction) =
         }
         const variable = await variablesService.getVariableById(req.params.id, workspaceId)
         if (!variable) {
-            return res.status(404).send(`Variable ${req.params.id} not found in the database`)
+            return res.status(404).send('Variable not found in the database')
         }
         const body = req.body
         const updatedVariable = new Variable()

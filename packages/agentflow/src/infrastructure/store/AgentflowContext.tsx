@@ -1,9 +1,43 @@
 import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer, useRef } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
+import { cloneDeep } from 'lodash'
+
 import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
+import { getUniqueNodeId } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
+
+// ========================================
+// Helper Functions
+// ========================================
+
+/**
+ * Check if a value is a connection string (e.g., "{{nodeId.data.instance}}")
+ */
+function isConnectionString(value: unknown): boolean {
+    return typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')
+}
+
+/**
+ * Update IDs in anchor arrays to match a new node ID
+ */
+function updateAnchorIds(items: unknown, oldId: string, newId: string): void {
+    if (!Array.isArray(items)) return
+    for (const item of items) {
+        if (item?.id) {
+            item.id = item.id.replace(oldId, newId)
+        }
+    }
+}
+
+// ========================================
+// Types
+// ========================================
+
+// Local state setter types
+type NodesSetter = (nodes: FlowNode[]) => void
+type EdgesSetter = (edges: FlowEdge[]) => void
 
 // Context value interface
 export interface AgentflowContextValue {
@@ -11,15 +45,17 @@ export interface AgentflowContextValue {
     dispatch: Dispatch<AgentflowAction>
 
     // Convenience methods
-    setNodes: (nodes: FlowNode[]) => void
-    setEdges: (edges: FlowEdge[]) => void
+    setNodes: NodesSetter
+    setEdges: EdgesSetter
+    syncNodesFromReactFlow: NodesSetter
+    syncEdgesFromReactFlow: EdgesSetter
     setChatflow: (chatflow: FlowConfig | null) => void
     setDirty: (dirty: boolean) => void
     setReactFlowInstance: (instance: ReactFlowInstance | null) => void
 
     // Node operations
     deleteNode: (nodeId: string) => void
-    duplicateNode: (nodeId: string) => void
+    duplicateNode: (nodeId: string, distance?: number) => void
     updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>) => void
 
     // Edge operations
@@ -34,7 +70,7 @@ export interface AgentflowContextValue {
     closeEditDialog: () => void
 
     // Register ReactFlow local state setters
-    registerLocalStateSetters: (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => void
+    registerLocalStateSetters: (setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -52,16 +88,13 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     })
 
     // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
-    const localNodesSetterRef = useRef<((nodes: FlowNode[]) => void) | null>(null)
-    const localEdgesSetterRef = useRef<((edges: FlowEdge[]) => void) | null>(null)
+    const localNodesSetterRef = useRef<NodesSetter | null>(null)
+    const localEdgesSetterRef = useRef<EdgesSetter | null>(null)
 
-    const registerLocalStateSetters = useCallback(
-        (setLocalNodes: (nodes: FlowNode[]) => void, setLocalEdges: (edges: FlowEdge[]) => void) => {
-            localNodesSetterRef.current = setLocalNodes
-            localEdgesSetterRef.current = setLocalEdges
-        },
-        []
-    )
+    const registerLocalStateSetters = useCallback((setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => {
+        localNodesSetterRef.current = setLocalNodes
+        localEdgesSetterRef.current = setLocalEdges
+    }, [])
 
     // Helper function to synchronize state updates between context and ReactFlow
     const syncStateUpdate = useCallback(({ nodes, edges }: { nodes?: FlowNode[]; edges?: FlowEdge[] }) => {
@@ -80,11 +113,25 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     }, [])
 
     // Convenience setters
-    const setNodes = useCallback((nodes: FlowNode[]) => {
-        dispatch({ type: 'SET_NODES', payload: nodes })
+    const setNodes = useCallback<NodesSetter>(
+        (nodes) => {
+            syncStateUpdate({ nodes: nodes })
+        },
+        [syncStateUpdate]
+    )
+
+    const setEdges = useCallback<EdgesSetter>(
+        (edges) => {
+            syncStateUpdate({ edges: edges })
+        },
+        [syncStateUpdate]
+    )
+
+    const syncNodesFromReactFlow = useCallback<NodesSetter>((nodes) => {
+        dispatch({ type: 'SET_NODES', payload: normalizeNodes(nodes) })
     }, [])
 
-    const setEdges = useCallback((edges: FlowEdge[]) => {
+    const syncEdgesFromReactFlow = useCallback<EdgesSetter>((edges) => {
         dispatch({ type: 'SET_EDGES', payload: edges })
     }, [])
 
@@ -105,29 +152,59 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         (nodeId: string) => {
             const newNodes = state.nodes.filter((node) => node.id !== nodeId)
             const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
-
             syncStateUpdate({ nodes: newNodes, edges: newEdges })
         },
         [state.nodes, state.edges, syncStateUpdate]
     )
 
     const duplicateNode = useCallback(
-        (nodeId: string) => {
+        (nodeId: string, distance = 50) => {
             const nodeToDuplicate = state.nodes.find((node) => node.id === nodeId)
             if (!nodeToDuplicate) return
 
+            const newNodeId = getUniqueNodeId(nodeToDuplicate.data, state.nodes)
+            const nodeWidth = nodeToDuplicate.width ?? 300
+
+            // Deep clone to avoid mutating the original node's nested objects
+            const clonedNode = cloneDeep(nodeToDuplicate)
+
             const newNode: FlowNode = {
-                ...nodeToDuplicate,
-                id: `${nodeToDuplicate.id}_copy_${Date.now()}`,
+                ...clonedNode,
+                id: newNodeId,
                 position: {
-                    x: nodeToDuplicate.position.x + 50,
-                    y: nodeToDuplicate.position.y + 50
+                    x: clonedNode.position.x + nodeWidth + distance,
+                    y: clonedNode.position.y
                 },
-                data: { ...nodeToDuplicate.data }
+                data: {
+                    ...clonedNode.data,
+                    id: newNodeId,
+                    label: clonedNode.data.label + ` (${newNodeId.split('_').pop()})`
+                },
+                selected: false
             }
 
-            const newNodes = [...state.nodes, newNode]
-            syncStateUpdate({ nodes: newNodes })
+            // Update IDs in all anchor arrays to match new node ID
+            updateAnchorIds(newNode.data.inputs, nodeId, newNodeId)
+            updateAnchorIds(newNode.data.inputAnchors, nodeId, newNodeId)
+            updateAnchorIds(newNode.data.outputAnchors, nodeId, newNodeId)
+
+            // Clear connected input values by resetting to defaults
+            if (newNode.data.inputValues) {
+                for (const inputName in newNode.data.inputValues) {
+                    const value = newNode.data.inputValues[inputName]
+
+                    if (isConnectionString(value)) {
+                        // Reset string connections to parameter default
+                        const inputParam = newNode.data.inputs?.find((p) => p.name === inputName)
+                        newNode.data.inputValues[inputName] = inputParam?.default ?? ''
+                    } else if (Array.isArray(value)) {
+                        // Filter out connection strings from arrays
+                        newNode.data.inputValues[inputName] = value.filter((item) => !isConnectionString(item))
+                    }
+                }
+            }
+
+            syncStateUpdate({ nodes: [...state.nodes, newNode] })
         },
         [state.nodes, syncStateUpdate]
     )
@@ -198,6 +275,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         dispatch,
         setNodes,
         setEdges,
+        syncNodesFromReactFlow,
+        syncEdgesFromReactFlow,
         setChatflow,
         setDirty,
         setReactFlowInstance,
