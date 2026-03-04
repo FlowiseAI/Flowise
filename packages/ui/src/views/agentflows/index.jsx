@@ -57,13 +57,16 @@ const Agentflows = () => {
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
-        refresh(page, pageLimit, agentflowVersion)
+        refresh(page, pageLimit, agentflowVersion, search)
     }
 
-    const refresh = (page, limit, nextView) => {
+    const refresh = (page, limit, nextView, searchQuery) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
+        }
+        if (searchQuery) {
+            params.search = searchQuery
         }
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
@@ -78,19 +81,11 @@ const Agentflows = () => {
         if (nextView === null) return
         localStorage.setItem('agentFlowVersion', nextView)
         setAgentflowVersion(nextView)
-        refresh(1, pageLimit, nextView)
+        refresh(1, pageLimit, nextView, search)
     }
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
-    }
-
-    function filterFlows(data) {
-        return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
     }
 
     const addNew = () => {
@@ -118,6 +113,15 @@ const Agentflows = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setCurrentPage(1)
+            refresh(1, pageLimit, agentflowVersion, search)
+        }, 300)
+        return () => clearTimeout(timer)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search])
 
     useEffect(() => {
         if (getAllAgentflows.error) {
@@ -304,7 +308,7 @@ const Agentflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.data.map((data, index) => (
                                         <ItemCard
                                             key={index}
                                             onClick={() => goToCanvas(data)}
@@ -322,7 +326,7 @@ const Agentflows = () => {
                                     images={images}
                                     icons={icons}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
+                                    filterFunction={undefined}
                                     updateFlowsApi={getAllAgentflows}
                                     setError={setError}
                                     currentPage={currentPage}
