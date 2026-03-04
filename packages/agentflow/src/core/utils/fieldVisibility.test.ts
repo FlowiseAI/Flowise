@@ -79,6 +79,12 @@ describe('conditionMatches', () => {
         expect(conditionMatches('test', '[invalid')).toBe(false)
     })
 
+    it('rejects oversized regex patterns to mitigate ReDoS', () => {
+        const longPattern = '(a+)'.repeat(60) // exceeds 200 char limit
+        expect(conditionMatches('aaa', longPattern)).toBe(false)
+        expect(conditionMatches(['aaa'], longPattern)).toBe(false)
+    })
+
     it('scalar boolean strict equality', () => {
         expect(conditionMatches(true, true)).toBe(true)
         expect(conditionMatches(true, false)).toBe(false)
