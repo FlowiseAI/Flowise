@@ -319,31 +319,41 @@ const abortChatMessage = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+const safeJsonParse = (input: string) => {
+    if (!input || input.trim() === '') return null
+    try {
+        return JSON.parse(input)
+    } catch (error) {
+        console.warn('Unable to parse chat message JSON field', error)
+        return null
+    }
+}
+
 const parseAPIResponse = (apiResponse: ChatMessage | ChatMessage[]): ChatMessage | ChatMessage[] => {
     const parseResponse = (response: ChatMessage): ChatMessage => {
         const parsedResponse = { ...response }
 
         try {
             if (parsedResponse.sourceDocuments) {
-                parsedResponse.sourceDocuments = JSON.parse(parsedResponse.sourceDocuments)
+                parsedResponse.sourceDocuments = safeJsonParse(parsedResponse.sourceDocuments) ?? parsedResponse.sourceDocuments
             }
             if (parsedResponse.usedTools) {
-                parsedResponse.usedTools = JSON.parse(parsedResponse.usedTools)
+                parsedResponse.usedTools = safeJsonParse(parsedResponse.usedTools) ?? parsedResponse.usedTools
             }
             if (parsedResponse.fileAnnotations) {
-                parsedResponse.fileAnnotations = JSON.parse(parsedResponse.fileAnnotations)
+                parsedResponse.fileAnnotations = safeJsonParse(parsedResponse.fileAnnotations) ?? parsedResponse.fileAnnotations
             }
             if (parsedResponse.agentReasoning) {
-                parsedResponse.agentReasoning = JSON.parse(parsedResponse.agentReasoning)
+                parsedResponse.agentReasoning = safeJsonParse(parsedResponse.agentReasoning) ?? parsedResponse.agentReasoning
             }
             if (parsedResponse.fileUploads) {
-                parsedResponse.fileUploads = JSON.parse(parsedResponse.fileUploads)
+                parsedResponse.fileUploads = safeJsonParse(parsedResponse.fileUploads) ?? parsedResponse.fileUploads
             }
             if (parsedResponse.action) {
-                parsedResponse.action = JSON.parse(parsedResponse.action)
+                parsedResponse.action = safeJsonParse(parsedResponse.action) ?? parsedResponse.action
             }
             if (parsedResponse.artifacts) {
-                parsedResponse.artifacts = JSON.parse(parsedResponse.artifacts)
+                parsedResponse.artifacts = safeJsonParse(parsedResponse.artifacts) ?? parsedResponse.artifacts
             }
         } catch (e) {
             console.error('Error parsing chat message response', e)
