@@ -193,7 +193,7 @@ class CustomFunction_Agentflow implements INode {
                 newState = updateFlowState(state, _customFunctionUpdateState)
             }
 
-            const outputForState = typeof finalOutput === 'object' ? JSON.stringify(finalOutput, null, 2) : finalOutput
+            const outputForState = typeof finalOutput === 'object' && finalOutput !== null ? JSON.stringify(finalOutput, null, 2) : finalOutput
             newState = processTemplateVariables(newState, outputForState)
 
             const returnOutput = {
