@@ -89,8 +89,18 @@ describe('conditionMatches', () => {
         // Build patterns dynamically to avoid tripping CodeQL's static ReDoS scanner
         const nestedPlus = ['(a', '+)', '+$'].join('')
         const nestedStar = ['(a', '*)', '*'].join('')
+        const altQuantified = ['(a|a', 'a)', '+'].join('')
+        const spaceQuantified = ['(a', '+ )', '+'].join('')
         expect(conditionMatches('aaa', nestedPlus)).toBe(false)
         expect(conditionMatches(['aaa'], nestedStar)).toBe(false)
+        expect(conditionMatches('aaa', altQuantified)).toBe(false)
+        expect(conditionMatches('aaa', spaceQuantified)).toBe(false)
+    })
+
+    it('allows safe patterns with groups and quantifiers', () => {
+        // Non-nested: group without inner quantifier/alt, followed by quantifier
+        expect(conditionMatches('aaa', '(a)+')).toBe(true)
+        expect(conditionMatches('abc', '(abc)+')).toBe(true)
     })
 
     it('scalar boolean strict equality', () => {

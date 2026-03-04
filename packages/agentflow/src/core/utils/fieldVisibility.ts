@@ -9,8 +9,39 @@ const REGEX_INTENT = /[|()^$*+?[\]]/
 /** Maximum length for regex patterns to mitigate ReDoS from untrusted input. */
 const MAX_REGEX_LENGTH = 200
 
-/** Detects nested quantifiers that can cause catastrophic backtracking, e.g. (a+)+, (a*)*,  (\w+)+. */
-const NESTED_QUANTIFIER = /[+*]\)[+*?]/
+/**
+ * Detect patterns likely to cause catastrophic backtracking.
+ * Rejects any pattern containing a group with an inner quantifier or alternation
+ * that is itself quantified, e.g. (a+)+, (a*)+, (a|aa)+, (a+ )+.
+ */
+function hasNestedQuantifier(pattern: string): boolean {
+    let depth = 0
+    let hasInnerQuantifierOrAlt = false
+    for (let i = 0; i < pattern.length; i++) {
+        const ch = pattern[i]
+        if (ch === '\\') {
+            i++ // skip escaped char
+            continue
+        }
+        if (ch === '(') {
+            depth++
+            hasInnerQuantifierOrAlt = false
+        } else if (ch === ')') {
+            if (depth > 0) {
+                depth--
+                // Check if the group is followed by a quantifier
+                const next = pattern[i + 1]
+                if (hasInnerQuantifierOrAlt && (next === '+' || next === '*' || next === '?' || next === '{')) {
+                    return true
+                }
+            }
+            hasInnerQuantifierOrAlt = false
+        } else if (depth > 0 && (ch === '+' || ch === '*' || ch === '?' || ch === '|')) {
+            hasInnerQuantifierOrAlt = true
+        }
+    }
+    return false
+}
 
 /**
  * Safe regex test: rejects patterns that are oversized, contain nested quantifiers
@@ -18,7 +49,7 @@ const NESTED_QUANTIFIER = /[+*]\)[+*?]/
  */
 function safeRegexTest(pattern: string, value: string): boolean {
     if (pattern.length > MAX_REGEX_LENGTH) return false
-    if (NESTED_QUANTIFIER.test(pattern)) return false
+    if (hasNestedQuantifier(pattern)) return false
     try {
         return new RegExp(pattern).test(value)
     } catch {

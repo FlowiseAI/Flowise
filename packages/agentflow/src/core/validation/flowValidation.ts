@@ -155,7 +155,11 @@ export function validateNode(node: FlowNode, _edges: FlowEdge[]): ValidationErro
     const inputParams = node.data.inputs || []
     const inputValues = node.data.inputValues || {}
     for (const param of inputParams) {
-        if (!param.optional && evaluateParamVisibility(param, inputValues) && !inputValues[param.name]) {
+        if (
+            !param.optional &&
+            evaluateParamVisibility(param, inputValues) &&
+            (inputValues[param.name] == null || inputValues[param.name] === '')
+        ) {
             errors.push({
                 nodeId: node.id,
                 message: `Required input "${param.label || param.name}" is missing`,
