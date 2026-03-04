@@ -24,8 +24,8 @@ These modules carry the highest risk. Test in the same PR when modifying.
 <!-- prettier-ignore -->
 | File | Key exports to test | Status |
 | --- | --- | --- |
-| `src/core/validation/` | `validateFlow`, `validateNode` — empty flows, missing/multiple starts, disconnected nodes, cycles, required inputs | ✅ Done |
-| `src/core/utils/` | `getUniqueNodeId`, `getUniqueNodeLabel`, `initNode`, `generateExportFlowData`, `isValidConnectionAgentflowV2` | ✅ Done |
+| `src/core/validation/` | `validateFlow`, `validateNode` — empty flows, missing/multiple starts, disconnected nodes, cycles, required inputs; `isValidConnectionAgentflowV2` — self-connections, cycle detection | ✅ Done |
+| `src/core/utils/` | `getUniqueNodeId`, `getUniqueNodeLabel`, `initNode`, `generateExportFlowData` | ✅ Done |
 | `src/core/node-catalog/` | `filterNodesByComponents`, `isAgentflowNode`, `groupNodesByCategory` | ✅ Done |
 | `src/core/node-config/` | `getAgentflowIcon`, `getNodeColor` | ✅ Done |
 | `src/core/theme/tokens.ts` | All design tokens — node colors, light/dark variants, spacing scale, semantic colors, ReactFlow colors, shadows, border radius, gradients | ✅ Done |
@@ -53,7 +53,7 @@ Test when adding features or fixing bugs in these areas.
 | `src/infrastructure/store/ConfigContext.tsx` | `ConfigProvider` — theme detection (light/dark/system), media query listener | ✅ Done |
 | `src/features/generator/GenerateFlowDialog.tsx` | Dialog state machine — API call flow, error handling, progress state | ✅ Done |
 | `src/features/node-editor/EditNodeDialog.tsx` | Label editing — keyboard handling (Enter/Escape), node data updates | ✅ Done |
-| `src/features/canvas/hooks/useOpenNodeEditor.ts` | `openNodeEditor()` — node/schema lookup, inputValues initialization, early returns | ✅ Done |
+| `src/features/canvas/hooks/useOpenNodeEditor.ts` | `openNodeEditor()` — node/schema lookup, inputValues initialization, early returns, fallback to `node.data.inputs` when API schema unavailable, API schema priority over `data.inputs` | ✅ Done |
 
 ### Tier 3 — UI Components
 

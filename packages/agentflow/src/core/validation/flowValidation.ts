@@ -1,4 +1,5 @@
 import type { FlowEdge, FlowNode, ValidationError, ValidationResult } from '../types'
+import { evaluateParamVisibility } from '../utils/fieldVisibility'
 
 /**
  * Validate the flow structure
@@ -135,7 +136,6 @@ function detectCycle(nodes: FlowNode[], edges: FlowEdge[]): boolean {
     return false
 }
 
-// TODO: Integrate with per-node inline validation to surface errors on individual nodes in the canvas
 /**
  * Check if a specific node is valid
  */
@@ -151,10 +151,15 @@ export function validateNode(node: FlowNode, _edges: FlowEdge[]): ValidationErro
         })
     }
 
-    // Check required inputs (if defined)
+    // Check required inputs (if defined), skipping hidden params
     const inputParams = node.data.inputs || []
+    const inputValues = node.data.inputValues || {}
     for (const param of inputParams) {
-        if (!param.optional && !node.data.inputValues?.[param.name]) {
+        if (
+            !param.optional &&
+            evaluateParamVisibility(param, inputValues) &&
+            (inputValues[param.name] == null || inputValues[param.name] === '')
+        ) {
             errors.push({
                 nodeId: node.id,
                 message: `Required input "${param.label || param.name}" is missing`,

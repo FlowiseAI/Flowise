@@ -7,6 +7,7 @@ import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-reac
 
 import { NodeInputHandler } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
+import { evaluateFieldVisibility } from '@/core/utils/fieldVisibility'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 export interface EditNodeDialogProps {
@@ -47,13 +48,20 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             [inputParam.name]: newValue
         }
 
+        const updatedParams = evaluateFieldVisibility(inputParams, updatedInputValues)
+        setInputParams(updatedParams)
+        // Keep full inputValues in state — hidden field values are preserved so they
+        // can be restored when visibility conditions change (e.g. toggling provider back).
+        // Stripping should only happen on save/export, not on every keystroke.
         updateNodeData(data.id, { inputValues: updatedInputValues })
         setData({ ...data, inputValues: updatedInputValues })
     }
 
     useEffect(() => {
         if (dialogProps.inputParams) {
-            setInputParams(dialogProps.inputParams)
+            const initialValues = dialogProps.data?.inputValues || {}
+            const evaluatedParams = evaluateFieldVisibility(dialogProps.inputParams, initialValues)
+            setInputParams(evaluatedParams)
         }
         if (dialogProps.data) {
             setData(dialogProps.data)
