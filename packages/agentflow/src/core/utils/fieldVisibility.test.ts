@@ -85,6 +85,11 @@ describe('conditionMatches', () => {
         expect(conditionMatches(['aaa'], longPattern)).toBe(false)
     })
 
+    it('rejects nested quantifier patterns to mitigate ReDoS', () => {
+        expect(conditionMatches('aaa', '(a+)+$')).toBe(false)
+        expect(conditionMatches(['aaa'], '(a*)*')).toBe(false)
+    })
+
     it('scalar boolean strict equality', () => {
         expect(conditionMatches(true, true)).toBe(true)
         expect(conditionMatches(true, false)).toBe(false)

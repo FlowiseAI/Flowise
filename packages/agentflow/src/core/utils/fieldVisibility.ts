@@ -9,9 +9,16 @@ const REGEX_INTENT = /[|()^$*+?[\]]/
 /** Maximum length for regex patterns to mitigate ReDoS from untrusted input. */
 const MAX_REGEX_LENGTH = 200
 
-/** Timeout-safe regex test: compiles and tests the pattern, returning false for invalid or oversized patterns. */
+/** Detects nested quantifiers that can cause catastrophic backtracking, e.g. (a+)+, (a*)*,  (\w+)+. */
+const NESTED_QUANTIFIER = /[+*]\)[+*?]/
+
+/**
+ * Safe regex test: rejects patterns that are oversized, contain nested quantifiers
+ * (the primary cause of catastrophic backtracking), or are syntactically invalid.
+ */
 function safeRegexTest(pattern: string, value: string): boolean {
     if (pattern.length > MAX_REGEX_LENGTH) return false
+    if (NESTED_QUANTIFIER.test(pattern)) return false
     try {
         return new RegExp(pattern).test(value)
     } catch {
@@ -22,44 +29,30 @@ function safeRegexTest(pattern: string, value: string): boolean {
 /**
  * Check if a ground value matches a comparison value using the same matrix
  * as the UI's _showHideOperation in genericHelper.js.
+ *
+ * Ground values are normalized to arrays so scalar and array inputs share
+ * a single code path, reducing duplication.
  */
 export function conditionMatches(groundValue: unknown, comparisonValue: unknown): boolean {
-    if (Array.isArray(groundValue)) {
-        if (Array.isArray(comparisonValue)) {
-            return comparisonValue.some((val) => (groundValue as unknown[]).includes(val))
-        }
-        if (typeof comparisonValue === 'string') {
-            return (groundValue as unknown[]).some((val) => {
-                if (comparisonValue === val) return true
-                if (REGEX_INTENT.test(comparisonValue)) {
-                    return safeRegexTest(comparisonValue, String(val))
-                }
-                return false
-            })
-        }
-        if (typeof comparisonValue === 'boolean' || typeof comparisonValue === 'number') {
-            return (groundValue as unknown[]).includes(comparisonValue)
-        }
-        if (typeof comparisonValue === 'object' && comparisonValue !== null) {
-            return (groundValue as unknown[]).some((val) => isEqual(comparisonValue, val))
-        }
-    } else {
-        if (Array.isArray(comparisonValue)) {
-            return comparisonValue.includes(groundValue)
-        }
-        if (typeof comparisonValue === 'string') {
-            if (comparisonValue === groundValue) return true
+    const groundArr: unknown[] = Array.isArray(groundValue) ? groundValue : [groundValue]
+
+    if (Array.isArray(comparisonValue)) {
+        return comparisonValue.some((val) => groundArr.includes(val))
+    }
+    if (typeof comparisonValue === 'string') {
+        return groundArr.some((val) => {
+            if (comparisonValue === val) return true
             if (REGEX_INTENT.test(comparisonValue)) {
-                return safeRegexTest(comparisonValue, String(groundValue))
+                return safeRegexTest(comparisonValue, String(val))
             }
             return false
-        }
-        if (typeof comparisonValue === 'boolean' || typeof comparisonValue === 'number') {
-            return comparisonValue === groundValue
-        }
-        if (typeof comparisonValue === 'object' && comparisonValue !== null) {
-            return isEqual(comparisonValue, groundValue)
-        }
+        })
+    }
+    if (typeof comparisonValue === 'boolean' || typeof comparisonValue === 'number') {
+        return groundArr.includes(comparisonValue)
+    }
+    if (typeof comparisonValue === 'object' && comparisonValue !== null) {
+        return groundArr.some((val) => isEqual(comparisonValue, val))
     }
     return false
 }
