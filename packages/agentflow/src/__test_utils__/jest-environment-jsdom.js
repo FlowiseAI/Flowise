@@ -30,7 +30,18 @@ Module.prototype.require = function (id) {
                 toDataURL: () => ''
             }),
             createImageData: () => ({ data: [] }),
-            loadImage: () => Promise.resolve({})
+            loadImage: () => Promise.resolve({}),
+            Image: class Image {
+                constructor() {
+                    this.src = ''
+                    this.width = 0
+                    this.height = 0
+                    this.onload = null
+                    this.onerror = null
+                    this.naturalWidth = 0
+                    this.naturalHeight = 0
+                }
+            }
         }
     }
     return originalRequire.apply(this, arguments)

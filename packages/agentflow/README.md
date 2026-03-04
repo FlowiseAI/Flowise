@@ -46,7 +46,7 @@ export default function App() {
             <Agentflow apiBaseUrl='http://localhost:3000' token='your-api-key' />
         </div>
     )
-}
+}
 ```
 
 ### With Initial Flow Data and Callbacks
@@ -93,7 +93,7 @@ export default function App() {
             />
         </div>
     )
-}
+}
 ```
 
 ## Props
@@ -117,14 +117,15 @@ export default function App() {
 
 ### Imperative Methods (via `ref`)
 
-| Method              | Return Type        | Description                      |
-| ------------------- | ------------------ | -------------------------------- |
-| `getFlow()`         | `FlowData`         | Get current flow data            |
-| `toJSON()`          | `string`           | Export flow as JSON string       |
-| `validate()`        | `ValidationResult` | Validate the current flow        |
-| `fitView()`         | `void`             | Fit all nodes into view          |
-| `clear()`           | `void`             | Remove all nodes and edges       |
-| `addNode(nodeData)` | `void`             | Add a node (`Partial<FlowNode>`) |
+| Method                   | Return Type               | Description                           |
+| ------------------------ | ------------------------- | ------------------------------------- |
+| `getFlow()`              | `FlowData`                | Get current flow data                 |
+| `toJSON()`               | `string`                  | Export flow as JSON string            |
+| `validate()`             | `ValidationResult`        | Validate the current flow             |
+| `fitView()`              | `void`                    | Fit all nodes into view               |
+| `clear()`                | `void`                    | Remove all nodes and edges            |
+| `addNode(nodeData)`      | `void`                    | Add a node (`Partial<FlowNode>`)      |
+| `getReactFlowInstance()` | `ReactFlowInstance\|null` | Get the underlying ReactFlow instance |
 
 ### Design Note
 
