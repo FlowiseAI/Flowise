@@ -131,6 +131,9 @@ export interface InputParam {
     show?: Record<string, unknown>
     hide?: Record<string, unknown>
     display?: boolean
+    array?: InputParam[]
+    minItems?: number
+    maxItems?: number
 }
 
 export interface EdgeData {

@@ -26,18 +26,69 @@ jest.mock('@/infrastructure/store', () => ({
 jest.mock('@/atoms', () => ({
     NodeInputHandler: ({
         inputParam,
-        onDataChange
+        onDataChange,
+        data
     }: {
         inputParam: InputParam
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
-    }) => (
-        <div data-testid={`input-handler-${inputParam.name}`}>
-            <button data-testid={`change-${inputParam.name}`} onClick={() => onDataChange({ inputParam, newValue: 'test-value' })}>
-                Change {inputParam.name}
-            </button>
-        </div>
-    )
+    }) => {
+        // Handle array type inputs differently
+        if (inputParam.type === 'array') {
+            const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+
+            return (
+                <div data-testid={`input-handler-${inputParam.name}`}>
+                    <button
+                        data-testid={`add-${inputParam.name}`}
+                        onClick={() => {
+                            const newItem = inputParam.array?.reduce((acc, field) => {
+                                acc[field.name] = field.default ?? ''
+                                return acc
+                            }, {} as Record<string, unknown>)
+                            onDataChange({ inputParam, newValue: [...currentArray, newItem || {}] })
+                        }}
+                    >
+                        Add {inputParam.label}
+                    </button>
+                    {currentArray.map((_, index) => (
+                        <button
+                            key={index}
+                            data-testid={`delete-${inputParam.name}-${index}`}
+                            onClick={() => {
+                                const newArray = currentArray.filter((_, i) => i !== index)
+                                onDataChange({ inputParam, newValue: newArray })
+                            }}
+                        >
+                            Delete {index}
+                        </button>
+                    ))}
+                    {currentArray.map((_, index) => (
+                        <button
+                            key={`change-${index}`}
+                            data-testid={`change-${inputParam.name}-${index}`}
+                            onClick={() => {
+                                const newArray = [...currentArray]
+                                newArray[index] = { ...newArray[index], updated: true }
+                                onDataChange({ inputParam, newValue: newArray })
+                            }}
+                        >
+                            Change {index}
+                        </button>
+                    ))}
+                </div>
+            )
+        }
+
+        // Default handler for other types
+        return (
+            <div data-testid={`input-handler-${inputParam.name}`}>
+                <button data-testid={`change-${inputParam.name}`} onClick={() => onDataChange({ inputParam, newValue: 'test-value' })}>
+                    Change {inputParam.name}
+                </button>
+            </div>
+        )
+    }
 }))
 
 jest.mock('@tabler/icons-react', () => ({
@@ -251,5 +302,129 @@ describe('EditNodeDialog', () => {
                 })
             })
         )
+    })
+
+    // ========================================================================
+    // Integration Tests - Array Input
+    // ========================================================================
+
+    describe('Array input integration', () => {
+        it('should render ArrayInput component via NodeInputHandler for array type inputs', () => {
+            const arrayInputParams: InputParam[] = [
+                {
+                    name: 'items',
+                    label: 'Item',
+                    type: 'array',
+                    array: [
+                        { name: 'name', label: 'Name', type: 'string' } as InputParam,
+                        { name: 'value', label: 'Value', type: 'number' } as InputParam
+                    ]
+                } as InputParam
+            ]
+
+            const propsWithArrayInput = {
+                ...defaultProps,
+                dialogProps: {
+                    ...defaultProps.dialogProps,
+                    inputParams: arrayInputParams,
+                    data: {
+                        ...nodeData,
+                        inputValues: { items: [] }
+                    }
+                }
+            }
+
+            render(<EditNodeDialog {...propsWithArrayInput} />)
+
+            // Verify ArrayInput is rendered by checking for the "Add {label}" button
+            expect(screen.getByTestId('add-items')).toBeInTheDocument()
+            expect(screen.getByText('Add Item')).toBeInTheDocument()
+        })
+
+        it('should handle array data updates flowing through EditNodeDialog', () => {
+            const arrayInputParams: InputParam[] = [
+                {
+                    name: 'connections',
+                    label: 'Connection',
+                    type: 'array',
+                    array: [
+                        { name: 'host', label: 'Host', type: 'string', default: 'localhost' } as InputParam,
+                        { name: 'port', label: 'Port', type: 'number', default: 5432 } as InputParam
+                    ]
+                } as InputParam
+            ]
+
+            const initialArrayData = [
+                { host: 'server1.com', port: 3000 },
+                { host: 'server2.com', port: 8080 }
+            ]
+
+            const propsWithArrayData = {
+                ...defaultProps,
+                dialogProps: {
+                    ...defaultProps.dialogProps,
+                    inputParams: arrayInputParams,
+                    data: {
+                        ...nodeData,
+                        inputValues: { connections: initialArrayData }
+                    }
+                }
+            }
+
+            render(<EditNodeDialog {...propsWithArrayData} />)
+
+            // Verify initial state has delete and change buttons for existing items
+            expect(screen.getByTestId('delete-connections-0')).toBeInTheDocument()
+            expect(screen.getByTestId('delete-connections-1')).toBeInTheDocument()
+            expect(screen.getByTestId('change-connections-0')).toBeInTheDocument()
+            expect(screen.getByTestId('change-connections-1')).toBeInTheDocument()
+
+            // Test Add operation - adds a new item with default values
+            const addButton = screen.getByTestId('add-connections')
+            fireEvent.click(addButton)
+
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('node-1', {
+                inputValues: {
+                    connections: [
+                        { host: 'server1.com', port: 3000 },
+                        { host: 'server2.com', port: 8080 },
+                        { host: 'localhost', port: 5432 }
+                    ]
+                }
+            })
+
+            // Clear mock calls for next test
+            mockUpdateNodeData.mockClear()
+
+            // Test Delete operation - removes first item
+            const deleteButton = screen.getByTestId('delete-connections-0')
+            fireEvent.click(deleteButton)
+
+            // Should be called with updated array (first item removed)
+            expect(mockUpdateNodeData).toHaveBeenCalledTimes(1)
+            expect(mockUpdateNodeData).toHaveBeenCalledWith(
+                'node-1',
+                expect.objectContaining({
+                    inputValues: expect.objectContaining({
+                        connections: expect.arrayContaining([{ host: 'server2.com', port: 8080 }])
+                    })
+                })
+            )
+
+            // Clear mock calls for next test
+            mockUpdateNodeData.mockClear()
+
+            // Test Change operation - modifies an item
+            const changeButton = screen.getByTestId('change-connections-0')
+            fireEvent.click(changeButton)
+
+            // Verify updateNodeData was called with array update
+            expect(mockUpdateNodeData).toHaveBeenCalledTimes(1)
+            const lastCall = mockUpdateNodeData.mock.calls[0]
+            expect(lastCall[0]).toBe('node-1')
+            expect(lastCall[1]).toHaveProperty('inputValues')
+            expect(lastCall[1].inputValues).toHaveProperty('connections')
+            expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
+        })
     })
 })

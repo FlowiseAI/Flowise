@@ -224,16 +224,18 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                 {data &&
                     inputParams
                         .filter((inputParam) => inputParam.display !== false)
-                        .map((inputParam, index) => (
-                            <NodeInputHandler
-                                disabled={dialogProps.disabled}
-                                key={index}
-                                inputParam={inputParam}
-                                data={data}
-                                isAdditionalParams={true}
-                                onDataChange={onCustomDataChange}
-                            />
-                        ))}
+                        .map((inputParam, index) => {
+                            return (
+                                <NodeInputHandler
+                                    disabled={dialogProps.disabled}
+                                    key={index}
+                                    inputParam={inputParam}
+                                    data={data}
+                                    isAdditionalParams={true}
+                                    onDataChange={onCustomDataChange}
+                                />
+                            )
+                        })}
             </DialogContent>
         </Dialog>
     )

@@ -8,6 +8,8 @@ import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
 import type { InputAnchor, InputParam, NodeData } from '@/core/types'
 
+import ArrayInput from './ArrayInput'
+
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
         maxWidth: 500
@@ -116,6 +118,8 @@ export function NodeInputHandler({
                         ))}
                     </Select>
                 )
+            case 'array':
+                return <ArrayInput inputParam={inputParam} data={data} disabled={disabled} onDataChange={onDataChange} />
 
             default:
                 // For unsupported types, render a basic text field
