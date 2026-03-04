@@ -1,0 +1,4 @@
+{
+  "stripeWebhookRequired": false,
+  "notes": "Flowise uses Stripe billing APIs but does not expose a local Stripe webhook endpoint in this repo scope."
+}
