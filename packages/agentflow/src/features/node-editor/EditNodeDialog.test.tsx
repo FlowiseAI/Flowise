@@ -436,8 +436,14 @@ describe('EditNodeDialog', () => {
                     label: 'Item',
                     type: 'array',
                     array: [
-                        { name: 'type', label: 'Type', type: 'string' } as InputParam,
-                        { name: 'detail', label: 'Detail', type: 'string', show: { 'items[$index].type': 'special' } } as InputParam
+                        { id: 'type', name: 'type', label: 'Type', type: 'string' } as InputParam,
+                        {
+                            id: 'detail',
+                            name: 'detail',
+                            label: 'Detail',
+                            type: 'string',
+                            show: { 'items[$index].type': 'special' }
+                        } as InputParam
                     ]
                 } as InputParam
             ]
