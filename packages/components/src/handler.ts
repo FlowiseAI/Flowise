@@ -29,7 +29,47 @@ import { getCredentialData, getCredentialParam, getEnvironmentVariable } from '.
 import { EvaluationRunTracer } from '../evaluation/EvaluationRunTracer'
 import { EvaluationRunTracerLlama } from '../evaluation/EvaluationRunTracerLlama'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
-import { LangWatch, LangWatchSpan, LangWatchTrace, autoconvertTypedValues } from 'langwatch'
+// langwatch 0.16+ uses package.json "exports" subpaths which are not supported
+// by this project's moduleResolution ("node"/classic). Use require() to resolve
+// at runtime where Node.js handles exports correctly.
+// eslint-disable-next-line
+const { LangWatchCallbackHandler } = require('langwatch/observability/instrumentation/langchain') as { LangWatchCallbackHandler: any }
+// eslint-disable-next-line
+const { getLangWatchTracerFromProvider } = require('langwatch/observability') as { getLangWatchTracerFromProvider: any }
+// LangWatchSpan is an OpenTelemetry Span with extra methods (setType, setInput, setOutput, etc.)
+type LangWatchSpan = any
+
+import { OTLPTraceExporter as HttpOTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
+
+// langwatch 0.16 ships OTel v2 but Flowise uses OTel v1. setupObservability() fails due to
+// incompatible Resource API. Instead, register a v1 tracer provider with Flowise's own v1
+// OTLP HTTP exporter pointing at the LangWatch OTLP endpoint.
+let langWatchOtelInitialized = false
+function ensureLangWatchOtel(apiKey: string, endpoint: string) {
+    if (langWatchOtelInitialized) return
+    try {
+        const url = new URL('/api/otel/v1/traces', endpoint).toString()
+        const provider = new NodeTracerProvider({
+            resource: new Resource({ 'service.name': 'flowise' })
+        })
+        const exporter = new HttpOTLPTraceExporter({
+            url,
+            headers: {
+                authorization: `Bearer ${apiKey}`
+            }
+        })
+        provider.addSpanProcessor(new SimpleSpanProcessor(exporter))
+        provider.register()
+        langWatchOtelInitialized = true
+        if (process.env.DEBUG === 'true') {
+            console.log(`[LangWatch] OTel tracer provider registered, exporting to ${url}`)
+        }
+    } catch (e: any) {
+        if (process.env.DEBUG === 'true') {
+            console.error('[LangWatch] Failed to register OTel provider:', e?.message)
+        }
+    }
+}
 import { DataSource } from 'typeorm'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
@@ -599,22 +639,8 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const langWatchApiKey = getCredentialParam('langWatchApiKey', credentialData, nodeData)
                     const langWatchEndpoint = getCredentialParam('langWatchEndpoint', credentialData, nodeData)
 
-                    const langwatch = new LangWatch({
-                        apiKey: langWatchApiKey,
-                        endpoint: langWatchEndpoint
-                    })
-
-                    const trace = langwatch.getTrace()
-
-                    if (nodeData?.inputs?.analytics?.langWatch) {
-                        trace.update({
-                            metadata: {
-                                ...nodeData?.inputs?.analytics?.langWatch
-                            }
-                        })
-                    }
-
-                    callbacks.push(trace.getLangChainCallback())
+                    ensureLangWatchOtel(langWatchApiKey, langWatchEndpoint || 'https://app.langwatch.ai')
+                    callbacks.push(new LangWatchCallbackHandler())
                 } else if (provider === 'arize') {
                     const arizeApiKey = getCredentialParam('arizeApiKey', credentialData, nodeData)
                     const arizeSpaceId = getCredentialParam('arizeSpaceId', credentialData, nodeData)
@@ -837,12 +863,12 @@ export class AnalyticHandler {
             const langWatchApiKey = getCredentialParam('langWatchApiKey', credentialData, this.nodeData)
             const langWatchEndpoint = getCredentialParam('langWatchEndpoint', credentialData, this.nodeData)
 
-            const langwatch = new LangWatch({
-                apiKey: langWatchApiKey,
-                endpoint: langWatchEndpoint
-            })
+            ensureLangWatchOtel(langWatchApiKey, langWatchEndpoint || 'https://app.langwatch.ai')
 
-            this.handlers['langWatch'] = { client: langwatch }
+            // Use getLangWatchTracerFromProvider to wrap spans with LangWatch methods (setType, setInput, etc.)
+            const tracer = getLangWatchTracerFromProvider(opentelemetry.trace.getTracerProvider(), 'flowise')
+
+            this.handlers['langWatch'] = { tracer }
         } else if (provider === 'arize') {
             const arizeApiKey = getCredentialParam('arizeApiKey', credentialData, this.nodeData)
             const arizeSpaceId = getCredentialParam('arizeSpaceId', credentialData, this.nodeData)
@@ -997,29 +1023,21 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            let langwatchTrace: LangWatchTrace
+            const tracer = this.handlers['langWatch'].tracer
+            if (tracer) {
+                const span: LangWatchSpan = tracer.startSpan(name)
+                span.setType('chain')
+                span.setInput(input)
+                if (this.options.chatId) {
+                    span.setAttribute('langwatch.thread_id', this.options.chatId)
+                }
+                const spanId = span.spanContext().spanId
+                this.handlers['langWatch'].span = { [spanId]: span }
+                returnIds['langWatch'].span = spanId
 
-            if (!parentIds || !Object.keys(parentIds).length) {
-                const langwatch: LangWatch = this.handlers['langWatch'].client
-                langwatchTrace = langwatch.getTrace({
-                    name,
-                    metadata: { tags: ['openai-assistant'], threadId: this.options.chatId },
-                    ...this.nodeData?.inputs?.analytics?.langWatch
-                })
-            } else {
-                langwatchTrace = this.handlers['langWatch'].trace[parentIds['langWatch']]
-            }
-
-            if (langwatchTrace) {
-                const span = langwatchTrace.startSpan({
-                    name,
-                    type: 'chain',
-                    input: autoconvertTypedValues(input)
-                })
-                this.handlers['langWatch'].trace = { [langwatchTrace.traceId]: langwatchTrace }
-                this.handlers['langWatch'].span = { [span.spanId]: span }
-                returnIds['langWatch'].trace = langwatchTrace.traceId
-                returnIds['langWatch'].span = span.spanId
+                if (process.env.DEBUG === 'true') {
+                    console.log(`[LangWatch] onChainStart: span created, name=${name}, spanId=${spanId}`)
+                }
             }
         }
 
@@ -1175,11 +1193,14 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span?.[returnIds['langWatch']?.span]
             if (span) {
-                span.end({
-                    output: autoconvertTypedValues(output)
-                })
+                span.setOutput(output)
+                span.end()
+
+                if (process.env.DEBUG === 'true') {
+                    console.log(`[LangWatch] onChainEnd: span ended, spanId=${returnIds['langWatch']?.span}`)
+                }
             }
         }
 
@@ -1268,11 +1289,13 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span?.[returnIds['langWatch']?.span]
             if (span) {
-                span.end({
-                    error
-                })
+                span.recordException(
+                    typeof error === 'string' ? new Error(error) : error instanceof Error ? error : new Error(String(error))
+                )
+                span.setStatus({ code: SpanStatusCode.ERROR, message: String(error) })
+                span.end()
             }
         }
 
@@ -1363,14 +1386,18 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const trace: LangWatchTrace | undefined = this.handlers['langWatch'].trace[parentIds['langWatch'].trace]
-            if (trace) {
-                const span = trace.startLLMSpan({
-                    name,
-                    input: autoconvertTypedValues(input)
-                })
-                this.handlers['langWatch'].span = { [span.spanId]: span }
-                returnIds['langWatch'].span = span.spanId
+            const tracer = this.handlers['langWatch'].tracer
+            if (tracer) {
+                const span: LangWatchSpan = tracer.startSpan(name)
+                span.setType('llm')
+                span.setInput(input)
+                const spanId = span.spanContext().spanId
+                this.handlers['langWatch'].span = { ...this.handlers['langWatch'].span, [spanId]: span }
+                returnIds['langWatch'].span = spanId
+
+                if (process.env.DEBUG === 'true') {
+                    console.log(`[LangWatch] onLLMStart: LLM span created, name=${name}, spanId=${spanId}`)
+                }
             }
         }
 
@@ -1559,22 +1586,23 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span?.[returnIds['langWatch']?.span]
             if (span) {
-                const endPayload: ICommonObject = {
-                    output: autoconvertTypedValues(outputText)
-                }
-                // Add metrics if usage available
+                span.setOutput(outputText)
                 if (usageMetadata) {
-                    endPayload.metrics = {
+                    span.setMetrics({
                         promptTokens: usageMetadata.input_tokens,
                         completionTokens: usageMetadata.output_tokens
-                    }
+                    })
                 }
                 if (modelName) {
-                    endPayload.model = modelName
+                    span.setRequestModel(modelName)
                 }
-                span.end(endPayload)
+                span.end()
+
+                if (process.env.DEBUG === 'true') {
+                    console.log(`[LangWatch] onLLMEnd: LLM span ended, spanId=${returnIds['langWatch']?.span}, model=${modelName}`)
+                }
             }
         }
 
@@ -1626,11 +1654,13 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span?.[returnIds['langWatch']?.span]
             if (span) {
-                span.end({
-                    error
-                })
+                span.recordException(
+                    typeof error === 'string' ? new Error(error) : error instanceof Error ? error : new Error(String(error))
+                )
+                span.setStatus({ code: SpanStatusCode.ERROR, message: String(error) })
+                span.end()
             }
         }
 
@@ -1722,15 +1752,18 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const trace: LangWatchTrace | undefined = this.handlers['langWatch'].trace[parentIds['langWatch'].trace]
-            if (trace) {
-                const span = trace.startSpan({
-                    name,
-                    type: 'tool',
-                    input: autoconvertTypedValues(input)
-                })
-                this.handlers['langWatch'].span = { [span.spanId]: span }
-                returnIds['langWatch'].span = span.spanId
+            const tracer = this.handlers['langWatch'].tracer
+            if (tracer) {
+                const span: LangWatchSpan = tracer.startSpan(name)
+                span.setType('tool')
+                span.setInput(input)
+                const spanId = span.spanContext().spanId
+                this.handlers['langWatch'].span = { ...this.handlers['langWatch'].span, [spanId]: span }
+                returnIds['langWatch'].span = spanId
+
+                if (process.env.DEBUG === 'true') {
+                    console.log(`[LangWatch] onToolStart: tool span created, name=${name}, spanId=${spanId}`)
+                }
             }
         }
 
@@ -1829,11 +1862,14 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span?.[returnIds['langWatch']?.span]
             if (span) {
-                span.end({
-                    output: autoconvertTypedValues(output)
-                })
+                span.setOutput(output)
+                span.end()
+
+                if (process.env.DEBUG === 'true') {
+                    console.log(`[LangWatch] onToolEnd: tool span ended, spanId=${returnIds['langWatch']?.span}`)
+                }
             }
         }
 
@@ -1903,11 +1939,13 @@ export class AnalyticHandler {
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langWatch')) {
-            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span[returnIds['langWatch'].span]
+            const span: LangWatchSpan | undefined = this.handlers['langWatch'].span?.[returnIds['langWatch']?.span]
             if (span) {
-                span.end({
-                    error
-                })
+                span.recordException(
+                    typeof error === 'string' ? new Error(error) : error instanceof Error ? error : new Error(String(error))
+                )
+                span.setStatus({ code: SpanStatusCode.ERROR, message: String(error) })
+                span.end()
             }
         }
 
