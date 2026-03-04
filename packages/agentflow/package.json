@@ -41,7 +41,7 @@
         "dist"
     ],
     "sideEffects": [
-        "*.css"
+        "dist/**/*.css"
     ],
     "scripts": {
         "build": "tsc && vite build",
