@@ -1509,9 +1509,21 @@
                 },
                 {
                     "label": "sonar-deep-research",
-                    "name": "sonar",
+                    "name": "sonar-deep-research",
                     "input_cost": 2e-6,
                     "output_cost": 8e-6
+                },
+                {
+                    "label": "sonar-2",
+                    "name": "sonar-2",
+                    "input_cost": 1e-6,
+                    "output_cost": 1e-6
+                },
+                {
+                    "label": "sonar-pro-2",
+                    "name": "sonar-pro-2",
+                    "input_cost": 3e-6,
+                    "output_cost": 1.5e-5
                 },
                 {
                     "label": "r1-1776",
