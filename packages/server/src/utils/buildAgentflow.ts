@@ -769,12 +769,20 @@ async function determineNodesToIgnore(
     if (isDecisionNode && result.output?.conditions) {
         const outputConditions: ICondition[] = result.output.conditions
 
+        // safety net: if no conditions were fulfilled, don't ignore ALL children
+        // treat the last condition as an else/default fallback
+        const anyFulfilled = outputConditions.some((c) => c.isFulfilled === true)
+        if (!anyFulfilled && outputConditions.length > 0) {
+            // mark the last condition as fulfilled so at least one branch executes
+            outputConditions[outputConditions.length - 1].isFulfilled = true
+        }
+
         // Find indexes of unfulfilled conditions
         const unfulfilledIndexes = outputConditions
-            .map((condition: any, index: number) =>
+            .map((condition, index) =>
                 condition.isFulfilled === false || !Object.prototype.hasOwnProperty.call(condition, 'isFulfilled') ? index : -1
             )
-            .filter((index: number) => index !== -1)
+            .filter((index) => index !== -1)
 
         // Find nodes to ignore based on unfulfilled conditions
         for (const index of unfulfilledIndexes) {
@@ -1102,10 +1110,16 @@ const executeNode = async ({
         }
 
         // Resolve variables in node data
+        let formValue: Record<string, any> = {}
+        if (isObjectNotEmpty(incomingInput.form)) {
+            formValue = incomingInput.form as Record<string, any>
+        } else if (isObjectNotEmpty(agentflowRuntime.form)) {
+            formValue = agentflowRuntime.form as Record<string, any>
+        }
         const reactFlowNodeData: INodeData = await resolveVariables(
             flowNodeData,
             incomingInput.question ?? '',
-            incomingInput.form ?? agentflowRuntime.form ?? {},
+            formValue,
             flowConfig,
             availableVariables,
             variableOverrides,
@@ -2335,4 +2349,11 @@ export const executeAgentFlow = async ({
     }
 
     return result
+}
+
+/**
+ * Utility function to check if an object is not empty, null, or undefined
+ */
+export const isObjectNotEmpty = (obj: any): boolean => {
+    return obj && Object.keys(obj).length > 0 && obj.constructor === Object
 }

@@ -14,7 +14,7 @@ const QUEUE_NAME = 'ratelimit'
 const QUEUE_EVENT_NAME = 'updateRateLimiter'
 
 export class RateLimiterManager {
-    private rateLimiters: Record<string, RateLimitRequestHandler> = {}
+    private rateLimiters: Map<string, RateLimitRequestHandler> = new Map()
     private rateLimiterMutex: Mutex = new Mutex()
     private redisClient: Redis
     private static instance: RateLimiterManager
@@ -95,24 +95,30 @@ export class RateLimiterManager {
         const release = await this.rateLimiterMutex.acquire()
         try {
             if (process.env.MODE === MODE.QUEUE) {
-                this.rateLimiters[id] = rateLimit({
-                    windowMs: duration * 1000,
-                    max: limit,
-                    standardHeaders: true,
-                    legacyHeaders: false,
-                    message,
-                    store: new RedisStore({
-                        prefix: `rl:${id}`,
-                        // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-                        sendCommand: (...args: string[]) => this.redisClient.call(...args)
+                this.rateLimiters.set(
+                    id,
+                    rateLimit({
+                        windowMs: duration * 1000,
+                        max: limit,
+                        standardHeaders: true,
+                        legacyHeaders: false,
+                        message,
+                        store: new RedisStore({
+                            prefix: `rl:${id}`,
+                            // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
+                            sendCommand: (...args: string[]) => this.redisClient.call(...args)
+                        })
                     })
-                })
+                )
             } else {
-                this.rateLimiters[id] = rateLimit({
-                    windowMs: duration * 1000,
-                    max: limit,
-                    message
-                })
+                this.rateLimiters.set(
+                    id,
+                    rateLimit({
+                        windowMs: duration * 1000,
+                        max: limit,
+                        message
+                    })
+                )
             }
         } finally {
             release()
@@ -120,25 +126,25 @@ export class RateLimiterManager {
     }
 
     public removeRateLimiter(id: string): void {
-        if (this.rateLimiters[id]) {
-            delete this.rateLimiters[id]
-        }
+        this.rateLimiters.delete(id)
     }
 
     public getRateLimiter(): (req: Request, res: Response, next: NextFunction) => void {
         return (req: Request, res: Response, next: NextFunction) => {
             const id = req.params.id
-            if (!this.rateLimiters[id]) return next()
-            const idRateLimiter = this.rateLimiters[id]
-            return idRateLimiter(req, res, next)
+            if (typeof id === 'string' && id.length > 0 && this.rateLimiters.has(id)) {
+                return this.rateLimiters.get(id)!(req, res, next)
+            }
+            return next()
         }
     }
 
     public getRateLimiterById(id: string): (req: Request, res: Response, next: NextFunction) => void {
         return (req: Request, res: Response, next: NextFunction) => {
-            if (!this.rateLimiters[id]) return next()
-            const idRateLimiter = this.rateLimiters[id]
-            return idRateLimiter(req, res, next)
+            if (this.rateLimiters.has(id)) {
+                return this.rateLimiters.get(id)!(req, res, next)
+            }
+            return next()
         }
     }
 
