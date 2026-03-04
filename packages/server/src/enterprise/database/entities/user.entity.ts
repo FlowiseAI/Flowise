@@ -30,7 +30,7 @@ export class User {
     @Column({ type: 'text', nullable: true, unique: true })
     tempToken?: string | null
 
-    @CreateDateColumn({ nullable: true })
+    @Column({ type: 'datetime', nullable: true, default: null })
     tokenExpiry?: Date | null
 
     @Column({ type: 'varchar', length: 20, default: UserStatus.UNVERIFIED })

@@ -568,9 +568,11 @@ export class AccountService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
+            if (!data.user.tempToken) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-            if (user.tempToken !== data.user.tempToken)
+            if (!user.tempToken || user.tempToken !== data.user.tempToken)
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
 
             const tokenExpiry = user.tokenExpiry
@@ -592,7 +594,7 @@ export class AccountService {
             const hash = bcrypt.hashSync(password, salt)
             data.user = user
             data.user.credential = hash
-            data.user.tempToken = ''
+            data.user.tempToken = null
             data.user.tokenExpiry = undefined
             data.user.status = UserStatus.ACTIVE
 
