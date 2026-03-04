@@ -292,7 +292,15 @@ class ChatOpenAI_ChatModels implements INode {
         }
         if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
 
-        if (modelName.includes('o1') || modelName.includes('o3') || modelName.includes('gpt-5')) {
+        const isReasoningModel = (name: string): boolean => {
+            if (/^o[134]/.test(name)) return true
+            if (name === 'codex-mini') return true
+            if (name.includes('gpt-5') && name.includes('-chat')) return false
+            if (name.includes('gpt-5')) return true
+            return false
+        }
+
+        if (isReasoningModel(modelName)) {
             delete obj.temperature
             delete obj.stop
             const reasoning: OpenAIClient.Reasoning = {}
@@ -303,6 +311,11 @@ class ChatOpenAI_ChatModels implements INode {
                 reasoning.summary = reasoningSummary
             }
             obj.reasoning = reasoning
+
+            if (maxTokens) {
+                delete obj.maxTokens
+                obj.maxCompletionTokens = parseInt(maxTokens, 10)
+            }
         }
 
         let parsedBaseOptions: any | undefined = undefined

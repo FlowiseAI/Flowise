@@ -51,7 +51,8 @@ class AzureChatOpenAI_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'asyncOptions',
-                loadMethod: 'listModels'
+                loadMethod: 'listModels',
+                freeSolo: true
             },
             {
                 label: 'Temperature',
@@ -166,7 +167,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning Effort',
-                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.',
+                description: 'Constrains effort on reasoning for reasoning models. Applicable for o-series and gpt-5 models.',
                 name: 'reasoningEffort',
                 type: 'options',
                 options: [
@@ -273,7 +274,15 @@ class AzureChatOpenAI_ChatModels implements INode {
                 console.error('Error parsing base options', exception)
             }
         }
-        if (modelName.includes('o1') || modelName.includes('o3') || modelName.includes('gpt-5')) {
+        const isReasoningModel = (name: string): boolean => {
+            if (/^o[134]/.test(name)) return true
+            if (name === 'codex-mini') return true
+            if (name.includes('gpt-5') && name.includes('-chat')) return false
+            if (name.includes('gpt-5')) return true
+            return false
+        }
+
+        if (isReasoningModel(modelName)) {
             delete obj.temperature
             delete obj.stop
             const reasoning: OpenAIClient.Reasoning = {}

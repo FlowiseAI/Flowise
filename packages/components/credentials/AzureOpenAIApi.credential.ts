@@ -36,9 +36,9 @@ class AzureOpenAIApi implements INodeCredential {
                 label: 'Azure OpenAI Api Version',
                 name: 'azureOpenAIApiVersion',
                 type: 'string',
-                placeholder: '2023-06-01-preview',
+                placeholder: '2024-10-21',
                 description:
-                    'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/cognitive-services/openai/reference#chat-completions">examples</a>'
+                    'Description of Supported API Versions. Please refer <a target="_blank" href="https://learn.microsoft.com/en-us/azure/ai-foundry/openai/api-version-lifecycle">API version lifecycle</a>'
             }
         ]
     }
