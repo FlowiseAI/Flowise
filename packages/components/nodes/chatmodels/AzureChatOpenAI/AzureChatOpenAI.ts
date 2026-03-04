@@ -1,7 +1,7 @@
 import { AzureOpenAIInput, AzureChatOpenAI as LangchainAzureChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, isReasoningModelOpenAI } from '../../../src/utils'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { AzureChatOpenAI } from './FlowiseAzureChatOpenAI'
 import { OpenAI as OpenAIClient } from 'openai'
@@ -51,7 +51,8 @@ class AzureChatOpenAI_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'asyncOptions',
-                loadMethod: 'listModels'
+                loadMethod: 'listModels',
+                freeSolo: true
             },
             {
                 label: 'Temperature',
@@ -136,7 +137,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning',
-                description: 'Whether the model supports reasoning. Only applicable for reasoning models.',
+                description: 'Whether the model supports reasoning. Only applicable for reasoning models (gpt-5 and o-series models only)',
                 name: 'reasoning',
                 type: 'boolean',
                 default: false,
@@ -145,7 +146,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning Effort',
-                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.',
+                description: 'Constrains effort on reasoning. Only applicable for reasoning models (gpt-5 and o-series models only)',
                 name: 'reasoningEffort',
                 type: 'options',
                 options: [
@@ -234,7 +235,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
@@ -251,7 +252,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                 console.error('Error parsing base options', exception)
             }
         }
-        if (modelName.includes('o1') || modelName.includes('o3') || modelName.includes('gpt-5')) {
+        if (isReasoningModelOpenAI(modelName)) {
             delete obj.temperature
             delete obj.stop
             const reasoning: OpenAIClient.Reasoning = {}
@@ -262,11 +263,6 @@ class AzureChatOpenAI_ChatModels implements INode {
                 reasoning.summary = reasoningSummary
             }
             obj.reasoning = reasoning
-
-            if (maxTokens) {
-                delete obj.maxTokens
-                obj.maxCompletionTokens = parseInt(maxTokens, 10)
-            }
         }
 
         const multiModalOption: IMultiModalOption = {

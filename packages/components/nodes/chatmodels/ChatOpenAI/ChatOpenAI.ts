@@ -1,7 +1,7 @@
 import { ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, isReasoningModelOpenAI } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { OpenAI as OpenAIClient } from 'openai'
@@ -83,7 +83,7 @@ class ChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning Effort',
-                description: 'Constrains effort on reasoning for reasoning models',
+                description: 'Constrains effort on reasoning. Only applicable for reasoning models (gpt-5 and o-series models only)',
                 name: 'reasoningEffort',
                 type: 'options',
                 options: [
@@ -251,7 +251,7 @@ class ChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
@@ -263,7 +263,7 @@ class ChatOpenAI_ChatModels implements INode {
         }
         if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
 
-        if (modelName.includes('o1') || modelName.includes('o3') || modelName.includes('gpt-5')) {
+        if (isReasoningModelOpenAI(modelName)) {
             delete obj.temperature
             delete obj.stop
             const reasoning: OpenAIClient.Reasoning = {}

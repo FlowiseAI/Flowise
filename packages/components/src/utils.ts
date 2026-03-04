@@ -2219,3 +2219,11 @@ export const createZodSchemaFromJSON = (jsonSchema: any): z.ZodTypeAny => {
     // Fallback to any for unknown types
     return z.any()
 }
+
+export const isReasoningModelOpenAI = (name: string): boolean => {
+    if (/^o[134]/.test(name)) return true
+    if (name === 'codex-mini') return true
+    if (name.includes('gpt-5') && name.includes('-chat')) return false
+    if (name.includes('gpt-5')) return true
+    return false
+}

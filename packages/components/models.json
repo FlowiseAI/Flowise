@@ -397,6 +397,30 @@
                     "output_cost": 4.4e-6
                 },
                 {
+                    "label": "o3",
+                    "name": "o3",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "o3-pro",
+                    "name": "o3-pro",
+                    "input_cost": 2e-5,
+                    "output_cost": 8e-5
+                },
+                {
+                    "label": "o4-mini",
+                    "name": "o4-mini",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
+                },
+                {
+                    "label": "codex-mini",
+                    "name": "codex-mini",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 6e-6
+                },
+                {
                     "label": "o1",
                     "name": "o1",
                     "input_cost": 0.000015,
@@ -467,6 +491,18 @@
                     "name": "gpt-4.1-mini",
                     "input_cost": 0.0000004,
                     "output_cost": 0.0000016
+                },
+                {
+                    "label": "gpt-4.1-nano",
+                    "name": "gpt-4.1-nano",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
+                },
+                {
+                    "label": "gpt-5-pro",
+                    "name": "gpt-5-pro",
+                    "input_cost": 2.1e-5,
+                    "output_cost": 1.68e-4
                 },
                 {
                     "label": "gpt-5-chat-latest",
@@ -1300,6 +1336,12 @@
                     "output_cost": 0.00001
                 },
                 {
+                    "label": "o4-mini (latest)",
+                    "name": "o4-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
+                },
+                {
                     "label": "o3-mini (latest)",
                     "name": "o3-mini",
                     "input_cost": 1.1e-6,
@@ -1430,12 +1472,6 @@
                     "name": "gpt-3.5-turbo-16k-0613",
                     "input_cost": 0.000003,
                     "output_cost": 0.000004
-                },
-                {
-                    "label": "o4-mini",
-                    "name": "o4-mini",
-                    "input_cost": 1.5e-7,
-                    "output_cost": 6e-7
                 }
             ]
         },
