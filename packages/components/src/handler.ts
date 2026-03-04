@@ -61,13 +61,8 @@ function ensureLangWatchOtel(apiKey: string, endpoint: string) {
         provider.addSpanProcessor(new SimpleSpanProcessor(exporter))
         provider.register()
         langWatchOtelInitialized = true
-        if (process.env.DEBUG === 'true') {
-            console.log(`[LangWatch] OTel tracer provider registered, exporting to ${url}`)
-        }
-    } catch (e: any) {
-        if (process.env.DEBUG === 'true') {
-            console.error('[LangWatch] Failed to register OTel provider:', e?.message)
-        }
+    } catch {
+        // silently ignore — LangWatch tracing is best-effort
     }
 }
 import { DataSource } from 'typeorm'
@@ -1034,10 +1029,6 @@ export class AnalyticHandler {
                 const spanId = span.spanContext().spanId
                 this.handlers['langWatch'].span = { [spanId]: span }
                 returnIds['langWatch'].span = spanId
-
-                if (process.env.DEBUG === 'true') {
-                    console.log(`[LangWatch] onChainStart: span created, name=${name}, spanId=${spanId}`)
-                }
             }
         }
 
@@ -1197,10 +1188,6 @@ export class AnalyticHandler {
             if (span) {
                 span.setOutput(output)
                 span.end()
-
-                if (process.env.DEBUG === 'true') {
-                    console.log(`[LangWatch] onChainEnd: span ended, spanId=${returnIds['langWatch']?.span}`)
-                }
             }
         }
 
@@ -1394,10 +1381,6 @@ export class AnalyticHandler {
                 const spanId = span.spanContext().spanId
                 this.handlers['langWatch'].span = { ...this.handlers['langWatch'].span, [spanId]: span }
                 returnIds['langWatch'].span = spanId
-
-                if (process.env.DEBUG === 'true') {
-                    console.log(`[LangWatch] onLLMStart: LLM span created, name=${name}, spanId=${spanId}`)
-                }
             }
         }
 
@@ -1599,10 +1582,6 @@ export class AnalyticHandler {
                     span.setRequestModel(modelName)
                 }
                 span.end()
-
-                if (process.env.DEBUG === 'true') {
-                    console.log(`[LangWatch] onLLMEnd: LLM span ended, spanId=${returnIds['langWatch']?.span}, model=${modelName}`)
-                }
             }
         }
 
@@ -1760,10 +1739,6 @@ export class AnalyticHandler {
                 const spanId = span.spanContext().spanId
                 this.handlers['langWatch'].span = { ...this.handlers['langWatch'].span, [spanId]: span }
                 returnIds['langWatch'].span = spanId
-
-                if (process.env.DEBUG === 'true') {
-                    console.log(`[LangWatch] onToolStart: tool span created, name=${name}, spanId=${spanId}`)
-                }
             }
         }
 
@@ -1866,10 +1841,6 @@ export class AnalyticHandler {
             if (span) {
                 span.setOutput(output)
                 span.end()
-
-                if (process.env.DEBUG === 'true') {
-                    console.log(`[LangWatch] onToolEnd: tool span ended, spanId=${returnIds['langWatch']?.span}`)
-                }
             }
         }
 
