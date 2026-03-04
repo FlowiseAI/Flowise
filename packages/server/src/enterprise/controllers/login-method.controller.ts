@@ -14,11 +14,24 @@ import GoogleSSO from '../sso/GoogleSSO'
 import { decrypt } from '../utils/encryption.util'
 
 export class LoginMethodController {
+    constructor() {
+        this.create = this.create.bind(this)
+        this.read = this.read.bind(this)
+        this.update = this.update.bind(this)
+        this.defaultMethods = this.defaultMethods.bind(this)
+        this.testConfig = this.testConfig.bind(this)
+    }
+
     private assertEnterprisePlatform(): void {
         const platformType = getRunningExpressApp().identityManager.getPlatformType()
         if (platformType === Platform.CLOUD || platformType === Platform.OPEN_SOURCE) {
             throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
         }
+    }
+
+    private async getSafeConfig(encryptedConfig: string): Promise<Record<string, unknown>> {
+        const { clientSecret: _, ...safe } = JSON.parse(await decrypt(encryptedConfig)) as Record<string, unknown>
+        return safe
     }
 
     public async create(req: Request, res: Response, next: NextFunction) {
@@ -73,6 +86,10 @@ export class LoginMethodController {
         let queryRunner
         try {
             this.assertEnterprisePlatform()
+            const user = (req as any).user
+            if (!user?.activeOrganizationId) {
+                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+            }
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             const query = req.query as Partial<LoginMethod>
@@ -91,12 +108,18 @@ export class LoginMethodController {
             if (query.id) {
                 loginMethod = await loginMethodService.readLoginMethodById(query.id, queryRunner)
                 if (!loginMethod) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, LoginMethodErrorMessage.LOGIN_METHOD_NOT_FOUND)
-                loginMethod.config = JSON.parse(await decrypt(loginMethod.config))
+                if (loginMethod.organizationId !== user.activeOrganizationId) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
+                loginMethod.config = await this.getSafeConfig(loginMethod.config)
             } else if (query.organizationId) {
+                if (query.organizationId !== user.activeOrganizationId) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+                }
                 loginMethod = await loginMethodService.readLoginMethodByOrganizationId(query.organizationId, queryRunner)
 
                 for (let method of loginMethod) {
-                    method.config = JSON.parse(await decrypt(method.config))
+                    method.config = await this.getSafeConfig(method.config)
                 }
                 loginMethodConfig.providers = loginMethod
             } else {
@@ -131,25 +154,39 @@ export class LoginMethodController {
         }
     }
     public async testConfig(req: Request, res: Response, next: NextFunction) {
+        let queryRunner
         try {
-            const providers = req.body.providers
-            if (req.body.providerName === 'azure') {
-                const response = await AzureSSO.testSetup(providers[0].config)
+            const providers = req.body.providers as { config: Record<string, unknown> }[]
+            const providerName = req.body.providerName as string
+            const organizationId = req.body.organizationId as string | undefined
+            let config = providers[0]?.config ?? {}
+
+            if (organizationId) {
+                queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+                await queryRunner.connect()
+                const loginMethodService = new LoginMethodService()
+                config = await loginMethodService.getConfigWithSecrets(organizationId, providerName, config, queryRunner)
+            }
+
+            if (providerName === 'azure') {
+                const response = await AzureSSO.testSetup(config)
                 return res.json(response)
-            } else if (req.body.providerName === 'google') {
-                const response = await GoogleSSO.testSetup(providers[0].config)
+            } else if (providerName === 'google') {
+                const response = await GoogleSSO.testSetup(config)
                 return res.json(response)
-            } else if (req.body.providerName === 'auth0') {
-                const response = await Auth0SSO.testSetup(providers[0].config)
+            } else if (providerName === 'auth0') {
+                const response = await Auth0SSO.testSetup(config)
                 return res.json(response)
-            } else if (req.body.providerName === 'github') {
-                const response = await GithubSSO.testSetup(providers[0].config)
+            } else if (providerName === 'github') {
+                const response = await GithubSSO.testSetup(config)
                 return res.json(response)
             } else {
                 return res.json({ error: 'Provider not supported' })
             }
         } catch (error) {
             next(error)
+        } finally {
+            if (queryRunner) await queryRunner.release()
         }
     }
 }

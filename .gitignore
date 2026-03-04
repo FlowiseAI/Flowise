@@ -5,6 +5,7 @@
 # dependencies
 **/node_modules
 **/package-lock.json
+!**/examples/package-lock.json
 **/yarn.lock
 
 ## logs

@@ -1,4 +1,5 @@
-import { mapMimeTypeToExt } from './utils'
+import path from 'path'
+import { getUserHome, isAllowedUploadMimeType, mapMimeTypeToExt } from './utils'
 
 /**
  * Validates if a string is a valid UUID v4
@@ -146,4 +147,116 @@ export const validateMimeTypeAndExtensionMatch = (filename: string, mimetype: st
             `MIME type mismatch: file extension "${normalizedExt}" does not match declared MIME type "${mimetype}". Expected: ${expectedExt}`
         )
     }
+}
+
+/**
+ * Filters an array of MIME type strings to only those allowed for file upload config.
+ * Used when sanitizing chatbotConfig.allowedUploadFileTypes to prevent malicious values.
+ * @param {string[]} mimeTypes Raw MIME types (e.g. from splitting comma-separated config)
+ * @returns {string[]} Only MIME types that pass isAllowedUploadMimeType
+ */
+export const filterAllowedUploadMimeTypes = (mimeTypes: string[]): string[] => {
+    if (!Array.isArray(mimeTypes)) return []
+    return mimeTypes.map((m) => (typeof m === 'string' ? m.trim() : '')).filter((m) => m !== '' && isAllowedUploadMimeType(m))
+}
+
+/**
+ * Get allowed base directories for vector store operations
+ * @returns {string[]} Array of allowed base directory paths
+ */
+const getAllowedVectorStoreBaseDirs = (): string[] => {
+    const allowedDirs: string[] = []
+
+    // Allow user home .flowise directory
+    const userHome = getUserHome()
+    allowedDirs.push(path.join(userHome, '.flowise'))
+
+    // Allow configured blob storage path if set
+    if (process.env.BLOB_STORAGE_PATH) {
+        allowedDirs.push(path.resolve(process.env.BLOB_STORAGE_PATH))
+    }
+
+    return allowedDirs
+}
+
+/**
+ * Validates and sanitizes a vector store base path to prevent path traversal attacks
+ *
+ * This function addresses path traversal vulnerabilities in vector stores (Faiss, SimpleStore)
+ * by ensuring user-provided paths cannot escape allowed directories.
+ *
+ * @param {string | undefined} userProvidedPath The base path provided by user (can be empty/undefined)
+ * @returns {string} A validated, absolute path within allowed directories
+ * @throws {Error} If path validation fails or path is outside allowed directories
+ */
+export const validateVectorStorePath = (userProvidedPath: string | undefined): string => {
+    // If no path provided, use default secure location
+    if (!userProvidedPath || userProvidedPath.trim() === '') {
+        return path.join(getUserHome(), '.flowise', 'vectorstore')
+    }
+
+    const basePath = userProvidedPath.trim()
+
+    // Check for explicit path traversal patterns (..)
+    if (basePath.includes('..')) {
+        throw new Error('Invalid path: path traversal attempt detected')
+    }
+
+    // Check for URL-encoded path traversal
+    if (basePath.toLowerCase().includes('%2e') || basePath.toLowerCase().includes('%2f') || basePath.toLowerCase().includes('%5c')) {
+        throw new Error('Invalid path: encoded path traversal attempt detected')
+    }
+
+    // Check for null bytes and control characters
+    if (/\0/.test(basePath) || /[\x00-\x1f]/.test(basePath)) {
+        throw new Error('Invalid path: null bytes or control characters detected')
+    }
+
+    // Check for Windows-specific absolute paths and UNC paths (even on Unix systems)
+    // This prevents cross-platform attack vectors
+    if (/^[a-zA-Z]:\\/.test(basePath)) {
+        throw new Error('Invalid path: Windows absolute paths are not allowed')
+    }
+    if (/^\\\\[^\\]/.test(basePath)) {
+        throw new Error('Invalid path: UNC paths are not allowed')
+    }
+    if (/^\\\\\?\\/.test(basePath)) {
+        throw new Error('Invalid path: Extended-length paths are not allowed')
+    }
+
+    // Resolve to absolute path
+    // If path is relative, resolve it relative to the .flowise directory (safe default)
+    // If path is already absolute, keep it as-is
+    let resolvedPath: string
+    if (path.isAbsolute(basePath)) {
+        resolvedPath = path.resolve(basePath)
+    } else {
+        // Relative paths are resolved within the .flowise directory for safety
+        resolvedPath = path.resolve(path.join(getUserHome(), '.flowise', basePath))
+    }
+
+    // Verify the resolved path doesn't contain '..' after resolution
+    if (resolvedPath.includes('..')) {
+        throw new Error('Invalid path: path traversal detected in resolved path')
+    }
+
+    // Check if resolved path is within allowed directories
+    const allowedDirs = getAllowedVectorStoreBaseDirs()
+    const isWithinAllowedDir = allowedDirs.some((allowedDir) => {
+        // Normalize both paths for comparison
+        const normalizedResolved = path.normalize(resolvedPath)
+        const normalizedAllowed = path.normalize(allowedDir)
+
+        // Check if resolved path starts with allowed directory
+        // Add path separator to avoid partial matches (e.g., /home/user/.flowise vs /home/user/.flowise2)
+        return normalizedResolved === normalizedAllowed || normalizedResolved.startsWith(normalizedAllowed + path.sep)
+    })
+
+    if (!isWithinAllowedDir) {
+        throw new Error(
+            `Invalid path: path must be within allowed directories (${allowedDirs.join(', ')}). ` + `Attempted path: ${resolvedPath}`
+        )
+    }
+
+    return resolvedPath
 }

@@ -85,7 +85,6 @@
         "@types/passport": "^1.0.16",
         "@types/passport-jwt": "^4.0.1",
         "@types/passport-local": "^1.0.38",
-        "@types/uuid": "^9.0.7",
         "async-mutex": "^0.4.0",
         "axios": "1.12.0",
         "bcryptjs": "^2.4.3",
@@ -145,7 +144,7 @@
         "stripe": "^15.6.0",
         "turndown": "^7.2.0",
         "typeorm": "^0.3.6",
-        "uuid": "^9.0.1",
+        "uuid": "^10.0.0",
         "winston": "^3.9.0",
         "winston-daily-rotate-file": "^5.0.0"
     },

@@ -2,6 +2,13 @@ import { isValidUUID } from 'flowise-components'
 import chatflowsService from '../services/chatflows'
 import logger from './logger'
 
+// List of allowed URL slugs for public access to chatbots
+// It assumes the URL format includes one of the following patterns:
+// /prediction/{chatflowId}.
+// /public-chatbotConfig/{chatflowId}
+// /chatflows-streaming/{chatflowId}
+const ALLOWED_SLUGS = ['/prediction/', '/public-chatbotConfig/', '/chatflows-streaming/']
+
 /**
  * Validates if the origin is allowed for a specific chatflow
  * @param chatflowId - The chatflow ID to validate against
@@ -58,10 +65,12 @@ async function validateChatflowDomain(chatflowId: string, origin: string, worksp
 function extractChatflowId(url: string): string | null {
     try {
         const urlParts = url.split('/')
-        const predictionIndex = urlParts.indexOf('prediction')
+        const slug = extractSlugFromUrl(url)
+        if (!slug) return null
+        const slugIndex = urlParts.indexOf(slug)
 
-        if (predictionIndex !== -1 && urlParts.length > predictionIndex + 1) {
-            const chatflowId = urlParts[predictionIndex + 1]
+        if (slugIndex !== -1 && urlParts.length > slugIndex + 1) {
+            const chatflowId = urlParts[slugIndex + 1]
             // Remove query parameters if present
             return chatflowId.split('?')[0]
         }
@@ -74,12 +83,26 @@ function extractChatflowId(url: string): string | null {
 }
 
 /**
- * Validates if a request is a prediction request
+ * Extracts the slug from the URL if it matches any of the allowed slugs
  * @param url - The request URL
- * @returns boolean - True if it's a prediction request
+ * @returns string | null - The matched slug or null if no match
  */
-function isPredictionRequest(url: string): boolean {
-    return url.includes('/prediction/')
+function extractSlugFromUrl(url: string): string | null {
+    for (const publicUrl of ALLOWED_SLUGS) {
+        if (url.includes(publicUrl)) {
+            return publicUrl.replace(/\//g, '') // remove slashes
+        }
+    }
+    return null
+}
+
+/**
+ * Validates if a request is for public chatflows (embedded chatbots)
+ * @param url - The request URL
+ * @returns boolean - True if it's a public chatflow request
+ */
+function isPublicChatflowRequest(url: string): boolean {
+    return extractSlugFromUrl(url) !== null
 }
 
 /**
@@ -106,4 +129,4 @@ async function getUnauthorizedOriginError(chatflowId: string, workspaceId?: stri
     }
 }
 
-export { isPredictionRequest, extractChatflowId, validateChatflowDomain, getUnauthorizedOriginError }
+export { isPublicChatflowRequest, extractChatflowId, validateChatflowDomain, getUnauthorizedOriginError }

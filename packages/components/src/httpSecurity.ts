@@ -27,12 +27,25 @@ const DEFAULT_DENY_LIST = [
 ]
 
 /**
- * Gets the HTTP deny list from environment variable or returns default
- * @returns Array of denied IP addresses/CIDR ranges
+ * Gets the HTTP deny list.
+ * When HTTP_SECURITY_CHECK=false, the default deny list is omitted and only
+ * HTTP_DENY_LIST entries are used. Defaults to true (secure).
+ * @returns Array of denied IP addresses, hostnames, or CIDR ranges
  */
 function getHttpDenyList(): string[] {
+    const securityCheckEnabled = process.env.HTTP_SECURITY_CHECK !== 'false'
     const httpDenyListString = process.env.HTTP_DENY_LIST
-    return httpDenyListString ? httpDenyListString.split(',').map((s) => s.trim()) : DEFAULT_DENY_LIST
+    const customList = httpDenyListString
+        ? httpDenyListString
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+        : []
+
+    if (securityCheckEnabled) {
+        return [...new Set([...DEFAULT_DENY_LIST, ...customList])]
+    }
+    return customList
 }
 
 /**
@@ -97,7 +110,7 @@ export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirect
     }
 
     let redirects = 0
-    let currentConfig = { ...config, maxRedirects: 0 } // Disable automatic redirects
+    let currentConfig = { ...config, maxRedirects: 0, validateStatus: () => true } // Disable automatic redirects, accept all status codes
 
     while (redirects <= maxRedirects) {
         const target = await resolveAndValidate(currentUrl)

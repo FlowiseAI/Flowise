@@ -13,7 +13,7 @@ import { Readable } from 'node:stream'
 import path from 'path'
 import sanitize from 'sanitize-filename'
 import { getUserHome } from './utils'
-import { isPathTraversal, isValidUUID } from './validator'
+import { isPathTraversal, isUnsafeFilePath, isValidUUID } from './validator'
 
 const dirSize = async (directoryPath: string) => {
     let totalSize = 0
@@ -752,13 +752,26 @@ export const streamStorageFile = async (
         throw new Error('Invalid chatflowId format - must be a valid UUID')
     }
 
+    if (!chatId) {
+        throw new Error('chatId is missing')
+    }
+
     // Check for path traversal attempts
     if (isPathTraversal(chatflowId) || isPathTraversal(chatId)) {
         throw new Error('Invalid path characters detected in chatflowId or chatId')
     }
 
+    if (!fileName || isUnsafeFilePath(fileName)) {
+        throw new Error('Invalid or unsafe fileName detected')
+    }
+
     const storageType = getStorageType()
     const sanitizedFilename = sanitize(fileName)
+
+    if (!sanitizedFilename || sanitizedFilename.includes('/') || sanitizedFilename.includes('\\')) {
+        throw new Error('Invalid filename after sanitization')
+    }
+
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
 
