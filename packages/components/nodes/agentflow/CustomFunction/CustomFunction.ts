@@ -21,7 +21,7 @@ const exampleFunc = `/*
 * You can use properties specified in Input Variables with the prefix $. For example: $foo
 * You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input, $flow.state
 * You can get global variables: $vars.<variable-name>
-* Must return a string value at the end of function
+* You can return a string value or a JSON object at the end of function
 */
 
 const fetch = require('node-fetch');
@@ -32,6 +32,7 @@ const options = {
         'Content-Type': 'application/json'
     }
 };
+
 try {
     const response = await fetch(url, options);
     const text = await response.text();
@@ -60,7 +61,7 @@ class CustomFunction_Agentflow implements INode {
     constructor() {
         this.label = 'Custom Function'
         this.name = 'customFunctionAgentflow'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'CustomFunction'
         this.category = 'Agent Flows'
         this.description = 'Execute custom function'
@@ -107,7 +108,8 @@ class CustomFunction_Agentflow implements INode {
                         label: 'Key',
                         name: 'key',
                         type: 'asyncOptions',
-                        loadMethod: 'listRuntimeStateKeys'
+                        loadMethod: 'listRuntimeStateKeys',
+                        freeSolo: true
                     },
                     {
                         label: 'Value',
@@ -183,10 +185,7 @@ class CustomFunction_Agentflow implements INode {
                 streamOutput
             })
 
-            let finalOutput = response
-            if (typeof response === 'object') {
-                finalOutput = JSON.stringify(response, null, 2)
-            }
+            const finalOutput = response
 
             // Update flow state if needed
             let newState = { ...state }
@@ -194,7 +193,8 @@ class CustomFunction_Agentflow implements INode {
                 newState = updateFlowState(state, _customFunctionUpdateState)
             }
 
-            newState = processTemplateVariables(newState, finalOutput)
+            const outputForState = typeof finalOutput === 'object' ? JSON.stringify(finalOutput, null, 2) : finalOutput
+            newState = processTemplateVariables(newState, outputForState)
 
             const returnOutput = {
                 id: nodeData.id,
