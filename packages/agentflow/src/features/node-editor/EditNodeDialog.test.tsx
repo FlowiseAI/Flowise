@@ -44,11 +44,7 @@ jest.mock('@/atoms', () => ({
                     <button
                         data-testid={`add-${inputParam.name}`}
                         onClick={() => {
-                            const newItem = inputParam.array?.reduce((acc, field) => {
-                                acc[field.name] = field.default ?? ''
-                                return acc
-                            }, {} as Record<string, unknown>)
-                            onDataChange({ inputParam, newValue: [...currentArray, newItem || {}] })
+                            onDataChange({ inputParam, newValue: [...currentArray, { _mockAdded: true }] })
                         }}
                     >
                         Add {inputParam.label}
@@ -381,17 +377,13 @@ describe('EditNodeDialog', () => {
             expect(screen.getByTestId('change-connections-0')).toBeInTheDocument()
             expect(screen.getByTestId('change-connections-1')).toBeInTheDocument()
 
-            // Test Add operation - adds a new item with default values
+            // Test Add operation - appends a new item to the array
             const addButton = screen.getByTestId('add-connections')
             fireEvent.click(addButton)
 
             expect(mockUpdateNodeData).toHaveBeenCalledWith('node-1', {
                 inputValues: {
-                    connections: [
-                        { host: 'server1.com', port: 3000 },
-                        { host: 'server2.com', port: 8080 },
-                        { host: 'localhost', port: 5432 }
-                    ]
+                    connections: [{ host: 'server1.com', port: 3000 }, { host: 'server2.com', port: 8080 }, { _mockAdded: true }]
                 }
             })
 

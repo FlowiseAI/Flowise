@@ -281,7 +281,32 @@ describe('ArrayInput', () => {
         expect(deleteButtons[1]).toBeDisabled()
     })
 
-    // Test 11: itemParameters prop overrides inputParam.array display flags
+    // Test 11: Type-specific defaults when no explicit default is provided
+    it('should initialize new items with type-appropriate defaults when no default is specified', () => {
+        const inputParamWithTypes: InputParam = {
+            id: 'typed-array',
+            name: 'testArray',
+            label: 'Test Item',
+            type: 'array',
+            array: [
+                { id: 'str', name: 'str', label: 'String', type: 'string' } as InputParam,
+                { id: 'num', name: 'num', label: 'Number', type: 'number' } as InputParam,
+                { id: 'bool', name: 'bool', label: 'Boolean', type: 'boolean' } as InputParam,
+                { id: 'arr', name: 'arr', label: 'Array', type: 'array' } as InputParam
+            ]
+        }
+
+        render(<ArrayInput inputParam={inputParamWithTypes} data={mockNodeData} onDataChange={mockOnDataChange} />)
+
+        fireEvent.click(screen.getByRole('button', { name: /Add Test Item/i }))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: inputParamWithTypes,
+            newValue: [{ str: '', num: 0, bool: false, arr: [] }]
+        })
+    })
+
+    // Test 12: itemParameters prop overrides inputParam.array display flags
     it('should use itemParameters prop for field visibility when provided, ignoring inputParam.array display flags', () => {
         // inputParam.array has both fields with no display flag (both would show)
         const dataWithItem: NodeData = {

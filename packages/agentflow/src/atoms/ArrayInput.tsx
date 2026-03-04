@@ -51,12 +51,28 @@ export function ArrayInput({ inputParam, data, disabled = false, onDataChange, i
 
     // Add new array item
     const handleAddItem = useCallback(() => {
-        // Initialize new item with default values
+        // Initialize new item with type-appropriate default values
         const newItem: Record<string, unknown> = {}
 
         if (inputParam.array) {
             for (const field of inputParam.array) {
-                newItem[field.name] = field.default ?? ''
+                if (field.default !== undefined) {
+                    newItem[field.name] = field.default
+                } else {
+                    switch (field.type) {
+                        case 'number':
+                            newItem[field.name] = 0
+                            break
+                        case 'boolean':
+                            newItem[field.name] = false
+                            break
+                        case 'array':
+                            newItem[field.name] = []
+                            break
+                        default:
+                            newItem[field.name] = ''
+                    }
+                }
             }
         }
 
