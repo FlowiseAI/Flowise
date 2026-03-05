@@ -86,7 +86,7 @@ jobs:
         runs-on: ubuntu-latest
         environment: npm-publish
         permissions:
-            contents: read
+            contents: write
         steps:
             - uses: actions/checkout@v4
 
@@ -119,3 +119,11 @@ jobs:
               run: pnpm --filter @flowiseai/agentflow publish --no-git-checks --tag ${{ inputs.tag }}
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Commit version bump
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git add packages/agentflow/package.json
+                  git commit -m "chore: bump @flowiseai/agentflow to ${{ needs.dry-run.outputs.version }}"
+                  git push
