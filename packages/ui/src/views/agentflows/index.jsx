@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
@@ -53,6 +53,12 @@ const Agentflows = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
+
+    // Refs to avoid stale closures in debounced search effect
+    const pageLimitRef = useRef(pageLimit)
+    const agentflowVersionRef = useRef(agentflowVersion)
+    pageLimitRef.current = pageLimit
+    agentflowVersionRef.current = agentflowVersion
 
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
@@ -117,7 +123,7 @@ const Agentflows = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setCurrentPage(1)
-            refresh(1, pageLimit, agentflowVersion, search)
+            refresh(1, pageLimitRef.current, agentflowVersionRef.current, search)
         }, 300)
         return () => clearTimeout(timer)
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -326,7 +332,7 @@ const Agentflows = () => {
                                     images={images}
                                     icons={icons}
                                     isLoading={isLoading}
-                                    filterFunction={undefined}
+                                    filterFunction={() => true}
                                     updateFlowsApi={getAllAgentflows}
                                     setError={setError}
                                     currentPage={currentPage}

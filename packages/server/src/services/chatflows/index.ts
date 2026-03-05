@@ -166,7 +166,7 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
         }
         if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
         if (search) {
-            queryBuilder.andWhere('(chat_flow.name LIKE :search OR chat_flow.category LIKE :search)', { search: `%${search}%` })
+            queryBuilder.andWhere('(LOWER(chat_flow.name) LIKE :search OR LOWER(chat_flow.category) LIKE :search)', { search: `%${search.toLowerCase()}%` })
         }
         const [data, total] = await queryBuilder.getManyAndCount()
 
