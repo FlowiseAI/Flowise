@@ -284,10 +284,12 @@ class GetDocumentTool extends BaseGoogleDocsTool {
         const params = { ...arg, ...this.defaultParams }
 
         try {
-            let endpoint = `documents/${encodeURIComponent(params.documentId)}`
+            const queryParams = new URLSearchParams()
             if (params.includeTabsContent) {
-                endpoint += '?includeTabsContent=true'
+                queryParams.set('includeTabsContent', 'true')
             }
+            const endpoint =
+                `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '')
             const response = await this.makeGoogleDocsRequest({ endpoint, params })
             return response
         } catch (error) {
@@ -565,10 +567,12 @@ class GetTextContentTool extends BaseGoogleDocsTool {
         const params = { ...arg, ...this.defaultParams }
 
         try {
-            let endpoint = `documents/${encodeURIComponent(params.documentId)}`
+            const queryParams = new URLSearchParams()
             if (params.includeTabsContent) {
-                endpoint += '?includeTabsContent=true'
+                queryParams.set('includeTabsContent', 'true')
             }
+            const endpoint =
+                `documents/${encodeURIComponent(params.documentId)}` + (queryParams.size > 0 ? `?${queryParams.toString()}` : '')
             const response = await this.makeGoogleDocsRequest({ endpoint, params })
 
             const docData = JSON.parse(response.split(TOOL_ARGS_PREFIX)[0])
