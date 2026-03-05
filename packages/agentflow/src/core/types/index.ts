@@ -128,6 +128,8 @@ export interface InputParam {
     description?: string
     acceptVariable?: boolean
     additionalParams?: boolean
+    show?: Record<string, unknown>
+    hide?: Record<string, unknown>
     display?: boolean
 }
 
