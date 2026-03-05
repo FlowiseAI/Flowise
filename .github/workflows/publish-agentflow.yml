@@ -1,0 +1,121 @@
+name: Publish @flowiseai/agentflow
+on:
+    workflow_dispatch:
+        inputs:
+            bump:
+                description: 'Version bump type'
+                required: true
+                type: choice
+                default: 'prerelease'
+                options:
+                    - prerelease
+                    - patch
+                    - minor
+                    - major
+                    - custom
+            custom_version:
+                description: 'Custom version (only used when bump is "custom", e.g. 1.0.0-beta.1)'
+                required: false
+                type: string
+            tag:
+                description: 'npm dist-tag'
+                required: false
+                type: choice
+                default: 'dev'
+                options:
+                    - dev
+                    - latest
+
+jobs:
+    dry-run:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+        outputs:
+            version: ${{ steps.resolve-version.outputs.version }}
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v2
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '18.15.0'
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Validate custom version
+              if: inputs.bump == 'custom'
+              run: |
+                  if [ -z "${{ inputs.custom_version }}" ]; then
+                    echo "::error::custom_version is required when bump is 'custom'"
+                    exit 1
+                  fi
+                  npx semver "${{ inputs.custom_version }}" || (echo "::error::Invalid semver: ${{ inputs.custom_version }}" && exit 1)
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+              env:
+                  PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+            - name: Set version
+              run: |
+                  if [ "${{ inputs.bump }}" = "custom" ]; then
+                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.custom_version }}" --no-git-tag-version
+                  else
+                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.bump }}" --preid dev --no-git-tag-version
+                  fi
+
+            - name: Resolve version
+              id: resolve-version
+              run: |
+                  VERSION=$(node -p "require('./packages/agentflow/package.json').version")
+                  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+                  echo "## Version to publish: \`$VERSION\`" >> "$GITHUB_STEP_SUMMARY"
+                  echo "## Tag: \`${{ inputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Package contents
+              run: pnpm --filter @flowiseai/agentflow exec npm pack --dry-run
+
+            - name: Dry run publish
+              run: pnpm --filter @flowiseai/agentflow publish --no-git-checks --dry-run --tag ${{ inputs.tag }}
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    publish:
+        needs: dry-run
+        runs-on: ubuntu-latest
+        environment: npm-publish
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v2
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '18.15.0'
+                  registry-url: 'https://registry.npmjs.org'
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
+              env:
+                  PUPPETEER_SKIP_DOWNLOAD: 'true'
+
+            - name: Set version
+              run: |
+                  if [ "${{ inputs.bump }}" = "custom" ]; then
+                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.custom_version }}" --no-git-tag-version
+                  else
+                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.bump }}" --preid dev --no-git-tag-version
+                  fi
+
+            - name: Log version
+              run: |
+                  echo "Publishing version: ${{ needs.dry-run.outputs.version }}"
+                  echo "Tag: ${{ inputs.tag }}"
+
+            - name: Publish
+              run: pnpm --filter @flowiseai/agentflow publish --no-git-checks --tag ${{ inputs.tag }}
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
