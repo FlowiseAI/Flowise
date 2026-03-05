@@ -3,12 +3,10 @@ import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, IN
 import { getCredentialData, getCredentialParam, getVars, prepareSandboxVars } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
 import { MCPToolkit } from '../core'
-import hash from 'object-hash'
 import axios from 'axios'
-import crypto from 'crypto'
-import { z } from 'zod'
+import { z, ZodTypeAny } from 'zod'
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js'
-import type { CallToolRequest, CallToolResult } from '@modelcontextprotocol/sdk/types.js'
+import type { CallToolRequest, CallToolResult, TextContent, Tool as McpTool } from '@modelcontextprotocol/sdk/types.js'
 
 const VAR_PLACEHOLDER_RE = /\{\{\$vars\.([^}]+)\}\}/g
 const PIPEDREAM_CONNECT_URL_PATTERN = /https:\/\/pipedream\.com\/_static\/connect\.html\?[^\s"')]+/
@@ -20,7 +18,7 @@ function extractConnectUrl(text: string): string | null {
 }
 
 function formatPipedreamResponse(res: CallToolResult): string {
-    const textItems = res.content.filter((c: any) => c.type === 'text').map((c: any) => c.text)
+    const textItems = res.content.filter((c): c is TextContent => c.type === 'text').map((c) => c.text)
     const text = textItems.join('\n')
 
     const connectUrl = extractConnectUrl(text)
@@ -49,7 +47,7 @@ function createSchemaModel(inputSchema: { type: string; properties?: Record<stri
     const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key]) => {
         acc[key] = z.any()
         return acc
-    }, {} as Record<string, z.ZodTypeAny>)
+    }, {} as Record<string, ZodTypeAny>)
     return z.object(schemaProperties)
 }
 
@@ -122,12 +120,14 @@ class Pipedream_MCP implements INode {
                 name: 'appSlug',
                 type: 'string',
                 description:
-                    'The app slug for the Pipedream app you want to use. Find this on [mcp.pipedream.com](https://mcp.pipedream.com)'
+                    'The unique app identifier (name slug) for a Pipedream app (e.g. <code>slack</code>, <code>gmail</code>, <code>notion</code>, <code>linear</code>). Browse all available apps and their slugs at <a target="_blank" href="https://mcp.pipedream.com">mcp.pipedream.com</a>. The slug is the lowercase name shown in the app URL on Pipedream (e.g. pipedream.com/apps/<b>slack</b>). You can specify multiple apps by providing comma-separated slugs (e.g. <code>slack,notion</code>).'
             },
             {
-                label: 'External User ID',
+                label: 'User ID',
                 name: 'externalUserId',
                 type: 'string',
+                description:
+                    'A unique identifier for your end user (e.g. email or user ID from your system). Supports Flowise variables (e.g. <code>{{$vars.user_email}}</code>) and flow variables (e.g. <code>{{$flow.sessionId}}</code>).',
                 acceptVariable: true,
                 placeholder: '{{$vars.user_email}}'
             },
@@ -163,7 +163,7 @@ class Pipedream_MCP implements INode {
                 if (!appSlug || !externalUserId) {
                     return [
                         {
-                            label: 'Please fill in App Slug and External User ID first',
+                            label: 'Please fill in App Slug and User ID first',
                             name: 'placeholder',
                             description: 'Configure the required fields above, then refresh'
                         }
@@ -213,7 +213,7 @@ class Pipedream_MCP implements INode {
         }
 
         try {
-            const body: any = {
+            const body: Record<string, string> = {
                 grant_type: 'client_credentials',
                 client_id: clientId,
                 client_secret: clientSecret
@@ -279,16 +279,13 @@ class Pipedream_MCP implements INode {
         }
 
         let externalUserId = nodeData.inputs?.externalUserId as string
-        if (!externalUserId) {
-            throw new Error('Pipedream external user ID is required')
-        }
-
         externalUserId = await this.resolveVarsInString(externalUserId, nodeData, options)
+        console.info(`externalUserId [resolveVarsInString]: ${externalUserId}`)
 
         if (externalUserId.includes('{{')) {
             if (!isLoadMethod) {
                 throw new Error(
-                    'Variables in External User ID are not resolved. ' +
+                    'Variables in User ID are not resolved. ' +
                         '{{$vars.*}} requires a matching workspace variable. ' +
                         '{{$flow.*}} variables (e.g. sessionId) are only available at runtime, not when refreshing actions.'
                 )
@@ -298,14 +295,20 @@ class Pipedream_MCP implements INode {
             externalUserId = 'flowise_preview_user'
         }
 
-        const SAFE_USER_ID = /^[a-zA-Z0-9._@+-]{1,256}$/
-        if (!SAFE_USER_ID.test(externalUserId)) {
-            throw new Error('externalUserId contains invalid characters. Allowed: letters, digits, . _ @ + -')
+        externalUserId = externalUserId.replace(/<[^>]*>/g, '').trim()
+        console.info(`externalUserId: ${externalUserId}`)
+        if (!externalUserId) {
+            throw new Error('Pipedream user ID is required')
+        }
+
+        const SAFE_USER_ID = /^[a-zA-Z0-9._@+-]{1,250}$/
+        if (!SAFE_USER_ID.test(externalUserId.trim())) {
+            throw new Error('User ID contains invalid characters. Allowed: letters, digits, . _ @ + -')
         }
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const projectId = getCredentialParam('projectId', credentialData, nodeData)
-        const oauthScopes = getCredentialParam('oauthScopes', credentialData, nodeData) as string | undefined
+        const oauthScopes = getCredentialParam('oauthScopes', credentialData, nodeData) as string | 'connect:*'
 
         if (!projectId) {
             throw new Error('Pipedream Project ID is required in credentials')
@@ -334,17 +337,6 @@ class Pipedream_MCP implements INode {
             }
         }
 
-        const workspaceId = options?.searchOptions?.workspaceId?._value || options?.workspaceId || 'default'
-        const tokenFingerprint = crypto.createHash('sha256').update(accessToken).digest('hex').slice(0, 16)
-        const cacheKey = hash({ workspaceId, projectId, environment, externalUserId, appSlug, toolMode, oauthScopes, tokenFingerprint })
-
-        if (options.cachePool) {
-            const cachedResult = await options.cachePool.getMCPCache(cacheKey)
-            if (cachedResult && cachedResult.tools.length > 0) {
-                return cachedResult.tools
-            }
-        }
-
         try {
             const toolkit = new MCPToolkit(serverParams as any, 'sse')
             await toolkit.initialize()
@@ -354,7 +346,7 @@ class Pipedream_MCP implements INode {
                 throw new Error(`No tools available for the Pipedream app slug "${appSlug}". Please check your configuration.`)
             }
 
-            const toolPromises = rawTools.map((t: any) =>
+            const toolPromises = rawTools.map((t: McpTool) =>
                 createPipedreamTool(toolkit, t.name, t.description || t.name, createSchemaModel(t.inputSchema))
             )
             const settled = await Promise.allSettled(toolPromises)
@@ -362,10 +354,6 @@ class Pipedream_MCP implements INode {
 
             if (tools.length === 0) {
                 throw new Error(`No tools available for the Pipedream app slug "${appSlug}". Please check your configuration.`)
-            }
-
-            if (options.cachePool) {
-                await options.cachePool.addMCPCache(cacheKey, { toolkit, tools })
             }
 
             return tools
