@@ -37,6 +37,8 @@ jobs:
             - uses: actions/checkout@v4
 
             - uses: pnpm/action-setup@v2
+              with:
+                  version: 10.26.0
 
             - uses: actions/setup-node@v4
               with:
@@ -46,11 +48,13 @@ jobs:
             - name: Validate custom version
               if: inputs.bump == 'custom'
               run: |
-                  if [ -z "${{ inputs.custom_version }}" ]; then
+                  if [ -z "$CUSTOM_VERSION" ]; then
                     echo "::error::custom_version is required when bump is 'custom'"
                     exit 1
                   fi
-                  npx semver "${{ inputs.custom_version }}" || (echo "::error::Invalid semver: ${{ inputs.custom_version }}" && exit 1)
+                  npx semver "$CUSTOM_VERSION" || (echo "::error::Invalid semver: $CUSTOM_VERSION" && exit 1)
+              env:
+                  CUSTOM_VERSION: ${{ inputs.custom_version }}
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
@@ -59,11 +63,14 @@ jobs:
 
             - name: Set version
               run: |
-                  if [ "${{ inputs.bump }}" = "custom" ]; then
-                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.custom_version }}" --no-git-tag-version
+                  if [ "$BUMP" = "custom" ]; then
+                    pnpm --filter @flowiseai/agentflow exec npm version "$CUSTOM_VERSION" --no-git-tag-version
                   else
-                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.bump }}" --preid dev --no-git-tag-version
+                    pnpm --filter @flowiseai/agentflow exec npm version "$BUMP" --preid dev --no-git-tag-version
                   fi
+              env:
+                  BUMP: ${{ inputs.bump }}
+                  CUSTOM_VERSION: ${{ inputs.custom_version }}
 
             - name: Resolve version
               id: resolve-version
@@ -92,6 +99,8 @@ jobs:
             - uses: actions/checkout@v4
 
             - uses: pnpm/action-setup@v2
+              with:
+                  version: 10.26.0
 
             - uses: actions/setup-node@v4
               with:
@@ -105,11 +114,14 @@ jobs:
 
             - name: Set version
               run: |
-                  if [ "${{ inputs.bump }}" = "custom" ]; then
-                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.custom_version }}" --no-git-tag-version
+                  if [ "$BUMP" = "custom" ]; then
+                    pnpm --filter @flowiseai/agentflow exec npm version "$CUSTOM_VERSION" --no-git-tag-version
                   else
-                    pnpm --filter @flowiseai/agentflow exec npm version "${{ inputs.bump }}" --preid dev --no-git-tag-version
+                    pnpm --filter @flowiseai/agentflow exec npm version "$BUMP" --preid dev --no-git-tag-version
                   fi
+              env:
+                  BUMP: ${{ inputs.bump }}
+                  CUSTOM_VERSION: ${{ inputs.custom_version }}
 
             - name: Log version
               run: |
