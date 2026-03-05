@@ -87,6 +87,7 @@ jobs:
         environment: npm-publish
         permissions:
             contents: write
+            pull-requests: write
         steps:
             - uses: actions/checkout@v4
 
@@ -120,10 +121,20 @@ jobs:
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-            - name: Commit version bump
+            - name: Create version bump PR
               run: |
+                  VERSION="${{ needs.dry-run.outputs.version }}"
+                  BRANCH="chore/bump-agentflow-${VERSION}"
                   git config user.name "github-actions[bot]"
                   git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git checkout -b "$BRANCH"
                   git add packages/agentflow/package.json
-                  git commit -m "chore: bump @flowiseai/agentflow to ${{ needs.dry-run.outputs.version }}"
-                  git push
+                  git commit -m "chore: bump @flowiseai/agentflow to ${VERSION}"
+                  git push -u origin "$BRANCH"
+                  gh pr create \
+                    --title "chore: bump @flowiseai/agentflow to ${VERSION}" \
+                    --body "Automated version bump after publishing \`@flowiseai/agentflow@${VERSION}\` to npm with tag \`${{ inputs.tag }}\`." \
+                    --base main \
+                    --head "$BRANCH"
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
