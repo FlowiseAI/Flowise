@@ -58,7 +58,7 @@ describe('EditNodeDialog', () => {
     const inputParams: InputParam[] = [
         { name: 'model', label: 'Model', type: 'string' } as InputParam,
         { name: 'temperature', label: 'Temperature', type: 'number' } as InputParam,
-        { name: 'hiddenParam', label: 'Hidden', type: 'string', display: false } as InputParam
+        { id: 'hiddenParam', name: 'hiddenParam', label: 'Hidden', type: 'string', hide: { model: 'gpt-4' } } as InputParam
     ]
 
     const defaultProps = {
@@ -193,5 +193,63 @@ describe('EditNodeDialog', () => {
                 temperature: 'test-value'
             })
         })
+    })
+
+    it('should preserve hidden field values in state (not strip on keystroke)', () => {
+        // Setup: provider=openAI with openAIModel selected
+        const visibilityParams: InputParam[] = [
+            {
+                id: 'provider',
+                name: 'provider',
+                label: 'Provider',
+                type: 'options',
+                options: [
+                    { label: 'OpenAI', name: 'openAI' },
+                    { label: 'Google', name: 'google' }
+                ]
+            },
+            {
+                id: 'openAIModel',
+                name: 'openAIModel',
+                label: 'OpenAI Model',
+                type: 'string',
+                show: { provider: 'openAI' }
+            },
+            {
+                id: 'googleModel',
+                name: 'googleModel',
+                label: 'Google Model',
+                type: 'string',
+                show: { provider: 'google' }
+            }
+        ]
+
+        const visibilityData: NodeData = {
+            id: 'node-vis',
+            name: 'testNode',
+            label: 'Test',
+            inputValues: { provider: 'openAI', openAIModel: 'gpt-4', googleModel: '' }
+        } as NodeData
+
+        render(
+            <EditNodeDialog
+                show={true}
+                dialogProps={{ inputParams: visibilityParams, data: visibilityData, disabled: false }}
+                onCancel={jest.fn()}
+            />
+        )
+
+        // Switch provider to google — openAIModel becomes hidden
+        fireEvent.click(screen.getByTestId('change-provider'))
+
+        // updateNodeData should keep openAIModel in inputValues (not stripped)
+        expect(mockUpdateNodeData).toHaveBeenCalledWith(
+            'node-vis',
+            expect.objectContaining({
+                inputValues: expect.objectContaining({
+                    openAIModel: 'gpt-4' // preserved, not stripped
+                })
+            })
+        )
     })
 })

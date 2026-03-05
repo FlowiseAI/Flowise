@@ -120,6 +120,7 @@
         "moment": "^2.29.3",
         "moment-timezone": "^0.5.34",
         "multer": "^2.0.2",
+        "multer-azure-blob-storage": "^1.2.0",
         "multer-cloud-storage": "^4.0.0",
         "multer-s3": "^3.0.1",
         "mysql2": "^3.11.3",
@@ -147,6 +148,7 @@
         "typeorm": "^0.3.6",
         "uuid": "^9.0.1",
         "winston": "^3.9.0",
+        "winston-azure-blob": "^1.5.0",
         "winston-daily-rotate-file": "^5.0.0"
     },
     "devDependencies": {
