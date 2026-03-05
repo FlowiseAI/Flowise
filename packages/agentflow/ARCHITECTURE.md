@@ -122,10 +122,10 @@ core/
 │   └── ...
 ├── validation/             # Flow validation logic
 │   ├── flowValidation.ts   # validateFlow, validateNode
+│   ├── connectionValidation.ts  # isValidConnectionAgentflowV2
 │   └── ...
 ├── utils/                  # Generic utilities
 │   ├── nodeFactory.ts      # initNode, getUniqueNodeId
-│   ├── connectionValidation.ts
 │   └── ...
 └── index.ts                # Barrel export (use sparingly)
 ```
