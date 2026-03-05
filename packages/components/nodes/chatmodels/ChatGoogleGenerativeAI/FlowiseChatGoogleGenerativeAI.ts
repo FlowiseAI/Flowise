@@ -25,8 +25,7 @@ import {
     parseBase64DataUrl,
     convertToProviderContentBlock,
     isDataContentBlock,
-    ToolMessage,
-    InputTokenDetails
+    ToolMessage
 } from '@langchain/core/messages'
 import { ChatGeneration } from '@langchain/core/outputs'
 import { ToolCallChunk } from '@langchain/core/messages/tool'
@@ -459,7 +458,7 @@ export function convertBaseMessagesToContent(
 // Usage Metadata Conversion
 // ============================================================================
 
-export function convertUsageMetadata(usageMetadata: GenerateContentResponse['usageMetadata'], model: string): UsageMetadata {
+export function convertUsageMetadata(usageMetadata: GenerateContentResponse['usageMetadata']): UsageMetadata {
     const output: UsageMetadata = {
         input_tokens: usageMetadata?.promptTokenCount ?? 0,
         output_tokens: usageMetadata?.candidatesTokenCount ?? 0,
@@ -468,23 +467,6 @@ export function convertUsageMetadata(usageMetadata: GenerateContentResponse['usa
     if (usageMetadata?.cachedContentTokenCount) {
         output.input_token_details ??= {}
         output.input_token_details.cache_read = usageMetadata.cachedContentTokenCount
-    }
-    // gemini-3-pro-preview has bracket based tracking of tokens per request
-    if (model === 'gemini-3-pro-preview') {
-        const over200k = Math.max(0, (usageMetadata?.promptTokenCount ?? 0) - 200000)
-        const cachedOver200k = Math.max(0, (usageMetadata?.cachedContentTokenCount ?? 0) - 200000)
-        if (over200k) {
-            output.input_token_details = {
-                ...output.input_token_details,
-                over_200k: over200k
-            } as InputTokenDetails
-        }
-        if (cachedOver200k) {
-            output.input_token_details = {
-                ...output.input_token_details,
-                cache_read_over_200k: cachedOver200k
-            } as InputTokenDetails
-        }
     }
     return output
 }
@@ -852,7 +834,7 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
 
         let usageMetadata: UsageMetadata | undefined
         if ('usageMetadata' in res.response) {
-            usageMetadata = convertUsageMetadata(res.response.usageMetadata, this.model)
+            usageMetadata = convertUsageMetadata(res.response.usageMetadata)
         }
 
         const generationResult = mapGenerateContentResultToChatResult(res.response, {
@@ -917,7 +899,7 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
                 (this as any).streamUsage !== false &&
                 options.streamUsage !== false
             ) {
-                usageMetadata = convertUsageMetadata(response.usageMetadata, this.model)
+                usageMetadata = convertUsageMetadata(response.usageMetadata)
 
                 // Under the hood, LangChain combines the prompt tokens. Google returns the updated
                 // total each time, so we need to find the difference between the tokens.

@@ -10,6 +10,7 @@ import {
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { findBestScenarioIndex } from './matchScenario'
+import { extractResponseContent } from '../../../src/utils'
 
 class ConditionAgent_Agentflow implements INode {
     label: string
@@ -382,7 +383,7 @@ class ConditionAgent_Agentflow implements INode {
             // End analytics tracking (pass structured output with usage metadata)
             if (analyticHandlers && llmIds) {
                 const analyticsOutput: any = {
-                    content: typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
+                    content: extractResponseContent(response)
                 }
                 // Include usage metadata if available
                 if (response.usage_metadata) {
@@ -450,7 +451,7 @@ class ConditionAgent_Agentflow implements INode {
                 input: { messages: messagesWithFileReferences },
                 output: {
                     conditions,
-                    content: typeof response.content === 'string' ? response.content : JSON.stringify(response.content),
+                    content: extractResponseContent(response),
                     timeMetadata: {
                         start: startTime,
                         end: endTime,
@@ -547,7 +548,7 @@ class ConditionAgent_Agentflow implements INode {
                     ],
                     { signal: abortController?.signal }
                 )
-                messages.push({ role: 'assistant', content: summary.content as string })
+                messages.push({ role: 'assistant', content: extractResponseContent(summary) })
             } else if (memoryType === 'conversationSummaryBuffer') {
                 // Summary buffer: Summarize messages that exceed token limit
                 await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController)
@@ -610,7 +611,11 @@ class ConditionAgent_Agentflow implements INode {
             )
 
             // Add summary as a system message at the beginning, then add remaining messages
-            messages.push({ role: 'system', content: `Previous conversation summary: ${summary.content}` })
+            let summaryRole = 'system'
+            if (messages.some((msg) => typeof msg === 'object' && !Array.isArray(msg) && 'role' in msg && msg.role === 'system')) {
+                summaryRole = 'user' // some model doesn't allow multiple system messages
+            }
+            messages.push({ role: summaryRole, content: `Previous conversation summary: ${extractResponseContent(summary)}` })
             messages.push(...remainingMessages)
         } else {
             // If under token limit, use all messages

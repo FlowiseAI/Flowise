@@ -1,3 +1,4 @@
+import { extractResponseContent } from '../../../src/utils'
 import { Moderation } from '../Moderation'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
@@ -23,7 +24,8 @@ export class SimplePromptModerationRunner implements Moderation {
                 const res = await this.model.invoke(
                     `Are these two sentences similar to each other? Only return Yes or No.\nFirst sentence: ${input}\nSecond sentence: ${denyStr}`
                 )
-                if (res.content.toString().toLowerCase().includes('yes')) {
+                const responseContent = extractResponseContent(res)
+                if (responseContent.toLowerCase().includes('yes')) {
                     throw Error(this.moderationErrorMessage)
                 }
             }

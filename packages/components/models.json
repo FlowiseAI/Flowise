@@ -736,10 +736,16 @@
                     "output_cost": 0.00012
                 },
                 {
-                    "label": "gemini-3-pro-preview",
-                    "name": "gemini-3-pro-preview",
-                    "input_cost": 0.00002,
-                    "output_cost": 0.00012
+                    "label": "gemini-3.1-flash-lite-preview",
+                    "name": "gemini-3.1-flash-lite-preview",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "gemini-3.1-flash-image-preview",
+                    "name": "gemini-3.1-flash-image-preview",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.000067
                 },
                 {
                     "label": "gemini-3-flash-preview",
@@ -830,10 +836,10 @@
                     "output_cost": 0.00012
                 },
                 {
-                    "label": "gemini-3-pro-preview",
-                    "name": "gemini-3-pro-preview",
-                    "input_cost": 0.00002,
-                    "output_cost": 0.00012
+                    "label": "gemini-3.1-flash-lite-preview",
+                    "name": "gemini-3.1-flash-lite-preview",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000015
                 },
                 {
                     "label": "gemini-3-flash-preview",

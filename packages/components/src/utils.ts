@@ -2220,6 +2220,29 @@ export const createZodSchemaFromJSON = (jsonSchema: any): z.ZodTypeAny => {
     return z.any()
 }
 
+export const extractResponseContent = (response: any): string => {
+    if (!response) return ''
+
+    const content = response.content
+
+    if (Array.isArray(content)) {
+        return content
+            .map((item: any) => {
+                if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                    return item.text
+                }
+                return ''
+            })
+            .filter((text: string) => text)
+            .join('\n')
+    }
+
+    if (typeof content === 'string') return content
+    if (content != null) return JSON.stringify(content, null, 2)
+
+    return JSON.stringify(response, null, 2)
+}
+
 export const isReasoningModelOpenAI = (name: string): boolean => {
     if (/^o[134]/.test(name)) return true
     if (name === 'codex-mini') return true

@@ -2,6 +2,7 @@ import { Document } from '@langchain/core/documents'
 import {
     addArrayFilesToStorage,
     addSingleFileToStorage,
+    extractResponseContent,
     getFileFromStorage,
     getFileFromUpload,
     ICommonObject,
@@ -2133,7 +2134,7 @@ const refreshDocStoreMiddleware = async (
     }
 }
 
-const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<string> => {
+const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<ICommonObject> => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -2175,7 +2176,8 @@ const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: I
             const response = await llmNodeInstance.invoke(
                 DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR.replace('{context}', chunksPageContent)
             )
-            return response
+            const content = extractResponseContent(response)
+            return { content }
         }
 
         throw new InternalFlowiseError(

@@ -33,7 +33,12 @@ import {
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import { convertMultiOptionsToStringArray, processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
+import {
+    convertMultiOptionsToStringArray,
+    processTemplateVariables,
+    configureStructuredOutput,
+    extractResponseContent
+} from '../../../src/utils'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 
 interface ITool {
@@ -914,7 +919,7 @@ class Agent_Agentflow implements INode {
             }
 
             const llmWithoutToolsBind = (await newLLMNodeInstance.init(newNodeData, '', options)) as BaseChatModel
-            let llmNodeInstance = llmWithoutToolsBind
+            let llmNodeInstance = llmWithoutToolsBind // save the original LLM instance for later use in withStructuredOutput, getNumTokens
 
             const isStructuredOutput = _agentStructuredOutput && Array.isArray(_agentStructuredOutput) && _agentStructuredOutput.length > 0
 
@@ -1039,7 +1044,7 @@ class Agent_Agentflow implements INode {
                     memoryType,
                     pastChatHistory,
                     runtimeChatHistory,
-                    llmNodeInstance,
+                    llmWithoutToolsBind,
                     nodeData,
                     userMessage,
                     input,
@@ -1271,23 +1276,7 @@ class Agent_Agentflow implements INode {
                     sseStreamer.streamThinkingEvent(chatId, '', thinkingDuration)
                 }
 
-                let finalResponse = ''
-                if (response.content && Array.isArray(response.content)) {
-                    finalResponse = response.content
-                        .map((item: any) => {
-                            if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
-                                return item.text
-                            }
-                            return ''
-                        })
-                        .filter((text: string) => text)
-                        .join('\n')
-                } else if (response.content && typeof response.content === 'string') {
-                    finalResponse = response.content
-                } else {
-                    finalResponse = JSON.stringify(response, null, 2)
-                }
-                sseStreamer.streamTokenEvent(chatId, finalResponse)
+                sseStreamer.streamTokenEvent(chatId, extractResponseContent(response))
             }
 
             // Calculate execution time
@@ -1410,10 +1399,11 @@ class Agent_Agentflow implements INode {
 
             // If is structured output, then invoke LLM again with structured output at the very end after all tool calls
             if (isStructuredOutput) {
-                llmNodeInstance = configureStructuredOutput(llmNodeInstance, _agentStructuredOutput)
+                const structuredllmNodeInstance = configureStructuredOutput(llmWithoutToolsBind, _agentStructuredOutput)
                 const prompt = 'Convert the following response to the structured output format: ' + finalResponse
-                response = await llmNodeInstance.invoke(prompt, { signal: abortController?.signal })
+                response = await structuredllmNodeInstance.invoke(prompt, { signal: abortController?.signal })
 
+                // Prefix the response with ```json and suffix with ``` to render as a code block
                 if (typeof response === 'object') {
                     finalResponse = '```json\n' + JSON.stringify(response, null, 2) + '\n```'
                 } else {
@@ -1726,7 +1716,7 @@ class Agent_Agentflow implements INode {
         memoryType,
         pastChatHistory,
         runtimeChatHistory,
-        llmNodeInstance,
+        llmWithoutToolsBind,
         nodeData,
         userMessage,
         input,
@@ -1740,7 +1730,7 @@ class Agent_Agentflow implements INode {
         memoryType: string
         pastChatHistory: BaseMessageLike[]
         runtimeChatHistory: BaseMessageLike[]
-        llmNodeInstance: BaseChatModel
+        llmWithoutToolsBind: BaseChatModel
         nodeData: INodeData
         userMessage: string
         input: string | Record<string, any>
@@ -1786,7 +1776,7 @@ class Agent_Agentflow implements INode {
                 messages.push(...windowedMessages)
             } else if (memoryType === 'conversationSummary') {
                 // Summary memory: Summarize all past messages
-                const summary = await llmNodeInstance.invoke(
+                const summary = await llmWithoutToolsBind.invoke(
                     [
                         {
                             role: 'user',
@@ -1798,10 +1788,16 @@ class Agent_Agentflow implements INode {
                     ],
                     { signal: abortController?.signal }
                 )
-                messages.push({ role: 'assistant', content: summary.content as string })
+                messages.push({ role: 'assistant', content: extractResponseContent(summary) })
+                if (!userMessage && input && typeof input === 'string') {
+                    messages.push({
+                        role: 'user',
+                        content: input
+                    })
+                }
             } else if (memoryType === 'conversationSummaryBuffer') {
                 // Summary buffer: Summarize messages that exceed token limit
-                await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController)
+                await this.handleSummaryBuffer(messages, pastMessages, llmWithoutToolsBind, nodeData, abortController)
             } else {
                 // Default: Use all messages
                 messages.push(...pastMessages)
@@ -1823,7 +1819,7 @@ class Agent_Agentflow implements INode {
     private async handleSummaryBuffer(
         messages: BaseMessageLike[],
         pastMessages: BaseMessageLike[],
-        llmNodeInstance: BaseChatModel,
+        llmWithoutToolsBind: BaseChatModel,
         nodeData: INodeData,
         abortController: AbortController
     ): Promise<void> {
@@ -1831,7 +1827,7 @@ class Agent_Agentflow implements INode {
 
         // Convert past messages to a format suitable for token counting
         const messagesString = pastMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-        const tokenCount = await llmNodeInstance.getNumTokens(messagesString)
+        const tokenCount = await llmWithoutToolsBind.getNumTokens(messagesString)
 
         if (tokenCount > maxTokenLimit) {
             // Calculate how many messages to summarize (messages that exceed the token limit)
@@ -1846,14 +1842,14 @@ class Agent_Agentflow implements INode {
                     messagesToSummarize.push(poppedMessage)
                     // Recalculate token count for remaining messages
                     const remainingMessagesString = remainingMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-                    currBufferLength = await llmNodeInstance.getNumTokens(remainingMessagesString)
+                    currBufferLength = await llmWithoutToolsBind.getNumTokens(remainingMessagesString)
                 }
             }
 
             // Summarize the messages that were removed
             const messagesToSummarizeString = messagesToSummarize.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
 
-            const summary = await llmNodeInstance.invoke(
+            const summary = await llmWithoutToolsBind.invoke(
                 [
                     {
                         role: 'user',
@@ -1864,7 +1860,11 @@ class Agent_Agentflow implements INode {
             )
 
             // Add summary as a system message at the beginning, then add remaining messages
-            messages.push({ role: 'system', content: `Previous conversation summary: ${summary.content}` })
+            let summaryRole = 'system'
+            if (messages.some((msg) => typeof msg === 'object' && !Array.isArray(msg) && 'role' in msg && msg.role === 'system')) {
+                summaryRole = 'user' // some model doesn't allow multiple system messages
+            }
+            messages.push({ role: summaryRole, content: `Previous conversation summary: ${extractResponseContent(summary)}` })
             messages.push(...remainingMessages)
         } else {
             // If under token limit, use all messages
@@ -2411,7 +2411,7 @@ class Agent_Agentflow implements INode {
         }
 
         if (response.tool_calls.length === 0) {
-            const responseContent = typeof response.content === 'string' ? response.content : JSON.stringify(response.content, null, 2)
+            const responseContent = extractResponseContent(response)
             return {
                 response: new AIMessageChunk(responseContent),
                 usedTools,
@@ -2441,11 +2441,7 @@ class Agent_Agentflow implements INode {
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {
-                let responseContent = JSON.stringify(newResponse, null, 2)
-                if (typeof newResponse.content === 'string') {
-                    responseContent = newResponse.content
-                }
-                sseStreamer.streamTokenEvent(chatId, responseContent)
+                sseStreamer.streamTokenEvent(chatId, extractResponseContent(newResponse))
             }
         }
 
@@ -2829,11 +2825,7 @@ class Agent_Agentflow implements INode {
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer && !isStructuredOutput) {
-                let responseContent = JSON.stringify(newResponse, null, 2)
-                if (typeof newResponse.content === 'string') {
-                    responseContent = newResponse.content
-                }
-                sseStreamer.streamTokenEvent(chatId, responseContent)
+                sseStreamer.streamTokenEvent(chatId, extractResponseContent(newResponse))
             }
         }
 

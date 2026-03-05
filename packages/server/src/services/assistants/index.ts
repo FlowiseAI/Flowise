@@ -1,4 +1,4 @@
-import { ICommonObject } from 'flowise-components'
+import { extractResponseContent, ICommonObject } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, isEqual, uniqWith } from 'lodash'
 import OpenAI from 'openai'
@@ -529,8 +529,7 @@ const generateAssistantInstruction = async (task: string, selectedChatModel: ICo
                     content: ASSISTANT_PROMPT_GENERATOR.replace('{{task}}', task)
                 }
             ])
-            const content = response?.content || response.kwargs?.content
-
+            const content = extractResponseContent(response)
             return { content }
         }
 

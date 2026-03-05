@@ -15,7 +15,7 @@ import {
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
-import { processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
+import { processTemplateVariables, configureStructuredOutput, extractResponseContent } from '../../../src/utils'
 import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
 import { flatten } from 'lodash'
 
@@ -504,14 +504,7 @@ class LLM_Agentflow implements INode {
                 // Stream whole response back to UI if this is the last node
                 if (isLastNode && options.sseStreamer) {
                     const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
-                    let finalResponse = ''
-                    if (response.content && Array.isArray(response.content)) {
-                        finalResponse = response.content.map((item: any) => item.text).join('\n')
-                    } else if (response.content && typeof response.content === 'string') {
-                        finalResponse = response.content
-                    } else {
-                        finalResponse = JSON.stringify(response, null, 2)
-                    }
+                    const finalResponse = extractResponseContent(response)
                     sseStreamer.streamTokenEvent(chatId, finalResponse)
                 }
             }
@@ -593,17 +586,8 @@ class LLM_Agentflow implements INode {
                 reasonContent !== undefined && reasonContent !== '' ? { thinking: reasonContent, thinkingDuration } : undefined
 
             // Prepare final response and output object
-            let finalResponse = ''
-            if (response.content && Array.isArray(response.content)) {
-                finalResponse = response.content.map((item: any) => item.text).join('\n')
-            } else if (response.content && typeof response.content === 'string') {
-                finalResponse = response.content
-            } else if (response.content === '') {
-                // Empty response content, this could happen when there is only image data
-                finalResponse = ''
-            } else {
-                finalResponse = JSON.stringify(response, null, 2)
-            }
+            const finalResponse = extractResponseContent(response)
+
             const costMetadata = await this.calculateUsageCost(model, modelConfig?.modelName as string | undefined, response.usage_metadata)
 
             const output = this.prepareOutputObject(
@@ -798,7 +782,7 @@ class LLM_Agentflow implements INode {
                     ],
                     { signal: abortController?.signal }
                 )
-                messages.push({ role: 'assistant', content: summary.content as string })
+                messages.push({ role: 'assistant', content: extractResponseContent(summary) })
             } else if (memoryType === 'conversationSummaryBuffer') {
                 // Summary buffer: Summarize messages that exceed token limit
                 await this.handleSummaryBuffer(messages, pastMessages, llmNodeInstance, nodeData, abortController)
@@ -864,7 +848,11 @@ class LLM_Agentflow implements INode {
             )
 
             // Add summary as a system message at the beginning, then add remaining messages
-            messages.push({ role: 'system', content: `Previous conversation summary: ${summary.content}` })
+            let summaryRole = 'system'
+            if (messages.some((msg) => typeof msg === 'object' && !Array.isArray(msg) && 'role' in msg && msg.role === 'system')) {
+                summaryRole = 'user' // some model doesn't allow multiple system messages
+            }
+            messages.push({ role: summaryRole, content: `Previous conversation summary: ${extractResponseContent(summary)}` })
             messages.push(...remainingMessages)
         } else {
             // If under token limit, use all messages
