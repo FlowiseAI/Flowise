@@ -93,6 +93,15 @@ export function ArrayInput({ inputParam, data, disabled = false, onDataChange, i
         [arrayItems, inputParam, onDataChange]
     )
 
+    // Pre-compute stable per-item onDataChange handlers to avoid new closures on every render
+    const itemHandlers = useMemo(
+        () =>
+            arrayItems.map((_, index) => ({ inputParam: changedParam, newValue }: { inputParam: InputParam; newValue: unknown }) => {
+                handleItemInputChange(index, changedParam, newValue)
+            }),
+        [arrayItems, handleItemInputChange]
+    )
+
     // Check if item can be deleted based on minItems constraint
     const canDeleteItem = !inputParam.minItems || arrayItems.length > inputParam.minItems
 
@@ -146,17 +155,15 @@ export function ArrayInput({ inputParam, data, disabled = false, onDataChange, i
                         {/* Render input fields for array item */}
                         {itemParameters[index]
                             ?.filter((param) => param.display !== false)
-                            .map((param, paramIndex) => (
+                            .map((param, _) => (
                                 <NodeInputHandler
-                                    key={paramIndex}
+                                    key={param.name}
                                     inputParam={param}
                                     data={itemData}
                                     disabled={disabled}
                                     isAdditionalParams={true}
                                     disablePadding={false}
-                                    onDataChange={({ inputParam: changedParam, newValue }) => {
-                                        handleItemInputChange(index, changedParam, newValue)
-                                    }}
+                                    onDataChange={itemHandlers[index]}
                                 />
                             ))}
                     </Box>

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useUpdateNodeInternals } from 'reactflow'
 
 import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typography } from '@mui/material'
@@ -16,6 +16,17 @@ export interface EditNodeDialogProps {
     onCancel: () => void
 }
 
+function computeArrayItemParameters(params: InputParam[], inputValues: Record<string, unknown>): Record<string, InputParam[][]> {
+    const result: Record<string, InputParam[][]> = {}
+    for (const param of params) {
+        if (param.type === 'array' && param.array) {
+            const items = (inputValues[param.name] as Record<string, unknown>[]) || []
+            result[param.name] = items.map((_, index) => evaluateFieldVisibility(param.array!, inputValues, index))
+        }
+    }
+    return result
+}
+
 /**
  * Dialog for editing node properties
  */
@@ -31,21 +42,6 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const [isEditingNodeName, setEditingNodeName] = useState(false)
     const [nodeName, setNodeName] = useState('')
     const [arrayItemParameters, setArrayItemParameters] = useState<Record<string, InputParam[][]>>({})
-
-    // Evaluate field visibility for each item in every array-type param.
-    const computeArrayItemParameters = useCallback(
-        (params: InputParam[], inputValues: Record<string, unknown>): Record<string, InputParam[][]> => {
-            const result: Record<string, InputParam[][]> = {}
-            for (const param of params) {
-                if (param.type === 'array' && param.array) {
-                    const items = (inputValues[param.name] as Record<string, unknown>[]) || []
-                    result[param.name] = items.map((_, index) => evaluateFieldVisibility(param.array!, inputValues, index))
-                }
-            }
-            return result
-        },
-        []
-    )
 
     const onNodeLabelChange = () => {
         if (!data || !nodeNameRef.current) return
