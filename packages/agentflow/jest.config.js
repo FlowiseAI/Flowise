@@ -38,6 +38,7 @@ module.exports = {
     coverageThreshold: {
         './src/*.ts': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/Agentflow.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
+        './src/atoms/ArrayInput.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/core/': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/features/canvas/components/ConnectionLine.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         // Only getMinimumNodeHeight() is tested; the component is Tier 3 UI with no business logic

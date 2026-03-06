@@ -132,6 +132,8 @@ export interface InputParam {
     show?: Record<string, unknown>
     hide?: Record<string, unknown>
     display?: boolean
+    minItems?: number
+    maxItems?: number
     array?: InputParam[] // Sub-field definitions for array-type params
 }
 
