@@ -224,11 +224,11 @@ class UpdateDraftTool extends BaseGmailTool {
             description: 'Update a specific draft in Gmail',
             schema: z.object({
                 id: z.string().describe('ID of the draft to update'),
-                to: z.string().describe('Recipient email address(es), comma-separated'),
-                subject: z.string().optional().describe('Email subject'),
+                to: z.string().describe('Recipient email address(es), comma-separated').refine(v => !/[\r\n]/.test(v), 'CRLF characters are not allowed'),
+                subject: z.string().optional().describe('Email subject').refine(v => !v || !/[\r\n]/.test(v), 'CRLF characters are not allowed'),
                 body: z.string().optional().describe('Email body content'),
-                cc: z.string().optional().describe('CC email address(es), comma-separated'),
-                bcc: z.string().optional().describe('BCC email address(es), comma-separated')
+                cc: z.string().optional().describe('CC email address(es), comma-separated').refine(v => !v || !/[\r\n]/.test(v), 'CRLF characters are not allowed'),
+                bcc: z.string().optional().describe('BCC email address(es), comma-separated').refine(v => !v || !/[\r\n]/.test(v), 'CRLF characters are not allowed')
             }),
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'PUT',
