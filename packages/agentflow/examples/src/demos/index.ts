@@ -1,5 +1,6 @@
 export * from './AllNodeTypesExample'
 export * from './BasicExample'
+export * from './CustomNodeExample'
 export * from './CustomUIExample'
 export * from './DarkModeExample'
 export * from './FilteredComponentsExample'
