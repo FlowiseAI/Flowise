@@ -5,7 +5,7 @@ import { act, renderHook } from '@testing-library/react'
 
 import { isValidConnectionAgentflowV2 } from '@/core'
 import type { FlowEdge, FlowNode, NodeData } from '@/core/types'
-import { checkHumanInputInIteration, checkNestedIteration, checkSingleStartNode, findParentIterationNode } from '@/core/validation'
+import { checkNodePlacementConstraints } from '@/core/validation'
 
 import { useFlowHandlers } from './useFlowHandlers'
 
@@ -36,10 +36,7 @@ jest.mock('@/core', () => ({
 }))
 
 jest.mock('@/core/validation', () => ({
-    checkSingleStartNode: jest.fn(() => ({ valid: true })),
-    checkNestedIteration: jest.fn(() => ({ valid: true })),
-    checkHumanInputInIteration: jest.fn(() => ({ valid: true })),
-    findParentIterationNode: jest.fn(() => null)
+    checkNodePlacementConstraints: jest.fn(() => ({ valid: true }))
 }))
 
 describe('useFlowHandlers', () => {
@@ -310,8 +307,8 @@ describe('useFlowHandlers', () => {
             expect(mockSetDirty).toHaveBeenCalledWith(true)
         })
 
-        it('should not add node when start node constraint fails', () => {
-            ;(checkSingleStartNode as jest.Mock).mockReturnValueOnce({ valid: false, message: 'Only one start node' })
+        it('should not add node when placement constraint fails', () => {
+            ;(checkNodePlacementConstraints as jest.Mock).mockReturnValueOnce({ valid: false, message: 'Only one start node' })
             const onConstraintViolation = jest.fn()
             const { result } = renderUseFlowHandlers({ availableNodes, onConstraintViolation })
 
@@ -320,34 +317,6 @@ describe('useFlowHandlers', () => {
             })
 
             expect(onConstraintViolation).toHaveBeenCalledWith('Only one start node')
-            expect(setLocalNodes).not.toHaveBeenCalled()
-        })
-
-        it('should not add node when nested iteration constraint fails', () => {
-            ;(findParentIterationNode as jest.Mock).mockReturnValueOnce({ id: 'iter-1', type: 'iteration' })
-            ;(checkNestedIteration as jest.Mock).mockReturnValueOnce({ valid: false, message: 'No nested iteration' })
-            const onConstraintViolation = jest.fn()
-            const { result } = renderUseFlowHandlers({ availableNodes, onConstraintViolation })
-
-            act(() => {
-                result.current.handleAddNode('llmAgentflow', { x: 100, y: 100 })
-            })
-
-            expect(onConstraintViolation).toHaveBeenCalledWith('No nested iteration')
-            expect(setLocalNodes).not.toHaveBeenCalled()
-        })
-
-        it('should not add node when human input in iteration constraint fails', () => {
-            ;(findParentIterationNode as jest.Mock).mockReturnValueOnce({ id: 'iter-1', type: 'iteration' })
-            ;(checkHumanInputInIteration as jest.Mock).mockReturnValueOnce({ valid: false, message: 'No human input in iteration' })
-            const onConstraintViolation = jest.fn()
-            const { result } = renderUseFlowHandlers({ availableNodes, onConstraintViolation })
-
-            act(() => {
-                result.current.handleAddNode('llmAgentflow', { x: 100, y: 100 })
-            })
-
-            expect(onConstraintViolation).toHaveBeenCalledWith('No human input in iteration')
             expect(setLocalNodes).not.toHaveBeenCalled()
         })
 

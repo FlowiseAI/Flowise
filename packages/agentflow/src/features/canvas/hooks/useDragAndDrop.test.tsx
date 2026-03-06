@@ -2,7 +2,7 @@ import { makeFlowNode, makeNodeData } from '@test-utils/factories'
 import { act, renderHook } from '@testing-library/react'
 
 import type { FlowNode, NodeData } from '@/core/types'
-import { checkHumanInputInIteration, checkNestedIteration, checkSingleStartNode, findParentIterationNode } from '@/core/validation'
+import { checkNodePlacementConstraints } from '@/core/validation'
 
 // --- Tests ---
 import { DROP_OFFSET_X, DROP_OFFSET_Y, useDragAndDrop } from './useDragAndDrop'
@@ -32,9 +32,7 @@ jest.mock('@/core', () => ({
 }))
 
 jest.mock('@/core/validation', () => ({
-    checkSingleStartNode: jest.fn(() => ({ valid: true })),
-    checkNestedIteration: jest.fn(() => ({ valid: true })),
-    checkHumanInputInIteration: jest.fn(() => ({ valid: true })),
+    checkNodePlacementConstraints: jest.fn(() => ({ valid: true })),
     findParentIterationNode: jest.fn(() => null)
 }))
 
@@ -146,8 +144,8 @@ describe('useDragAndDrop', () => {
             expect(mockSetDirty).not.toHaveBeenCalled()
         })
 
-        it('should not add node when start node constraint fails', () => {
-            ;(checkSingleStartNode as jest.Mock).mockReturnValueOnce({ valid: false, message: 'Only one start node' })
+        it('should not add node when placement constraint fails', () => {
+            ;(checkNodePlacementConstraints as jest.Mock).mockReturnValueOnce({ valid: false, message: 'Only one start node' })
             const onConstraintViolation = jest.fn()
             const { result } = renderUseDragAndDrop({ onConstraintViolation })
             const event = makeDragEvent(JSON.stringify(nodeData))
@@ -157,36 +155,6 @@ describe('useDragAndDrop', () => {
             })
 
             expect(onConstraintViolation).toHaveBeenCalledWith('Only one start node')
-            expect(setLocalNodes).not.toHaveBeenCalled()
-        })
-
-        it('should not add node when nested iteration constraint fails', () => {
-            ;(findParentIterationNode as jest.Mock).mockReturnValueOnce({ id: 'iter-1', type: 'iteration' })
-            ;(checkNestedIteration as jest.Mock).mockReturnValueOnce({ valid: false, message: 'No nested iteration' })
-            const onConstraintViolation = jest.fn()
-            const { result } = renderUseDragAndDrop({ onConstraintViolation })
-            const event = makeDragEvent(JSON.stringify(nodeData))
-
-            act(() => {
-                result.current.handleDrop(event)
-            })
-
-            expect(onConstraintViolation).toHaveBeenCalledWith('No nested iteration')
-            expect(setLocalNodes).not.toHaveBeenCalled()
-        })
-
-        it('should not add node when human input in iteration constraint fails', () => {
-            ;(findParentIterationNode as jest.Mock).mockReturnValueOnce({ id: 'iter-1', type: 'iteration' })
-            ;(checkHumanInputInIteration as jest.Mock).mockReturnValueOnce({ valid: false, message: 'No human input in iteration' })
-            const onConstraintViolation = jest.fn()
-            const { result } = renderUseDragAndDrop({ onConstraintViolation })
-            const event = makeDragEvent(JSON.stringify(nodeData))
-
-            act(() => {
-                result.current.handleDrop(event)
-            })
-
-            expect(onConstraintViolation).toHaveBeenCalledWith('No human input in iteration')
             expect(setLocalNodes).not.toHaveBeenCalled()
         })
 

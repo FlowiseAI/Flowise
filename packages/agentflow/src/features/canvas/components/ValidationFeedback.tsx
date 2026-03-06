@@ -32,10 +32,19 @@ function groupErrorsByNode(errors: ValidationError[], nodes: FlowNode[]): NodeVa
         const id = error.nodeId || error.edgeId || 'flow'
         if (!nodeMap.has(id)) {
             const node = nodes.find((n) => n.id === id)
+            let label = `Edge ${id}`
+            let name = 'edge'
+            if (node) {
+                label = node.data.label || node.data.name
+                name = node.data.name
+            } else if (id === 'flow') {
+                label = 'Flow'
+                name = 'flow'
+            }
             nodeMap.set(id, {
                 id,
-                label: node?.data.label || node?.data.name || `Edge ${id}`,
-                name: node?.data.name || 'edge',
+                label,
+                name,
                 issues: []
             })
         }
@@ -218,7 +227,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                             <img
                                                 style={{ objectFit: 'cover', height: '15vh', width: 'auto' }}
                                                 src={validateEmptyImage}
-                                                alt='validate_empty'
+                                                alt='Illustration of a checklist with no items, indicating no issues found'
                                             />
                                             {hasValidated ? (
                                                 <Typography variant='body2' color='success.main' sx={{ mt: 2, fontWeight: 500 }}>

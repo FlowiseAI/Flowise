@@ -3,7 +3,7 @@ import { useReactFlow } from 'reactflow'
 
 import { getUniqueNodeId, getUniqueNodeLabel, initNode, resolveNodeType } from '@/core'
 import type { FlowNode, NodeData } from '@/core/types'
-import { checkHumanInputInIteration, checkNestedIteration, checkSingleStartNode, findParentIterationNode } from '@/core/validation'
+import { checkNodePlacementConstraints, findParentIterationNode } from '@/core/validation'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 // Offset to center the dropped node on the cursor position.
@@ -54,31 +54,15 @@ export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper, onConst
                     y: event.clientY - reactFlowBounds.top - DROP_OFFSET_Y
                 })
 
-                // Check single start node constraint
-                const startCheck = checkSingleStartNode(nodes, nodeData.name)
-                if (!startCheck.valid) {
-                    onConstraintViolation?.(startCheck.message!)
+                // Check placement constraints (start node, nested iteration, human input in iteration)
+                const constraintCheck = checkNodePlacementConstraints(nodes, nodeData.name, position)
+                if (!constraintCheck.valid) {
+                    onConstraintViolation?.(constraintCheck.message!)
                     return
                 }
 
                 // Determine if dropped inside an iteration node
                 const parentNode = findParentIterationNode(nodes, position)
-
-                if (parentNode) {
-                    // Check nested iteration constraint
-                    const nestedCheck = checkNestedIteration(nodeData.name, parentNode)
-                    if (!nestedCheck.valid) {
-                        onConstraintViolation?.(nestedCheck.message!)
-                        return
-                    }
-
-                    // Check human input in iteration constraint
-                    const humanInputCheck = checkHumanInputInIteration(nodeData.name, parentNode)
-                    if (!humanInputCheck.valid) {
-                        onConstraintViolation?.(humanInputCheck.message!)
-                        return
-                    }
-                }
 
                 const newId = getUniqueNodeId(nodeData, nodes)
                 const newLabel = getUniqueNodeLabel(nodeData, nodes)

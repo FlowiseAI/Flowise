@@ -36,6 +36,32 @@ export function checkHumanInputInIteration(newNodeName: string, parentNode: Flow
 }
 
 /**
+ * Check all placement constraints for a node being added to the canvas.
+ * Returns the first failing constraint, or a valid result if all pass.
+ */
+export function checkNodePlacementConstraints(
+    nodes: FlowNode[],
+    nodeType: string,
+    position?: { x: number; y: number } | null
+): ConstraintResult {
+    const startCheck = checkSingleStartNode(nodes, nodeType)
+    if (!startCheck.valid) return startCheck
+
+    if (position) {
+        const parentNode = findParentIterationNode(nodes, position)
+        if (parentNode) {
+            const nestedCheck = checkNestedIteration(nodeType, parentNode)
+            if (!nestedCheck.valid) return nestedCheck
+
+            const humanInputCheck = checkHumanInputInIteration(nodeType, parentNode)
+            if (!humanInputCheck.valid) return humanInputCheck
+        }
+    }
+
+    return { valid: true }
+}
+
+/**
  * Find the iteration node that contains the given position, if any
  */
 export function findParentIterationNode(nodes: FlowNode[], position: { x: number; y: number }): FlowNode | null {

@@ -1,6 +1,12 @@
 import { makeFlowNode } from '@test-utils/factories'
 
-import { checkHumanInputInIteration, checkNestedIteration, checkSingleStartNode, findParentIterationNode } from './constraintValidation'
+import {
+    checkHumanInputInIteration,
+    checkNestedIteration,
+    checkNodePlacementConstraints,
+    checkSingleStartNode,
+    findParentIterationNode
+} from './constraintValidation'
 
 describe('checkSingleStartNode', () => {
     it('should reject when a start node already exists', () => {
@@ -59,6 +65,53 @@ describe('checkHumanInputInIteration', () => {
     it('should allow non-human-input nodes inside iteration', () => {
         const parent = makeFlowNode('iter', { type: 'iteration', data: { id: 'iter', name: 'iterationAgentflow', label: 'Iteration' } })
         const result = checkHumanInputInIteration('llmAgentflow', parent)
+        expect(result.valid).toBe(true)
+    })
+})
+
+describe('checkNodePlacementConstraints', () => {
+    it('should reject duplicate start node', () => {
+        const nodes = [makeFlowNode('a', { data: { id: 'a', name: 'startAgentflow', label: 'Start' } })]
+        const result = checkNodePlacementConstraints(nodes, 'startAgentflow')
+        expect(result.valid).toBe(false)
+        expect(result.message).toContain('Only one start node')
+    })
+
+    it('should reject nested iteration when position is inside an iteration node', () => {
+        const iterNode = makeFlowNode('iter', {
+            type: 'iteration',
+            position: { x: 100, y: 100 },
+            width: 400,
+            height: 300,
+            data: { id: 'iter', name: 'iterationAgentflow', label: 'Iteration' }
+        })
+        const result = checkNodePlacementConstraints([iterNode], 'iterationAgentflow', { x: 200, y: 200 })
+        expect(result.valid).toBe(false)
+        expect(result.message).toContain('Nested iteration')
+    })
+
+    it('should reject human input inside iteration', () => {
+        const iterNode = makeFlowNode('iter', {
+            type: 'iteration',
+            position: { x: 100, y: 100 },
+            width: 400,
+            height: 300,
+            data: { id: 'iter', name: 'iterationAgentflow', label: 'Iteration' }
+        })
+        const result = checkNodePlacementConstraints([iterNode], 'humanInputAgentflow', { x: 200, y: 200 })
+        expect(result.valid).toBe(false)
+        expect(result.message).toContain('Human input node')
+    })
+
+    it('should pass when all constraints are satisfied', () => {
+        const nodes = [makeFlowNode('a', { data: { id: 'a', name: 'llmAgentflow', label: 'LLM' } })]
+        const result = checkNodePlacementConstraints(nodes, 'llmAgentflow', { x: 50, y: 50 })
+        expect(result.valid).toBe(true)
+    })
+
+    it('should pass when no position is provided', () => {
+        const nodes = [makeFlowNode('a', { data: { id: 'a', name: 'llmAgentflow', label: 'LLM' } })]
+        const result = checkNodePlacementConstraints(nodes, 'llmAgentflow')
         expect(result.valid).toBe(true)
     })
 })

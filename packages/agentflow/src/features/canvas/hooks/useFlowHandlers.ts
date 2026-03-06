@@ -3,7 +3,7 @@ import { addEdge, applyEdgeChanges, applyNodeChanges, Connection, EdgeChange, No
 
 import { getNodeColor, getUniqueNodeId, getUniqueNodeLabel, initNode, isValidConnectionAgentflowV2, resolveNodeType } from '@/core'
 import type { FlowDataCallback, FlowEdge, FlowNode, NodeData } from '@/core/types'
-import { checkHumanInputInIteration, checkNestedIteration, checkSingleStartNode, findParentIterationNode } from '@/core/validation'
+import { checkNodePlacementConstraints } from '@/core/validation'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 interface UseFlowHandlersProps {
@@ -151,29 +151,11 @@ export function useFlowHandlers({
             const nodeData = availableNodes.find((n) => n.name === nodeType)
             if (!nodeData) return
 
-            // Check single start node constraint
-            const startCheck = checkSingleStartNode(nodes, nodeType)
-            if (!startCheck.valid) {
-                onConstraintViolation?.(startCheck.message!)
+            // Check placement constraints (start node, nested iteration, human input in iteration)
+            const constraintCheck = checkNodePlacementConstraints(nodes, nodeType, position)
+            if (!constraintCheck.valid) {
+                onConstraintViolation?.(constraintCheck.message!)
                 return
-            }
-
-            // Check iteration-related constraints when position is inside an iteration node
-            if (position) {
-                const parentNode = findParentIterationNode(nodes, position)
-                if (parentNode) {
-                    const nestedCheck = checkNestedIteration(nodeType, parentNode)
-                    if (!nestedCheck.valid) {
-                        onConstraintViolation?.(nestedCheck.message!)
-                        return
-                    }
-
-                    const humanInputCheck = checkHumanInputInIteration(nodeType, parentNode)
-                    if (!humanInputCheck.valid) {
-                        onConstraintViolation?.(humanInputCheck.message!)
-                        return
-                    }
-                }
             }
 
             const newId = getUniqueNodeId(nodeData, nodes)

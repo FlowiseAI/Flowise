@@ -6,4 +6,10 @@ export { applyValidationErrorsToNodes, groupValidationErrorsByNodeId, validateFl
 
 // Constraint validation utilities
 export type { ConstraintResult } from './constraintValidation'
-export { checkHumanInputInIteration, checkNestedIteration, checkSingleStartNode, findParentIterationNode } from './constraintValidation'
+export {
+    checkHumanInputInIteration,
+    checkNestedIteration,
+    checkNodePlacementConstraints,
+    checkSingleStartNode,
+    findParentIterationNode
+} from './constraintValidation'
