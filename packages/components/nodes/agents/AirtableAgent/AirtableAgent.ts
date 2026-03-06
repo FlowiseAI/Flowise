@@ -188,7 +188,7 @@ json.dumps(my_dict)`
                 )
             }
             try {
-                const code = `import pandas as pd\n${pythonCode}`
+                const code = `import pandas as pd\nimport numpy as np\n${pythonCode}`
                 // TODO: get print console output
                 finalResult = await pyodide.runPythonAsync(code)
             } catch (error) {
