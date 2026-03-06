@@ -4,6 +4,8 @@
  * Run with: SELTZ_API_KEY=your-key npx jest --testPathPattern=SeltzSearch.integration
  */
 
+export {}
+
 // Mock @langchain/core/tools to avoid ESM issues in Jest
 jest.mock('@langchain/core/tools', () => {
     class MockTool {

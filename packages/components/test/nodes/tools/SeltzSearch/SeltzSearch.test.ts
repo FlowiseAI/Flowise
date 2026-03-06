@@ -1,3 +1,5 @@
+export {}
+
 // Mock @langchain/core/tools before any import that pulls it in
 jest.mock('@langchain/core/tools', () => {
     class MockTool {
