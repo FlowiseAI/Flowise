@@ -1,6 +1,22 @@
 import type { FlowNode, NodeData } from '../types'
 
 /**
+ * Map from NodeData.type to the ReactFlow node type key.
+ * Any type not listed here defaults to 'agentflowNode'.
+ */
+const NODE_TYPE_MAP: Record<string, string> = {
+    Iteration: 'iteration',
+    StickyNote: 'stickyNote'
+}
+
+/**
+ * Resolve the ReactFlow node type from a NodeData type string.
+ */
+export function resolveNodeType(nodeDataType: string): string {
+    return NODE_TYPE_MAP[nodeDataType] ?? 'agentflowNode'
+}
+
+/**
  * Generate a unique node ID based on existing nodes
  */
 export function getUniqueNodeId(nodeData: NodeData, nodes: FlowNode[]): string {

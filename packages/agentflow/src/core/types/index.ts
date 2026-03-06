@@ -83,6 +83,7 @@ export interface NodeData {
     error?: string
     warning?: string
     hint?: string
+    validationErrors?: string[]
     [key: string]: unknown
 }
 
@@ -131,6 +132,7 @@ export interface InputParam {
     show?: Record<string, unknown>
     hide?: Record<string, unknown>
     display?: boolean
+    array?: InputParam[] // Sub-field definitions for array-type params
 }
 
 export interface EdgeData {

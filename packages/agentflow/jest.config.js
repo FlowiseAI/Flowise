@@ -13,6 +13,7 @@ const baseConfig = {
     testPathIgnorePatterns: ['/node_modules/', '/dist/'],
     moduleNameMapper: {
         '^@test-utils/(.*)$': '<rootDir>/src/__test_utils__/$1',
+        '\\.svg$': '<rootDir>/src/__mocks__/styleMock.js',
         '^@/(.*)$': '<rootDir>/src/$1',
         '\\.(css|less|scss|sass)$': '<rootDir>/src/__mocks__/styleMock.js'
     }
