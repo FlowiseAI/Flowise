@@ -75,6 +75,10 @@ class SeltzSearch_Tools implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const seltzApiKey = getCredentialParam('seltzApiKey', credentialData, nodeData)
 
+        if (seltzApiKey == null) {
+            throw new Error('Seltz API key is missing. Please connect a Seltz API credential.')
+        }
+
         const toolDescription = nodeData.inputs?.toolDescription as string
         const maxDocuments = nodeData.inputs?.maxDocuments as string
         const context = nodeData.inputs?.context as string
