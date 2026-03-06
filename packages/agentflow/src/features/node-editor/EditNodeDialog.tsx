@@ -81,7 +81,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             setData(dialogProps.data)
             if (dialogProps.data.label) setNodeName(dialogProps.data.label)
         }
-    }, [dialogProps, computeArrayItemParameters])
+    }, [dialogProps])
 
     if (!show) return null
 
