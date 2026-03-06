@@ -597,7 +597,7 @@ export class AccountService {
             data.user = user
             data.user.credential = hash
             data.user.tempToken = null
-            data.user.tokenExpiry = undefined
+            data.user.tokenExpiry = null
             data.user.status = UserStatus.ACTIVE
 
             await queryRunner.startTransaction()
