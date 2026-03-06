@@ -358,12 +358,12 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
         const updateDocStore = new DocumentStore()
         // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
         updateDocStore.name = body.name
-        updateDocStore.description = body.description
-        updateDocStore.vectorStoreConfig = body.vectorStoreConfig
-        updateDocStore.embeddingConfig = body.embeddingConfig
-        updateDocStore.recordManagerConfig = body.recordManagerConfig
-        updateDocStore.loaders = body.loaders
-        updateDocStore.whereUsed = body.whereUsed
+        updateDocStore.description = body.description ?? null
+        updateDocStore.vectorStoreConfig = body.vectorStoreConfig ?? null
+        updateDocStore.embeddingConfig = body.embeddingConfig ?? null
+        updateDocStore.recordManagerConfig = body.recordManagerConfig ?? null
+        updateDocStore.loaders = body.loaders ?? '[]'
+        updateDocStore.whereUsed = body.whereUsed ?? '[]'
         const apiResponse = await documentStoreService.updateDocumentStore(store, updateDocStore)
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
