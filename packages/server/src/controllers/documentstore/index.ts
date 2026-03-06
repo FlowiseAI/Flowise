@@ -26,14 +26,15 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
         }
 
         const body = req.body
-        body.workspaceId = req.user?.activeWorkspaceId
-        if (!body.workspaceId) {
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: documentStoreController.createDocumentStore - workspaceId not provided!`
             )
         }
         const docStore = DocumentStoreDTO.toEntity(body)
+        docStore.workspaceId = workspaceId
         const apiResponse = await documentStoreService.createDocumentStore(docStore, orgId)
         return res.json(apiResponse)
     } catch (error) {

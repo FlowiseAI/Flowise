@@ -307,7 +307,6 @@ export class DocumentStoreDTO {
         docStore.vectorStoreConfig = body.vectorStoreConfig ?? null
         docStore.embeddingConfig = body.embeddingConfig ?? null
         docStore.recordManagerConfig = body.recordManagerConfig ?? null
-        docStore.workspaceId = body.workspaceId // Set by controller from req.user before this call
         // when a new document store is created, it is empty and in sync
         docStore.status = DocumentStoreStatus.EMPTY_SYNC
         return docStore
