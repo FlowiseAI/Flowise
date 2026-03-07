@@ -150,11 +150,15 @@ class ChatVolcengine_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
 
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
             apiKey: openAIApiKey,
             streaming: streaming ?? true
+        }
+
+        const parsedTemperature = parseFloat(temperature as string)
+        if (!isNaN(parsedTemperature)) {
+            obj.temperature = parsedTemperature
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
@@ -175,7 +179,7 @@ class ChatVolcengine_ChatModels implements INode {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
                 if (parsedBaseOptions.baseURL) {
                     console.warn("The 'baseURL' parameter is not allowed when using the ChatVolcengine node.")
-                    parsedBaseOptions.baseURL = undefined
+                    delete parsedBaseOptions.baseURL
                 }
             } catch (exception) {
                 throw new Error('Invalid JSON in the BaseOptions: ' + exception)
