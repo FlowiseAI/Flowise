@@ -44,7 +44,7 @@ class ChatVolcengine_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'doubao-1.5-pro-32k'
+                default: 'doubao-1-5-pro-32k-250115'
             },
             {
                 label: 'Temperature',
@@ -151,7 +151,6 @@ class ChatVolcengine_ChatModels implements INode {
 
         const obj: ChatOpenAIFields = {
             modelName,
-            openAIApiKey,
             apiKey: openAIApiKey,
             streaming: streaming ?? true
         }
