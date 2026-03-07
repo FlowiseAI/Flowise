@@ -1,10 +1,12 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
 import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesState, useNodesState } from 'reactflow'
 
+import { Alert, Snackbar } from '@mui/material'
 import { IconSparkles } from '@tabler/icons-react'
 
 import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
+import { applyValidationErrorsToNodes, validateFlow } from './core/validation'
 import {
     AgentflowHeader,
     ConnectionLine,
@@ -15,6 +17,7 @@ import {
     useFlowHandlers,
     useFlowNodes
 } from './features/canvas'
+import { ValidationFeedback } from './features/canvas/components'
 import { GenerateFlowDialog } from './features/generator'
 import { EditNodeDialog } from './features/node-editor'
 import { AddNodesDrawer, StyledFab } from './features/node-palette'
@@ -80,6 +83,17 @@ function AgentflowCanvas({
     const [edges, setLocalEdges, onEdgesChange] = useEdgesState(initialFlow?.edges || [])
     const [showGenerateDialog, setShowGenerateDialog] = useState(false)
 
+    // Constraint violation snackbar state
+    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({ open: false, message: '' })
+
+    const handleConstraintViolation = useCallback((message: string) => {
+        setSnackbar({ open: true, message })
+    }, [])
+
+    const handleSnackbarClose = useCallback(() => {
+        setSnackbar({ open: false, message: '' })
+    }, [])
+
     // Load available nodes
     const { availableNodes } = useFlowNodes()
 
@@ -106,14 +120,16 @@ function AgentflowCanvas({
         onNodesChange,
         onEdgesChange,
         onFlowChange,
-        availableNodes
+        availableNodes,
+        onConstraintViolation: handleConstraintViolation
     })
 
     // Drag and drop handlers
     const { handleDragOver, handleDrop } = useDragAndDrop({
         nodes: nodes as FlowNode[],
         setLocalNodes: setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>,
-        reactFlowWrapper: reactFlowWrapper as React.RefObject<HTMLDivElement>
+        reactFlowWrapper: reactFlowWrapper as React.RefObject<HTMLDivElement>,
+        onConstraintViolation: handleConstraintViolation
     })
 
     // Handle generated flow from dialog
@@ -134,13 +150,25 @@ function AgentflowCanvas({
         [setLocalNodes, setLocalEdges, setDirty, onFlowGenerated]
     )
 
-    // Handle save
+    // Handle save — run validation first and highlight problem nodes
     const handleSave = useCallback(() => {
-        if (onSave) {
-            onSave(agentflow.getFlow())
-            setDirty(false)
+        if (!onSave) return
+
+        const flowNodes = nodes as FlowNode[]
+        const flowEdges = edges as FlowEdge[]
+        const result = validateFlow(flowNodes, flowEdges, availableNodes)
+
+        // Update node border highlighting: set errors on failing nodes, clear errors on now-valid nodes
+        setLocalNodes((prev) => applyValidationErrorsToNodes(prev as FlowNode[], result.errors) as FlowNode[])
+
+        if (!result.valid) {
+            handleConstraintViolation('Flow has validation errors. Please fix them before saving.')
+            return
         }
-    }, [onSave, agentflow, setDirty])
+
+        onSave(agentflow.getFlow())
+        setDirty(false)
+    }, [onSave, agentflow, setDirty, nodes, edges, availableNodes, setLocalNodes, handleConstraintViolation])
 
     // Keyboard shortcut: Cmd+S / Ctrl+S to save
     useEffect(() => {
@@ -210,6 +238,16 @@ function AgentflowCanvas({
                         </StyledFab>
                     )}
 
+                    {/* Validation Feedback - positioned at top right */}
+                    {!readOnly && (
+                        <ValidationFeedback
+                            nodes={nodes as FlowNode[]}
+                            edges={edges as FlowEdge[]}
+                            availableNodes={availableNodes}
+                            setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
+                        />
+                    )}
+
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}
@@ -244,6 +282,18 @@ function AgentflowCanvas({
 
             {/* Edit Node Dialog */}
             <EditNodeDialog show={state.editingNodeId !== null} dialogProps={state.editDialogProps || {}} onCancel={closeEditDialog} />
+
+            {/* Constraint Violation Snackbar */}
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={5000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            >
+                <Alert onClose={handleSnackbarClose} severity='error' variant='filled' sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </div>
     )
 }
