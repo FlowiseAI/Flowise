@@ -354,7 +354,7 @@ describe('getUniqueImageMessages', () => {
                 content: [
                     {
                         type: 'image_url',
-                        image_url: { url: existingBase64 },
+                        image_url: { url: existingBase64, detail: 'low' },
                         _fileName: 'photo.jpg',
                         _mime: 'image/jpeg'
                     }
