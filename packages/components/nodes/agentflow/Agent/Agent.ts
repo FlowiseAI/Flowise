@@ -28,7 +28,7 @@ import {
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
-    replaceBase64ImagesWithFileReferences,
+    revertBase64ImagesToFileRefs,
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
@@ -1001,10 +1001,6 @@ class Agent_Agentflow implements INode {
 
             // Prepare messages array
             const messages: BaseMessageLike[] = []
-            // Use to store messages with image file references as we do not want to store the base64 data into database
-            let runtimeImageMessagesWithFileRef: BaseMessageLike[] = []
-            // Use to keep track of past messages with image file references
-            let pastImageMessagesWithFileRef: BaseMessageLike[] = []
 
             // Prepend history ONLY if it is the first node
             if (prependedChatHistory.length > 0 && !runtimeChatHistory.length) {
@@ -1043,9 +1039,7 @@ class Agent_Agentflow implements INode {
                     input,
                     abortController,
                     options,
-                    modelConfig,
-                    runtimeImageMessagesWithFileRef,
-                    pastImageMessagesWithFileRef
+                    modelConfig
                 })
             } else if (!runtimeChatHistory.length) {
                 /*
@@ -1056,9 +1050,7 @@ class Agent_Agentflow implements INode {
                 if (options.uploads) {
                     const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                     if (imageContents) {
-                        const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
-                        messages.push(imageMessageWithBase64)
-                        runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                        messages.push(imageContents.imageMessageWithBase64)
                     }
                 }
 
@@ -1100,8 +1092,9 @@ class Agent_Agentflow implements INode {
             let _toolCallMessages: BaseMessageLike[] = []
 
             /**
-             * Add image artifacts from previous assistant responses as user messages
-             * Images are converted from FILE-STORAGE::<image_path> to base 64 image_url format
+             * Add image artifacts from previous assistant responses as user messages.
+             * Only the inserted temporary messages contain base64 — other messages are untouched.
+             * All base64 image_url items are tagged with _fileName/_mime for revert after invoke.
              */
             await addImageArtifactsToMessages(messages, options)
 
@@ -1415,23 +1408,25 @@ class Agent_Agentflow implements INode {
             newState = processTemplateVariables(newState, outputForStateProcessing)
 
             /**
-             * Remove the temporarily added image artifact messages before storing
+             * Remove temporary artifact image messages (they were only needed for the model invoke).
+             * Then revert all remaining tagged base64 image_url items back to stored-file format.
              * This is to avoid storing the actual base64 data into database
              */
             const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
-
-            // Replace the actual messages array with one that includes the file references for images instead of base64 data
-            const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messagesToStore,
-                runtimeImageMessagesWithFileRef,
-                pastImageMessagesWithFileRef
-            )
+            const messagesWithFileReferences = revertBase64ImagesToFileRefs(messagesToStore)
 
             // Only add to runtime chat history if this is the first node
             const inputMessages = []
             if (!runtimeChatHistory.length) {
-                if (runtimeImageMessagesWithFileRef.length) {
-                    inputMessages.push(...runtimeImageMessagesWithFileRef)
+                // Include any image file reference messages from uploads in the chat history
+                const imageInputMessages = messagesWithFileReferences.filter(
+                    (msg: any) =>
+                        msg.role === 'user' &&
+                        Array.isArray(msg.content) &&
+                        msg.content.some((item: any) => item.type === 'stored-file' && item.mime?.startsWith('image/'))
+                )
+                if (imageInputMessages.length) {
+                    inputMessages.push(...imageInputMessages)
                 }
                 if (input && typeof input === 'string') {
                     if (!enableMemory) {
@@ -1659,9 +1654,7 @@ class Agent_Agentflow implements INode {
         input,
         abortController,
         options,
-        modelConfig,
-        runtimeImageMessagesWithFileRef,
-        pastImageMessagesWithFileRef
+        modelConfig
     }: {
         messages: BaseMessageLike[]
         memoryType: string
@@ -1674,12 +1667,9 @@ class Agent_Agentflow implements INode {
         abortController: AbortController
         options: ICommonObject
         modelConfig: ICommonObject
-        runtimeImageMessagesWithFileRef: BaseMessageLike[]
-        pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
-        const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
+        const { updatedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
         pastChatHistory = updatedPastMessages
-        pastImageMessagesWithFileRef.push(...transformedPastMessages)
 
         let pastMessages = [...pastChatHistory, ...runtimeChatHistory]
         if (!runtimeChatHistory.length && input && typeof input === 'string') {
@@ -1691,9 +1681,7 @@ class Agent_Agentflow implements INode {
             if (options.uploads) {
                 const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                 if (imageContents) {
-                    const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
-                    pastMessages.push(imageMessageWithBase64)
-                    runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                    pastMessages.push(imageContents.imageMessageWithBase64)
                 }
             }
             pastMessages.push({
@@ -1701,9 +1689,8 @@ class Agent_Agentflow implements INode {
                 content: input
             })
         }
-        const { updatedMessages, transformedMessages } = await processMessagesWithImages(pastMessages, options)
+        const { updatedMessages } = await processMessagesWithImages(pastMessages, options)
         pastMessages = updatedMessages
-        pastImageMessagesWithFileRef.push(...transformedMessages)
 
         if (pastMessages.length > 0) {
             if (memoryType === 'windowSize') {

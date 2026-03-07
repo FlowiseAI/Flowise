@@ -7,7 +7,7 @@ import { IFlowState } from './Interface.Agentflow'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
 import fetch from 'node-fetch'
 
-export const addImagesToMessages = async (
+const _addImagesToMessages = async (
     options: ICommonObject,
     allowImageUploads: boolean,
     imageResolution?: 'auto' | 'low' | 'high'
@@ -21,7 +21,6 @@ export const addImagesToMessages = async (
             if (upload.type == 'stored-file') {
                 const fileName = upload.name.replace(/^FILE-STORAGE::/, '')
                 const contents = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
-                // as the image is stored in the server, read the file and convert it to base64
                 bf = 'data:' + upload.mime + ';base64,' + contents.toString('base64')
 
                 imageContent.push({
@@ -29,8 +28,10 @@ export const addImagesToMessages = async (
                     image_url: {
                         url: bf,
                         detail: imageResolution ?? 'low'
-                    }
-                })
+                    },
+                    _fileName: upload.name,
+                    _mime: upload.mime
+                } as any)
             } else if (upload.type == 'url' && bf) {
                 imageContent.push({
                     type: 'image_url',
@@ -98,14 +99,16 @@ export const processMessagesWithImages = async (
                         // Create base64 data URL
                         const base64Data = 'data:' + item.mime + ';base64,' + contents.toString('base64')
 
-                        // Add to image content array
+                        // Add to image content array with file ref tags for later revert
                         imageContents.push({
                             type: 'image_url',
                             image_url: {
                                 url: base64Data,
                                 detail: item.imageResolution ?? 'low'
-                            }
-                        })
+                            },
+                            _fileName: item.name,
+                            _mime: item.mime
+                        } as any)
                     } catch (error) {
                         console.error(`Failed to load image ${item.name}:`, error)
                     }
@@ -130,103 +133,27 @@ export const processMessagesWithImages = async (
 }
 
 /**
- * Replace base64 image data in messages with file references
- * @param messages Array of messages that may contain base64 image data
- * @param uniqueImageMessages Array of messages with file references for new images
- * @param pastImageMessages Array of messages with file references for previous images
- * @returns Updated messages array with file references instead of base64 data
+ * Revert all base64 image_url items back to stored-file references.
+ * Each image_url item tagged with `_fileName` and `_mime` (added during base64 conversion)
+ * is replaced with its original stored-file format. Untagged image_url items (e.g. external URLs) are left as-is.
+ *
+ * This eliminates the need for separate tracking arrays and fragile sequential replacement.
+ *
+ * @param messages Array of messages that may contain tagged base64 image data
+ * @returns Deep copy of messages with tagged base64 images reverted to stored-file format
  */
-export const replaceBase64ImagesWithFileReferences = (
-    messages: BaseMessageLike[],
-    uniqueImageMessages: BaseMessageLike[] = [],
-    pastImageMessages: BaseMessageLike[] = []
-): BaseMessageLike[] => {
-    // Create a deep copy to avoid mutating the original
+export const revertBase64ImagesToFileRefs = (messages: BaseMessageLike[]): BaseMessageLike[] => {
     const updatedMessages = JSON.parse(JSON.stringify(messages))
 
-    // Track positions in replacement arrays
-    let pastMessageIndex = 0
-    let pastContentIndex = 0
-    let uniqueMessageIndex = 0
-    let uniqueContentIndex = 0
-
-    for (let i = 0; i < updatedMessages.length; i++) {
-        const message = updatedMessages[i]
+    for (const message of updatedMessages) {
         if (message.content && Array.isArray(message.content)) {
             for (let j = 0; j < message.content.length; j++) {
                 const item = message.content[j]
-                if (item.type === 'image_url') {
-                    // Try past images first
-                    let replacement = null
-
-                    if (pastMessageIndex < pastImageMessages.length) {
-                        const pastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
-                        if (pastMessage && Array.isArray(pastMessage.content)) {
-                            if (pastContentIndex < pastMessage.content.length) {
-                                replacement = pastMessage.content[pastContentIndex]
-                                pastContentIndex++
-
-                                // Move to next message if we've used all content in current one
-                                if (pastContentIndex >= pastMessage.content.length) {
-                                    pastMessageIndex++
-                                    pastContentIndex = 0
-                                }
-                            } else {
-                                // Current message has no more content, move to next
-                                pastMessageIndex++
-                                pastContentIndex = 0
-
-                                // Try again with the next message
-                                if (pastMessageIndex < pastImageMessages.length) {
-                                    const nextPastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
-                                    if (nextPastMessage && Array.isArray(nextPastMessage.content) && nextPastMessage.content.length > 0) {
-                                        replacement = nextPastMessage.content[0]
-                                        pastContentIndex = 1
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Try unique images if no past image replacement found
-                    if (!replacement && uniqueMessageIndex < uniqueImageMessages.length) {
-                        const uniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
-                        if (uniqueMessage && Array.isArray(uniqueMessage.content)) {
-                            if (uniqueContentIndex < uniqueMessage.content.length) {
-                                replacement = uniqueMessage.content[uniqueContentIndex]
-                                uniqueContentIndex++
-
-                                // Move to next message if we've used all content in current one
-                                if (uniqueContentIndex >= uniqueMessage.content.length) {
-                                    uniqueMessageIndex++
-                                    uniqueContentIndex = 0
-                                }
-                            } else {
-                                // Current message has no more content, move to next
-                                uniqueMessageIndex++
-                                uniqueContentIndex = 0
-
-                                // Try again with the next message
-                                if (uniqueMessageIndex < uniqueImageMessages.length) {
-                                    const nextUniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
-                                    if (
-                                        nextUniqueMessage &&
-                                        Array.isArray(nextUniqueMessage.content) &&
-                                        nextUniqueMessage.content.length > 0
-                                    ) {
-                                        replacement = nextUniqueMessage.content[0]
-                                        uniqueContentIndex = 1
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Apply replacement if found
-                    if (replacement) {
-                        message.content[j] = {
-                            ...replacement
-                        }
+                if (item.type === 'image_url' && item._fileName) {
+                    message.content[j] = {
+                        type: 'stored-file',
+                        name: item._fileName,
+                        mime: item._mime
                     }
                 }
             }
@@ -251,7 +178,7 @@ export const getUniqueImageMessages = async (
     if (!options.uploads) return undefined
 
     // Get images from uploads
-    const images = await addImagesToMessages(options, modelConfig?.allowImageUploads, modelConfig?.imageResolution)
+    const images = await _addImagesToMessages(options, modelConfig?.allowImageUploads, modelConfig?.imageResolution)
 
     // Filter out images that are already in previous messages
     const uniqueImages = images.filter((image) => {
@@ -327,15 +254,16 @@ export const getPastChatHistoryImageMessages = async (
                     if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
                         const fileName = upload.name.replace(/^FILE-STORAGE::/, '')
                         const fileData = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
-                        // as the image is stored in the server, read the file and convert it to base64
                         const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
 
                         imageContents.push({
                             type: 'image_url',
                             image_url: {
                                 url: bf
-                            }
-                        })
+                            },
+                            _fileName: upload.name,
+                            _mime: upload.mime
+                        } as any)
                     } else if (upload.type === 'url' && upload.mime.startsWith('image') && upload.data) {
                         imageContents.push({
                             type: 'image_url',
@@ -804,13 +732,18 @@ export const extractArtifactsFromResponse = async (
 }
 
 /**
- * Add image artifacts from previous assistant messages as user messages
- * This allows the LLM to see and reference the generated images in the conversation
- * Messages are marked with a special flag for later removal
+ * Add image artifacts from previous assistant messages as user messages with base64 data.
+ * This allows the LLM to see and reference the generated images in the conversation.
+ *
+ * Only the inserted temporary messages contain base64 — other messages are NOT modified.
+ * Temporary messages are marked with `_isTemporaryImageMessage` for removal after model invoke.
+ *
+ * @returns Array of file-reference messages (stored-file format) corresponding to each inserted message,
+ *          useful for reverting base64 back to file references if needed.
  */
 export const addImageArtifactsToMessages = async (messages: BaseMessageLike[], options: ICommonObject): Promise<void> => {
     const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'webp']
-    const messagesToInsert: Array<{ index: number; message: any }> = []
+    const messagesToInsert: Array<{ index: number; base64Message: any }> = []
 
     // Iterate through messages to find assistant messages with image artifacts
     for (let i = 0; i < messages.length; i++) {
@@ -828,12 +761,9 @@ export const addImageArtifactsToMessages = async (messages: BaseMessageLike[], o
             // Extract image artifacts
             for (const artifact of artifacts) {
                 if (artifact.type && artifact.data) {
-                    // Check if this is an image artifact by file type
                     if (imageExtensions.includes(artifact.type.toLowerCase())) {
-                        // Extract filename from the file path
                         const fileName = artifact.data.split('/').pop() || artifact.data
                         const mimeType = `image/${artifact.type.toLowerCase()}`
-
                         imageArtifacts.push({
                             type: 'stored-file',
                             name: fileName,
@@ -843,51 +773,61 @@ export const addImageArtifactsToMessages = async (messages: BaseMessageLike[], o
                 }
             }
 
-            // If we found image artifacts, prepare to insert a user message after this assistant message
-            if (imageArtifacts.length > 0) {
-                // Check if the next message already contains these image artifacts to avoid duplicates
-                const nextMessage = messages[i + 1] as any
-                const shouldInsert =
-                    !nextMessage ||
-                    nextMessage.role !== 'user' ||
-                    !Array.isArray(nextMessage.content) ||
-                    !nextMessage.content.some(
-                        (item: any) =>
-                            (item.type === 'stored-file' || item.type === 'image_url') &&
-                            imageArtifacts.some((artifact) => {
-                                // Compare with and without FILE-STORAGE:: prefix
-                                const artifactName = artifact.name.replace('FILE-STORAGE::', '')
-                                const itemName = item.name?.replace('FILE-STORAGE::', '') || ''
-                                return artifactName === itemName
-                            })
-                    )
+            if (imageArtifacts.length === 0) continue
 
-                if (shouldInsert) {
-                    messagesToInsert.push({
-                        index: i + 1,
-                        message: {
-                            role: 'user',
-                            content: imageArtifacts,
-                            _isTemporaryImageMessage: true // Mark for later removal
-                        }
-                    })
+            // Check if the next message already contains these image artifacts to avoid duplicates
+            const nextMessage = messages[i + 1] as any
+            const shouldInsert =
+                !nextMessage ||
+                nextMessage.role !== 'user' ||
+                !Array.isArray(nextMessage.content) ||
+                !nextMessage.content.some(
+                    (item: any) =>
+                        (item.type === 'stored-file' || item.type === 'image_url') &&
+                        imageArtifacts.some((artifact) => {
+                            const artifactName = artifact.name.replace('FILE-STORAGE::', '')
+                            const itemName = item.name?.replace('FILE-STORAGE::', '') || ''
+                            return artifactName === itemName
+                        })
+                )
+
+            if (!shouldInsert) continue
+
+            // Convert stored-file refs to base64 inline — only for these artifact images
+            const base64Contents: MessageContentImageUrl[] = []
+            for (const artifact of imageArtifacts) {
+                try {
+                    const fileName = artifact.name.replace(/^FILE-STORAGE::/, '')
+                    const contents = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
+                    const base64Data = 'data:' + artifact.mime + ';base64,' + contents.toString('base64')
+                    base64Contents.push({
+                        type: 'image_url',
+                        image_url: { url: base64Data },
+                        _fileName: artifact.name,
+                        _mime: artifact.mime
+                    } as any)
+                } catch (error) {
+                    console.error(`Failed to load artifact image ${artifact.name}:`, error)
                 }
+            }
+
+            if (base64Contents.length > 0) {
+                messagesToInsert.push({
+                    index: i + 1,
+                    base64Message: {
+                        role: 'user',
+                        content: base64Contents,
+                        _isTemporaryImageMessage: true
+                    }
+                })
             }
         }
     }
 
-    // Insert messages in reverse order to maintain correct indices
+    // Insert base64 messages in reverse order to maintain correct indices
     for (let i = messagesToInsert.length - 1; i >= 0; i--) {
-        const { index, message } = messagesToInsert[i]
-        messages.splice(index, 0, message)
-    }
-
-    // Convert stored-file references to base64 image_url format
-    if (messagesToInsert.length > 0) {
-        const { updatedMessages } = await processMessagesWithImages(messages, options)
-        // Replace the messages array content with the updated messages
-        messages.length = 0
-        messages.push(...updatedMessages)
+        const { index, base64Message } = messagesToInsert[i]
+        messages.splice(index, 0, base64Message)
     }
 }
 

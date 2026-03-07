@@ -45,7 +45,7 @@ class ChatAnthropic_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'claude-3-haiku'
+                default: 'claude-haiku-4-5'
             },
             {
                 label: 'Temperature',
