@@ -281,8 +281,10 @@ export const sanitizeFileName = (name: string): string => {
     } catch (_) {
         // If decoding fails the raw string is fine — basename will still strip dirs
     }
+    // Normalize backslashes to forward slashes so path.basename works on all
+    // platforms (on Linux, path.basename does not treat \ as a separator)
+    stripped = stripped.replace(/\\/g, '/')
     // Extract only the base filename — removes all directory components
-    // path.basename handles both / and \ separators on all platforms
     let baseName = path.basename(stripped)
     // Run through sanitize-filename to strip OS-reserved chars, control chars, etc.
     baseName = sanitize(baseName)
