@@ -33,6 +33,7 @@ import {
     updateFlowState
 } from '../utils'
 import { convertMultiOptionsToStringArray, processTemplateVariables, configureStructuredOutput } from '../../../src/utils'
+import { sanitizeFileName } from '../../../src/validator'
 
 interface ITool {
     agentSelectedTool: string
@@ -2619,8 +2620,8 @@ class Agent_Agentflow implements INode {
             const filePath = match[2]
 
             try {
-                // Extract filename from the file path
-                const fileName = filePath.split('/').pop() || filePath
+                // Extract and sanitize filename from the file path (LLM-generated, untrusted)
+                const fileName = sanitizeFileName(filePath)
 
                 // Replace sandbox link with proper download URL
                 const downloadUrl = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatflowId}&chatId=${chatId}&fileName=${fileName}&download=true`

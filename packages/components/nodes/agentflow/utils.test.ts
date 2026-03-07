@@ -1,4 +1,5 @@
 import { revertBase64ImagesToFileRefs, processMessagesWithImages, addImageArtifactsToMessages, getUniqueImageMessages } from './utils'
+import { sanitizeFileName } from '../../src/validator'
 
 // Mock storageUtils
 jest.mock('../../src/storageUtils', () => ({
@@ -15,12 +16,14 @@ jest.mock('../../src/multiModalUtils', () => ({
 jest.mock('node-fetch', () => jest.fn())
 
 // Mock ../../src/utils to avoid pulling in axios (ESM)
-jest.mock('../../src/utils', () => ({
-    getCredentialData: jest.fn(),
-    getCredentialParam: jest.fn(),
-    handleEscapeCharacters: jest.fn((str: string) => str),
-    mapMimeTypeToInputField: jest.fn()
-}))
+jest.mock('../../src/utils', () => {
+    return {
+        getCredentialData: jest.fn(),
+        getCredentialParam: jest.fn(),
+        handleEscapeCharacters: jest.fn((str: string) => str),
+        mapMimeTypeToInputField: jest.fn()
+    }
+})
 
 describe('revertBase64ImagesToFileRefs', () => {
     it('reverts tagged image_url items to stored-file format', () => {
@@ -455,5 +458,126 @@ describe('end-to-end: base64 tagging and revert', () => {
 
         expect(reverted[0]).toEqual({ role: 'user', content: 'generate an image of a cat' })
         expect(reverted[2]).toEqual({ role: 'user', content: 'make it blue' })
+    })
+})
+
+describe('sanitizeFileName', () => {
+    it('returns a plain filename as-is', () => {
+        expect(sanitizeFileName('photo.jpg')).toBe('photo.jpg')
+    })
+
+    it('strips FILE-STORAGE:: prefix', () => {
+        expect(sanitizeFileName('FILE-STORAGE::photo.jpg')).toBe('photo.jpg')
+    })
+
+    it('strips path traversal sequences', () => {
+        expect(sanitizeFileName('../../../../etc/passwd')).toBe('passwd')
+        expect(sanitizeFileName('../../../secret.txt')).toBe('secret.txt')
+    })
+
+    it('strips absolute paths', () => {
+        expect(sanitizeFileName('/etc/passwd')).toBe('passwd')
+        expect(sanitizeFileName('C:\\Windows\\system32\\config.sys')).toBe('config.sys')
+    })
+
+    it('strips FILE-STORAGE:: prefix combined with traversal', () => {
+        expect(sanitizeFileName('FILE-STORAGE::../../etc/shadow')).toBe('shadow')
+    })
+
+    it('throws on empty or dot-only names', () => {
+        expect(() => sanitizeFileName('')).toThrow()
+        expect(() => sanitizeFileName('..')).toThrow()
+        expect(() => sanitizeFileName('FILE-STORAGE::')).toThrow()
+    })
+
+    it('handles names with subdirectory components', () => {
+        expect(sanitizeFileName('uploads/subfolder/image.png')).toBe('image.png')
+    })
+
+    it('strips URL-encoded path traversal sequences', () => {
+        // %2e%2e%2f = ../  — decoded then basename-extracted
+        expect(sanitizeFileName('%2e%2e%2fetc%2fpasswd')).toBe('passwd')
+    })
+
+    it('rejects double-encoded traversal attempts', () => {
+        // %252e decodes to %2e which isUnsafeFilePath catches — must throw
+        expect(() => sanitizeFileName('%252e%252e%252fpasswd')).toThrow()
+    })
+
+    it('strips backslash-based traversal (Windows)', () => {
+        expect(sanitizeFileName('..\\..\\Windows\\system.ini')).toBe('system.ini')
+    })
+})
+
+describe('path traversal prevention in image processing', () => {
+    it('_addImagesToMessages sanitizes filenames with traversal', async () => {
+        const options = {
+            uploads: [{ type: 'stored-file', name: '../../../../etc/passwd', mime: 'image/jpeg', data: '' }],
+            chatflowid: 'flow1',
+            chatId: 'chat1',
+            orgId: 'org1'
+        }
+        const modelConfig = { allowImageUploads: true }
+
+        const result = await getUniqueImageMessages(options, [], modelConfig)
+
+        expect(result).toBeDefined()
+        const content = (result!.imageMessageWithBase64 as any).content[0]
+        // _fileName should be sanitized to just the basename
+        expect(content._fileName).toBe('passwd')
+        expect(content._fileName).not.toContain('..')
+    })
+
+    it('processMessagesWithImages sanitizes stored-file names', async () => {
+        const options = { chatflowid: 'flow1', chatId: 'chat1', orgId: 'org1' }
+        const messages: any[] = [{ role: 'user', content: [{ type: 'stored-file', name: '../../../secret.png', mime: 'image/png' }] }]
+
+        const { updatedMessages } = await processMessagesWithImages(messages, options)
+        const content = (updatedMessages[0] as any).content[0]
+
+        expect(content._fileName).toBe('secret.png')
+        expect(content._fileName).not.toContain('..')
+    })
+
+    it('addImageArtifactsToMessages sanitizes LLM-controlled artifact paths (prompt injection)', async () => {
+        const options = { chatflowid: 'flow1', chatId: 'chat1', orgId: 'org1' }
+        const messages: any[] = [
+            {
+                role: 'assistant',
+                content: 'Here is your image',
+                additional_kwargs: {
+                    artifacts: [{ type: 'png', data: '../../../../etc/shadow' }]
+                }
+            }
+        ]
+
+        await addImageArtifactsToMessages(messages, options)
+
+        expect(messages).toHaveLength(2)
+        const inserted = messages[1]
+        expect(inserted._isTemporaryImageMessage).toBe(true)
+        // The _fileName must be sanitized — no traversal sequences
+        expect(inserted.content[0]._fileName).toBe('shadow')
+        expect(inserted.content[0]._fileName).not.toContain('..')
+        expect(inserted.content[0]._fileName).not.toContain('/')
+    })
+
+    it('addImageArtifactsToMessages sanitizes URL-encoded artifact paths', async () => {
+        const options = { chatflowid: 'flow1', chatId: 'chat1', orgId: 'org1' }
+        const messages: any[] = [
+            {
+                role: 'assistant',
+                content: 'Image ready',
+                additional_kwargs: {
+                    artifacts: [{ type: 'png', data: 'uploads%2f..%2f..%2f..%2fetc%2fpasswd' }]
+                }
+            }
+        ]
+
+        await addImageArtifactsToMessages(messages, options)
+
+        expect(messages).toHaveLength(2)
+        expect(messages[1].content[0]._fileName).toBe('passwd')
+        expect(messages[1].content[0]._fileName).not.toContain('..')
     })
 })

@@ -5,6 +5,7 @@ import { ICommonObject, IFileUpload, INodeData } from '../../src/Interface'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { IFlowState } from './Interface.Agentflow'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
+import { sanitizeFileName } from '../../src/validator'
 import fetch from 'node-fetch'
 
 const _addImagesToMessages = async (
@@ -19,7 +20,7 @@ const _addImagesToMessages = async (
         for (const upload of imageUploads) {
             let bf = upload.data
             if (upload.type == 'stored-file') {
-                const fileName = upload.name.replace(/^FILE-STORAGE::/, '')
+                const fileName = sanitizeFileName(upload.name)
                 const contents = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
                 bf = 'data:' + upload.mime + ';base64,' + contents.toString('base64')
 
@@ -29,7 +30,7 @@ const _addImagesToMessages = async (
                         url: bf,
                         detail: imageResolution ?? 'low'
                     },
-                    _fileName: upload.name,
+                    _fileName: fileName,
                     _mime: upload.mime
                 } as any)
             } else if (upload.type == 'url' && bf) {
@@ -92,7 +93,7 @@ export const processMessagesWithImages = async (
                 if (item.type === 'stored-file' && item.name && item.mime.startsWith('image/')) {
                     hasImageReferences = true
                     try {
-                        const fileName = item.name.replace(/^FILE-STORAGE::/, '')
+                        const fileName = sanitizeFileName(item.name)
                         // Get file contents from storage
                         const contents = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
 
@@ -106,7 +107,7 @@ export const processMessagesWithImages = async (
                                 url: base64Data,
                                 detail: item.imageResolution ?? 'low'
                             },
-                            _fileName: item.name,
+                            _fileName: fileName,
                             _mime: item.mime
                         } as any)
                     } catch (error) {
@@ -206,7 +207,7 @@ export const getUniqueImageMessages = async (
         role: 'user',
         content: options.uploads.map((upload: IFileUpload) => ({
             type: upload.type,
-            name: upload.name,
+            name: sanitizeFileName(upload.name),
             mime: upload.mime,
             imageResolution: modelConfig?.imageResolution
         }))
@@ -252,7 +253,7 @@ export const getPastChatHistoryImageMessages = async (
                 const imageContents: MessageContentImageUrl[] = []
                 for (const upload of uploads) {
                     if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
-                        const fileName = upload.name.replace(/^FILE-STORAGE::/, '')
+                        const fileName = sanitizeFileName(upload.name)
                         const fileData = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
                         const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
 
@@ -261,7 +262,7 @@ export const getPastChatHistoryImageMessages = async (
                             image_url: {
                                 url: bf
                             },
-                            _fileName: upload.name,
+                            _fileName: fileName,
                             _mime: upload.mime
                         } as any)
                     } else if (upload.type === 'url' && upload.mime.startsWith('image') && upload.data) {
@@ -272,6 +273,7 @@ export const getPastChatHistoryImageMessages = async (
                             }
                         })
                     } else if (upload.type === 'stored-file:full') {
+                        const safeFileName = sanitizeFileName(upload.name)
                         const fileLoaderNodeModule = await import('../../nodes/documentloaders/File/File')
                         // @ts-ignore
                         const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
@@ -285,11 +287,11 @@ export const getPastChatHistoryImageMessages = async (
                         fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
                         const nodeData = {
                             inputs: {
-                                [fileInputFieldFromMimeType]: `FILE-STORAGE::${JSON.stringify([upload.name])}`
+                                [fileInputFieldFromMimeType]: `FILE-STORAGE::${JSON.stringify([safeFileName])}`
                             }
                         }
                         const documents: string = await fileLoaderNodeInstance.init(nodeData, '', nodeOptions)
-                        messageWithFileUploads += `<doc name='${upload.name}'>${handleEscapeCharacters(documents, true)}</doc>\n\n`
+                        messageWithFileUploads += `<doc name='${safeFileName}'>${handleEscapeCharacters(documents, true)}</doc>\n\n`
                     }
                 }
                 const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
@@ -762,7 +764,8 @@ export const addImageArtifactsToMessages = async (messages: BaseMessageLike[], o
             for (const artifact of artifacts) {
                 if (artifact.type && artifact.data) {
                     if (imageExtensions.includes(artifact.type.toLowerCase())) {
-                        const fileName = artifact.data.split('/').pop() || artifact.data
+                        // artifact.data originates from LLM output — sanitize to prevent path traversal
+                        const fileName = sanitizeFileName(artifact.data)
                         const mimeType = `image/${artifact.type.toLowerCase()}`
                         imageArtifacts.push({
                             type: 'stored-file',
@@ -797,13 +800,13 @@ export const addImageArtifactsToMessages = async (messages: BaseMessageLike[], o
             const base64Contents: MessageContentImageUrl[] = []
             for (const artifact of imageArtifacts) {
                 try {
-                    const fileName = artifact.name.replace(/^FILE-STORAGE::/, '')
+                    const fileName = sanitizeFileName(artifact.name)
                     const contents = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
                     const base64Data = 'data:' + artifact.mime + ';base64,' + contents.toString('base64')
                     base64Contents.push({
                         type: 'image_url',
                         image_url: { url: base64Data },
-                        _fileName: artifact.name,
+                        _fileName: fileName,
                         _mime: artifact.mime
                     } as any)
                 } catch (error) {

@@ -1,4 +1,5 @@
 import path from 'path'
+import sanitize from 'sanitize-filename'
 import { getUserHome, isAllowedUploadMimeType, mapMimeTypeToExt } from './utils'
 
 /**
@@ -259,4 +260,36 @@ export const validateVectorStorePath = (userProvidedPath: string | undefined): s
     }
 
     return resolvedPath
+}
+
+/**
+ * Sanitize a file name to prevent path traversal attacks.
+ * Strips common storage prefixes, extracts the basename, runs it through
+ * the `sanitize-filename` package, and rejects anything that still looks unsafe.
+ *
+ * @param {string} name The file name to sanitize
+ */
+export const sanitizeFileName = (name: string): string => {
+    if (!name || typeof name !== 'string') {
+        throw new Error('Invalid file name: name is required')
+    }
+    // Strip the FILE-STORAGE:: prefix if present
+    let stripped = name.replace(/^FILE-STORAGE::/, '')
+    // Decode percent-encoded traversal sequences before basename extraction
+    try {
+        stripped = decodeURIComponent(stripped)
+    } catch (_) {
+        // If decoding fails the raw string is fine — basename will still strip dirs
+    }
+    // Extract only the base filename — removes all directory components
+    // path.basename handles both / and \ separators on all platforms
+    let baseName = path.basename(stripped)
+    // Run through sanitize-filename to strip OS-reserved chars, control chars, etc.
+    baseName = sanitize(baseName)
+    // Remove leading dots to prevent hidden files or relative path references
+    baseName = baseName.replace(/^\.+/, '')
+    if (!baseName || isUnsafeFilePath(baseName)) {
+        throw new Error(`Invalid or unsafe file name: ${name}`)
+    }
+    return baseName
 }
