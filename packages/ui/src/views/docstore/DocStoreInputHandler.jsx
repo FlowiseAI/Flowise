@@ -41,7 +41,21 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
 
     const handleDataChange = ({ inputParam, newValue }) => {
         data.inputs[inputParam.name] = newValue
-        const allowedShowHideInputTypes = ['boolean', 'asyncOptions', 'asyncMultiOptions', 'options', 'multiOptions']
+        const allowedShowHideInputTypes = [
+            'boolean',
+            'asyncOptions',
+            'asyncMultiOptions',
+            'options',
+            'multiOptions',
+            'string',
+            'password',
+            'number',
+            'code',
+            'json',
+            'datagrid',
+            'array',
+            'file'
+        ]
         if (allowedShowHideInputTypes.includes(inputParam.type) && nodeDataChangeHandler) {
             nodeDataChangeHandler({ nodeId: data.id, inputParam, newValue })
         }
@@ -80,7 +94,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
 
     const onExpandDialogSave = (newValue, inputParamName) => {
         setShowExpandDialog(false)
-        data.inputs[inputParamName] = newValue
+        handleDataChange({ inputParam: { name: inputParamName }, newValue })
     }
 
     const getCredential = () => {
@@ -157,7 +171,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                             <File
                                 disabled={disabled}
                                 fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
                             />
                         )}
@@ -174,7 +188,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 columns={inputParam.datagrid}
                                 hideFooter={true}
                                 rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
                             />
                         )}
                         {inputParam.type === 'code' && (
@@ -188,7 +202,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                         theme={customization.isDarkMode ? 'dark' : 'light'}
                                         lang={'js'}
                                         placeholder={inputParam.placeholder}
-                                        onValueChange={(code) => (data.inputs[inputParam.name] = code)}
+                                        onValueChange={(code) => handleDataChange({ inputParam, newValue: code })}
                                         basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                                     />
                                 </div>
@@ -199,7 +213,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 key={data.inputs[inputParam.name]}
                                 disabled={disabled}
                                 inputParam={inputParam}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                 nodeId={data.id}
                             />
@@ -207,7 +221,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                         {inputParam.type === 'json' && (
                             <JsonEditorInput
                                 disabled={disabled}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                 isDarkMode={customization.isDarkMode}
                             />
