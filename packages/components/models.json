@@ -1135,6 +1135,23 @@
             ]
         },
         {
+            "name": "volcengine",
+            "models": [
+                {
+                    "label": "doubao-1-5-lite-32k-250115",
+                    "name": "doubao-1-5-lite-32k-250115",
+                    "input_cost": 0.0000417,
+                    "output_cost": 0.0000833
+                },
+                {
+                    "label": "doubao-1-5-pro-32k-250115",
+                    "name": "doubao-1-5-pro-32k-250115",
+                    "input_cost": 0.0001111,
+                    "output_cost": 0.0002778
+                }
+            ]
+        },
+        {
             "name": "chatOpenAI",
             "models": [
                 {
