@@ -16,6 +16,7 @@ export abstract class BaseCommand extends Command {
         FLOWISE_FILE_SIZE_LIMIT: Flags.string(),
         PORT: Flags.string(),
         CORS_ORIGINS: Flags.string(),
+        MCP_CORS_ORIGINS: Flags.string(),
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         NUMBER_OF_PROXIES: Flags.string(),

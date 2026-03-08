@@ -13,6 +13,7 @@ import Leads from '@/ui-component/extended/Leads'
 import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
+import McpServer from '@/ui-component/extended/McpServer'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -54,6 +55,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Post Processing',
         id: 'postProcessing'
+    },
+    {
+        label: 'MCP Server',
+        id: 'mcpServer'
     }
 ]
 
@@ -147,6 +152,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                         {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
                         {item.id === 'postProcessing' ? <PostProcessing dialogProps={dialogProps} /> : null}
+                        {item.id === 'mcpServer' ? <McpServer dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>
