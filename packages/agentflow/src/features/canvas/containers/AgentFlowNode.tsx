@@ -1,5 +1,4 @@
 import { memo, useEffect, useRef, useState } from 'react'
-import { useUpdateNodeInternals } from 'reactflow'
 
 import { Box, Typography } from '@mui/material'
 
@@ -31,7 +30,6 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
     const ref = useRef<HTMLDivElement>(null)
-    const updateNodeInternals = useUpdateNodeInternals()
     const { openNodeEditor } = useOpenNodeEditor()
 
     const [isHovered, setIsHovered] = useState(false)
@@ -49,24 +47,16 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
         openNodeEditor(data.id)
     }
 
+    const hasValidationErrors = (data.validationErrors?.length ?? 0) > 0
     const outputAnchors = data.outputAnchors ?? []
     const minHeight = getMinimumNodeHeight(outputAnchors.length)
 
     useEffect(() => {
-        if (ref.current) {
-            setTimeout(() => {
-                updateNodeInternals(data.id)
-            }, 10)
-        }
-    }, [data, ref, updateNodeInternals])
-
-    useEffect(() => {
-        if (data.warning) {
-            setWarningMessage(data.warning)
-        } else {
-            setWarningMessage('')
-        }
-    }, [data.name, data.version, data.warning])
+        const messages: string[] = []
+        if (data.warning) messages.push(data.warning)
+        if (data.validationErrors?.length) messages.push(...data.validationErrors)
+        setWarningMessage(messages.join('\n'))
+    }, [data.name, data.version, data.warning, data.validationErrors])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onDoubleClick={handleDoubleClick}>
@@ -80,8 +70,8 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
             <CardWrapper
                 content={false}
                 sx={{
-                    borderColor: stateColor,
-                    borderWidth: '1px',
+                    borderColor: hasValidationErrors ? '#FFB938' : stateColor,
+                    borderWidth: hasValidationErrors ? '2px' : '1px',
                     boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
                     minHeight,
                     height: 'auto',

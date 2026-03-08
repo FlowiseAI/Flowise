@@ -1,9 +1,39 @@
 import { createContext, Dispatch, ReactNode, useCallback, useContext, useReducer, useRef } from 'react'
 import type { ReactFlowInstance } from 'reactflow'
 
+import { cloneDeep } from 'lodash'
+
 import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
+import { getUniqueNodeId } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
+
+// ========================================
+// Helper Functions
+// ========================================
+
+/**
+ * Check if a value is a connection string (e.g., "{{nodeId.data.instance}}")
+ */
+function isConnectionString(value: unknown): boolean {
+    return typeof value === 'string' && value.startsWith('{{') && value.endsWith('}}')
+}
+
+/**
+ * Update IDs in anchor arrays to match a new node ID
+ */
+function updateAnchorIds(items: unknown, oldId: string, newId: string): void {
+    if (!Array.isArray(items)) return
+    for (const item of items) {
+        if (item?.id) {
+            item.id = item.id.replace(oldId, newId)
+        }
+    }
+}
+
+// ========================================
+// Types
+// ========================================
 
 // Local state setter types
 type NodesSetter = (nodes: FlowNode[]) => void
@@ -25,7 +55,7 @@ export interface AgentflowContextValue {
 
     // Node operations
     deleteNode: (nodeId: string) => void
-    duplicateNode: (nodeId: string) => void
+    duplicateNode: (nodeId: string, distance?: number) => void
     updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>) => void
 
     // Edge operations
@@ -64,19 +94,6 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     const registerLocalStateSetters = useCallback((setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => {
         localNodesSetterRef.current = setLocalNodes
         localEdgesSetterRef.current = setLocalEdges
-    }, [])
-
-    // Helper function to generate unique copy IDs
-    const getUniqueCopyId = useCallback((baseId: string, nodes: FlowNode[]): string => {
-        const existingIds = new Set(nodes.map((node) => node.id))
-        for (let i = 1; i < Number.MAX_SAFE_INTEGER; i++) {
-            const newId = `${baseId}_copy_${i}`
-            if (!existingIds.has(newId)) {
-                return newId
-            }
-        }
-        //Fallback
-        return `${baseId}_copy_${Date.now()}`
     }, [])
 
     // Helper function to synchronize state updates between context and ReactFlow
@@ -135,35 +152,61 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         (nodeId: string) => {
             const newNodes = state.nodes.filter((node) => node.id !== nodeId)
             const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
-
             syncStateUpdate({ nodes: newNodes, edges: newEdges })
         },
         [state.nodes, state.edges, syncStateUpdate]
     )
 
     const duplicateNode = useCallback(
-        (nodeId: string) => {
+        (nodeId: string, distance = 50) => {
             const nodeToDuplicate = state.nodes.find((node) => node.id === nodeId)
             if (!nodeToDuplicate) return
 
-            const newNodeId = getUniqueCopyId(nodeToDuplicate.id, state.nodes)
+            const newNodeId = getUniqueNodeId(nodeToDuplicate.data, state.nodes)
+            const nodeWidth = nodeToDuplicate.width ?? 300
+
+            // Deep clone to avoid mutating the original node's nested objects
+            const clonedNode = cloneDeep(nodeToDuplicate)
+
             const newNode: FlowNode = {
-                ...nodeToDuplicate,
+                ...clonedNode,
                 id: newNodeId,
                 position: {
-                    x: nodeToDuplicate.position.x + 50,
-                    y: nodeToDuplicate.position.y + 50
+                    x: clonedNode.position.x + nodeWidth + distance,
+                    y: clonedNode.position.y
                 },
                 data: {
-                    ...nodeToDuplicate.data,
-                    id: newNodeId
+                    ...clonedNode.data,
+                    id: newNodeId,
+                    label: clonedNode.data.label + ` (${newNodeId.split('_').pop()})`
+                },
+                selected: false
+            }
+
+            // Update IDs in all anchor arrays to match new node ID
+            updateAnchorIds(newNode.data.inputs, nodeId, newNodeId)
+            updateAnchorIds(newNode.data.inputAnchors, nodeId, newNodeId)
+            updateAnchorIds(newNode.data.outputAnchors, nodeId, newNodeId)
+
+            // Clear connected input values by resetting to defaults
+            if (newNode.data.inputValues) {
+                for (const inputName in newNode.data.inputValues) {
+                    const value = newNode.data.inputValues[inputName]
+
+                    if (isConnectionString(value)) {
+                        // Reset string connections to parameter default
+                        const inputParam = newNode.data.inputs?.find((p) => p.name === inputName)
+                        newNode.data.inputValues[inputName] = inputParam?.default ?? ''
+                    } else if (Array.isArray(value)) {
+                        // Filter out connection strings from arrays
+                        newNode.data.inputValues[inputName] = value.filter((item) => !isConnectionString(item))
+                    }
                 }
             }
 
-            const newNodes = [...state.nodes, newNode]
-            syncStateUpdate({ nodes: newNodes })
+            syncStateUpdate({ nodes: [...state.nodes, newNode] })
         },
-        [state.nodes, syncStateUpdate, getUniqueCopyId]
+        [state.nodes, syncStateUpdate]
     )
 
     const updateNodeData = useCallback(

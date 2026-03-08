@@ -105,6 +105,8 @@ export interface INodeParams {
     hide?: INodeDisplay
     generateDocStoreDescription?: boolean
     generateInstruction?: boolean
+    minItems?: number
+    maxItems?: number
 }
 
 export interface INodeExecutionData {
@@ -458,7 +460,7 @@ export enum FollowUpPromptProvider {
 }
 
 export type FollowUpPromptProviderConfig = {
-    [key in FollowUpPromptProvider]: {
+    [_key in FollowUpPromptProvider]: {
         credentialId: string
         modelName: string
         baseUrl: string

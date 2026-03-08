@@ -242,7 +242,7 @@ export function AllNodeTypesExample() {
                     token={token ?? undefined}
                     initialFlow={allNodesFlow}
                     showDefaultHeader={false}
-                    readOnly={true}
+                    readOnly={false}
                 />
             </div>
         </div>
