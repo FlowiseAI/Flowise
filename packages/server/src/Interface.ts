@@ -70,6 +70,7 @@ export interface IChatFlow {
     apiConfig?: string
     category?: string
     type?: ChatflowType
+    mcpServerConfig?: string
     workspaceId: string
 }
 
