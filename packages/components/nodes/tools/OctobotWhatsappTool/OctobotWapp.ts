@@ -8,34 +8,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import FormData from 'form-data'
 
-/**
- * Sanitizes text by removing ANSI escape codes and other problematic characters
- * that LLMs sometimes output instead of actual content.
- * ANSI codes look like: [1m [33m [0m etc.
- */
-function sanitizeText(text: string): string {
-    if (!text) return text
-
-    // Remove ANSI escape codes (terminal color/formatting codes)
-    // Pattern: ESC[ followed by numbers and letters like [1m [33m [0m
-    let sanitized = text
-        .replace(/\x1B\[[0-9;]*[A-Za-z]/g, '') // Standard ANSI escape sequences
-        .replace(/\[([0-9;]*)m/g, '')          // Bracket-number-m patterns without ESC
-        .replace(/\[\d+m/g, '')                 // Simple [XXm patterns
-        .replace(/\[\d+;\d+m/g, '')             // [XX;YYm patterns
-        .replace(/\[0m/g, '')                   // Reset codes
-
-    // Remove other zero-width and problematic Unicode characters
-    sanitized = sanitized
-        .replace(/[\u200B-\u200D\uFEFF]/g, '')  // Zero-width chars
-        .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '') // Control chars except newline/tab
-
-    // Normalize whitespace (multiple spaces to single, trim)
-    sanitized = sanitized.replace(/  +/g, ' ').trim()
-
-    return sanitized
-}
-
 // Constants
 const TOOL_NAME = 'OctobotWappTool'
 const TOOL_DESC = `Send WhatsApp messages or create groups via OctobotWapp API.
@@ -204,20 +176,20 @@ class OctobotWapp_Tools implements INode {
         const schema =
             type_message === 'create_group'
                 ? z.object({
-                    recipients: z.string().describe('Comma-separated participant phone numbers (e.g., "201110076346,201110076347")'),
-                    text_message: z.string().describe('The group name/subject'),
-                    group_picture_url: z.string().optional().describe('URL of the group picture (optional)')
-                })
+                      recipients: z.string().describe('Comma-separated participant phone numbers (e.g., "201110076346,201110076347")'),
+                      text_message: z.string().describe('The group name/subject'),
+                      group_picture_url: z.string().optional().describe('URL of the group picture (optional)')
+                  })
                 : z.object({
-                    recipients: z
-                        .string()
-                        .describe(
-                            type_contact === 'group'
-                                ? 'Comma-separated group IDs (e.g., "120363123456789012@g.us" or multiple groups)'
-                                : 'Comma-separated phone numbers (e.g., "201110076346" or "201110076346,201110076347")'
-                        ),
-                    text_message: z.string().describe('The message text to send')
-                })
+                      recipients: z
+                          .string()
+                          .describe(
+                              type_contact === 'group'
+                                  ? 'Comma-separated group IDs (e.g., "120363123456789012@g.us" or multiple groups)'
+                                  : 'Comma-separated phone numbers (e.g., "201110076346" or "201110076346,201110076347")'
+                          ),
+                      text_message: z.string().describe('The message text to send')
+                  })
 
         return await OctobotWappTool.initialize({
             name: toolName ?? TOOL_NAME,
@@ -312,7 +284,7 @@ export class OctobotWappTool extends StructuredTool {
 
                 const formData = new FormData()
                 formData.append('deviceUuid', this.device_uuid)
-                formData.append('subject', sanitizeText(text_message))
+                formData.append('subject', text_message)
                 formData.append('participants', recipients)
 
                 // Simply pass the group picture URL if provided
@@ -367,10 +339,10 @@ export class OctobotWappTool extends StructuredTool {
             }
 
             if (this.type_message === 'text') {
-                formData.append('text_message', sanitizeText(text_message))
+                formData.append('text_message', text_message)
             } else {
                 if (text_message) {
-                    formData.append('text_message', sanitizeText(text_message))
+                    formData.append('text_message', text_message)
                 }
 
                 if (!this.media_path || !fs.existsSync(this.media_path)) {
