@@ -13,20 +13,21 @@ import { Tool } from '../../database/entities/Tool'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { Platform } from '../../Interface'
-import assistantsService from '../../services/assistants'
-import chatflowsService from '../../services/chatflows'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { checkUsageLimit } from '../../utils/quotaUsage'
-import { sanitizeNullBytes } from '../../utils/sanitize.util'
-import assistantService from '../assistants'
-import chatMessagesService from '../chat-messages'
+import assistantsService from '../assistants'
 import chatflowService from '../chatflows'
+import chatMessagesService from '../chat-messages'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { utilGetChatMessage } from '../../utils/getChatMessage'
+import { getStoragePath, parseJsonBody } from 'flowise-components'
+import path from 'path'
+import { checkUsageLimit } from '../../utils/quotaUsage'
 import documenStoreService from '../documentstore'
 import executionService, { ExecutionFilters } from '../executions'
 import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
 import variableService from '../variables'
+import { ChatMessageRatingType, ChatType, Platform } from '../../Interface'
+import { sanitizeNullBytes } from '../../utils/sanitize.util'
 
 type ExportInput = {
     agentflow: boolean
@@ -101,17 +102,17 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId: string): 
         AgentFlowV2 = 'data' in AgentFlowV2 ? AgentFlowV2.data : AgentFlowV2
 
         let AssistantCustom: Assistant[] =
-            exportInput.assistantCustom === true ? await assistantService.getAllAssistants(activeWorkspaceId, 'CUSTOM') : []
+            exportInput.assistantCustom === true ? await assistantsService.getAllAssistants(activeWorkspaceId, 'CUSTOM') : []
 
         let AssistantFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT', activeWorkspaceId) : []
         AssistantFlow = 'data' in AssistantFlow ? AssistantFlow.data : AssistantFlow
 
         let AssistantOpenAI: Assistant[] =
-            exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants(activeWorkspaceId, 'OPENAI') : []
+            exportInput.assistantOpenAI === true ? await assistantsService.getAllAssistants(activeWorkspaceId, 'OPENAI') : []
 
         let AssistantAzure: Assistant[] =
-            exportInput.assistantAzure === true ? await assistantService.getAllAssistants(activeWorkspaceId, 'AZURE') : []
+            exportInput.assistantAzure === true ? await assistantsService.getAllAssistants(activeWorkspaceId, 'AZURE') : []
 
         let ChatFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId) : []
@@ -635,7 +636,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
     importData.Tool = importData.Tool || []
     importData.Variable = importData.Variable || []
 
-    let queryRunner
+    let queryRunner: QueryRunner
     try {
         queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
         await queryRunner.connect()
@@ -644,7 +645,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             if (importData.AgentFlow.length > 0) {
                 importData.AgentFlow = reduceSpaceForChatflowFlowData(importData.AgentFlow)
                 importData.AgentFlow = insertWorkspaceId(importData.AgentFlow, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('MULTIAGENT', orgId)
+                const existingChatflowCount = await chatflowService.getAllChatflowsCountByOrganization('MULTIAGENT', orgId)
                 const newChatflowCount = importData.AgentFlow.length
                 await checkUsageLimit(
                     'flows',
@@ -657,7 +658,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             if (importData.AgentFlowV2.length > 0) {
                 importData.AgentFlowV2 = reduceSpaceForChatflowFlowData(importData.AgentFlowV2)
                 importData.AgentFlowV2 = insertWorkspaceId(importData.AgentFlowV2, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('AGENTFLOW', orgId)
+                const existingChatflowCount = await chatflowService.getAllChatflowsCountByOrganization('AGENTFLOW', orgId)
                 const newChatflowCount = importData.AgentFlowV2.length
                 await checkUsageLimit(
                     'flows',
@@ -682,7 +683,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             if (importData.AssistantFlow.length > 0) {
                 importData.AssistantFlow = reduceSpaceForChatflowFlowData(importData.AssistantFlow)
                 importData.AssistantFlow = insertWorkspaceId(importData.AssistantFlow, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('ASSISTANT', orgId)
+                const existingChatflowCount = await chatflowService.getAllChatflowsCountByOrganization('ASSISTANT', orgId)
                 const newChatflowCount = importData.AssistantFlow.length
                 await checkUsageLimit(
                     'flows',
@@ -719,7 +720,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             if (importData.ChatFlow.length > 0) {
                 importData.ChatFlow = reduceSpaceForChatflowFlowData(importData.ChatFlow)
                 importData.ChatFlow = insertWorkspaceId(importData.ChatFlow, activeWorkspaceId)
-                const existingChatflowCount = await chatflowsService.getAllChatflowsCountByOrganization('CHATFLOW', orgId)
+                const existingChatflowCount = await chatflowService.getAllChatflowsCountByOrganization('CHATFLOW', orgId)
                 const newChatflowCount = importData.ChatFlow.length
                 await checkUsageLimit(
                     'flows',
@@ -800,8 +801,160 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
     }
 }
 
+// Export chatflow messages
+const exportChatflowMessages = async (
+    chatflowId: string,
+    chatType?: ChatType[] | string,
+    feedbackType?: ChatMessageRatingType[] | string,
+    startDate?: string,
+    endDate?: string,
+    workspaceId?: string
+) => {
+    try {
+        // Parse chatType if it's a string
+        let parsedChatTypes: ChatType[] | undefined
+        if (chatType) {
+            if (typeof chatType === 'string') {
+                const parsed = parseJsonBody(chatType)
+                parsedChatTypes = Array.isArray(parsed) ? parsed : [chatType as ChatType]
+            } else if (Array.isArray(chatType)) {
+                parsedChatTypes = chatType
+            }
+        }
+
+        // Parse feedbackType if it's a string
+        let parsedFeedbackTypes: ChatMessageRatingType[] | undefined
+        if (feedbackType) {
+            if (typeof feedbackType === 'string') {
+                const parsed = parseJsonBody(feedbackType)
+                parsedFeedbackTypes = Array.isArray(parsed) ? parsed : [feedbackType as ChatMessageRatingType]
+            } else if (Array.isArray(feedbackType)) {
+                parsedFeedbackTypes = feedbackType
+            }
+        }
+
+        // Get all chat messages for the chatflow with feedback
+        const chatMessages = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatTypes: parsedChatTypes,
+            feedbackTypes: parsedFeedbackTypes,
+            startDate,
+            endDate,
+            sortOrder: 'DESC',
+            feedback: true,
+            activeWorkspaceId: workspaceId
+        })
+
+        const storagePath = getStoragePath()
+        const exportObj: { [key: string]: any } = {}
+
+        // Process each chat message
+        for (const chatmsg of chatMessages) {
+            const chatPK = getChatPK(chatmsg)
+            const filePaths: string[] = []
+
+            // Handle file uploads
+            if (chatmsg.fileUploads) {
+                const uploads = parseJsonBody(chatmsg.fileUploads)
+                if (Array.isArray(uploads)) {
+                    uploads.forEach((file: any) => {
+                        if (file.type === 'stored-file') {
+                            filePaths.push(path.join(storagePath, chatmsg.chatflowid, chatmsg.chatId, file.name))
+                        }
+                    })
+                }
+            }
+
+            // Create message object
+            const msg: any = {
+                content: chatmsg.content,
+                role: chatmsg.role === 'apiMessage' ? 'bot' : 'user',
+                time: chatmsg.createdDate
+            }
+
+            // Add optional properties
+            if (filePaths.length) msg.filePaths = filePaths
+            if (chatmsg.sourceDocuments) msg.sourceDocuments = parseJsonBody(chatmsg.sourceDocuments)
+            if (chatmsg.usedTools) msg.usedTools = parseJsonBody(chatmsg.usedTools)
+            if (chatmsg.fileAnnotations) msg.fileAnnotations = parseJsonBody(chatmsg.fileAnnotations)
+            if ((chatmsg as any).feedback) msg.feedback = (chatmsg as any).feedback.content
+            if (chatmsg.agentReasoning) msg.agentReasoning = parseJsonBody(chatmsg.agentReasoning)
+
+            // Handle artifacts
+            if (chatmsg.artifacts) {
+                const artifacts = parseJsonBody(chatmsg.artifacts)
+                msg.artifacts = artifacts
+                if (Array.isArray(artifacts)) {
+                    artifacts.forEach((artifact: any) => {
+                        if (artifact.type === 'png' || artifact.type === 'jpeg') {
+                            const baseURL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`
+                            artifact.data = `${baseURL}/api/v1/get-upload-file?chatflowId=${chatmsg.chatflowid}&chatId=${
+                                chatmsg.chatId
+                            }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
+                        }
+                    })
+                }
+            }
+
+            // Group messages by chat session
+            if (!exportObj[chatPK]) {
+                exportObj[chatPK] = {
+                    id: chatmsg.chatId,
+                    source: getChatType(chatmsg.chatType as ChatType),
+                    sessionId: chatmsg.sessionId ?? null,
+                    memoryType: chatmsg.memoryType ?? null,
+                    email: (chatmsg as any).leadEmail ?? null,
+                    messages: [msg]
+                }
+            } else {
+                exportObj[chatPK].messages.push(msg)
+            }
+        }
+
+        // Convert to array and reverse message order within each conversation
+        const exportMessages = Object.values(exportObj).map((conversation: any) => ({
+            ...conversation,
+            messages: conversation.messages.reverse()
+        }))
+
+        return exportMessages
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: exportImportService.exportChatflowMessages - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+// Helper function to get chat primary key
+const getChatPK = (chatmsg: ChatMessage): string => {
+    const chatId = chatmsg.chatId
+    const memoryType = chatmsg.memoryType
+    const sessionId = chatmsg.sessionId
+
+    if (memoryType && sessionId) {
+        return `${chatId}_${memoryType}_${sessionId}`
+    }
+    return chatId
+}
+
+// Helper function to get chat type display name
+const getChatType = (chatType?: ChatType): string => {
+    if (!chatType) return 'Unknown'
+
+    switch (chatType) {
+        case ChatType.EVALUATION:
+            return 'Evaluation'
+        case ChatType.INTERNAL:
+            return 'UI'
+        case ChatType.EXTERNAL:
+            return 'API/Embed'
+    }
+}
+
 export default {
     convertExportInput,
     exportData,
-    importData
+    importData,
+    exportChatflowMessages
 }

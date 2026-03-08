@@ -527,7 +527,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                         icon={
                                                             <div
                                                                 style={{
-                                                                    borderRadius: '50%'
+                                                                    borderRadius: '50%',
+                                                                    position: 'relative'
                                                                 }}
                                                             >
                                                                 <img
@@ -540,6 +541,27 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                                     src={getImage(index)}
                                                                     alt={item}
                                                                 />
+                                                                {item === 'LlamaIndex' && (
+                                                                    <span
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            top: '-4px',
+                                                                            right: '-6px',
+                                                                            backgroundColor: '#ff9800',
+                                                                            color: 'white',
+                                                                            borderRadius: '50%',
+                                                                            width: '12px',
+                                                                            height: '12px',
+                                                                            fontSize: '10px',
+                                                                            fontWeight: 'bold',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center'
+                                                                        }}
+                                                                    >
+                                                                        !
+                                                                    </span>
+                                                                )}
                                                             </div>
                                                         }
                                                         iconPosition='start'

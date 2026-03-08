@@ -1,15 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
-import { User, UserStatus } from '../database/entities/user.entity'
-import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
 import { DataSource, ILike, QueryRunner } from 'typeorm'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
-import { compareHash, getHash } from '../utils/encryption.util'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { sanitizeUser } from '../../utils/sanitize.util'
+import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
+import { User, UserStatus } from '../database/entities/user.entity'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { compareHash, getHash } from '../utils/encryption.util'
+import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
 
 export const enum UserErrorMessage {
     EXPIRED_TEMP_TOKEN = 'Expired Temporary Token',
@@ -88,10 +88,11 @@ export class UserService {
         if (data.status) this.validateUserStatus(data.status)
 
         data.id = generateId()
-        if (data.createdBy) {
-            const createdBy = await this.readUserById(data.createdBy, queryRunner)
-            if (!createdBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-            data.createdBy = createdBy.id
+        const createdById = data.createdBy
+        if (createdById) {
+            const createdByUser = await this.readUserById(createdById, queryRunner)
+            if (!createdByUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+            data.createdBy = createdByUser.id
             data.updatedBy = data.createdBy
         } else {
             data.createdBy = data.id
@@ -170,8 +171,7 @@ export class UserService {
                 if (newUserData.newPassword !== newUserData.confirmPassword) {
                     throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.PASSWORDS_DO_NOT_MATCH)
                 }
-                const hash = getHash(newUserData.newPassword)
-                newUserData.credential = hash
+                newUserData.credential = this.encryptUserCredential(newUserData.newPassword)
                 newUserData.tempToken = ''
                 newUserData.tokenExpiry = undefined
             }

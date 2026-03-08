@@ -324,7 +324,7 @@ class SearxngSearch extends Tool {
         } else if (res.answers.length) {
             return res.answers[0]
         } else if (res.infoboxes.length) {
-            return res.infoboxes[0]?.content.replaceAll(/<[^>]+>/gi, '')
+            return res.infoboxes[0]?.content ?? ''
         } else if (res.suggestions.length) {
             let suggestions = 'Suggestions: '
             res.suggestions.forEach((s) => {

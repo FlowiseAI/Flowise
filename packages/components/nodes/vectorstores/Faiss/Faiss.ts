@@ -4,6 +4,7 @@ import { FaissStore } from '@langchain/community/vectorstores/faiss'
 import { Embeddings } from '@langchain/core/embeddings'
 import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { validateVectorStorePath } from '../../../src/validator'
 
 class Faiss_VectorStores implements INode {
     label: string
@@ -88,7 +89,9 @@ class Faiss_VectorStores implements INode {
 
             try {
                 const vectorStore = await FaissStore.fromDocuments(finalDocs, embeddings)
-                await vectorStore.save(basePath)
+                // Validate and sanitize the base path to prevent path traversal attacks
+                const validatedPath = validateVectorStorePath(basePath)
+                await vectorStore.save(validatedPath)
 
                 // Avoid illegal invocation error
                 vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {
@@ -109,7 +112,9 @@ class Faiss_VectorStores implements INode {
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseFloat(topK) : 4
 
-        const vectorStore = await FaissStore.load(basePath, embeddings)
+        // Validate and sanitize the base path to prevent path traversal attacks
+        const validatedPath = validateVectorStorePath(basePath)
+        const vectorStore = await FaissStore.load(validatedPath, embeddings)
 
         // Avoid illegal invocation error
         vectorStore.similaritySearchVectorWithScore = async (query: number[], k: number) => {

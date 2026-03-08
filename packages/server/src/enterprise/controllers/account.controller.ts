@@ -1,13 +1,16 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { AccountService } from '../services/account.service'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { Organization } from '../database/entities/organization.entity'
+import { User } from '../database/entities/user.entity'
+import { AccountDTO, AccountService } from '../services/account.service'
 
 export class AccountController {
     public async register(req: Request, res: Response, next: NextFunction) {
         try {
             const accountService = new AccountService()
-            const data = await accountService.register(req.body)
+            const sanitizedBody = sanitizeRegistrationDTO(req.body)
+            const data = await accountService.register(sanitizedBody)
             return res.status(StatusCodes.CREATED).json(data)
         } catch (error) {
             next(error)
@@ -68,7 +71,7 @@ export class AccountController {
         try {
             const accountService = new AccountService()
             const data = await accountService.resetPassword(req.body)
-            return res.status(StatusCodes.CREATED).json(data)
+            return res.status(StatusCodes.OK).json(data)
         } catch (error) {
             next(error)
         }
@@ -133,4 +136,43 @@ export class AccountController {
             return res.json({ message: 'Authentication failed' })
         }
     }
+}
+
+function sanitizeRegistrationDTO(data: AccountDTO): AccountDTO {
+    const sanitized: AccountDTO = {
+        user: {},
+        organization: {},
+        organizationUser: {},
+        workspace: {},
+        workspaceUser: {},
+        role: {}
+    }
+
+    // Strict allowlist: only fields a client may supply during registration.
+    // Never accept server-managed fields: id, createdBy, updatedBy, createdDate, updatedDate, status, tokenExpiry.
+    const allowedUserFields: (keyof User)[] = ['name', 'email', 'credential', 'tempToken']
+    if (data.user && typeof data.user === 'object' && !Array.isArray(data.user)) {
+        for (const field of allowedUserFields) {
+            const value = data.user[field]
+            if (value != null) {
+                sanitized.user[field] = value as any
+            }
+        }
+        if (data.user.referral != null) {
+            sanitized.user.referral = data.user.referral
+        }
+    }
+
+    // Allow organization.name for Enterprise owner registration (the only path that doesn't hardcode it).
+    const allowedOrgFields: (keyof Organization)[] = ['name']
+    if (data.organization && typeof data.organization === 'object' && !Array.isArray(data.organization)) {
+        for (const field of allowedOrgFields) {
+            const value = data.organization[field]
+            if (value != null) {
+                sanitized.organization[field] = value as any
+            }
+        }
+    }
+
+    return sanitized
 }

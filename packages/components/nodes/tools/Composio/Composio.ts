@@ -63,11 +63,11 @@ class Composio_Tools implements INode {
                 refresh: true
             },
             {
-                label: 'Auth Status',
-                name: 'authStatus',
+                label: 'Connected Account',
+                name: 'connectedAccountId',
                 type: 'asyncOptions',
-                loadMethod: 'authStatus',
-                placeholder: 'Connection status will appear here',
+                loadMethod: 'listConnections',
+                description: 'Select which connection to use',
                 refresh: true
             },
             {
@@ -164,7 +164,7 @@ class Composio_Tools implements INode {
                 ]
             }
         },
-        authStatus: async (nodeData: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> => {
+        listConnections: async (nodeData: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> => {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options ?? {})
             const composioApiKey = getCredentialParam('composioApi', credentialData, nodeData)
             const appName = nodeData.inputs?.appName as string
@@ -184,20 +184,44 @@ class Composio_Tools implements INode {
                     {
                         label: 'Select an App first',
                         name: 'placeholder',
-                        description: 'Select an app from the dropdown to view available actions'
+                        description: 'Select an app from the dropdown to view available connections'
                     }
                 ]
             }
 
             const toolset = new LangchainToolSet({ apiKey: composioApiKey })
-            const authStatus = await toolset.client.getEntity('default').getConnection({ app: appName.toLowerCase() })
-            return [
-                {
-                    label: authStatus ? 'Connected' : 'Not Connected',
-                    name: authStatus ? 'Connected' : 'Not Connected',
-                    description: authStatus ? 'Selected app has an active connection' : 'Please connect the app on app.composio.dev'
-                }
-            ]
+
+            const appInfo = await toolset.client.apps.get({ appKey: appName.toLowerCase() })
+            const requiresAuth = (appInfo as any)?.no_auth !== true
+
+            if (!requiresAuth) {
+                return [
+                    {
+                        label: 'No connection needed',
+                        name: 'No connection needed',
+                        description: 'This app does not require authentication'
+                    }
+                ]
+            }
+
+            const connections = await toolset.client.connectedAccounts.list({ appNames: appName.toLowerCase() })
+            const activeConnections = connections.items?.filter((c: any) => c.status === 'ACTIVE') || []
+
+            if (activeConnections.length === 0) {
+                return [
+                    {
+                        label: 'No connections available',
+                        name: '',
+                        description: 'Please connect the app on app.composio.dev first'
+                    }
+                ]
+            }
+
+            return activeConnections.map((c: any) => ({
+                label: c.clientUniqueUserId || c.id,
+                name: c.id,
+                description: `Created: ${new Date(c.createdAt).toLocaleDateString()}`
+            }))
         }
     }
 
@@ -210,7 +234,7 @@ class Composio_Tools implements INode {
         if (!composioApiKey) {
             nodeData.inputs = {
                 appName: undefined,
-                authStatus: '',
+                connectedAccountId: '',
                 actions: []
             }
             throw new Error('API Key Required')
@@ -227,7 +251,37 @@ class Composio_Tools implements INode {
         }
 
         const toolset = new LangchainToolSet({ apiKey: composioApiKey })
-        const tools = await toolset.getTools({ actions })
+        const appName = nodeData.inputs?.appName as string
+
+        if (!appName) {
+            throw new Error('App name is required. Please select an app.')
+        }
+
+        const appInfo = await toolset.client.apps.get({ appKey: appName.toLowerCase() })
+        const requiresAuth = (appInfo as any)?.no_auth !== true
+
+        if (!requiresAuth) {
+            const tools = await toolset.getTools({ actions })
+            return tools
+        }
+
+        const selectedConnectionId = nodeData.inputs?.connectedAccountId as string
+
+        if (!selectedConnectionId) {
+            throw new Error(`Please select a connected account for ${appName}`)
+        }
+
+        const activeConnection = await toolset.client.connectedAccounts.get({ connectedAccountId: selectedConnectionId })
+
+        if (!activeConnection || (activeConnection as any).status !== 'ACTIVE') {
+            throw new Error(
+                `Selected connection is no longer active for ${appName}. Please select a different connection or reconnect on app.composio.dev`
+            )
+        }
+
+        const entityId = (activeConnection as any).clientUniqueUserId || 'default'
+        const toolsetWithEntity = new LangchainToolSet({ apiKey: composioApiKey, entityId })
+        const tools = await toolsetWithEntity.getTools({ actions })
         return tools
     }
 }

@@ -22,6 +22,8 @@ The columns and data types of a dataframe are given below as a Python dictionary
 
 I will ask question, and you will output the Python code using pandas dataframe to answer my question. Do not provide any explanations. Do not respond with anything except the output of the code.
 
+Security: Output ONLY pandas/numpy operations on the dataframe (df). Do not use import, exec, eval, open, os, subprocess, or any other system or file operations. The code will be validated and rejected if it contains such constructs.
+
 Question: {question}
 Output Code:`
 

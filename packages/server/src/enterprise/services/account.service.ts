@@ -7,6 +7,7 @@ import { IdentityManager } from '../../IdentityManager'
 import { Platform, UserPlan } from '../../Interface'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization, OrganizationName } from '../database/entities/organization.entity'
@@ -15,9 +16,12 @@ import { User, UserStatus } from '../database/entities/user.entity'
 import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspace-user.entity'
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
-import { compareHash } from '../utils/encryption.util'
+import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
 import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
+import { getSecureAppUrl, getSecureTokenLink } from '../utils/url.util'
+import { validatePasswordOrThrow } from '../utils/validation.util'
 import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
@@ -25,11 +29,12 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
-import { sanitizeUser } from '../../utils/sanitize.util'
-import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 
-type AccountDTO = {
-    user: Partial<User>
+/** Optional referral field for Stripe referral tracking in CLOUD; not a User entity column. */
+type RegistrationUser = Partial<User> & { referral?: string }
+
+export type AccountDTO = {
+    user: RegistrationUser
     organization: Partial<Organization>
     organizationUser: Partial<OrganizationUser>
     workspace: Partial<Workspace>
@@ -94,7 +99,7 @@ export class AccountService {
             await queryRunner.manager.save(User, updatedUser)
 
             // resend invite
-            const verificationLink = `${process.env.APP_URL}/verify?token=${updateUserData.tempToken}`
+            const verificationLink = getSecureTokenLink('/verify', updateUserData.tempToken!)
             await sendVerificationEmailForCloud(email, verificationLink)
 
             await queryRunner.commitTransaction()
@@ -104,6 +109,8 @@ export class AccountService {
         } finally {
             await queryRunner.release()
         }
+
+        return { message: 'success' }
     }
 
     private async ensureOneOrganizationOnly(queryRunner: QueryRunner) {
@@ -135,7 +142,6 @@ export class AccountService {
                 const { customerId, subscriptionId } = await this.identityManager.createStripeUserAndSubscribe({
                     email: data.user.email,
                     userPlan: UserPlan.FREE,
-                    // @ts-ignore
                     referral: data.user.referral || ''
                 })
                 data.organization.customerId = customerId
@@ -168,7 +174,7 @@ export class AccountService {
                 }
                 // send verification email only if user signed up with email/password
                 if (data.user.credential) {
-                    const verificationLink = `${process.env.APP_URL}/verify?token=${data.user.tempToken}`
+                    const verificationLink = getSecureTokenLink('/verify', data.user.tempToken!)
                     await sendVerificationEmailForCloud(data.user.email!, verificationLink)
                 }
                 break
@@ -309,8 +315,8 @@ export class AccountService {
                 // send invite
                 const registerLink =
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
-                        ? `${process.env.APP_URL}/register?token=${data.user.tempToken}`
-                        : `${process.env.APP_URL}/register`
+                        ? getSecureTokenLink('/register', data.user.tempToken!)
+                        : getSecureAppUrl('/register')
                 await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
                 data.user = await this.userService.createNewUser(data.user, queryRunner)
 
@@ -378,9 +384,9 @@ export class AccountService {
                     tokenExpiry.setHours(tokenExpiry.getHours() + expiryInHours)
                     data.user.tokenExpiry = tokenExpiry
                     await this.userService.saveUser(data.user, queryRunner)
-                    registerLink = `${process.env.APP_URL}/register?token=${data.user.tempToken}`
+                    registerLink = getSecureTokenLink('/register', data.user.tempToken!)
                 } else {
-                    registerLink = `${process.env.APP_URL}/register`
+                    registerLink = getSecureAppUrl('/register')
                 }
                 if (workspaceUser.length === 1) {
                     oldWorkspaceUser = workspaceUser[0]
@@ -406,7 +412,7 @@ export class AccountService {
             } else {
                 data.organizationUser.updatedBy = data.user.createdBy
 
-                const dashboardLink = `${process.env.APP_URL}`
+                const dashboardLink = getSecureAppUrl()
                 await sendWorkspaceAdd(data.user.email!, data.workspace.name!, dashboardLink)
             }
 
@@ -467,6 +473,18 @@ export class AccountService {
                 await auditService.recordLoginActivity(user.email || '', LoginActivityCode.INCORRECT_CREDENTIAL, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.INCORRECT_USER_EMAIL_OR_CREDENTIALS)
             }
+
+            // If the stored hash was created with fewer salt rounds than the current minimum
+            // (e.g. 5 before we increased to 10), rehash with the current rounds on successful login.
+            if (hashNeedsUpgrade(user.credential!, getPasswordSaltRounds())) {
+                try {
+                    const newHash = getHash(data.user.credential!)
+                    await this.userService.saveUser({ ...user, credential: newHash }, queryRunner)
+                } catch (upgradeError) {
+                    logger.warn(`Failed to upgrade password hash for user ${user.email}`, upgradeError)
+                }
+            }
+
             if (user.status === UserStatus.UNVERIFIED) {
                 await auditService.recordLoginActivity(data.user.email || '', LoginActivityCode.REGISTRATION_PENDING, 'Login Failed')
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.USER_EMAIL_UNVERIFIED)
@@ -532,7 +550,7 @@ export class AccountService {
             tokenExpiry.setMinutes(tokenExpiry.getMinutes() + expiryInMins)
             data.user.tokenExpiry = tokenExpiry
             data.user = await this.userService.saveUser(data.user, queryRunner)
-            const resetLink = `${process.env.APP_URL}/reset-password?token=${data.user.tempToken}`
+            const resetLink = getSecureTokenLink('/reset-password', data.user.tempToken!)
             await sendPasswordResetEmail(data.user.email!, resetLink)
             await queryRunner.commitTransaction()
         } catch (error) {
@@ -542,7 +560,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async resetPassword(data: AccountDTO) {
@@ -563,11 +581,15 @@ export class AccountService {
             const diff = now.diff(tokenExpiry, 'minutes')
             if (Math.abs(diff) > expiryInMins) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
 
+            // @ts-ignore
+            const password = data.user.password
+            validatePasswordOrThrow(password)
+
             // all checks are done, now update the user password, don't forget to hash it and do not forget to clear the temp token
             // leave the user status and other details as is
-            const salt = bcrypt.genSaltSync(parseInt(process.env.PASSWORD_SALT_HASH_ROUNDS || '5'))
+            const salt = bcrypt.genSaltSync(getPasswordSaltRounds())
             // @ts-ignore
-            const hash = bcrypt.hashSync(data.user.password, salt)
+            const hash = bcrypt.hashSync(password, salt)
             data.user = user
             data.user.credential = hash
             data.user.tempToken = ''
@@ -581,13 +603,13 @@ export class AccountService {
             // Invalidate all sessions for this user after password reset
             await destroyAllSessionsForUser(user.id as string)
         } catch (error) {
-            await queryRunner.rollbackTransaction()
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             throw error
         } finally {
-            await queryRunner.release()
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
 
-        return sanitizeUser(data.user)
+        return { message: 'success' }
     }
 
     public async logout(user: LoggedInUser) {

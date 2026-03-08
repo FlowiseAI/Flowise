@@ -1,7 +1,8 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { ChatBedrockConverseInput, ChatBedrockConverse } from '@langchain/aws'
 import { BedrockChat } from './FlowiseAWSChatBedrock'
 
@@ -62,6 +63,13 @@ class AWSChatBedrock_ChatModels implements INode {
                 name: 'customModel',
                 description: 'If provided, will override model selected from Model Name option',
                 type: 'string',
+                optional: true
+            },
+            {
+                label: 'Custom Endpoint Host',
+                name: 'endpointHost',
+                type: 'string',
+                description: 'Custom endpoint host to use for the model. If provided, will override the default endpoint host.',
                 optional: true
             },
             {
@@ -133,6 +141,7 @@ class AWSChatBedrock_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const streaming = nodeData.inputs?.streaming as boolean
         const latencyOptimized = nodeData.inputs?.latencyOptimized as boolean
+        const endpointHost = (nodeData.inputs?.endpointHost as string)?.trim()
 
         const obj: ChatBedrockConverseInput = {
             region: iRegion,
@@ -146,24 +155,21 @@ class AWSChatBedrock_ChatModels implements INode {
             obj.performanceConfig = { latency: 'optimized' }
         }
 
+        if (endpointHost) {
+            obj.endpointHost = endpointHost
+        }
+
         /**
          * Long-term credentials specified in LLM configuration are optional.
          * Bedrock's credential provider falls back to the AWS SDK to fetch
          * credentials from the running environment.
          * When specified, we override the default provider with configured values.
+         * Supports STS AssumeRole when a Role ARN is configured in the credential.
          * @see https://github.com/aws/aws-sdk-js-v3/blob/main/packages/credential-provider-node/README.md
          */
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        if (credentialData && Object.keys(credentialData).length !== 0) {
-            const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
-            const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
-            const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
-
-            obj.credentials = {
-                accessKeyId: credentialApiKey,
-                secretAccessKey: credentialApiSecret,
-                sessionToken: credentialApiSession
-            }
+        const credentialConfig = await getAWSCredentialConfig(nodeData, options, iRegion)
+        if (credentialConfig.credentials) {
+            obj.credentials = credentialConfig.credentials
         }
         if (cache) obj.cache = cache
 

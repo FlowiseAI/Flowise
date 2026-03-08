@@ -323,6 +323,30 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.2",
+                    "name": "gpt-5.2",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-pro",
+                    "name": "gpt-5.2-pro",
+                    "input_cost": 0.000021,
+                    "output_cost": 0.000168
+                },
+                {
+                    "label": "gpt-5.2-chat-latest",
+                    "name": "gpt-5.2-chat-latest",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-codex",
+                    "name": "gpt-5.2-codex",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
                     "label": "gpt-5.1",
                     "name": "gpt-5.1",
                     "input_cost": 0.00000125,
@@ -893,6 +917,7 @@
                 }
             ],
             "regions": [
+                { "label": "global", "name": "global" },
                 { "label": "us-east1", "name": "us-east1" },
                 { "label": "us-east4", "name": "us-east4" },
                 { "label": "us-central1", "name": "us-central1" },
@@ -1026,16 +1051,69 @@
             "name": "chatCohere",
             "models": [
                 {
-                    "label": "command-a",
-                    "name": "command-a",
+                    "label": "command-a-03-2025",
+                    "name": "command-a-03-2025",
+                    "description": "Command A – most performant; tool use, RAG, multilingual",
                     "input_cost": 0.0025,
                     "output_cost": 0.01
                 },
                 {
-                    "label": "command-r-plus",
-                    "name": "command-r-plus",
+                    "label": "command-r7b-12-2024",
+                    "name": "command-r7b-12-2024",
+                    "description": "Small, fast; RAG, tool use, agents",
+                    "input_cost": 0.000037,
+                    "output_cost": 0.00015
+                },
+                {
+                    "label": "command-a-reasoning-08-2025",
+                    "name": "command-a-reasoning-08-2025",
+                    "description": "Command A Reasoning – nuanced problem-solving, agents",
                     "input_cost": 0.0025,
                     "output_cost": 0.01
+                },
+                {
+                    "label": "command-r-08-2024",
+                    "name": "command-r-08-2024",
+                    "description": "Command R – RAG, tool use, multilingual",
+                    "input_cost": 0.00015,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "command-r-plus-08-2024",
+                    "name": "command-r-plus-08-2024",
+                    "description": "Command R+ – complex RAG, multi-step tool use",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
+                }
+            ]
+        },
+        {
+            "name": "chatCerebras",
+            "models": [
+                {
+                    "label": "llama-3.3-70b",
+                    "name": "llama-3.3-70b",
+                    "description": "Best for complex reasoning and long-form content"
+                },
+                {
+                    "label": "qwen-3-32b",
+                    "name": "qwen-3-32b",
+                    "description": "Balanced performance for general-purpose tasks"
+                },
+                {
+                    "label": "llama3.1-8b",
+                    "name": "llama3.1-8b",
+                    "description": "Fastest model, ideal for simple tasks and high throughput"
+                },
+                {
+                    "label": "gpt-oss-120b",
+                    "name": "gpt-oss-120b",
+                    "description": "Largest model for demanding tasks"
+                },
+                {
+                    "label": "zai-glm-4.6",
+                    "name": "zai-glm-4.6",
+                    "description": "Advanced reasoning and complex problem-solving"
                 }
             ]
         },
@@ -1059,6 +1137,30 @@
         {
             "name": "chatOpenAI",
             "models": [
+                {
+                    "label": "gpt-5.2",
+                    "name": "gpt-5.2",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-pro",
+                    "name": "gpt-5.2-pro",
+                    "input_cost": 0.000021,
+                    "output_cost": 0.000168
+                },
+                {
+                    "label": "gpt-5.2-chat-latest",
+                    "name": "gpt-5.2-chat-latest",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
+                {
+                    "label": "gpt-5.2-codex",
+                    "name": "gpt-5.2-codex",
+                    "input_cost": 0.00000175,
+                    "output_cost": 0.000014
+                },
                 {
                     "label": "gpt-5.1",
                     "name": "gpt-5.1",
@@ -2094,16 +2196,8 @@
             "name": "googleGenerativeAiEmbeddings",
             "models": [
                 {
-                    "label": "embedding-001",
-                    "name": "embedding-001"
-                },
-                {
-                    "label": "text-embedding-004",
-                    "name": "text-embedding-004"
-                },
-                {
-                    "label": "gemini-embedding-exp-03-07",
-                    "name": "gemini-embedding-exp-03-07"
+                    "label": "gemini-embedding-001",
+                    "name": "gemini-embedding-001"
                 }
             ]
         },

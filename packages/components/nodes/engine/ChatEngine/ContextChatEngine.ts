@@ -25,6 +25,8 @@ class ContextChatEngine_LlamaIndex implements INode {
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
     sessionId?: string
+    badge: string
+    deprecateMessage: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Context Chat Engine'
@@ -36,6 +38,8 @@ class ContextChatEngine_LlamaIndex implements INode {
         this.description = 'Answer question based on retrieved documents (context) with built-in memory to remember conversation'
         this.baseClasses = [this.type]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Chat Model',

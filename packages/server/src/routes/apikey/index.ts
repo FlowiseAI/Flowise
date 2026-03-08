@@ -5,7 +5,6 @@ const router = express.Router()
 
 // CREATE
 router.post('/', checkPermission('apikeys:create'), apikeyController.createApiKey)
-router.post('/import', checkPermission('apikeys:import'), apikeyController.importKeys)
 
 // READ
 router.get('/', checkPermission('apikeys:view'), apikeyController.getAllApiKeys)

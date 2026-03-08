@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "3.0.12",
+    "version": "3.0.13",
     "private": true,
     "homepage": "https://octobot.it.com",
     "workspaces": [
@@ -24,6 +24,7 @@
         "user:windows": "cd packages/server/bin && run user",
         "user:default": "cd packages/server/bin && ./run user",
         "test": "turbo run test",
+        "test:coverage": "turbo run test:coverage",
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -90,7 +91,7 @@
     },
     "engines": {
         "node": ">=18.15.0 <19.0.0 || ^20",
-        "pnpm": ">=9"
+        "pnpm": "^10.26.0"
     },
     "resolutions": {
         "@google/generative-ai": "^0.24.0",

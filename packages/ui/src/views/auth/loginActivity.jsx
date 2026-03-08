@@ -1,11 +1,21 @@
-import { forwardRef, useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import moment from 'moment/moment'
 import PropTypes from 'prop-types'
+import { forwardRef, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 
 // material-ui
 import {
     Box,
+    Checkbox,
+    FormControl,
+    IconButton,
+    InputLabel,
+    ListItemButton,
+    ListItemText,
+    MenuItem,
+    OutlinedInput,
+    Paper,
+    Select,
     Skeleton,
     Stack,
     Table,
@@ -13,25 +23,13 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
-    IconButton,
-    useTheme,
-    Checkbox,
-    Button,
-    OutlinedInput,
-    MenuItem,
-    Select,
-    InputLabel,
-    FormControl,
-    ListItemText,
-    ListItemButton
+    useTheme
 } from '@mui/material'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import MainCard from '@/ui-component/cards/MainCard'
 import { StyledTableCell, StyledTableRow } from '@/ui-component/table/TableStyles'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -41,18 +39,15 @@ import auditApi from '@/api/audit'
 
 // Hooks
 import useApi from '@/hooks/useApi'
-import useConfirm from '@/hooks/useConfirm'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconCircleX, IconChevronLeft, IconChevronRight, IconTrash, IconX, IconLogin, IconLogout } from '@tabler/icons-react'
+import { IconChevronLeft, IconChevronRight, IconCircleX, IconLogin, IconLogout } from '@tabler/icons-react'
 
 // store
 import { useError } from '@/store/context/ErrorContext'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
-import { PermissionButton } from '@/ui-component/button/RBACButtons'
 
 const activityTypes = [
     'Login Success',
@@ -93,16 +88,10 @@ DatePickerCustomInput.propTypes = {
 const LoginActivity = () => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
-    const dispatch = useDispatch()
     useNotifier()
     const { error, setError } = useError()
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
-    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
-
     const [isLoading, setLoading] = useState(true)
-
-    const { confirm } = useConfirm()
 
     const getLoginActivityApi = useApi(auditApi.fetchLoginActivity)
     const [activity, setActivity] = useState([])
@@ -114,8 +103,6 @@ const LoginActivity = () => {
     const [startDate, setStartDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)))
     const [endDate, setEndDate] = useState(new Date())
 
-    const [selected, setSelected] = useState([])
-
     const onStartDateSelected = (date) => {
         setStartDate(date)
         refreshData(currentPage, date, endDate, typeFilter)
@@ -124,31 +111,6 @@ const LoginActivity = () => {
     const onEndDateSelected = (date) => {
         setEndDate(date)
         refreshData(currentPage, startDate, date, typeFilter)
-    }
-
-    const onSelectAllClick = (event) => {
-        if (event.target.checked) {
-            const newSelected = activity.map((n) => n.id)
-            setSelected(newSelected)
-            return
-        }
-        setSelected([])
-    }
-
-    const handleSelect = (event, id) => {
-        const selectedIndex = selected.indexOf(id)
-        let newSelected = []
-
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, id)
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1))
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1))
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(selected.slice(0, selectedIndex), selected.slice(selectedIndex + 1))
-        }
-        setSelected(newSelected)
     }
 
     const refreshData = (_page, _start, _end, _filter) => {
@@ -219,59 +181,6 @@ const LoginActivity = () => {
         }
     }
 
-    const deleteLoginActivity = async () => {
-        const confirmPayload = {
-            title: `Delete`,
-            description: `Delete ${selected.length} ${selected.length > 1 ? 'records' : 'record'}? `,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
-        }
-        const isConfirmed = await confirm(confirmPayload)
-        //
-        if (isConfirmed) {
-            try {
-                const deleteResp = await auditApi.deleteLoginActivity({
-                    selected: selected
-                })
-                if (deleteResp.data) {
-                    enqueueSnackbar({
-                        message: selected.length + ' Login Activity Records Deleted Successfully',
-                        options: {
-                            key: new Date().getTime() + Math.random(),
-                            variant: 'success',
-                            action: (key) => (
-                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                    <IconX />
-                                </Button>
-                            )
-                        }
-                    })
-                    onConfirm()
-                }
-            } catch (error) {
-                enqueueSnackbar({
-                    message: `Failed to delete records: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'error',
-                        persist: true,
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-            }
-        }
-    }
-
-    const onConfirm = () => {
-        getLoginActivityApi.request()
-    }
-
     useEffect(() => {
         getLoginActivityApi.request({
             pageNo: 1
@@ -298,7 +207,6 @@ const LoginActivity = () => {
             setStart(data.currentPage * data.pageSize - (data.pageSize - 1))
             setEnd(data.currentPage * data.pageSize > data.count ? data.count : data.currentPage * data.pageSize)
             setActivity(data.data)
-            setSelected([])
         }
     }, [getLoginActivityApi.data])
 
@@ -447,17 +355,6 @@ const LoginActivity = () => {
                                                 />
                                             </IconButton>
                                         </div>
-                                        <PermissionButton
-                                            permissionId={'loginActivity:delete'}
-                                            sx={{ mt: 1, mb: 2 }}
-                                            variant='outlined'
-                                            disabled={selected.length === 0}
-                                            onClick={deleteLoginActivity}
-                                            color='error'
-                                            startIcon={<IconTrash />}
-                                        >
-                                            {'Delete Selected'}
-                                        </PermissionButton>
                                     </div>
                                 </div>
                                 <TableContainer
@@ -475,13 +372,6 @@ const LoginActivity = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <StyledTableCell style={{ width: '5%' }}>
-                                                    <Checkbox
-                                                        color='primary'
-                                                        checked={selected.length === (activity || []).length}
-                                                        onChange={onSelectAllClick}
-                                                    />
-                                                </StyledTableCell>
                                                 <StyledTableCell>Activity</StyledTableCell>
                                                 <StyledTableCell>User</StyledTableCell>
                                                 <StyledTableCell>Date</StyledTableCell>
@@ -508,23 +398,8 @@ const LoginActivity = () => {
                                                         <StyledTableCell>
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
                                                     </StyledTableRow>
                                                     <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
                                                         <StyledTableCell>
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
@@ -550,13 +425,6 @@ const LoginActivity = () => {
                                                             key={index}
                                                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                         >
-                                                            <StyledTableCell component='th' scope='row' style={{ width: '5%' }}>
-                                                                <Checkbox
-                                                                    color='primary'
-                                                                    checked={selected.indexOf(item.id) !== -1}
-                                                                    onChange={(event) => handleSelect(event, item.id)}
-                                                                />
-                                                            </StyledTableCell>
                                                             <StyledTableCell component='th' scope='row'>
                                                                 <div
                                                                     style={{
@@ -630,7 +498,6 @@ const LoginActivity = () => {
                     </Stack>
                 )}
             </MainCard>
-            <ConfirmDialog />
         </>
     )
 }

@@ -1,5 +1,4 @@
-import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama'
-import { OllamaInput } from '@langchain/community/llms/ollama'
+import { OllamaEmbeddings, OllamaEmbeddingsParams } from '@langchain/ollama'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 
@@ -18,7 +17,7 @@ class OllamaEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'Ollama Embeddings'
         this.name = 'ollamaEmbedding'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'OllamaEmbeddings'
         this.icon = 'Ollama.svg'
         this.category = 'Embeddings'
@@ -75,18 +74,18 @@ class OllamaEmbedding_Embeddings implements INode {
         const numGpu = nodeData.inputs?.numGpu as string
         const useMMap = nodeData.inputs?.useMMap as boolean
 
-        const obj = {
+        const obj: OllamaEmbeddingsParams = {
             model: modelName,
-            baseUrl,
-            requestOptions: {}
+            baseUrl
         }
 
-        const requestOptions: OllamaInput = {}
+        const requestOptions: NonNullable<OllamaEmbeddingsParams['requestOptions']> = {}
         if (numThread) requestOptions.numThread = parseFloat(numThread)
         if (numGpu) requestOptions.numGpu = parseFloat(numGpu)
 
         // default useMMap to true
-        requestOptions.useMMap = useMMap === undefined ? true : useMMap
+        // Note: @langchain/ollama uses `useMmap` (not `useMMap`) in requestOptions
+        requestOptions.useMmap = useMMap ?? true
 
         if (Object.keys(requestOptions).length) obj.requestOptions = requestOptions
 

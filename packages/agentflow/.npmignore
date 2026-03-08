@@ -1,0 +1,17 @@
+# Source & config
+/src
+/examples
+*.ts
+!*.d.ts
+tsconfig.json
+vite.config.ts
+jest.config.js
+.eslintrc.js
+
+# Dev artifacts
+.turbo
+node_modules
+.DS_Store
+
+# Keep dist
+!dist

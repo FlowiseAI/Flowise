@@ -7,7 +7,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 async function errorHandlerMiddleware(err: InternalFlowiseError, req: Request, res: Response, next: NextFunction) {
     const statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
     if (err.message.includes('401 Incorrect API key provided'))
-        err.message = '401 Invalid model key or Incorrect local model configuration.'
+        err.message = '401 Unauthorized – check your API key and ensure it has access to the requested model.'
     let displayedError = {
         statusCode,
         success: false,

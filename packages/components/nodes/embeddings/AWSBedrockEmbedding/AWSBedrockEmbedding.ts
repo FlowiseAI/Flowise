@@ -1,7 +1,8 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 import { BedrockEmbeddings, BedrockEmbeddingsParams } from '@langchain/community/embeddings/bedrock'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
 
 class AWSBedrockEmbedding_Embeddings implements INode {
@@ -129,17 +130,15 @@ class AWSBedrockEmbedding_Embeddings implements INode {
             region: iRegion
         }
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        if (credentialData && Object.keys(credentialData).length !== 0) {
-            const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
-            const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
-            const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
-
-            obj.credentials = {
-                accessKeyId: credentialApiKey,
-                secretAccessKey: credentialApiSecret,
-                sessionToken: credentialApiSession
-            }
+        /**
+         * Long-term credentials specified in embedding configuration are optional.
+         * Bedrock's credential provider falls back to the AWS SDK to fetch
+         * credentials from the running environment.
+         * Supports STS AssumeRole when a Role ARN is configured in the credential.
+         */
+        const credentialConfig = await getAWSCredentialConfig(nodeData, options, iRegion)
+        if (credentialConfig.credentials) {
+            obj.credentials = credentialConfig.credentials
         }
 
         const client = new BedrockRuntimeClient({

@@ -72,14 +72,32 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         const row = appServer.AppDataSource.getRepository(Evaluation).create(newEval)
         row.average_metrics = JSON.stringify({})
 
+        const chatflowTypes = body.chatflowType ? JSON.parse(body.chatflowType) : []
+        if (!Array.isArray(chatflowTypes)) {
+            throw new Error('chatflowType must be a valid array')
+        }
+
+        const simpleEvaluators =
+            body.selectedSimpleEvaluators && body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
+        if (!Array.isArray(simpleEvaluators)) {
+            throw new Error('selectedSimpleEvaluators must be a valid array')
+        }
+
         const additionalConfig: ICommonObject = {
-            chatflowTypes: body.chatflowType ? JSON.parse(body.chatflowType) : [],
+            chatflowTypes: chatflowTypes,
             datasetAsOneConversation: body.datasetAsOneConversation,
-            simpleEvaluators: body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
+            simpleEvaluators: simpleEvaluators
         }
 
         if (body.evaluationType === 'llm') {
-            additionalConfig.lLMEvaluators = body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+            const lLMEvaluators =
+                body.selectedLLMEvaluators && body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+
+            if (!Array.isArray(lLMEvaluators)) {
+                throw new Error('selectedLLMEvaluators must be a valid array')
+            }
+
+            additionalConfig.lLMEvaluators = lLMEvaluators
             additionalConfig.llmConfig = {
                 credentialId: body.credentialId,
                 llm: body.llm,
@@ -123,6 +141,11 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         // When chatflow has an APIKey
         const apiKeys: { chatflowId: string; apiKey: string }[] = []
         const chatflowIds = JSON.parse(body.chatflowId)
+
+        if (!Array.isArray(chatflowIds)) {
+            throw new Error('chatflowId must be a valid array')
+        }
+
         for (let i = 0; i < chatflowIds.length; i++) {
             const chatflowId = chatflowIds[i]
             const cFlow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
@@ -246,7 +269,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                             metricsArray,
                             actualOutputArray,
                             errorArray,
-                            body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : [],
+                            additionalConfig.simpleEvaluators,
                             workspaceId
                         )
 
@@ -257,7 +280,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
 
                         if (body.evaluationType === 'llm') {
                             resultRow.llmConfig = additionalConfig.llmConfig
-                            resultRow.LLMEvaluators = body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+                            resultRow.LLMEvaluators = additionalConfig.lLMEvaluators
                             const llmEvaluatorMap: { evaluatorId: string; evaluator: any }[] = []
                             for (let i = 0; i < resultRow.LLMEvaluators.length; i++) {
                                 const evaluatorId = resultRow.LLMEvaluators[i]

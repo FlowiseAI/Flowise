@@ -25,6 +25,8 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
     tags: string[]
     inputs: INodeParams[]
     sessionId?: string
+    badge: string
+    deprecateMessage: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'OpenAI Tool Agent'
@@ -36,6 +38,8 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
         this.description = `Agent that uses OpenAI Function Calling to pick the tools and args to call using LlamaIndex`
         this.baseClasses = [this.type, ...getBaseClasses(OpenAIAgent)]
         this.tags = ['LlamaIndex']
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'LlamaIndex integration is deprecated and will be removed in a future release.'
         this.inputs = [
             {
                 label: 'Tools',

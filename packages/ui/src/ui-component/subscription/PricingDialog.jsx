@@ -1,28 +1,29 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import PropTypes from 'prop-types'
+import accountApi from '@/api/account.api'
+import apiKeyApi from '@/api/apikey'
+import pricingApi from '@/api/pricing'
+import userApi from '@/api/user'
+import workspaceApi from '@/api/workspace'
+import useApi from '@/hooks/useApi'
+import { store } from '@/store'
+import { upgradePlanSuccess } from '@/store/reducers/authSlice'
 import {
+    Box,
+    Button,
+    CircularProgress,
     Dialog,
+    DialogActions,
     DialogContent,
     DialogTitle,
     Grid,
-    Typography,
-    Button,
     IconButton,
-    Box,
-    CircularProgress,
-    DialogActions
+    Typography
 } from '@mui/material'
-import { IconX, IconCheck, IconCreditCard, IconExternalLink, IconAlertCircle } from '@tabler/icons-react'
-import { useTheme, alpha } from '@mui/material/styles'
-import accountApi from '@/api/account.api'
-import pricingApi from '@/api/pricing'
-import workspaceApi from '@/api/workspace'
-import userApi from '@/api/user'
-import useApi from '@/hooks/useApi'
+import { alpha, useTheme } from '@mui/material/styles'
+import { IconAlertCircle, IconCheck, IconCreditCard, IconExternalLink, IconX } from '@tabler/icons-react'
 import { useSnackbar } from 'notistack'
-import { store } from '@/store'
-import { upgradePlanSuccess } from '@/store/reducers/authSlice'
+import PropTypes from 'prop-types'
+import { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
 
 const PricingDialog = ({ open, onClose }) => {
     const customization = useSelector((state) => state.customization)
@@ -37,6 +38,7 @@ const PricingDialog = ({ open, onClose }) => {
     const [purchasedSeats, setPurchasedSeats] = useState(0)
     const [occupiedSeats, setOccupiedSeats] = useState(0)
     const [workspaceCount, setWorkspaceCount] = useState(0)
+    const [proAPIKeysCount, setProAPIKeysCount] = useState(0)
     const [isOpeningBillingPortal, setIsOpeningBillingPortal] = useState(false)
 
     const getPricingPlansApi = useApi(pricingApi.getPricingPlans)
@@ -44,6 +46,7 @@ const PricingDialog = ({ open, onClose }) => {
     const getPlanProrationApi = useApi(userApi.getPlanProration)
     const getAdditionalSeatsQuantityApi = useApi(userApi.getAdditionalSeatsQuantity)
     const getAllWorkspacesApi = useApi(workspaceApi.getAllWorkspacesByOrganizationId)
+    const getAllAPIKeysApi = useApi(apiKeyApi.getAllAPIKeys)
 
     useEffect(() => {
         getPricingPlansApi.request()
@@ -116,6 +119,20 @@ const PricingDialog = ({ open, onClose }) => {
     }, [getAllWorkspacesApi.data])
 
     useEffect(() => {
+        if (getAllAPIKeysApi.data) {
+            if (getAllAPIKeysApi.data?.length > 0) {
+                // Count API keys that have sharing permissions
+                const sharingKeysCount = getAllAPIKeysApi.data.filter((apiKey) => {
+                    return apiKey.permissions.includes('credentials:share') || apiKey.permissions.includes('templates:custom-share')
+                }).length
+
+                setProAPIKeysCount(sharingKeysCount)
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getAllAPIKeysApi.data])
+
+    useEffect(() => {
         if (
             getCustomerDefaultSourceApi.data &&
             getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method &&
@@ -162,6 +179,7 @@ const PricingDialog = ({ open, onClose }) => {
 
             if (isCurrentPlanValue && (plan.title === 'Pro' || plan.title === 'Enterprise')) {
                 getAllWorkspacesApi.request(currentUser?.activeOrganizationId)
+                getAllAPIKeysApi.request({ type: 'organization' })
             }
 
             return {
@@ -420,6 +438,22 @@ const PricingDialog = ({ open, onClose }) => {
                                     You must remove all workspaces except the default workspace before changing your plan.
                                 </Typography>
                             </>
+                        ) : proAPIKeysCount > 0 ? (
+                            <>
+                                <Typography
+                                    color='error'
+                                    sx={{
+                                        p: 2,
+                                        borderRadius: 1,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 1
+                                    }}
+                                >
+                                    <IconAlertCircle size={20} />
+                                    You must remove all API keys with sharing permissions before changing your plan.
+                                </Typography>
+                            </>
                         ) : (
                             <>
                                 {getCustomerDefaultSourceApi.loading ? (
@@ -643,7 +677,8 @@ const PricingDialog = ({ open, onClose }) => {
                                 !prorationInfo ||
                                 purchasedSeats > 0 ||
                                 occupiedSeats > 1 ||
-                                workspaceCount > 1
+                                workspaceCount > 1 ||
+                                proAPIKeysCount > 0
                             }
                         >
                             {isUpdatingPlan ? (

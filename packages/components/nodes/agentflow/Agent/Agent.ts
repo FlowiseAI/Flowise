@@ -21,6 +21,7 @@ import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
+import { randomBytes } from 'crypto'
 import {
     addImageArtifactsToMessages,
     extractArtifactsFromResponse,
@@ -63,6 +64,27 @@ interface ISimpliefiedTool {
         label: string
         name: string
     }
+}
+
+/**
+ * Sanitizes a string to be used as a tool name.
+ * Restricts to ASCII characters [a-z0-9_-] for LLM API compatibility (OpenAI, Anthropic, Gemini).
+ * Non-ASCII titles (Korean, Chinese, Japanese, etc.) will use auto-generated fallback names.
+ * This prevents 'Invalid tools[0].function.name: empty string' errors.
+ */
+const sanitizeToolName = (name: string): string => {
+    const sanitized = name
+        .toLowerCase()
+        .replace(/ /g, '_')
+        .replace(/[^a-z0-9_-]/g, '') // ASCII only for LLM API compatibility
+
+    // If the result is empty (e.g., non-ASCII only input), generate a unique fallback name
+    if (!sanitized) {
+        return `tool_${Date.now()}_${randomBytes(4).toString('hex').slice(0, 5)}`
+    }
+
+    // Enforce 64 character limit common for tool names
+    return sanitized.slice(0, 64)
 }
 
 class Agent_Agentflow implements INode {
@@ -664,6 +686,7 @@ class Agent_Agentflow implements INode {
             if (!model) {
                 throw new Error('Model is required')
             }
+            const modelName = modelConfig?.model ?? modelConfig?.modelName
 
             // Extract tools
             const tools = nodeData.inputs?.agentTools as ITool[]
@@ -757,10 +780,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: storeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(storeName),
                             description: knowledgeBase.docStoreDescription,
                             retriever: docStoreVectorInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -777,10 +797,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: storeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(storeName),
                         description: knowledgeBase.docStoreDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -838,10 +855,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: knowledgeName
-                                .toLowerCase()
-                                .replace(/ /g, '_')
-                                .replace(/[^a-z0-9_-]/g, ''),
+                            name: sanitizeToolName(knowledgeName),
                             description: knowledgeBase.knowledgeDescription,
                             retriever: vectorStoreInstance,
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
@@ -858,10 +872,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: knowledgeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
+                        name: sanitizeToolName(knowledgeName),
                         description: knowledgeBase.knowledgeDescription,
                         schema: jsonSchema,
                         toolNode: {
@@ -1063,7 +1074,12 @@ class Agent_Agentflow implements INode {
             // Initialize response and determine if streaming is possible
             let response: AIMessageChunk = new AIMessageChunk('')
             const isLastNode = options.isLastNode as boolean
-            const isStreamable = isLastNode && options.sseStreamer !== undefined && modelConfig?.streaming !== false && !isStructuredOutput
+            const streamingConfig = modelConfig?.streaming
+            const useDefault = streamingConfig == null || streamingConfig === ''
+            const effectiveStreaming = useDefault
+                ? newLLMNodeInstance.inputs?.find((i: INodeParams) => i.name === 'streaming')?.default ?? true
+                : streamingConfig
+            const isStreamable = isLastNode && options.sseStreamer !== undefined && effectiveStreaming !== false && !isStructuredOutput
 
             // Start analytics
             if (analyticHandlers && options.parentTraceIds) {
@@ -1380,7 +1396,7 @@ class Agent_Agentflow implements INode {
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
-                await analyticHandlers.onLLMEnd(llmIds, finalResponse)
+                await analyticHandlers.onLLMEnd(llmIds, output, { model: modelName, provider: model })
             }
 
             // Send additional streaming events if needed

@@ -1,14 +1,18 @@
-import * as PropTypes from 'prop-types'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import moment from 'moment/moment'
-import { useEffect, useState } from 'react'
+import * as PropTypes from 'prop-types'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // material-ui
 import {
-    Button,
     Box,
+    Button,
     Chip,
+    Collapse,
+    IconButton,
+    Paper,
+    Popover,
     Skeleton,
     Stack,
     Table,
@@ -16,25 +20,20 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
-    IconButton,
-    Popover,
-    Collapse,
     Typography
 } from '@mui/material'
 import TableCell, { tableCellClasses } from '@mui/material/TableCell'
-import { useTheme, styled } from '@mui/material/styles'
+import { styled, useTheme } from '@mui/material/styles'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
-import APIKeyDialog from './APIKeyDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
-import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
-import { Available } from '@/ui-component/rbac/available'
-import UploadJSONFileDialog from '@/views/apikey/UploadJSONFileDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import MainCard from '@/ui-component/cards/MainCard'
+import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
+import { Available } from '@/ui-component/rbac/available'
+import APIKeyDialog from './APIKeyDialog'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -48,19 +47,8 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import {
-    IconTrash,
-    IconEdit,
-    IconCopy,
-    IconChevronsUp,
-    IconChevronsDown,
-    IconX,
-    IconPlus,
-    IconEye,
-    IconEyeOff,
-    IconFileUpload
-} from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
+import { IconChevronsDown, IconChevronsUp, IconCopy, IconEdit, IconEye, IconEyeOff, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 
 // ==============================|| APIKey ||============================== //
 
@@ -88,13 +76,15 @@ function APIKeyRow(props) {
     const [open, setOpen] = useState(false)
     const theme = useTheme()
 
+    const permissions = props.apiKey.permissions || []
+
     return (
         <>
             <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                 <StyledTableCell scope='row' style={{ width: '15%' }}>
                     {props.apiKey.keyName}
                 </StyledTableCell>
-                <StyledTableCell style={{ width: '40%' }}>
+                <StyledTableCell style={{ width: '25%' }}>
                     {props.showApiKeys.includes(props.apiKey.apiKey)
                         ? props.apiKey.apiKey
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
@@ -124,6 +114,29 @@ function APIKeyRow(props) {
                         </Typography>
                     </Popover>
                 </StyledTableCell>
+                <StyledTableCell sx={{ width: '25%' }}>
+                    <Stack sx={{ flexDirection: 'row' }}>
+                        <Typography
+                            variant='subtitle2'
+                            color='textPrimary'
+                            sx={{
+                                width: '100%',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: '2',
+                                WebkitBoxOrient: 'vertical'
+                            }}
+                        >
+                            {permissions.map((d, key) => (
+                                <React.Fragment key={key}>
+                                    {d}
+                                    {', '}
+                                </React.Fragment>
+                            ))}
+                        </Typography>
+                    </Stack>
+                </StyledTableCell>
                 <StyledTableCell>
                     {props.apiKey.chatFlows.length}{' '}
                     {props.apiKey.chatFlows.length > 0 && (
@@ -150,7 +163,7 @@ function APIKeyRow(props) {
             </TableRow>
             {open && (
                 <TableRow sx={{ '& td': { border: 0 } }}>
-                    <StyledTableCell sx={{ p: 2 }} colSpan={6}>
+                    <StyledTableCell sx={{ p: 2 }} colSpan={7}>
                         <Collapse in={open} timeout='auto' unmountOnExit>
                             <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
                                 <Table aria-label='chatflow table'>
@@ -218,9 +231,6 @@ const APIKey = () => {
     const [anchorEl, setAnchorEl] = useState(null)
     const [showApiKeys, setShowApiKeys] = useState([])
     const openPopOver = Boolean(anchorEl)
-
-    const [showUploadDialog, setShowUploadDialog] = useState(false)
-    const [uploadDialogProps, setUploadDialogProps] = useState({})
 
     const [search, setSearch] = useState('')
 
@@ -296,17 +306,6 @@ const APIKey = () => {
         setShowDialog(true)
     }
 
-    const uploadDialog = () => {
-        const dialogProp = {
-            type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Upload',
-            data: {}
-        }
-        setUploadDialogProps(dialogProp)
-        setShowUploadDialog(true)
-    }
-
     const deleteKey = async (key) => {
         const confirmPayload = {
             title: `Delete`,
@@ -361,7 +360,6 @@ const APIKey = () => {
 
     const onConfirm = () => {
         setShowDialog(false)
-        setShowUploadDialog(false)
         refresh(currentPage, pageLimit)
     }
 
@@ -395,16 +393,6 @@ const APIKey = () => {
                             title='API Keys'
                             description='Flowise API & SDK authentication keys'
                         >
-                            <PermissionButton
-                                permissionId={'apikeys:import'}
-                                variant='outlined'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={uploadDialog}
-                                startIcon={<IconFileUpload />}
-                                id='btn_importApiKeys'
-                            >
-                                Import
-                            </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
                                 variant='contained'
@@ -445,6 +433,7 @@ const APIKey = () => {
                                             <TableRow>
                                                 <StyledTableCell>Key Name</StyledTableCell>
                                                 <StyledTableCell>API Key</StyledTableCell>
+                                                <StyledTableCell>Permissions</StyledTableCell>
                                                 <StyledTableCell>Usage</StyledTableCell>
                                                 <StyledTableCell>Updated</StyledTableCell>
                                                 <Available permission={'apikeys:update,apikeys:create'}>
@@ -471,6 +460,9 @@ const APIKey = () => {
                                                         <StyledTableCell>
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
                                                         <Available permission={'apikeys:update,apikeys:create'}>
                                                             <StyledTableCell> </StyledTableCell>
                                                         </Available>
@@ -479,6 +471,9 @@ const APIKey = () => {
                                                         </Available>
                                                     </StyledTableRow>
                                                     <StyledTableRow>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
                                                         <StyledTableCell>
                                                             <Skeleton variant='text' />
                                                         </StyledTableCell>
@@ -541,14 +536,6 @@ const APIKey = () => {
                 onConfirm={onConfirm}
                 setError={setError}
             ></APIKeyDialog>
-            {showUploadDialog && (
-                <UploadJSONFileDialog
-                    show={showUploadDialog}
-                    dialogProps={uploadDialogProps}
-                    onCancel={() => setShowUploadDialog(false)}
-                    onConfirm={onConfirm}
-                ></UploadJSONFileDialog>
-            )}
             <ConfirmDialog />
         </>
     )

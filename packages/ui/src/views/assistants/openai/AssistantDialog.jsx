@@ -125,6 +125,25 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
     const customization = useSelector((state) => state.customization)
     const dialogRef = useRef()
 
+    // Sanitize image URL to prevent XSS attacks via javascript:, data:, or blob: schemes
+    const sanitizeImageUrl = (url) => {
+        const fallbackUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=fallback`
+        if (!url || typeof url !== 'string') {
+            return fallbackUrl
+        }
+        try {
+            const parsed = new URL(url, window.location.origin)
+            // Only allow http and https protocols
+            if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                return url
+            }
+        } catch (e) {
+            // Invalid URL
+        }
+        // Return default avatar if URL is invalid or uses disallowed protocol
+        return fallbackUrl
+    }
+
     const getSpecificAssistantApi = useApi(assistantsApi.getSpecificAssistant)
     const getAssistantObjApi = useApi(assistantsApi.getAssistantObj)
 
@@ -790,7 +809,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                     objectFit: 'contain'
                                 }}
                                 alt={assistantName}
-                                src={assistantIcon}
+                                src={sanitizeImageUrl(assistantIcon)}
                             />
                         </div>
                         <OutlinedInput

@@ -13,7 +13,7 @@ module.exports = {
     },
 
     // Regular expression to find test files
-    testRegex: '((\\.|/)index\\.test)\\.tsx?$',
+    testRegex: '.*\\.test\\.tsx?$',
 
     // File extensions to recognize in module resolution
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],

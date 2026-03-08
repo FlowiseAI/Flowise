@@ -365,7 +365,7 @@ const OverrideConfig = ({ dialogProps }) => {
                 <TooltipWithParser
                     style={{ mb: 1, mt: 2, marginLeft: 10 }}
                     title={
-                        'Enable or disable which properties of the flow configuration can be overridden. Refer to the <a href="https://docs.flowiseai.com/using-flowise/api#override-config" target="_blank">documentation</a> for more information.'
+                        'Enable or disable which properties of the flow configuration can be overridden. Refer to the <a href="https://docs.flowiseai.com/using-flowise/prediction#configuration-override" target="_blank">documentation</a> for more information.'
                     }
                 />
             </Typography>

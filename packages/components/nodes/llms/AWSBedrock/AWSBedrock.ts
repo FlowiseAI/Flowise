@@ -2,9 +2,10 @@ import { Bedrock } from '@langchain/community/llms/bedrock'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { BaseBedrockInput } from '@langchain/community/dist/utils/bedrock'
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 
 /**
  * @author Michael Connor <mlconnor@yahoo.com>
@@ -116,19 +117,12 @@ class AWSBedrock_LLMs implements INode {
          * Bedrock's credential provider falls back to the AWS SDK to fetch
          * credentials from the running environment.
          * When specified, we override the default provider with configured values.
+         * Supports STS AssumeRole when a Role ARN is configured in the credential.
          * @see https://github.com/aws/aws-sdk-js-v3/blob/main/packages/credential-provider-node/README.md
          */
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        if (credentialData && Object.keys(credentialData).length !== 0) {
-            const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
-            const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
-            const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
-
-            obj.credentials = {
-                accessKeyId: credentialApiKey,
-                secretAccessKey: credentialApiSecret,
-                sessionToken: credentialApiSession
-            }
+        const credentialConfig = await getAWSCredentialConfig(nodeData, options, iRegion)
+        if (credentialConfig.credentials) {
+            obj.credentials = credentialConfig.credentials
         }
         if (cache) obj.cache = cache
 
