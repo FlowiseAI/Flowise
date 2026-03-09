@@ -11,6 +11,8 @@ import type { FlowEdge, FlowNode, NodeData, ValidationError } from '@/core/types
 import { applyValidationErrorsToNodes, validateFlow } from '@/core/validation'
 import { useConfigContext } from '@/infrastructure/store'
 
+const validationColor = tokens.colors.border.validation
+
 /** Validation result grouped by node */
 interface NodeValidationResult {
     id: string
@@ -130,8 +132,6 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
             </Box>
         )
     }
-
-    const validationColor = tokens.colors.border.validation
 
     // Reset stale validation state when flow changes
     useEffect(() => {
