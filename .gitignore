@@ -114,3 +114,5 @@ extensions/
 # Only allow apps/oss-app, ignore all other apps
 apps/*/
 !apps/oss-app/
+
+cursor_hosting_another_application_on_v.md
