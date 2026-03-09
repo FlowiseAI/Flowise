@@ -100,6 +100,38 @@ const customNodeInputParams: InputParam[] = [
         show: { enableMemory: true, memoryType: 'tokenBuffer' }
     },
     {
+        id: 'conditions',
+        name: 'conditions',
+        label: 'Condition',
+        type: 'array',
+        array: [
+            {
+                id: 'variable',
+                name: 'variable',
+                label: 'Variable',
+                type: 'string'
+            },
+            {
+                id: 'operation',
+                name: 'operation',
+                label: 'Operation',
+                type: 'options',
+                options: [
+                    { label: 'Equals', name: 'equals' },
+                    { label: 'Contains', name: 'contains' },
+                    { label: 'Is Empty', name: 'isEmpty' }
+                ]
+            },
+            {
+                id: 'value',
+                name: 'value',
+                label: 'Value',
+                type: 'string',
+                hide: { 'conditions[$index].operation': 'isEmpty' }
+            }
+        ]
+    },
+    {
         id: 'outputFormat',
         name: 'outputFormat',
         label: 'Output Format',
