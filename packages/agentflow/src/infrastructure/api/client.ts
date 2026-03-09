@@ -16,7 +16,8 @@ export function createApiClient(apiBaseUrl: string, token?: string): AxiosInstan
 
     const client = axios.create({
         baseURL: `${apiBaseUrl}/api/v1`,
-        headers
+        headers,
+        withCredentials: true
     })
 
     // Add request interceptor for debugging

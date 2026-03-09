@@ -1,4 +1,4 @@
-import { makeFlowEdge, makeFlowNode } from '@test-utils/factories'
+import { makeFlowEdge, makeFlowNode, makeNodeData } from '@test-utils/factories'
 
 import type { FlowEdge, FlowNode } from '../types'
 
@@ -36,40 +36,16 @@ describe('validateFlow', () => {
         expect(result.valid).toBe(true)
     })
 
-    it('should warn when start node has no outgoing connections', () => {
-        const nodes = [makeNode('a', 'startAgentflow')]
-        const result = validateFlow(nodes, [])
-        expect(result.errors).toContainEqual(
-            expect.objectContaining({ type: 'warning', message: expect.stringContaining('outgoing connection') })
-        )
-        // Warnings don't make the flow invalid
-        expect(result.valid).toBe(true)
-    })
-
-    it('should warn for disconnected non-start nodes with no incoming edges', () => {
-        const nodes = [makeNode('a', 'startAgentflow'), makeNode('b', 'llmAgentflow', 'LLM')]
+    it('should warn for disconnected nodes (not in any edge)', () => {
+        const nodes = [makeNode('a', 'startAgentflow'), makeNode('b', 'llmAgentflow')]
         const edges: FlowEdge[] = []
         const result = validateFlow(nodes, edges)
         expect(result.errors).toContainEqual(
-            expect.objectContaining({ nodeId: 'b', type: 'warning', message: expect.stringContaining('no incoming') })
+            expect.objectContaining({ nodeId: 'a', type: 'warning', message: 'This node is not connected to anything' })
         )
-    })
-
-    it('should warn for non-end nodes with no outgoing edges', () => {
-        const nodes = [makeNode('a', 'startAgentflow'), makeNode('b', 'llmAgentflow', 'LLM')]
-        const edges = [makeEdge('a', 'b')]
-        const result = validateFlow(nodes, edges)
         expect(result.errors).toContainEqual(
-            expect.objectContaining({ nodeId: 'b', type: 'warning', message: expect.stringContaining('no outgoing') })
+            expect.objectContaining({ nodeId: 'b', type: 'warning', message: 'This node is not connected to anything' })
         )
-    })
-
-    it('should not warn about outgoing edges for end nodes (directReplyAgentflow)', () => {
-        const nodes = [makeNode('a', 'startAgentflow'), makeNode('b', 'directReplyAgentflow')]
-        const edges = [makeEdge('a', 'b')]
-        const result = validateFlow(nodes, edges)
-        const outgoingWarnings = result.errors.filter((e) => e.nodeId === 'b' && e.message.includes('no outgoing'))
-        expect(outgoingWarnings).toHaveLength(0)
     })
 
     it('should ignore sticky notes in disconnection checks', () => {
@@ -87,18 +63,55 @@ describe('validateFlow', () => {
         expect(result.valid).toBe(false)
         expect(result.errors).toContainEqual(expect.objectContaining({ message: expect.stringContaining('cycle') }))
     })
+
+    // --- Hanging edge detection ---
+    it('should warn about hanging edge with missing source', () => {
+        const nodes = [makeNode('a', 'startAgentflow'), makeNode('b', 'llmAgentflow')]
+        const edges = [makeEdge('a', 'b'), makeEdge('nonexistent', 'b')]
+        const result = validateFlow(nodes, edges)
+        expect(result.errors).toContainEqual(
+            expect.objectContaining({
+                nodeId: 'b',
+                message: expect.stringContaining('non-existent source node')
+            })
+        )
+    })
+
+    it('should warn about hanging edge with missing target', () => {
+        const nodes = [makeNode('a', 'startAgentflow'), makeNode('b', 'llmAgentflow')]
+        const edges = [makeEdge('a', 'b'), makeEdge('a', 'nonexistent')]
+        const result = validateFlow(nodes, edges)
+        expect(result.errors).toContainEqual(
+            expect.objectContaining({
+                nodeId: 'a',
+                message: expect.stringContaining('non-existent target node')
+            })
+        )
+    })
+
+    it('should warn about hanging edge with both missing', () => {
+        const nodes = [makeNode('a', 'startAgentflow')]
+        const edges = [makeEdge('x', 'y')]
+        const result = validateFlow(nodes, edges)
+        expect(result.errors).toContainEqual(
+            expect.objectContaining({
+                edgeId: 'x-y',
+                message: 'Disconnected edge - both source and target nodes do not exist'
+            })
+        )
+    })
 })
 
 describe('validateNode', () => {
     it('should return error for node with no name', () => {
         const node = makeNode('a', '')
-        const errors = validateNode(node, [])
+        const errors = validateNode(node)
         expect(errors).toContainEqual(expect.objectContaining({ type: 'error', message: expect.stringContaining('missing a name') }))
     })
 
     it('should return no errors for valid node', () => {
         const node = makeNode('a', 'llmAgentflow')
-        expect(validateNode(node, [])).toHaveLength(0)
+        expect(validateNode(node)).toHaveLength(0)
     })
 
     it('should warn about missing required inputs', () => {
@@ -112,8 +125,8 @@ describe('validateNode', () => {
                 inputValues: {}
             }
         }
-        const errors = validateNode(node, [])
-        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: expect.stringContaining('Model') }))
+        const errors = validateNode(node)
+        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Model is required' }))
     })
 
     it('should not warn about optional inputs', () => {
@@ -127,7 +140,111 @@ describe('validateNode', () => {
                 inputValues: {}
             }
         }
-        const errors = validateNode(node, [])
+        const errors = validateNode(node)
         expect(errors).toHaveLength(0)
+    })
+
+    it('should skip hidden fields (show condition not met)', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: false, show: { mode: 'api' } }],
+                inputValues: { mode: 'local' }
+            }
+        }
+        const errors = validateNode(node)
+        const apiKeyErrors = errors.filter((e) => e.message.includes('API Key'))
+        expect(apiKeyErrors).toHaveLength(0)
+    })
+
+    // --- Credential validation ---
+    it('should warn about missing required credential', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
+                inputValues: {}
+            }
+        }
+        const errors = validateNode(node)
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Credential is required' }))
+        // Should produce exactly one error, not a duplicate from the general required-field check
+        const credErrors = errors.filter((e) => e.message.includes('required'))
+        expect(credErrors).toHaveLength(1)
+    })
+
+    it('should not warn about credential when value is set', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
+                inputValues: { credential: 'some-credential-id' }
+            }
+        }
+        const errors = validateNode(node)
+        const credErrors = errors.filter((e) => e.message === 'Credential is required')
+        expect(credErrors).toHaveLength(0)
+    })
+
+    // --- Array sub-field validation ---
+    it('should validate required array sub-fields', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'conditionAgentflow'),
+            data: {
+                id: 'a',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputs: [
+                    {
+                        id: 'conds',
+                        name: 'conditions',
+                        label: 'Conditions',
+                        type: 'array',
+                        array: [{ id: 'f1', name: 'fieldName', label: 'Field Name', type: 'string', optional: false }]
+                    }
+                ],
+                inputValues: {
+                    conditions: [{ fieldName: '' }, { fieldName: 'valid' }]
+                }
+            }
+        }
+        const errors = validateNode(node)
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Conditions item #1: Field Name is required' }))
+        const item2Errors = errors.filter((e) => e.message.includes('item #2'))
+        expect(item2Errors).toHaveLength(0)
+    })
+
+    // --- Nested config validation ---
+    it('should validate nested component config required fields', () => {
+        const availableNodes = [
+            makeNodeData({
+                name: 'openAIChat',
+                inputs: [{ id: 'ak', name: 'apiKey', label: 'API Key', type: 'string', optional: false }]
+            })
+        ]
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [{ id: 'model', name: 'model', label: 'Chat Model', type: 'string' }],
+                inputValues: {
+                    model: 'openAIChat',
+                    modelConfig: { apiKey: '' }
+                }
+            }
+        }
+        const errors = validateNode(node, availableNodes)
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Chat Model configuration: API Key is required' }))
     })
 })
