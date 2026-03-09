@@ -7,12 +7,24 @@ import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-reac
 
 import { NodeInputHandler } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
+import { evaluateFieldVisibility } from '@/core/utils/fieldVisibility'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 export interface EditNodeDialogProps {
     show: boolean
     dialogProps: EditDialogProps
     onCancel: () => void
+}
+
+function computeArrayItemParameters(params: InputParam[], inputValues: Record<string, unknown>): Record<string, InputParam[][]> {
+    const result: Record<string, InputParam[][]> = {}
+    for (const param of params) {
+        if (param.type === 'array' && param.array) {
+            const items = (inputValues[param.name] as Record<string, unknown>[]) || []
+            result[param.name] = items.map((_, index) => evaluateFieldVisibility(param.array!, inputValues, index))
+        }
+    }
+    return result
 }
 
 /**
@@ -29,6 +41,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const [data, setData] = useState<NodeData | null>(null)
     const [isEditingNodeName, setEditingNodeName] = useState(false)
     const [nodeName, setNodeName] = useState('')
+    const [arrayItemParameters, setArrayItemParameters] = useState<Record<string, InputParam[][]>>({})
 
     const onNodeLabelChange = () => {
         if (!data || !nodeNameRef.current) return
@@ -47,13 +60,22 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             [inputParam.name]: newValue
         }
 
+        const updatedParams = evaluateFieldVisibility(inputParams, updatedInputValues)
+        setInputParams(updatedParams)
+        setArrayItemParameters(computeArrayItemParameters(inputParams, updatedInputValues))
+        // Keep full inputValues in state — hidden field values are preserved so they
+        // can be restored when visibility conditions change (e.g. toggling provider back).
+        // Stripping should only happen on save/export, not on every keystroke.
         updateNodeData(data.id, { inputValues: updatedInputValues })
         setData({ ...data, inputValues: updatedInputValues })
     }
 
     useEffect(() => {
         if (dialogProps.inputParams) {
-            setInputParams(dialogProps.inputParams)
+            const initialValues = dialogProps.data?.inputValues || {}
+            const evaluatedParams = evaluateFieldVisibility(dialogProps.inputParams, initialValues)
+            setInputParams(evaluatedParams)
+            setArrayItemParameters(computeArrayItemParameters(dialogProps.inputParams, initialValues))
         }
         if (dialogProps.data) {
             setData(dialogProps.data)
@@ -216,16 +238,19 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                 {data &&
                     inputParams
                         .filter((inputParam) => inputParam.display !== false)
-                        .map((inputParam, index) => (
-                            <NodeInputHandler
-                                disabled={dialogProps.disabled}
-                                key={index}
-                                inputParam={inputParam}
-                                data={data}
-                                isAdditionalParams={true}
-                                onDataChange={onCustomDataChange}
-                            />
-                        ))}
+                        .map((inputParam, index) => {
+                            return (
+                                <NodeInputHandler
+                                    disabled={dialogProps.disabled}
+                                    key={index}
+                                    inputParam={inputParam}
+                                    data={data}
+                                    isAdditionalParams={true}
+                                    onDataChange={onCustomDataChange}
+                                    itemParameters={inputParam.type === 'array' ? arrayItemParameters[inputParam.name] : undefined}
+                                />
+                            )
+                        })}
             </DialogContent>
         </Dialog>
     )

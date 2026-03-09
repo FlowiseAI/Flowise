@@ -46,7 +46,7 @@ export default function App() {
             <Agentflow apiBaseUrl='http://localhost:3000' token='your-api-key' />
         </div>
     )
-}
+}
 ```
 
 ### With Initial Flow Data and Callbacks
@@ -93,7 +93,7 @@ export default function App() {
             />
         </div>
     )
-}
+}
 ```
 
 ## Props
