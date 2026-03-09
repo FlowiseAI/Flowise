@@ -19,7 +19,7 @@ export function createToolsApi(client: AxiosInstance) {
          * Get a specific tool by ID
          */
         getToolById: async (id: string): Promise<Tool> => {
-            const response = await client.get(`/tools/${id}`)
+            const response = await client.get(`/tools/${encodeURIComponent(id)}`)
             return response.data
         }
     }

@@ -25,12 +25,12 @@ describe('createCredentialsApi', () => {
     })
 
     describe('getCredentialsByName', () => {
-        it('should call GET /credentials?credentialName=openAIApi', async () => {
+        it('should call GET /credentials with credentialName param', async () => {
             const mockCredentials = [{ id: '1', name: 'My OpenAI Key', credentialName: 'openAIApi' }]
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockCredentials })
 
             const result = await api.getCredentialsByName('openAIApi')
-            expect(mockClient.get).toHaveBeenCalledWith('/credentials?credentialName=openAIApi')
+            expect(mockClient.get).toHaveBeenCalledWith('/credentials', { params: { credentialName: 'openAIApi' } })
             expect(result).toEqual(mockCredentials)
         })
     })

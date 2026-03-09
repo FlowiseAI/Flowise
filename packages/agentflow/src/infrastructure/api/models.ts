@@ -19,7 +19,7 @@ export function createModelsApi(client: AxiosInstance) {
          * Get chat models filtered by provider
          */
         getModelsByProvider: async (provider: string): Promise<Model[]> => {
-            const response = await client.get(`/assistants/components/chatmodels?provider=${provider}`)
+            const response = await client.get('/assistants/components/chatmodels', { params: { provider } })
             return response.data
         }
     }

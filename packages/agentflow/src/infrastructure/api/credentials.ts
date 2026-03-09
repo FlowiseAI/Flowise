@@ -19,7 +19,7 @@ export function createCredentialsApi(client: AxiosInstance) {
          * Get credentials filtered by component credential name
          */
         getCredentialsByName: async (credentialName: string): Promise<Credential[]> => {
-            const response = await client.get(`/credentials?credentialName=${credentialName}`)
+            const response = await client.get('/credentials', { params: { credentialName } })
             return response.data
         }
     }

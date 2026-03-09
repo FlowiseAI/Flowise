@@ -25,12 +25,12 @@ describe('createModelsApi', () => {
     })
 
     describe('getModelsByProvider', () => {
-        it('should call GET /assistants/components/chatmodels?provider=openai', async () => {
+        it('should call GET /assistants/components/chatmodels with provider param', async () => {
             const mockModels = [{ name: 'gpt-4', label: 'GPT-4' }]
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockModels })
 
             const result = await api.getModelsByProvider('openai')
-            expect(mockClient.get).toHaveBeenCalledWith('/assistants/components/chatmodels?provider=openai')
+            expect(mockClient.get).toHaveBeenCalledWith('/assistants/components/chatmodels', { params: { provider: 'openai' } })
             expect(result).toEqual(mockModels)
         })
     })

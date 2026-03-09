@@ -96,26 +96,32 @@ function ApiInspectorInner() {
     // ── Filtered / single ─────────────────────────────────────────────────────
     const fetchModelsByProvider = async () => {
         setModelsByProvider(loading())
-        modelsApi
-            .getModelsByProvider(provider)
-            .then((data) => setModelsByProvider(ok(data)))
-            .catch((e) => setModelsByProvider(err(e)))
+        try {
+            const data = await modelsApi.getModelsByProvider(provider)
+            setModelsByProvider(ok(data))
+        } catch (e) {
+            setModelsByProvider(err(e))
+        }
     }
 
     const fetchToolById = async () => {
         setToolById(loading())
-        toolsApi
-            .getToolById(toolId)
-            .then((data) => setToolById(ok(data)))
-            .catch((e) => setToolById(err(e)))
+        try {
+            const data = await toolsApi.getToolById(toolId)
+            setToolById(ok(data))
+        } catch (e) {
+            setToolById(err(e))
+        }
     }
 
     const fetchCredentialsByName = async () => {
         setCredentialsByName(loading())
-        credentialsApi
-            .getCredentialsByName(credentialName)
-            .then((data) => setCredentialsByName(ok(data)))
-            .catch((e) => setCredentialsByName(err(e)))
+        try {
+            const data = await credentialsApi.getCredentialsByName(credentialName)
+            setCredentialsByName(ok(data))
+        } catch (e) {
+            setCredentialsByName(err(e))
+        }
     }
 
     // ── Registry ──────────────────────────────────────────────────────────────
