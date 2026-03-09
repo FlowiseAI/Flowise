@@ -170,6 +170,7 @@
         "srt-parser-2": "^1.2.3",
         "supergateway": "3.0.1",
         "typeorm": "^0.3.6",
+        "uuid": "^10.0.0",
         "weaviate-ts-client": "^1.1.0",
         "winston": "^3.9.0",
         "ws": "^8.18.0",
