@@ -98,10 +98,12 @@ export default function App() {
 
 ## Props
 
+<!-- prettier-ignore -->
 | Prop                 | Type                                       | Default        | Description                                                     |
 | -------------------- | ------------------------------------------ | -------------- | --------------------------------------------------------------- |
 | `apiBaseUrl`         | `string`                                   | **(required)** | Flowise API server endpoint                                     |
 | `token`              | `string`                                   | —              | Authentication token for API calls                              |
+| `requestInterceptor` | `(config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig` | — | Callback to customize outgoing API requests |
 | `initialFlow`        | `FlowData`                                 | —              | Initial flow data to render (uncontrolled — only used on mount) |
 | `components`         | `string[]`                                 | —              | Restrict which node types appear in the palette                 |
 | `onFlowChange`       | `(flow: FlowData) => void`                 | —              | Called when the flow changes (node/edge add, remove, move)      |

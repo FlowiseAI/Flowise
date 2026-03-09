@@ -43,6 +43,8 @@ export type {
     NodeOutput,
     OutputAnchor,
     PaletteRenderProps,
+    // API utilities
+    RequestInterceptor,
     ValidationError,
     // Validation
     ValidationResult,
