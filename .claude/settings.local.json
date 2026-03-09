@@ -1,0 +1,5 @@
+{
+    "permissions": {
+        "allow": ["Bash(grep:*)", "Bash(npx jest:*)", "Bash(npx tsc:*)"]
+    }
+}

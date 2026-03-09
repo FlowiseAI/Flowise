@@ -1,12 +1,7 @@
 import { AnalyticHandler } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
-import {
-    getPastChatHistoryImageMessages,
-    getUniqueImageMessages,
-    processMessagesWithImages,
-    replaceBase64ImagesWithFileReferences
-} from '../utils'
+import { getPastChatHistoryImageMessages, getUniqueImageMessages, processMessagesWithImages, revertBase64ImagesToFileRefs } from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { findBestScenarioIndex } from './matchScenario'
@@ -74,6 +69,7 @@ class ConditionAgent_Agentflow implements INode {
                         placeholder: 'User is asking for a pizza'
                     }
                 ],
+                minItems: 1,
                 default: [
                     {
                         scenario: ''
@@ -318,11 +314,6 @@ class ConditionAgent_Agentflow implements INode {
                     content: `\`\`\`json\n{"output": "user is not asking about AI"}\n\`\`\``
                 }
             ]
-            // Use to store messages with image file references as we do not want to store the base64 data into database
-            let runtimeImageMessagesWithFileRef: BaseMessageLike[] = []
-            // Use to keep track of past messages with image file references
-            let pastImageMessagesWithFileRef: BaseMessageLike[] = []
-
             input = `{"input": ${input}, "scenarios": ${JSON.stringify(
                 _conditionAgentScenarios.map((scenario) => scenario.scenario)
             )}, "instruction": ${conditionAgentInstructions}}`
@@ -339,9 +330,7 @@ class ConditionAgent_Agentflow implements INode {
                     input,
                     abortController,
                     options,
-                    modelConfig,
-                    runtimeImageMessagesWithFileRef,
-                    pastImageMessagesWithFileRef
+                    modelConfig
                 })
             } else {
                 /*
@@ -351,9 +340,7 @@ class ConditionAgent_Agentflow implements INode {
                 if (!runtimeChatHistory.length && options.uploads) {
                     const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                     if (imageContents) {
-                        const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
-                        messages.push(imageMessageWithBase64)
-                        runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                        messages.push(imageContents.imageMessageWithBase64)
                     }
                 }
                 messages.push({
@@ -427,18 +414,20 @@ class ConditionAgent_Agentflow implements INode {
                 }
             })
 
-            // Replace the actual messages array with one that includes the file references for images instead of base64 data
-            const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
-                messages,
-                runtimeImageMessagesWithFileRef,
-                pastImageMessagesWithFileRef
-            )
+            // Revert all tagged base64 image_url items back to stored-file format
+            const messagesWithFileReferences = revertBase64ImagesToFileRefs(messages)
 
             // Only add to runtime chat history if this is the first node
             const inputMessages = []
             if (!runtimeChatHistory.length) {
-                if (runtimeImageMessagesWithFileRef.length) {
-                    inputMessages.push(...runtimeImageMessagesWithFileRef)
+                const imageInputMessages = messagesWithFileReferences.filter(
+                    (msg: any) =>
+                        msg.role === 'user' &&
+                        Array.isArray(msg.content) &&
+                        msg.content.some((item: any) => item.type === 'stored-file' && item.mime?.startsWith('image/'))
+                )
+                if (imageInputMessages.length) {
+                    inputMessages.push(...imageInputMessages)
                 }
                 if (input && typeof input === 'string') {
                     inputMessages.push({ role: 'user', content: question })
@@ -488,9 +477,7 @@ class ConditionAgent_Agentflow implements INode {
         input,
         abortController,
         options,
-        modelConfig,
-        runtimeImageMessagesWithFileRef,
-        pastImageMessagesWithFileRef
+        modelConfig
     }: {
         messages: BaseMessageLike[]
         memoryType: string
@@ -502,12 +489,9 @@ class ConditionAgent_Agentflow implements INode {
         abortController: AbortController
         options: ICommonObject
         modelConfig: ICommonObject
-        runtimeImageMessagesWithFileRef: BaseMessageLike[]
-        pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
-        const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
+        const { updatedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
         pastChatHistory = updatedPastMessages
-        pastImageMessagesWithFileRef.push(...transformedPastMessages)
 
         let pastMessages = [...pastChatHistory, ...runtimeChatHistory]
         if (!runtimeChatHistory.length) {
@@ -518,15 +502,12 @@ class ConditionAgent_Agentflow implements INode {
             if (options.uploads) {
                 const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                 if (imageContents) {
-                    const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
-                    pastMessages.push(imageMessageWithBase64)
-                    runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                    pastMessages.push(imageContents.imageMessageWithBase64)
                 }
             }
         }
-        const { updatedMessages, transformedMessages } = await processMessagesWithImages(pastMessages, options)
+        const { updatedMessages } = await processMessagesWithImages(pastMessages, options)
         pastMessages = updatedMessages
-        pastImageMessagesWithFileRef.push(...transformedMessages)
 
         if (pastMessages.length > 0) {
             if (memoryType === 'windowSize') {

@@ -105,6 +105,8 @@ export interface INodeParams {
     hide?: INodeDisplay
     generateDocStoreDescription?: boolean
     generateInstruction?: boolean
+    minItems?: number
+    maxItems?: number
 }
 
 export interface INodeExecutionData {
