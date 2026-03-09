@@ -21,7 +21,11 @@ export const buildGoogleCredentials = async (nodeData: INodeData, options: IComm
         if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
         else if (!googleApplicationCredentialFilePath && googleApplicationCredential) {
             const parsedCredential = safeJsonParse(googleApplicationCredential)
-            authOptions.credentials = parsedCredential ?? googleApplicationCredential
+            if (parsedCredential && typeof parsedCredential === 'object' && !Array.isArray(parsedCredential)) {
+                authOptions.credentials = parsedCredential
+            } else {
+                throw new Error('Invalid Google Application Credential JSON; expected a JSON object.')
+            }
         }
 
         if (projectID) authOptions.projectId = projectID
