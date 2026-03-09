@@ -319,3 +319,28 @@ export interface ApiResponse<T> {
     data: T
     status: number
 }
+
+export interface Model {
+    name: string
+    label: string
+    description?: string
+    category?: string
+    inputParams?: InputParam[]
+}
+
+export interface Tool {
+    id: string
+    name: string
+    description?: string
+    iconSrc?: string
+    schema?: string
+    func?: string
+}
+
+export interface Credential {
+    id: string
+    name: string
+    credentialName: string
+    createdDate?: string
+    updatedDate?: string
+}

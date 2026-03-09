@@ -7,10 +7,14 @@ import { ApiProvider, useApiContext } from './ApiContext'
 jest.mock('../api', () => ({
     createApiClient: jest.fn(() => 'mock-client'),
     createNodesApi: jest.fn(() => ({ getAllNodes: jest.fn() })),
-    createChatflowsApi: jest.fn(() => ({ getAll: jest.fn() }))
+    createChatflowsApi: jest.fn(() => ({ getAll: jest.fn() })),
+    createModelsApi: jest.fn(() => ({ getChatModels: jest.fn() })),
+    createToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
+    createCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() }))
 }))
 
-const { createApiClient, createNodesApi, createChatflowsApi } = jest.requireMock('../api')
+const { createApiClient, createNodesApi, createChatflowsApi, createModelsApi, createToolsApi, createCredentialsApi } =
+    jest.requireMock('../api')
 
 describe('ApiContext', () => {
     beforeEach(() => jest.clearAllMocks())
@@ -32,6 +36,9 @@ describe('ApiContext', () => {
             expect(result.current.client).toBe('mock-client')
             expect(result.current.nodesApi).toBeDefined()
             expect(result.current.chatflowsApi).toBeDefined()
+            expect(result.current.modelsApi).toBeDefined()
+            expect(result.current.toolsApi).toBeDefined()
+            expect(result.current.credentialsApi).toBeDefined()
             expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined)
         })
 
@@ -54,6 +61,9 @@ describe('ApiContext', () => {
 
             expect(createNodesApi).toHaveBeenCalledWith('mock-client')
             expect(createChatflowsApi).toHaveBeenCalledWith('mock-client')
+            expect(createModelsApi).toHaveBeenCalledWith('mock-client')
+            expect(createToolsApi).toHaveBeenCalledWith('mock-client')
+            expect(createCredentialsApi).toHaveBeenCalledWith('mock-client')
         })
 
         it('should memoize value across re-renders with same props', () => {

@@ -2,13 +2,28 @@ import { createContext, ReactNode, useContext, useMemo } from 'react'
 
 import type { AxiosInstance } from 'axios'
 
-import { type ChatflowsApi, createApiClient, createChatflowsApi, createNodesApi, type NodesApi } from '../api'
+import {
+    type ChatflowsApi,
+    createApiClient,
+    createChatflowsApi,
+    createCredentialsApi,
+    createModelsApi,
+    createNodesApi,
+    createToolsApi,
+    type CredentialsApi,
+    type ModelsApi,
+    type NodesApi,
+    type ToolsApi
+} from '../api'
 
 interface ApiContextValue {
     client: AxiosInstance
     apiBaseUrl: string
     nodesApi: NodesApi
     chatflowsApi: ChatflowsApi
+    modelsApi: ModelsApi
+    toolsApi: ToolsApi
+    credentialsApi: CredentialsApi
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null)
@@ -24,12 +39,18 @@ export function ApiProvider({ apiBaseUrl, token, children }: ApiProviderProps) {
         const client = createApiClient(apiBaseUrl, token)
         const nodesApi = createNodesApi(client)
         const chatflowsApi = createChatflowsApi(client)
+        const modelsApi = createModelsApi(client)
+        const toolsApi = createToolsApi(client)
+        const credentialsApi = createCredentialsApi(client)
 
         return {
             client,
             apiBaseUrl,
             nodesApi,
-            chatflowsApi
+            chatflowsApi,
+            modelsApi,
+            toolsApi,
+            credentialsApi
         }
     }, [apiBaseUrl, token])
 
