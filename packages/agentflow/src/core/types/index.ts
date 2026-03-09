@@ -60,7 +60,7 @@ export interface FlowConfig {
 // ============================================================================
 
 export interface NodeData {
-    id: string
+    id?: string
     name: string
     label: string
     type?: string
@@ -117,7 +117,7 @@ export interface OutputAnchor {
 }
 
 export interface InputParam {
-    id: string
+    id?: string
     name: string
     label: string
     type: string
@@ -320,13 +320,7 @@ export interface ApiResponse<T> {
     status: number
 }
 
-export interface Model {
-    name: string
-    label: string
-    description?: string
-    category?: string
-    inputParams?: InputParam[]
-}
+export type Model = NodeData
 
 export interface Tool {
     id: string
@@ -335,6 +329,10 @@ export interface Tool {
     iconSrc?: string
     schema?: string
     func?: string
+    color?: string
+    createdDate: string
+    updatedDate: string
+    workspaceID?: string
 }
 
 export interface Credential {
@@ -343,4 +341,5 @@ export interface Credential {
     credentialName: string
     createdDate?: string
     updatedDate?: string
+    workspaceID?: string
 }

@@ -11,7 +11,7 @@ export function createModelsApi(client: AxiosInstance) {
          * Get all available chat models
          */
         getChatModels: async (): Promise<Model[]> => {
-            const response = await client.get('/assistants/chatmodels')
+            const response = await client.get('/assistants/components/chatmodels')
             return response.data
         },
 
@@ -19,7 +19,7 @@ export function createModelsApi(client: AxiosInstance) {
          * Get chat models filtered by provider
          */
         getModelsByProvider: async (provider: string): Promise<Model[]> => {
-            const response = await client.get(`/assistants/chatmodels?provider=${provider}`)
+            const response = await client.get(`/assistants/components/chatmodels?provider=${provider}`)
             return response.data
         }
     }

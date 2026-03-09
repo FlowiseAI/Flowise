@@ -14,6 +14,10 @@ export { useAgentflow } from './useAgentflow'
 // Context hooks (for advanced usage)
 export { useAgentflowContext, useApiContext, useConfigContext } from './infrastructure/store'
 
+// Load method registry (for dynamic API dispatch from node input loadMethod strings)
+export type { ApiServices } from './infrastructure/api'
+export { getLoadMethod } from './infrastructure/api'
+
 // Types
 export type {
     // Instance
@@ -27,6 +31,7 @@ export type {
     // API
     Chatflow,
     ConfigContextValue,
+    Credential,
     EdgeData,
     FlowConfig,
     // Flow data
@@ -37,12 +42,14 @@ export type {
     HeaderRenderProps,
     InputAnchor,
     InputParam,
+    Model,
     // Node data
     NodeData,
     NodeInput,
     NodeOutput,
     OutputAnchor,
     PaletteRenderProps,
+    Tool,
     ValidationError,
     // Validation
     ValidationResult,

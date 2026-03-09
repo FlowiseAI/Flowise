@@ -9,6 +9,7 @@ import { type ComponentType, lazy, Suspense, useState } from 'react'
 import { apiBaseUrl, token } from './config'
 import {
     AllNodeTypesExampleProps,
+    ApiInspectorExampleProps,
     BasicExampleProps,
     CustomNodeExampleProps,
     CustomUIExampleProps,
@@ -26,6 +27,13 @@ const examples: Array<{
     props: object
     component: ComponentType
 }> = [
+    {
+        id: 'api-inspector',
+        name: 'API Inspector',
+        description: 'Live test of models, tools, credentials, and loadMethodRegistry APIs',
+        props: ApiInspectorExampleProps,
+        component: lazy(() => import('./demos/ApiInspectorExample').then((m) => ({ default: m.ApiInspectorExample })))
+    },
     {
         id: 'basic',
         name: 'Basic Usage',
