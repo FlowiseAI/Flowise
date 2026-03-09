@@ -79,54 +79,6 @@ class AzureChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'Top Probability',
-                name: 'topP',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Frequency Penalty',
-                name: 'frequencyPenalty',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Presence Penalty',
-                name: 'presencePenalty',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Timeout',
-                name: 'timeout',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Base Path',
-                name: 'basepath',
-                type: 'string',
-                optional: true,
-                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
-                additionalParams: true
-            },
-            {
-                label: 'Base Options',
-                name: 'baseOptions',
-                type: 'json',
-                optional: true,
-                description: 'Default headers to include with every request to the API.',
-                additionalParams: true
-            },
-            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -191,6 +143,54 @@ class AzureChatOpenAI_ChatModels implements INode {
                 show: {
                     reasoning: true
                 }
+            },
+            {
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Frequency Penalty',
+                name: 'frequencyPenalty',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Presence Penalty',
+                name: 'presencePenalty',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Timeout',
+                name: 'timeout',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Base Path',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
+                additionalParams: true
+            },
+            {
+                label: 'Base Options',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                description: 'Default headers to include with every request to the API.',
+                additionalParams: true
             }
         ]
     }

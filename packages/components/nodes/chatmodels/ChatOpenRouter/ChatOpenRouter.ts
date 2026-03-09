@@ -62,6 +62,15 @@ class ChatOpenRouter_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Max Tokens',
                 name: 'maxTokens',
                 type: 'number',
@@ -117,15 +126,6 @@ class ChatOpenRouter_ChatModels implements INode {
                 optional: true,
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
-            },
-            {
-                label: 'Allow Image Uploads',
-                name: 'allowImageUploads',
-                type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
-                default: false,
-                optional: true
             }
         ]
     }

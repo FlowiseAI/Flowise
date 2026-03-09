@@ -78,6 +78,15 @@ class AWSChatBedrock_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
@@ -86,15 +95,6 @@ class AWSChatBedrock_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 default: 0.7
-            },
-            {
-                label: 'Allow Image Uploads',
-                name: 'allowImageUploads',
-                type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
-                default: false,
-                optional: true
             },
             {
                 label: 'Max Tokens to Sample',
