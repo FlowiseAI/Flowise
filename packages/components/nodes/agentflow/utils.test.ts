@@ -1,4 +1,10 @@
-import { revertBase64ImagesToFileRefs, processMessagesWithImages, addImageArtifactsToMessages, getUniqueImageMessages } from './utils'
+import {
+    revertBase64ImagesToFileRefs,
+    processMessagesWithImages,
+    addImageArtifactsToMessages,
+    getUniqueImageMessages,
+    sanitizeImageContentForAPI
+} from './utils'
 import { sanitizeFileName } from '../../src/validator'
 import { IChatMessage, IMultimodalContentItem } from './Interface.Agentflow'
 import { IFileUpload } from '../../src/Interface'
@@ -436,6 +442,62 @@ describe('getUniqueImageMessages', () => {
         const result = await getUniqueImageMessages(options, messages, modelConfig)
 
         expect(result).toBeUndefined()
+    })
+})
+
+describe('sanitizeImageContentForAPI', () => {
+    it('strips unexpected keys from image_url content items', () => {
+        const messages: IChatMessage[] = [
+            {
+                role: 'user',
+                content: [
+                    {
+                        type: 'image_url',
+                        image_url: { url: 'data:image/png;base64,abc', detail: 'low' },
+                        _fileName: 'test.png',
+                        _mime: 'image/png'
+                    } as unknown as IMultimodalContentItem
+                ]
+            }
+        ]
+
+        sanitizeImageContentForAPI(messages)
+
+        const item = (messages[0].content as IMultimodalContentItem[])[0]
+        expect(item).toEqual({ type: 'image_url', image_url: { url: 'data:image/png;base64,abc', detail: 'low' } })
+        expect((item as Record<string, unknown>)._fileName).toBeUndefined()
+        expect((item as Record<string, unknown>)._mime).toBeUndefined()
+    })
+
+    it('preserves string image_url values', () => {
+        const messages: IChatMessage[] = [
+            {
+                role: 'user',
+                content: [
+                    { type: 'image_url', image_url: 'https://example.com/img.png', extra: 'junk' } as unknown as IMultimodalContentItem
+                ]
+            }
+        ]
+
+        sanitizeImageContentForAPI(messages)
+
+        const item = (messages[0].content as IMultimodalContentItem[])[0]
+        expect(item).toEqual({ type: 'image_url', image_url: 'https://example.com/img.png' })
+    })
+
+    it('does not modify non-image content items', () => {
+        const messages: IChatMessage[] = [{ role: 'user', content: [{ type: 'text', text: 'hello' } as unknown as IMultimodalContentItem] }]
+
+        sanitizeImageContentForAPI(messages)
+
+        const item = (messages[0].content as IMultimodalContentItem[])[0]
+        expect(item).toEqual({ type: 'text', text: 'hello' })
+    })
+
+    it('handles messages with string content', () => {
+        const messages: IChatMessage[] = [{ role: 'user', content: 'hello' }]
+        sanitizeImageContentForAPI(messages) // should not throw
+        expect(messages[0].content).toBe('hello')
     })
 })
 

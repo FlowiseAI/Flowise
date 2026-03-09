@@ -446,7 +446,6 @@ class LLM_Agentflow implements INode {
             /**
              * Add image artifacts from previous assistant responses as user messages.
              * Only the inserted temporary messages contain base64 — other messages are untouched.
-             * All base64 image_url items are tagged with _fileName/_mime for revert after invoke.
              */
             await addImageArtifactsToMessages(messages, options)
 

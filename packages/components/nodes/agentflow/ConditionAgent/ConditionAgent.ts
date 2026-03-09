@@ -1,7 +1,13 @@
 import { AnalyticHandler } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
-import { getPastChatHistoryImageMessages, getUniqueImageMessages, processMessagesWithImages, revertBase64ImagesToFileRefs } from '../utils'
+import {
+    getPastChatHistoryImageMessages,
+    getUniqueImageMessages,
+    processMessagesWithImages,
+    revertBase64ImagesToFileRefs,
+    sanitizeImageContentForAPI
+} from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { findBestScenarioIndex } from './matchScenario'
@@ -359,6 +365,9 @@ class ConditionAgent_Agentflow implements INode {
 
             // Track execution time
             const startTime = Date.now()
+
+            // Strip unexpected keys from image content items before sending to the model
+            sanitizeImageContentForAPI(messages)
 
             response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 

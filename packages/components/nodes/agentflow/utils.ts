@@ -83,6 +83,29 @@ const saveImageToStorage = async (
     return { filePath: path, fileName, totalSize }
 }
 
+/**
+ * Strips unexpected keys from image_url content items in a messages array.
+ * LLM APIs (e.g. OpenAI) reject content items that have extra properties
+ * beyond `type` and `image_url`. This sanitization ensures clean payloads
+ * regardless of how messages were constructed or loaded from storage.
+ */
+export const sanitizeImageContentForAPI = (messages: BaseMessageLike[]): void => {
+    for (const msg of messages as IChatMessage[]) {
+        if (!Array.isArray(msg.content)) continue
+        for (let i = 0; i < msg.content.length; i++) {
+            const item = msg.content[i] as IMultimodalContentItem
+            if (item.type === 'image_url' && item.image_url) {
+                // Rebuild the content item with only the keys the API expects
+                const imageUrl =
+                    typeof item.image_url === 'string'
+                        ? item.image_url
+                        : { url: item.image_url.url, ...(item.image_url.detail ? { detail: item.image_url.detail } : {}) }
+                msg.content[i] = { type: 'image_url', image_url: imageUrl } as unknown as MessageContentComplex
+            }
+        }
+    }
+}
+
 // ─── Processing stored-file references into base64 for model invocation ──────
 
 /**
@@ -157,6 +180,9 @@ export const processMessagesWithImages = async (
             }
         }
     }
+
+    // Sanitize all image_url content items to strip unexpected keys before model invoke
+    sanitizeImageContentForAPI(updatedMessages)
 
     return { updatedMessages, transformedMessages }
 }
@@ -738,6 +764,11 @@ export const addImageArtifactsToMessages = async (messages: BaseMessageLike[], o
         const { index, base64Message } = messagesToInsert[i]
         messages.splice(index, 0, base64Message as unknown as BaseMessageLike)
     }
+
+    // Sanitize all image_url content items to strip unexpected keys before model invoke.
+    // This is the last function called before llmNodeInstance.invoke() in Agent.ts and LLM.ts,
+    // so it serves as the final cleanup to prevent API errors from stale or dirty data.
+    sanitizeImageContentForAPI(messages)
 }
 
 // ─── Flow state management ───────────────────────────────────────────────────
