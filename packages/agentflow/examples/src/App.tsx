@@ -28,13 +28,6 @@ const examples: Array<{
     component: ComponentType
 }> = [
     {
-        id: 'api-inspector',
-        name: 'API Inspector',
-        description: 'Live test of models, tools, credentials, and loadMethodRegistry APIs',
-        props: ApiInspectorExampleProps,
-        component: lazy(() => import('./demos/ApiInspectorExample').then((m) => ({ default: m.ApiInspectorExample })))
-    },
-    {
         id: 'basic',
         name: 'Basic Usage',
         description: 'Simple canvas with imperative methods',
@@ -89,6 +82,13 @@ const examples: Array<{
         description: 'Restrict available nodes with presets',
         props: FilteredComponentsExampleProps,
         component: lazy(() => import('./demos/FilteredComponentsExample').then((m) => ({ default: m.FilteredComponentsExample })))
+    },
+    {
+        id: 'api-inspector',
+        name: 'API Inspector',
+        description: 'Live test of models, tools, credentials, and loadMethodRegistry APIs',
+        props: ApiInspectorExampleProps,
+        component: lazy(() => import('./demos/ApiInspectorExample').then((m) => ({ default: m.ApiInspectorExample })))
     }
 ]
 

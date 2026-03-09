@@ -14,23 +14,23 @@ describe('createModelsApi', () => {
     const api = createModelsApi(mockClient)
 
     describe('getChatModels', () => {
-        it('should call GET /assistants/chatmodels', async () => {
+        it('should call GET /assistants/components/chatmodels', async () => {
             const mockModels = [{ name: 'gpt-4', label: 'GPT-4' }]
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockModels })
 
             const result = await api.getChatModels()
-            expect(mockClient.get).toHaveBeenCalledWith('/assistants/chatmodels')
+            expect(mockClient.get).toHaveBeenCalledWith('/assistants/components/chatmodels')
             expect(result).toEqual(mockModels)
         })
     })
 
     describe('getModelsByProvider', () => {
-        it('should call GET /assistants/chatmodels?provider=openai', async () => {
+        it('should call GET /assistants/components/chatmodels?provider=openai', async () => {
             const mockModels = [{ name: 'gpt-4', label: 'GPT-4' }]
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockModels })
 
             const result = await api.getModelsByProvider('openai')
-            expect(mockClient.get).toHaveBeenCalledWith('/assistants/chatmodels?provider=openai')
+            expect(mockClient.get).toHaveBeenCalledWith('/assistants/components/chatmodels?provider=openai')
             expect(result).toEqual(mockModels)
         })
     })

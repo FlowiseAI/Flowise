@@ -60,7 +60,7 @@ export interface FlowConfig {
 // ============================================================================
 
 export interface NodeData {
-    id?: string
+    id: string
     name: string
     label: string
     type?: string
@@ -117,7 +117,7 @@ export interface OutputAnchor {
 }
 
 export interface InputParam {
-    id?: string
+    id: string
     name: string
     label: string
     type: string
@@ -320,7 +320,7 @@ export interface ApiResponse<T> {
     status: number
 }
 
-export type Model = NodeData
+export type Model = Omit<NodeData, 'id'>
 
 export interface Tool {
     id: string
