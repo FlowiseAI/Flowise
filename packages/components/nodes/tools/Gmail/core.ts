@@ -39,7 +39,10 @@ const CreateDraftSchema = z.object({
 })
 
 const UpdateDraftSchema = CreateDraftSchema.extend({
-    id: z.string().describe('ID of the draft to update')
+    id: z
+        .string()
+        .regex(/^[A-Za-z0-9_-]+$/, 'Draft ID must contain only URL-safe characters')
+        .describe('ID of the draft to update')
 })
 
 const SendMessageSchema = z.object({
