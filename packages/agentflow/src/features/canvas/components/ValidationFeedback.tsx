@@ -6,6 +6,7 @@ import { IconChecklist, IconExclamationCircle, IconX } from '@tabler/icons-react
 
 import validateEmptyImage from '@/assets/images/validate_empty.svg'
 import { getAgentflowIcon } from '@/core/node-config'
+import { tokens } from '@/core/theme/tokens'
 import type { FlowEdge, FlowNode, NodeData, ValidationError } from '@/core/types'
 import { applyValidationErrorsToNodes, validateFlow } from '@/core/validation'
 import { useConfigContext } from '@/infrastructure/store'
@@ -130,6 +131,8 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
         )
     }
 
+    const validationColor = tokens.colors.border.validation
+
     // Reset stale validation state when flow changes
     useEffect(() => {
         if (hasValidated) {
@@ -187,7 +190,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                                     mb: 2,
                                                     backgroundColor: isDarkMode ? theme.palette.background.paper : theme.palette.grey[50],
                                                     borderRadius: '8px',
-                                                    border: `1px solid ${alpha('#FFB938', isDarkMode ? 0.3 : 0.5)}`
+                                                    border: `1px solid ${alpha(validationColor, isDarkMode ? 0.3 : 0.5)}`
                                                 }}
                                             >
                                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -202,7 +205,9 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                                             pt: 1.5,
                                                             px: 2,
                                                             pb: issueIndex === item.issues.length - 1 ? 1.5 : 0.5,
-                                                            backgroundColor: isDarkMode ? darken('#FFB938', 0.85) : lighten('#FFB938', 0.9),
+                                                            backgroundColor: isDarkMode
+                                                                ? darken(validationColor, 0.85)
+                                                                : lighten(validationColor, 0.9),
                                                             display: 'flex',
                                                             alignItems: 'center',
                                                             gap: 1.5,
@@ -213,7 +218,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                                         }}
                                                     >
                                                         <IconExclamationCircle
-                                                            color='#FFB938'
+                                                            color={validationColor}
                                                             size={20}
                                                             style={{ minWidth: 20, flexShrink: 0 }}
                                                         />
