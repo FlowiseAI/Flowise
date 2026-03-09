@@ -2,14 +2,9 @@
 // API Types
 // ============================================================================
 
-import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
+import type { InternalAxiosRequestConfig } from 'axios'
 
 export type RequestInterceptor = (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig
-
-export interface ApiContextValue {
-    client: AxiosInstance
-    apiBaseUrl: string
-}
 
 export interface Chatflow {
     id: string
