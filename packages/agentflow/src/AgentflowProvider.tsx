@@ -12,7 +12,10 @@ interface AgentflowProviderProps {
     apiBaseUrl: string
     /** Authentication token for API calls */
     token?: string
-    /** Optional callback to customize outgoing API requests */
+    /**
+     * Optional callback to customize outgoing API requests.
+     * Has access to full request config including auth tokens — only pass trusted code.
+     */
     requestInterceptor?: RequestInterceptor
     /** Whether to use dark mode (default: false) */
     isDarkMode?: boolean

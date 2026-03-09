@@ -77,7 +77,15 @@ export interface AgentflowProps {
     /** Callback when flow is generated via AI */
     onFlowGenerated?: FlowDataCallback
 
-    /** Optional callback to customize outgoing API requests (e.g., set withCredentials, add headers) */
+    /**
+     * Optional callback to customize outgoing API requests (e.g., set `withCredentials`, add headers).
+     * Receives the full Axios request config including auth headers — only modify what you need.
+     *
+     * **Security:** This callback executes in the request pipeline with access to all request
+     * data, including authentication tokens. Only pass trusted, developer-authored functions.
+     * Never use dynamically evaluated or user-generated code as the interceptor.
+     * If the interceptor throws, the error is caught and the original config is used.
+     */
     requestInterceptor?: RequestInterceptor
 }
 
