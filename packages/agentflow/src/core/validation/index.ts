@@ -2,4 +2,14 @@
 export { isValidConnectionAgentflowV2 } from './connectionValidation'
 
 // Flow validation utilities
-export { validateFlow, validateNode } from './flowValidation'
+export { applyValidationErrorsToNodes, groupValidationErrorsByNodeId, validateFlow, validateNode } from './flowValidation'
+
+// Constraint validation utilities
+export type { ConstraintResult } from './constraintValidation'
+export {
+    checkHumanInputInIteration,
+    checkNestedIteration,
+    checkNodePlacementConstraints,
+    checkSingleStartNode,
+    findParentIterationNode
+} from './constraintValidation'

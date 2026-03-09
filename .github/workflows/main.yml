@@ -31,10 +31,10 @@ jobs:
                   cache-dependency-path: 'pnpm-lock.yaml'
             - run: pnpm install
             - run: pnpm lint
-            - run: pnpm test:coverage
             - run: pnpm build
               env:
                   NODE_OPTIONS: '--max_old_space_size=4096'
+            - run: pnpm test:coverage
             - name: Cypress install
               run: pnpm cypress install
             - name: Install dependencies (Cypress Action)
