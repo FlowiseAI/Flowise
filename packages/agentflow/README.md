@@ -98,10 +98,12 @@ export default function App() {
 
 ## Props
 
+<!-- prettier-ignore -->
 | Prop                 | Type                                       | Default        | Description                                                     |
 | -------------------- | ------------------------------------------ | -------------- | --------------------------------------------------------------- |
 | `apiBaseUrl`         | `string`                                   | **(required)** | Flowise API server endpoint                                     |
 | `token`              | `string`                                   | —              | Authentication token for API calls                              |
+| `requestInterceptor` | `(config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig` | — | Customize outgoing API requests (e.g., set `withCredentials`, add headers). The callback receives the full Axios request config — only modify what you need. See [Security: requestInterceptor](#security-requestinterceptor) below. |
 | `initialFlow`        | `FlowData`                                 | —              | Initial flow data to render (uncontrolled — only used on mount) |
 | `components`         | `string[]`                                 | —              | Restrict which node types appear in the palette                 |
 | `onFlowChange`       | `(flow: FlowData) => void`                 | —              | Called when the flow changes (node/edge add, remove, move)      |
@@ -126,6 +128,16 @@ export default function App() {
 | `clear()`                | `void`                    | Remove all nodes and edges            |
 | `addNode(nodeData)`      | `void`                    | Add a node (`Partial<FlowNode>`)      |
 | `getReactFlowInstance()` | `ReactFlowInstance\|null` | Get the underlying ReactFlow instance |
+
+### Security: `requestInterceptor`
+
+The `requestInterceptor` callback runs inside the Axios request pipeline and has access to the full request configuration, including authentication headers. This is the same trust model as any other callback prop (e.g., `onSave`, `renderHeader`) — the host application developer supplies the function and is responsible for its behavior.
+
+**Guidelines for consumers:**
+
+-   Only pass **trusted, developer-authored** functions. Never use dynamically evaluated code (`eval`, `new Function`, etc.) or user-generated input as the interceptor.
+-   Follow the **principle of least privilege** — only read or modify the specific config properties you need (e.g., `withCredentials`, custom headers).
+-   If the interceptor throws, the error is caught, logged, and the **original unmodified config** is used so the request still proceeds safely.
 
 ### Design Note
 
