@@ -1,0 +1,89 @@
+// ============================================================================
+// Node & Edge Data Types
+// ============================================================================
+
+export interface NodeData {
+    id: string
+    name: string
+    label: string
+    type?: string
+    category?: string
+    description?: string
+    version?: number
+    baseClasses?: string[]
+    inputs?: InputParam[] // Parameter definitions from API
+    inputValues?: Record<string, unknown> // Actual values entered by users
+    outputs?: NodeOutput[]
+    inputAnchors?: InputAnchor[]
+    outputAnchors?: OutputAnchor[]
+    // Visual properties
+    color?: string
+    icon?: string
+    selected?: boolean
+    hideInput?: boolean
+    // Status properties
+    status?: 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'STOPPED' | 'TERMINATED'
+    error?: string
+    warning?: string
+    hint?: string
+    validationErrors?: string[]
+    [key: string]: unknown
+}
+
+export interface NodeInput {
+    label: string
+    name: string
+    type: string
+    optional?: boolean
+}
+
+export interface NodeOutput {
+    label: string
+    name: string
+    type: string
+}
+
+export interface InputAnchor {
+    id: string
+    name: string
+    label: string
+    type: string
+    optional?: boolean
+    description?: string
+}
+
+export interface OutputAnchor {
+    id: string
+    name: string
+    label: string
+    type: string
+}
+
+export interface InputParam {
+    id: string
+    name: string
+    label: string
+    type: string
+    default?: unknown
+    optional?: boolean
+    options?: Array<{ label: string; name: string } | string>
+    placeholder?: string
+    rows?: number
+    description?: string
+    acceptVariable?: boolean
+    additionalParams?: boolean
+    show?: Record<string, unknown>
+    hide?: Record<string, unknown>
+    display?: boolean
+    minItems?: number
+    maxItems?: number
+    array?: InputParam[] // Sub-field definitions for array-type params
+}
+
+export interface EdgeData {
+    sourceColor?: string
+    targetColor?: string
+    edgeLabel?: string
+    isHumanInput?: boolean
+    [key: string]: unknown
+}
