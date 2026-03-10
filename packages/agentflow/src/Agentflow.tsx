@@ -322,6 +322,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
     const {
         apiBaseUrl,
         token,
+        requestInterceptor,
         initialFlow,
         components,
         onFlowChange,
@@ -340,6 +341,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         <AgentflowProvider
             apiBaseUrl={apiBaseUrl}
             token={token}
+            requestInterceptor={requestInterceptor}
             isDarkMode={isDarkMode}
             components={components}
             readOnly={readOnly}
