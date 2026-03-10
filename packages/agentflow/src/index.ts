@@ -21,30 +21,30 @@ export type {
     // Main props
     AgentflowProps,
     AgentflowState,
-    // Context
-    ApiContextValue,
-    ApiResponse,
     // API
+    ApiResponse,
     Chatflow,
+    // Context
     ConfigContextValue,
+    // Flow data
     EdgeData,
     FlowConfig,
-    // Flow data
     FlowData,
     FlowEdge,
     FlowNode,
     // Render props
     HeaderRenderProps,
+    // Node data
     InputAnchor,
     InputParam,
-    // Node data
     NodeData,
     NodeInput,
     NodeOutput,
     OutputAnchor,
     PaletteRenderProps,
-    ValidationError,
+    RequestInterceptor,
     // Validation
+    ValidationError,
     ValidationResult,
     Viewport
 } from './core/types'
