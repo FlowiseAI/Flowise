@@ -1,6 +1,6 @@
 import { Document } from '@langchain/core/documents'
-import axios, { AxiosRequestConfig } from 'axios'
-import * as https from 'https'
+import { AxiosRequestConfig } from 'axios'
+import { secureAxiosRequest } from '../../../src/httpSecurity'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
 import { TextSplitter } from 'langchain/text_splitter'
 import { omit } from 'lodash'
@@ -256,16 +256,9 @@ class ApiLoader extends BaseDocumentLoader {
 
     protected async executeGetRequest(url: string, headers?: ICommonObject, ca?: string): Promise<IDocument[]> {
         try {
-            const config: AxiosRequestConfig = {}
-            if (headers) {
-                config.headers = headers
-            }
-            if (ca) {
-                config.httpsAgent = new https.Agent({
-                    ca: ca
-                })
-            }
-            const response = await axios.get(url, config)
+            const config: AxiosRequestConfig = { method: 'GET', url, headers: headers ?? {} }
+            const agentOptions = ca ? { ca } : undefined
+            const response = await secureAxiosRequest(config, 5, agentOptions)
             const responseJsonString = JSON.stringify(response.data, null, 2)
             const doc = new Document({
                 pageContent: responseJsonString,
@@ -281,16 +274,9 @@ class ApiLoader extends BaseDocumentLoader {
 
     protected async executePostRequest(url: string, headers?: ICommonObject, body?: ICommonObject, ca?: string): Promise<IDocument[]> {
         try {
-            const config: AxiosRequestConfig = {}
-            if (headers) {
-                config.headers = headers
-            }
-            if (ca) {
-                config.httpsAgent = new https.Agent({
-                    ca: ca
-                })
-            }
-            const response = await axios.post(url, body ?? {}, config)
+            const config: AxiosRequestConfig = { method: 'POST', url, data: body ?? {}, headers: headers ?? {} }
+            const agentOptions = ca ? { ca } : undefined
+            const response = await secureAxiosRequest(config, 5, agentOptions)
             const responseJsonString = JSON.stringify(response.data, null, 2)
             const doc = new Document({
                 pageContent: responseJsonString,

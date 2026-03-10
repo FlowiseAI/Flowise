@@ -73,6 +73,7 @@ class ConditionAgent_Agentflow implements INode {
                         placeholder: 'User is asking for a pizza'
                     }
                 ],
+                minItems: 1,
                 default: [
                     {
                         scenario: ''
