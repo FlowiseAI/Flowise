@@ -1,5 +1,4 @@
 export * from './AllNodeTypesExample'
-export * from './ApiInspectorExample'
 export * from './BasicExample'
 export * from './CustomNodeExample'
 export * from './CustomUIExample'
