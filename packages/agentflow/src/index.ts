@@ -21,30 +21,30 @@ export type {
     // Main props
     AgentflowProps,
     AgentflowState,
-    // Context
-    ApiContextValue,
-    ApiResponse,
     // API
+    ApiResponse,
     Chatflow,
+    // Context
     ConfigContextValue,
+    // Flow data
     EdgeData,
     FlowConfig,
-    // Flow data
     FlowData,
     FlowEdge,
     FlowNode,
     // Render props
     HeaderRenderProps,
+    // Node data
     InputAnchor,
     InputParam,
-    // Node data
     NodeData,
     NodeInput,
     NodeOutput,
     OutputAnchor,
     PaletteRenderProps,
-    ValidationError,
+    RequestInterceptor,
     // Validation
+    ValidationError,
     ValidationResult,
     Viewport
 } from './core/types'
@@ -52,4 +52,5 @@ export type {
 // Utilities (for advanced usage)
 export { filterNodesByComponents, isAgentflowNode } from './core/node-catalog'
 export { AGENTFLOW_ICONS, DEFAULT_AGENTFLOW_NODES, getAgentflowIcon, getNodeColor } from './core/node-config'
+export { evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './core/utils/fieldVisibility'
 export { validateFlow } from './core/validation'

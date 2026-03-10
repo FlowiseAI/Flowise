@@ -42,6 +42,7 @@
         "@gomomento/sdk-core": "^1.51.1",
         "@google-ai/generativelanguage": "^2.5.0",
         "@google-cloud/storage": "^7.15.2",
+        "@azure/storage-blob": "^12.29.0",
         "@google/generative-ai": "^0.24.0",
         "@grpc/grpc-js": "^1.10.10",
         "@huggingface/inference": "^4.13.2",

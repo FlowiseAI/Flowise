@@ -26,18 +26,67 @@ jest.mock('@/infrastructure/store', () => ({
 jest.mock('@/atoms', () => ({
     NodeInputHandler: ({
         inputParam,
-        onDataChange
+        onDataChange,
+        data,
+        itemParameters
     }: {
         inputParam: InputParam
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
-    }) => (
-        <div data-testid={`input-handler-${inputParam.name}`}>
-            <button data-testid={`change-${inputParam.name}`} onClick={() => onDataChange({ inputParam, newValue: 'test-value' })}>
-                Change {inputParam.name}
-            </button>
-        </div>
-    )
+        itemParameters?: InputParam[][]
+    }) => {
+        // Handle array type inputs differently
+        if (inputParam.type === 'array') {
+            const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+
+            return (
+                <div data-testid={`input-handler-${inputParam.name}`} data-item-params-count={itemParameters?.length ?? 'none'}>
+                    <button
+                        data-testid={`add-${inputParam.name}`}
+                        onClick={() => {
+                            onDataChange({ inputParam, newValue: [...currentArray, { _mockAdded: true }] })
+                        }}
+                    >
+                        Add {inputParam.label}
+                    </button>
+                    {currentArray.map((_, index) => (
+                        <button
+                            key={index}
+                            data-testid={`delete-${inputParam.name}-${index}`}
+                            onClick={() => {
+                                const newArray = currentArray.filter((_, i) => i !== index)
+                                onDataChange({ inputParam, newValue: newArray })
+                            }}
+                        >
+                            Delete {index}
+                        </button>
+                    ))}
+                    {currentArray.map((_, index) => (
+                        <button
+                            key={`change-${index}`}
+                            data-testid={`change-${inputParam.name}-${index}`}
+                            onClick={() => {
+                                const newArray = [...currentArray]
+                                newArray[index] = { ...newArray[index], updated: true }
+                                onDataChange({ inputParam, newValue: newArray })
+                            }}
+                        >
+                            Change {index}
+                        </button>
+                    ))}
+                </div>
+            )
+        }
+
+        // Default handler for other types
+        return (
+            <div data-testid={`input-handler-${inputParam.name}`}>
+                <button data-testid={`change-${inputParam.name}`} onClick={() => onDataChange({ inputParam, newValue: 'test-value' })}>
+                    Change {inputParam.name}
+                </button>
+            </div>
+        )
+    }
 }))
 
 jest.mock('@tabler/icons-react', () => ({
@@ -58,7 +107,7 @@ describe('EditNodeDialog', () => {
     const inputParams: InputParam[] = [
         { name: 'model', label: 'Model', type: 'string' } as InputParam,
         { name: 'temperature', label: 'Temperature', type: 'number' } as InputParam,
-        { name: 'hiddenParam', label: 'Hidden', type: 'string', display: false } as InputParam
+        { id: 'hiddenParam', name: 'hiddenParam', label: 'Hidden', type: 'string', hide: { model: 'gpt-4' } } as InputParam
     ]
 
     const defaultProps = {
@@ -192,6 +241,222 @@ describe('EditNodeDialog', () => {
                 model: 'gpt-4',
                 temperature: 'test-value'
             })
+        })
+    })
+
+    it('should preserve hidden field values in state (not strip on keystroke)', () => {
+        // Setup: provider=openAI with openAIModel selected
+        const visibilityParams: InputParam[] = [
+            {
+                id: 'provider',
+                name: 'provider',
+                label: 'Provider',
+                type: 'options',
+                options: [
+                    { label: 'OpenAI', name: 'openAI' },
+                    { label: 'Google', name: 'google' }
+                ]
+            },
+            {
+                id: 'openAIModel',
+                name: 'openAIModel',
+                label: 'OpenAI Model',
+                type: 'string',
+                show: { provider: 'openAI' }
+            },
+            {
+                id: 'googleModel',
+                name: 'googleModel',
+                label: 'Google Model',
+                type: 'string',
+                show: { provider: 'google' }
+            }
+        ]
+
+        const visibilityData: NodeData = {
+            id: 'node-vis',
+            name: 'testNode',
+            label: 'Test',
+            inputValues: { provider: 'openAI', openAIModel: 'gpt-4', googleModel: '' }
+        } as NodeData
+
+        render(
+            <EditNodeDialog
+                show={true}
+                dialogProps={{ inputParams: visibilityParams, data: visibilityData, disabled: false }}
+                onCancel={jest.fn()}
+            />
+        )
+
+        // Switch provider to google — openAIModel becomes hidden
+        fireEvent.click(screen.getByTestId('change-provider'))
+
+        // updateNodeData should keep openAIModel in inputValues (not stripped)
+        expect(mockUpdateNodeData).toHaveBeenCalledWith(
+            'node-vis',
+            expect.objectContaining({
+                inputValues: expect.objectContaining({
+                    openAIModel: 'gpt-4' // preserved, not stripped
+                })
+            })
+        )
+    })
+
+    // ========================================================================
+    // Integration Tests - Array Input
+    // ========================================================================
+
+    describe('Array input integration', () => {
+        it('should render ArrayInput component via NodeInputHandler for array type inputs', () => {
+            const arrayInputParams: InputParam[] = [
+                {
+                    name: 'items',
+                    label: 'Item',
+                    type: 'array',
+                    array: [
+                        { name: 'name', label: 'Name', type: 'string' } as InputParam,
+                        { name: 'value', label: 'Value', type: 'number' } as InputParam
+                    ]
+                } as InputParam
+            ]
+
+            const propsWithArrayInput = {
+                ...defaultProps,
+                dialogProps: {
+                    ...defaultProps.dialogProps,
+                    inputParams: arrayInputParams,
+                    data: {
+                        ...nodeData,
+                        inputValues: { items: [] }
+                    }
+                }
+            }
+
+            render(<EditNodeDialog {...propsWithArrayInput} />)
+
+            // Verify ArrayInput is rendered by checking for the "Add {label}" button
+            expect(screen.getByTestId('add-items')).toBeInTheDocument()
+            expect(screen.getByText('Add Item')).toBeInTheDocument()
+        })
+
+        it('should handle array data updates flowing through EditNodeDialog', () => {
+            const arrayInputParams: InputParam[] = [
+                {
+                    name: 'connections',
+                    label: 'Connection',
+                    type: 'array',
+                    array: [
+                        { name: 'host', label: 'Host', type: 'string', default: 'localhost' } as InputParam,
+                        { name: 'port', label: 'Port', type: 'number', default: 5432 } as InputParam
+                    ]
+                } as InputParam
+            ]
+
+            const initialArrayData = [
+                { host: 'server1.com', port: 3000 },
+                { host: 'server2.com', port: 8080 }
+            ]
+
+            const propsWithArrayData = {
+                ...defaultProps,
+                dialogProps: {
+                    ...defaultProps.dialogProps,
+                    inputParams: arrayInputParams,
+                    data: {
+                        ...nodeData,
+                        inputValues: { connections: initialArrayData }
+                    }
+                }
+            }
+
+            render(<EditNodeDialog {...propsWithArrayData} />)
+
+            // Verify initial state has delete and change buttons for existing items
+            expect(screen.getByTestId('delete-connections-0')).toBeInTheDocument()
+            expect(screen.getByTestId('delete-connections-1')).toBeInTheDocument()
+            expect(screen.getByTestId('change-connections-0')).toBeInTheDocument()
+            expect(screen.getByTestId('change-connections-1')).toBeInTheDocument()
+
+            // Test Add operation - appends a new item to the array
+            const addButton = screen.getByTestId('add-connections')
+            fireEvent.click(addButton)
+
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('node-1', {
+                inputValues: {
+                    connections: [{ host: 'server1.com', port: 3000 }, { host: 'server2.com', port: 8080 }, { _mockAdded: true }]
+                }
+            })
+
+            // Clear mock calls for next test
+            mockUpdateNodeData.mockClear()
+
+            // Test Delete operation - removes first item
+            const deleteButton = screen.getByTestId('delete-connections-0')
+            fireEvent.click(deleteButton)
+
+            // Should be called with updated array (first item removed)
+            expect(mockUpdateNodeData).toHaveBeenCalledTimes(1)
+            expect(mockUpdateNodeData).toHaveBeenCalledWith(
+                'node-1',
+                expect.objectContaining({
+                    inputValues: expect.objectContaining({
+                        connections: expect.arrayContaining([{ host: 'server2.com', port: 8080 }])
+                    })
+                })
+            )
+
+            // Clear mock calls for next test
+            mockUpdateNodeData.mockClear()
+
+            // Test Change operation - modifies an item
+            const changeButton = screen.getByTestId('change-connections-0')
+            fireEvent.click(changeButton)
+
+            // Verify updateNodeData was called with array update
+            expect(mockUpdateNodeData).toHaveBeenCalledTimes(1)
+            const lastCall = mockUpdateNodeData.mock.calls[0]
+            expect(lastCall[0]).toBe('node-1')
+            expect(lastCall[1]).toHaveProperty('inputValues')
+            expect(lastCall[1].inputValues).toHaveProperty('connections')
+            expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
+        })
+
+        it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {
+            const arrayParams: InputParam[] = [
+                {
+                    name: 'items',
+                    label: 'Item',
+                    type: 'array',
+                    array: [
+                        { id: 'type', name: 'type', label: 'Type', type: 'string' } as InputParam,
+                        {
+                            id: 'detail',
+                            name: 'detail',
+                            label: 'Detail',
+                            type: 'string',
+                            show: { 'items[$index].type': 'special' }
+                        } as InputParam
+                    ]
+                } as InputParam
+            ]
+
+            const propsWithArrayData = {
+                ...defaultProps,
+                dialogProps: {
+                    ...defaultProps.dialogProps,
+                    inputParams: arrayParams,
+                    data: {
+                        ...nodeData,
+                        inputValues: { items: [{ type: 'normal' }, { type: 'special' }] }
+                    }
+                }
+            }
+
+            render(<EditNodeDialog {...propsWithArrayData} />)
+
+            // itemParameters should have one entry per array item (2 items → count = 2)
+            const handler = screen.getByTestId('input-handler-items')
+            expect(handler).toHaveAttribute('data-item-params-count', '2')
         })
     })
 })

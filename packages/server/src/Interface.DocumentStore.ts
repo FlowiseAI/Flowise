@@ -299,9 +299,14 @@ export class DocumentStoreDTO {
 
     static toEntity(body: any): DocumentStore {
         const docStore = new DocumentStore()
-        Object.assign(docStore, body)
+        // Explicit allowlist — never accept id or timestamps from client
+        docStore.name = body.name
+        docStore.description = body.description ?? null
         docStore.loaders = body.loaders ?? '[]'
         docStore.whereUsed = body.whereUsed ?? '[]'
+        docStore.vectorStoreConfig = body.vectorStoreConfig ?? null
+        docStore.embeddingConfig = body.embeddingConfig ?? null
+        docStore.recordManagerConfig = body.recordManagerConfig ?? null
         // when a new document store is created, it is empty and in sync
         docStore.status = DocumentStoreStatus.EMPTY_SYNC
         return docStore
