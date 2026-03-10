@@ -26,14 +26,15 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
         }
 
         const body = req.body
-        body.workspaceId = req.user?.activeWorkspaceId
-        if (!body.workspaceId) {
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
                 `Error: documentStoreController.createDocumentStore - workspaceId not provided!`
             )
         }
         const docStore = DocumentStoreDTO.toEntity(body)
+        docStore.workspaceId = workspaceId
         const apiResponse = await documentStoreService.createDocumentStore(docStore, orgId)
         return res.json(apiResponse)
     } catch (error) {
@@ -355,7 +356,14 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
         }
         const body = req.body
         const updateDocStore = new DocumentStore()
-        Object.assign(updateDocStore, body)
+        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
+        if (body.name !== undefined) updateDocStore.name = body.name
+        if (body.description !== undefined) updateDocStore.description = body.description
+        if (body.vectorStoreConfig !== undefined) updateDocStore.vectorStoreConfig = body.vectorStoreConfig
+        if (body.embeddingConfig !== undefined) updateDocStore.embeddingConfig = body.embeddingConfig
+        if (body.recordManagerConfig !== undefined) updateDocStore.recordManagerConfig = body.recordManagerConfig
+        if (body.loaders !== undefined) updateDocStore.loaders = body.loaders
+        if (body.whereUsed !== undefined) updateDocStore.whereUsed = body.whereUsed
         const apiResponse = await documentStoreService.updateDocumentStore(store, updateDocStore)
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {

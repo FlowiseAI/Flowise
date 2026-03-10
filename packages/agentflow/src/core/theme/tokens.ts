@@ -97,7 +97,8 @@ export const tokens = {
 
         border: {
             default: { light: baseColors.gray300, dark: baseColors.darkGray500 },
-            hover: { light: baseColors.gray400, dark: baseColors.darkGray600 }
+            hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
+            validation: baseColors.nodeCondition
         },
 
         text: {
