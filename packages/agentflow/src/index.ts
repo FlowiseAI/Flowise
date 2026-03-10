@@ -19,6 +19,7 @@ export type { ApiServices } from './infrastructure/api'
 export { getLoadMethod } from './infrastructure/api'
 
 // Types
+/* eslint-disable simple-import-sort/exports */
 export type {
     // Instance
     AgentFlowInstance,
@@ -55,6 +56,8 @@ export type {
     ValidationResult,
     Viewport
 } from './core/types'
+/* eslint-enable simple-import-sort/exports */
+
 
 // Utilities (for advanced usage)
 export { filterNodesByComponents, isAgentflowNode } from './core/node-catalog'
