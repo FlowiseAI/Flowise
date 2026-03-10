@@ -1,4 +1,4 @@
-import { getCredentialData, getCredentialParam, safeJsonParse, type ICommonObject, type INodeData } from '.'
+import { getCredentialData, getCredentialParam, parseJsonBody, type ICommonObject, type INodeData } from '.'
 import type { ChatVertexAIInput, VertexAIInput } from '@langchain/google-vertexai'
 
 type SupportedAuthOptions = ChatVertexAIInput['authOptions'] | VertexAIInput['authOptions']
@@ -20,7 +20,13 @@ export const buildGoogleCredentials = async (nodeData: INodeData, options: IComm
 
         if (googleApplicationCredentialFilePath && !googleApplicationCredential) authOptions.keyFile = googleApplicationCredentialFilePath
         else if (!googleApplicationCredentialFilePath && googleApplicationCredential) {
-            const parsedCredential = safeJsonParse(googleApplicationCredential)
+            let parsedCredential: unknown
+            try {
+                parsedCredential = parseJsonBody(googleApplicationCredential)
+            } catch (e) {
+                throw new Error('Invalid Google Application Credential JSON; expected a JSON object.')
+            }
+
             if (parsedCredential && typeof parsedCredential === 'object' && !Array.isArray(parsedCredential)) {
                 authOptions.credentials = parsedCredential
             } else {
