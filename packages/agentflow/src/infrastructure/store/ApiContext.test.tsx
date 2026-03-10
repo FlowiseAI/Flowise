@@ -41,7 +41,7 @@ describe('ApiContext', () => {
             expect(result.current.modelsApi).toBeDefined()
             expect(result.current.toolsApi).toBeDefined()
             expect(result.current.credentialsApi).toBeDefined()
-            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined)
+            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined, expect.any(Function))
         })
 
         it('should pass token to createApiClient', () => {
