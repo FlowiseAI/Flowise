@@ -1,12 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 
-import { Box, FormControlLabel, IconButton, MenuItem, Select, Switch, TextField, Tooltip, TooltipProps, Typography } from '@mui/material'
+import {
+    Box,
+    CircularProgress,
+    FormControlLabel,
+    IconButton,
+    MenuItem,
+    Select,
+    Switch,
+    TextField,
+    Tooltip,
+    TooltipProps,
+    Typography
+} from '@mui/material'
+import Autocomplete from '@mui/material/Autocomplete'
 import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconRefresh, IconVariable } from '@tabler/icons-react'
 
 import type { InputAnchor, InputParam, NodeData } from '@/core/types'
+import { type OptionItem, useAsyncOptions } from '@/infrastructure/api/hooks'
 
 import ArrayInput from './ArrayInput'
 
@@ -27,9 +41,142 @@ export interface NodeInputHandlerProps {
     itemParameters?: InputParam[][]
 }
 
+// ─── Async sub-components ────────────────────────────────────────────────────
+// Hooks cannot be called inside switch cases, so async rendering is split into
+// dedicated components that call useAsyncOptions at their top level.
+
+interface AsyncInputProps {
+    inputParam: InputParam
+    value: unknown
+    disabled: boolean
+    onChange: (newValue: string) => void
+}
+
+function AsyncOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
+    const { options, loading, error, refetch } = useAsyncOptions({
+        loadMethod: inputParam.loadMethod,
+        credentialNames: inputParam.credentialNames
+    })
+
+    if (error) {
+        return (
+            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant='caption' color='error' sx={{ flexGrow: 1 }}>
+                    {error}
+                </Typography>
+                <IconButton size='small' onClick={refetch} title='Retry' aria-label='retry'>
+                    <IconRefresh size={16} />
+                </IconButton>
+            </Box>
+        )
+    }
+
+    const matchedValue = options.find((o) => o.name === value) ?? null
+
+    return (
+        <Autocomplete<OptionItem>
+            size='small'
+            disabled={disabled}
+            options={options}
+            value={matchedValue}
+            getOptionLabel={(o) => o.label}
+            isOptionEqualToValue={(o, v) => o.name === v.name}
+            onChange={(_e, selection) => onChange(selection?.name ?? '')}
+            loading={loading}
+            noOptionsText={loading ? 'Loading…' : 'No options available'}
+            sx={{ mt: 1 }}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                            <Fragment>
+                                {loading ? <CircularProgress color='inherit' size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                            </Fragment>
+                        )
+                    }}
+                />
+            )}
+        />
+    )
+}
+
+function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
+    const { options, loading, error, refetch } = useAsyncOptions({
+        loadMethod: inputParam.loadMethod,
+        credentialNames: inputParam.credentialNames
+    })
+
+    if (error) {
+        return (
+            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant='caption' color='error' sx={{ flexGrow: 1 }}>
+                    {error}
+                </Typography>
+                <IconButton size='small' onClick={refetch} title='Retry' aria-label='retry'>
+                    <IconRefresh size={16} />
+                </IconButton>
+            </Box>
+        )
+    }
+
+    // Stored as JSON-serialized array of names, e.g. '["option1","option2"]'
+    let selectedNames: string[] = []
+    if (typeof value === 'string' && value.startsWith('[')) {
+        try {
+            selectedNames = JSON.parse(value)
+        } catch {
+            selectedNames = []
+        }
+    } else if (Array.isArray(value)) {
+        selectedNames = value as string[]
+    }
+
+    const selectedOptions = options.filter((o) => selectedNames.includes(o.name))
+
+    return (
+        <Autocomplete<OptionItem, true>
+            multiple
+            filterSelectedOptions
+            size='small'
+            disabled={disabled}
+            options={options}
+            value={selectedOptions}
+            getOptionLabel={(o) => o.label}
+            isOptionEqualToValue={(o, v) => o.name === v.name}
+            onChange={(_e, selection) => {
+                const names = selection.map((s) => s.name)
+                onChange(names.length > 0 ? JSON.stringify(names) : '')
+            }}
+            loading={loading}
+            noOptionsText={loading ? 'Loading…' : 'No options available'}
+            sx={{ mt: 1 }}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    InputProps={{
+                        ...params.InputProps,
+                        endAdornment: (
+                            <Fragment>
+                                {loading ? <CircularProgress color='inherit' size={20} /> : null}
+                                {params.InputProps.endAdornment}
+                            </Fragment>
+                        )
+                    }}
+                />
+            )}
+        />
+    )
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 /**
  * Simplified input handler for agentflow nodes
- * Handles basic input types: string, number, password, boolean, options
+ * Handles basic input types: string, number, password, boolean, options, array,
+ * asyncOptions (single-select), asyncMultiOptions (multi-select).
  */
 export function NodeInputHandler({
     inputAnchor,
@@ -120,6 +267,7 @@ export function NodeInputHandler({
                         ))}
                     </Select>
                 )
+
             case 'array':
                 return (
                     <ArrayInput
@@ -128,6 +276,24 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onDataChange={onDataChange}
                         itemParameters={itemParameters}
+                    />
+                )
+
+            case 'asyncOptions':
+                // Single-select async dropdown. Value stored as option.name string.
+                // onChange flows through handleDataChange → onDataChange →
+                // EditNodeDialog.onCustomDataChange → evaluateFieldVisibility,
+                // so visibility re-evaluation for dependent fields is automatic.
+                return <AsyncOptionsInput inputParam={inputParam} value={value} disabled={disabled} onChange={(v) => handleDataChange(v)} />
+
+            case 'asyncMultiOptions':
+                // Multi-select async dropdown. Value stored as JSON-serialized string array.
+                return (
+                    <AsyncMultiOptionsInput
+                        inputParam={inputParam}
+                        value={value}
+                        disabled={disabled}
+                        onChange={(v) => handleDataChange(v)}
                     />
                 )
 

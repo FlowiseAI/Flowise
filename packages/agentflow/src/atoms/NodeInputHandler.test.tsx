@@ -1,0 +1,235 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+
+import type { InputParam, NodeData } from '@/core/types'
+
+import { NodeInputHandler } from './NodeInputHandler'
+
+// ─── Mocks ────────────────────────────────────────────────────────────────────
+
+jest.mock('reactflow', () => ({
+    Handle: () => null,
+    Position: { Left: 'left' },
+    useUpdateNodeInternals: () => jest.fn()
+}))
+
+jest.mock('@tabler/icons-react', () => ({
+    IconArrowsMaximize: () => <span data-testid='icon-expand' />,
+    IconVariable: () => <span data-testid='icon-variable' />,
+    IconRefresh: () => <span data-testid='icon-refresh' />
+}))
+
+interface MockAsyncResult {
+    options: Array<{ label: string; name: string }>
+    loading: boolean
+    error: string | null
+    refetch: () => void
+}
+
+const mockRefetch = jest.fn()
+
+// Typed mock so mockReturnValue accepts the full return shape without 'never' errors
+const mockUseAsyncOptions = jest.fn<MockAsyncResult, [unknown]>(() => ({
+    options: [] as Array<{ label: string; name: string }>,
+    loading: true,
+    error: null,
+    refetch: mockRefetch
+}))
+
+jest.mock('@/infrastructure/api/hooks', () => ({
+    // Single-arg wrapper avoids the "spread of unknown[]" TS error
+    useAsyncOptions: (arg: unknown) => mockUseAsyncOptions(arg)
+}))
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const mockOnDataChange = jest.fn()
+
+const baseNodeData: NodeData = {
+    id: 'node-1',
+    name: 'testNode',
+    label: 'Test Node',
+    inputValues: {}
+}
+
+const makeParam = (overrides: Partial<InputParam>): InputParam => ({
+    id: 'p1',
+    name: 'myField',
+    label: 'My Field',
+    type: 'asyncOptions',
+    optional: false,
+    additionalParams: true,
+    ...overrides
+})
+
+const idleResult = (): MockAsyncResult => ({ options: [], loading: false, error: null, refetch: mockRefetch })
+
+beforeEach(() => {
+    jest.clearAllMocks()
+    mockUseAsyncOptions.mockReturnValue({ options: [], loading: true, error: null, refetch: mockRefetch })
+})
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+describe('NodeInputHandler – asyncOptions', () => {
+    it('renders loading spinner while options are loading', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        // CircularProgress is rendered inside the Autocomplete endAdornment
+        expect(document.querySelector('.MuiCircularProgress-root')).toBeTruthy()
+    })
+
+    it('renders Autocomplete with options after loading', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [
+                { label: 'GPT-4o', name: 'gpt-4o' },
+                { label: 'Claude 3', name: 'claude-3' }
+            ]
+        })
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.getByRole('combobox')).toBeTruthy()
+    })
+
+    it('calls onDataChange with option.name when selection changes', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'GPT-4o', name: 'gpt-4o' }]
+        })
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        const input = screen.getByRole('combobox')
+        fireEvent.change(input, { target: { value: 'GPT' } })
+        await waitFor(() => screen.getByText('GPT-4o'))
+        fireEvent.click(screen.getByText('GPT-4o'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith(expect.objectContaining({ newValue: 'gpt-4o' }))
+    })
+
+    it('renders error message and retry button on API failure', () => {
+        mockUseAsyncOptions.mockReturnValue({ ...idleResult(), error: 'Network failure' })
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.getByText('Network failure')).toBeTruthy()
+        expect(screen.getByRole('button', { name: /retry/i })).toBeTruthy()
+    })
+
+    it('retry button calls refetch', () => {
+        mockUseAsyncOptions.mockReturnValue({ ...idleResult(), error: 'Network failure' })
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        fireEvent.click(screen.getByRole('button', { name: /retry/i }))
+        expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('shows no-options text when loaded with empty list', async () => {
+        mockUseAsyncOptions.mockReturnValue(idleResult())
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        // mouseDown opens the MUI Autocomplete popup
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => expect(screen.getByText('No options available')).toBeTruthy())
+    })
+})
+
+describe('NodeInputHandler – asyncMultiOptions', () => {
+    it('calls onDataChange with JSON array string when multiple options selected', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [
+                { label: 'Tool A', name: 'tool-a' },
+                { label: 'Tool B', name: 'tool-b' }
+            ]
+        })
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncMultiOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        const input = screen.getByRole('combobox')
+        fireEvent.change(input, { target: { value: 'Tool' } })
+        await waitFor(() => screen.getByText('Tool A'))
+        fireEvent.click(screen.getByText('Tool A'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith(expect.objectContaining({ newValue: '["tool-a"]' }))
+    })
+
+    it('calls onDataChange with empty string when all selections cleared', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Tool A', name: 'tool-a' }]
+        })
+
+        const nodeDataWithValue: NodeData = {
+            ...baseNodeData,
+            inputValues: { myField: '["tool-a"]' }
+        }
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncMultiOptions' })}
+                data={nodeDataWithValue}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        // The MUI Autocomplete clear button (title="Clear") clears all selections
+        const clearButton = screen.getByTitle('Clear')
+        fireEvent.click(clearButton)
+
+        expect(mockOnDataChange).toHaveBeenCalledWith(expect.objectContaining({ newValue: '' }))
+    })
+})
