@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 
 import { renderHook } from '@testing-library/react'
 
+import type { RequestInterceptor } from '@/core/types'
+
 import { ApiProvider, useApiContext } from './ApiContext'
 
 jest.mock('../api', () => ({
@@ -50,7 +52,7 @@ describe('ApiContext', () => {
             )
             renderHook(() => useApiContext(), { wrapper })
 
-            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', 'my-token')
+            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', 'my-token', expect.any(Function))
         })
 
         it('should create nodesApi and chatflowsApi from client', () => {
@@ -64,6 +66,37 @@ describe('ApiContext', () => {
             expect(createModelsApi).toHaveBeenCalledWith('mock-client')
             expect(createToolsApi).toHaveBeenCalledWith('mock-client')
             expect(createCredentialsApi).toHaveBeenCalledWith('mock-client')
+        })
+
+        it('should use updated requestInterceptor without recreating client', () => {
+            const interceptorA = jest.fn((config) => ({ ...config, headers: { ...config.headers, 'X-A': '1' } }))
+            const interceptorB = jest.fn((config) => ({ ...config, headers: { ...config.headers, 'X-B': '2' } }))
+
+            let activeInterceptor: RequestInterceptor = interceptorA
+            const wrapper = ({ children }: { children: ReactNode }) => (
+                <ApiProvider apiBaseUrl='http://localhost:3000' requestInterceptor={activeInterceptor}>
+                    {children}
+                </ApiProvider>
+            )
+
+            const { rerender } = renderHook(() => useApiContext(), { wrapper })
+
+            // Capture the wrapper function passed to createApiClient
+            const wrapperFn = createApiClient.mock.calls[0][2]
+            expect(createApiClient).toHaveBeenCalledTimes(1)
+
+            // Re-render with a different interceptor but same apiBaseUrl/token
+            activeInterceptor = interceptorB
+            rerender()
+
+            // Client should NOT be recreated
+            expect(createApiClient).toHaveBeenCalledTimes(1)
+
+            // The wrapper should now delegate to interceptorB
+            const config = { url: '/test', headers: {} }
+            wrapperFn(config)
+            expect(interceptorB).toHaveBeenCalledWith(config)
+            expect(interceptorA).not.toHaveBeenCalled()
         })
 
         it('should memoize value across re-renders with same props', () => {

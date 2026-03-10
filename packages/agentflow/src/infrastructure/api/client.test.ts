@@ -115,4 +115,47 @@ describe('createApiClient', () => {
         expect(consoleSpy).not.toHaveBeenCalled()
         consoleSpy.mockRestore()
     })
+
+    it('should not set withCredentials by default', () => {
+        createApiClient('https://flowise.example.com')
+        expect(mockedAxios.create).toHaveBeenCalledWith(
+            expect.not.objectContaining({
+                withCredentials: true
+            })
+        )
+    })
+
+    it('should apply requestInterceptor to requests', () => {
+        const interceptor = jest.fn((config) => {
+            config.withCredentials = true
+            return config
+        })
+        const client = createApiClient('https://flowise.example.com', undefined, interceptor)
+        const successHandler = (client.interceptors.request.use as jest.Mock).mock.calls[0][0]
+        const config = { url: '/chatflows', headers: {} }
+        const result = successHandler(config)
+        expect(interceptor).toHaveBeenCalledWith(config)
+        expect(result.withCredentials).toBe(true)
+    })
+
+    it('should pass config through when no requestInterceptor is provided', () => {
+        const client = createApiClient('https://flowise.example.com')
+        const successHandler = (client.interceptors.request.use as jest.Mock).mock.calls[0][0]
+        const config = { url: '/chatflows', headers: {} }
+        expect(successHandler(config)).toBe(config)
+    })
+
+    it('should catch and log errors thrown by requestInterceptor', () => {
+        const interceptor = jest.fn(() => {
+            throw new Error('interceptor broke')
+        })
+        const client = createApiClient('https://flowise.example.com', undefined, interceptor)
+        const successHandler = (client.interceptors.request.use as jest.Mock).mock.calls[0][0]
+        const config = { url: '/chatflows', headers: {} }
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
+        const result = successHandler(config)
+        expect(result).toBe(config)
+        expect(consoleSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Error))
+        consoleSpy.mockRestore()
+    })
 })
