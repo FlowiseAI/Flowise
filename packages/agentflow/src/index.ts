@@ -29,9 +29,10 @@ export type {
     ApiResponse,
     Chatflow,
     ChatModel,
+    Credential,
+    Tool,
     // Context
     ConfigContextValue,
-    Credential,
     // Flow data
     EdgeData,
     FlowConfig,
@@ -49,7 +50,6 @@ export type {
     OutputAnchor,
     PaletteRenderProps,
     RequestInterceptor,
-    Tool,
     // Validation
     ValidationError,
     ValidationResult,
