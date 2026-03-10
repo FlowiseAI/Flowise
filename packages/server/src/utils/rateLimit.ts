@@ -95,21 +95,51 @@ export class RateLimiterManager {
         const release = await this.rateLimiterMutex.acquire()
         try {
             if (process.env.MODE === MODE.QUEUE) {
-                this.rateLimiters.set(
-                    id,
-                    rateLimit({
-                        windowMs: duration * 1000,
-                        max: limit,
-                        standardHeaders: true,
-                        legacyHeaders: false,
-                        message,
-                        store: new RedisStore({
-                            prefix: `rl:${id}`,
-                            // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
-                            sendCommand: (...args: string[]) => this.redisClient.call(...args)
+                // Add retry logic for Redis connection issues
+                const maxRetries = 3
+                let retryCount = 0
+                let lastError: Error | null = null
+
+                while (retryCount < maxRetries) {
+                    try {
+                        this.rateLimiters.set(
+                            id,
+                            rateLimit({
+                                windowMs: duration * 1000,
+                                max: limit,
+                                standardHeaders: true,
+                                legacyHeaders: false,
+                                message,
+                                store: new RedisStore({
+                                    prefix: `rl:${id}`,
+                                    // @ts-expect-error - Known issue: the `call` function is not present in @types/ioredis
+                                    sendCommand: (...args: string[]) => this.redisClient.call(...args)
+                                })
+                            })
+                        )
+                        break // Success, exit retry loop
+                    } catch (error) {
+                        lastError = error as Error
+                        retryCount++
+                        if (retryCount < maxRetries) {
+                            // Wait before retry (exponential backoff)
+                            await new Promise(resolve => setTimeout(resolve, Math.pow(2, retryCount) * 100))
+                        }
+                    }
+                }
+
+                if (retryCount >= maxRetries && lastError) {
+                    console.error(`Failed to add rate limiter after ${maxRetries} retries:`, lastError.message)
+                    // Fall back to in-memory rate limiter if Redis fails
+                    this.rateLimiters.set(
+                        id,
+                        rateLimit({
+                            windowMs: duration * 1000,
+                            max: limit,
+                            message: `${message} (fallback mode - Redis unavailable)`
                         })
-                    })
-                )
+                    )
+                }
             } else {
                 this.rateLimiters.set(
                     id,
