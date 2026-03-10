@@ -570,16 +570,15 @@ export class AccountService {
         try {
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-            if (user.tempToken !== data.user.tempToken)
+            if (!user.tempToken || !data.user.tempToken || user.tempToken !== data.user.tempToken)
                 throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
 
             const tokenExpiry = user.tokenExpiry
-            const now = moment()
-            const expiryInMins = process.env.PASSWORD_RESET_TOKEN_EXPIRY_IN_MINUTES
-                ? parseInt(process.env.PASSWORD_RESET_TOKEN_EXPIRY_IN_MINUTES)
-                : 15
-            const diff = now.diff(tokenExpiry, 'minutes')
-            if (Math.abs(diff) > expiryInMins) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
+            if (!tokenExpiry) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+
+            const tokenExpiryMoment = moment(tokenExpiry)
+            if (!tokenExpiryMoment.isValid() || moment().isAfter(tokenExpiryMoment))
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
 
             // @ts-ignore
             const password = data.user.password
@@ -592,8 +591,8 @@ export class AccountService {
             const hash = bcrypt.hashSync(password, salt)
             data.user = user
             data.user.credential = hash
-            data.user.tempToken = ''
-            data.user.tokenExpiry = undefined
+            data.user.tempToken = null
+            data.user.tokenExpiry = null
             data.user.status = UserStatus.ACTIVE
 
             await queryRunner.startTransaction()
