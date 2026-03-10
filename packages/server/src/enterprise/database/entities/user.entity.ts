@@ -30,18 +30,7 @@ export class User {
     @Column({ type: 'text', nullable: true, unique: true })
     tempToken?: string | null
 
-    @Column({
-        type: 'datetime',
-        nullable: true,
-        default: null,
-        transformer: {
-            to: (v: Date | null | undefined): string | null => (v instanceof Date ? v.toISOString() : null),
-            from: (v: string | Date | null): Date | null => {
-                if (!v) return null
-                return v instanceof Date ? v : new Date(v)
-            }
-        }
-    })
+    @CreateDateColumn({ nullable: true })
     tokenExpiry?: Date | null
 
     @Column({ type: 'varchar', length: 20, default: UserStatus.UNVERIFIED })
