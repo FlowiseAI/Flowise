@@ -9,7 +9,7 @@
 
 import { useState } from 'react'
 
-import type { ApiServices, Credential, Model, Tool } from '@flowiseai/agentflow'
+import type { ApiServices, ChatModel, Credential, Tool } from '@flowiseai/agentflow'
 import { AgentflowProvider, getLoadMethod, useApiContext } from '@flowiseai/agentflow'
 
 import { apiBaseUrl, token } from '../config'
@@ -41,16 +41,16 @@ function err<T>(e: unknown): ApiState<T> {
 // ─── Inner component ──────────────────────────────────────────────────────────
 
 function ApiInspectorInner() {
-    const { modelsApi, toolsApi, credentialsApi } = useApiContext()
+    const { chatModelsApi: modelsApi, toolsApi, credentialsApi } = useApiContext()
 
     // --- "Fetch All" states ---
-    const [allModels, setAllModels] = useState<ApiState<Model[]>>(idle())
+    const [allModels, setAllModels] = useState<ApiState<ChatModel[]>>(idle())
     const [allTools, setAllTools] = useState<ApiState<Tool[]>>(idle())
     const [allCredentials, setAllCredentials] = useState<ApiState<Credential[]>>(idle())
 
     // --- Filtered/single states ---
     const [provider, setProvider] = useState('openai')
-    const [modelsByProvider, setModelsByProvider] = useState<ApiState<Model[]>>(idle())
+    const [modelsByProvider, setModelsByProvider] = useState<ApiState<ChatModel[]>>(idle())
 
     const [toolId, setToolId] = useState('')
     const [toolById, setToolById] = useState<ApiState<Tool>>(idle())
@@ -127,10 +127,10 @@ function ApiInspectorInner() {
     // ── Registry ──────────────────────────────────────────────────────────────
     const testRegistry = async () => {
         const log: string[] = []
-        const apis: ApiServices = { modelsApi, toolsApi, credentialsApi }
+        const apis: ApiServices = { chatModelsApi: modelsApi, toolsApi, credentialsApi }
 
         const cases: Array<[string, Record<string, unknown>?]> = [
-            ['listModels'],
+            ['listChatModels'],
             ['listTools'],
             ['listCredentials', credentialName ? { name: credentialName } : undefined],
             ['unknownMethod']

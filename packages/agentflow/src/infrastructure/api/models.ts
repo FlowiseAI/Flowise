@@ -1,16 +1,16 @@
 import type { AxiosInstance } from 'axios'
 
-import type { Model } from '@/core/types'
+import type { ChatModel } from '@/core/types'
 
 /**
  * Create models API functions bound to a client instance
  */
-export function createModelsApi(client: AxiosInstance) {
+export function bindChatModelsApi(client: AxiosInstance) {
     return {
         /**
          * Get all available chat models
          */
-        getChatModels: async (): Promise<Model[]> => {
+        getChatModels: async (): Promise<ChatModel[]> => {
             const response = await client.get('/assistants/components/chatmodels')
             return response.data
         },
@@ -18,11 +18,11 @@ export function createModelsApi(client: AxiosInstance) {
         /**
          * Get chat models filtered by provider
          */
-        getModelsByProvider: async (provider: string): Promise<Model[]> => {
+        getModelsByProvider: async (provider: string): Promise<ChatModel[]> => {
             const response = await client.get('/assistants/components/chatmodels', { params: { provider } })
             return response.data
         }
     }
 }
 
-export type ModelsApi = ReturnType<typeof createModelsApi>
+export type ChatModelsApi = ReturnType<typeof bindChatModelsApi>

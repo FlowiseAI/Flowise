@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import { createCredentialsApi } from './credentials'
+import { bindCredentialsApi } from './credentials'
 
 const mockClient = {
     get: jest.fn()
@@ -10,8 +10,8 @@ beforeEach(() => {
     jest.clearAllMocks()
 })
 
-describe('createCredentialsApi', () => {
-    const api = createCredentialsApi(mockClient)
+describe('bindCredentialsApi', () => {
+    const api = bindCredentialsApi(mockClient)
 
     describe('getAllCredentials', () => {
         it('should call GET /credentials', async () => {

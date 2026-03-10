@@ -5,7 +5,7 @@ import type { Credential } from '@/core/types'
 /**
  * Create credentials API functions bound to a client instance
  */
-export function createCredentialsApi(client: AxiosInstance) {
+export function bindCredentialsApi(client: AxiosInstance) {
     return {
         /**
          * Get all credentials
@@ -25,4 +25,4 @@ export function createCredentialsApi(client: AxiosInstance) {
     }
 }
 
-export type CredentialsApi = ReturnType<typeof createCredentialsApi>
+export type CredentialsApi = ReturnType<typeof bindCredentialsApi>

@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import { createModelsApi } from './models'
+import { bindChatModelsApi } from './models'
 
 const mockClient = {
     get: jest.fn()
@@ -10,8 +10,8 @@ beforeEach(() => {
     jest.clearAllMocks()
 })
 
-describe('createModelsApi', () => {
-    const api = createModelsApi(mockClient)
+describe('bindChatModelsApi', () => {
+    const api = bindChatModelsApi(mockClient)
 
     describe('getChatModels', () => {
         it('should call GET /assistants/components/chatmodels', async () => {

@@ -10,12 +10,12 @@ jest.mock('../api', () => ({
     createApiClient: jest.fn(() => 'mock-client'),
     createNodesApi: jest.fn(() => ({ getAllNodes: jest.fn() })),
     createChatflowsApi: jest.fn(() => ({ getAll: jest.fn() })),
-    createModelsApi: jest.fn(() => ({ getChatModels: jest.fn() })),
-    createToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
-    createCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() }))
+    bindChatModelsApi: jest.fn(() => ({ getChatModels: jest.fn() })),
+    bindToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
+    bindCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() }))
 }))
 
-const { createApiClient, createNodesApi, createChatflowsApi, createModelsApi, createToolsApi, createCredentialsApi } =
+const { createApiClient, createNodesApi, createChatflowsApi, bindChatModelsApi, bindToolsApi, bindCredentialsApi } =
     jest.requireMock('../api')
 
 describe('ApiContext', () => {
@@ -38,7 +38,7 @@ describe('ApiContext', () => {
             expect(result.current.client).toBe('mock-client')
             expect(result.current.nodesApi).toBeDefined()
             expect(result.current.chatflowsApi).toBeDefined()
-            expect(result.current.modelsApi).toBeDefined()
+            expect(result.current.chatModelsApi).toBeDefined()
             expect(result.current.toolsApi).toBeDefined()
             expect(result.current.credentialsApi).toBeDefined()
             expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined, expect.any(Function))
@@ -63,9 +63,9 @@ describe('ApiContext', () => {
 
             expect(createNodesApi).toHaveBeenCalledWith('mock-client')
             expect(createChatflowsApi).toHaveBeenCalledWith('mock-client')
-            expect(createModelsApi).toHaveBeenCalledWith('mock-client')
-            expect(createToolsApi).toHaveBeenCalledWith('mock-client')
-            expect(createCredentialsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindChatModelsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindToolsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindCredentialsApi).toHaveBeenCalledWith('mock-client')
         })
 
         it('should use updated requestInterceptor without recreating client', () => {

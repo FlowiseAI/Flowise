@@ -1,37 +1,26 @@
 import type { AxiosInstance } from 'axios'
 
-import { createToolsApi } from './tools'
+import { bindToolsApi } from './tools'
 
 const mockClient = {
-    get: jest.fn()
+    post: jest.fn()
 } as unknown as jest.Mocked<AxiosInstance>
 
 beforeEach(() => {
     jest.clearAllMocks()
 })
 
-describe('createToolsApi', () => {
-    const api = createToolsApi(mockClient)
+describe('bindToolsApi', () => {
+    const api = bindToolsApi(mockClient)
 
     describe('getAllTools', () => {
-        it('should call GET /tools', async () => {
-            const mockTools = [{ id: '1', name: 'Calculator' }]
-            ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockTools })
+        it('should POST to /node-load-method/toolAgentflow with listTools loadMethod', async () => {
+            const mockTools = [{ label: 'Calculator', name: 'calculator' }]
+            ;(mockClient.post as jest.Mock).mockResolvedValue({ data: mockTools })
 
             const result = await api.getAllTools()
-            expect(mockClient.get).toHaveBeenCalledWith('/tools')
+            expect(mockClient.post).toHaveBeenCalledWith('/node-load-method/toolAgentflow', { loadMethod: 'listTools' })
             expect(result).toEqual(mockTools)
-        })
-    })
-
-    describe('getToolById', () => {
-        it('should call GET /tools/:id', async () => {
-            const mockTool = { id: 'abc', name: 'Calculator' }
-            ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockTool })
-
-            const result = await api.getToolById('abc')
-            expect(mockClient.get).toHaveBeenCalledWith('/tools/abc')
-            expect(result).toEqual(mockTool)
         })
     })
 })

@@ -2,13 +2,12 @@ import type { ApiServices } from './loadMethodRegistry'
 import { getLoadMethod, loadMethodRegistry } from './loadMethodRegistry'
 
 const mockApis: ApiServices = {
-    modelsApi: {
+    chatModelsApi: {
         getChatModels: jest.fn(),
         getModelsByProvider: jest.fn()
     },
     toolsApi: {
-        getAllTools: jest.fn(),
-        getToolById: jest.fn()
+        getAllTools: jest.fn()
     },
     credentialsApi: {
         getAllCredentials: jest.fn(),
@@ -21,13 +20,13 @@ beforeEach(() => {
 })
 
 describe('loadMethodRegistry', () => {
-    describe('listModels', () => {
-        it('should call modelsApi.getChatModels()', async () => {
+    describe('listChatModels', () => {
+        it('should call chatModelsApi.getChatModels()', async () => {
             const mockModels = [{ name: 'gpt-4', label: 'GPT-4' }]
-            ;(mockApis.modelsApi.getChatModels as jest.Mock).mockResolvedValue(mockModels)
+            ;(mockApis.chatModelsApi.getChatModels as jest.Mock).mockResolvedValue(mockModels)
 
-            const result = await loadMethodRegistry['listModels'](mockApis)
-            expect(mockApis.modelsApi.getChatModels).toHaveBeenCalled()
+            const result = await loadMethodRegistry['listChatModels'](mockApis)
+            expect(mockApis.chatModelsApi.getChatModels).toHaveBeenCalled()
             expect(result).toEqual(mockModels)
         })
     })
@@ -57,7 +56,7 @@ describe('loadMethodRegistry', () => {
 
 describe('getLoadMethod', () => {
     it('should return the registry function for a known key', () => {
-        const fn = getLoadMethod('listModels')
+        const fn = getLoadMethod('listChatModels')
         expect(fn).toBeDefined()
         expect(typeof fn).toBe('function')
     })

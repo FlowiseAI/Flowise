@@ -28,6 +28,7 @@ export type {
     // API
     ApiResponse,
     Chatflow,
+    ChatModel,
     // Context
     ConfigContextValue,
     Credential,
@@ -42,7 +43,6 @@ export type {
     // Node data
     InputAnchor,
     InputParam,
-    Model,
     NodeData,
     NodeInput,
     NodeOutput,

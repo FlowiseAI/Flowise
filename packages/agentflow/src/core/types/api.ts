@@ -26,19 +26,12 @@ export interface ApiResponse<T> {
     status: number
 }
 
-export type Model = Omit<NodeData, 'id'>
+export type ChatModel = Omit<NodeData, 'id'>
 
 export interface Tool {
-    id: string
+    label: string
     name: string
-    description?: string
-    iconSrc?: string
-    schema?: string
-    func?: string
-    color?: string
-    createdDate: string
-    updatedDate: string
-    workspaceID?: string
+    imageSrc?: string
 }
 
 export interface Credential {
