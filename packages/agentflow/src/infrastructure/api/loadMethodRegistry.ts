@@ -26,6 +26,8 @@ export interface ApiServices {
 export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: Record<string, unknown>) => Promise<unknown>> = {
     listModels: (apis) => apis.chatModelsApi.getChatModels(),
     listTools: (apis, params) => apis.toolsApi.getAllTools(params?.nodeName as string | undefined),
+    listToolInputArgs: (apis, params) =>
+        apis.toolsApi.getToolInputArgs((params?.inputs as Record<string, unknown>) ?? {}, params?.nodeName as string | undefined),
     listCredentials: (apis, params) => {
         const name = params?.name
         if (typeof name !== 'string') {

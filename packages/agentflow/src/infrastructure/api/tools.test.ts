@@ -32,4 +32,31 @@ describe('bindToolsApi', () => {
             expect(result).toEqual(mockTools)
         })
     })
+
+    describe('getToolInputArgs', () => {
+        it('should POST currentNode.inputs to /node-load-method/toolAgentflow by default', async () => {
+            const mockArgs = [{ label: 'key', name: 'key' }]
+            ;(mockClient.post as jest.Mock).mockResolvedValue({ data: mockArgs })
+
+            const inputs = { toolAgentflowSelectedTool: 'awsDynamoDBKVStorage' }
+            const result = await api.getToolInputArgs(inputs)
+
+            expect(mockClient.post).toHaveBeenCalledWith('/node-load-method/toolAgentflow', {
+                loadMethod: 'listToolInputArgs',
+                currentNode: { inputs }
+            })
+            expect(result).toEqual(mockArgs)
+        })
+
+        it('should use provided nodeName in the endpoint', async () => {
+            ;(mockClient.post as jest.Mock).mockResolvedValue({ data: [] })
+
+            await api.getToolInputArgs({ toolAgentflowSelectedTool: 'calculator' }, 'agentAgentflow')
+
+            expect(mockClient.post).toHaveBeenCalledWith('/node-load-method/agentAgentflow', {
+                loadMethod: 'listToolInputArgs',
+                currentNode: { inputs: { toolAgentflowSelectedTool: 'calculator' } }
+            })
+        })
+    })
 })

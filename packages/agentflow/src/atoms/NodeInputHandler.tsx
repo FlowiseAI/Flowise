@@ -23,6 +23,7 @@ export interface AsyncInputProps {
     disabled: boolean
     onChange: (newValue: string) => void
     nodeName?: string
+    inputValues?: Record<string, unknown>
 }
 
 export interface NodeInputHandlerProps {
@@ -157,6 +158,7 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onChange={(v) => handleDataChange(v)}
                         nodeName={data.name}
+                        inputValues={data.inputValues as Record<string, unknown> | undefined}
                     />
                 )
 
