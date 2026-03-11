@@ -241,4 +241,74 @@ describe('NodeInputHandler – asyncMultiOptions', () => {
 
         expect(mockOnDataChange).toHaveBeenCalledWith(expect.objectContaining({ newValue: '' }))
     })
+
+    it('renders error message and retry button on API failure', () => {
+        mockUseAsyncOptions.mockReturnValue({ ...idleResult(), error: 'Network failure' })
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncMultiOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={AsyncInput}
+            />
+        )
+
+        expect(screen.getByText('Network failure')).toBeTruthy()
+        expect(screen.getByRole('button', { name: /retry/i })).toBeTruthy()
+    })
+
+    it('renders without crashing when value is a malformed JSON string', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Tool A', name: 'tool-a' }]
+        })
+
+        const nodeDataWithBadValue: NodeData = {
+            ...baseNodeData,
+            inputValues: { myField: '[not valid json' }
+        }
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncMultiOptions' })}
+                data={nodeDataWithBadValue}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={AsyncInput}
+            />
+        )
+
+        // Falls back to empty selection — combobox still renders
+        expect(screen.getByRole('combobox')).toBeTruthy()
+    })
+
+    it('renders pre-selected chips when value is passed as an array', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [
+                { label: 'Tool A', name: 'tool-a' },
+                { label: 'Tool B', name: 'tool-b' }
+            ]
+        })
+
+        const nodeDataWithArrayValue: NodeData = {
+            ...baseNodeData,
+            inputValues: { myField: ['tool-a', 'tool-b'] }
+        }
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncMultiOptions' })}
+                data={nodeDataWithArrayValue}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={AsyncInput}
+            />
+        )
+
+        expect(screen.getByText('Tool A')).toBeTruthy()
+        expect(screen.getByText('Tool B')).toBeTruthy()
+    })
 })
