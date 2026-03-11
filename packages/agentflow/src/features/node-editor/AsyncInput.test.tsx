@@ -20,7 +20,7 @@ jest.mock('@tabler/icons-react', () => ({
 }))
 
 interface MockAsyncResult {
-    options: Array<{ label: string; name: string }>
+    options: Array<{ label: string; name: string; imageSrc?: string; description?: string }>
     loading: boolean
     error: string | null
     refetch: () => void
@@ -183,6 +183,112 @@ describe('NodeInputHandler – asyncOptions', () => {
         // mouseDown opens the MUI Autocomplete popup
         fireEvent.mouseDown(screen.getByRole('combobox'))
         await waitFor(() => expect(screen.getByText('No options available')).toBeTruthy())
+    })
+
+    it('marks pre-selected option as selected when dropdown is opened', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [
+                { label: 'GPT-4o', name: 'gpt-4o' },
+                { label: 'Claude 3', name: 'claude-3' }
+            ]
+        })
+
+        const nodeDataWithValue: NodeData = {
+            ...baseNodeData,
+            inputValues: { myField: 'gpt-4o' }
+        }
+
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={nodeDataWithValue}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={AsyncInput}
+            />
+        )
+
+        // Opening the dropdown with a pre-selected value triggers isOptionEqualToValue
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => expect(screen.getByText('GPT-4o')).toBeTruthy())
+    })
+})
+
+describe('AsyncInput (direct) – asyncOptions', () => {
+    it('passes undefined params when nodeName and inputValues are absent', () => {
+        mockUseAsyncOptions.mockReturnValue(idleResult())
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='' disabled={false} onChange={jest.fn()} />)
+
+        expect(mockUseAsyncOptions).toHaveBeenCalledWith(expect.objectContaining({ params: undefined }))
+    })
+
+    it('calls onChange with empty string when selection is cleared', async () => {
+        const mockChange = jest.fn()
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'GPT-4o', name: 'gpt-4o' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='gpt-4o' disabled={false} onChange={mockChange} />)
+
+        const clearButton = screen.getByTitle('Clear')
+        fireEvent.click(clearButton)
+
+        expect(mockChange).toHaveBeenCalledWith('')
+    })
+
+    it('renders option image and description when present in renderOption', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'GPT-4o', name: 'gpt-4o', imageSrc: 'http://test/icon.png', description: 'OpenAI model' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='' disabled={false} onChange={jest.fn()} />)
+
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => {
+            expect(screen.getByAltText('GPT-4o')).toBeTruthy()
+            expect(screen.getByText('OpenAI model')).toBeTruthy()
+        })
+    })
+
+    it('renders selected option image in renderInput when imageSrc is present', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'GPT-4o', name: 'gpt-4o', imageSrc: 'http://test/icon.png' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='gpt-4o' disabled={false} onChange={jest.fn()} />)
+
+        // The selected option's image appears in the input adornment
+        await waitFor(() => expect(screen.getByAltText('GPT-4o')).toBeTruthy())
+    })
+})
+
+describe('AsyncInput (direct) – asyncMultiOptions', () => {
+    it('passes undefined params when nodeName and inputValues are absent', () => {
+        mockUseAsyncOptions.mockReturnValue(idleResult())
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncMultiOptions' })} value='' disabled={false} onChange={jest.fn()} />)
+
+        expect(mockUseAsyncOptions).toHaveBeenCalledWith(expect.objectContaining({ params: undefined }))
+    })
+
+    it('renders option image and description when present in renderOption', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Tool A', name: 'tool-a', imageSrc: 'http://test/icon.png', description: 'A useful tool' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncMultiOptions' })} value='' disabled={false} onChange={jest.fn()} />)
+
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => {
+            expect(screen.getByAltText('Tool A')).toBeTruthy()
+            expect(screen.getByText('A useful tool')).toBeTruthy()
+        })
     })
 })
 
