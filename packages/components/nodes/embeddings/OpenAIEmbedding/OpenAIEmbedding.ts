@@ -81,6 +81,23 @@ class OpenAIEmbedding_Embeddings implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Encoding Format',
+                name: 'encodingFormat',
+                type: 'options',
+                options: [
+                    {
+                        label: 'float',
+                        name: 'float'
+                    },
+                    {
+                        label: 'base64',
+                        name: 'base64'
+                    }
+                ],
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -100,6 +117,7 @@ class OpenAIEmbedding_Embeddings implements INode {
         const baseOptions = nodeData.inputs?.baseOptions
         const modelName = nodeData.inputs?.modelName as string
         const dimensions = nodeData.inputs?.dimensions as string
+        const encodingFormat = nodeData.inputs?.encodingFormat as 'float' | 'base64' | undefined
 
         if (nodeData.inputs?.credentialId) {
             nodeData.credential = nodeData.inputs?.credentialId
@@ -116,6 +134,7 @@ class OpenAIEmbedding_Embeddings implements INode {
         if (batchSize) obj.batchSize = parseInt(batchSize, 10)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (dimensions) obj.dimensions = parseInt(dimensions, 10)
+        if (encodingFormat) obj.encodingFormat = encodingFormat
 
         let parsedBaseOptions: any | undefined = undefined
 
