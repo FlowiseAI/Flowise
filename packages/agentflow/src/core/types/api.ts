@@ -4,6 +4,8 @@
 
 import type { InternalAxiosRequestConfig } from 'axios'
 
+import type { NodeData } from './node'
+
 export type RequestInterceptor = (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig
 
 export interface Chatflow {
@@ -22,4 +24,21 @@ export interface Chatflow {
 export interface ApiResponse<T> {
     data: T
     status: number
+}
+
+export type ChatModel = Omit<NodeData, 'id'>
+
+export interface Tool {
+    label: string
+    name: string
+    imageSrc?: string
+}
+
+export interface Credential {
+    id: string
+    name: string
+    credentialName: string
+    createdDate?: string
+    updatedDate?: string
+    workspaceID?: string
 }
