@@ -62,11 +62,12 @@ jobs:
                   PUPPETEER_SKIP_DOWNLOAD: 'true'
 
             - name: Set version
+              working-directory: packages/agentflow
               run: |
                   if [ "$BUMP" = "custom" ]; then
-                    pnpm --filter @flowiseai/agentflow exec npm version "$CUSTOM_VERSION" --no-git-tag-version
+                    npm version "$CUSTOM_VERSION" --no-git-tag-version
                   else
-                    pnpm --filter @flowiseai/agentflow exec npm version "$BUMP" --preid dev --no-git-tag-version
+                    npm version "$BUMP" --preid dev --no-git-tag-version
                   fi
               env:
                   BUMP: ${{ inputs.bump }}
@@ -81,7 +82,7 @@ jobs:
                   echo "## Tag: \`${{ inputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
 
             - name: Package contents
-              run: pnpm --filter @flowiseai/agentflow exec npm pack --dry-run
+              run: pnpm --filter @flowiseai/agentflow pack --dry-run
 
             - name: Dry run publish
               run: pnpm --filter @flowiseai/agentflow publish --no-git-checks --dry-run --tag ${{ inputs.tag }}
@@ -113,11 +114,12 @@ jobs:
                   PUPPETEER_SKIP_DOWNLOAD: 'true'
 
             - name: Set version
+              working-directory: packages/agentflow
               run: |
                   if [ "$BUMP" = "custom" ]; then
-                    pnpm --filter @flowiseai/agentflow exec npm version "$CUSTOM_VERSION" --no-git-tag-version
+                    npm version "$CUSTOM_VERSION" --no-git-tag-version
                   else
-                    pnpm --filter @flowiseai/agentflow exec npm version "$BUMP" --preid dev --no-git-tag-version
+                    npm version "$BUMP" --preid dev --no-git-tag-version
                   fi
               env:
                   BUMP: ${{ inputs.bump }}
