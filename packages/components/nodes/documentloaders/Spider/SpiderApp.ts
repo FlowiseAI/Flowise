@@ -1,4 +1,5 @@
-import axios, { AxiosResponse, AxiosRequestHeaders } from 'axios'
+import { AxiosResponse, AxiosRequestHeaders } from 'axios'
+import { secureAxiosRequest } from '../../../src/httpSecurity'
 
 interface SpiderAppConfig {
     apiKey?: string | null
@@ -100,7 +101,7 @@ class SpiderApp {
     }
 
     private postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
-        return axios.post(`${this.apiUrl}/${url}`, data, { headers })
+        return secureAxiosRequest({ method: 'POST', url: `${this.apiUrl}/${url}`, data, headers })
     }
 
     private handleError(response: AxiosResponse, action: string): void {

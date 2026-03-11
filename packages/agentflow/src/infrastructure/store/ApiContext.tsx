@@ -4,13 +4,28 @@ import type { AxiosInstance } from 'axios'
 
 import type { RequestInterceptor } from '@/core/types'
 
-import { type ChatflowsApi, createApiClient, createChatflowsApi, createNodesApi, type NodesApi } from '../api'
+import {
+    bindChatModelsApi,
+    bindCredentialsApi,
+    bindToolsApi,
+    type ChatflowsApi,
+    type ChatModelsApi,
+    createApiClient,
+    createChatflowsApi,
+    createNodesApi,
+    type CredentialsApi,
+    type NodesApi,
+    type ToolsApi
+} from '../api'
 
 interface ApiContextValue {
     client: AxiosInstance
     apiBaseUrl: string
     nodesApi: NodesApi
     chatflowsApi: ChatflowsApi
+    chatModelsApi: ChatModelsApi
+    toolsApi: ToolsApi
+    credentialsApi: CredentialsApi
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null)
@@ -33,12 +48,18 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
         })
         const nodesApi = createNodesApi(client)
         const chatflowsApi = createChatflowsApi(client)
+        const chatModelsApi = bindChatModelsApi(client)
+        const toolsApi = bindToolsApi(client)
+        const credentialsApi = bindCredentialsApi(client)
 
         return {
             client,
             apiBaseUrl,
             nodesApi,
-            chatflowsApi
+            chatflowsApi,
+            chatModelsApi,
+            toolsApi,
+            credentialsApi
         }
     }, [apiBaseUrl, token])
 
