@@ -11,7 +11,7 @@ export function bindToolsApi(client: AxiosInstance) {
          * Get all available tools
          */
         getAllTools: async (): Promise<Tool[]> => {
-            const response = await client.post('/node-load-method/toolAgentflow', { loadMethod: 'listTools' })
+            const response = await client.post('/node-load-method/agentAgentflow', { loadMethod: 'listTools' })
             return response.data
         }
     }

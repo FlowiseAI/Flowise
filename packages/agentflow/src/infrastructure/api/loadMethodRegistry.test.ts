@@ -3,8 +3,7 @@ import { getLoadMethod, loadMethodRegistry } from './loadMethodRegistry'
 
 const mockApis: ApiServices = {
     chatModelsApi: {
-        getChatModels: jest.fn(),
-        getModelsByProvider: jest.fn()
+        getChatModels: jest.fn()
     },
     toolsApi: {
         getAllTools: jest.fn()
@@ -20,12 +19,12 @@ beforeEach(() => {
 })
 
 describe('loadMethodRegistry', () => {
-    describe('listChatModels', () => {
+    describe('listModels', () => {
         it('should call chatModelsApi.getChatModels()', async () => {
             const mockModels = [{ name: 'gpt-4', label: 'GPT-4' }]
             ;(mockApis.chatModelsApi.getChatModels as jest.Mock).mockResolvedValue(mockModels)
 
-            const result = await loadMethodRegistry['listChatModels'](mockApis)
+            const result = await loadMethodRegistry['listModels'](mockApis)
             expect(mockApis.chatModelsApi.getChatModels).toHaveBeenCalled()
             expect(result).toEqual(mockModels)
         })
@@ -56,7 +55,7 @@ describe('loadMethodRegistry', () => {
 
 describe('getLoadMethod', () => {
     it('should return the registry function for a known key', () => {
-        const fn = getLoadMethod('listChatModels')
+        const fn = getLoadMethod('listModels')
         expect(fn).toBeDefined()
         expect(typeof fn).toBe('function')
     })
