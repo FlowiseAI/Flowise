@@ -13,6 +13,8 @@ jest.mock('reactflow', () => ({
     useUpdateNodeInternals: () => mockUpdateNodeInternals
 }))
 
+const mockSyncOutputPorts = jest.fn()
+
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
         state: {},
@@ -20,6 +22,9 @@ jest.mock('@/infrastructure/store', () => ({
     }),
     useConfigContext: () => ({
         isDarkMode: false
+    }),
+    useDynamicOutputPorts: () => ({
+        syncOutputPorts: mockSyncOutputPorts
     })
 }))
 
@@ -83,6 +88,35 @@ jest.mock('@/atoms', () => ({
             <div data-testid={`input-handler-${inputParam.name}`}>
                 <button data-testid={`change-${inputParam.name}`} onClick={() => onDataChange({ inputParam, newValue: 'test-value' })}>
                     Change {inputParam.name}
+                </button>
+            </div>
+        )
+    }
+}))
+
+jest.mock('@/atoms/inputs/ConditionBuilder', () => ({
+    ConditionBuilder: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        return (
+            <div data-testid='condition-builder'>
+                <button
+                    data-testid='add-condition'
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentArray, { type: 'string', value1: '', operation: 'equal', value2: '' }]
+                        })
+                    }}
+                >
+                    Add Condition
                 </button>
             </div>
         )
@@ -419,6 +453,66 @@ describe('EditNodeDialog', () => {
             expect(lastCall[1]).toHaveProperty('inputValues')
             expect(lastCall[1].inputValues).toHaveProperty('connections')
             expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
+        })
+
+        it('should render ConditionBuilder for conditionAgentflow node', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('condition-builder')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the conditions param
+            expect(screen.queryByTestId('input-handler-conditions')).not.toBeInTheDocument()
+        })
+
+        it('should call syncOutputPorts when conditions array changes on a condition node', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-condition'))
+
+            expect(mockSyncOutputPorts).toHaveBeenCalledWith(2)
         })
 
         it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {

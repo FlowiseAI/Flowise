@@ -6,9 +6,10 @@ import { useTheme } from '@mui/material/styles'
 import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-react'
 
 import { NodeInputHandler } from '@/atoms'
+import { ConditionBuilder } from '@/atoms/inputs/ConditionBuilder'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
 import { evaluateFieldVisibility } from '@/core/utils/fieldVisibility'
-import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
+import { useAgentflowContext, useConfigContext, useDynamicOutputPorts } from '@/infrastructure/store'
 
 export interface EditNodeDialogProps {
     show: boolean
@@ -43,6 +44,9 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const [nodeName, setNodeName] = useState('')
     const [arrayItemParameters, setArrayItemParameters] = useState<Record<string, InputParam[][]>>({})
 
+    const isConditionNode = data?.name === 'conditionAgentflow'
+    const { syncOutputPorts } = useDynamicOutputPorts(data?.id ?? '', 'Condition', isConditionNode)
+
     const onNodeLabelChange = () => {
         if (!data || !nodeNameRef.current) return
 
@@ -68,6 +72,11 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
         // Stripping should only happen on save/export, not on every keystroke.
         updateNodeData(data.id, { inputValues: updatedInputValues })
         setData({ ...data, inputValues: updatedInputValues })
+
+        // Sync output ports when conditions array changes on a condition node
+        if (isConditionNode && inputParam.name === 'conditions' && Array.isArray(newValue)) {
+            syncOutputPorts(newValue.length)
+        }
     }
 
     useEffect(() => {
@@ -239,6 +248,20 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                     inputParams
                         .filter((inputParam) => inputParam.display !== false)
                         .map((inputParam, index) => {
+                            // Render ConditionBuilder for condition node's conditions array
+                            if (isConditionNode && inputParam.type === 'array' && inputParam.name === 'conditions') {
+                                return (
+                                    <ConditionBuilder
+                                        key={index}
+                                        inputParam={inputParam}
+                                        data={data}
+                                        disabled={dialogProps.disabled}
+                                        onDataChange={onCustomDataChange}
+                                        itemParameters={arrayItemParameters[inputParam.name]}
+                                    />
+                                )
+                            }
+
                             return (
                                 <NodeInputHandler
                                     disabled={dialogProps.disabled}
