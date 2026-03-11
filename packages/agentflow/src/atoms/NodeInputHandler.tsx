@@ -1,26 +1,12 @@
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { ComponentType, useCallback, useEffect, useRef, useState } from 'react'
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 
-import {
-    Box,
-    CircularProgress,
-    FormControlLabel,
-    IconButton,
-    MenuItem,
-    Select,
-    Switch,
-    TextField,
-    Tooltip,
-    TooltipProps,
-    Typography
-} from '@mui/material'
-import Autocomplete from '@mui/material/Autocomplete'
+import { Box, FormControlLabel, IconButton, MenuItem, Select, Switch, TextField, Tooltip, TooltipProps, Typography } from '@mui/material'
 import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconRefresh, IconVariable } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
 import type { InputAnchor, InputParam, NodeData } from '@/core/types'
-import { type OptionItem, useAsyncOptions } from '@/infrastructure/api/hooks'
 
 import ArrayInput from './ArrayInput'
 
@@ -29,6 +15,14 @@ const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <To
         maxWidth: 500
     }
 })
+
+/** Props passed to an async input component (asyncOptions / asyncMultiOptions). */
+export interface AsyncInputProps {
+    inputParam: InputParam
+    value: unknown
+    disabled: boolean
+    onChange: (newValue: string) => void
+}
 
 export interface NodeInputHandlerProps {
     inputAnchor?: InputAnchor
@@ -39,178 +33,8 @@ export interface NodeInputHandlerProps {
     disablePadding?: boolean
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
     itemParameters?: InputParam[][]
-}
-
-// ─── Async sub-components ─────
-interface AsyncInputProps {
-    inputParam: InputParam
-    value: unknown
-    disabled: boolean
-    onChange: (newValue: string) => void
-}
-
-function AsyncOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
-    const { options, loading, error, refetch } = useAsyncOptions({
-        loadMethod: inputParam.loadMethod,
-        credentialNames: inputParam.credentialNames
-    })
-
-    if (error) {
-        return (
-            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant='caption' color='error' sx={{ flexGrow: 1 }}>
-                    {error}
-                </Typography>
-                <IconButton size='small' onClick={refetch} title='Retry' aria-label='retry'>
-                    <IconRefresh size={16} />
-                </IconButton>
-            </Box>
-        )
-    }
-
-    const matchedValue = options.find((o) => o.name === value) ?? null
-
-    return (
-        <Autocomplete<OptionItem>
-            size='small'
-            disabled={disabled}
-            options={options}
-            value={matchedValue}
-            getOptionLabel={(o) => o.label}
-            isOptionEqualToValue={(o, v) => o.name === v.name}
-            onChange={(_e, selection) => onChange(selection?.name ?? '')}
-            loading={loading}
-            noOptionsText={loading ? 'Loading…' : 'No options available'}
-            sx={{ mt: 1 }}
-            renderOption={(props, option) => (
-                <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {option.imageSrc && (
-                        <Box
-                            component='img'
-                            src={option.imageSrc}
-                            alt={option.label}
-                            sx={{ width: 30, height: 30, padding: '1px', borderRadius: '50%', flexShrink: 0 }}
-                        />
-                    )}
-                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant='h5'>{option.label}</Typography>
-                        {option.description && <Typography variant='caption'>{option.description}</Typography>}
-                    </Box>
-                </Box>
-            )}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    InputProps={{
-                        ...params.InputProps,
-                        startAdornment: (
-                            <>
-                                {matchedValue?.imageSrc && (
-                                    <Box
-                                        component='img'
-                                        src={matchedValue.imageSrc}
-                                        alt={matchedValue.label}
-                                        sx={{ width: 32, height: 32, borderRadius: '50%', mr: 0.5, flexShrink: 0 }}
-                                    />
-                                )}
-                                {params.InputProps.startAdornment}
-                            </>
-                        ),
-                        endAdornment: (
-                            <Fragment>
-                                {loading ? <CircularProgress color='inherit' size={20} /> : null}
-                                {params.InputProps.endAdornment}
-                            </Fragment>
-                        )
-                    }}
-                />
-            )}
-        />
-    )
-}
-
-function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
-    const { options, loading, error, refetch } = useAsyncOptions({
-        loadMethod: inputParam.loadMethod,
-        credentialNames: inputParam.credentialNames
-    })
-
-    if (error) {
-        return (
-            <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant='caption' color='error' sx={{ flexGrow: 1 }}>
-                    {error}
-                </Typography>
-                <IconButton size='small' onClick={refetch} title='Retry' aria-label='retry'>
-                    <IconRefresh size={16} />
-                </IconButton>
-            </Box>
-        )
-    }
-
-    // Stored as JSON-serialized array of names, e.g. '["option1","option2"]'
-    let selectedNames: string[] = []
-    if (typeof value === 'string' && value.startsWith('[')) {
-        try {
-            selectedNames = JSON.parse(value)
-        } catch {
-            selectedNames = []
-        }
-    } else if (Array.isArray(value)) {
-        selectedNames = value as string[]
-    }
-
-    const selectedOptions = options.filter((o) => selectedNames.includes(o.name))
-
-    return (
-        <Autocomplete<OptionItem, true>
-            multiple
-            filterSelectedOptions
-            size='small'
-            disabled={disabled}
-            options={options}
-            value={selectedOptions}
-            getOptionLabel={(o) => o.label}
-            isOptionEqualToValue={(o, v) => o.name === v.name}
-            onChange={(_e, selection) => {
-                const names = selection.map((s) => s.name)
-                onChange(names.length > 0 ? JSON.stringify(names) : '')
-            }}
-            loading={loading}
-            noOptionsText={loading ? 'Loading…' : 'No options available'}
-            sx={{ mt: 1 }}
-            renderOption={(props, option) => (
-                <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {option.imageSrc && (
-                        <Box
-                            component='img'
-                            src={option.imageSrc}
-                            alt={option.label}
-                            sx={{ width: 30, height: 30, padding: '1px', borderRadius: '50%', flexShrink: 0 }}
-                        />
-                    )}
-                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant='h5'>{option.label}</Typography>
-                        {option.description && <Typography variant='caption'>{option.description}</Typography>}
-                    </Box>
-                </Box>
-            )}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    InputProps={{
-                        ...params.InputProps,
-                        endAdornment: (
-                            <Fragment>
-                                {loading ? <CircularProgress color='inherit' size={20} /> : null}
-                                {params.InputProps.endAdornment}
-                            </Fragment>
-                        )
-                    }}
-                />
-            )}
-        />
-    )
+    /** Renders asyncOptions / asyncMultiOptions fields. Lives in features/ to keep atoms free of infrastructure. */
+    AsyncInputComponent?: ComponentType<AsyncInputProps>
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -227,7 +51,8 @@ export function NodeInputHandler({
     isAdditionalParams = false,
     disablePadding = false,
     onDataChange,
-    itemParameters
+    itemParameters,
+    AsyncInputComponent
 }: NodeInputHandlerProps) {
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
@@ -317,23 +142,15 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onDataChange={onDataChange}
                         itemParameters={itemParameters}
+                        AsyncInputComponent={AsyncInputComponent}
                     />
                 )
 
             case 'asyncOptions':
-                // Single-select async dropdown. Value stored as option.name string.
-
-                return <AsyncOptionsInput inputParam={inputParam} value={value} disabled={disabled} onChange={(v) => handleDataChange(v)} />
-
             case 'asyncMultiOptions':
-                // Multi-select async dropdown. Value stored as JSON-serialized string array.
+                if (!AsyncInputComponent) return null
                 return (
-                    <AsyncMultiOptionsInput
-                        inputParam={inputParam}
-                        value={value}
-                        disabled={disabled}
-                        onChange={(v) => handleDataChange(v)}
-                    />
+                    <AsyncInputComponent inputParam={inputParam} value={value} disabled={disabled} onChange={(v) => handleDataChange(v)} />
                 )
 
             default:

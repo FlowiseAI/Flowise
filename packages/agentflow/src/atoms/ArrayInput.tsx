@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { type ComponentType, useCallback, useMemo } from 'react'
 
 import { Box, Button, Chip, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -6,7 +6,7 @@ import { IconPlus, IconTrash } from '@tabler/icons-react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { NodeInputHandler } from './NodeInputHandler'
+import { type AsyncInputProps, NodeInputHandler } from './NodeInputHandler'
 
 export interface ArrayInputProps {
     inputParam: InputParam
@@ -14,9 +14,17 @@ export interface ArrayInputProps {
     disabled?: boolean
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
     itemParameters?: InputParam[][]
+    AsyncInputComponent?: ComponentType<AsyncInputProps>
 }
 
-export function ArrayInput({ inputParam, data, disabled = false, onDataChange, itemParameters: itemParametersProp }: ArrayInputProps) {
+export function ArrayInput({
+    inputParam,
+    data,
+    disabled = false,
+    onDataChange,
+    itemParameters: itemParametersProp,
+    AsyncInputComponent
+}: ArrayInputProps) {
     const theme = useTheme()
 
     // Derive array items directly from props (single source of truth)
@@ -164,6 +172,7 @@ export function ArrayInput({ inputParam, data, disabled = false, onDataChange, i
                                     isAdditionalParams={true}
                                     disablePadding={false}
                                     onDataChange={itemHandlers[index]}
+                                    AsyncInputComponent={AsyncInputComponent}
                                 />
                             ))}
                     </Box>

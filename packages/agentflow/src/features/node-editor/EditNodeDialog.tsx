@@ -10,6 +10,8 @@ import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
 import { evaluateFieldVisibility } from '@/core/utils/fieldVisibility'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
+import { AsyncInput } from './AsyncInput'
+
 export interface EditNodeDialogProps {
     show: boolean
     dialogProps: EditDialogProps
@@ -248,6 +250,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                     isAdditionalParams={true}
                                     onDataChange={onCustomDataChange}
                                     itemParameters={inputParam.type === 'array' ? arrayItemParameters[inputParam.name] : undefined}
+                                    AsyncInputComponent={AsyncInput}
                                 />
                             )
                         })}
