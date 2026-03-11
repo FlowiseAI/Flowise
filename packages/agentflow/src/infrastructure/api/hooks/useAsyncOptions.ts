@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useApiContext } from '../../store/ApiContext'
 import type { ApiServices } from '../loadMethodRegistry'
@@ -13,7 +13,6 @@ export interface OptionItem {
 interface UseAsyncOptionsParams {
     loadMethod?: string
     credentialNames?: string[]
-    params?: Record<string, unknown>
 }
 
 interface UseAsyncOptionsResult {
@@ -26,17 +25,13 @@ interface UseAsyncOptionsResult {
 /**
  * Fetches async option lists from the API using the loadMethodRegistry.
  */
-export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyncOptionsParams): UseAsyncOptionsResult {
+export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptionsParams): UseAsyncOptionsResult {
     const { chatModelsApi, toolsApi, credentialsApi } = useApiContext()
 
     const [options, setOptions] = useState<OptionItem[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [fetchCounter, setFetchCounter] = useState(0)
-
-    // Stable ref for params
-    const paramsRef = useRef(params)
-    paramsRef.current = params
 
     // Stable string key for credentialNames: a new array reference on every render
     // (e.g. inline `credentialNames={['openAIApi']}`) would otherwise cancel and
@@ -60,9 +55,10 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
                 if (credentialNamesKey) {
                     // Credential-based path: mirrors AsyncDropdown.jsx fetchCredentialList.
                     // credentialNamesKey is '\0'-joined; reconstruct original names for the API call.
+                    // Pass as an array so axios serialises to ?credentialName=a&credentialName=b
+                    // (passing a joined string would cause axios to URL-encode the '&').
                     const names = credentialNamesKey.split('\0')
-                    const joined = names.length > 1 ? names.join('&credentialName=') : names[0]
-                    const credentials = await credentialsApi.getCredentialsByName(joined)
+                    const credentials = await credentialsApi.getCredentialsByName(names.length === 1 ? names[0] : names)
                     // Credentials use id as the stored value, name as the display label
                     result = credentials.map((c) => ({ label: c.name, name: c.id }))
                 } else if (loadMethod) {
@@ -71,7 +67,7 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
                         throw new Error(`Unknown loadMethod: "${loadMethod}"`)
                     }
                     const apis: ApiServices = { chatModelsApi, toolsApi, credentialsApi }
-                    const raw = await fn(apis, paramsRef.current)
+                    const raw = await fn(apis)
                     result = normalizeOptions(raw)
                 } else {
                     throw new Error('useAsyncOptions requires either loadMethod or credentialNames')

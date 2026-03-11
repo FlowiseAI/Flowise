@@ -47,14 +47,12 @@ interface AsyncInputProps {
     value: unknown
     disabled: boolean
     onChange: (newValue: string) => void
-    params?: Record<string, unknown>
 }
 
-function AsyncOptionsInput({ inputParam, value, disabled, onChange, params }: AsyncInputProps) {
+function AsyncOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
-        credentialNames: inputParam.credentialNames,
-        params
+        credentialNames: inputParam.credentialNames
     })
 
     if (error) {
@@ -102,11 +100,10 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange, params }: As
     )
 }
 
-function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, params }: AsyncInputProps) {
+function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
-        credentialNames: inputParam.credentialNames,
-        params
+        credentialNames: inputParam.credentialNames
     })
 
     if (error) {

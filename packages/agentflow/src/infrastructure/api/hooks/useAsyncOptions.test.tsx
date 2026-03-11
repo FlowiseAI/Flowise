@@ -66,19 +66,6 @@ describe('useAsyncOptions', () => {
         expect(result.current.options).toEqual([{ name: 'calculator', label: 'Calculator', description: undefined }])
     })
 
-    it('listCredentials: calls getCredentialsByName with params.name', async () => {
-        mockGetCredentialsByName.mockResolvedValue([{ id: 'cred-1', name: 'My OpenAI Key', credentialName: 'openAIApi' }])
-
-        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listCredentials', params: { name: 'openAIApi' } }))
-
-        await waitFor(() => expect(result.current.loading).toBe(false))
-
-        expect(mockGetCredentialsByName).toHaveBeenCalledWith('openAIApi')
-        // When going through loadMethodRegistry, normalizeOptions maps obj.name as the stored key.
-        // For credential ID-based storage, use the credentialNames prop path instead (see other tests).
-        expect(result.current.options).toEqual([{ name: 'My OpenAI Key', label: 'My OpenAI Key', description: undefined }])
-    })
-
     it('credentialNames (single): calls getCredentialsByName with the name', async () => {
         mockGetCredentialsByName.mockResolvedValue([{ id: 'cred-1', name: 'My OpenAI Key', credentialName: 'openAIApi' }])
 
@@ -91,7 +78,7 @@ describe('useAsyncOptions', () => {
         expect(result.current.options).toEqual([{ label: 'My OpenAI Key', name: 'cred-1' }])
     })
 
-    it('credentialNames (multiple): joins names with &credentialName=', async () => {
+    it('credentialNames (multiple): passes names as array to getCredentialsByName', async () => {
         mockGetCredentialsByName.mockResolvedValue([
             { id: 'c1', name: 'OpenAI Key', credentialName: 'openAIApi' },
             { id: 'c2', name: 'Anthropic Key', credentialName: 'anthropicApi' }
@@ -101,7 +88,7 @@ describe('useAsyncOptions', () => {
 
         await waitFor(() => expect(result.current.loading).toBe(false))
 
-        expect(mockGetCredentialsByName).toHaveBeenCalledWith('openAIApi&credentialName=anthropicApi')
+        expect(mockGetCredentialsByName).toHaveBeenCalledWith(['openAIApi', 'anthropicApi'])
         expect(result.current.options).toHaveLength(2)
         expect(result.current.options[0]).toEqual({ label: 'OpenAI Key', name: 'c1' })
     })
