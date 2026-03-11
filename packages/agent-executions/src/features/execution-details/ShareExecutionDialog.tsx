@@ -1,62 +1,43 @@
 import { createPortal } from 'react-dom'
-import PropTypes from 'prop-types'
 import { useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-
-// Material
 import { Typography, Box, Dialog, DialogContent, DialogTitle, Button, Tooltip } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconCopy, IconX, IconLink } from '@tabler/icons-react'
+import { IconCopy, IconLink } from '@tabler/icons-react'
+import { useConfigContext } from '../../infrastructure/store/ConfigContext'
+import { useApiContext } from '../../infrastructure/store/ApiContext'
+import { useApi } from '../../infrastructure/api/hooks'
 
-// Constants
-import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+interface ShareExecutionDialogProps {
+    show: boolean
+    executionId?: string
+    onClose: () => void
+    onUnshare?: () => void
+}
 
-// API
-import executionsApi from '@/api/executions'
-import useApi from '@/hooks/useApi'
-
-const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
-    const portalElement = document.getElementById('portal')
+export const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }: ShareExecutionDialogProps) => {
+    const config = useConfigContext()
+    const { executionsApi } = useApiContext()
+    const portalElement = config.portalElement || document.body
     const theme = useTheme()
-    const dispatch = useDispatch()
-    const customization = useSelector((state) => state.customization)
     const [copied, setCopied] = useState(false)
 
     const updateExecutionApi = useApi(executionsApi.updateExecution)
 
-    // Create shareable link
-    const origin = window.location.origin
+    const origin = config.originUrl || window.location.origin
     const shareableLink = `${origin}/execution/${executionId}`
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(shareableLink)
         setCopied(true)
-
-        // Show success message
-        dispatch(
-            enqueueSnackbarAction({
-                message: 'Link copied to clipboard',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => dispatch(closeSnackbarAction(key))}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
-        )
-
-        // Reset copied state after 2 seconds
-        setTimeout(() => {
-            setCopied(false)
-        }, 2000)
+        config.onNotification?.('Link copied to clipboard', 'success')
+        setTimeout(() => setCopied(false), 2000)
     }
 
     const handleUnshare = () => {
-        updateExecutionApi.request(executionId, { isPublic: false })
-        if (onUnshare) onUnshare()
+        if (executionId) {
+            updateExecutionApi.request(executionId, { isPublic: false })
+        }
+        onUnshare?.()
         onClose()
     }
 
@@ -70,7 +51,6 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
                     Anyone with the link below can view this execution trace.
                 </Typography>
 
-                {/* Link Display Box */}
                 <Box
                     sx={{
                         display: 'flex',
@@ -79,7 +59,7 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
                         p: 1,
                         border: `1px solid ${theme.palette.divider}`,
                         borderRadius: '8px',
-                        backgroundColor: customization.isDarkMode ? theme.palette.background.paper : theme.palette.grey[100]
+                        backgroundColor: config.isDarkMode ? theme.palette.background.paper : theme.palette.grey[100]
                     }}
                 >
                     <IconLink size={20} style={{ marginRight: '8px', color: theme.palette.text.secondary }} />
@@ -102,7 +82,6 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
                     </Tooltip>
                 </Box>
 
-                {/* Actions */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button color='error' onClick={handleUnshare} sx={{ mr: 1 }}>
                         Unshare
@@ -115,12 +94,3 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
 
     return createPortal(component, portalElement)
 }
-
-ShareExecutionDialog.propTypes = {
-    show: PropTypes.bool,
-    executionId: PropTypes.string,
-    onClose: PropTypes.func,
-    onUnshare: PropTypes.func
-}
-
-export default ShareExecutionDialog
