@@ -152,7 +152,20 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         await checkUsageLimit('flows', subscriptionId, getRunningExpressApp().usageCacheManager, existingChatflowCount + newChatflowCount)
 
         const newChatFlow = new ChatFlow()
-        Object.assign(newChatFlow, body)
+        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
+        if (body.name !== undefined) newChatFlow.name = body.name
+        if (body.flowData !== undefined) newChatFlow.flowData = body.flowData
+        if (body.deployed !== undefined) newChatFlow.deployed = body.deployed
+        if (body.isPublic !== undefined) newChatFlow.isPublic = body.isPublic
+        if (body.apikeyid !== undefined) newChatFlow.apikeyid = body.apikeyid
+        if (body.chatbotConfig !== undefined) newChatFlow.chatbotConfig = body.chatbotConfig
+        if (body.apiConfig !== undefined) newChatFlow.apiConfig = body.apiConfig
+        if (body.analytic !== undefined) newChatFlow.analytic = body.analytic
+        if (body.speechToText !== undefined) newChatFlow.speechToText = body.speechToText
+        if (body.textToSpeech !== undefined) newChatFlow.textToSpeech = body.textToSpeech
+        if (body.followUpPrompts !== undefined) newChatFlow.followUpPrompts = body.followUpPrompts
+        if (body.category !== undefined) newChatFlow.category = body.category
+        if (body.type !== undefined) newChatFlow.type = body.type
         newChatFlow.workspaceId = workspaceId
         const apiResponse = await chatflowsService.saveChatflow(
             newChatFlow,
@@ -194,7 +207,20 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
         const updateChatFlow = new ChatFlow()
-        Object.assign(updateChatFlow, body)
+        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
+        if (body.name !== undefined) updateChatFlow.name = body.name
+        if (body.flowData !== undefined) updateChatFlow.flowData = body.flowData
+        if (body.deployed !== undefined) updateChatFlow.deployed = body.deployed
+        if (body.isPublic !== undefined) updateChatFlow.isPublic = body.isPublic
+        if (body.apikeyid !== undefined) updateChatFlow.apikeyid = body.apikeyid
+        if (body.chatbotConfig !== undefined) updateChatFlow.chatbotConfig = body.chatbotConfig
+        if (body.apiConfig !== undefined) updateChatFlow.apiConfig = body.apiConfig
+        if (body.analytic !== undefined) updateChatFlow.analytic = body.analytic
+        if (body.speechToText !== undefined) updateChatFlow.speechToText = body.speechToText
+        if (body.textToSpeech !== undefined) updateChatFlow.textToSpeech = body.textToSpeech
+        if (body.followUpPrompts !== undefined) updateChatFlow.followUpPrompts = body.followUpPrompts
+        if (body.category !== undefined) updateChatFlow.category = body.category
+        if (body.type !== undefined) updateChatFlow.type = body.type
 
         updateChatFlow.id = chatflow.id
         const rateLimiterManager = RateLimiterManager.getInstance()
