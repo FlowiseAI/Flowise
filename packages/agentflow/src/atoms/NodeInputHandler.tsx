@@ -41,10 +41,7 @@ export interface NodeInputHandlerProps {
     itemParameters?: InputParam[][]
 }
 
-// ─── Async sub-components ────────────────────────────────────────────────────
-// Hooks cannot be called inside switch cases, so async rendering is split into
-// dedicated components that call useAsyncOptions at their top level.
-
+// ─── Async sub-components ─────
 interface AsyncInputProps {
     inputParam: InputParam
     value: unknown
@@ -175,8 +172,7 @@ function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange }: Async
 
 /**
  * Simplified input handler for agentflow nodes
- * Handles basic input types: string, number, password, boolean, options, array,
- * asyncOptions (single-select), asyncMultiOptions (multi-select).
+ * Handles basic input types: string, number, password, boolean, options, array, single-select, multi-select.
  */
 export function NodeInputHandler({
     inputAnchor,
@@ -281,9 +277,7 @@ export function NodeInputHandler({
 
             case 'asyncOptions':
                 // Single-select async dropdown. Value stored as option.name string.
-                // onChange flows through handleDataChange → onDataChange →
-                // EditNodeDialog.onCustomDataChange → evaluateFieldVisibility,
-                // so visibility re-evaluation for dependent fields is automatic.
+
                 return <AsyncOptionsInput inputParam={inputParam} value={value} disabled={disabled} onChange={(v) => handleDataChange(v)} />
 
             case 'asyncMultiOptions':

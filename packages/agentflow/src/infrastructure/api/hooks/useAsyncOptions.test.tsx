@@ -8,12 +8,15 @@ const mockGetChatModels = jest.fn()
 const mockGetAllTools = jest.fn()
 const mockGetCredentialsByName = jest.fn()
 
+// Stable API objects — same reference on every render so they don't re-trigger the effect
+const mockApiContext = {
+    chatModelsApi: { getChatModels: mockGetChatModels, getModelsByProvider: jest.fn() },
+    toolsApi: { getAllTools: mockGetAllTools },
+    credentialsApi: { getAllCredentials: jest.fn(), getCredentialsByName: mockGetCredentialsByName }
+}
+
 jest.mock('../../store/ApiContext', () => ({
-    useApiContext: () => ({
-        modelsApi: { getChatModels: mockGetChatModels, getModelsByProvider: jest.fn() },
-        toolsApi: { getAllTools: mockGetAllTools, getToolById: jest.fn() },
-        credentialsApi: { getAllCredentials: jest.fn(), getCredentialsByName: mockGetCredentialsByName }
-    })
+    useApiContext: () => mockApiContext
 }))
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -27,20 +30,20 @@ beforeEach(() => {
 describe('useAsyncOptions', () => {
     it('starts in loading state', () => {
         mockGetChatModels.mockResolvedValue([])
-        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listModels' }))
+        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listChatModels' }))
 
         expect(result.current.loading).toBe(true)
         expect(result.current.options).toEqual([])
         expect(result.current.error).toBeNull()
     })
 
-    it('listModels: populates options on success', async () => {
+    it('listChatModels: populates options on success', async () => {
         mockGetChatModels.mockResolvedValue([
             { name: 'gpt-4o', label: 'GPT-4o' },
             { name: 'claude-3', label: 'Claude 3', description: 'Fast model' }
         ])
 
-        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listModels' }))
+        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listChatModels' }))
 
         await waitFor(() => expect(result.current.loading).toBe(false))
 
@@ -106,7 +109,7 @@ describe('useAsyncOptions', () => {
     it('API error: sets error message, loading false', async () => {
         mockGetChatModels.mockRejectedValue(new Error('Network failure'))
 
-        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listModels' }))
+        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listChatModels' }))
 
         await waitFor(() => expect(result.current.loading).toBe(false))
 
@@ -120,7 +123,7 @@ describe('useAsyncOptions', () => {
             { name: 'claude-3', label: 'Claude 3' }
         ])
 
-        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listModels' }))
+        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listChatModels' }))
         await waitFor(() => expect(result.current.loading).toBe(false))
         expect(result.current.options).toHaveLength(1)
 

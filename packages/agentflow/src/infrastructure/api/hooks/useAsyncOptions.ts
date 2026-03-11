@@ -27,9 +27,7 @@ interface UseAsyncOptionsResult {
  * Fetches async option lists from the API using the loadMethodRegistry.
  */
 export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyncOptionsParams): UseAsyncOptionsResult {
-    const apiContext = useApiContext()
-    const apiContextRef = useRef(apiContext)
-    apiContextRef.current = apiContext
+    const { chatModelsApi, toolsApi, credentialsApi } = useApiContext()
 
     const [options, setOptions] = useState<OptionItem[]>([])
     const [loading, setLoading] = useState(true)
@@ -53,9 +51,6 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
         let cancelled = false
 
         async function load() {
-            // Read latest services from ref — not from closure deps
-            const { modelsApi, toolsApi, credentialsApi } = apiContextRef.current
-
             setLoading(true)
             setError(null)
 
@@ -75,7 +70,7 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
                     if (!fn) {
                         throw new Error(`Unknown loadMethod: "${loadMethod}"`)
                     }
-                    const apis: ApiServices = { modelsApi, toolsApi, credentialsApi }
+                    const apis: ApiServices = { chatModelsApi, toolsApi, credentialsApi }
                     const raw = await fn(apis, paramsRef.current)
                     result = normalizeOptions(raw)
                 } else {
@@ -99,11 +94,7 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
         return () => {
             cancelled = true
         }
-        // loadMethod and credentialNamesKey are stable primitives.
-        // fetchCounter is the manual refetch trigger.
-        // API services are read from apiContextRef, not listed as deps.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadMethod, credentialNamesKey, fetchCounter])
+    }, [loadMethod, credentialNamesKey, fetchCounter, chatModelsApi, toolsApi, credentialsApi])
 
     return { options, loading, error, refetch }
 }
