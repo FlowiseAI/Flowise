@@ -111,12 +111,15 @@ function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange }: Async
     let selectedNames: string[] = []
     if (typeof value === 'string' && value.startsWith('[')) {
         try {
-            selectedNames = JSON.parse(value)
+            const parsed = JSON.parse(value)
+            if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+                selectedNames = parsed
+            }
         } catch {
             selectedNames = []
         }
     } else if (Array.isArray(value)) {
-        selectedNames = value as string[]
+        selectedNames = value.filter((item): item is string => typeof item === 'string')
     }
 
     const selectedOptions = options.filter((o) => selectedNames.includes(o.name))
