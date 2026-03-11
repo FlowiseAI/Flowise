@@ -12,7 +12,8 @@ const mockGetCredentialsByName = jest.fn()
 const mockApiContext = {
     chatModelsApi: { getChatModels: mockGetChatModels },
     toolsApi: { getAllTools: mockGetAllTools },
-    credentialsApi: { getAllCredentials: jest.fn(), getCredentialsByName: mockGetCredentialsByName }
+    credentialsApi: { getAllCredentials: jest.fn(), getCredentialsByName: mockGetCredentialsByName },
+    apiBaseUrl: 'http://localhost:3000'
 }
 
 jest.mock('../../store/ApiContext', () => ({

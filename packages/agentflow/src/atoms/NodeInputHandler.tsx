@@ -82,11 +82,40 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange }: AsyncInput
             loading={loading}
             noOptionsText={loading ? 'Loading…' : 'No options available'}
             sx={{ mt: 1 }}
+            renderOption={(props, option) => (
+                <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {option.imageSrc && (
+                        <Box
+                            component='img'
+                            src={option.imageSrc}
+                            alt={option.label}
+                            sx={{ width: 30, height: 30, padding: '1px', borderRadius: '50%', flexShrink: 0 }}
+                        />
+                    )}
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant='h5'>{option.label}</Typography>
+                        {option.description && <Typography variant='caption'>{option.description}</Typography>}
+                    </Box>
+                </Box>
+            )}
             renderInput={(params) => (
                 <TextField
                     {...params}
                     InputProps={{
                         ...params.InputProps,
+                        startAdornment: (
+                            <>
+                                {matchedValue?.imageSrc && (
+                                    <Box
+                                        component='img'
+                                        src={matchedValue.imageSrc}
+                                        alt={matchedValue.label}
+                                        sx={{ width: 32, height: 32, borderRadius: '50%', mr: 0.5, flexShrink: 0 }}
+                                    />
+                                )}
+                                {params.InputProps.startAdornment}
+                            </>
+                        ),
                         endAdornment: (
                             <Fragment>
                                 {loading ? <CircularProgress color='inherit' size={20} /> : null}
@@ -150,6 +179,22 @@ function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange }: Async
             loading={loading}
             noOptionsText={loading ? 'Loading…' : 'No options available'}
             sx={{ mt: 1 }}
+            renderOption={(props, option) => (
+                <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {option.imageSrc && (
+                        <Box
+                            component='img'
+                            src={option.imageSrc}
+                            alt={option.label}
+                            sx={{ width: 30, height: 30, padding: '1px', borderRadius: '50%', flexShrink: 0 }}
+                        />
+                    )}
+                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant='h5'>{option.label}</Typography>
+                        {option.description && <Typography variant='caption'>{option.description}</Typography>}
+                    </Box>
+                </Box>
+            )}
             renderInput={(params) => (
                 <TextField
                     {...params}

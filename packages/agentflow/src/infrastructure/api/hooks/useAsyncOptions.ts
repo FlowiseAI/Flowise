@@ -8,6 +8,7 @@ export interface OptionItem {
     label: string
     name: string
     description?: string
+    imageSrc?: string
 }
 
 interface UseAsyncOptionsParams {
@@ -26,7 +27,7 @@ interface UseAsyncOptionsResult {
  * Fetches async option lists from the API using the loadMethodRegistry.
  */
 export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptionsParams): UseAsyncOptionsResult {
-    const { chatModelsApi, toolsApi, credentialsApi } = useApiContext()
+    const { chatModelsApi, toolsApi, credentialsApi, apiBaseUrl } = useApiContext()
 
     const [options, setOptions] = useState<OptionItem[]>([])
     const [loading, setLoading] = useState(true)
@@ -68,7 +69,7 @@ export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptions
                     }
                     const apis: ApiServices = { chatModelsApi, toolsApi, credentialsApi }
                     const raw = await fn(apis)
-                    result = normalizeOptions(raw)
+                    result = normalizeOptions(raw, apiBaseUrl)
                 } else {
                     throw new Error('useAsyncOptions requires either loadMethod or credentialNames')
                 }
@@ -90,13 +91,14 @@ export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptions
         return () => {
             cancelled = true
         }
-    }, [loadMethod, credentialNamesKey, fetchCounter, chatModelsApi, toolsApi, credentialsApi])
+    }, [loadMethod, credentialNamesKey, fetchCounter, chatModelsApi, toolsApi, credentialsApi, apiBaseUrl])
 
     return { options, loading, error, refetch }
 }
 
-/** Normalize raw API response into OptionItem[]. Handles objects with label/name, or plain strings. */
-function normalizeOptions(raw: unknown): OptionItem[] {
+/** Normalize raw API response into OptionItem[]. Handles objects with label/name, or plain strings.
+ *  If an item carries `imageSrc: true` (server flag), the resolved icon URL is constructed from apiBaseUrl. */
+function normalizeOptions(raw: unknown, apiBaseUrl: string): OptionItem[] {
     if (!Array.isArray(raw)) return []
     return raw
         .map((item) => {
@@ -105,7 +107,8 @@ function normalizeOptions(raw: unknown): OptionItem[] {
                 const name = typeof obj.name === 'string' ? obj.name : ''
                 const label = typeof obj.label === 'string' ? obj.label : name
                 const description = typeof obj.description === 'string' ? obj.description : undefined
-                return { label, name, description }
+                const imageSrc = obj.imageSrc ? `${apiBaseUrl}/api/v1/node-icon/${name}` : undefined
+                return { label, name, description, imageSrc }
             }
             if (typeof item === 'string') {
                 return { label: item, name: item }
