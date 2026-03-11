@@ -14,7 +14,12 @@ export { useAgentflow } from './useAgentflow'
 // Context hooks (for advanced usage)
 export { useAgentflowContext, useApiContext, useConfigContext } from './infrastructure/store'
 
+// Load method registry (for dynamic API dispatch from node input loadMethod strings)
+export type { ApiServices } from './infrastructure/api'
+export { getLoadMethod } from './infrastructure/api'
+
 // Types
+/* eslint-disable simple-import-sort/exports */
 export type {
     // Instance
     AgentFlowInstance,
@@ -24,6 +29,9 @@ export type {
     // API
     ApiResponse,
     Chatflow,
+    ChatModel,
+    Credential,
+    Tool,
     // Context
     ConfigContextValue,
     // Flow data
@@ -48,6 +56,7 @@ export type {
     ValidationResult,
     Viewport
 } from './core/types'
+/* eslint-enable simple-import-sort/exports */
 
 // Utilities (for advanced usage)
 export { filterNodesByComponents, isAgentflowNode } from './core/node-catalog'
