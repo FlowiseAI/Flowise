@@ -21,9 +21,9 @@ export const sanitizeFlowDataForPublicEndpoint = (flowDataString: string): strin
             delete node.data.credential
 
             const inputs = node.data.inputs
-            const inputParams: INodeParams[] = node.data.inputParams
 
-            if (!inputs || !inputParams) continue
+            if (!inputs) continue
+            const inputParams: INodeParams[] = node.data.inputParams ?? []
 
             const sanitizedInputs: Record<string, unknown> = {}
             for (const key of Object.keys(inputs)) {
