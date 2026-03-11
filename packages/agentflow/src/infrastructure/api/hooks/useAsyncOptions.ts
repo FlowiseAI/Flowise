@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import type { NodeOption } from '@/core/types'
+
 import { useApiContext } from '../../store/ApiContext'
 import type { ApiServices } from '../loadMethodRegistry'
 import { getLoadMethod } from '../loadMethodRegistry'
 
-export interface OptionItem {
-    label: string
-    name: string
-    description?: string
-    imageSrc?: string
-}
+export type OptionItem = NodeOption
 
 interface UseAsyncOptionsParams {
     loadMethod?: string
