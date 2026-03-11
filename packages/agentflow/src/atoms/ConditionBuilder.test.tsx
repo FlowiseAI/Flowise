@@ -7,7 +7,7 @@ import { ConditionBuilder } from './ConditionBuilder'
 // --- Mocks ---
 const mockOnDataChange = jest.fn()
 
-jest.mock('../NodeInputHandler', () => ({
+jest.mock('./NodeInputHandler', () => ({
     NodeInputHandler: ({
         inputParam,
         onDataChange

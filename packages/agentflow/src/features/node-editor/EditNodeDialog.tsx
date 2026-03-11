@@ -5,11 +5,12 @@ import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typog
 import { useTheme } from '@mui/material/styles'
 import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-react'
 
-import { NodeInputHandler } from '@/atoms'
-import { ConditionBuilder } from '@/atoms/inputs/ConditionBuilder'
+import { ConditionBuilder, NodeInputHandler } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
-import { evaluateFieldVisibility } from '@/core/utils/fieldVisibility'
-import { useAgentflowContext, useConfigContext, useDynamicOutputPorts } from '@/infrastructure/store'
+import { evaluateFieldVisibility } from '@/core/utils'
+import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
+
+import { useDynamicOutputPorts } from './useDynamicOutputPorts'
 
 export interface EditNodeDialogProps {
     show: boolean

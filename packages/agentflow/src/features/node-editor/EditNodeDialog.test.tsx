@@ -22,7 +22,10 @@ jest.mock('@/infrastructure/store', () => ({
     }),
     useConfigContext: () => ({
         isDarkMode: false
-    }),
+    })
+}))
+
+jest.mock('./useDynamicOutputPorts', () => ({
     useDynamicOutputPorts: () => ({
         syncOutputPorts: mockSyncOutputPorts
     })
@@ -91,10 +94,7 @@ jest.mock('@/atoms', () => ({
                 </button>
             </div>
         )
-    }
-}))
-
-jest.mock('@/atoms/inputs/ConditionBuilder', () => ({
+    },
     ConditionBuilder: ({
         inputParam,
         onDataChange,

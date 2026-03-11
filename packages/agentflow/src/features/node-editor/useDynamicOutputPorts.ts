@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react'
 import { useUpdateNodeInternals } from 'reactflow'
 
-import { buildDynamicOutputAnchors } from '@/core/utils/dynamicOutputAnchors'
+import { buildDynamicOutputAnchors, parseOutputHandleIndex } from '@/core/utils/dynamicOutputAnchors'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 /**
@@ -32,10 +32,9 @@ export function useDynamicOutputPorts(nodeId: string, labelPrefix: string, enabl
                 const totalNewAnchors = includeElse ? count + 1 : count
                 const updatedEdges = state.edges.filter((edge) => {
                     if (edge.source !== nodeId || !edge.sourceHandle) return true
-                    const handlePrefix = `${nodeId}-output-`
-                    if (!edge.sourceHandle.startsWith(handlePrefix)) return true
-                    const handleIndex = parseInt(edge.sourceHandle.slice(handlePrefix.length), 10)
-                    return !isNaN(handleIndex) && handleIndex < totalNewAnchors
+                    const handleIndex = parseOutputHandleIndex(nodeId, edge.sourceHandle)
+                    if (isNaN(handleIndex)) return true
+                    return handleIndex < totalNewAnchors
                 })
                 if (updatedEdges.length !== state.edges.length) {
                     setEdges(updatedEdges)

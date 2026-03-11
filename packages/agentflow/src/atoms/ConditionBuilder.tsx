@@ -6,7 +6,7 @@ import { IconPlus, IconTrash } from '@tabler/icons-react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { NodeInputHandler } from '../NodeInputHandler'
+import { NodeInputHandler } from './NodeInputHandler'
 
 export interface ConditionBuilderProps {
     inputParam: InputParam
@@ -86,7 +86,6 @@ export function ConditionBuilder({
 
     const handleDeleteItem = useCallback(
         (indexToDelete: number) => {
-            itemKeysRef.current = itemKeysRef.current.filter((_, i) => i !== indexToDelete)
             onDataChange?.({ inputParam, newValue: arrayItems.filter((_, i) => i !== indexToDelete) })
         },
         [arrayItems, inputParam, onDataChange]
