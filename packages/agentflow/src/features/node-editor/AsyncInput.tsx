@@ -8,10 +8,11 @@ import type { AsyncInputProps } from '@/atoms'
 import type { NodeOption } from '@/core/types'
 import { useAsyncOptions } from '@/infrastructure/api/hooks'
 
-function AsyncOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
+function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName }: AsyncInputProps) {
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
-        credentialNames: inputParam.credentialNames
+        credentialNames: inputParam.credentialNames,
+        params: nodeName ? { nodeName } : undefined
     })
 
     if (error) {
@@ -88,10 +89,11 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange }: AsyncInput
     )
 }
 
-function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange }: AsyncInputProps) {
+function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeName }: AsyncInputProps) {
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
-        credentialNames: inputParam.credentialNames
+        credentialNames: inputParam.credentialNames,
+        params: nodeName ? { nodeName } : undefined
     })
 
     if (error) {

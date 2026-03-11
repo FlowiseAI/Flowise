@@ -11,6 +11,7 @@ export type OptionItem = NodeOption
 interface UseAsyncOptionsParams {
     loadMethod?: string
     credentialNames?: string[]
+    params?: Record<string, unknown>
 }
 
 interface UseAsyncOptionsResult {
@@ -23,7 +24,7 @@ interface UseAsyncOptionsResult {
 /**
  * Fetches async option lists from the API using the loadMethodRegistry.
  */
-export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptionsParams): UseAsyncOptionsResult {
+export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyncOptionsParams): UseAsyncOptionsResult {
     const { chatModelsApi, toolsApi, credentialsApi, apiBaseUrl } = useApiContext()
 
     const [options, setOptions] = useState<OptionItem[]>([])
@@ -35,6 +36,8 @@ export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptions
     // (e.g. inline `credentialNames={['openAIApi']}`) would otherwise cancel and
     // restart the effect on each render, preventing async ops from completing.
     const credentialNamesKey = credentialNames ? credentialNames.join('\0') : ''
+    // Stable key for params object — same reasoning as above.
+    const paramsKey = params ? JSON.stringify(params) : ''
 
     const refetch = useCallback(() => {
         setFetchCounter((c) => c + 1)
@@ -65,7 +68,8 @@ export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptions
                         throw new Error(`Unknown loadMethod: "${loadMethod}"`)
                     }
                     const apis: ApiServices = { chatModelsApi, toolsApi, credentialsApi }
-                    const raw = await fn(apis)
+                    const stableParams = paramsKey ? (JSON.parse(paramsKey) as Record<string, unknown>) : undefined
+                    const raw = await fn(apis, stableParams)
                     result = normalizeOptions(raw, apiBaseUrl)
                 } else {
                     throw new Error('useAsyncOptions requires either loadMethod or credentialNames')
@@ -88,7 +92,7 @@ export function useAsyncOptions({ loadMethod, credentialNames }: UseAsyncOptions
         return () => {
             cancelled = true
         }
-    }, [loadMethod, credentialNamesKey, fetchCounter, chatModelsApi, toolsApi, credentialsApi, apiBaseUrl])
+    }, [loadMethod, credentialNamesKey, paramsKey, fetchCounter, chatModelsApi, toolsApi, credentialsApi, apiBaseUrl])
 
     return { options, loading, error, refetch }
 }

@@ -22,6 +22,7 @@ export interface AsyncInputProps {
     value: unknown
     disabled: boolean
     onChange: (newValue: string) => void
+    nodeName?: string
 }
 
 export interface NodeInputHandlerProps {
@@ -150,7 +151,13 @@ export function NodeInputHandler({
             case 'asyncMultiOptions':
                 if (!AsyncInputComponent) return null
                 return (
-                    <AsyncInputComponent inputParam={inputParam} value={value} disabled={disabled} onChange={(v) => handleDataChange(v)} />
+                    <AsyncInputComponent
+                        inputParam={inputParam}
+                        value={value}
+                        disabled={disabled}
+                        onChange={(v) => handleDataChange(v)}
+                        nodeName={data.name}
+                    />
                 )
 
             default:
