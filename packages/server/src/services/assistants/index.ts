@@ -20,7 +20,7 @@ import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import nodesService from '../nodes'
 
-const createAssistant = async (requestBody: any, orgId: string): Promise<Assistant> => {
+const createAssistant = async (requestBody: any, orgId: string, workspaceId: string): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
@@ -29,6 +29,8 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
         const assistantDetails = JSON.parse(requestBody.details)
 
         if (requestBody.type === 'CUSTOM') {
+            // For CUSTOM assistants the credential field is a client-generated UUID used as an
+            // internal identifier, not a reference to the Credential entity, so no lookup is needed.
             const newAssistant = new Assistant()
             Object.assign(newAssistant, requestBody)
 
@@ -51,7 +53,8 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
 
         try {
             const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-                id: requestBody.credential
+                id: requestBody.credential,
+                workspaceId: workspaceId
             })
 
             if (!credential) {
@@ -319,6 +322,8 @@ const updateAssistant = async (assistantId: string, requestBody: any, workspaceI
             // columns during merge, which can overwrite workspaceId, id, and timestamps
             // even when those fields are absent from the source object.
             if (body.details !== undefined) assistant.details = body.details
+            // For CUSTOM assistants the credential field is a client-generated UUID used as an
+            // internal identifier, not a reference to the Credential entity, so no lookup is needed.
             if (body.credential !== undefined) assistant.credential = body.credential
             if (body.iconSrc !== undefined) assistant.iconSrc = body.iconSrc
 
@@ -331,7 +336,8 @@ const updateAssistant = async (assistantId: string, requestBody: any, workspaceI
             const body = requestBody
             const assistantDetails = JSON.parse(body.details)
             const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-                id: body.credential
+                id: body.credential,
+                workspaceId: workspaceId
             })
 
             if (!credential) {
