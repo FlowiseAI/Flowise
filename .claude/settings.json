@@ -1,0 +1,5 @@
+{
+    "permissions": {
+        "allow": ["Bash(npx jest --testPathPattern=\"NodeInputHandler.test|EditNodeDialog.test\")"]
+    }
+}

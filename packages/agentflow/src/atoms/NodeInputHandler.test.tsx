@@ -1,8 +1,10 @@
-import { render, screen } from '@testing-library/react'
+import { ComponentType } from 'react'
+
+import { fireEvent, render, screen } from '@testing-library/react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { NodeInputHandler } from './NodeInputHandler'
+import { type AsyncInputProps, NodeInputHandler } from './NodeInputHandler'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -71,5 +73,54 @@ describe('NodeInputHandler – static types', () => {
 
         // Without AsyncInputComponent, async types render nothing
         expect(container.querySelector('input')).toBeNull()
+    })
+})
+
+describe('NodeInputHandler – async onChange wiring', () => {
+    // A minimal AsyncInputComponent that exposes its onChange via a button.
+    // This verifies that async dropdown value changes flow through to onDataChange,
+    // which is what triggers field visibility re-evaluation in the parent (EditNodeDialog).
+    const StubAsyncInput: ComponentType<AsyncInputProps> = ({ onChange }) => (
+        <button data-testid='async-select' onClick={() => onChange('selected-value')}>
+            Select
+        </button>
+    )
+
+    it('calls onDataChange when asyncOptions fires onChange', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+            />
+        )
+
+        fireEvent.click(screen.getByTestId('async-select'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: expect.objectContaining({ name: 'myField', type: 'asyncOptions' }),
+            newValue: 'selected-value'
+        })
+    })
+
+    it('calls onDataChange when asyncMultiOptions fires onChange', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncMultiOptions' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+            />
+        )
+
+        fireEvent.click(screen.getByTestId('async-select'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: expect.objectContaining({ name: 'myField', type: 'asyncMultiOptions' }),
+            newValue: 'selected-value'
+        })
     })
 })
