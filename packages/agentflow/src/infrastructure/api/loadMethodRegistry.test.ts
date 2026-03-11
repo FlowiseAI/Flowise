@@ -6,7 +6,8 @@ const mockApis: ApiServices = {
         getChatModels: jest.fn()
     },
     toolsApi: {
-        getAllTools: jest.fn()
+        getAllTools: jest.fn(),
+        getToolInputArgs: jest.fn()
     },
     credentialsApi: {
         getAllCredentials: jest.fn(),
@@ -38,6 +39,20 @@ describe('loadMethodRegistry', () => {
             const result = await loadMethodRegistry['listTools'](mockApis)
             expect(mockApis.toolsApi.getAllTools).toHaveBeenCalled()
             expect(result).toEqual(mockTools)
+        })
+    })
+
+    describe('listToolInputArgs', () => {
+        it('should call toolsApi.getToolInputArgs() with inputs and nodeName from params', async () => {
+            const mockArgs = [{ name: 'query', label: 'Query' }]
+            ;(mockApis.toolsApi.getToolInputArgs as jest.Mock).mockResolvedValue(mockArgs)
+
+            const result = await loadMethodRegistry['listToolInputArgs'](mockApis, {
+                inputs: { toolAgentflowSelectedTool: 'calculator' },
+                nodeName: 'toolAgentflow'
+            })
+            expect(mockApis.toolsApi.getToolInputArgs).toHaveBeenCalledWith({ toolAgentflowSelectedTool: 'calculator' }, 'toolAgentflow')
+            expect(result).toEqual(mockArgs)
         })
     })
 
