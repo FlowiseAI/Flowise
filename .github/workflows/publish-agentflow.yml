@@ -62,13 +62,15 @@ jobs:
                   PUPPETEER_SKIP_DOWNLOAD: 'true'
 
             - name: Set version
-              working-directory: packages/agentflow
               run: |
+                  CURRENT=$(npm pkg get version --prefix packages/agentflow | tr -d '"')
                   if [ "$BUMP" = "custom" ]; then
-                    npm version "$CUSTOM_VERSION" --no-git-tag-version
+                    NEW_VERSION="$CUSTOM_VERSION"
                   else
-                    npm version "$BUMP" --preid dev --no-git-tag-version
+                    NEW_VERSION=$(npx semver "$CURRENT" -i "$BUMP" --preid dev)
                   fi
+                  npm pkg set version="$NEW_VERSION" --prefix packages/agentflow
+                  echo "Version set to $NEW_VERSION"
               env:
                   BUMP: ${{ inputs.bump }}
                   CUSTOM_VERSION: ${{ inputs.custom_version }}
@@ -76,7 +78,7 @@ jobs:
             - name: Resolve version
               id: resolve-version
               run: |
-                  VERSION=$(node -p "require('./packages/agentflow/package.json').version")
+                  VERSION=$(npm pkg get version --prefix packages/agentflow | tr -d '"')
                   echo "version=$VERSION" >> "$GITHUB_OUTPUT"
                   echo "## Version to publish: \`$VERSION\`" >> "$GITHUB_STEP_SUMMARY"
                   echo "## Tag: \`${{ inputs.tag }}\`" >> "$GITHUB_STEP_SUMMARY"
@@ -114,13 +116,15 @@ jobs:
                   PUPPETEER_SKIP_DOWNLOAD: 'true'
 
             - name: Set version
-              working-directory: packages/agentflow
               run: |
+                  CURRENT=$(npm pkg get version --prefix packages/agentflow | tr -d '"')
                   if [ "$BUMP" = "custom" ]; then
-                    npm version "$CUSTOM_VERSION" --no-git-tag-version
+                    NEW_VERSION="$CUSTOM_VERSION"
                   else
-                    npm version "$BUMP" --preid dev --no-git-tag-version
+                    NEW_VERSION=$(npx semver "$CURRENT" -i "$BUMP" --preid dev)
                   fi
+                  npm pkg set version="$NEW_VERSION" --prefix packages/agentflow
+                  echo "Version set to $NEW_VERSION"
               env:
                   BUMP: ${{ inputs.bump }}
                   CUSTOM_VERSION: ${{ inputs.custom_version }}
