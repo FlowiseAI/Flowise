@@ -1,0 +1,73 @@
+.react-markdown table {
+    border-spacing: 0 !important;
+    border-collapse: collapse !important;
+    border-color: inherit !important;
+    display: block !important;
+    width: max-content !important;
+    max-width: 100% !important;
+    overflow: auto !important;
+}
+
+.react-markdown tbody,
+.react-markdown td,
+.react-markdown tfoot,
+.react-markdown th,
+.react-markdown thead,
+.react-markdown tr {
+    border-color: inherit !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+    padding: 10px !important;
+}
+
+.react-markdown h1,
+.react-markdown h2,
+.react-markdown h3,
+.react-markdown h4,
+.react-markdown h5,
+.react-markdown h6 {
+    line-height: 1.4;
+    margin: 0.8em 0 0.4em 0;
+    font-weight: 600;
+}
+
+.react-markdown h1 {
+    font-size: 1.8em;
+}
+
+.react-markdown h2 {
+    font-size: 1.5em;
+}
+
+.react-markdown h3 {
+    font-size: 1.3em;
+}
+
+.react-markdown h4 {
+    font-size: 1.1em;
+}
+
+.react-markdown h5 {
+    font-size: 1em;
+    font-weight: 700;
+}
+
+.react-markdown h6 {
+    font-size: 0.9em;
+    font-weight: 700;
+}
+
+.react-markdown p {
+    line-height: 1.6;
+    margin: 0.5em 0;
+}
+
+.react-markdown img {
+    max-width: 100%;
+    max-height: 400px;
+    height: auto;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 10px 0;
+}

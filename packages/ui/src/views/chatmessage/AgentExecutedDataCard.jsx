@@ -37,8 +37,8 @@ import { IconArrowsMaximize, IconLoader, IconCircleXFilled, IconRelationOneToMan
 
 // Project imports
 import { useTheme } from '@mui/material/styles'
-import { FLOWISE_CREDENTIAL_ID, AGENTFLOW_ICONS } from '@/store/constant'
-import { NodeExecutionDetails } from '@/views/agentexecutions/NodeExecutionDetails'
+import { FLOWISE_CREDENTIAL_ID, AGENTFLOW_ICONS, baseURL } from '@/store/constant'
+import { NodeExecutionDetails, AgentExecutionsProvider } from '@flowiseai/agent-executions'
 
 const getIconColor = (status) => {
     switch (status) {
@@ -185,7 +185,9 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, meta
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth='md' fullWidth disableBackdropClick={true}>
                 <DialogContent onClick={(e) => e.stopPropagation()}>
                     {data ? (
-                        <NodeExecutionDetails data={data} label={label} metadata={metadata} />
+                        <AgentExecutionsProvider apiBaseUrl={baseURL}>
+                            <NodeExecutionDetails data={data} label={label} metadata={metadata} />
+                        </AgentExecutionsProvider>
                     ) : (
                         <Typography color='text.secondary'>No data available for this item</Typography>
                     )}

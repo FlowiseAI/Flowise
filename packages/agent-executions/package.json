@@ -1,0 +1,107 @@
+{
+    "name": "@flowiseai/agent-executions",
+    "version": "0.0.0-dev.1",
+    "description": "Embeddable React component for viewing and managing AI agent execution traces",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/FlowiseAI/Flowise.git",
+        "directory": "packages/agent-executions"
+    },
+    "homepage": "https://github.com/FlowiseAI/Flowise/tree/main/packages/agent-executions#readme",
+    "bugs": {
+        "url": "https://github.com/FlowiseAI/Flowise/issues"
+    },
+    "keywords": [
+        "flowise",
+        "flowiseai",
+        "agent-executions",
+        "react",
+        "llm",
+        "ai",
+        "agent",
+        "execution",
+        "trace"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
+    "main": "./dist/index.umd.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.umd.js",
+            "types": "./dist/index.d.ts"
+        },
+        "./styles.css": "./dist/styles.css"
+    },
+    "files": [
+        "dist"
+    ],
+    "sideEffects": [
+        "dist/**/*.css"
+    ],
+    "scripts": {
+        "build": "tsc && vite build",
+        "clean": "rimraf dist",
+        "dev": "vite",
+        "lint": "eslint \"src/**/*.{ts,tsx}\"",
+        "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+        "nuke": "rimraf dist node_modules .turbo",
+        "prepublishOnly": "npm run clean && npm run build"
+    },
+    "peerDependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "@mui/material": "^5.15.0",
+        "@mui/x-tree-view": "^7.25.0",
+        "@mui/icons-material": "^5.0.0",
+        "@emotion/react": "^11.10.0",
+        "@emotion/styled": "^11.10.0"
+    },
+    "dependencies": {
+        "axios": "^1.7.2",
+        "lodash": "^4.17.21",
+        "moment": "^2.29.4",
+        "@tabler/icons-react": "^3.7.0",
+        "react-datepicker": "^4.24.0",
+        "react-markdown": "^8.0.7",
+        "remark-gfm": "^3.0.1",
+        "remark-math": "^5.1.1",
+        "rehype-mathjax": "^4.0.0",
+        "react-syntax-highlighter": "^15.5.0",
+        "dompurify": "^3.0.6",
+        "flowise-react-json-view": "^1.21.7",
+        "@uiw/react-codemirror": "^4.21.21",
+        "@codemirror/lang-javascript": "^6.2.1",
+        "@codemirror/lang-json": "^6.0.1",
+        "@uiw/codemirror-theme-vscode": "^4.21.21",
+        "@uiw/codemirror-theme-sublime": "^4.21.21",
+        "@codemirror/view": "^6.26.3",
+        "prop-types": "^15.8.1"
+    },
+    "devDependencies": {
+        "@types/dompurify": "^3.0.5",
+        "@types/lodash": "^4.14.195",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "@types/react-syntax-highlighter": "^15.5.11",
+        "@typescript-eslint/eslint-plugin": "^8.18.2",
+        "@typescript-eslint/parser": "^8.18.2",
+        "@vitejs/plugin-react": "^4.2.0",
+        "eslint": "^8.24.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-jsx-a11y": "^6.6.1",
+        "eslint-plugin-prettier": "^3.4.0",
+        "eslint-plugin-react": "^7.26.1",
+        "eslint-plugin-react-hooks": "^4.6.0",
+        "prettier": "^2.7.1",
+        "rimraf": "^5.0.5",
+        "typescript": "^5.4.5",
+        "vite": "^5.0.2",
+        "vite-plugin-dts": "^3.7.0"
+    }
+}

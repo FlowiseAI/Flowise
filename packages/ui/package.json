@@ -8,6 +8,7 @@
         "email": "henryheng@flowiseai.com"
     },
     "dependencies": {
+        "@flowiseai/agent-executions": "workspace:^",
         "@codemirror/lang-javascript": "^6.2.1",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.2.5",
