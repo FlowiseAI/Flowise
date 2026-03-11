@@ -104,7 +104,9 @@ const updateVariable = async (variable: Variable, updatedVariable: Variable) => 
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Cloud platform does not support runtime variables!')
     try {
         const tmpUpdatedVariable = await appServer.AppDataSource.getRepository(Variable).merge(variable, updatedVariable)
-        tmpUpdatedVariable.workspaceId = variable.workspaceId // defense-in-depth: never trust client-supplied workspaceId
+const originalWorkspaceId = variable.workspaceId;
+const tmpUpdatedVariable = await appServer.AppDataSource.getRepository(Variable).merge(variable, updatedVariable);
+tmpUpdatedVariable.workspaceId = originalWorkspaceId;
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
         return dbResponse
     } catch (error) {
