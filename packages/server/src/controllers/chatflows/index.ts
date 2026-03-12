@@ -229,7 +229,7 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
         const workspaceIds = workspaceUser.map((user) => user.workspaceId)
         if (!workspaceIds.includes(chatflow.workspaceId))
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'You are not in the workspace that owns this chatflow' })
-        return res.status(StatusCodes.OK).json(chatflow)
+        return res.status(StatusCodes.OK).json({ ...chatflow, flowData: sanitizeFlowDataForPublicEndpoint(chatflow.flowData) })
     } catch (error) {
         next(error)
     } finally {
