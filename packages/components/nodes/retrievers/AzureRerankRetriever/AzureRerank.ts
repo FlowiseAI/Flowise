@@ -1,4 +1,4 @@
-import axios from 'axios'
+import { secureAxiosRequest } from '../../../src/httpSecurity'
 import { Callbacks } from '@langchain/core/callbacks/manager'
 import { Document } from '@langchain/core/documents'
 import { BaseDocumentCompressor } from 'langchain/retrievers/document_compressors'
@@ -42,7 +42,7 @@ export class AzureRerank extends BaseDocumentCompressor {
             documents: documents.map((doc) => doc.pageContent)
         }
         try {
-            let returnedDocs = await axios.post(this.azureApiUrl, data, config)
+            let returnedDocs = await secureAxiosRequest({ method: 'POST', url: this.azureApiUrl, data, ...config })
             const finalResults: Document<Record<string, any>>[] = []
             returnedDocs.data.results.forEach((result: any) => {
                 const doc = documents[result.index]

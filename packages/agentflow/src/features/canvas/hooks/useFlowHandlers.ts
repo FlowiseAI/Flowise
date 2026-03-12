@@ -1,8 +1,9 @@
 import { useCallback, useRef } from 'react'
 import { addEdge, applyEdgeChanges, applyNodeChanges, Connection, EdgeChange, Node, NodeChange } from 'reactflow'
 
-import { getNodeColor, getUniqueNodeId, getUniqueNodeLabel, initNode, isValidConnectionAgentflowV2 } from '@/core'
+import { getNodeColor, getUniqueNodeId, getUniqueNodeLabel, initNode, isValidConnectionAgentflowV2, resolveNodeType } from '@/core'
 import type { FlowDataCallback, FlowEdge, FlowNode, NodeData } from '@/core/types'
+import { checkNodePlacementConstraints } from '@/core/validation'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 interface UseFlowHandlersProps {
@@ -14,6 +15,7 @@ interface UseFlowHandlersProps {
     onEdgesChange: (changes: EdgeChange[]) => void
     onFlowChange?: FlowDataCallback
     availableNodes: NodeData[]
+    onConstraintViolation?: (message: string) => void
 }
 
 /**
@@ -27,7 +29,8 @@ export function useFlowHandlers({
     onNodesChange,
     onEdgesChange,
     onFlowChange,
-    availableNodes
+    availableNodes,
+    onConstraintViolation
 }: UseFlowHandlersProps) {
     const { state, setDirty } = useAgentflowContext()
 
@@ -148,12 +151,20 @@ export function useFlowHandlers({
             const nodeData = availableNodes.find((n) => n.name === nodeType)
             if (!nodeData) return
 
+            // Check placement constraints (start node, nested iteration, human input in iteration)
+            const constraintCheck = checkNodePlacementConstraints(nodes, nodeType, position)
+            if (!constraintCheck.valid) {
+                onConstraintViolation?.(constraintCheck.message!)
+                return
+            }
+
             const newId = getUniqueNodeId(nodeData, nodes)
             const newLabel = getUniqueNodeLabel(nodeData, nodes)
             const initializedData = initNode(nodeData, newId, true)
+
             const newNode: FlowNode = {
                 id: newId,
-                type: 'agentflowNode',
+                type: resolveNodeType(nodeData.type ?? ''),
                 position: position || { x: 100, y: 100 },
                 data: { ...initializedData, label: newLabel }
             }
@@ -173,7 +184,7 @@ export function useFlowHandlers({
                 viewport: getViewport()
             })
         },
-        [availableNodes, nodes, edges, setLocalNodes, setDirty, getViewport]
+        [availableNodes, nodes, edges, setLocalNodes, setDirty, getViewport, onConstraintViolation]
     )
 
     return {

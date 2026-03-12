@@ -15,9 +15,9 @@ export interface PythonCodeValidationResult {
  * Uses word boundaries and context to minimize false positives (e.g. df.astype is allowed).
  */
 const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
-    // Imports (we already inject "import pandas as pd"; LLM code must not add modules)
+    // Imports (the executor pre-imports pandas and numpy; LLM code must not add any imports)
     { pattern: /\bfrom\s+\S+\s+import\b/g, reason: 'import statement (from...import)' },
-    { pattern: /\bimport\s+(?!pandas|numpy\b)/g, reason: 'import statement (only pandas/numpy allowed via prelude)' },
+    { pattern: /\bimport\b/g, reason: 'import statement (all imports forbidden; pandas and numpy are pre-imported by the executor)' },
     // Dangerous builtins
     { pattern: /\beval\s*\(/g, reason: 'eval()' },
     { pattern: /\bexec\s*\(/g, reason: 'exec()' },
@@ -51,7 +51,11 @@ const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
     { pattern: /\b__mro__\b/g, reason: '__mro__' },
     { pattern: /\b__globals__\b/g, reason: '__globals__' },
     { pattern: /\b__code__\b/g, reason: '__code__' },
-    { pattern: /\b__closure__\b/g, reason: '__closure__' }
+    { pattern: /\b__closure__\b/g, reason: '__closure__' },
+    { pattern: /\bvars\s*\(/g, reason: 'vars()' },
+    { pattern: /\bdir\s*\(/g, reason: 'dir()' },
+    { pattern: /\b__dict__\b/g, reason: '__dict__ (attribute reflection)' },
+    { pattern: /\b__module__\b/g, reason: '__module__ (module reflection)' }
 ]
 
 /**
