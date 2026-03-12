@@ -7,6 +7,9 @@ import type { RequestInterceptor } from '@/core/types'
 import {
     bindChatModelsApi,
     bindCredentialsApi,
+    bindEmbeddingsApi,
+    bindRuntimeStateApi,
+    bindStoresApi,
     bindToolsApi,
     type ChatflowsApi,
     type ChatModelsApi,
@@ -14,7 +17,10 @@ import {
     createChatflowsApi,
     createNodesApi,
     type CredentialsApi,
+    type EmbeddingsApi,
     type NodesApi,
+    type RuntimeStateApi,
+    type StoresApi,
     type ToolsApi
 } from '../api'
 
@@ -26,6 +32,9 @@ interface ApiContextValue {
     chatModelsApi: ChatModelsApi
     toolsApi: ToolsApi
     credentialsApi: CredentialsApi
+    storesApi: StoresApi
+    embeddingsApi: EmbeddingsApi
+    runtimeStateApi: RuntimeStateApi
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null)
@@ -51,6 +60,9 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
         const chatModelsApi = bindChatModelsApi(client)
         const toolsApi = bindToolsApi(client)
         const credentialsApi = bindCredentialsApi(client)
+        const storesApi = bindStoresApi(client)
+        const embeddingsApi = bindEmbeddingsApi(client)
+        const runtimeStateApi = bindRuntimeStateApi(client)
 
         return {
             client,
@@ -59,7 +71,10 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
             chatflowsApi,
             chatModelsApi,
             toolsApi,
-            credentialsApi
+            credentialsApi,
+            storesApi,
+            embeddingsApi,
+            runtimeStateApi
         }
     }, [apiBaseUrl, token])
 

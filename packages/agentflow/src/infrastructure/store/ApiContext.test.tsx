@@ -12,11 +12,23 @@ jest.mock('../api', () => ({
     createChatflowsApi: jest.fn(() => ({ getAll: jest.fn() })),
     bindChatModelsApi: jest.fn(() => ({ getChatModels: jest.fn() })),
     bindToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
-    bindCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() }))
+    bindCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() })),
+    bindStoresApi: jest.fn(() => ({ getStores: jest.fn(), getVectorStores: jest.fn() })),
+    bindEmbeddingsApi: jest.fn(() => ({ getEmbeddings: jest.fn() })),
+    bindRuntimeStateApi: jest.fn(() => ({ getRuntimeStateKeys: jest.fn() }))
 }))
 
-const { createApiClient, createNodesApi, createChatflowsApi, bindChatModelsApi, bindToolsApi, bindCredentialsApi } =
-    jest.requireMock('../api')
+const {
+    createApiClient,
+    createNodesApi,
+    createChatflowsApi,
+    bindChatModelsApi,
+    bindToolsApi,
+    bindCredentialsApi,
+    bindStoresApi,
+    bindEmbeddingsApi,
+    bindRuntimeStateApi
+} = jest.requireMock('../api')
 
 describe('ApiContext', () => {
     beforeEach(() => jest.clearAllMocks())
@@ -41,6 +53,9 @@ describe('ApiContext', () => {
             expect(result.current.chatModelsApi).toBeDefined()
             expect(result.current.toolsApi).toBeDefined()
             expect(result.current.credentialsApi).toBeDefined()
+            expect(result.current.storesApi).toBeDefined()
+            expect(result.current.embeddingsApi).toBeDefined()
+            expect(result.current.runtimeStateApi).toBeDefined()
             expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined, expect.any(Function))
         })
 
@@ -66,6 +81,9 @@ describe('ApiContext', () => {
             expect(bindChatModelsApi).toHaveBeenCalledWith('mock-client')
             expect(bindToolsApi).toHaveBeenCalledWith('mock-client')
             expect(bindCredentialsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindStoresApi).toHaveBeenCalledWith('mock-client')
+            expect(bindEmbeddingsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindRuntimeStateApi).toHaveBeenCalledWith('mock-client')
         })
 
         it('should use updated requestInterceptor without recreating client', () => {
