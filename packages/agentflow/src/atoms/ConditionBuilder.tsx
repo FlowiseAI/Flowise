@@ -64,7 +64,7 @@ export function ConditionBuilder({
         const newItem: Record<string, unknown> = {}
         if (inputParam.array) {
             for (const field of inputParam.array) {
-                if (field.default !== undefined) {
+                if (field.default != null) {
                     newItem[field.name] = field.default
                 } else {
                     switch (field.type) {
