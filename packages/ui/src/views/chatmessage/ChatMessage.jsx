@@ -1331,6 +1331,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             })
             // Filter out previously loaded execution messages (by id) before appending,
             // preventing duplicates when the API is called multiple times (e.g. React StrictMode)
+            // Messages without an ID (e.g., initial welcome message, in-progress user messages) are always preserved.
             setMessages((prevMessages) => {
                 const initialMessages = prevMessages.filter((msg) => !msg.id || !loadedMessages.some((lm) => lm.id === msg.id))
                 return [...initialMessages, ...loadedMessages]
