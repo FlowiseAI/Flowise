@@ -3,7 +3,17 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import { cloneDeep } from 'lodash'
 
-import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
+import type {
+    AgentflowAction,
+    AgentflowState,
+    FlowConfig,
+    FlowData,
+    FlowDataCallback,
+    FlowEdge,
+    FlowNode,
+    InputParam,
+    NodeData
+} from '@/core/types'
 import { getUniqueNodeId } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
@@ -71,6 +81,9 @@ export interface AgentflowContextValue {
 
     // Register ReactFlow local state setters
     registerLocalStateSetters: (setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => void
+
+    // Register onFlowChange callback (called by AgentflowCanvas)
+    registerOnFlowChange: (callback: FlowDataCallback | undefined) => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -94,6 +107,13 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     const registerLocalStateSetters = useCallback((setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => {
         localNodesSetterRef.current = setLocalNodes
         localEdgesSetterRef.current = setLocalEdges
+    }, [])
+
+    // Store onFlowChange callback ref (registered by AgentflowCanvas)
+    const onFlowChangeRef = useRef<FlowDataCallback | undefined>(undefined)
+
+    const registerOnFlowChange = useCallback((callback: FlowDataCallback | undefined) => {
+        onFlowChangeRef.current = callback
     }, [])
 
     // Helper function to synchronize state updates between context and ReactFlow
@@ -222,8 +242,14 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             })
 
             syncStateUpdate({ nodes: newNodes })
+
+            // Notify parent of flow change (e.g. node data edits from EditNodeDialog)
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: newNodes, edges: state.edges, viewport })
+            }
         },
-        [state.nodes, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     // Edge operations
@@ -288,7 +314,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         closeEditDialog,
         getFlowData,
         reset,
-        registerLocalStateSetters
+        registerLocalStateSetters,
+        registerOnFlowChange
     }
 
     return <AgentflowContext.Provider value={value}>{children}</AgentflowContext.Provider>

@@ -13,6 +13,8 @@ jest.mock('reactflow', () => ({
     useUpdateNodeInternals: () => mockUpdateNodeInternals
 }))
 
+const mockCleanupOrphanedEdges = jest.fn()
+
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
         state: {},
@@ -21,6 +23,30 @@ jest.mock('@/infrastructure/store', () => ({
     useConfigContext: () => ({
         isDarkMode: false
     })
+}))
+
+jest.mock('./useDynamicOutputPorts', () => ({
+    useDynamicOutputPorts: () => ({
+        cleanupOrphanedEdges: mockCleanupOrphanedEdges
+    })
+}))
+
+jest.mock('@/core/utils', () => ({
+    ...jest.requireActual('@/core/utils'),
+    buildDynamicOutputAnchors: (nodeId: string, count: number, labelPrefix: string) => {
+        const anchors = []
+        for (let i = 0; i < count; i++) {
+            anchors.push({
+                id: `${nodeId}-output-${i}`,
+                name: `${i}`,
+                label: `${i}`,
+                type: labelPrefix,
+                description: `${labelPrefix} ${i}`
+            })
+        }
+        anchors.push({ id: `${nodeId}-output-${count}`, name: `${count}`, label: `${count}`, type: labelPrefix, description: 'Else' })
+        return anchors
+    }
 }))
 
 jest.mock('@/atoms', () => ({
@@ -83,6 +109,32 @@ jest.mock('@/atoms', () => ({
             <div data-testid={`input-handler-${inputParam.name}`}>
                 <button data-testid={`change-${inputParam.name}`} onClick={() => onDataChange({ inputParam, newValue: 'test-value' })}>
                     Change {inputParam.name}
+                </button>
+            </div>
+        )
+    },
+    ConditionBuilder: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        return (
+            <div data-testid='condition-builder'>
+                <button
+                    data-testid='add-condition'
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentArray, { type: 'string', value1: '', operation: 'equal', value2: '' }]
+                        })
+                    }}
+                >
+                    Add Condition
                 </button>
             </div>
         )
@@ -503,6 +555,76 @@ describe('EditNodeDialog', () => {
             expect(lastCall[1]).toHaveProperty('inputValues')
             expect(lastCall[1].inputValues).toHaveProperty('connections')
             expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
+        })
+
+        it('should render ConditionBuilder for conditionAgentflow node', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('condition-builder')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the conditions param
+            expect(screen.queryByTestId('input-handler-conditions')).not.toBeInTheDocument()
+        })
+
+        it('should merge outputAnchors into a single updateNodeData call when conditions change', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-condition'))
+
+            // Should merge inputValues and outputAnchors into a single updateNodeData call
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('conditionAgentflow_0', {
+                inputValues: expect.objectContaining({ conditions: expect.any(Array) }),
+                outputAnchors: expect.arrayContaining([
+                    expect.objectContaining({ description: 'Condition 0' }),
+                    expect.objectContaining({ description: 'Condition 1' }),
+                    expect.objectContaining({ description: 'Else' })
+                ])
+            })
+            // Should call cleanupOrphanedEdges with the new count
+            expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
         })
 
         it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {
