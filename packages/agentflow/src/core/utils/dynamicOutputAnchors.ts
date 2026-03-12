@@ -14,8 +14,10 @@ export function parseOutputHandleIndex(nodeId: string, handleId: string): number
 
 /**
  * Build output anchors for a node based on a dynamic item count.
- * Generates one anchor per item (`${labelPrefix} 0`, `${labelPrefix} 1`, ...)
- * plus an optional Else anchor at the end.
+ *
+ * Matches the v2 flow data format where `label` and `name` are numeric
+ * indices and `description` holds the human-readable text
+ * (e.g. "Condition 0", "Else").
  */
 export function buildDynamicOutputAnchors(nodeId: string, count: number, labelPrefix: string, includeElse: boolean = true): OutputAnchor[] {
     const anchors: OutputAnchor[] = []
@@ -24,8 +26,9 @@ export function buildDynamicOutputAnchors(nodeId: string, count: number, labelPr
         anchors.push({
             id: getOutputHandleId(nodeId, i),
             name: String(i),
-            label: `${labelPrefix} ${i}`,
-            type: labelPrefix
+            label: String(i),
+            type: labelPrefix,
+            description: `${labelPrefix} ${i}`
         })
     }
 
@@ -33,8 +36,9 @@ export function buildDynamicOutputAnchors(nodeId: string, count: number, labelPr
         anchors.push({
             id: getOutputHandleId(nodeId, count),
             name: String(count),
-            label: 'Else',
-            type: labelPrefix
+            label: String(count),
+            type: labelPrefix,
+            description: 'Else'
         })
     }
 

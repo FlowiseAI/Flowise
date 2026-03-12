@@ -7,7 +7,7 @@ import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-reac
 
 import { ConditionBuilder, NodeInputHandler } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
-import { evaluateFieldVisibility } from '@/core/utils'
+import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 import { useDynamicOutputPorts } from './useDynamicOutputPorts'
@@ -46,7 +46,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const [arrayItemParameters, setArrayItemParameters] = useState<Record<string, InputParam[][]>>({})
 
     const isConditionNode = data?.name === 'conditionAgentflow'
-    const { syncOutputPorts } = useDynamicOutputPorts(data?.id ?? '', 'Condition', isConditionNode)
+    const { cleanupOrphanedEdges } = useDynamicOutputPorts(data?.id ?? '', isConditionNode)
 
     const onNodeLabelChange = () => {
         if (!data || !nodeNameRef.current) return
@@ -68,16 +68,19 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
         const updatedParams = evaluateFieldVisibility(inputParams, updatedInputValues)
         setInputParams(updatedParams)
         setArrayItemParameters(computeArrayItemParameters(inputParams, updatedInputValues))
-        // Keep full inputValues in state — hidden field values are preserved so they
-        // can be restored when visibility conditions change (e.g. toggling provider back).
-        // Stripping should only happen on save/export, not on every keystroke.
+
+        // When conditions array changes, merge inputValues and outputAnchors
+        // into a single updateNodeData call to avoid stale-closure overwrites.
+        if (isConditionNode && inputParam.name === 'conditions' && Array.isArray(newValue)) {
+            const outputAnchors = buildDynamicOutputAnchors(data.id, newValue.length, 'Condition', true)
+            updateNodeData(data.id, { inputValues: updatedInputValues, outputAnchors })
+            setData({ ...data, inputValues: updatedInputValues, outputAnchors })
+            cleanupOrphanedEdges(newValue.length)
+            return
+        }
+
         updateNodeData(data.id, { inputValues: updatedInputValues })
         setData({ ...data, inputValues: updatedInputValues })
-
-        // Sync output ports when conditions array changes on a condition node
-        if (isConditionNode && inputParam.name === 'conditions' && Array.isArray(newValue)) {
-            syncOutputPorts(newValue.length)
-        }
     }
 
     useEffect(() => {

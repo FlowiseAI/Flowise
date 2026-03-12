@@ -13,7 +13,7 @@ jest.mock('reactflow', () => ({
     useUpdateNodeInternals: () => mockUpdateNodeInternals
 }))
 
-const mockSyncOutputPorts = jest.fn()
+const mockCleanupOrphanedEdges = jest.fn()
 
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
@@ -27,8 +27,26 @@ jest.mock('@/infrastructure/store', () => ({
 
 jest.mock('./useDynamicOutputPorts', () => ({
     useDynamicOutputPorts: () => ({
-        syncOutputPorts: mockSyncOutputPorts
+        cleanupOrphanedEdges: mockCleanupOrphanedEdges
     })
+}))
+
+jest.mock('@/core/utils', () => ({
+    ...jest.requireActual('@/core/utils'),
+    buildDynamicOutputAnchors: (nodeId: string, count: number, labelPrefix: string) => {
+        const anchors = []
+        for (let i = 0; i < count; i++) {
+            anchors.push({
+                id: `${nodeId}-output-${i}`,
+                name: `${i}`,
+                label: `${i}`,
+                type: labelPrefix,
+                description: `${labelPrefix} ${i}`
+            })
+        }
+        anchors.push({ id: `${nodeId}-output-${count}`, name: `${count}`, label: `${count}`, type: labelPrefix, description: 'Else' })
+        return anchors
+    }
 }))
 
 jest.mock('@/atoms', () => ({
@@ -485,7 +503,7 @@ describe('EditNodeDialog', () => {
             expect(screen.queryByTestId('input-handler-conditions')).not.toBeInTheDocument()
         })
 
-        it('should call syncOutputPorts when conditions array changes on a condition node', () => {
+        it('should merge outputAnchors into a single updateNodeData call when conditions change', () => {
             const conditionParams: InputParam[] = [
                 {
                     name: 'conditions',
@@ -512,7 +530,17 @@ describe('EditNodeDialog', () => {
 
             fireEvent.click(screen.getByTestId('add-condition'))
 
-            expect(mockSyncOutputPorts).toHaveBeenCalledWith(2)
+            // Should merge inputValues and outputAnchors into a single updateNodeData call
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('conditionAgentflow_0', {
+                inputValues: expect.objectContaining({ conditions: expect.any(Array) }),
+                outputAnchors: expect.arrayContaining([
+                    expect.objectContaining({ description: 'Condition 0' }),
+                    expect.objectContaining({ description: 'Condition 1' }),
+                    expect.objectContaining({ description: 'Else' })
+                ])
+            })
+            // Should call cleanupOrphanedEdges with the new count
+            expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
         })
 
         it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {

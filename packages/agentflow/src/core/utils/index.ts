@@ -8,4 +8,4 @@ export { generateExportFlowData } from './flowExport'
 export { evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './fieldVisibility'
 
 // Dynamic output anchor utilities
-export { buildDynamicOutputAnchors } from './dynamicOutputAnchors'
+export { buildDynamicOutputAnchors, parseOutputHandleIndex } from './dynamicOutputAnchors'

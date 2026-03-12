@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -37,13 +37,12 @@ export function ConditionBuilder({
         [data.inputValues, inputParam.name]
     )
 
-    // Ensure stable keys array matches item count
-    while (itemKeysRef.current.length < arrayItems.length) {
-        itemKeysRef.current.push(`condition-${idCounterRef.current++}`)
-    }
-    if (itemKeysRef.current.length > arrayItems.length) {
-        itemKeysRef.current = itemKeysRef.current.slice(0, arrayItems.length)
-    }
+    // Grow keys array when new items appear (e.g. on mount or external data changes)
+    useEffect(() => {
+        while (itemKeysRef.current.length < arrayItems.length) {
+            itemKeysRef.current.push(`condition-${idCounterRef.current++}`)
+        }
+    }, [arrayItems.length])
 
     const itemParameters = useMemo<InputParam[][]>(
         () => itemParametersProp ?? arrayItems.map(() => inputParam.array || []),
@@ -86,6 +85,7 @@ export function ConditionBuilder({
 
     const handleDeleteItem = useCallback(
         (indexToDelete: number) => {
+            itemKeysRef.current.splice(indexToDelete, 1)
             onDataChange?.({ inputParam, newValue: arrayItems.filter((_, i) => i !== indexToDelete) })
         },
         [arrayItems, inputParam, onDataChange]

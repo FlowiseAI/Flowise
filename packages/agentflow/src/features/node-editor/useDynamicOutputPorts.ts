@@ -1,31 +1,39 @@
 import { useCallback, useRef } from 'react'
 import { useUpdateNodeInternals } from 'reactflow'
 
-import { buildDynamicOutputAnchors, parseOutputHandleIndex } from '@/core/utils/dynamicOutputAnchors'
+import { parseOutputHandleIndex } from '@/core/utils'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 /**
- * Hook that syncs a node's output anchors with a dynamic item count.
- * Call syncOutputPorts after each data change that affects the anchor count.
+ * Hook for managing dynamic output ports on nodes whose anchor count
+ * depends on runtime data (e.g. condition nodes).
  *
- * When the count decreases, edges connected to removed output handles are cleaned up.
- * Pass `enabled: false` (or omit labelPrefix) to make the hook inert for non-applicable nodes.
+ * Provides `cleanupOrphanedEdges` to remove edges that point to output
+ * handles that no longer exist after the count decreases.
+ *
+ * The caller is responsible for computing outputAnchors (via
+ * `buildDynamicOutputAnchors`) and merging them into the same
+ * `updateNodeData` call that updates inputValues — this avoids the
+ * stale-closure problem of two sequential store updates in one tick.
+ *
+ * Pass `enabled: false` to make the hook inert for non-applicable nodes.
  */
-export function useDynamicOutputPorts(nodeId: string, labelPrefix: string, enabled: boolean = true, includeElse: boolean = true) {
-    const { state, updateNodeData, setEdges } = useAgentflowContext()
+export function useDynamicOutputPorts(nodeId: string, enabled: boolean = true, includeElse: boolean = true) {
+    const { state, setEdges } = useAgentflowContext()
     const updateNodeInternals = useUpdateNodeInternals()
     const prevCountRef = useRef<number | null>(null)
 
-    const syncOutputPorts = useCallback(
+    /**
+     * Removes edges connected to output handles that no longer exist
+     * after the item count changes, and notifies ReactFlow to re-measure
+     * the node's handles.
+     */
+    const cleanupOrphanedEdges = useCallback(
         (count: number) => {
             if (!enabled) return
-            if (prevCountRef.current === count) return
 
             const prevCount = prevCountRef.current
             prevCountRef.current = count
-
-            const outputAnchors = buildDynamicOutputAnchors(nodeId, count, labelPrefix, includeElse)
-            updateNodeData(nodeId, { outputAnchors })
 
             // Remove edges connected to output handles that no longer exist
             if (prevCount !== null && count < prevCount) {
@@ -43,8 +51,8 @@ export function useDynamicOutputPorts(nodeId: string, labelPrefix: string, enabl
 
             updateNodeInternals(nodeId)
         },
-        [nodeId, labelPrefix, enabled, includeElse, state.edges, updateNodeData, setEdges, updateNodeInternals]
+        [nodeId, enabled, includeElse, state.edges, setEdges, updateNodeInternals]
     )
 
-    return { syncOutputPorts }
+    return { cleanupOrphanedEdges }
 }
