@@ -223,6 +223,105 @@ describe('validateNode', () => {
         expect(item2Errors).toHaveLength(0)
     })
 
+    // --- asyncOptions / asyncMultiOptions validation ---
+    it('should warn when required asyncOptions field is visible and empty', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
+                inputValues: {}
+            }
+        }
+        const errors = validateNode(node)
+        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Model is required' }))
+    })
+
+    it('should not warn when asyncOptions field has a selected value', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
+                inputValues: { model: 'gpt-4o' }
+            }
+        }
+        const errors = validateNode(node)
+        const modelErrors = errors.filter((e) => e.message.includes('Model'))
+        expect(modelErrors).toHaveLength(0)
+    })
+
+    it('should not warn about a field that is hidden by an asyncOptions value', () => {
+        // Field B has show: { model: 'gpt-4o' }. When model !== 'gpt-4o', field B is hidden.
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [
+                    { id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' },
+                    { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false, show: { model: 'gpt-4o' } }
+                ],
+                inputValues: { model: 'claude-3' } // temperature is hidden
+            }
+        }
+        const errors = validateNode(node)
+        const tempErrors = errors.filter((e) => e.message.includes('Temperature'))
+        expect(tempErrors).toHaveLength(0)
+    })
+
+    it('should warn about a required field made visible by asyncOptions value', () => {
+        // When model === 'gpt-4o', Temperature becomes required and is empty.
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputs: [
+                    { id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' },
+                    { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false, show: { model: 'gpt-4o' } }
+                ],
+                inputValues: { model: 'gpt-4o' } // temperature is visible but empty
+            }
+        }
+        const errors = validateNode(node)
+        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Temperature is required' }))
+    })
+
+    it('should correctly resolve asyncMultiOptions JSON array value for show/hide conditions', () => {
+        // Field B shows when tools includes 'calculator'. asyncMultiOptions stores as JSON array string.
+        const node: FlowNode = {
+            ...makeNode('a', 'agentNode'),
+            data: {
+                id: 'a',
+                name: 'agentNode',
+                label: 'Agent',
+                inputs: [
+                    { id: 'p1', name: 'tools', label: 'Tools', type: 'asyncMultiOptions', optional: true, loadMethod: 'listTools' },
+                    {
+                        id: 'p2',
+                        name: 'calcConfig',
+                        label: 'Calculator Config',
+                        type: 'string',
+                        optional: false,
+                        show: { tools: ['calculator'] }
+                    }
+                ],
+                // JSON array string — calcConfig should be visible
+                inputValues: { tools: '["calculator","search"]' }
+            }
+        }
+        const errors = validateNode(node)
+        // calcConfig is visible and empty → should be flagged
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Calculator Config is required' }))
+    })
+
     // --- Nested config validation ---
     it('should validate nested component config required fields', () => {
         const availableNodes = [

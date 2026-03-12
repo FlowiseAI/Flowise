@@ -1,70 +1,70 @@
-import { type ComponentType, useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { Box, Button, Chip, IconButton } from '@mui/material'
+import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { type AsyncInputProps, NodeInputHandler } from './NodeInputHandler'
+import { NodeInputHandler } from './NodeInputHandler'
 
-export interface ArrayInputProps {
+export interface ConditionBuilderProps {
     inputParam: InputParam
     data: NodeData
     disabled?: boolean
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
     itemParameters?: InputParam[][]
-    AsyncInputComponent?: ComponentType<AsyncInputProps>
 }
 
-export function ArrayInput({
+/**
+ * Specialized array input for condition nodes.
+ * Renders each condition with a label (Condition 0, Condition 1, ...) and an Else indicator.
+ * isEmpty/notEmpty operations hide the Value 2 field via the existing field visibility system.
+ */
+export function ConditionBuilder({
     inputParam,
     data,
     disabled = false,
     onDataChange,
-    itemParameters: itemParametersProp,
-    AsyncInputComponent
-}: ArrayInputProps) {
+    itemParameters: itemParametersProp
+}: ConditionBuilderProps) {
     const theme = useTheme()
+    const idCounterRef = useRef(0)
+    const itemKeysRef = useRef<string[]>([])
 
-    // Derive array items directly from props (single source of truth)
-    // Memoized to prevent unnecessary re-renders of child hooks
     const arrayItems = useMemo(
         () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
         [data.inputValues, inputParam.name]
     )
 
-    // Use pre-computed itemParameters
-    // Falls back to raw field definitions for nested arrays without show/hide conditions.
+    // Grow keys array when new items appear (e.g. on mount or external data changes)
+    useEffect(() => {
+        while (itemKeysRef.current.length < arrayItems.length) {
+            itemKeysRef.current.push(`condition-${idCounterRef.current++}`)
+        }
+    }, [arrayItems.length])
+
     const itemParameters = useMemo<InputParam[][]>(
         () => itemParametersProp ?? arrayItems.map(() => inputParam.array || []),
         [itemParametersProp, arrayItems, inputParam.array]
     )
 
-    // Handle changes to individual fields within array items
     const handleItemInputChange = useCallback(
         (itemIndex: number, changedParam: InputParam, newValue: unknown) => {
             const updatedArrayItems = [...arrayItems]
             const updatedItem = { ...updatedArrayItems[itemIndex] }
-
-            // Update the specific field
             updatedItem[changedParam.name] = newValue
             updatedArrayItems[itemIndex] = updatedItem
-
-            // Notify parent of change (parent will update props, causing re-render)
             onDataChange?.({ inputParam, newValue: updatedArrayItems })
         },
         [arrayItems, inputParam, onDataChange]
     )
 
-    // Add new array item
     const handleAddItem = useCallback(() => {
-        // Initialize new item with type-appropriate default values
         const newItem: Record<string, unknown> = {}
-
         if (inputParam.array) {
             for (const field of inputParam.array) {
-                if (field.default !== undefined) {
+                if (field.default != null) {
                     newItem[field.name] = field.default
                 } else {
                     switch (field.type) {
@@ -74,34 +74,23 @@ export function ArrayInput({
                         case 'boolean':
                             newItem[field.name] = false
                             break
-                        case 'array':
-                            newItem[field.name] = []
-                            break
                         default:
                             newItem[field.name] = ''
                     }
                 }
             }
         }
-
-        const updatedArrayItems = [...arrayItems, newItem]
-
-        // Notify parent of change (parent will update props, causing re-render)
-        onDataChange?.({ inputParam, newValue: updatedArrayItems })
+        onDataChange?.({ inputParam, newValue: [...arrayItems, newItem] })
     }, [arrayItems, inputParam, onDataChange])
 
-    // Delete array item
     const handleDeleteItem = useCallback(
         (indexToDelete: number) => {
-            const updatedArrayItems = arrayItems.filter((_, i) => i !== indexToDelete)
-
-            // Notify parent of change (parent will update props, causing re-render)
-            onDataChange?.({ inputParam, newValue: updatedArrayItems })
+            itemKeysRef.current.splice(indexToDelete, 1)
+            onDataChange?.({ inputParam, newValue: arrayItems.filter((_, i) => i !== indexToDelete) })
         },
         [arrayItems, inputParam, onDataChange]
     )
 
-    // Pre-compute stable per-item onDataChange handlers to avoid new closures on every render
     const itemHandlers = useMemo(
         () =>
             arrayItems.map((_, index) => ({ inputParam: changedParam, newValue }: { inputParam: InputParam; newValue: unknown }) => {
@@ -110,14 +99,11 @@ export function ArrayInput({
         [arrayItems, handleItemInputChange]
     )
 
-    // Check if item can be deleted based on minItems constraint
     const canDeleteItem = !inputParam.minItems || arrayItems.length > inputParam.minItems
 
     return (
         <>
-            {/* Render each array item */}
             {arrayItems.map((itemValues, index) => {
-                // Create item-specific data context for nested NodeInputHandler
                 const itemData: NodeData = {
                     ...data,
                     inputValues: itemValues
@@ -125,7 +111,7 @@ export function ArrayInput({
 
                 return (
                     <Box
-                        key={index}
+                        key={itemKeysRef.current[index]}
                         sx={{
                             p: 2,
                             mt: 2,
@@ -136,7 +122,6 @@ export function ArrayInput({
                             position: 'relative'
                         }}
                     >
-                        {/* Delete button */}
                         <IconButton
                             title='Delete'
                             onClick={() => handleDeleteItem(index)}
@@ -157,13 +142,11 @@ export function ArrayInput({
                             <IconTrash />
                         </IconButton>
 
-                        {/* Index chip */}
-                        <Chip label={`${index}`} size='small' sx={{ position: 'absolute', right: 55, top: 16 }} />
+                        <Chip label={`Condition ${index}`} size='small' sx={{ position: 'absolute', right: 55, top: 16 }} />
 
-                        {/* Render input fields for array item */}
                         {itemParameters[index]
                             ?.filter((param) => param.display !== false)
-                            .map((param, _) => (
+                            .map((param) => (
                                 <NodeInputHandler
                                     key={param.name}
                                     inputParam={param}
@@ -172,14 +155,32 @@ export function ArrayInput({
                                     isAdditionalParams={true}
                                     disablePadding={false}
                                     onDataChange={itemHandlers[index]}
-                                    AsyncInputComponent={AsyncInputComponent}
                                 />
                             ))}
                     </Box>
                 )
             })}
 
-            {/* Add item button */}
+            {/* Else indicator */}
+            <Box
+                sx={{
+                    p: 2,
+                    mt: 2,
+                    mb: 1,
+                    border: 1,
+                    borderColor: theme.palette.grey[300],
+                    borderRadius: 2,
+                    backgroundColor: theme.palette.action.hover
+                }}
+            >
+                <Typography variant='body2' color='text.secondary' fontWeight={500}>
+                    Else
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>
+                    Executes when no conditions match
+                </Typography>
+            </Box>
+
             <Button
                 fullWidth
                 size='small'
@@ -189,10 +190,10 @@ export function ArrayInput({
                 startIcon={<IconPlus />}
                 onClick={handleAddItem}
             >
-                Add {inputParam.label}
+                Add Condition
             </Button>
         </>
     )
 }
 
-export default ArrayInput
+export default ConditionBuilder

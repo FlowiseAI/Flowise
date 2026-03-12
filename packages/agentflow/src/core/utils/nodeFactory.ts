@@ -1,4 +1,6 @@
-import type { FlowNode, NodeData } from '../types'
+import type { FlowNode, NodeData, OutputAnchor } from '../types'
+
+import { buildDynamicOutputAnchors } from './dynamicOutputAnchors'
 
 /**
  * Map from NodeData.type to the ReactFlow node type key.
@@ -130,11 +132,21 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
         }
     }
 
-    // Initialize outputs
-    const outputAnchors = isAgentflow ? createAgentFlowOutputs(nodeData, newNodeId) : []
-
     // Initialize default input values from definitions using initializeDefaultNodeData
     const initialInputValues = initializeDefaultNodeData(inputDefinitions)
+
+    // Initialize outputs — condition nodes use buildDynamicOutputAnchors so that
+    // the initial outputAnchors match the v2 format (numeric label/name + description)
+    let outputAnchors: OutputAnchor[] | Array<{ id: string; label: string; name: string }> = []
+    if (isAgentflow) {
+        if (nodeData.name === 'conditionAgentflow') {
+            const conditions = initialInputValues.conditions
+            const conditionCount = Array.isArray(conditions) ? conditions.length : 0
+            outputAnchors = buildDynamicOutputAnchors(newNodeId, conditionCount, 'Condition', true)
+        } else {
+            outputAnchors = createAgentFlowOutputs(nodeData, newNodeId)
+        }
+    }
 
     // Create initialized node data
     const initializedData: NodeData = {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { ComponentType, useCallback, useEffect, useRef, useState } from 'react'
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 
 import { Box, FormControlLabel, IconButton, MenuItem, Select, Switch, TextField, Tooltip, TooltipProps, Typography } from '@mui/material'
@@ -16,6 +16,16 @@ const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <To
     }
 })
 
+/** Props passed to an async input component (asyncOptions / asyncMultiOptions). */
+export interface AsyncInputProps {
+    inputParam: InputParam
+    value: unknown
+    disabled: boolean
+    onChange: (newValue: string) => void
+    nodeName?: string
+    inputValues?: Record<string, unknown>
+}
+
 export interface NodeInputHandlerProps {
     inputAnchor?: InputAnchor
     inputParam?: InputParam
@@ -25,11 +35,15 @@ export interface NodeInputHandlerProps {
     disablePadding?: boolean
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
     itemParameters?: InputParam[][]
+    /** Renders asyncOptions / asyncMultiOptions fields. Lives in features/ to keep atoms free of infrastructure. */
+    AsyncInputComponent?: ComponentType<AsyncInputProps>
 }
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 /**
  * Simplified input handler for agentflow nodes
- * Handles basic input types: string, number, password, boolean, options
+ * Handles basic input types: string, number, password, boolean, options, array, single-select, multi-select.
  */
 export function NodeInputHandler({
     inputAnchor,
@@ -39,7 +53,8 @@ export function NodeInputHandler({
     isAdditionalParams = false,
     disablePadding = false,
     onDataChange,
-    itemParameters
+    itemParameters,
+    AsyncInputComponent
 }: NodeInputHandlerProps) {
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
@@ -120,6 +135,7 @@ export function NodeInputHandler({
                         ))}
                     </Select>
                 )
+
             case 'array':
                 return (
                     <ArrayInput
@@ -128,6 +144,21 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onDataChange={onDataChange}
                         itemParameters={itemParameters}
+                        AsyncInputComponent={AsyncInputComponent}
+                    />
+                )
+
+            case 'asyncOptions':
+            case 'asyncMultiOptions':
+                if (!AsyncInputComponent) return null
+                return (
+                    <AsyncInputComponent
+                        inputParam={inputParam}
+                        value={value}
+                        disabled={disabled}
+                        onChange={(v) => handleDataChange(v)}
+                        nodeName={data.name}
+                        inputValues={data.inputValues as Record<string, unknown> | undefined}
                     />
                 )
 

@@ -13,6 +13,8 @@ jest.mock('reactflow', () => ({
     useUpdateNodeInternals: () => mockUpdateNodeInternals
 }))
 
+const mockCleanupOrphanedEdges = jest.fn()
+
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
         state: {},
@@ -21,6 +23,30 @@ jest.mock('@/infrastructure/store', () => ({
     useConfigContext: () => ({
         isDarkMode: false
     })
+}))
+
+jest.mock('./useDynamicOutputPorts', () => ({
+    useDynamicOutputPorts: () => ({
+        cleanupOrphanedEdges: mockCleanupOrphanedEdges
+    })
+}))
+
+jest.mock('@/core/utils', () => ({
+    ...jest.requireActual('@/core/utils'),
+    buildDynamicOutputAnchors: (nodeId: string, count: number, labelPrefix: string) => {
+        const anchors = []
+        for (let i = 0; i < count; i++) {
+            anchors.push({
+                id: `${nodeId}-output-${i}`,
+                name: `${i}`,
+                label: `${i}`,
+                type: labelPrefix,
+                description: `${labelPrefix} ${i}`
+            })
+        }
+        anchors.push({ id: `${nodeId}-output-${count}`, name: `${count}`, label: `${count}`, type: labelPrefix, description: 'Else' })
+        return anchors
+    }
 }))
 
 jest.mock('@/atoms', () => ({
@@ -83,6 +109,32 @@ jest.mock('@/atoms', () => ({
             <div data-testid={`input-handler-${inputParam.name}`}>
                 <button data-testid={`change-${inputParam.name}`} onClick={() => onDataChange({ inputParam, newValue: 'test-value' })}>
                     Change {inputParam.name}
+                </button>
+            </div>
+        )
+    },
+    ConditionBuilder: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        return (
+            <div data-testid='condition-builder'>
+                <button
+                    data-testid='add-condition'
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentArray, { type: 'string', value1: '', operation: 'equal', value2: '' }]
+                        })
+                    }}
+                >
+                    Add Condition
                 </button>
             </div>
         )
@@ -303,6 +355,90 @@ describe('EditNodeDialog', () => {
     })
 
     // ========================================================================
+    // Async-driven Field Visibility (FLOWISE-233 integration)
+    // ========================================================================
+
+    describe('async-driven visibility', () => {
+        it('shows a field hidden by an asyncOptions value when that value is selected', () => {
+            const asyncParams: InputParam[] = [
+                { id: 'model', name: 'model', label: 'Model', type: 'asyncOptions', loadMethod: 'listModels' } as InputParam,
+                { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'test-value' } } as InputParam
+            ]
+            const asyncData: NodeData = { ...nodeData, id: 'node-async', inputValues: { model: '' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Temperature is hidden while model is empty
+            expect(screen.queryByTestId('input-handler-temperature')).not.toBeInTheDocument()
+
+            // User picks a value from the async dropdown
+            fireEvent.click(screen.getByTestId('change-model'))
+
+            // Visibility engine re-runs: temperature is now shown
+            expect(screen.getByTestId('input-handler-temperature')).toBeInTheDocument()
+        })
+
+        it('shows a field hidden by an asyncMultiOptions value when that value is selected', () => {
+            const asyncParams: InputParam[] = [
+                {
+                    id: 'tools',
+                    name: 'tools',
+                    label: 'Tools',
+                    type: 'asyncMultiOptions',
+                    loadMethod: 'listTools',
+                    optional: true
+                } as InputParam,
+                { id: 'cfg', name: 'toolConfig', label: 'Tool Config', type: 'string', show: { tools: 'test-value' } } as InputParam
+            ]
+            const asyncData: NodeData = { ...nodeData, id: 'node-multi', inputValues: { tools: '' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.queryByTestId('input-handler-toolConfig')).not.toBeInTheDocument()
+
+            fireEvent.click(screen.getByTestId('change-tools'))
+
+            expect(screen.getByTestId('input-handler-toolConfig')).toBeInTheDocument()
+        })
+
+        it('hides a field when asyncOptions value no longer satisfies its show condition', () => {
+            const asyncParams: InputParam[] = [
+                { id: 'model', name: 'model', label: 'Model', type: 'asyncOptions', loadMethod: 'listModels' } as InputParam,
+                { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'gpt-4o' } } as InputParam
+            ]
+            // Start with temperature visible (model === 'gpt-4o')
+            const asyncData: NodeData = { ...nodeData, id: 'node-hide', inputValues: { model: 'gpt-4o', temperature: '0.5' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('input-handler-temperature')).toBeInTheDocument()
+
+            // Changing model fires onDataChange with 'test-value', which no longer satisfies show: { model: 'gpt-4o' }
+            fireEvent.click(screen.getByTestId('change-model'))
+
+            expect(screen.queryByTestId('input-handler-temperature')).not.toBeInTheDocument()
+        })
+    })
+
+    // ========================================================================
     // Integration Tests - Array Input
     // ========================================================================
 
@@ -419,6 +555,76 @@ describe('EditNodeDialog', () => {
             expect(lastCall[1]).toHaveProperty('inputValues')
             expect(lastCall[1].inputValues).toHaveProperty('connections')
             expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
+        })
+
+        it('should render ConditionBuilder for conditionAgentflow node', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('condition-builder')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the conditions param
+            expect(screen.queryByTestId('input-handler-conditions')).not.toBeInTheDocument()
+        })
+
+        it('should merge outputAnchors into a single updateNodeData call when conditions change', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-condition'))
+
+            // Should merge inputValues and outputAnchors into a single updateNodeData call
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('conditionAgentflow_0', {
+                inputValues: expect.objectContaining({ conditions: expect.any(Array) }),
+                outputAnchors: expect.arrayContaining([
+                    expect.objectContaining({ description: 'Condition 0' }),
+                    expect.objectContaining({ description: 'Condition 1' }),
+                    expect.objectContaining({ description: 'Else' })
+                ])
+            })
+            // Should call cleanupOrphanedEdges with the new count
+            expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
         })
 
         it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {
