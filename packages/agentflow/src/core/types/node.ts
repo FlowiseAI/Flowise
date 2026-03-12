@@ -57,6 +57,7 @@ export interface OutputAnchor {
     name: string
     label: string
     type: string
+    description?: string
 }
 
 export interface InputParam {
