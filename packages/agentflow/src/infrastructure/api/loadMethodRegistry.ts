@@ -17,15 +17,17 @@ export interface ApiServices {
  * and must return a `Promise` of the option values to populate the node's dropdown.
  *
  * ### Built-in entries
- * - `listChatModels` — fetches available chat models via `GET /assistants/components/chatmodels`
+ * - `listModels` — fetches available chat models via `GET /assistants/components/chatmodels`
  * - `listTools` — fetches available tool components via `POST /node-load-method/toolAgentflow`
  * - `listCredentials` — fetches credentials filtered by `params.name` (credential component name)
  *   via `GET /credentials?credentialName=<name>`
  *
  */
 export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: Record<string, unknown>) => Promise<unknown>> = {
-    listChatModels: (apis) => apis.chatModelsApi.getChatModels(),
-    listTools: (apis) => apis.toolsApi.getAllTools(),
+    listModels: (apis) => apis.chatModelsApi.getChatModels(),
+    listTools: (apis, params) => apis.toolsApi.getAllTools(params?.nodeName as string | undefined),
+    listToolInputArgs: (apis, params) =>
+        apis.toolsApi.getToolInputArgs((params?.inputs as Record<string, unknown>) ?? {}, params?.nodeName as string | undefined),
     listCredentials: (apis, params) => {
         const name = params?.name
         if (typeof name !== 'string') {

@@ -10,6 +10,7 @@ import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
 import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
+import { AsyncInput } from './AsyncInput'
 import { useDynamicOutputPorts } from './useDynamicOutputPorts'
 
 export interface EditNodeDialogProps {
@@ -275,6 +276,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                     isAdditionalParams={true}
                                     onDataChange={onCustomDataChange}
                                     itemParameters={inputParam.type === 'array' ? arrayItemParameters[inputParam.name] : undefined}
+                                    AsyncInputComponent={AsyncInput}
                                 />
                             )
                         })}

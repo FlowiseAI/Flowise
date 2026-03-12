@@ -355,6 +355,90 @@ describe('EditNodeDialog', () => {
     })
 
     // ========================================================================
+    // Async-driven Field Visibility (FLOWISE-233 integration)
+    // ========================================================================
+
+    describe('async-driven visibility', () => {
+        it('shows a field hidden by an asyncOptions value when that value is selected', () => {
+            const asyncParams: InputParam[] = [
+                { id: 'model', name: 'model', label: 'Model', type: 'asyncOptions', loadMethod: 'listModels' } as InputParam,
+                { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'test-value' } } as InputParam
+            ]
+            const asyncData: NodeData = { ...nodeData, id: 'node-async', inputValues: { model: '' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Temperature is hidden while model is empty
+            expect(screen.queryByTestId('input-handler-temperature')).not.toBeInTheDocument()
+
+            // User picks a value from the async dropdown
+            fireEvent.click(screen.getByTestId('change-model'))
+
+            // Visibility engine re-runs: temperature is now shown
+            expect(screen.getByTestId('input-handler-temperature')).toBeInTheDocument()
+        })
+
+        it('shows a field hidden by an asyncMultiOptions value when that value is selected', () => {
+            const asyncParams: InputParam[] = [
+                {
+                    id: 'tools',
+                    name: 'tools',
+                    label: 'Tools',
+                    type: 'asyncMultiOptions',
+                    loadMethod: 'listTools',
+                    optional: true
+                } as InputParam,
+                { id: 'cfg', name: 'toolConfig', label: 'Tool Config', type: 'string', show: { tools: 'test-value' } } as InputParam
+            ]
+            const asyncData: NodeData = { ...nodeData, id: 'node-multi', inputValues: { tools: '' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.queryByTestId('input-handler-toolConfig')).not.toBeInTheDocument()
+
+            fireEvent.click(screen.getByTestId('change-tools'))
+
+            expect(screen.getByTestId('input-handler-toolConfig')).toBeInTheDocument()
+        })
+
+        it('hides a field when asyncOptions value no longer satisfies its show condition', () => {
+            const asyncParams: InputParam[] = [
+                { id: 'model', name: 'model', label: 'Model', type: 'asyncOptions', loadMethod: 'listModels' } as InputParam,
+                { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'gpt-4o' } } as InputParam
+            ]
+            // Start with temperature visible (model === 'gpt-4o')
+            const asyncData: NodeData = { ...nodeData, id: 'node-hide', inputValues: { model: 'gpt-4o', temperature: '0.5' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('input-handler-temperature')).toBeInTheDocument()
+
+            // Changing model fires onDataChange with 'test-value', which no longer satisfies show: { model: 'gpt-4o' }
+            fireEvent.click(screen.getByTestId('change-model'))
+
+            expect(screen.queryByTestId('input-handler-temperature')).not.toBeInTheDocument()
+        })
+    })
+
+    // ========================================================================
     // Integration Tests - Array Input
     // ========================================================================
 

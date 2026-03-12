@@ -79,6 +79,8 @@ export interface InputParam {
     minItems?: number
     maxItems?: number
     array?: InputParam[] // Sub-field definitions for array-type params
+    loadMethod?: string // Registry key for async option loading (asyncOptions / asyncMultiOptions)
+    credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
 }
 
 export interface EdgeData {

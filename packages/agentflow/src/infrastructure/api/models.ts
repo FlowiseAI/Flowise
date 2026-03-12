@@ -11,15 +11,7 @@ export function bindChatModelsApi(client: AxiosInstance) {
          * Get all available chat models
          */
         getChatModels: async (): Promise<ChatModel[]> => {
-            const response = await client.get('/assistants/components/chatmodels')
-            return response.data
-        },
-
-        /**
-         * Get chat models filtered by provider
-         */
-        getModelsByProvider: async (provider: string): Promise<ChatModel[]> => {
-            const response = await client.get('/assistants/components/chatmodels', { params: { provider } })
+            const response = await client.post('/node-load-method/agentAgentflow', { loadMethod: 'listModels' })
             return response.data
         }
     }
