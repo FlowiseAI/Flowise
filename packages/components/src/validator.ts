@@ -32,17 +32,25 @@ export const isValidURL = (url: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isPathTraversal = (path: string): boolean => {
-    // Allow absolute paths in Linux containers (e.g., /data/...)
-    // but block directory traversal attempts and other dangerous patterns
+    // PATH_TRAVERSAL_SAFETY defaults to true; must be explicitly set to 'false' to disable
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return false
+    }
+
+    // Normalize %2e → . before checking for .. to catch mixed-encoding bypasses
+    // e.g. .%2e/, %2e./, %2e%2e all become ../
+    if (/\.\./.test(path.replace(/%2e/gi, '.'))) {
+        return true
+    }
+
     const dangerousPatterns = [
-        /\.\./, // Directory traversal (..)
-        /%2e%2e/i, // URL encoded ..
         /%2f/i, // URL encoded /
         /%5c/i, // URL encoded \ (Windows path)
         /\0/, // Null bytes
-        /^[a-zA-Z]:\\/, // Windows absolute paths (C:\) - not allowed in Linux containers
-        /^\\\\[^\\]/, // UNC paths (\\server\) - not allowed in Linux containers
-        /%00/i // URL encoded null byte
+        /%00/i, // URL encoded null byte
+        /^\s*[a-zA-Z]:[/\\]/, // Windows absolute paths (C:\, C:/) with optional leading whitespace
+        /^\\\\[^\\]/, // UNC paths (\\server\)
+        /^\// // Absolute Unix paths (/etc, /data, /root, etc.)
     ]
 
     return dangerousPatterns.some((pattern) => pattern.test(path))
