@@ -9,6 +9,9 @@ import logger from './logger'
 // /chatflows-streaming/{chatflowId}
 const ALLOWED_SLUGS = ['/prediction/', '/public-chatbotConfig/', '/chatflows-streaming/']
 
+// The TTS generate endpoint passes chatflowId in the request body, not the URL path
+const TTS_GENERATE_PATH = '/api/v1/text-to-speech/generate'
+
 /**
  * Validates if the origin is allowed for a specific chatflow
  * @param chatflowId - The chatflow ID to validate against
@@ -106,6 +109,16 @@ function isPublicChatflowRequest(url: string): boolean {
 }
 
 /**
+ * Checks if the request is for the TTS generate endpoint.
+ * This endpoint passes chatflowId in the request body rather than the URL path.
+ * @param url - The request URL
+ * @returns boolean - True if it's the TTS generate endpoint
+ */
+function isTTSGenerateRequest(url: string): boolean {
+    return url.split('?')[0] === TTS_GENERATE_PATH
+}
+
+/**
  * Get the custom error message for unauthorized origin
  * @param chatflowId - The chatflow ID
  * @param workspaceId - Optional workspace ID
@@ -129,4 +142,4 @@ async function getUnauthorizedOriginError(chatflowId: string, workspaceId?: stri
     }
 }
 
-export { isPublicChatflowRequest, extractChatflowId, validateChatflowDomain, getUnauthorizedOriginError }
+export { isPublicChatflowRequest, isTTSGenerateRequest, extractChatflowId, validateChatflowDomain, getUnauthorizedOriginError }
