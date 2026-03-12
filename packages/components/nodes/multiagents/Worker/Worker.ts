@@ -7,8 +7,7 @@ import { formatToOpenAIToolMessages } from '@langchain/classic/agents/format_scr
 import { type ToolsAgentStep } from '@langchain/classic/agents/openai/output_parser'
 import { INode, INodeData, INodeParams, IMultiAgentNode, ITeamState, ICommonObject, MessageContentImageUrl } from '../../../src/Interface'
 import { ToolCallingAgentOutputParser, AgentExecutor } from '../../../src/agents'
-import { StringOutputParser } from '@langchain/core/output_parsers'
-import { getInputVariables, handleEscapeCharacters } from '../../../src/utils'
+import { getInputVariables, handleEscapeCharacters, createTextOnlyOutputParser } from '../../../src/utils'
 
 const examplePrompt = 'You are a research assistant who can search for up-to-date info using search engine.'
 
@@ -254,13 +253,13 @@ async function createAgent(
         let conversationChain
 
         if (!workerInputVariablesValues || !Object.keys(workerInputVariablesValues).length) {
-            conversationChain = RunnableSequence.from([prompt, llm, new StringOutputParser()])
+            conversationChain = RunnableSequence.from([prompt, llm, createTextOnlyOutputParser()])
         } else {
             conversationChain = RunnableSequence.from([
                 RunnablePassthrough.assign(transformObjectPropertyToFunction(workerInputVariablesValues)),
                 prompt,
                 llm,
-                new StringOutputParser()
+                createTextOnlyOutputParser()
             ])
         }
         return conversationChain

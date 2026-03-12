@@ -10,7 +10,8 @@ import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AES, enc } from 'crypto-js'
-import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { AIMessage, AIMessageChunk, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { RunnableLambda } from '@langchain/core/runnables'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
@@ -297,6 +298,27 @@ export const transformBracesWithColon = (input: string): string => {
         } else {
             // Otherwise, leave it as is
             return match
+        }
+    })
+}
+
+/**
+ * Creates a RunnableLambda that extracts text content from a chat model response,
+ * filtering out reasoning/thinking content blocks that reasoning models may return.
+ */
+export const createTextOnlyOutputParser = () => {
+    return new RunnableLambda({
+        func: (response: AIMessageChunk) => {
+            if (typeof response.content === 'string') {
+                return response.content
+            }
+            if (Array.isArray(response.content)) {
+                return response.content
+                    .filter((block: any) => block.type === 'text' || block.type === 'text_delta')
+                    .map((block: any) => block.text ?? '')
+                    .join('')
+            }
+            return ''
         }
     })
 }

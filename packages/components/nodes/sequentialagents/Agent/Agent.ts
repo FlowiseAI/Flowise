@@ -6,7 +6,6 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessage, AIMessageChunk, BaseMessage, HumanMessage, ToolMessage } from '@langchain/core/messages'
 import { formatToOpenAIToolMessages } from '@langchain/classic/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from '@langchain/classic/agents/openai/output_parser'
-import { StringOutputParser } from '@langchain/core/output_parsers'
 import {
     INode,
     INodeData,
@@ -38,7 +37,8 @@ import {
     removeInvalidImageMarkdown,
     transformBracesWithColon,
     executeJavaScriptCode,
-    createCodeExecutionSandbox
+    createCodeExecutionSandbox,
+    createTextOnlyOutputParser
 } from '../../../src/utils'
 import {
     customGet,
@@ -742,7 +742,7 @@ async function createAgent(
         let conversationChain
 
         if (!agentInputVariablesValues || !Object.keys(agentInputVariablesValues).length) {
-            conversationChain = RunnableSequence.from([prompt, llm, new StringOutputParser()]).withConfig({
+            conversationChain = RunnableSequence.from([prompt, llm, createTextOnlyOutputParser()]).withConfig({
                 metadata: { sequentialNodeName: agentName }
             })
         } else {
@@ -750,7 +750,7 @@ async function createAgent(
                 RunnablePassthrough.assign(transformObjectPropertyToFunction(agentInputVariablesValues, state)),
                 prompt,
                 llm,
-                new StringOutputParser()
+                createTextOnlyOutputParser()
             ]).withConfig({
                 metadata: { sequentialNodeName: agentName }
             })

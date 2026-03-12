@@ -5,7 +5,13 @@ import { RunnableSequence } from '@langchain/core/runnables'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from '@langchain/classic/agents/format_scratchpad/openai_tools'
-import { getBaseClasses, transformBracesWithColon, convertChatHistoryToText, convertBaseMessagetoIMessage } from '../../../src/utils'
+import {
+    getBaseClasses,
+    transformBracesWithColon,
+    convertChatHistoryToText,
+    convertBaseMessagetoIMessage,
+    createTextOnlyOutputParser
+} from '../../../src/utils'
 import { type ToolsAgentStep } from '@langchain/classic/agents/openai/output_parser'
 import {
     FlowiseMemory,
@@ -25,7 +31,6 @@ import type { Document } from '@langchain/core/documents'
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { RESPONSE_TEMPLATE, REPHRASE_TEMPLATE } from '../../chains/ConversationalRetrievalQAChain/prompts'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
-import { StringOutputParser } from '@langchain/core/output_parsers'
 import { Tool } from '@langchain/core/tools'
 
 class ConversationalRetrievalToolAgent_Agents implements INode {
@@ -323,7 +328,7 @@ const prepareAgent = async (
         // Always rephrase to normalize/expand user queries for better retrieval
         try {
             const CONDENSE_QUESTION_PROMPT = PromptTemplate.fromTemplate(rephrasePrompt)
-            const condenseQuestionChain = RunnableSequence.from([CONDENSE_QUESTION_PROMPT, rephraseModel, new StringOutputParser()])
+            const condenseQuestionChain = RunnableSequence.from([CONDENSE_QUESTION_PROMPT, rephraseModel, createTextOnlyOutputParser()])
             const res = await condenseQuestionChain.invoke({
                 question: input,
                 chat_history: chatHistoryString
