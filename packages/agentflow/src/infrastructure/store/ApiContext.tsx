@@ -5,17 +5,17 @@ import type { AxiosInstance } from 'axios'
 import type { RequestInterceptor } from '@/core/types'
 
 import {
+    bindApiClient,
+    bindChatflowsApi,
     bindChatModelsApi,
     bindCredentialsApi,
     bindEmbeddingsApi,
+    bindNodesApi,
     bindRuntimeStateApi,
     bindStoresApi,
     bindToolsApi,
     type ChatflowsApi,
     type ChatModelsApi,
-    createApiClient,
-    createChatflowsApi,
-    createNodesApi,
     type CredentialsApi,
     type EmbeddingsApi,
     type NodesApi,
@@ -52,11 +52,11 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
     interceptorRef.current = requestInterceptor
 
     const value = useMemo(() => {
-        const client = createApiClient(apiBaseUrl, token, (config) => {
+        const client = bindApiClient(apiBaseUrl, token, (config) => {
             return interceptorRef.current?.(config) ?? config
         })
-        const nodesApi = createNodesApi(client)
-        const chatflowsApi = createChatflowsApi(client)
+        const nodesApi = bindNodesApi(client)
+        const chatflowsApi = bindChatflowsApi(client)
         const chatModelsApi = bindChatModelsApi(client)
         const toolsApi = bindToolsApi(client)
         const credentialsApi = bindCredentialsApi(client)

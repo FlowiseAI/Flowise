@@ -7,9 +7,9 @@ import type { RequestInterceptor } from '@/core/types'
 import { ApiProvider, useApiContext } from './ApiContext'
 
 jest.mock('../api', () => ({
-    createApiClient: jest.fn(() => 'mock-client'),
-    createNodesApi: jest.fn(() => ({ getAllNodes: jest.fn() })),
-    createChatflowsApi: jest.fn(() => ({ getAll: jest.fn() })),
+    bindApiClient: jest.fn(() => 'mock-client'),
+    bindNodesApi: jest.fn(() => ({ getAllNodes: jest.fn() })),
+    bindChatflowsApi: jest.fn(() => ({ getAll: jest.fn() })),
     bindChatModelsApi: jest.fn(() => ({ getChatModels: jest.fn() })),
     bindToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
     bindCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() })),
@@ -19,9 +19,9 @@ jest.mock('../api', () => ({
 }))
 
 const {
-    createApiClient,
-    createNodesApi,
-    createChatflowsApi,
+    bindApiClient,
+    bindNodesApi,
+    bindChatflowsApi,
     bindChatModelsApi,
     bindToolsApi,
     bindCredentialsApi,
@@ -56,10 +56,10 @@ describe('ApiContext', () => {
             expect(result.current.storesApi).toBeDefined()
             expect(result.current.embeddingsApi).toBeDefined()
             expect(result.current.runtimeStateApi).toBeDefined()
-            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined, expect.any(Function))
+            expect(bindApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined, expect.any(Function))
         })
 
-        it('should pass token to createApiClient', () => {
+        it('should pass token to bindApiClient', () => {
             const wrapper = ({ children }: { children: ReactNode }) => (
                 <ApiProvider apiBaseUrl='http://localhost:3000' token='my-token'>
                     {children}
@@ -67,7 +67,7 @@ describe('ApiContext', () => {
             )
             renderHook(() => useApiContext(), { wrapper })
 
-            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', 'my-token', expect.any(Function))
+            expect(bindApiClient).toHaveBeenCalledWith('http://localhost:3000', 'my-token', expect.any(Function))
         })
 
         it('should create nodesApi and chatflowsApi from client', () => {
@@ -76,8 +76,8 @@ describe('ApiContext', () => {
             )
             renderHook(() => useApiContext(), { wrapper })
 
-            expect(createNodesApi).toHaveBeenCalledWith('mock-client')
-            expect(createChatflowsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindNodesApi).toHaveBeenCalledWith('mock-client')
+            expect(bindChatflowsApi).toHaveBeenCalledWith('mock-client')
             expect(bindChatModelsApi).toHaveBeenCalledWith('mock-client')
             expect(bindToolsApi).toHaveBeenCalledWith('mock-client')
             expect(bindCredentialsApi).toHaveBeenCalledWith('mock-client')
@@ -99,16 +99,16 @@ describe('ApiContext', () => {
 
             const { rerender } = renderHook(() => useApiContext(), { wrapper })
 
-            // Capture the wrapper function passed to createApiClient
-            const wrapperFn = createApiClient.mock.calls[0][2]
-            expect(createApiClient).toHaveBeenCalledTimes(1)
+            // Capture the wrapper function passed to bindApiClient
+            const wrapperFn = bindApiClient.mock.calls[0][2]
+            expect(bindApiClient).toHaveBeenCalledTimes(1)
 
             // Re-render with a different interceptor but same apiBaseUrl/token
             activeInterceptor = interceptorB
             rerender()
 
             // Client should NOT be recreated
-            expect(createApiClient).toHaveBeenCalledTimes(1)
+            expect(bindApiClient).toHaveBeenCalledTimes(1)
 
             // The wrapper should now delegate to interceptorB
             const config = { url: '/test', headers: {} }
@@ -127,7 +127,7 @@ describe('ApiContext', () => {
 
             expect(result.current).toBe(first)
             // Only created once despite re-render
-            expect(createApiClient).toHaveBeenCalledTimes(1)
+            expect(bindApiClient).toHaveBeenCalledTimes(1)
         })
     })
 })

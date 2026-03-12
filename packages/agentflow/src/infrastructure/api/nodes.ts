@@ -5,7 +5,7 @@ import type { NodeData } from '@/core/types'
 /**
  * Create nodes API functions bound to a client instance
  */
-export function createNodesApi(client: AxiosInstance) {
+export function bindNodesApi(client: AxiosInstance) {
     return {
         /**
          * Get all available nodes
@@ -34,4 +34,4 @@ export function createNodesApi(client: AxiosInstance) {
     }
 }
 
-export type NodesApi = ReturnType<typeof createNodesApi>
+export type NodesApi = ReturnType<typeof bindNodesApi>
