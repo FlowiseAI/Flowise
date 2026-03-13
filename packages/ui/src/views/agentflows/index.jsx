@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
@@ -28,6 +28,9 @@ import useApi from '@/hooks/useApi'
 import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
+// utils
+import { debounce } from 'lodash'
+
 // icons
 import { IconPlus, IconLayoutGrid, IconList, IconX, IconAlertTriangle } from '@tabler/icons-react'
 
@@ -54,16 +57,21 @@ const Agentflows = () => {
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
 
+    const searchRef = useRef('')
+
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
-        refresh(page, pageLimit, agentflowVersion)
+        refresh(page, pageLimit, agentflowVersion, searchRef.current)
     }
 
-    const refresh = (page, limit, nextView) => {
+    const refresh = (page, limit, nextView, searchVal) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
+        }
+        if (searchVal) {
+            params.search = searchVal
         }
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
@@ -78,19 +86,22 @@ const Agentflows = () => {
         if (nextView === null) return
         localStorage.setItem('agentFlowVersion', nextView)
         setAgentflowVersion(nextView)
-        refresh(1, pageLimit, nextView)
+        refresh(1, pageLimit, nextView, searchRef.current)
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const debouncedSearch = useCallback(
+        debounce((value, version) => {
+            setCurrentPage(1)
+            refresh(1, pageLimit, version, value)
+        }, 300),
+        [pageLimit]
+    )
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
-    }
-
-    function filterFlows(data) {
-        return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
+        searchRef.current = event.target.value
+        debouncedSearch(event.target.value, agentflowVersion)
     }
 
     const addNew = () => {
@@ -304,7 +315,7 @@ const Agentflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.data?.map((data, index) => (
                                         <ItemCard
                                             key={index}
                                             onClick={() => goToCanvas(data)}
@@ -322,7 +333,6 @@ const Agentflows = () => {
                                     images={images}
                                     icons={icons}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
                                     updateFlowsApi={getAllAgentflows}
                                     setError={setError}
                                     currentPage={currentPage}

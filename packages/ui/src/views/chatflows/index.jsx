@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
@@ -27,6 +27,9 @@ import useApi from '@/hooks/useApi'
 import { baseURL } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
+// utils
+import { debounce } from 'lodash'
+
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
@@ -48,17 +51,21 @@ const Chatflows = () => {
     const [currentPage, setCurrentPage] = useState(1)
     const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
+    const searchRef = useRef('')
 
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
-        applyFilters(page, pageLimit)
+        applyFilters(page, pageLimit, searchRef.current)
     }
 
-    const applyFilters = (page, limit) => {
+    const applyFilters = (page, limit, searchVal) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
+        }
+        if (searchVal) {
+            params.search = searchVal
         }
         getAllChatflowsApi.request(params)
     }
@@ -69,16 +76,19 @@ const Chatflows = () => {
         setView(nextView)
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const debouncedSearch = useCallback(
+        debounce((value) => {
+            setCurrentPage(1)
+            applyFilters(1, pageLimit, value)
+        }, 300),
+        [pageLimit]
+    )
+
     const onSearchChange = (event) => {
         setSearch(event.target.value)
-    }
-
-    function filterFlows(data) {
-        return (
-            data?.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data?.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
+        searchRef.current = event.target.value
+        debouncedSearch(event.target.value)
     }
 
     const addNew = () => {
@@ -196,7 +206,7 @@ const Chatflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
+                                    {getAllChatflowsApi.data?.data?.map((data, index) => (
                                         <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                     ))}
                                 </Box>
@@ -205,7 +215,6 @@ const Chatflows = () => {
                                     data={getAllChatflowsApi.data?.data}
                                     images={images}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
                                     updateFlowsApi={getAllChatflowsApi}
                                     setError={setError}
                                     currentPage={currentPage}

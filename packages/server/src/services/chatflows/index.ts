@@ -142,7 +142,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
     }
 }
 
-const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: number = -1, limit: number = -1, search?: string) => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -150,10 +150,6 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
             .createQueryBuilder('chat_flow')
             .orderBy('chat_flow.updatedDate', 'DESC')
 
-        if (page > 0 && limit > 0) {
-            queryBuilder.skip((page - 1) * limit)
-            queryBuilder.take(limit)
-        }
         if (type === 'MULTIAGENT') {
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'MULTIAGENT' })
         } else if (type === 'AGENTFLOW') {
@@ -165,6 +161,16 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
             queryBuilder.andWhere('chat_flow.type = :type', { type: 'CHATFLOW' })
         }
         if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
+        if (search) {
+            queryBuilder.andWhere(
+                '(chat_flow.name LIKE :search OR chat_flow.id LIKE :search)',
+                { search: `%${search}%` }
+            )
+        }
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
         const [data, total] = await queryBuilder.getManyAndCount()
 
         if (page > 0 && limit > 0) {
