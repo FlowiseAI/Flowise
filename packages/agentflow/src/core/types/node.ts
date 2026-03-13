@@ -77,7 +77,7 @@ export interface InputParam {
     hide?: Record<string, unknown>
     display?: boolean
     minItems?: number
-    maxItems?: number
+    maxItems?: number // No agentflow nodes set this today — supported for forward-compat
     array?: InputParam[] // Sub-field definitions for array-type params
     loadMethod?: string // Registry key for async option loading (asyncOptions / asyncMultiOptions)
     credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
