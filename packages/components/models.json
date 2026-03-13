@@ -1522,6 +1522,23 @@
             ]
         },
         {
+            "name": "chatMiniMax",
+            "models": [
+                {
+                    "label": "MiniMax-M2.5",
+                    "name": "MiniMax-M2.5",
+                    "input_cost": 3e-7,
+                    "output_cost": 1.2e-6
+                },
+                {
+                    "label": "MiniMax-M2.5-highspeed",
+                    "name": "MiniMax-M2.5-highspeed",
+                    "input_cost": 6e-7,
+                    "output_cost": 2.4e-6
+                }
+            ]
+        },
+        {
             "name": "chatMistralAI",
             "models": [
                 {
