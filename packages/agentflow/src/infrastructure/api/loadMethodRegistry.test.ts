@@ -22,6 +22,12 @@ const mockApis: ApiServices = {
     },
     runtimeStateApi: {
         getRuntimeStateKeys: jest.fn()
+    },
+    nodesApi: {
+        getAllNodes: jest.fn(),
+        getNodeByName: jest.fn(),
+        getNodeIconUrl: jest.fn(),
+        loadNodeMethod: jest.fn()
     }
 }
 
@@ -63,6 +69,23 @@ describe('loadMethodRegistry', () => {
             })
             expect(mockApis.toolsApi.getToolInputArgs).toHaveBeenCalledWith({ toolAgentflowSelectedTool: 'calculator' }, 'toolAgentflow')
             expect(result).toEqual(mockArgs)
+        })
+    })
+
+    describe('listRegions', () => {
+        it('should call nodesApi.loadNodeMethod() with nodeName and listRegions', async () => {
+            const mockRegions = [{ name: 'us-east-1', label: 'US East (N. Virginia)' }]
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockRegions)
+
+            const result = await loadMethodRegistry['listRegions'](mockApis, { nodeName: 'awsChatBedrock' })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsChatBedrock', 'listRegions')
+            expect(result).toEqual(mockRegions)
+        })
+
+        it('should reject when nodeName param is missing', async () => {
+            await expect(loadMethodRegistry['listRegions'](mockApis)).rejects.toThrow(
+                '`listRegions` requires a string `nodeName` parameter.'
+            )
         })
     })
 

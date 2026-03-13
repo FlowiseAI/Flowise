@@ -25,7 +25,7 @@ interface UseAsyncOptionsResult {
  * Fetches async option lists from the API using the loadMethodRegistry.
  */
 export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyncOptionsParams): UseAsyncOptionsResult {
-    const { chatModelsApi, toolsApi, credentialsApi, storesApi, embeddingsApi, runtimeStateApi, apiBaseUrl } = useApiContext()
+    const { chatModelsApi, toolsApi, credentialsApi, storesApi, embeddingsApi, runtimeStateApi, nodesApi, apiBaseUrl } = useApiContext()
 
     const [options, setOptions] = useState<OptionItem[]>([])
     const [loading, setLoading] = useState(true)
@@ -67,7 +67,15 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
                     if (!fn) {
                         throw new Error(`Unknown loadMethod: "${loadMethod}"`)
                     }
-                    const apis: ApiServices = { chatModelsApi, toolsApi, credentialsApi, storesApi, embeddingsApi, runtimeStateApi }
+                    const apis: ApiServices = {
+                        chatModelsApi,
+                        toolsApi,
+                        credentialsApi,
+                        storesApi,
+                        embeddingsApi,
+                        runtimeStateApi,
+                        nodesApi
+                    }
                     const stableParams = paramsKey ? (JSON.parse(paramsKey) as Record<string, unknown>) : undefined
                     const raw = await fn(apis, stableParams)
                     result = normalizeOptions(raw, apiBaseUrl)
@@ -103,6 +111,7 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
         storesApi,
         embeddingsApi,
         runtimeStateApi,
+        nodesApi,
         apiBaseUrl
     ])
 
