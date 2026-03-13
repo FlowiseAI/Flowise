@@ -1088,6 +1088,39 @@
             ]
         },
         {
+            "name": "chatAvian",
+            "models": [
+                {
+                    "label": "deepseek/deepseek-v3.2",
+                    "name": "deepseek/deepseek-v3.2",
+                    "description": "DeepSeek V3.2 - 164K context, fast and cost-effective",
+                    "input_cost": 0.00026,
+                    "output_cost": 0.00038
+                },
+                {
+                    "label": "moonshotai/kimi-k2.5",
+                    "name": "moonshotai/kimi-k2.5",
+                    "description": "Kimi K2.5 - 131K context, advanced reasoning",
+                    "input_cost": 0.00045,
+                    "output_cost": 0.0022
+                },
+                {
+                    "label": "z-ai/glm-5",
+                    "name": "z-ai/glm-5",
+                    "description": "GLM-5 - 131K context, multilingual",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.00255
+                },
+                {
+                    "label": "minimax/minimax-m2.5",
+                    "name": "minimax/minimax-m2.5",
+                    "description": "MiniMax M2.5 - 1M context, long-context specialist",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0011
+                }
+            ]
+        },
+        {
             "name": "chatCerebras",
             "models": [
                 {
