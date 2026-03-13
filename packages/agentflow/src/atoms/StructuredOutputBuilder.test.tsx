@@ -8,8 +8,34 @@ import { StructuredOutputBuilder } from './StructuredOutputBuilder'
 const mockOnDataChange = jest.fn()
 
 jest.mock('@tabler/icons-react', () => ({
+    IconArrowsMaximize: () => <span data-testid='icon-arrows-maximize' />,
+    IconInfoCircle: () => <span data-testid='icon-info-circle' />,
     IconPlus: () => <span data-testid='icon-plus' />,
     IconTrash: () => <span data-testid='icon-trash' />
+}))
+
+jest.mock('@/atoms/ExpandTextDialog', () => ({
+    ExpandTextDialog: ({
+        open,
+        value,
+        title,
+        onConfirm,
+        onCancel
+    }: {
+        open: boolean
+        value: string
+        title: string
+        onConfirm: (v: string) => void
+        onCancel: () => void
+    }) =>
+        open ? (
+            <div data-testid='expand-dialog'>
+                <span>{title}</span>
+                <span data-testid='expand-value'>{value}</span>
+                <button onClick={() => onConfirm('updated schema')}>Save</button>
+                <button onClick={onCancel}>Cancel</button>
+            </div>
+        ) : null
 }))
 
 describe('StructuredOutputBuilder', () => {
@@ -302,6 +328,91 @@ describe('StructuredOutputBuilder', () => {
         render(<StructuredOutputBuilder inputParam={inputParamWithMax} data={dataWithEntries} onDataChange={mockOnDataChange} />)
 
         expect(screen.getByRole('button', { name: /Add JSON Structured Output/i })).toBeDisabled()
+    })
+
+    // --- Description required asterisk ---
+
+    it('should render Description label with required asterisk', () => {
+        const dataWithEntries: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
+            }
+        } as NodeData
+
+        render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
+
+        const descLabel = screen.getByText('Description')
+        const asterisk = descLabel.parentElement?.querySelector('span')
+        expect(asterisk).toHaveTextContent('*')
+    })
+
+    // --- Info tooltips ---
+
+    it('should render info icon next to Enum Values label', () => {
+        const dataWithEntries: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                llmStructuredOutput: [{ key: 'status', type: 'enum', enumValues: '', description: '' }]
+            }
+        } as NodeData
+
+        render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
+
+        expect(screen.getByText('Enum Values')).toBeInTheDocument()
+        expect(screen.getByTestId('icon-info-circle')).toBeInTheDocument()
+    })
+
+    it('should render info icon and expand icon next to JSON Schema label', () => {
+        const dataWithEntries: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                llmStructuredOutput: [{ key: 'items', type: 'jsonArray', jsonSchema: '{}', description: '' }]
+            }
+        } as NodeData
+
+        render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
+
+        expect(screen.getByText('JSON Schema')).toBeInTheDocument()
+        expect(screen.getByTestId('icon-info-circle')).toBeInTheDocument()
+        expect(screen.getByTitle('Expand')).toBeInTheDocument()
+    })
+
+    // --- Expand dialog for JSON Schema ---
+
+    it('should open expand dialog when expand icon is clicked on JSON Schema', () => {
+        const dataWithEntries: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                llmStructuredOutput: [{ key: 'items', type: 'jsonArray', jsonSchema: '{"a":"b"}', description: '' }]
+            }
+        } as NodeData
+
+        render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
+
+        fireEvent.click(screen.getByTitle('Expand'))
+
+        expect(screen.getByTestId('expand-dialog')).toBeInTheDocument()
+        expect(screen.getByTestId('expand-value')).toHaveTextContent('{"a":"b"}')
+    })
+
+    it('should update JSON Schema when expand dialog saves', () => {
+        const dataWithEntries: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                llmStructuredOutput: [{ key: 'items', type: 'jsonArray', jsonSchema: '{}', description: '' }]
+            }
+        } as NodeData
+
+        render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
+
+        fireEvent.click(screen.getByTitle('Expand'))
+        fireEvent.click(screen.getByText('Save'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: mockInputParam,
+            newValue: [{ key: 'items', type: 'jsonArray', jsonSchema: 'updated schema', description: '' }]
+        })
     })
 
     // --- All six type options ---

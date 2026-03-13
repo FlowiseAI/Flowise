@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Typography } from '@mui/material'
+import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconPlus, IconTrash } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react'
 
+import { ExpandTextDialog } from '@/atoms'
 import type { InputParam, NodeData } from '@/core/types'
 
 const OUTPUT_TYPES = [
@@ -86,6 +87,9 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
 
     const isDeleteVisible = !inputParam.minItems || entries.length > inputParam.minItems
     const isAddDisabled = disabled || (!!inputParam.maxItems && entries.length >= inputParam.maxItems)
+
+    // Expand dialog state for JSON Schema field
+    const [expandOpen, setExpandOpen] = useState<{ index: number } | null>(null)
 
     return (
         <>
@@ -178,6 +182,11 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         <Box sx={{ p: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <Typography>Enum Values</Typography>
+                                <Tooltip title='Enum values. Separated by comma' placement='top'>
+                                    <span style={{ display: 'inline-flex', marginLeft: 6, cursor: 'pointer' }}>
+                                        <IconInfoCircle size={16} style={{ opacity: 0.6 }} />
+                                    </span>
+                                </Tooltip>
                             </div>
                             <TextField
                                 fullWidth
@@ -197,6 +206,22 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         <Box sx={{ p: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <Typography>JSON Schema</Typography>
+                                <Tooltip title='JSON schema for the structured output' placement='top'>
+                                    <span style={{ display: 'inline-flex', marginLeft: 6, cursor: 'pointer' }}>
+                                        <IconInfoCircle size={16} style={{ opacity: 0.6 }} />
+                                    </span>
+                                </Tooltip>
+                                <div style={{ flexGrow: 1 }} />
+                                <IconButton
+                                    size='small'
+                                    sx={{ height: 25, width: 25 }}
+                                    title='Expand'
+                                    color='primary'
+                                    disabled={disabled}
+                                    onClick={() => setExpandOpen({ index })}
+                                >
+                                    <IconArrowsMaximize />
+                                </IconButton>
                             </div>
                             <TextField
                                 fullWidth
@@ -216,7 +241,10 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                     {/* Description field */}
                     <Box sx={{ p: 2 }}>
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Typography>Description</Typography>
+                            <Typography>
+                                Description
+                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                            </Typography>
                         </div>
                         <TextField
                             fullWidth
@@ -244,6 +272,22 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
             >
                 Add {inputParam.label}
             </Button>
+
+            {/* Expand dialog for JSON Schema */}
+            {expandOpen && (
+                <ExpandTextDialog
+                    open
+                    value={entries[expandOpen.index]?.jsonSchema ?? ''}
+                    title='JSON Schema'
+                    placeholder='{ "key": { "type": "string", "description": "..." } }'
+                    disabled={disabled}
+                    onConfirm={(val) => {
+                        handleFieldChange(expandOpen.index, 'jsonSchema', val)
+                        setExpandOpen(null)
+                    }}
+                    onCancel={() => setExpandOpen(null)}
+                />
+            )}
         </>
     )
 }
