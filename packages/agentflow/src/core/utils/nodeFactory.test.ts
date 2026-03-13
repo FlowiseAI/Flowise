@@ -163,6 +163,22 @@ describe('initNode', () => {
         expect(result.outputAnchors).toHaveLength(0)
     })
 
+    it('should strip server-only metadata like filePath from node data', () => {
+        const nodeData = makeNodeData({
+            filePath: '/some/server/path/Agent.js',
+            badge: 'NEW',
+            author: 'Flowise',
+            documentation: 'https://docs.example.com',
+            loadMethods: { listModels: () => Promise.resolve([]) }
+        } as Partial<NodeData>)
+        const result = initNode(nodeData, 'n1')
+        expect(result).not.toHaveProperty('filePath')
+        expect(result).not.toHaveProperty('badge')
+        expect(result).not.toHaveProperty('author')
+        expect(result).not.toHaveProperty('documentation')
+        expect(result).not.toHaveProperty('loadMethods')
+    })
+
     it('should generate dynamic outputAnchors for conditionAgentflow nodes', () => {
         const conditionNodeData = makeNodeData({
             name: 'conditionAgentflow',
