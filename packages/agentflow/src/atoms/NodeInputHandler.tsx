@@ -148,7 +148,7 @@ export function NodeInputHandler({
                         if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
                             selectedNames = parsed
                         }
-                    } catch {
+                    } catch (e) {
                         console.error('Failed to parse multiOptions value:', value, e)
                         selectedNames = []
                     }
