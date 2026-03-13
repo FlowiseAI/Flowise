@@ -62,6 +62,10 @@ export const isPathTraversal = (path: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isUnsafeFilePath = (filePath: string): boolean => {
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return false
+    }
+
     if (!filePath || typeof filePath !== 'string') {
         return true
     }
@@ -201,6 +205,14 @@ const getAllowedVectorStoreBaseDirs = (): string[] => {
  * @throws {Error} If path validation fails or path is outside allowed directories
  */
 export const validateVectorStorePath = (userProvidedPath: string | undefined): string => {
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        if (!userProvidedPath || userProvidedPath.trim() === '') {
+            return path.join(getUserHome(), '.flowise', 'vectorstore')
+        }
+        const bypassPath = userProvidedPath.trim()
+        return path.isAbsolute(bypassPath) ? bypassPath : path.resolve(path.join(getUserHome(), '.flowise', bypassPath))
+    }
+
     // If no path provided, use default secure location
     if (!userProvidedPath || userProvidedPath.trim() === '') {
         return path.join(getUserHome(), '.flowise', 'vectorstore')
