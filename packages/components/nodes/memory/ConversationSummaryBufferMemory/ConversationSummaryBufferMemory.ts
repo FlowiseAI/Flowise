@@ -12,7 +12,7 @@ import { getBaseClasses, mapChatMessageToBaseMessage } from '../../../src/utils'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { BaseMessage, getBufferString, HumanMessage } from '@langchain/core/messages'
 import { ConversationSummaryBufferMemory, ConversationSummaryBufferMemoryInput } from 'langchain/memory'
-import { DataSource } from 'typeorm'
+import { DataSource, Not, MoreThan, EntityManager } from 'typeorm'
 import { ChatAnthropic } from '../../chatmodels/ChatAnthropic/FlowiseChatAnthropic'
 
 class ConversationSummaryBufferMemory_Memory implements INode {
@@ -128,10 +128,22 @@ class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         if (!id) return []
 
+        const summaryRow = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).findOne({
+            where: { sessionId: id, chatflowid: this.chatflowid, role: 'summaryMessage' },
+            order: { createdDate: 'DESC' }
+        })
+
+        const summaryCreatedDate = summaryRow?.createdDate ?? null
+        if (summaryRow) {
+            this.movingSummaryBuffer = summaryRow.content
+        }
+
         let chatMessage = await this.appDataSource.getRepository(this.databaseEntities['ChatMessage']).find({
             where: {
                 sessionId: id,
-                chatflowid: this.chatflowid
+                chatflowid: this.chatflowid,
+                role: Not('summaryMessage'),
+                ...(summaryCreatedDate ? { createdDate: MoreThan(summaryCreatedDate) } : {})
             },
             order: {
                 createdDate: 'ASC'
@@ -163,10 +175,38 @@ class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory
                     }
                 }
                 this.movingSummaryBuffer = await this.predictNewSummary(prunedMemory, this.movingSummaryBuffer)
+
+                // Sanitize the LLM-generated summary to mitigate prompt injection persistence
+                const sanitizedSummary = this.sanitizeSummary(this.movingSummaryBuffer)
+                this.movingSummaryBuffer = sanitizedSummary
+
+                // Use a transaction to atomically replace the summary row, preventing race conditions
+                await this.appDataSource.transaction(async (transactionalEntityManager: EntityManager) => {
+                    await transactionalEntityManager.getRepository(this.databaseEntities['ChatMessage']).delete({
+                        sessionId: id,
+                        chatflowid: this.chatflowid,
+                        role: 'summaryMessage'
+                    })
+
+                    await transactionalEntityManager.getRepository(this.databaseEntities['ChatMessage']).save({
+                        sessionId: id,
+                        chatflowid: this.chatflowid,
+                        role: 'summaryMessage',
+                        content: sanitizedSummary,
+                        chatType: 'INTERNAL',
+                        chatId: id,
+                        createdDate: new Date()
+                    })
+                })
             }
         }
 
         // ----------- Finished Pruning ---------------
+
+        // Remove summary prepended for token counting so block below can add it once cleanly
+        if (this.movingSummaryBuffer && baseMessages.length > 0 && baseMessages[0] instanceof this.summaryChatMessageClass) {
+            baseMessages.shift()
+        }
 
         if (this.movingSummaryBuffer) {
             // Anthropic doesn't support multiple system messages
@@ -190,6 +230,26 @@ class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory
         }
 
         return returnIMessages
+    }
+
+    /**
+     * Sanitize LLM-generated summary to mitigate prompt injection persistence.
+     * Strips known injection patterns that could influence future LLM interactions.
+     */
+    private sanitizeSummary(summary: string): string {
+        // Remove null bytes
+        let sanitized = summary.replace(/\u0000/g, '')
+        // Strip common prompt injection delimiters and override attempts
+        sanitized = sanitized
+            .replace(/```[^`]*```/gs, '[code block removed]')
+            .replace(/<\/?(?:system|instruction|prompt|context|role|human|assistant|user)[^>]*>/gi, '')
+            .replace(/\[(?:INST|SYS|SYSTEM)\][\s\S]*?\[\/(?:INST|SYS|SYSTEM)\]/gi, '')
+        // Truncate excessively long summaries (likely injection padding)
+        const MAX_SUMMARY_LENGTH = 10000
+        if (sanitized.length > MAX_SUMMARY_LENGTH) {
+            sanitized = sanitized.substring(0, MAX_SUMMARY_LENGTH)
+        }
+        return sanitized
     }
 
     async addChatMessages(): Promise<void> {
