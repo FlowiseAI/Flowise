@@ -163,7 +163,7 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
         if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
         if (search) {
             queryBuilder.andWhere(
-                '(chat_flow.name LIKE :search OR chat_flow.id LIKE :search)',
+                '(LOWER(chat_flow.name) LIKE LOWER(:search) OR chat_flow.id LIKE :search)',
                 { search: `%${search}%` }
             )
         }
