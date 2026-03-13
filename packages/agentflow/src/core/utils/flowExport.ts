@@ -31,11 +31,11 @@ function pickExportNodeData(data: NodeData): NodeData {
     }
 
     // Strip sensitive values from inputValues (password, file, folder)
-    if (data.inputValues && Object.keys(data.inputValues).length) {
-        const inputDefs = data.inputs || []
+    if (data.inputValues) {
+        const inputDefsByName = new Map((data.inputs || []).map((i) => [i.name, i]))
         const cleanedValues: Record<string, unknown> = {}
         for (const [key, value] of Object.entries(data.inputValues)) {
-            const inputDef = inputDefs.find((inp) => inp.name === key)
+            const inputDef = inputDefsByName.get(key)
             if (inputDef && SENSITIVE_INPUT_TYPES.has(inputDef.type)) continue
             cleanedValues[key] = value
         }
