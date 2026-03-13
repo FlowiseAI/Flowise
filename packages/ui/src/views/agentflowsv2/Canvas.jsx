@@ -51,7 +51,8 @@ import {
     initNode,
     updateOutdatedNodeData,
     updateOutdatedNodeEdge,
-    isValidConnectionAgentflowV2
+    isValidConnectionAgentflowV2,
+    normalizeStickyNoteNodes
 } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import { usePrompt } from '@/utils/usePrompt'
@@ -162,7 +163,7 @@ const AgentflowCanvas = () => {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
 
-            setNodes(nodes)
+            setNodes(normalizeStickyNoteNodes(nodes))
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)
         } catch (e) {
@@ -204,7 +205,7 @@ const AgentflowCanvas = () => {
 
     const handleSaveFlow = (chatflowName) => {
         if (reactFlowInstance) {
-            const nodes = reactFlowInstance.getNodes().map((node) => {
+            const nodes = normalizeStickyNoteNodes(reactFlowInstance.getNodes()).map((node) => {
                 const nodeData = cloneDeep(node.data)
                 if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
                     nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
@@ -333,6 +334,7 @@ const AgentflowCanvas = () => {
                 newNode.type = 'iteration'
             } else if (nodeData.type === 'StickyNote') {
                 newNode.type = 'stickyNote'
+                newNode.style = { zIndex: 0 }
             } else {
                 newNode.type = 'agentFlow'
             }
@@ -408,7 +410,8 @@ const AgentflowCanvas = () => {
 
             setSelectedNode(newNode)
             setNodes((nds) => {
-                return (nds ?? []).concat(newNode).map((node) => {
+                const updatedNodes = normalizeStickyNoteNodes((nds ?? []).concat(newNode))
+                return updatedNodes.map((node) => {
                     if (node.id === newNode.id) {
                         node.data = {
                             ...node.data,
@@ -448,7 +451,7 @@ const AgentflowCanvas = () => {
             }
         }
 
-        setNodes(cloneNodes)
+        setNodes(normalizeStickyNoteNodes(cloneNodes))
         setEdges(cloneEdges.filter((edge) => !toBeRemovedEdges.includes(edge)))
         setDirty()
         setIsSyncNodesButtonEnabled(false)
@@ -528,7 +531,7 @@ const AgentflowCanvas = () => {
         if (getSpecificChatflowApi.data) {
             const chatflow = getSpecificChatflowApi.data
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
-            setNodes(initialFlow.nodes || [])
+            setNodes(normalizeStickyNoteNodes(initialFlow.nodes || []))
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
