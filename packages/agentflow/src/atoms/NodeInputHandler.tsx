@@ -250,6 +250,19 @@ export function NodeInputHandler({
                     </>
                 )
 
+            case 'credential':
+                if (!AsyncInputComponent) return null
+                return (
+                    <AsyncInputComponent
+                        inputParam={inputParam}
+                        value={value}
+                        disabled={disabled}
+                        onChange={(v) => handleDataChange(v)}
+                        nodeName={data.name}
+                        inputValues={data.inputValues as Record<string, unknown> | undefined}
+                    />
+                )
+
             default:
                 // For unsupported types, render a basic text field
                 return (

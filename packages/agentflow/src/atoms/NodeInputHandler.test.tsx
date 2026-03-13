@@ -213,3 +213,57 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         expect(screen.queryByTestId('config-input-myField')).toBeNull()
     })
 })
+
+describe('NodeInputHandler – credential type rendering', () => {
+    const StubAsyncInput: ComponentType<AsyncInputProps> = ({ onChange }) => (
+        <button data-testid='credential-select' onClick={() => onChange('cred-id-123')}>
+            Select Credential
+        </button>
+    )
+
+    it('renders AsyncInputComponent for credential type', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'credential', name: 'FLOWISE_CREDENTIAL_ID', credentialNames: ['awsApi'] })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+            />
+        )
+
+        expect(screen.getByTestId('credential-select')).toBeTruthy()
+    })
+
+    it('renders nothing for credential type when no AsyncInputComponent', () => {
+        const { container } = render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'credential', name: 'FLOWISE_CREDENTIAL_ID', credentialNames: ['awsApi'] })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(container.querySelector('button')).toBeNull()
+    })
+
+    it('calls onDataChange when credential onChange fires', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'credential', name: 'FLOWISE_CREDENTIAL_ID', credentialNames: ['awsApi'] })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+            />
+        )
+
+        fireEvent.click(screen.getByTestId('credential-select'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: expect.objectContaining({ name: 'FLOWISE_CREDENTIAL_ID', type: 'credential' }),
+            newValue: 'cred-id-123'
+        })
+    })
+})
