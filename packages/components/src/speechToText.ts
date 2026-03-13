@@ -76,7 +76,9 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
             }
             case SpeechToTextType.AZURE_COGNITIVE: {
                 try {
-                    const baseUrl = `https://${credentialData.serviceRegion}.cognitiveservices.azure.com/speechtotext/transcriptions:transcribe`
+                    const defaultEndpoint = `https://${credentialData.serviceRegion}.cognitiveservices.azure.com`
+                    const endpoint = speechToTextConfig.customEndpoint || defaultEndpoint
+                    const baseUrl = `${endpoint.replace(/\/$/, '')}/speechtotext/transcriptions:transcribe`
                     const apiVersion = credentialData.apiVersion || '2024-05-15-preview'
 
                     const formData = new FormData()
@@ -86,10 +88,13 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                     const channelsStr = speechToTextConfig.channels || '0,1'
                     const channels = channelsStr.split(',').map(Number)
 
-                    const definition = {
+                    const definition: ICommonObject = {
                         locales: [speechToTextConfig.language || 'en-US'],
                         profanityFilterMode: speechToTextConfig.profanityFilterMode || 'Masked',
                         channels
+                    }
+                    if (speechToTextConfig.endpointId) {
+                        definition.customEndpointId = speechToTextConfig.endpointId
                     }
                     formData.append('definition', JSON.stringify(definition))
 
