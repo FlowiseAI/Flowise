@@ -22,6 +22,7 @@ if (!fs.existsSync(logDir)) {
 }
 
 const logger = createLogger({
+    level: config.logging.server.level,
     format: combine(
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         format.json(),
@@ -46,6 +47,7 @@ const logger = createLogger({
 })
 
 requestLogger = createLogger({
+    level: config.logging.express.level,
     format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
     defaultMeta: {
         package: 'server'
