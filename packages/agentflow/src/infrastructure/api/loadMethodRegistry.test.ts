@@ -12,6 +12,16 @@ const mockApis: ApiServices = {
     credentialsApi: {
         getAllCredentials: jest.fn(),
         getCredentialsByName: jest.fn()
+    },
+    storesApi: {
+        getStores: jest.fn(),
+        getVectorStores: jest.fn()
+    },
+    embeddingsApi: {
+        getEmbeddings: jest.fn()
+    },
+    runtimeStateApi: {
+        getRuntimeStateKeys: jest.fn()
     }
 }
 

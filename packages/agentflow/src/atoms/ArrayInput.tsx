@@ -1,4 +1,4 @@
-import { type ComponentType, useCallback, useMemo } from 'react'
+import { type ComponentType, useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { Box, Button, Chip, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -33,6 +33,17 @@ export function ArrayInput({
         () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
         [data.inputValues, inputParam.name]
     )
+
+    // Stable keys for array items — avoids using index as React key
+    const idCounterRef = useRef(0)
+    const itemKeysRef = useRef<string[]>([])
+
+    // Grow keys array when new items appear (e.g. on mount or external data changes)
+    useEffect(() => {
+        while (itemKeysRef.current.length < arrayItems.length) {
+            itemKeysRef.current.push(`item-${idCounterRef.current++}`)
+        }
+    }, [arrayItems.length])
 
     // Use pre-computed itemParameters
     // Falls back to raw field definitions for nested arrays without show/hide conditions.
@@ -94,6 +105,7 @@ export function ArrayInput({
     const handleDeleteItem = useCallback(
         (indexToDelete: number) => {
             const updatedArrayItems = arrayItems.filter((_, i) => i !== indexToDelete)
+            itemKeysRef.current.splice(indexToDelete, 1)
 
             // Notify parent of change (parent will update props, causing re-render)
             onDataChange?.({ inputParam, newValue: updatedArrayItems })
@@ -125,7 +137,7 @@ export function ArrayInput({
 
                 return (
                     <Box
-                        key={index}
+                        key={itemKeysRef.current[index]}
                         sx={{
                             p: 2,
                             mt: 2,
