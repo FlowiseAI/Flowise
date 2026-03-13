@@ -1,11 +1,13 @@
 import { AnalyticHandler } from '../../../src/handler'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, IMessage, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { getPastChatHistoryImageMessages, getUniqueImageMessages, processMessagesWithImages, revertBase64ImagesToFileRefs } from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { findBestScenarioIndex } from './matchScenario'
 import { extractResponseContent } from '../../../src/utils'
+import { getModelConfigByModelName, MODEL_TYPE } from '../../../src/modelLoader'
+import { NodeHtmlMarkdown } from 'node-html-markdown'
 
 class ConditionAgent_Agentflow implements INode {
     label: string
@@ -24,7 +26,7 @@ class ConditionAgent_Agentflow implements INode {
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'conditionAgentAgentflow'
-        this.version = 1.1
+        this.version = 2.0
         this.type = 'ConditionAgent'
         this.category = 'Agent Flows'
         this.description = `Utilize an agent to split flows based on dynamic conditions`
@@ -80,26 +82,6 @@ class ConditionAgent_Agentflow implements INode {
                 ]
             },
             {
-                label: 'Override System Prompt',
-                name: 'conditionAgentOverrideSystemPrompt',
-                type: 'boolean',
-                description: 'Override initial system prompt for Condition Agent',
-                optional: true
-            },
-            {
-                label: 'Node System Prompt',
-                name: 'conditionAgentSystemPrompt',
-                type: 'string',
-                rows: 4,
-                optional: true,
-                acceptVariable: true,
-                default: CONDITION_AGENT_SYSTEM_PROMPT,
-                description: 'Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure',
-                show: {
-                    conditionAgentOverrideSystemPrompt: true
-                }
-            }
-            /*{
                 label: 'Enable Memory',
                 name: 'conditionAgentEnableMemory',
                 type: 'boolean',
@@ -158,7 +140,27 @@ class ConditionAgent_Agentflow implements INode {
                 show: {
                     conditionAgentMemoryType: 'conversationSummaryBuffer'
                 }
-            }*/
+            },
+            {
+                label: 'Override System Prompt',
+                name: 'conditionAgentOverrideSystemPrompt',
+                type: 'boolean',
+                description: 'Override initial system prompt for Condition Agent',
+                optional: true
+            },
+            {
+                label: 'Condition Agent System Prompt',
+                name: 'conditionAgentSystemPrompt',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                acceptVariable: true,
+                default: CONDITION_AGENT_SYSTEM_PROMPT,
+                description: 'Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure',
+                show: {
+                    conditionAgentOverrideSystemPrompt: true
+                }
+            }
         ]
         this.outputs = [
             {
@@ -264,7 +266,7 @@ class ConditionAgent_Agentflow implements INode {
             const conditionAgentInstructions = nodeData.inputs?.conditionAgentInstructions as string
             const conditionAgentSystemPrompt = nodeData.inputs?.conditionAgentSystemPrompt as string
             const conditionAgentOverrideSystemPrompt = nodeData.inputs?.conditionAgentOverrideSystemPrompt as boolean
-            let systemPrompt = CONDITION_AGENT_SYSTEM_PROMPT
+            let systemPrompt = NodeHtmlMarkdown.translate(CONDITION_AGENT_SYSTEM_PROMPT)
             if (conditionAgentSystemPrompt && conditionAgentOverrideSystemPrompt) {
                 systemPrompt = conditionAgentSystemPrompt
             }
@@ -278,6 +280,7 @@ class ConditionAgent_Agentflow implements INode {
             const state = options.agentflowRuntime?.state as ICommonObject
             const pastChatHistory = (options.pastChatHistory as BaseMessageLike[]) ?? []
             const runtimeChatHistory = (options.agentflowRuntime?.chatHistory as BaseMessageLike[]) ?? []
+            const prependedChatHistory = options.prependedChatHistory as IMessage[]
 
             // Initialize the LLM model instance
             const nodeInstanceFilePath = options.componentNodes[model].filePath as string
@@ -299,8 +302,8 @@ class ConditionAgent_Agentflow implements INode {
                 throw new Error('Scenarios are required')
             }
 
-            // Prepare messages array
-            const messages: BaseMessageLike[] = [
+            // Prepare prefix messages (system prompt + few-shot examples) - needed for model invocation only
+            const prefixMessages: BaseMessageLike[] = [
                 {
                     role: 'system',
                     content: systemPrompt
@@ -314,6 +317,25 @@ class ConditionAgent_Agentflow implements INode {
                     content: `\`\`\`json\n{"output": "user is not asking about AI"}\n\`\`\``
                 }
             ]
+
+            // Prepare messages array (these get stored in output)
+            const messages: BaseMessageLike[] = []
+
+            // Prepend history ONLY if it is the first node
+            if (prependedChatHistory.length > 0 && !runtimeChatHistory.length) {
+                for (const msg of prependedChatHistory) {
+                    const role: string = msg.role === 'apiMessage' ? 'assistant' : 'user'
+                    const content: string = msg.content ?? ''
+                    messages.push({
+                        role,
+                        content
+                    })
+                }
+            }
+
+            const scenariosList = _conditionAgentScenarios.map((scenario, index) => `${index + 1}. ${scenario.scenario}`).join('\n')
+            const prettyInput = `### Input\n${input}\n\n### Scenarios\n${scenariosList}\n\n### Instruction\n${conditionAgentInstructions}`
+
             input = `{"input": ${input}, "scenarios": ${JSON.stringify(
                 _conditionAgentScenarios.map((scenario) => scenario.scenario)
             )}, "instruction": ${conditionAgentInstructions}}`
@@ -352,16 +374,19 @@ class ConditionAgent_Agentflow implements INode {
             // Initialize response and determine if streaming is possible
             let response: AIMessageChunk = new AIMessageChunk('')
 
+            // Combine prefix messages with regular messages for model invocation
+            const allMessages = [...prefixMessages, ...messages]
+
             // Start analytics
             if (analyticHandlers && options.parentTraceIds) {
                 const llmLabel = options?.componentNodes?.[model]?.label || model
-                llmIds = await analyticHandlers.onLLMStart(llmLabel, messages, options.parentTraceIds)
+                llmIds = await analyticHandlers.onLLMStart(llmLabel, allMessages, options.parentTraceIds)
             }
 
             // Track execution time
             const startTime = Date.now()
 
-            response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+            response = await llmNodeInstance.invoke(allMessages, { signal: abortController?.signal })
 
             // Calculate execution time
             const endTime = Date.now()
@@ -417,6 +442,15 @@ class ConditionAgent_Agentflow implements INode {
             // Revert all tagged base64 image_url items back to stored-file format
             const messagesWithFileReferences = revertBase64ImagesToFileRefs(messages)
 
+            // Replace the user input with prettified input for display purposes
+            for (let i = messagesWithFileReferences.length - 1; i >= 0; i--) {
+                const msg = messagesWithFileReferences[i] as any
+                if (msg.role === 'user' && msg.content === input) {
+                    msg.content = prettyInput
+                    break
+                }
+            }
+
             // Only add to runtime chat history if this is the first node
             const inputMessages = []
             if (!runtimeChatHistory.length) {
@@ -434,19 +468,39 @@ class ConditionAgent_Agentflow implements INode {
                 }
             }
 
+            const costMetadata = await this.calculateUsageCost(model, modelConfig?.modelName as string | undefined, response.usage_metadata)
+
+            const output: any = {
+                conditions,
+                content: extractResponseContent(response),
+                timeMetadata: {
+                    start: startTime,
+                    end: endTime,
+                    delta: timeDelta
+                }
+            }
+
+            if (response.usage_metadata) {
+                output.usageMetadata = { ...response.usage_metadata }
+            }
+
+            if (costMetadata && output.usageMetadata) {
+                output.usageMetadata.input_cost = costMetadata.input_cost
+                output.usageMetadata.output_cost = costMetadata.output_cost
+                output.usageMetadata.total_cost = costMetadata.total_cost
+                output.usageMetadata.base_input_cost = costMetadata.base_input_cost
+                output.usageMetadata.base_output_cost = costMetadata.base_output_cost
+            }
+
+            if (response.response_metadata) {
+                output.responseMetadata = response.response_metadata
+            }
+
             const returnOutput = {
                 id: nodeData.id,
                 name: this.name,
                 input: { messages: messagesWithFileReferences },
-                output: {
-                    conditions,
-                    content: extractResponseContent(response),
-                    timeMetadata: {
-                        start: startTime,
-                        end: endTime,
-                        delta: timeDelta
-                    }
-                },
+                output,
                 state,
                 chatHistory: [...inputMessages]
             }
@@ -601,6 +655,47 @@ class ConditionAgent_Agentflow implements INode {
         } else {
             // If under token limit, use all messages
             messages.push(...pastMessages)
+        }
+    }
+
+    /**
+     * Calculates input/output and total cost from usage metadata using model pricing from models.json.
+     */
+    private async calculateUsageCost(
+        provider: string | undefined,
+        modelName: string | undefined,
+        usageMetadata: Record<string, any> | undefined
+    ): Promise<
+        | {
+              input_cost: number
+              output_cost: number
+              total_cost: number
+              base_input_cost: number
+              base_output_cost: number
+          }
+        | undefined
+    > {
+        if (!provider || !modelName) return undefined
+        const inputTokens = (usageMetadata?.input_tokens ?? 0) as number
+        const outputTokens = (usageMetadata?.output_tokens ?? 0) as number
+        try {
+            const modelConfig = await getModelConfigByModelName(MODEL_TYPE.CHAT, provider, modelName)
+            if (!modelConfig) return undefined
+            const baseInputCost = Number(modelConfig.input_cost) || 0
+            const baseOutputCost = Number(modelConfig.output_cost) || 0
+            const inputCost = inputTokens * baseInputCost
+            const outputCost = outputTokens * baseOutputCost
+            const totalCost = inputCost + outputCost
+            if (inputCost === 0 && outputCost === 0) return undefined
+            return {
+                input_cost: inputCost,
+                output_cost: outputCost,
+                total_cost: totalCost,
+                base_input_cost: baseInputCost,
+                base_output_cost: baseOutputCost
+            }
+        } catch {
+            return undefined
         }
     }
 }
