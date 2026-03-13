@@ -27,6 +27,7 @@ import ConnectionLine from './ConnectionLine'
 import StickyNote from './StickyNote'
 import CanvasHeader from '@/views/canvas/CanvasHeader'
 import AddNodes from '@/views/canvas/AddNodes'
+import GuideButton from '@/views/canvas/GuideButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import ChatPopUp from '@/views/chatmessage/ChatPopUp'
@@ -40,6 +41,8 @@ import chatflowsApi from '@/api/chatflows'
 // Hooks
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
+import useAgentFlowCreationGuide from '@/hooks/onboarding/useAgentFlowCreationGuide'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // icons
 import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
@@ -111,6 +114,17 @@ const AgentflowCanvas = () => {
     const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+
+    // ==============================|| Onboarding ||============================== //
+
+    const { startGuide: startAgentGuide } = useAgentFlowCreationGuide()
+    const { isActive, isFirstStep, getCurrentStep, next, goTo } = useOverlay()
+
+    const isButtonSparkle = isActive() && isFirstStep()
+
+    const handleGuideClick = () => {
+        startAgentGuide()
+    }
 
     // ==============================|| Events & Actions ||============================== //
 
@@ -425,11 +439,36 @@ const AgentflowCanvas = () => {
                 })
             })
             setTimeout(() => setDirty(), 0)
+
+            handleOnboardingOnDrop()
         },
 
         // eslint-disable-next-line
-        [reactFlowInstance]
+        [reactFlowInstance, isActive, getCurrentStep, next]
     )
+
+    const handleOnboardingOnDrop = () => {
+        const currentStep = getCurrentStep()
+        if (!currentStep) return
+        setTimeout(() => {
+            switch (currentStep.id) {
+                case 'agent-creation:drag-condition-agent':
+                case 'agent-creation:dragging-condition-agent':
+                    goTo('agent-creation:configure-condition-agent')
+                    break
+                case 'agent-creation:drag-billing-agent':
+                case 'agent-creation:dragging-billing-agent':
+                    goTo('agent-creation:configure-billing-agent')
+                    break
+                case 'agent-creation:drag-general-agent':
+                case 'agent-creation:dragging-general-agent':
+                    goTo('agent-creation:configure-general-agent')
+                    break
+                default:
+                    break
+            }
+        }, 200)
+    }
 
     const syncNodes = () => {
         const componentNodes = canvas.componentNodes
@@ -545,6 +584,16 @@ const AgentflowCanvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
             window.history.replaceState(state, null, `/v2/agentcanvas/${chatflow.id}`)
+
+            // Auto-advance to next step if on save step during onboarding
+            if (isActive()) {
+                const currentStep = getCurrentStep()
+                if (currentStep?.id === 'agent-creation:saving-flow') {
+                    setTimeout(() => {
+                        next()
+                    }, 500)
+                }
+            }
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
@@ -634,6 +683,20 @@ const AgentflowCanvas = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
+
+    // Auto-start guide when navigating from QuickStart
+    useEffect(() => {
+        if (state?.startGuide && getNodesApi.data && reactFlowInstance) {
+            // Small delay to ensure canvas is fully rendered
+            setTimeout(() => {
+                if (state.guideType === 'create_agent') {
+                    startAgentGuide()
+                }
+            }, 500)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state?.startGuide, getNodesApi.data, reactFlowInstance])
 
     usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
 
@@ -798,6 +861,7 @@ const AgentflowCanvas = () => {
                                 )}
                                 <ChatPopUp isAgentCanvas={true} chatflowid={chatflowId} onOpenChange={setChatPopupOpen} />
                                 {!chatPopupOpen && <ValidationPopUp isAgentCanvas={true} chatflowid={chatflowId} />}
+                                {isActive() && <GuideButton onClick={handleGuideClick} variant={isButtonSparkle ? 'sparkle' : 'default'} />}
                             </ReactFlow>
                         </div>
                     </div>

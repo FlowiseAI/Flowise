@@ -11,6 +11,8 @@ import themes from '@/themes'
 
 // project imports
 import NavigationScroll from '@/layout/NavigationScroll'
+import OnboardingGate from '@/views/onboarding/OnboardingGate'
+import { OverlayProvider } from '@/ui-component/overlay/OverlayProvider'
 
 // ==============================|| APP ||============================== //
 
@@ -21,9 +23,13 @@ const App = () => {
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={themes(customization)}>
                 <CssBaseline />
-                <NavigationScroll>
-                    <Routes />
-                </NavigationScroll>
+                <OverlayProvider>
+                    <OnboardingGate>
+                        <NavigationScroll>
+                            <Routes />
+                        </NavigationScroll>
+                    </OnboardingGate>
+                </OverlayProvider>
             </ThemeProvider>
         </StyledEngineProvider>
     )

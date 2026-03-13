@@ -44,7 +44,16 @@ import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
 import ExportingGIF from '@/assets/images/Exporting.gif'
-import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconUserEdit, IconX } from '@tabler/icons-react'
+import {
+    IconFileExport,
+    IconFileUpload,
+    IconInfoCircle,
+    IconLogout,
+    IconSettings,
+    IconUserEdit,
+    IconX,
+    IconRobot
+} from '@tabler/icons-react'
 import './index.css'
 
 // API
@@ -461,6 +470,18 @@ const ProfileSection = ({ handleLogout }) => {
                                                     }
                                                 }}
                                             >
+                                                <ListItemButton
+                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                    onClick={() => {
+                                                        setOpen(false)
+                                                        navigate('/welcome')
+                                                    }}
+                                                >
+                                                    <ListItemIcon>
+                                                        <IconRobot stroke={1.5} size='1.3rem' />
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={<Typography variant='body2'>Quick Start</Typography>} />
+                                                </ListItemButton>
                                                 <PermissionListItemButton
                                                     permissionId='workspace:export'
                                                     sx={{ borderRadius: `${customization.borderRadius}px` }}

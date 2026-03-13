@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 
+// Utils
+import { useOverlay } from '@/utils/overlay/useOverlay'
+
 // material-ui
 import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack } from '@mui/material'
@@ -15,6 +18,7 @@ import { Available } from '@/ui-component/rbac/available'
 const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
     const theme = useTheme()
     const navigate = useNavigate()
+    const { next } = useOverlay()
 
     return (
         <>
@@ -59,8 +63,12 @@ const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
                         color='secondary'
                         variant='contained'
                         title='Use Chatflow'
-                        onClick={() => onChatflowCopy(flowData)}
+                        onClick={() => {
+                            onChatflowCopy(flowData)
+                            next() // Finish the marketplace exploration guide after copying the template
+                        }}
                         startIcon={<IconCopy />}
+                        data-onboarding='marketplace-use-template-button'
                     >
                         Use Template
                     </StyledButton>

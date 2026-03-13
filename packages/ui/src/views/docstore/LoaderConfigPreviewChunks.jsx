@@ -37,6 +37,7 @@ import { useError } from '@/store/context/ErrorContext'
 // Utils
 import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -65,6 +66,7 @@ const LoaderConfigPreviewChunks = () => {
     const theme = useTheme()
     const { error } = useError()
     const { hasAssignedWorkspace } = useAuth()
+    const { goTo } = useOverlay()
 
     const getNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
@@ -187,6 +189,7 @@ const LoaderConfigPreviewChunks = () => {
                     setCurrentPreviewCount(previewResp.data.previewChunkCount)
                 }
                 setLoading(false)
+                goTo('docstore:process-documents')
             } catch (error) {
                 setLoading(false)
                 enqueueSnackbar({
@@ -230,6 +233,7 @@ const LoaderConfigPreviewChunks = () => {
                     // don't wait for the process to complete, redirect to document store
                     documentStoreApi.processLoader(config, saveResp.data?.id)
                     navigate('/document-stores/' + storeId)
+                    goTo('docstore:completion')
                 }
             } catch (error) {
                 setLoading(false)
@@ -438,6 +442,7 @@ const LoaderConfigPreviewChunks = () => {
                                         onClick={onSaveAndProcess}
                                         sx={{ borderRadius: 2, height: '100%' }}
                                         startIcon={<IconDatabaseImport />}
+                                        data-onboarding='docstore-loader-process-button'
                                     >
                                         Process
                                     </StyledButton>
@@ -466,6 +471,7 @@ const LoaderConfigPreviewChunks = () => {
                                                 }
                                                 value={loaderName}
                                                 onChange={(e) => setLoaderName(e.target.value)}
+                                                data-onboarding='docstore-loader-name-input'
                                             />
                                         </Box>
                                         {selectedDocumentLoader &&
@@ -517,7 +523,7 @@ const LoaderConfigPreviewChunks = () => {
                                                         )}
                                                     </div>
                                                 </Box>
-                                                <Box sx={{ p: 2 }}>
+                                                <Box data-onboarding='docstore-text-splitter' sx={{ p: 2 }}>
                                                     <Typography>Splitter</Typography>
                                                     <Dropdown
                                                         key={JSON.stringify(selectedTextSplitter)}
@@ -604,6 +610,7 @@ const LoaderConfigPreviewChunks = () => {
                                                         title='Preview'
                                                         variant='extended'
                                                         onClick={onPreviewChunks}
+                                                        data-onboarding='docstore-loader-preview-chunks-button'
                                                     >
                                                         <IconEye style={{ marginRight: '5px' }} />
                                                         Preview Chunks
@@ -631,6 +638,7 @@ const LoaderConfigPreviewChunks = () => {
                                                     <StyledFab
                                                         color='secondary'
                                                         aria-label='preview'
+                                                        data-onboarding='docstore-loader-preview-chunks-button'
                                                         title='Preview'
                                                         variant='extended'
                                                         onClick={onPreviewChunks}

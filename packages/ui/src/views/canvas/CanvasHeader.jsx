@@ -31,6 +31,7 @@ import useApi from '@/hooks/useApi'
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -67,6 +68,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
+
+    // Onboarding overlay
+    const { getCurrentStep, goTo } = useOverlay()
 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
@@ -214,8 +218,28 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     }
 
     const onSaveChatflowClick = () => {
-        if (chatflow.id) handleSaveFlow(flowName)
-        else setFlowDialogOpen(true)
+        if (chatflow.id) {
+            handleSaveFlow(flowName)
+        } else {
+            setFlowDialogOpen(true)
+            handleOnboardingOnSaveClick()
+        }
+    }
+
+    const handleOnboardingOnSaveClick = () => {
+        const currentStep = getCurrentStep()
+        if (!currentStep) return
+
+        switch (currentStep.id) {
+            case 'chatflow-creation:save-flow':
+                goTo('chatflow-creation:saving-flow')
+                break
+            case 'agent-creation:save-flow':
+                goTo('agent-creation:saving-flow')
+                break
+            default:
+                break
+        }
     }
 
     const onConfirmSaveName = (flowName) => {
@@ -411,7 +435,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         </ButtonBase>
                     )}
                     <Available permission={savePermission}>
-                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }} data-onboarding='save-button'>
                             <Avatar
                                 variant='rounded'
                                 sx={{
