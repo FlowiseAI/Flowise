@@ -163,6 +163,40 @@ describe('initNode', () => {
         expect(result.outputAnchors).toHaveLength(0)
     })
 
+    it('should strip server-only metadata like filePath from node data', () => {
+        const nodeData = makeNodeData({
+            filePath: '/some/server/path/Agent.js',
+            badge: 'NEW',
+            author: 'Flowise',
+            documentation: 'https://docs.example.com',
+            loadMethods: { listModels: () => Promise.resolve([]) }
+        } as Partial<NodeData>)
+        const result = initNode(nodeData, 'n1')
+        expect(result).not.toHaveProperty('filePath')
+        expect(result).not.toHaveProperty('badge')
+        expect(result).not.toHaveProperty('author')
+        expect(result).not.toHaveProperty('documentation')
+        expect(result).not.toHaveProperty('loadMethods')
+    })
+
+    it('should strip runtime-only state from node data', () => {
+        const nodeData = makeNodeData({
+            status: 'FINISHED',
+            error: 'some error',
+            warning: 'some warning',
+            hint: 'some hint',
+            validationErrors: ['error1'],
+            selected: true
+        } as Partial<NodeData>)
+        const result = initNode(nodeData, 'n1')
+        expect(result).not.toHaveProperty('status')
+        expect(result).not.toHaveProperty('error')
+        expect(result).not.toHaveProperty('warning')
+        expect(result).not.toHaveProperty('hint')
+        expect(result).not.toHaveProperty('validationErrors')
+        expect(result).not.toHaveProperty('selected')
+    })
+
     it('should generate dynamic outputAnchors for conditionAgentflow nodes', () => {
         const conditionNodeData = makeNodeData({
             name: 'conditionAgentflow',
