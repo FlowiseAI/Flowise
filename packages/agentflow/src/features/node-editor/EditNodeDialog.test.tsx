@@ -113,6 +113,58 @@ jest.mock('@/atoms', () => ({
             </div>
         )
     },
+    MessagesInput: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentMessages = (data.inputValues?.[inputParam.name] as Array<{ role: string; content: string }>) || []
+        return (
+            <div data-testid={`messages-input-${inputParam.name}`}>
+                <button
+                    data-testid={`add-message-${inputParam.name}`}
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentMessages, { role: 'user', content: '' }]
+                        })
+                    }}
+                >
+                    Add Message
+                </button>
+            </div>
+        )
+    },
+    StructuredOutputBuilder: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentEntries = (data.inputValues?.[inputParam.name] as Array<{ key: string; type: string; description: string }>) || []
+        return (
+            <div data-testid={`structured-output-${inputParam.name}`}>
+                <button
+                    data-testid={`add-output-${inputParam.name}`}
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentEntries, { key: '', type: 'string', description: '' }]
+                        })
+                    }}
+                >
+                    Add Output
+                </button>
+            </div>
+        )
+    },
     ConditionBuilder: ({
         inputParam,
         onDataChange,
@@ -625,6 +677,189 @@ describe('EditNodeDialog', () => {
             })
             // Should call cleanupOrphanedEdges with the new count
             expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
+        })
+
+        it('should render MessagesInput for agentMessages param on Agent node', () => {
+            const agentParams: InputParam[] = [
+                {
+                    name: 'agentMessages',
+                    label: 'Messages',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const agentData: NodeData = {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputValues: {
+                    agentMessages: [{ role: 'system', content: 'You are helpful' }]
+                }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: agentParams, data: agentData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('messages-input-agentMessages')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the messages param
+            expect(screen.queryByTestId('input-handler-agentMessages')).not.toBeInTheDocument()
+        })
+
+        it('should render MessagesInput for llmMessages param on LLM node', () => {
+            const llmParams: InputParam[] = [
+                {
+                    name: 'llmMessages',
+                    label: 'Messages',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const llmData: NodeData = {
+                id: 'llmAgentflow_0',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputValues: { llmMessages: [] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog show={true} dialogProps={{ inputParams: llmParams, data: llmData, disabled: false }} onCancel={jest.fn()} />
+            )
+
+            expect(screen.getByTestId('messages-input-llmMessages')).toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-llmMessages')).not.toBeInTheDocument()
+        })
+
+        it('should propagate MessagesInput data changes through onCustomDataChange', () => {
+            const agentParams: InputParam[] = [
+                {
+                    name: 'agentMessages',
+                    label: 'Messages',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const agentData: NodeData = {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputValues: { agentMessages: [{ role: 'system', content: 'Hello' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: agentParams, data: agentData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-message-agentMessages'))
+
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('agentAgentflow_0', {
+                inputValues: {
+                    agentMessages: [
+                        { role: 'system', content: 'Hello' },
+                        { role: 'user', content: '' }
+                    ]
+                }
+            })
+        })
+
+        it('should render StructuredOutputBuilder for agentStructuredOutput param', () => {
+            const agentParams: InputParam[] = [
+                {
+                    name: 'agentStructuredOutput',
+                    label: 'JSON Structured Output',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const agentData: NodeData = {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputValues: {
+                    agentStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
+                }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: agentParams, data: agentData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('structured-output-agentStructuredOutput')).toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-agentStructuredOutput')).not.toBeInTheDocument()
+        })
+
+        it('should render StructuredOutputBuilder for llmStructuredOutput param', () => {
+            const llmParams: InputParam[] = [
+                {
+                    name: 'llmStructuredOutput',
+                    label: 'JSON Structured Output',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const llmData: NodeData = {
+                id: 'llmAgentflow_0',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputValues: { llmStructuredOutput: [] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog show={true} dialogProps={{ inputParams: llmParams, data: llmData, disabled: false }} onCancel={jest.fn()} />
+            )
+
+            expect(screen.getByTestId('structured-output-llmStructuredOutput')).toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-llmStructuredOutput')).not.toBeInTheDocument()
+        })
+
+        it('should propagate StructuredOutputBuilder data changes through onCustomDataChange', () => {
+            const llmParams: InputParam[] = [
+                {
+                    name: 'llmStructuredOutput',
+                    label: 'JSON Structured Output',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const llmData: NodeData = {
+                id: 'llmAgentflow_0',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputValues: { llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog show={true} dialogProps={{ inputParams: llmParams, data: llmData, disabled: false }} onCancel={jest.fn()} />
+            )
+
+            fireEvent.click(screen.getByTestId('add-output-llmStructuredOutput'))
+
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('llmAgentflow_0', {
+                inputValues: {
+                    llmStructuredOutput: [
+                        { key: 'name', type: 'string', description: '' },
+                        { key: '', type: 'string', description: '' }
+                    ]
+                }
+            })
         })
 
         it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {
