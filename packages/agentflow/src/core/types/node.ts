@@ -80,6 +80,7 @@ export interface InputParam {
     maxItems?: number
     array?: InputParam[] // Sub-field definitions for array-type params
     loadMethod?: string // Registry key for async option loading (asyncOptions / asyncMultiOptions)
+    loadConfig?: boolean // When true, renders a config accordion beneath the async dropdown for the selected component
     credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
 }
 
