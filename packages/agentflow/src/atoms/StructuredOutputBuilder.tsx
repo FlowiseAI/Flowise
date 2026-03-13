@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -47,9 +47,12 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
         [data.inputValues, inputParam.name]
     )
 
-    while (itemKeysRef.current.length < entries.length) {
-        itemKeysRef.current.push(`output-${idCounterRef.current++}`)
-    }
+    // Grow keys array when new items appear (e.g. on mount or external data changes)
+    useEffect(() => {
+        while (itemKeysRef.current.length < entries.length) {
+            itemKeysRef.current.push(`output-${idCounterRef.current++}`)
+        }
+    }, [entries.length])
 
     const handleFieldChange = useCallback(
         (index: number, field: string, value: string) => {

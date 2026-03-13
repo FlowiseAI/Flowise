@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -44,10 +44,12 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
         [data.inputValues, inputParam.name]
     )
 
-    // Grow keys array synchronously so keys are available on first render
-    while (itemKeysRef.current.length < messages.length) {
-        itemKeysRef.current.push(`message-${idCounterRef.current++}`)
-    }
+    // Grow keys array when new items appear (e.g. on mount or external data changes)
+    useEffect(() => {
+        while (itemKeysRef.current.length < messages.length) {
+            itemKeysRef.current.push(`message-${idCounterRef.current++}`)
+        }
+    }, [messages.length])
 
     const handleRoleChange = useCallback(
         (index: number, role: string) => {
