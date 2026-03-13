@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { styled } from '@mui/material/styles'
-import { Box, Grid, Tooltip, Typography, useTheme } from '@mui/material'
+import { Box, Chip, Grid, Stack, Tooltip, Typography, useTheme } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -30,7 +30,14 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| CONTRACT CARD ||=========================== //
 
-const ItemCard = ({ data, images, icons, onClick }) => {
+const formatProviderLabel = (provider) => {
+    if (provider === 'whatsapp') return 'WhatsApp'
+    if (provider === 'instagram') return 'Instagram'
+    if (provider === 'telegram') return 'Telegram'
+    return provider
+}
+
+const ItemCard = ({ data, images, icons, onClick, channelBindings }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -91,6 +98,21 @@ const ItemCard = ({ data, images, icons, onClick }) => {
                                 {data.templateName || data.name}
                             </Typography>
                         </div>
+                        {channelBindings?.length > 0 && (
+                            <Stack direction='row' spacing={0.5} useFlexGap sx={{ flexWrap: 'wrap', mt: 1 }}>
+                                {channelBindings.slice(0, 2).map((binding, index) => (
+                                    <Chip
+                                        key={`${binding.provider}-${index}`}
+                                        size='small'
+                                        variant='outlined'
+                                        label={formatProviderLabel(binding.provider)}
+                                    />
+                                ))}
+                                {channelBindings.length > 2 && (
+                                    <Chip size='small' variant='outlined' label={`+${channelBindings.length - 2}`} />
+                                )}
+                            </Stack>
+                        )}
                         {data.description && (
                             <span
                                 style={{
@@ -187,7 +209,8 @@ ItemCard.propTypes = {
     data: PropTypes.object,
     images: PropTypes.array,
     icons: PropTypes.array,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    channelBindings: PropTypes.array
 }
 
 export default ItemCard

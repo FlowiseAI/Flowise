@@ -13,11 +13,16 @@ import Leads from '@/ui-component/extended/Leads'
 import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
+import ChannelBindings from '@/ui-component/extended/ChannelBindings'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Security',
         id: 'security'
+    },
+    {
+        label: 'Channels',
+        id: 'channels'
     },
     {
         label: 'Starter Prompts',
@@ -138,6 +143,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                 {filteredTabs.map((item, index) => (
                     <TabPanel key={item.id} value={tabValue} index={index}>
                         {item.id === 'security' && <Security dialogProps={dialogProps} />}
+                        {item.id === 'channels' ? <ChannelBindings dialogProps={dialogProps} /> : null}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}

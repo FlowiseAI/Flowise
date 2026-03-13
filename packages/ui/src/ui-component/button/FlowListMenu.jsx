@@ -19,6 +19,7 @@ import ExportTemplateOutlinedIcon from '@mui/icons-material/BookmarksOutlined'
 import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons-react'
+import { useNavigate } from 'react-router-dom'
 
 import chatflowsApi from '@/api/chatflows'
 
@@ -77,6 +78,7 @@ const StyledMenu = styled((props) => (
 export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi, currentPage, pageLimit }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
 
     useNotifier()
@@ -175,6 +177,15 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
             chatflow: chatflow
         })
         setSpeechToTextDialogOpen(true)
+    }
+
+    const handleChannelBindings = () => {
+        setAnchorEl(null)
+        const params = new URLSearchParams({
+            flowId: chatflow.id,
+            openBinding: '1'
+        })
+        navigate(`/channels?${params.toString()}`)
     }
 
     const saveFlowRename = async (chatflowName) => {
@@ -421,6 +432,14 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 >
                     <MicNoneOutlinedIcon />
                     Speech To Text
+                </PermissionMenuItem>
+                <PermissionMenuItem
+                    permissionId={'credentials:view,chatflows:view,agentflows:view'}
+                    onClick={handleChannelBindings}
+                    disableRipple
+                >
+                    <PictureInPictureAltIcon />
+                    Channel Bindings
                 </PermissionMenuItem>
                 <PermissionMenuItem
                     permissionId={isAgentCanvas ? 'agentflows:update' : 'chatflows:update'}
