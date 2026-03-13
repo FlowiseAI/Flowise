@@ -55,7 +55,7 @@ export const FlowListTable = ({
     images = {},
     icons = {},
     isLoading,
-    filterFunction,
+    filterFunction = () => true,
     updateFlowsApi,
     setError,
     isAgentCanvas,
