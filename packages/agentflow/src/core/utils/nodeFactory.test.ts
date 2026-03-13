@@ -179,6 +179,24 @@ describe('initNode', () => {
         expect(result).not.toHaveProperty('loadMethods')
     })
 
+    it('should strip runtime-only state from node data', () => {
+        const nodeData = makeNodeData({
+            status: 'FINISHED',
+            error: 'some error',
+            warning: 'some warning',
+            hint: 'some hint',
+            validationErrors: ['error1'],
+            selected: true
+        } as Partial<NodeData>)
+        const result = initNode(nodeData, 'n1')
+        expect(result).not.toHaveProperty('status')
+        expect(result).not.toHaveProperty('error')
+        expect(result).not.toHaveProperty('warning')
+        expect(result).not.toHaveProperty('hint')
+        expect(result).not.toHaveProperty('validationErrors')
+        expect(result).not.toHaveProperty('selected')
+    })
+
     it('should generate dynamic outputAnchors for conditionAgentflow nodes', () => {
         const conditionNodeData = makeNodeData({
             name: 'conditionAgentflow',

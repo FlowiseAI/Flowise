@@ -91,7 +91,11 @@ function createAgentFlowOutputs(nodeData: NodeData, newNodeId: string): Array<{ 
 /**
  * Pick only the properties that belong to NodeData from a server API response.
  * Strips server-only metadata (filePath, badge, author, loadMethods, etc.)
- * that leaks through the `[key: string]: unknown` index signature.
+ * and runtime-only state (status, error, warning, hint, validationErrors)
+ * that should not be persisted in flow data.
+ *
+ * Mirrors the allowlist used by generateExportFlowData in agentflow v2
+ * (packages/ui/src/utils/genericHelper.js).
  */
 function pickNodeData(raw: NodeData): NodeData {
     return {
@@ -110,13 +114,7 @@ function pickNodeData(raw: NodeData): NodeData {
         outputAnchors: raw.outputAnchors,
         color: raw.color,
         icon: raw.icon,
-        selected: raw.selected,
-        hideInput: raw.hideInput,
-        status: raw.status,
-        error: raw.error,
-        warning: raw.warning,
-        hint: raw.hint,
-        validationErrors: raw.validationErrors
+        hideInput: raw.hideInput
     }
 }
 
