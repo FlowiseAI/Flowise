@@ -2,15 +2,21 @@ import type { ReactNode } from 'react'
 
 import { renderHook } from '@testing-library/react'
 
+import type { RequestInterceptor } from '@/core/types'
+
 import { ApiProvider, useApiContext } from './ApiContext'
 
 jest.mock('../api', () => ({
     createApiClient: jest.fn(() => 'mock-client'),
     createNodesApi: jest.fn(() => ({ getAllNodes: jest.fn() })),
-    createChatflowsApi: jest.fn(() => ({ getAll: jest.fn() }))
+    createChatflowsApi: jest.fn(() => ({ getAll: jest.fn() })),
+    bindChatModelsApi: jest.fn(() => ({ getChatModels: jest.fn() })),
+    bindToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
+    bindCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() }))
 }))
 
-const { createApiClient, createNodesApi, createChatflowsApi } = jest.requireMock('../api')
+const { createApiClient, createNodesApi, createChatflowsApi, bindChatModelsApi, bindToolsApi, bindCredentialsApi } =
+    jest.requireMock('../api')
 
 describe('ApiContext', () => {
     beforeEach(() => jest.clearAllMocks())
@@ -32,7 +38,10 @@ describe('ApiContext', () => {
             expect(result.current.client).toBe('mock-client')
             expect(result.current.nodesApi).toBeDefined()
             expect(result.current.chatflowsApi).toBeDefined()
-            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined)
+            expect(result.current.chatModelsApi).toBeDefined()
+            expect(result.current.toolsApi).toBeDefined()
+            expect(result.current.credentialsApi).toBeDefined()
+            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined, expect.any(Function))
         })
 
         it('should pass token to createApiClient', () => {
@@ -43,7 +52,7 @@ describe('ApiContext', () => {
             )
             renderHook(() => useApiContext(), { wrapper })
 
-            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', 'my-token')
+            expect(createApiClient).toHaveBeenCalledWith('http://localhost:3000', 'my-token', expect.any(Function))
         })
 
         it('should create nodesApi and chatflowsApi from client', () => {
@@ -54,6 +63,40 @@ describe('ApiContext', () => {
 
             expect(createNodesApi).toHaveBeenCalledWith('mock-client')
             expect(createChatflowsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindChatModelsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindToolsApi).toHaveBeenCalledWith('mock-client')
+            expect(bindCredentialsApi).toHaveBeenCalledWith('mock-client')
+        })
+
+        it('should use updated requestInterceptor without recreating client', () => {
+            const interceptorA = jest.fn((config) => ({ ...config, headers: { ...config.headers, 'X-A': '1' } }))
+            const interceptorB = jest.fn((config) => ({ ...config, headers: { ...config.headers, 'X-B': '2' } }))
+
+            let activeInterceptor: RequestInterceptor = interceptorA
+            const wrapper = ({ children }: { children: ReactNode }) => (
+                <ApiProvider apiBaseUrl='http://localhost:3000' requestInterceptor={activeInterceptor}>
+                    {children}
+                </ApiProvider>
+            )
+
+            const { rerender } = renderHook(() => useApiContext(), { wrapper })
+
+            // Capture the wrapper function passed to createApiClient
+            const wrapperFn = createApiClient.mock.calls[0][2]
+            expect(createApiClient).toHaveBeenCalledTimes(1)
+
+            // Re-render with a different interceptor but same apiBaseUrl/token
+            activeInterceptor = interceptorB
+            rerender()
+
+            // Client should NOT be recreated
+            expect(createApiClient).toHaveBeenCalledTimes(1)
+
+            // The wrapper should now delegate to interceptorB
+            const config = { url: '/test', headers: {} }
+            wrapperFn(config)
+            expect(interceptorB).toHaveBeenCalledWith(config)
+            expect(interceptorA).not.toHaveBeenCalled()
         })
 
         it('should memoize value across re-renders with same props', () => {

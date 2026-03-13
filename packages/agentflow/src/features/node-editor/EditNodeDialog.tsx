@@ -5,10 +5,13 @@ import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typog
 import { useTheme } from '@mui/material/styles'
 import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-react'
 
-import { NodeInputHandler } from '@/atoms'
+import { ConditionBuilder, NodeInputHandler } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
-import { evaluateFieldVisibility } from '@/core/utils/fieldVisibility'
+import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
+
+import { AsyncInput } from './AsyncInput'
+import { useDynamicOutputPorts } from './useDynamicOutputPorts'
 
 export interface EditNodeDialogProps {
     show: boolean
@@ -43,6 +46,9 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const [nodeName, setNodeName] = useState('')
     const [arrayItemParameters, setArrayItemParameters] = useState<Record<string, InputParam[][]>>({})
 
+    const isConditionNode = data?.name === 'conditionAgentflow'
+    const { cleanupOrphanedEdges } = useDynamicOutputPorts(data?.id ?? '', isConditionNode)
+
     const onNodeLabelChange = () => {
         if (!data || !nodeNameRef.current) return
 
@@ -63,9 +69,17 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
         const updatedParams = evaluateFieldVisibility(inputParams, updatedInputValues)
         setInputParams(updatedParams)
         setArrayItemParameters(computeArrayItemParameters(inputParams, updatedInputValues))
-        // Keep full inputValues in state — hidden field values are preserved so they
-        // can be restored when visibility conditions change (e.g. toggling provider back).
-        // Stripping should only happen on save/export, not on every keystroke.
+
+        // When conditions array changes, merge inputValues and outputAnchors
+        // into a single updateNodeData call to avoid stale-closure overwrites.
+        if (isConditionNode && inputParam.name === 'conditions' && Array.isArray(newValue)) {
+            const outputAnchors = buildDynamicOutputAnchors(data.id, newValue.length, 'Condition', true)
+            updateNodeData(data.id, { inputValues: updatedInputValues, outputAnchors })
+            setData({ ...data, inputValues: updatedInputValues, outputAnchors })
+            cleanupOrphanedEdges(newValue.length)
+            return
+        }
+
         updateNodeData(data.id, { inputValues: updatedInputValues })
         setData({ ...data, inputValues: updatedInputValues })
     }
@@ -239,6 +253,20 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                     inputParams
                         .filter((inputParam) => inputParam.display !== false)
                         .map((inputParam, index) => {
+                            // Render ConditionBuilder for condition node's conditions array
+                            if (isConditionNode && inputParam.type === 'array' && inputParam.name === 'conditions') {
+                                return (
+                                    <ConditionBuilder
+                                        key={index}
+                                        inputParam={inputParam}
+                                        data={data}
+                                        disabled={dialogProps.disabled}
+                                        onDataChange={onCustomDataChange}
+                                        itemParameters={arrayItemParameters[inputParam.name]}
+                                    />
+                                )
+                            }
+
                             return (
                                 <NodeInputHandler
                                     disabled={dialogProps.disabled}
@@ -248,6 +276,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                     isAdditionalParams={true}
                                     onDataChange={onCustomDataChange}
                                     itemParameters={inputParam.type === 'array' ? arrayItemParameters[inputParam.name] : undefined}
+                                    AsyncInputComponent={AsyncInput}
                                 />
                             )
                         })}
