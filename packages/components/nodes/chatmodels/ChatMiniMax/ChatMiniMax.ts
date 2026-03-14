@@ -151,8 +151,16 @@ class ChatMiniMax_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
+        // MiniMax requires temperature in (0.0, 1.0] - validate and clamp
+        let parsedTemperature = parseFloat(temperature)
+        if (isNaN(parsedTemperature) || parsedTemperature <= 0) {
+            parsedTemperature = 0.7 // safe default within MiniMax's accepted range
+        } else if (parsedTemperature > 1.0) {
+            parsedTemperature = 1.0
+        }
+
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
+            temperature: parsedTemperature,
             modelName,
             openAIApiKey,
             apiKey: openAIApiKey,
@@ -177,7 +185,7 @@ class ChatMiniMax_ChatModels implements INode {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
                 if (parsedBaseOptions.baseURL) {
                     console.warn("The 'baseURL' parameter is not allowed when using the ChatMiniMax node.")
-                    parsedBaseOptions.baseURL = undefined
+                    delete parsedBaseOptions.baseURL
                 }
             } catch (exception) {
                 throw new Error('Invalid JSON in the BaseOptions: ' + exception)
