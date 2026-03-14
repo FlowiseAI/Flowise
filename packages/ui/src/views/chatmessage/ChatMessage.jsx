@@ -1304,7 +1304,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     obj.agentFlowExecutedData = JSON.parse(message.execution.executionData)
                 return obj
             })
-            setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
+            // Use functional update to filter out previously loaded history messages (by id) before appending,
+            // preventing duplicate messages when the API is called multiple times (e.g. React StrictMode)
+            setMessages((prevMessages) => {
+                const initialMessages = prevMessages.filter((msg) => !msg.id || !loadedMessages.some((lm) => lm.id === msg.id))
+                return [...initialMessages, ...loadedMessages]
+            })
             setLocalStorageChatflow(chatflowid, chatId)
         }
 
@@ -1324,7 +1329,13 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 }
                 return obj
             })
-            setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
+            // Filter out previously loaded execution messages (by id) before appending,
+            // preventing duplicates when the API is called multiple times (e.g. React StrictMode)
+            // Messages without an ID (e.g., initial welcome message, in-progress user messages) are always preserved.
+            setMessages((prevMessages) => {
+                const initialMessages = prevMessages.filter((msg) => !msg.id || !loadedMessages.some((lm) => lm.id === msg.id))
+                return [...initialMessages, ...loadedMessages]
+            })
             setLocalStorageChatflow(chatflowid, chatId)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
