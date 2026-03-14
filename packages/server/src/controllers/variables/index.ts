@@ -22,9 +22,12 @@ const createVariable = async (req: Request, res: Response, next: NextFunction) =
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: toolsController.createTool - workspace ${workspaceId} not found!`)
         }
         const body = req.body
-        body.workspaceId = workspaceId
+        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
         const newVariable = new Variable()
-        Object.assign(newVariable, body)
+        if (body.name !== undefined) newVariable.name = body.name
+        if (body.value !== undefined) newVariable.value = body.value
+        if (body.type !== undefined) newVariable.type = body.type
+        newVariable.workspaceId = workspaceId
         const apiResponse = await variablesService.createVariable(newVariable, orgId)
         return res.json(apiResponse)
     } catch (error) {
@@ -91,8 +94,11 @@ const updateVariable = async (req: Request, res: Response, next: NextFunction) =
             return res.status(404).send('Variable not found in the database')
         }
         const body = req.body
+        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
         const updatedVariable = new Variable()
-        Object.assign(updatedVariable, body)
+        if (body.name !== undefined) updatedVariable.name = body.name
+        if (body.value !== undefined) updatedVariable.value = body.value
+        if (body.type !== undefined) updatedVariable.type = body.type
         const apiResponse = await variablesService.updateVariable(variable, updatedVariable)
         return res.json(apiResponse)
     } catch (error) {
