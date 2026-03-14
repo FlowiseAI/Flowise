@@ -22,7 +22,6 @@ import { IconX } from '@tabler/icons-react'
 
 import chatflowsApi from '@/api/chatflows'
 
-import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
@@ -77,8 +76,6 @@ const StyledMenu = styled((props) => (
 export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi, currentPage, pageLimit }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
-    const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
-
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -178,12 +175,9 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     }
 
     const saveFlowRename = async (chatflowName) => {
-        const updateBody = {
-            name: chatflowName,
-            chatflow
-        }
         try {
-            await updateChatflowApi.request(chatflow.id, updateBody)
+            await chatflowsApi.updateChatflow(chatflow.id, { name: chatflowName })
+            setFlowDialogOpen(false)
             const params = {
                 page: currentPage,
                 limit: pageLimit
@@ -198,7 +192,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
+                message: typeof error.response?.data === 'object' ? error.response.data.message : error.response?.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -227,12 +221,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
         setCategoryDialogOpen(false)
         // save categories as string
         const categoryTags = categories.join(';')
-        const updateBody = {
-            category: categoryTags,
-            chatflow
-        }
         try {
-            await updateChatflowApi.request(chatflow.id, updateBody)
+            await chatflowsApi.updateChatflow(chatflow.id, { category: categoryTags })
             const params = {
                 page: currentPage,
                 limit: pageLimit
@@ -245,7 +235,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
+                message: typeof error.response?.data === 'object' ? error.response.data.message : error.response?.data,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
