@@ -9,8 +9,14 @@ import type { NodeOption } from '@/core/types'
 import { useAsyncOptions } from '@/infrastructure/api/hooks'
 
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
+    // Only include inputValues in params for loadMethods that actually need them (e.g. listToolInputArgs).
+    // Including them unconditionally causes every keystroke in sibling text fields to change the
+    // serialised paramsKey, triggering unnecessary refetches for all async dropdowns.
+    const needsInputs = inputParam.loadMethod === 'listToolInputArgs'
     const params =
-        nodeName || inputValues ? { ...(nodeName ? { nodeName } : {}), ...(inputValues ? { inputs: inputValues } : {}) } : undefined
+        nodeName || (needsInputs && inputValues)
+            ? { ...(nodeName ? { nodeName } : {}), ...(needsInputs && inputValues ? { inputs: inputValues } : {}) }
+            : undefined
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,
@@ -92,8 +98,11 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, in
 }
 
 function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
+    const needsInputs = inputParam.loadMethod === 'listToolInputArgs'
     const params =
-        nodeName || inputValues ? { ...(nodeName ? { nodeName } : {}), ...(inputValues ? { inputs: inputValues } : {}) } : undefined
+        nodeName || (needsInputs && inputValues)
+            ? { ...(nodeName ? { nodeName } : {}), ...(needsInputs && inputValues ? { inputs: inputValues } : {}) }
+            : undefined
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,

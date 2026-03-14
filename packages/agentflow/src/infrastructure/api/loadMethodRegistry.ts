@@ -1,6 +1,7 @@
 import type { CredentialsApi } from './credentials'
 import type { EmbeddingsApi } from './embeddings'
 import type { ChatModelsApi } from './models'
+import type { NodesApi } from './nodes'
 import type { RuntimeStateApi } from './runtimeState'
 import type { StoresApi } from './stores'
 import type { ToolsApi } from './tools'
@@ -12,6 +13,7 @@ export interface ApiServices {
     storesApi: StoresApi
     embeddingsApi: EmbeddingsApi
     runtimeStateApi: RuntimeStateApi
+    nodesApi: NodesApi
 }
 
 /**
@@ -33,7 +35,13 @@ export interface ApiServices {
  *
  */
 export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: Record<string, unknown>) => Promise<unknown>> = {
-    listModels: (apis) => apis.chatModelsApi.getChatModels(),
+    listModels: (apis, params) => {
+        const nodeName = params?.nodeName as string | undefined
+        if (nodeName) {
+            return apis.nodesApi.loadNodeMethod(nodeName, 'listModels')
+        }
+        return apis.chatModelsApi.getChatModels()
+    },
     listTools: (apis, params) => apis.toolsApi.getAllTools(params?.nodeName as string | undefined),
     listToolInputArgs: (apis, params) =>
         apis.toolsApi.getToolInputArgs((params?.inputs as Record<string, unknown>) ?? {}, params?.nodeName as string | undefined),
@@ -41,6 +49,13 @@ export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: R
     listVectorStores: (apis) => apis.storesApi.getVectorStores(),
     listEmbeddings: (apis) => apis.embeddingsApi.getEmbeddings(),
     listRuntimeStateKeys: (apis) => apis.runtimeStateApi.getRuntimeStateKeys(),
+    listRegions: (apis, params) => {
+        const nodeName = params?.nodeName
+        if (typeof nodeName !== 'string') {
+            return Promise.reject(new Error('`listRegions` requires a string `nodeName` parameter.'))
+        }
+        return apis.nodesApi.loadNodeMethod(nodeName, 'listRegions')
+    },
     listCredentials: (apis, params) => {
         const name = params?.name
         if (typeof name !== 'string') {

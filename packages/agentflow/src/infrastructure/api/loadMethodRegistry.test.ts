@@ -22,6 +22,12 @@ const mockApis: ApiServices = {
     },
     runtimeStateApi: {
         getRuntimeStateKeys: jest.fn()
+    },
+    nodesApi: {
+        getAllNodes: jest.fn(),
+        getNodeByName: jest.fn(),
+        getNodeIconUrl: jest.fn(),
+        loadNodeMethod: jest.fn()
     }
 }
 
@@ -31,13 +37,23 @@ beforeEach(() => {
 
 describe('loadMethodRegistry', () => {
     describe('listModels', () => {
-        it('should call chatModelsApi.getChatModels()', async () => {
+        it('should call chatModelsApi.getChatModels() when no nodeName provided', async () => {
             const mockModels = [{ name: 'gpt-4', label: 'GPT-4' }]
             ;(mockApis.chatModelsApi.getChatModels as jest.Mock).mockResolvedValue(mockModels)
 
             const result = await loadMethodRegistry['listModels'](mockApis)
             expect(mockApis.chatModelsApi.getChatModels).toHaveBeenCalled()
             expect(result).toEqual(mockModels)
+        })
+
+        it('should call nodesApi.loadNodeMethod() when nodeName is provided', async () => {
+            const mockBedrockModels = [{ name: 'anthropic.claude-3-haiku', label: 'Claude 3 Haiku' }]
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockBedrockModels)
+
+            const result = await loadMethodRegistry['listModels'](mockApis, { nodeName: 'awsChatBedrock' })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsChatBedrock', 'listModels')
+            expect(mockApis.chatModelsApi.getChatModels).not.toHaveBeenCalled()
+            expect(result).toEqual(mockBedrockModels)
         })
     })
 
@@ -63,6 +79,23 @@ describe('loadMethodRegistry', () => {
             })
             expect(mockApis.toolsApi.getToolInputArgs).toHaveBeenCalledWith({ toolAgentflowSelectedTool: 'calculator' }, 'toolAgentflow')
             expect(result).toEqual(mockArgs)
+        })
+    })
+
+    describe('listRegions', () => {
+        it('should call nodesApi.loadNodeMethod() with nodeName and listRegions', async () => {
+            const mockRegions = [{ name: 'us-east-1', label: 'US East (N. Virginia)' }]
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockRegions)
+
+            const result = await loadMethodRegistry['listRegions'](mockApis, { nodeName: 'awsChatBedrock' })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsChatBedrock', 'listRegions')
+            expect(result).toEqual(mockRegions)
+        })
+
+        it('should reject when nodeName param is missing', async () => {
+            await expect(loadMethodRegistry['listRegions'](mockApis)).rejects.toThrow(
+                '`listRegions` requires a string `nodeName` parameter.'
+            )
         })
     })
 

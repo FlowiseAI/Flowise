@@ -4,7 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { type AsyncInputProps, NodeInputHandler } from './NodeInputHandler'
+import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -174,6 +174,149 @@ describe('NodeInputHandler – async onChange wiring', () => {
         expect(mockOnDataChange).toHaveBeenCalledWith({
             inputParam: expect.objectContaining({ name: 'myField', type: 'asyncMultiOptions' }),
             newValue: 'selected-value'
+        })
+    })
+})
+
+describe('NodeInputHandler – loadConfig rendering', () => {
+    const StubAsyncInput: ComponentType<AsyncInputProps> = ({ onChange }) => (
+        <button data-testid='async-select' onClick={() => onChange('selected-value')}>
+            Select
+        </button>
+    )
+
+    const StubConfigInput: ComponentType<ConfigInputComponentProps> = ({ inputParam }) => (
+        <div data-testid={`config-input-${inputParam.name}`}>Config Accordion</div>
+    )
+
+    it('renders ConfigInputComponent when loadConfig is true and value exists', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
+                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+                ConfigInputComponent={StubConfigInput}
+                onConfigChange={jest.fn()}
+            />
+        )
+
+        expect(screen.getByTestId('config-input-myField')).toBeTruthy()
+    })
+
+    it('does not render ConfigInputComponent when loadConfig is false', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions', loadConfig: false })}
+                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+                ConfigInputComponent={StubConfigInput}
+                onConfigChange={jest.fn()}
+            />
+        )
+
+        expect(screen.queryByTestId('config-input-myField')).toBeNull()
+    })
+
+    it('does not render ConfigInputComponent when value is empty', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
+                data={{ ...baseNodeData, inputValues: { myField: '' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+                ConfigInputComponent={StubConfigInput}
+                onConfigChange={jest.fn()}
+            />
+        )
+
+        expect(screen.queryByTestId('config-input-myField')).toBeNull()
+    })
+
+    it('does not render ConfigInputComponent when component is not injected', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
+                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+            />
+        )
+
+        expect(screen.queryByTestId('config-input-myField')).toBeNull()
+    })
+
+    it('does not render ConfigInputComponent when onConfigChange is not provided', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
+                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+                ConfigInputComponent={StubConfigInput}
+            />
+        )
+
+        expect(screen.queryByTestId('config-input-myField')).toBeNull()
+    })
+})
+
+describe('NodeInputHandler – credential type rendering', () => {
+    const StubAsyncInput: ComponentType<AsyncInputProps> = ({ onChange }) => (
+        <button data-testid='credential-select' onClick={() => onChange('cred-id-123')}>
+            Select Credential
+        </button>
+    )
+
+    it('renders AsyncInputComponent for credential type', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'credential', name: 'FLOWISE_CREDENTIAL_ID', credentialNames: ['awsApi'] })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+            />
+        )
+
+        expect(screen.getByTestId('credential-select')).toBeTruthy()
+    })
+
+    it('renders nothing for credential type when no AsyncInputComponent', () => {
+        const { container } = render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'credential', name: 'FLOWISE_CREDENTIAL_ID', credentialNames: ['awsApi'] })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(container.querySelector('button')).toBeNull()
+    })
+
+    it('calls onDataChange when credential onChange fires', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'credential', name: 'FLOWISE_CREDENTIAL_ID', credentialNames: ['awsApi'] })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                AsyncInputComponent={StubAsyncInput}
+            />
+        )
+
+        fireEvent.click(screen.getByTestId('credential-select'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: expect.objectContaining({ name: 'FLOWISE_CREDENTIAL_ID', type: 'credential' }),
+            newValue: 'cred-id-123'
         })
     })
 })

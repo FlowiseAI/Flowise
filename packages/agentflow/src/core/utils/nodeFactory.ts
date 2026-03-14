@@ -162,6 +162,21 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
         }
     }
 
+    // Credential — extract top-level credential property and prepend to input definitions
+    const rawCredential = (nodeData as Record<string, unknown>).credential as
+        | { name?: string; label?: string; type?: string; credentialNames?: string[]; optional?: boolean }
+        | undefined
+
+    if (rawCredential?.credentialNames?.length) {
+        inputDefinitions.unshift({
+            ...rawCredential,
+            id: `${newNodeId}-input-FLOWISE_CREDENTIAL_ID-credential`,
+            name: 'FLOWISE_CREDENTIAL_ID',
+            label: rawCredential.label ?? 'Credential',
+            type: 'credential'
+        })
+    }
+
     // Initialize default input values from definitions using initializeDefaultNodeData
     const initialInputValues = initializeDefaultNodeData(inputDefinitions)
 

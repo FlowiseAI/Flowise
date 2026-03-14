@@ -28,6 +28,21 @@ export interface AsyncInputProps {
     inputValues?: Record<string, unknown>
 }
 
+/** Props passed to a config input component (loadConfig accordion). */
+export interface ConfigInputComponentProps {
+    data: NodeData
+    inputParam: InputParam
+    disabled?: boolean
+    arrayIndex?: number | null
+    parentArrayParam?: InputParam | null
+    onConfigChange: (
+        configKey: string,
+        configValues: Record<string, unknown>,
+        arrayContext?: { parentParamName: string; arrayIndex: number }
+    ) => void
+    AsyncInputComponent?: ComponentType<AsyncInputProps>
+}
+
 export interface NodeInputHandlerProps {
     inputAnchor?: InputAnchor
     inputParam?: InputParam
@@ -39,6 +54,18 @@ export interface NodeInputHandlerProps {
     itemParameters?: InputParam[][]
     /** Renders asyncOptions / asyncMultiOptions fields. Lives in features/ to keep atoms free of infrastructure. */
     AsyncInputComponent?: ComponentType<AsyncInputProps>
+    /** Renders loadConfig accordion beneath async dropdowns. Injected from features/ to keep atoms infrastructure-free. */
+    ConfigInputComponent?: ComponentType<ConfigInputComponentProps>
+    /** Callback for config value changes (from ConfigInputComponent). */
+    onConfigChange?: (
+        configKey: string,
+        configValues: Record<string, unknown>,
+        arrayContext?: { parentParamName: string; arrayIndex: number }
+    ) => void
+    /** For array-based configs: index of current array item. */
+    arrayIndex?: number | null
+    /** For array-based configs: the parent array InputParam definition. */
+    parentArrayParam?: InputParam | null
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -56,7 +83,11 @@ export function NodeInputHandler({
     disablePadding = false,
     onDataChange,
     itemParameters,
-    AsyncInputComponent
+    AsyncInputComponent,
+    ConfigInputComponent,
+    onConfigChange,
+    arrayIndex = null,
+    parentArrayParam = null
 }: NodeInputHandlerProps) {
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
@@ -208,11 +239,39 @@ export function NodeInputHandler({
                         onDataChange={onDataChange}
                         itemParameters={itemParameters}
                         AsyncInputComponent={AsyncInputComponent}
+                        ConfigInputComponent={ConfigInputComponent}
+                        onConfigChange={onConfigChange}
                     />
                 )
 
             case 'asyncOptions':
             case 'asyncMultiOptions':
+                if (!AsyncInputComponent) return null
+                return (
+                    <>
+                        <AsyncInputComponent
+                            inputParam={inputParam}
+                            value={value}
+                            disabled={disabled}
+                            onChange={(v) => handleDataChange(v)}
+                            nodeName={data.name}
+                            inputValues={data.inputValues as Record<string, unknown> | undefined}
+                        />
+                        {inputParam.loadConfig && ConfigInputComponent && value && onConfigChange && (
+                            <ConfigInputComponent
+                                data={data}
+                                inputParam={inputParam}
+                                disabled={disabled}
+                                arrayIndex={arrayIndex}
+                                parentArrayParam={parentArrayParam}
+                                onConfigChange={onConfigChange}
+                                AsyncInputComponent={AsyncInputComponent}
+                            />
+                        )}
+                    </>
+                )
+
+            case 'credential':
                 if (!AsyncInputComponent) return null
                 return (
                     <AsyncInputComponent
