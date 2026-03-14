@@ -89,6 +89,36 @@ function createAgentFlowOutputs(nodeData: NodeData, newNodeId: string): Array<{ 
 }
 
 /**
+ * Pick only the properties that belong to NodeData from a server API response.
+ * Strips server-only metadata (filePath, badge, author, loadMethods, etc.)
+ * and runtime-only state (status, error, warning, hint, validationErrors)
+ * that should not be persisted in flow data.
+ *
+ * Mirrors the allowlist used by generateExportFlowData in agentflow v2
+ * (packages/ui/src/utils/genericHelper.js).
+ */
+function pickNodeData(raw: NodeData): NodeData {
+    return {
+        id: raw.id,
+        name: raw.name,
+        label: raw.label,
+        type: raw.type,
+        category: raw.category,
+        description: raw.description,
+        version: raw.version,
+        baseClasses: raw.baseClasses,
+        inputs: raw.inputs,
+        inputValues: raw.inputValues,
+        outputs: raw.outputs,
+        inputAnchors: raw.inputAnchors,
+        outputAnchors: raw.outputAnchors,
+        color: raw.color,
+        icon: raw.icon,
+        hideInput: raw.hideInput
+    }
+}
+
+/**
  * Initialize a node with proper anchors and default values
  * Converts API response (with inputs as definitions) to canvas node format
  */
@@ -163,9 +193,9 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
         }
     }
 
-    // Create initialized node data
+    // Create initialized node data — pickNodeData strips server-only metadata
     const initializedData: NodeData = {
-        ...nodeData,
+        ...pickNodeData(nodeData),
         id: newNodeId,
         inputs: inputDefinitions, // Keep parameter definitions
         inputValues: { ...initialInputValues, ...(nodeData.inputValues || {}) }, // Merge defaults with existing values

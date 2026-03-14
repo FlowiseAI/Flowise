@@ -76,6 +76,59 @@ describe('NodeInputHandler – static types', () => {
     })
 })
 
+describe('NodeInputHandler – expand dialog', () => {
+    it('should open expand dialog when expand icon is clicked on multiline string field', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string', rows: 4 })}
+                data={{ ...baseNodeData, inputValues: { myField: 'Some long text' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        fireEvent.click(screen.getByTitle('Expand'))
+
+        const expandInput = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(expandInput).toHaveValue('Some long text')
+    })
+
+    it('should save expanded content via onDataChange on confirm', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string', rows: 4 })}
+                data={{ ...baseNodeData, inputValues: { myField: 'Original' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        fireEvent.click(screen.getByTitle('Expand'))
+
+        const expandTextarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        fireEvent.change(expandTextarea, { target: { value: 'Expanded text' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: expect.objectContaining({ name: 'myField' }),
+            newValue: 'Expanded text'
+        })
+    })
+
+    it('should not show expand icon for non-multiline string fields', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.queryByTitle('Expand')).not.toBeInTheDocument()
+    })
+})
+
 describe('NodeInputHandler – async onChange wiring', () => {
     // A minimal AsyncInputComponent that exposes its onChange via a button.
     // This verifies that async dropdown value changes flow through to onDataChange,

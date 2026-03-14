@@ -5,7 +5,7 @@ import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typog
 import { useTheme } from '@mui/material/styles'
 import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-react'
 
-import { ConditionBuilder, NodeInputHandler } from '@/atoms'
+import { ConditionBuilder, MessagesInput, NodeInputHandler, StructuredOutputBuilder } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
 import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
@@ -13,6 +13,12 @@ import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 import { AsyncInput } from './AsyncInput'
 import { ConfigInput } from './ConfigInput'
 import { useDynamicOutputPorts } from './useDynamicOutputPorts'
+
+/** Array param names that should render as MessagesInput instead of generic ArrayInput. */
+const MESSAGE_PARAM_NAMES = new Set(['agentMessages', 'llmMessages'])
+
+/** Array param names that should render as StructuredOutputBuilder instead of generic ArrayInput. */
+const STRUCTURED_OUTPUT_PARAM_NAMES = new Set(['agentStructuredOutput', 'llmStructuredOutput'])
 
 export interface EditNodeDialogProps {
     show: boolean
@@ -287,6 +293,32 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                         disabled={dialogProps.disabled}
                                         onDataChange={onCustomDataChange}
                                         itemParameters={arrayItemParameters[inputParam.name]}
+                                    />
+                                )
+                            }
+
+                            // Render MessagesInput for Agent/LLM message arrays
+                            if (inputParam.type === 'array' && MESSAGE_PARAM_NAMES.has(inputParam.name)) {
+                                return (
+                                    <MessagesInput
+                                        key={index}
+                                        inputParam={inputParam}
+                                        data={data}
+                                        disabled={dialogProps.disabled}
+                                        onDataChange={onCustomDataChange}
+                                    />
+                                )
+                            }
+
+                            // Render StructuredOutputBuilder for Agent/LLM structured output arrays
+                            if (inputParam.type === 'array' && STRUCTURED_OUTPUT_PARAM_NAMES.has(inputParam.name)) {
+                                return (
+                                    <StructuredOutputBuilder
+                                        key={index}
+                                        inputParam={inputParam}
+                                        data={data}
+                                        disabled={dialogProps.disabled}
+                                        onDataChange={onCustomDataChange}
                                     />
                                 )
                             }
