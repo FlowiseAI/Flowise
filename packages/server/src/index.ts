@@ -23,6 +23,7 @@ import { Prometheus } from './metrics/Prometheus'
 import errorHandlerMiddleware from './middlewares/errors'
 import { NodesPool } from './NodesPool'
 import { QueueManager } from './queue/QueueManager'
+import { ScheduleBeat } from './queue/ScheduleBeat'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import flowiseApiV1Router from './routes'
 import { UsageCacheManager } from './UsageCacheManager'
@@ -150,6 +151,10 @@ export class App {
                 await this.redisSubscriber.connect()
                 logger.info('🔗 [server]: Redis event subscriber connected successfully')
             }
+
+            // Init ScheduleBeat (works in both queue and non-queue mode)
+            await ScheduleBeat.getInstance().init()
+            logger.info('⏰ [server]: ScheduleBeat initialized successfully')
 
             logger.info('🎉 [server]: All initialization steps completed successfully!')
         } catch (error) {

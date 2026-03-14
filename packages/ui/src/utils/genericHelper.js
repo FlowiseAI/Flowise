@@ -137,7 +137,10 @@ export const initNode = (nodeData, newNodeId, isAgentflow) => {
         'file',
         'folder',
         'tabs',
-        'conditionFunction' // This is a special type for condition functions
+        'conditionFunction', // This is a special type for condition functions
+        'timePicker',
+        'weekDaysPicker',
+        'monthDaysPicker'
     ]
 
     // Inputs
