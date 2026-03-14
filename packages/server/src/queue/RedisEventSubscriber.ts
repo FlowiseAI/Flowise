@@ -6,6 +6,7 @@ export class RedisEventSubscriber {
     private redisSubscriber: ReturnType<typeof createClient>
     private sseStreamer: SSEStreamer
     private subscribedChannels: Set<string> = new Set()
+    private cleanupInterval: NodeJS.Timeout | null = null
 
     constructor(sseStreamer: SSEStreamer) {
         if (process.env.REDIS_URL) {
@@ -99,6 +100,45 @@ export class RedisEventSubscriber {
         this.subscribedChannels.add(channel)
     }
 
+    async unsubscribe(channel: string) {
+        if (!this.subscribedChannels.has(channel)) {
+            return
+        }
+
+        try {
+            await this.redisSubscriber.unsubscribe(channel)
+            this.subscribedChannels.delete(channel)
+            logger.debug(
+                `[RedisEventSubscriber] Unsubscribed from channel: ${channel}. Active subscriptions: ${this.subscribedChannels.size}`
+            )
+        } catch (error) {
+            logger.error(`[RedisEventSubscriber] Error unsubscribing from channel ${channel}:`, { error })
+            // Still remove from tracking set to prevent stale entries
+            this.subscribedChannels.delete(channel)
+        }
+    }
+
+    getSubscriptionCount(): number {
+        return this.subscribedChannels.size
+    }
+
+    startPeriodicCleanup(intervalMs: number = 60_000) {
+        this.cleanupInterval = setInterval(() => {
+            let cleaned = 0
+            for (const channel of this.subscribedChannels) {
+                if (!this.sseStreamer.clients[channel]) {
+                    this.unsubscribe(channel)
+                    cleaned++
+                }
+            }
+            if (cleaned > 0) {
+                logger.info(
+                    `[RedisEventSubscriber] Periodic cleanup: removed ${cleaned} stale subscriptions. Remaining: ${this.subscribedChannels.size}`
+                )
+            }
+        }, intervalMs)
+    }
+
     private handleEvent(message: string) {
         // Parse the message from Redis
         const event = JSON.parse(message)
@@ -176,6 +216,10 @@ export class RedisEventSubscriber {
     }
 
     async disconnect() {
+        if (this.cleanupInterval) {
+            clearInterval(this.cleanupInterval)
+            this.cleanupInterval = null
+        }
         if (this.redisSubscriber) {
             await this.redisSubscriber.quit()
         }
