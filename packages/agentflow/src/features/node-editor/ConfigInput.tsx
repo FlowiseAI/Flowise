@@ -1,4 +1,4 @@
-import { type ComponentType, useCallback, useEffect, useRef, useState } from 'react'
+import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material'
@@ -90,15 +90,12 @@ export function ConfigInput({
     const [expanded, setExpanded] = useState(false)
     /** The fetched & initialized sub-node data (input definitions + label). */
     const [configNodeData, setConfigNodeData] = useState<NodeData | null>(null)
-    /** Evaluated input params with display flags. */
-    const [configInputParams, setConfigInputParams] = useState<InputParam[]>([])
-    /** The current config values (what gets persisted to parent). */
-    const [configInputValues, setConfigInputValues] = useState<Record<string, unknown>>({})
 
     // Refs to avoid stale closures and prevent reactive loops
     const onConfigChangeRef = useRef(onConfigChange)
     onConfigChangeRef.current = onConfigChange
-    const loadedSelectionRef = useRef<string | null>(null)
+    const dataRef = useRef(data)
+    dataRef.current = data
 
     // ── Derive current selection from parent ──────────────────────────────────
 
@@ -115,21 +112,34 @@ export function ConfigInput({
         [inputParam.name, parentArrayParam, arrayIndex]
     )
 
-    // ── Load node definition when selection changes ───────────────────────────
+    // ── Derive config values from parent (single source of truth) ───────────
+
+    const configInputValues = useMemo((): Record<string, unknown> => {
+        if (!configNodeData) return {}
+        const existing = readExistingConfig(data, inputParam.name, arrayIndex, parentArrayParam)
+        if (existing && existing[inputParam.name] === currentSelection) {
+            return existing
+        }
+        // No saved config or selection mismatch — fall back to defaults
+        const paramDefs = (configNodeData.inputs ?? []) as InputParam[]
+        return { ...initializeDefaults(paramDefs), [inputParam.name]: currentSelection }
+    }, [configNodeData, data, inputParam.name, arrayIndex, parentArrayParam, currentSelection])
+
+    // ── Derive visible params from definitions + current values ──────────────
+
+    const configInputParams = useMemo((): InputParam[] => {
+        if (!configNodeData) return []
+        const paramDefs = (configNodeData.inputs ?? []) as InputParam[]
+        return evaluateFieldVisibility(paramDefs, configInputValues)
+    }, [configNodeData, configInputValues])
+
+    // ── Fetch node definition when selection changes ─────────────────────────
 
     useEffect(() => {
         if (!currentSelection) {
-            if (loadedSelectionRef.current !== null) {
-                loadedSelectionRef.current = null
-                setConfigNodeData(null)
-                setConfigInputParams([])
-                setConfigInputValues({})
-            }
+            setConfigNodeData(null)
             return
         }
-
-        // Skip if already loaded for this selection
-        if (loadedSelectionRef.current === currentSelection) return
 
         let cancelled = false
 
@@ -140,35 +150,18 @@ export function ConfigInput({
 
                 // initNode with isAgentflow=false so it doesn't create agentflow output anchors
                 const initialized = initNode(nodeDefn, `${currentSelection}_0`, false)
-                const paramDefs = (initialized.inputs ?? []) as InputParam[]
-
-                // Check for existing config in parent
-                const existingConfig = readExistingConfig(data, inputParam.name, arrayIndex, parentArrayParam)
-
-                let mergedValues: Record<string, unknown>
-                if (existingConfig && existingConfig[inputParam.name] === currentSelection) {
-                    // Existing config matches current selection — reuse it
-                    mergedValues = { ...existingConfig, [inputParam.name]: currentSelection }
-                } else {
-                    // No config or model changed — use defaults
-                    mergedValues = { ...initializeDefaults(paramDefs), [inputParam.name]: currentSelection }
-                }
-
-                const visibleParams = evaluateFieldVisibility(paramDefs, mergedValues)
-
-                loadedSelectionRef.current = currentSelection
                 setConfigNodeData(initialized)
-                setConfigInputParams(visibleParams)
-                setConfigInputValues(mergedValues)
 
                 // Persist initial config to parent
-                persistConfig(mergedValues)
+                const paramDefs = (initialized.inputs ?? []) as InputParam[]
+                const existing = readExistingConfig(dataRef.current, inputParam.name, arrayIndex, parentArrayParam)
+                const values =
+                    existing && existing[inputParam.name] === currentSelection
+                        ? existing
+                        : { ...initializeDefaults(paramDefs), [inputParam.name]: currentSelection }
+                persistConfig(values)
             } catch {
-                // API error — clear config
-                loadedSelectionRef.current = null
                 setConfigNodeData(null)
-                setConfigInputParams([])
-                setConfigInputValues({})
             }
         }
 
@@ -176,28 +169,15 @@ export function ConfigInput({
         return () => {
             cancelled = true
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentSelection, nodesApi])
+    }, [currentSelection, nodesApi, inputParam.name, arrayIndex, parentArrayParam, persistConfig])
 
     // ── Internal change handler ───────────────────────────────────────────────
 
     const handleInternalChange = useCallback(
         ({ inputParam: changedParam, newValue }: { inputParam: InputParam; newValue: unknown }) => {
-            setConfigInputValues((prev) => {
-                const updated = { ...prev, [changedParam.name]: newValue }
-
-                // Re-evaluate visibility
-                const paramDefs = (configNodeData?.inputs ?? []) as InputParam[]
-                const visibleParams = evaluateFieldVisibility(paramDefs, updated)
-                setConfigInputParams(visibleParams)
-
-                // Persist to parent
-                persistConfig(updated)
-
-                return updated
-            })
+            persistConfig({ ...configInputValues, [changedParam.name]: newValue })
         },
-        [configNodeData, persistConfig]
+        [configInputValues, persistConfig]
     )
 
     // ── Render ────────────────────────────────────────────────────────────────
