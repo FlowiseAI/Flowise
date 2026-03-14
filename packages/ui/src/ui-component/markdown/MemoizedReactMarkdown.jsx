@@ -116,6 +116,13 @@ export const MemoizedReactMarkdown = memo(
                                 </code>
                             )
                         },
+                        a({ href, children, ...linkProps }) {
+                            return (
+                                <a href={href} target='_blank' rel='noopener noreferrer' {...linkProps}>
+                                    {children}
+                                </a>
+                            )
+                        },
                         p({ children }) {
                             return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
                         },
