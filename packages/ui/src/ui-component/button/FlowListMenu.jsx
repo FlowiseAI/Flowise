@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import { styled, alpha } from '@mui/material/styles'
@@ -75,6 +76,7 @@ const StyledMenu = styled((props) => (
 }))
 
 export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi, currentPage, pageLimit }) {
+    const navigate = useNavigate()
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -178,38 +180,27 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     }
 
     const saveFlowRename = async (chatflowName) => {
-        const updateBody = {
-            name: chatflowName,
-            chatflow
-        }
         try {
-            await updateChatflowApi.request(chatflow.id, updateBody)
-            const params = {
-                page: currentPage,
-                limit: pageLimit
-            }
+            await updateChatflowApi.request(chatflow.id, { name: chatflowName })
+            setFlowDialogOpen(false)
+            enqueueSnackbar({
+                message: 'Flow renamed successfully!',
+                options: { variant: 'success' }
+            })
+
             if (isAgentCanvas && isAgentflowV2) {
-                await updateFlowsApi.request('AGENTFLOW', params)
+                navigate(`/v2/agentcanvas/${chatflow.id}`, { replace: true })
             } else if (isAgentCanvas) {
-                await updateFlowsApi.request('MULTIAGENT', params)
+                navigate(`/agentcanvas/${chatflow.id}`, { replace: true })
             } else {
-                await updateFlowsApi.request(params)
+                navigate(`/canvas/${chatflow.id}`, { replace: true })
             }
         } catch (error) {
-            if (setError) setError(error)
             enqueueSnackbar({
-                message: typeof error.response.data === 'object' ? error.response.data.message : error.response.data,
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'error',
-                    persist: true,
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
+                message: `Rename failed: ${typeof error.response?.data === 'object' ? error.response.data.message : error.response.data}`,
+                options: { variant: 'error', persist: true }
             })
+            if (setError) setError(error)
         }
     }
 
