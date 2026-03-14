@@ -500,9 +500,16 @@ class ExtendedLunaryHandler extends LunaryHandler {
         if (this.chatId && runId === this.currentRunId) {
             const answer = outputs.output
 
+            // Extract content properly - handle both string and AIMessage objects
+            // This fixes OpenRouter base64 image data being discarded
+            let content = answer
+            if (answer && typeof answer === 'object' && 'content' in answer) {
+                content = (answer as any).content
+            }
+
             this.thread.trackMessage({
                 id: this.apiMessageId,
-                content: answer,
+                content: content,
                 role: 'assistant'
             })
 
