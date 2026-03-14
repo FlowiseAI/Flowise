@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { v4 as uuidv4 } from 'uuid'
 
 const PasteJSONDialog = ({ show, onCancel, onConfirm, customization }) => {
     const portalElement = document.getElementById('portal')
@@ -14,9 +15,9 @@ const PasteJSONDialog = ({ show, onCancel, onConfirm, customization }) => {
         try {
             const parsedJSON = JSON.parse(jsonInput)
             if (!Array.isArray(parsedJSON)) throw new Error('Input must be an array of properties')
-            const formattedData = parsedJSON.map((item, index) => ({
-                id: index + 1,
-                property: item.property || '',
+            const formattedData = parsedJSON.map((item) => ({
+                id: uuidv4(),
+                property: (item.property || '').trim(),
                 type: item.type || 'string',
                 description: item.description || '',
                 required: item.required || false
