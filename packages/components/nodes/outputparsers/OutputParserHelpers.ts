@@ -1,7 +1,7 @@
 import { BaseOutputParser } from '@langchain/core/output_parsers'
 import { ChatPromptTemplate, FewShotPromptTemplate, PromptTemplate, SystemMessagePromptTemplate } from '@langchain/core/prompts'
 import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
-import { LLMChain } from 'langchain/chains'
+import { LLMChain } from '@langchain/classic/chains'
 import { ICommonObject } from '../../src'
 
 export const CATEGORY = 'Output Parsers'

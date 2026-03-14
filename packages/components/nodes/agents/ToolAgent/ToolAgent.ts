@@ -5,8 +5,8 @@ import { ChainValues } from '@langchain/core/utils/types'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
-import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
-import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
+import { formatToOpenAIToolMessages } from '@langchain/classic/agents/format_scratchpad/openai_tools'
+import { type ToolsAgentStep } from '@langchain/classic/agents/openai/output_parser'
 import {
     extractOutputFromArray,
     getBaseClasses,

@@ -1,6 +1,7 @@
-import { AzureChatOpenAI as LangchainAzureChatOpenAI, OpenAIChatInput, AzureOpenAIInput, ClientOptions } from '@langchain/openai'
+import { AzureChatOpenAI as LangchainAzureChatOpenAI } from '@langchain/openai'
 import { IMultiModalOption, IVisionChatModal } from '../../../src'
-import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
+
+export type AzureChatOpenAIConstructorFields = ConstructorParameters<typeof LangchainAzureChatOpenAI>[0]
 
 export class AzureChatOpenAI extends LangchainAzureChatOpenAI implements IVisionChatModal {
     configuredModel: string
@@ -9,18 +10,7 @@ export class AzureChatOpenAI extends LangchainAzureChatOpenAI implements IVision
     builtInTools: Record<string, any>[] = []
     id: string
 
-    constructor(
-        id: string,
-        fields?: Partial<OpenAIChatInput> &
-            Partial<AzureOpenAIInput> & {
-                openAIApiKey?: string
-                openAIApiVersion?: string
-                openAIBasePath?: string
-                deploymentName?: string
-            } & BaseChatModelParams & {
-                configuration?: ClientOptions
-            }
-    ) {
+    constructor(id: string, fields?: AzureChatOpenAIConstructorFields) {
         super(fields)
         this.id = id
         this.configuredModel = fields?.modelName ?? ''

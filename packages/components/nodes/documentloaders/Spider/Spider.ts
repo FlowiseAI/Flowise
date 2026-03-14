@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/classic/text_splitter'
 import { Document, DocumentInterface } from '@langchain/core/documents'
-import { BaseDocumentLoader } from 'langchain/document_loaders/base'
+import { BaseDocumentLoader } from '@langchain/classic/document_loaders/base'
 import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import SpiderApp from './SpiderApp'
@@ -241,7 +241,8 @@ class Spider_DocumentLoaders implements INode {
         let docs = []
 
         if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
+            docs = await loader.load()
+            docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
         }

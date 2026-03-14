@@ -6,9 +6,6 @@ import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { ChatBedrockConverseInput, ChatBedrockConverse } from '@langchain/aws'
 import { BedrockChat } from './FlowiseAWSChatBedrock'
 
-/**
- * @author Michael Connor <mlconnor@yahoo.com>
- */
 class AWSChatBedrock_ChatModels implements INode {
     label: string
     name: string
@@ -22,7 +19,7 @@ class AWSChatBedrock_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'AWS ChatBedrock'
+        this.label = 'AWS Bedrock'
         this.name = 'awsChatBedrock'
         this.version = 6.1
         this.type = 'AWSChatBedrock'
@@ -81,6 +78,15 @@ class AWSChatBedrock_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
@@ -99,15 +105,6 @@ class AWSChatBedrock_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 default: 200
-            },
-            {
-                label: 'Allow Image Uploads',
-                name: 'allowImageUploads',
-                type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
-                default: false,
-                optional: true
             },
             {
                 label: 'Latency Optimized',

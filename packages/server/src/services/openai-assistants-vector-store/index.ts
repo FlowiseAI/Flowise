@@ -145,7 +145,7 @@ const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: s
         }
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const dbResponse = await openai.vectorStores.del(vectorStoreId)
+        const dbResponse = await openai.vectorStores.delete(vectorStoreId)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -232,7 +232,7 @@ const deleteFilesFromAssistantVectorStore = async (credentialId: string, vectorS
         const deletedFileIds = []
         let count = 0
         for (const file of file_ids) {
-            const res = await openai.vectorStores.files.del(vectorStoreId, file)
+            const res = await openai.vectorStores.files.delete(file, { vector_store_id: vectorStoreId })
             if (res.deleted) {
                 deletedFileIds.push(file)
                 count += 1

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 /**
  * This parser safely handles Zod schema strings without allowing arbitrary code execution

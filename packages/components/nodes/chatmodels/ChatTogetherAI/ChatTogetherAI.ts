@@ -16,7 +16,7 @@ class ChatTogetherAI_ChatModels implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'ChatTogetherAI'
+        this.label = 'TogetherAI'
         this.name = 'chatTogetherAI'
         this.version = 2.0
         this.type = 'ChatTogetherAI'

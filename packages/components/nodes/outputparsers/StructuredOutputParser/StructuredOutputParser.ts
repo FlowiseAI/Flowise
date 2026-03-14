@@ -1,6 +1,6 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { BaseOutputParser } from '@langchain/core/output_parsers'
-import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
+import { StructuredOutputParser as LangchainStructuredOutputParser } from '@langchain/core/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
 import { convertSchemaToZod, getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
 import { jsonrepair } from 'jsonrepair'

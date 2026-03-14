@@ -1,8 +1,9 @@
 import { ICommonObject } from './Interface'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
 import { isEqual, get, cloneDeep } from 'lodash'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+import { extractResponseContent } from './utils'
 
 const ToolType = z.array(z.string()).describe('List of tools')
 
@@ -329,7 +330,7 @@ const _generateSelectedTools = async (config: Record<string, any>, question: str
         const response = await model.invoke(messages)
 
         // Try to extract JSON from the response
-        const responseContent = response.content.toString()
+        const responseContent = extractResponseContent(response)
         const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/) || responseContent.match(/{[\s\S]*?}/)
 
         if (jsonMatch) {
@@ -385,7 +386,7 @@ const generateNodesEdges = async (config: Record<string, any>, question: string,
         const response = await model.invoke(messages)
 
         // Try to extract JSON from the response
-        const responseContent = response.content.toString()
+        const responseContent = extractResponseContent(response)
         const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/) || responseContent.match(/{[\s\S]*?}/)
 
         if (jsonMatch) {

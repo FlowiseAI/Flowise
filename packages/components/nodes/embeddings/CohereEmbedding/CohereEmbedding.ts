@@ -16,7 +16,7 @@ class CohereEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Cohere Embeddings'
+        this.label = 'Cohere Embedding'
         this.name = 'cohereEmbeddings'
         this.version = 3.0
         this.type = 'CohereEmbeddings'

@@ -1,7 +1,7 @@
 import { flatten } from 'lodash'
 import { createClient, SearchOptions } from 'redis'
 import { Embeddings } from '@langchain/core/embeddings'
-import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/community/vectorstores/redis'
+import { RedisVectorStore, RedisVectorStoreConfig } from '@langchain/redis'
 import { Document } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
@@ -163,7 +163,7 @@ class Redis_VectorStores implements INode {
                 await redisClient.connect()
 
                 const storeConfig: RedisVectorStoreConfig = {
-                    redisClient: redisClient,
+                    redisClient: redisClient as any,
                     indexName: indexName
                 }
                 const isIndexExists = await checkIndexExists(redisClient, indexName)
@@ -239,7 +239,7 @@ class Redis_VectorStores implements INode {
         })
 
         const storeConfig: RedisVectorStoreConfig = {
-            redisClient: redisClient,
+            redisClient: redisClient as any,
             indexName: indexName
         }
 

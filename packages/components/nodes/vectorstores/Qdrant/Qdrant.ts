@@ -228,7 +228,7 @@ class Qdrant_VectorStores implements INode {
             }
 
             const dbConfig: QdrantLibArgs = {
-                client,
+                client: client as any,
                 url: qdrantServerUrl,
                 collectionName,
                 collectionConfig: {
@@ -353,7 +353,7 @@ class Qdrant_VectorStores implements INode {
             })
 
             const dbConfig: QdrantLibArgs = {
-                client,
+                client: client as any,
                 url: qdrantServerUrl,
                 collectionName,
                 collectionConfig: {
@@ -430,7 +430,7 @@ class Qdrant_VectorStores implements INode {
         })
 
         const dbConfig: QdrantLibArgs = {
-            client,
+            client: client as any,
             collectionName,
             contentPayloadKey,
             metadataPayloadKey

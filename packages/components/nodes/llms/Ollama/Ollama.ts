@@ -1,4 +1,4 @@
-import { Ollama, OllamaInput } from '@langchain/community/llms/ollama'
+import { Ollama, OllamaInput } from '@langchain/ollama'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
@@ -15,15 +15,19 @@ class Ollama_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Ollama'
         this.name = 'ollama'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Ollama'
         this.icon = 'Ollama.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around open source large language models on Ollama'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use Ollama Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(Ollama)]
         this.inputs = [
             {
@@ -115,16 +119,6 @@ class Ollama_LLMs implements INode {
                 additionalParams: true
             },
             {
-                label: 'Number of GQA groups',
-                name: 'numGqa',
-                type: 'number',
-                description:
-                    'The number of GQA groups in the transformer layer. Required for some models, for example it is 8 for llama2:70b. Refer to <a target="_blank" href="https://github.com/jmorganca/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values">docs</a> for more details',
-                step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Number of GPU',
                 name: 'numGpu',
                 type: 'number',
@@ -198,7 +192,6 @@ class Ollama_LLMs implements INode {
         const mirostatEta = nodeData.inputs?.mirostatEta as string
         const mirostatTau = nodeData.inputs?.mirostatTau as string
         const numCtx = nodeData.inputs?.numCtx as string
-        const numGqa = nodeData.inputs?.numGqa as string
         const numGpu = nodeData.inputs?.numGpu as string
         const numThread = nodeData.inputs?.numThread as string
         const repeatLastN = nodeData.inputs?.repeatLastN as string
@@ -220,7 +213,6 @@ class Ollama_LLMs implements INode {
         if (mirostatEta) obj.mirostatEta = parseFloat(mirostatEta)
         if (mirostatTau) obj.mirostatTau = parseFloat(mirostatTau)
         if (numCtx) obj.numCtx = parseFloat(numCtx)
-        if (numGqa) obj.numGqa = parseFloat(numGqa)
         if (numGpu) obj.numGpu = parseFloat(numGpu)
         if (numThread) obj.numThread = parseFloat(numThread)
         if (repeatLastN) obj.repeatLastN = parseFloat(repeatLastN)

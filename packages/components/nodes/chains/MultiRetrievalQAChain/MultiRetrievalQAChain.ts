@@ -1,5 +1,5 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { MultiRetrievalQAChain } from 'langchain/chains'
+import { MultiRetrievalQAChain } from '@langchain/classic/chains'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, VectorStoreRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'

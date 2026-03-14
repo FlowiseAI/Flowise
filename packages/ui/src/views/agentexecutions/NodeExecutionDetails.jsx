@@ -25,7 +25,7 @@ import {
 } from '@mui/material'
 import { useTheme, darken } from '@mui/material/styles'
 import { useSnackbar } from 'notistack'
-import { IconCoins, IconClock, IconChevronDown, IconDownload, IconTool } from '@tabler/icons-react'
+import { IconCoins, IconCoin, IconClock, IconChevronDown, IconDownload, IconTool } from '@tabler/icons-react'
 import toolSVG from '@/assets/images/tool.svg'
 
 // Project imports
@@ -324,6 +324,24 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         color='primary'
                         size='small'
                         sx={{ ml: 1, '& .MuiChip-icon': { mr: 0.2, ml: 1 } }}
+                    />
+                )}
+                {data.output?.usageMetadata?.total_cost != null && Number(data.output.usageMetadata.total_cost) >= 0 && (
+                    <Chip
+                        icon={<IconCoin size={17} />}
+                        label={
+                            data.output.usageMetadata.total_cost >= 0.01
+                                ? `$${Number(data.output.usageMetadata.total_cost).toFixed(2)}`
+                                : `$${Number(data.output.usageMetadata.total_cost).toFixed(6)}`
+                        }
+                        variant='contained'
+                        size='small'
+                        sx={{
+                            ml: 1,
+                            backgroundColor: '#c49331',
+                            color: 'white',
+                            '& .MuiChip-icon': { color: 'white', mr: 0.2, ml: 1 }
+                        }}
                     />
                 )}
             </Box>

@@ -1,5 +1,5 @@
 import { Moderation } from '../Moderation'
-import { OpenAIModerationChain } from 'langchain/chains'
+import { OpenAIModerationChain } from '@langchain/classic/chains'
 
 export class OpenAIModerationRunner implements Moderation {
     private openAIApiKey = ''

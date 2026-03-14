@@ -36,7 +36,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'GoogleVertexAI Embeddings'
+        this.label = 'Google VertexAI Embedding'
         this.name = 'googlevertexaiEmbeddings'
         this.version = 2.1
         this.type = 'GoogleVertexAIEmbeddings'

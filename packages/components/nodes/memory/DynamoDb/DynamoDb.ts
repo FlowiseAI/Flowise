@@ -11,7 +11,7 @@ import {
 } from '@aws-sdk/client-dynamodb'
 import { DynamoDBChatMessageHistory } from '@langchain/community/stores/message/dynamodb'
 import { mapStoredMessageToChatMessage, AIMessage, HumanMessage, StoredMessage, BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from '@langchain/classic/memory'
 import {
     convertBaseMessagetoIMessage,
     getBaseClasses,
@@ -264,7 +264,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
                 }
             }))
             .filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
-        const baseMessages = messages.map(mapStoredMessageToChatMessage)
+        const baseMessages: BaseMessage[] = messages.map(mapStoredMessageToChatMessage)
         if (prependMessages?.length) {
             baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages, this.orgId)))
         }

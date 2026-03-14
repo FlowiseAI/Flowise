@@ -1,10 +1,10 @@
 import { Redis } from 'ioredis'
 import { RedisByteStore } from '@langchain/community/storage/ioredis'
 import { Embeddings, EmbeddingsInterface } from '@langchain/core/embeddings'
-import { CacheBackedEmbeddingsFields } from 'langchain/embeddings/cache_backed'
+import { CacheBackedEmbeddingsFields } from '@langchain/classic/embeddings/cache_backed'
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
 import { BaseStore } from '@langchain/core/stores'
-import { insecureHash } from '@langchain/core/utils/hash'
+import { sha256 } from '@langchain/core/utils/hash'
 import { Document } from '@langchain/core/documents'
 
 class RedisEmbeddingsCache implements INode {
@@ -168,7 +168,7 @@ class CacheBackedEmbeddings extends Embeddings {
         const decoder = new TextDecoder()
         const encoderBackedStore = new EncoderBackedStore<string, number[], Uint8Array>({
             store: documentEmbeddingStore,
-            keyEncoder: (key) => (options?.namespace ?? '') + insecureHash(key),
+            keyEncoder: (key) => (options?.namespace ?? '') + sha256(key),
             valueSerializer: (value) => encoder.encode(JSON.stringify(value)),
             valueDeserializer: (serializedValue) => JSON.parse(decoder.decode(serializedValue))
         })

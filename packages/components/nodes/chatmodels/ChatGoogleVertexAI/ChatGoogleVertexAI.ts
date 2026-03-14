@@ -1,5 +1,6 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ChatVertexAIInput, ChatVertexAI as LcChatVertexAI } from '@langchain/google-vertexai'
+import { GoogleGenerativeAIChatInput } from '@langchain/google-genai'
 import { buildGoogleCredentials } from '../../../src/google-utils'
 import {
     ICommonObject,
@@ -64,7 +65,7 @@ class GoogleVertexAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatGoogleVertexAI'
+        this.label = 'Google VertexAI'
         this.name = 'chatGoogleVertexAI'
         this.version = 5.3
         this.type = 'ChatGoogleVertexAI'
@@ -120,6 +121,14 @@ class GoogleVertexAI_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -128,13 +137,43 @@ class GoogleVertexAI_ChatModels implements INode {
                 default: false,
                 optional: true
             },
+            /** The thinkingLevel parameter, recommended for Gemini 3 models and onwards. */
             {
-                label: 'Streaming',
-                name: 'streaming',
-                type: 'boolean',
-                default: true,
+                label: 'Thinking Budget',
+                name: 'thinkingBudget',
+                type: 'number',
+                description: 'Guides the number of thinking tokens. -1 for dynamic, 0 to disable, or positive integer (Gemini 2.5 models).',
+                step: 1,
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    modelName: ['gemini-2.5-pro', 'gemini-2.5-flash', 'gemini-2.5-flash-lite']
+                }
+            },
+            {
+                label: 'Thinking Level',
+                name: 'thinkingLevel',
+                type: 'options',
+                description: 'Adjust the amount of reasoning effort based on the complexity of the user request',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'LOW'
+                    },
+                    {
+                        label: 'Medium',
+                        name: 'MEDIUM'
+                    },
+                    {
+                        label: 'High',
+                        name: 'HIGH'
+                    }
+                ],
+                optional: true,
+                additionalParams: true,
+                show: {
+                    modelName: ['gemini-3.1-pro-preview', 'gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview']
+                }
             },
             {
                 label: 'Max Output Tokens',
@@ -193,8 +232,9 @@ class GoogleVertexAI_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
-        const thinkingBudget = nodeData.inputs?.thinkingBudget as string
         const region = nodeData.inputs?.region as string
+        const thinkingBudget = nodeData.inputs?.thinkingBudget as string
+        const thinkingLevel = nodeData.inputs?.thinkingLevel as 'LOW' | 'MEDIUM' | 'HIGH'
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
@@ -204,7 +244,7 @@ class GoogleVertexAI_ChatModels implements INode {
             }
         }
 
-        const obj: ChatVertexAIInput = {
+        const obj: ChatVertexAIInput & Partial<GoogleGenerativeAIChatInput> = {
             temperature: parseFloat(temperature),
             modelName: customModelName || modelName,
             streaming: streaming ?? true
@@ -217,8 +257,18 @@ class GoogleVertexAI_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (cache) obj.cache = cache
         if (topK) obj.topK = parseFloat(topK)
-        if (thinkingBudget) obj.thinkingBudget = parseInt(thinkingBudget, 10)
         if (region) obj.location = region
+        if (thinkingLevel) {
+            obj.thinkingConfig = {
+                thinkingLevel: thinkingLevel,
+                includeThoughts: true
+            }
+        } else if (thinkingBudget) {
+            obj.thinkingConfig = {
+                thinkingBudget: parseInt(thinkingBudget, 10),
+                includeThoughts: true
+            }
+        }
 
         const model = new ChatVertexAI(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)

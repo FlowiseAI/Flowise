@@ -21,6 +21,8 @@ class AWSBedrock_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'AWS Bedrock'
@@ -30,6 +32,8 @@ class AWSBedrock_LLMs implements INode {
         this.icon = 'aws.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around AWS Bedrock large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use AWS Bedrock Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(Bedrock)]
         this.credential = {
             label: 'AWS Credential',

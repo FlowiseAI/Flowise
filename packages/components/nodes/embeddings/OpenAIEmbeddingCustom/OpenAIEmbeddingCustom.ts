@@ -15,7 +15,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'OpenAI Embeddings Custom'
+        this.label = 'OpenAI Custom Embedding'
         this.name = 'openAIEmbeddingsCustom'
         this.version = 3.0
         this.type = 'OpenAIEmbeddingsCustom'
@@ -52,17 +52,19 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
+                label: 'Base Path',
                 name: 'basepath',
                 type: 'string',
                 optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
                 additionalParams: true
             },
             {
-                label: 'BaseOptions',
+                label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
+                description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             },
             {
@@ -77,6 +79,23 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Encoding Format',
+                name: 'encodingFormat',
+                type: 'options',
+                options: [
+                    {
+                        label: 'float',
+                        name: 'float'
+                    },
+                    {
+                        label: 'base64',
+                        name: 'base64'
+                    }
+                ],
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -89,6 +108,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         const modelName = nodeData.inputs?.modelName as string
         const dimensions = nodeData.inputs?.dimensions as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const encodingFormat = nodeData.inputs?.encodingFormat as 'float' | 'base64' | undefined
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -102,6 +122,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (modelName) obj.modelName = modelName
         if (dimensions) obj.dimensions = parseInt(dimensions, 10)
+        if (encodingFormat) obj.encodingFormat = encodingFormat
 
         let parsedBaseOptions: any | undefined = undefined
         if (baseOptions) {

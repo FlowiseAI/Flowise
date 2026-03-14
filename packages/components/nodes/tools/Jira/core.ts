@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
 import { secureFetch } from '../../../src/httpSecurity'

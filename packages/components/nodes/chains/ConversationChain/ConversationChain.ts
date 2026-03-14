@@ -1,4 +1,4 @@
-import { ConversationChain } from 'langchain/chains'
+import { ConversationChain } from '@langchain/classic/chains'
 import {
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -8,7 +8,6 @@ import {
     PromptTemplate
 } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { StringOutputParser } from '@langchain/core/output_parsers'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { HumanMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
@@ -27,7 +26,7 @@ import {
     IServerSideEventStreamer
 } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { getBaseClasses, handleEscapeCharacters, transformBracesWithColon } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters, transformBracesWithColon, createTextOnlyOutputParser } from '../../../src/utils'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -268,7 +267,7 @@ const prepareChain = async (nodeData: INodeData, options: ICommonObject, session
         },
         prepareChatPrompt(nodeData, messageContent),
         model,
-        new StringOutputParser()
+        createTextOnlyOutputParser()
     ])
 
     return conversationChain

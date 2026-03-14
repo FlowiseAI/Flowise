@@ -12,6 +12,7 @@ import {
 } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { DEFAULT_HUMAN_INPUT_DESCRIPTION, DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML } from '../prompt'
+import { extractResponseContent } from '../../../src/utils'
 
 class HumanInput_Agentflow implements INode {
     label: string
@@ -250,7 +251,7 @@ class HumanInput_Agentflow implements INode {
                         humanInputDescription = response.content as string
                     } else {
                         const response = await llmNodeInstance.invoke(messages)
-                        humanInputDescription = response.content as string
+                        humanInputDescription = extractResponseContent(response)
                     }
                 }
             }

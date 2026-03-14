@@ -1,5 +1,5 @@
 import { get } from 'lodash'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { DataSource } from 'typeorm'
 import { StructuredTool } from '@langchain/core/tools'
 import { ChatMistralAI } from '@langchain/mistralai'

@@ -1,5 +1,5 @@
 import { flatten } from 'lodash'
-import { AgentExecutor } from 'langchain/agents'
+import { AgentExecutor } from '@langchain/classic/agents'
 import { pull } from 'langchain/hub'
 import { Tool } from '@langchain/core/tools'
 import type { PromptTemplate } from '@langchain/core/prompts'
@@ -21,6 +21,8 @@ class ReActAgentLLM_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'ReAct Agent for LLMs'
@@ -30,6 +32,9 @@ class ReActAgentLLM_Agents implements INode {
         this.category = 'Agents'
         this.icon = 'agent.svg'
         this.description = 'Agent that uses the ReAct logic to decide what action to take, optimized to be used with LLMs'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage =
+            'ReAct Agent for LLMs is deprecated and will be removed in a future release. Use Agent from AgentFlow instead.'
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
             {

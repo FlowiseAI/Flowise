@@ -11,7 +11,7 @@ import {
 import { getBaseClasses, mapChatMessageToBaseMessage } from '../../../src/utils'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { BaseMessage, getBufferString, HumanMessage } from '@langchain/core/messages'
-import { ConversationSummaryBufferMemory, ConversationSummaryBufferMemoryInput } from 'langchain/memory'
+import { ConversationSummaryBufferMemory, ConversationSummaryBufferMemoryInput } from '@langchain/classic/memory'
 import { DataSource } from 'typeorm'
 import { ChatAnthropic } from '../../chatmodels/ChatAnthropic/FlowiseChatAnthropic'
 

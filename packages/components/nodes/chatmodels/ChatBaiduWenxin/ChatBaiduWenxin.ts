@@ -16,7 +16,7 @@ class ChatBaiduWenxin_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatBaiduWenxin'
+        this.label = 'Baidu Wenxin'
         this.name = 'chatBaiduWenxin'
         this.version = 2.0
         this.type = 'ChatBaiduWenxin'

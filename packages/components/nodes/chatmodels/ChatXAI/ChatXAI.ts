@@ -17,7 +17,7 @@ class ChatXAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatXAI'
+        this.label = 'xAI Grok'
         this.name = 'chatXAI'
         this.version = 2.0
         this.type = 'ChatXAI'
@@ -61,22 +61,6 @@ class ChatXAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'Max Tokens',
-                name: 'maxTokens',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Max Tokens',
-                name: 'maxTokens',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -84,6 +68,22 @@ class ChatXAI_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
             }
         ]
     }

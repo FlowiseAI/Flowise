@@ -1,6 +1,6 @@
 import { flatten } from 'lodash'
 import { storageContextFromDefaults, serviceContextFromDefaults, VectorStoreIndex, Document } from 'llamaindex'
-import { Document as LCDocument } from 'langchain/document'
+import { Document as LCDocument } from '@langchain/core/documents'
 import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { validateVectorStorePath } from '../../../src/validator'
 

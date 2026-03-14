@@ -2,7 +2,7 @@ import { CallbackManagerForChainRun } from '@langchain/core/callbacks/manager'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { BasePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { ChainValues } from '@langchain/core/utils/types'
-import { BaseChain, ChainInputs, LLMChain, SerializedAPIChain } from 'langchain/chains'
+import { BaseChain, ChainInputs, LLMChain, SerializedAPIChain } from '@langchain/classic/chains'
 import { secureFetch } from '../../../src'
 
 export const API_URL_RAW_PROMPT_TEMPLATE = `You are given the below API Documentation:

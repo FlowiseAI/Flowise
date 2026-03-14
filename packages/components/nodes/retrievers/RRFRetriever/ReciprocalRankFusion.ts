@@ -3,8 +3,8 @@ import { Callbacks } from '@langchain/core/callbacks/manager'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
 import { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from '@langchain/core/prompts'
-import { LLMChain } from 'langchain/chains'
-import { BaseDocumentCompressor } from 'langchain/retrievers/document_compressors'
+import { LLMChain } from '@langchain/classic/chains'
+import { BaseDocumentCompressor } from '@langchain/classic/retrievers/document_compressors'
 
 export class ReciprocalRankFusion extends BaseDocumentCompressor {
     private readonly llm: BaseLanguageModel

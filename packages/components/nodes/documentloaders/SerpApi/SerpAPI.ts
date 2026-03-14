@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { SerpAPILoader } from '@langchain/community/document_loaders/web/serpapi'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'

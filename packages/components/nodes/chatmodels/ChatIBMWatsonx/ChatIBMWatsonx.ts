@@ -25,7 +25,7 @@ class ChatIBMWatsonx_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatIBMWatsonx'
+        this.label = 'IBM Watsonx'
         this.name = 'chatIBMWatsonx'
         this.version = 2.0
         this.type = 'ChatIBMWatsonx'

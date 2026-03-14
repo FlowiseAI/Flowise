@@ -1,4 +1,4 @@
-import { APIChain, createOpenAPIChain } from 'langchain/chains'
+import { APIChain, createOpenAPIChain } from '@langchain/classic/chains'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'

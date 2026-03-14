@@ -16,7 +16,7 @@ class ChatLocalAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatLocalAI'
+        this.label = 'LocalAI'
         this.name = 'chatLocalAI'
         this.version = 3.0
         this.type = 'ChatLocalAI'

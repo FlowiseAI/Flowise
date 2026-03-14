@@ -73,7 +73,7 @@
         "remark-math": "^5.1.1",
         "showdown": "^2.1.0",
         "tippy.js": "^6.3.7",
-        "uuid": "^9.0.1",
+        "uuid": "^10.0.0",
         "yup": "^0.32.9"
     },
     "scripts": {

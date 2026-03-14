@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { DynamicStructuredTool, DynamicStructuredToolInput } from '../OpenAPIToolkit/core'
 import { TOOL_ARGS_PREFIX } from '../../../src/agents'

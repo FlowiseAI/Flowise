@@ -15,7 +15,7 @@ class TogetherAIEmbedding_Embeddings implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'TogetherAIEmbedding'
+        this.label = 'TogetherAI Embedding'
         this.name = 'togetherAIEmbedding'
         this.version = 1.0
         this.type = 'TogetherAIEmbedding'

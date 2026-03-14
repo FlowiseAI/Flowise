@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { INode } from '../../../src/Interface'
 import { DynamicStructuredTool } from '../CustomTool/core'
 

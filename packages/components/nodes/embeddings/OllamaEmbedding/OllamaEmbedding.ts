@@ -15,7 +15,7 @@ class OllamaEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Ollama Embeddings'
+        this.label = 'Ollama Embedding'
         this.name = 'ollamaEmbedding'
         this.version = 2.0
         this.type = 'OllamaEmbeddings'

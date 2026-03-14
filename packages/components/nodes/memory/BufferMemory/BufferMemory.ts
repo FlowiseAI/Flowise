@@ -9,7 +9,7 @@ import {
     MemoryMethods
 } from '../../../src/Interface'
 import { getBaseClasses, mapChatMessageToBaseMessage } from '../../../src/utils'
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from '@langchain/classic/memory'
 import { BaseMessage } from '@langchain/core/messages'
 import { DataSource } from 'typeorm'
 

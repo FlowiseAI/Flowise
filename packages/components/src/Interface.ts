@@ -1,5 +1,5 @@
 import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from '@langchain/classic/memory'
 import { Moderation } from '../nodes/moderation/Moderation'
 
 /**
@@ -428,6 +428,7 @@ export * from './Interface.Evaluation'
 export interface IServerSideEventStreamer {
     streamStartEvent(chatId: string, data: any): void
     streamTokenEvent(chatId: string, data: string): void
+    streamThinkingEvent(chatId: string, data: string, duration?: number): void
     streamCustomEvent(chatId: string, eventType: string, data: any): void
     streamSourceDocumentsEvent(chatId: string, data: any): void
     streamUsedToolsEvent(chatId: string, data: any): void

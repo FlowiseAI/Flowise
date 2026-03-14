@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { VectorStore } from '@langchain/core/vectorstores'
-import { VectorDBQAChain } from 'langchain/chains'
+import { VectorDBQAChain } from '@langchain/classic/chains'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
