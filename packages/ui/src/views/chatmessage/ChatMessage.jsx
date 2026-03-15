@@ -975,19 +975,20 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         }
 
         let input = userInput
-
-        if (typeof selectedInput === 'string') {
-            if (selectedInput !== undefined && selectedInput.trim() !== '') input = selectedInput
-
-            if (input.trim()) {
-                inputHistory.addToHistory(input)
+        if (selectedInput !== undefined) {
+            if (typeof selectedInput === 'string' && selectedInput.trim() !== '') {
+                input = selectedInput
+            } else if (typeof selectedInput === 'object') {
+                input = Object.entries(selectedInput)
+                    .map(([key, value]) => `${key}: ${value}`)
+                    .join('\n')
             }
-        } else if (typeof selectedInput === 'object') {
-            input = Object.entries(selectedInput)
-                .map(([key, value]) => `${key}: ${value}`)
-                .join('\n')
         }
 
+         if (input.trim()) {
+            inputHistory.addToHistory(input)
+        }
+  
         setLoading(true)
         clearAgentflowNodeStatus()
 
@@ -1184,24 +1185,32 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             scrollToBottom()
         }, 100)
     }
-    // Prevent blank submissions and allow for multiline input
+
     const handleEnter = (e) => {
-        // Check if IME composition is in progress
         const isIMEComposition = e.isComposing || e.keyCode === 229
-        if (e.key === 'ArrowUp' && !isIMEComposition) {
-            e.preventDefault()
-            const previousInput = inputHistory.getPreviousInput(userInput)
-            setUserInput(previousInput)
-        } else if (e.key === 'ArrowDown' && !isIMEComposition) {
-            e.preventDefault()
-            const nextInput = inputHistory.getNextInput()
-            setUserInput(nextInput)
-        } else if (e.key === 'Enter' && userInput && !isIMEComposition) {
-            if (!e.shiftKey && userInput) {
-                handleSubmit(e)
+        const textarea = e.target
+
+        if (isIMEComposition) return
+
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            const cursorAtStart = textarea.selectionStart === 0
+            const cursorAtEnd = textarea.selectionStart === textarea.value.length
+
+            // Only navigate input history if cursor is at start (ArrowUp) or end (ArrowDown)
+            if ((e.key === 'ArrowUp' && cursorAtStart) || (e.key === 'ArrowDown' && cursorAtEnd)) {
+                e.preventDefault()
+                const newInput =
+                    e.key === 'ArrowUp'
+                        ? inputHistory.getPreviousInput(userInput)
+                        : inputHistory.getNextInput()
+                setUserInput(newInput)
             }
-        } else if (e.key === 'Enter') {
-            e.preventDefault()
+
+            // Otherwise, let the arrow key move the cursor normally
+            return
+        }
+        if (e.key === 'Enter' && !e.shiftKey) {
+            handleSubmit(e)
         }
     }
 
