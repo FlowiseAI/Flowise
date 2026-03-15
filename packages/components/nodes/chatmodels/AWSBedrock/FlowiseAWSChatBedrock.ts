@@ -27,7 +27,9 @@ export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
     }
 
     setVisionModel(): void {
-        if (!this.model.includes('claude-3')) {
+        // Claude 3+ and Claude 4+ models all support vision
+        const supportsVision = /claude-(3|opus|sonnet|haiku)/.test(this.model)
+        if (!supportsVision) {
             this.model = DEFAULT_IMAGE_MODEL
             this.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : DEFAULT_IMAGE_MAX_TOKEN
         }

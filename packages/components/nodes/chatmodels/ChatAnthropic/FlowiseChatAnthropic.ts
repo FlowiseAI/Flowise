@@ -29,7 +29,9 @@ export class ChatAnthropic extends LangchainChatAnthropic implements IVisionChat
     }
 
     setVisionModel(): void {
-        if (!this.modelName.startsWith('claude-3')) {
+        // Claude 3+ and Claude 4+ models all support vision
+        const supportsVision = /^claude-(3|opus|sonnet|haiku)/.test(this.modelName)
+        if (!supportsVision) {
             this.modelName = DEFAULT_IMAGE_MODEL
             this.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : DEFAULT_IMAGE_MAX_TOKEN
         }
