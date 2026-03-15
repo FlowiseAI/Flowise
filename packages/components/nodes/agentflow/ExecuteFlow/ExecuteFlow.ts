@@ -205,12 +205,29 @@ class ExecuteFlow_Agentflow implements INode {
             const response = await secureAxiosRequest(requestConfig)
 
             let resultText = ''
+            const sourceDocuments = response.data.sourceDocuments || null
+            const usedTools = response.data.usedTools || null
+            const artifacts = response.data.artifacts || null
+            const fileAnnotations = response.data.fileAnnotations || null
+
             if (response.data.text) resultText = response.data.text
             else if (response.data.json) resultText = '```json\n' + JSON.stringify(response.data.json, null, 2)
             else resultText = JSON.stringify(response.data, null, 2)
 
             if (isLastNode && sseStreamer) {
                 sseStreamer.streamTokenEvent(options.chatId, resultText)
+                if (sourceDocuments) {
+                    sseStreamer.streamSourceDocumentsEvent(options.chatId, sourceDocuments)
+                }
+                if (usedTools) {
+                    sseStreamer.streamUsedToolsEvent(options.chatId, usedTools)
+                }
+                if (artifacts) {
+                    sseStreamer.streamArtifactsEvent(options.chatId, artifacts)
+                }
+                if (fileAnnotations) {
+                    sseStreamer.streamFileAnnotationsEvent(options.chatId, fileAnnotations)
+                }
             }
 
             // Update flow state if needed
@@ -233,7 +250,7 @@ class ExecuteFlow_Agentflow implements INode {
                 returnRole = 'assistant'
             }
 
-            const returnOutput = {
+            const returnOutput: ICommonObject = {
                 id: nodeData.id,
                 name: this.name,
                 input: {
@@ -257,6 +274,11 @@ class ExecuteFlow_Agentflow implements INode {
                     }
                 ]
             }
+
+            if (sourceDocuments) returnOutput.output.sourceDocuments = sourceDocuments
+            if (usedTools) returnOutput.output.usedTools = usedTools
+            if (artifacts) returnOutput.output.artifacts = artifacts
+            if (fileAnnotations) returnOutput.output.fileAnnotations = fileAnnotations
 
             return returnOutput
         } catch (error) {
