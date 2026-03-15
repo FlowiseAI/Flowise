@@ -15,7 +15,7 @@ services:
         container_name: flowise-main
         build:
             context: .. # Build using the Dockerfile in the root directory
-            dockerfile: docker/Dockerfile
+            dockerfile: Dockerfile
         ports:
             - '${PORT}:${PORT}'
         volumes:
