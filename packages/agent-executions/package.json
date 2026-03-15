@@ -63,6 +63,7 @@
         "@emotion/styled": "^11.10.0"
     },
     "dependencies": {
+        "@flowiseai/common-ui-types": "workspace:^",
         "axios": "^1.7.2",
         "lodash": "^4.17.21",
         "moment": "^2.29.4",

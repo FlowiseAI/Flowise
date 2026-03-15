@@ -1,0 +1,40 @@
+{
+    "name": "@flowiseai/common-ui-types",
+    "version": "0.0.0-dev.1",
+    "description": "Shared UI types for Flowise frontend packages",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/FlowiseAI/Flowise.git",
+        "directory": "packages/common-ui-types"
+    },
+    "publishConfig": {
+        "access": "public",
+        "registry": "https://registry.npmjs.org"
+    },
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "clean": "rimraf dist",
+        "nuke": "rimraf dist node_modules .turbo"
+    },
+    "dependencies": {
+        "axios": "^1.7.2"
+    },
+    "devDependencies": {
+        "rimraf": "^5.0.5",
+        "typescript": "^5.4.5"
+    }
+}

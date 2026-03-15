@@ -68,6 +68,7 @@
         "reactflow": "^11.5.0"
     },
     "dependencies": {
+        "@flowiseai/common-ui-types": "workspace:^",
         "@tabler/icons-react": "^3.7.0",
         "axios": "^1.7.2",
         "lodash": "^4.17.21",

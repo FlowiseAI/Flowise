@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => {
             },
             rollupOptions: {
                 external: [
+                    '@flowiseai/common-ui-types',
                     'react',
                     'react-dom',
                     'react/jsx-runtime',
