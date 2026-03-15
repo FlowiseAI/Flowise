@@ -247,10 +247,14 @@ export const resolveVariables = async (
         // If value is not a string, return as is
         if (typeof value !== 'string') return value
 
-        const turndownService = new TurndownService()
-        value = turndownService.turndown(value)
-        // After conversion, replace any escaped underscores with regular underscores
-        value = value.replace(/\\_/g, '_')
+        // Only apply TurndownService if value contains HTML tags to avoid
+        // escaping Markdown characters in plain text (e.g., ## Heading -> \## Heading)
+        if (/<[a-z][\s\S]*>/i.test(value)) {
+            const turndownService = new TurndownService()
+            value = turndownService.turndown(value)
+            // After conversion, replace any escaped underscores with regular underscores
+            value = value.replace(/\\_/g, '_')
+        }
 
         const matches = value.match(/{{(.*?)}}/g)
 
