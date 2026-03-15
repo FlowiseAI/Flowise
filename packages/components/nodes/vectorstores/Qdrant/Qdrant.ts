@@ -199,6 +199,7 @@ class Qdrant_VectorStores implements INode {
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const qdrantSimilarity = nodeData.inputs?.qdrantSimilarity
             const qdrantVectorDimension = nodeData.inputs?.qdrantVectorDimension
+            let qdrantCollectionConfiguration = nodeData.inputs?.qdrantCollectionConfiguration
             const recordManager = nodeData.inputs?.recordManager
             const _batchSize = nodeData.inputs?.batchSize
             const contentPayloadKey = nodeData.inputs?.contentPayloadKey || 'content'
@@ -239,6 +240,21 @@ class Qdrant_VectorStores implements INode {
                 },
                 contentPayloadKey,
                 metadataPayloadKey
+            }
+
+            if (qdrantCollectionConfiguration) {
+                qdrantCollectionConfiguration =
+                    typeof qdrantCollectionConfiguration === 'object'
+                        ? qdrantCollectionConfiguration
+                        : parseJsonBody(qdrantCollectionConfiguration)
+                dbConfig.collectionConfig = {
+                    ...qdrantCollectionConfiguration,
+                    vectors: {
+                        ...qdrantCollectionConfiguration.vectors,
+                        size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                        distance: qdrantSimilarity ?? 'Cosine'
+                    }
+                }
             }
 
             try {
