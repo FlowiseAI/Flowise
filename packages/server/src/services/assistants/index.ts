@@ -20,7 +20,7 @@ import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import nodesService from '../nodes'
 
-const createAssistant = async (requestBody: any, orgId: string): Promise<Assistant> => {
+const createAssistant = async (requestBody: any, orgId: string, workspaceId: string): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
@@ -29,6 +29,8 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
         const assistantDetails = JSON.parse(requestBody.details)
 
         if (requestBody.type === 'CUSTOM') {
+            // For CUSTOM assistants the credential field is a client-generated UUID used as an
+            // internal identifier, not a reference to the Credential entity, so no lookup is needed.
             const newAssistant = new Assistant()
             Object.assign(newAssistant, requestBody)
 
@@ -51,7 +53,8 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
 
         try {
             const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-                id: requestBody.credential
+                id: requestBody.credential,
+                workspaceId: workspaceId
             })
 
             if (!credential) {
@@ -297,12 +300,33 @@ const updateAssistant = async (assistantId: string, requestBody: any, workspaceI
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Assistant ${assistantId} not found`)
         }
 
+        if (requestBody.details !== undefined) {
+            if (!requestBody.details) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Details cannot be empty`)
+            }
+            let parsedDetails: any
+            try {
+                parsedDetails = JSON.parse(requestBody.details)
+            } catch (e) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Details must be valid JSON`)
+            }
+            if (assistant.type === 'CUSTOM' && !parsedDetails?.name) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Details must include a name field`)
+            }
+        }
+
         if (assistant.type === 'CUSTOM') {
             const body = requestBody
-            const updateAssistant = new Assistant()
-            Object.assign(updateAssistant, body)
+            // Explicit allowlist — mutate only allowed fields on the fetched entity.
+            // Never use merge() with an intermediate entity: TypeORM iterates all metadata
+            // columns during merge, which can overwrite workspaceId, id, and timestamps
+            // even when those fields are absent from the source object.
+            if (body.details !== undefined) assistant.details = body.details
+            // For CUSTOM assistants the credential field is a client-generated UUID used as an
+            // internal identifier, not a reference to the Credential entity, so no lookup is needed.
+            if (body.credential !== undefined) assistant.credential = body.credential
+            if (body.iconSrc !== undefined) assistant.iconSrc = body.iconSrc
 
-            appServer.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
         }
@@ -312,7 +336,8 @@ const updateAssistant = async (assistantId: string, requestBody: any, workspaceI
             const body = requestBody
             const assistantDetails = JSON.parse(body.details)
             const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-                id: body.credential
+                id: body.credential,
+                workspaceId: workspaceId
             })
 
             if (!credential) {
@@ -376,11 +401,12 @@ const updateAssistant = async (assistantId: string, requestBody: any, workspaceI
             }
             if (savedToolResources) newAssistantDetails.tool_resources = savedToolResources
 
-            const updateAssistant = new Assistant()
-            body.details = JSON.stringify(newAssistantDetails)
-            Object.assign(updateAssistant, body)
+            // Explicit allowlist — mutate only allowed fields on the fetched entity (same
+            // reasoning as the CUSTOM path above: avoid merge() with an intermediate entity).
+            assistant.details = JSON.stringify(newAssistantDetails)
+            if (body.credential !== undefined) assistant.credential = body.credential
+            if (body.iconSrc !== undefined) assistant.iconSrc = body.iconSrc
 
-            appServer.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
         } catch (error) {
