@@ -7,7 +7,7 @@ import { IconCircleXFilled } from '@tabler/icons-react'
 import { useApiContext } from '../../infrastructure/store/ApiContext'
 import { useApi } from '../../infrastructure/api/hooks'
 import { ExecutionDetails } from '../execution-details/ExecutionDetails'
-import type { Execution, ExecutionNode, ExecutionMetadata } from '../../types'
+import type { Execution, ExecutionNode, ExecutionMetadata } from '@/core/types'
 
 interface PublicExecutionDetailsProps {
     executionId: string

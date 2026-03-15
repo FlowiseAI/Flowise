@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Stack, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material'
 import { omit } from 'lodash'
-import { useApiContext } from '../../infrastructure/store/ApiContext'
-import { useApi } from '../../infrastructure/api/hooks'
+import { useApiContext } from '@/infrastructure/store/ApiContext'
+import { useApi } from '@/infrastructure/api/hooks'
 import { ExecutionsListTable } from './ExecutionsListTable'
 import { ExecutionFilters } from './ExecutionFilters'
 import { ExecutionDetails } from '../execution-details/ExecutionDetails'
-import { EmptyState } from '../../atoms/EmptyState'
-import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '../../atoms/TablePagination'
-import type { Execution, ExecutionFilters as ExecutionFiltersType, ExecutionNode, ExecutionMetadata } from '../../types'
+import { EmptyState } from '@/atoms/EmptyState'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/atoms/TablePagination'
+import type { Execution, ExecutionFilters as ExecutionFiltersType, ExecutionNode, ExecutionMetadata } from '@/core/types'
 
 export const ExecutionsList = () => {
     const { executionsApi } = useApiContext()

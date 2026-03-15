@@ -48,6 +48,8 @@
         "build": "tsc && vite build",
         "clean": "rimraf dist",
         "dev": "vite",
+        "format": "prettier --write \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+        "format:check": "prettier --check \"{src,examples}/**/*.{ts,tsx,js,jsx,json,css,md}\"",
         "lint": "eslint \"src/**/*.{ts,tsx}\"",
         "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
         "nuke": "rimraf dist node_modules .turbo",

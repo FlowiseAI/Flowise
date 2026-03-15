@@ -18,7 +18,7 @@ import {
 import { tableCellClasses } from '@mui/material/TableCell'
 import { useConfigContext } from '../../infrastructure/store/ConfigContext'
 import { getIconFromStatus, getIconColor } from '../../atoms/StatusIcon'
-import type { Execution, ExecutionState } from '../../types'
+import type { Execution, ExecutionState } from '@/core/types'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,

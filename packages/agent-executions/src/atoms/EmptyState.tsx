@@ -1,5 +1,5 @@
 import { Box, Stack } from '@mui/material'
-import executionEmptySvg from '../assets/executions_empty.svg'
+import executionEmptySvg from '@/assets/executions_empty.svg'
 
 export const EmptyState = () => {
     return (

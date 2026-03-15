@@ -1,5 +1,5 @@
 import { FLOWISE_CREDENTIAL_ID } from '../constants'
-import type { ExecutionNode, ExecutionTreeItem } from '../types'
+import type { ExecutionNode, ExecutionTreeItem } from '@/core/types'
 
 interface InternalTreeNode extends ExecutionNode {
     uniqueNodeId: string

@@ -4,7 +4,7 @@ import { CodeBlock } from './CodeBlock'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeMathjax from 'rehype-mathjax'
-import '../assets/Markdown.css'
+import '@/assets/Markdown.css'
 
 const containsLaTeX = (text: string, customPatterns: { regex: RegExp; name: string }[] = []): boolean => {
     if (!text || typeof text !== 'string') return false

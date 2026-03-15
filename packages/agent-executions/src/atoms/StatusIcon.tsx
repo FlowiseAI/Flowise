@@ -3,7 +3,7 @@ import StopCircleIcon from '@mui/icons-material/StopCircle'
 import ErrorIcon from '@mui/icons-material/Error'
 import { IconLoader, IconCircleXFilled } from '@tabler/icons-react'
 import type { Theme } from '@mui/material/styles'
-import type { ExecutionState } from '../types'
+import type { ExecutionState } from '@/core/types'
 
 export const getIconFromStatus = (state: ExecutionState, theme: Theme) => {
     switch (state) {

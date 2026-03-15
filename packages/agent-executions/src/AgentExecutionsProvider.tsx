@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { ConfigProvider } from './infrastructure/store/ConfigContext'
-import { ApiProvider } from './infrastructure/store/ApiContext'
-import type { AgentExecutionsConfig } from './types'
+import { ConfigProvider } from '@/infrastructure/store/ConfigContext'
+import { ApiProvider } from '@/infrastructure/store/ApiContext'
+import type { AgentExecutionsConfig } from '@/core/types'
 
 export interface AgentExecutionsProviderProps extends AgentExecutionsConfig {
     children: ReactNode

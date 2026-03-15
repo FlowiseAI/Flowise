@@ -4,14 +4,14 @@ import { Typography, Box, Drawer, Chip, Button, Tooltip, IconButton } from '@mui
 import { useTheme } from '@mui/material/styles'
 import DragHandleIcon from '@mui/icons-material/DragHandle'
 import { IconRefresh, IconExternalLink, IconCopy, IconLoader, IconShare, IconWorld, IconX } from '@tabler/icons-react'
-import { useConfigContext } from '../../infrastructure/store/ConfigContext'
-import { useApiContext } from '../../infrastructure/store/ApiContext'
-import { useApi } from '../../infrastructure/api/hooks'
+import { useConfigContext } from '@/infrastructure/store/ConfigContext'
+import { useApiContext } from '@/infrastructure/store/ApiContext'
+import { useApi } from '@/infrastructure/api/hooks'
 import { ExecutionTreeView } from './ExecutionTreeView'
 import { NodeExecutionDetails } from './NodeExecutionDetails'
 import { ShareExecutionDialog } from './ShareExecutionDialog'
-import { buildTreeData, getAllNodeIds, findNode, findFirstStoppedNode } from '../../utils/tree-builder'
-import type { ExecutionNode, ExecutionMetadata, ExecutionTreeItem } from '../../types'
+import { buildTreeData, getAllNodeIds, findNode, findFirstStoppedNode } from '@/utils/tree-builder'
+import type { ExecutionNode, ExecutionMetadata, ExecutionTreeItem } from '@/core/types'
 
 const MIN_DRAWER_WIDTH = 400
 const DEFAULT_DRAWER_WIDTH = typeof window !== 'undefined' ? window.innerWidth - 400 : 800

@@ -1,6 +1,6 @@
 import { Box } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { useConfigContext } from '../infrastructure/store/ConfigContext'
+import { useConfigContext } from '@/infrastructure/store/ConfigContext'
 
 interface JsonTokenProps {
     type: string

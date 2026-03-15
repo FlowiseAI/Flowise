@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react'
-import type { AgentExecutionsConfig } from '../../types'
+import type { AgentExecutionsConfig } from '@/core/types'
 
 const ConfigContext = createContext<AgentExecutionsConfig | null>(null)
 

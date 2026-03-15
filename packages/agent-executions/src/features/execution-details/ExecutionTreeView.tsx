@@ -16,9 +16,9 @@ import { TreeItem2Provider } from '@mui/x-tree-view/TreeItem2Provider'
 import { TreeItem2DragAndDropOverlay } from '@mui/x-tree-view/TreeItem2DragAndDropOverlay'
 import { IconRelationOneToManyFilled } from '@tabler/icons-react'
 import { useTheme } from '@mui/material/styles'
-import { AGENTFLOW_ICONS } from '../../constants'
-import { getIconFromStatus, getIconColor } from '../../atoms/StatusIcon'
-import type { ExecutionTreeItem, ExecutionState } from '../../types'
+import { AGENTFLOW_ICONS } from '@/constants'
+import { getIconFromStatus, getIconColor } from '@/atoms/StatusIcon'
+import type { ExecutionTreeItem, ExecutionState } from '@/core/types'
 
 const StyledTreeItemRoot = styled(TreeItem2Root)(({ theme }) => ({
     color: theme.palette.grey[400]

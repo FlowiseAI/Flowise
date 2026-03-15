@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
 import { Box, Dialog, DialogContent, DialogTitle, Typography } from '@mui/material'
 import ReactJson from 'flowise-react-json-view'
-import { useConfigContext } from '../infrastructure/store/ConfigContext'
+import { useConfigContext } from '@/infrastructure/store/ConfigContext'
 
 interface SourceDocDialogProps {
     show: boolean

@@ -15,8 +15,8 @@ import {
     useTheme
 } from '@mui/material'
 import { IconTrash } from '@tabler/icons-react'
-import { useConfigContext } from '../../infrastructure/store/ConfigContext'
-import type { ExecutionFilters as ExecutionFiltersType } from '../../types'
+import { useConfigContext } from '@/infrastructure/store/ConfigContext'
+import type { ExecutionFilters as ExecutionFiltersType } from '@/core/types'
 
 interface ExecutionFiltersProps {
     filters: ExecutionFiltersType
