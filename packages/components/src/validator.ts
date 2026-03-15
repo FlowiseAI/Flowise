@@ -32,17 +32,28 @@ export const isValidURL = (url: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isPathTraversal = (path: string): boolean => {
-    // Check for common path traversal patterns
+    // PATH_TRAVERSAL_SAFETY defaults to true; must be explicitly set to 'false' to disable
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return false
+    }
+
+    // Normalize %2e → . before checking for .. to catch mixed-encoding bypasses
+    // e.g. .%2e/, %2e./, %2e%2e all become ../
+    if (/\.\./.test(path.replace(/%2e/gi, '.'))) {
+        return true
+    }
+
     const dangerousPatterns = [
-        '..', // Directory traversal
-        '/', // Root directory
-        '\\', // Windows root directory
-        '%2e', // URL encoded .
-        '%2f', // URL encoded /
-        '%5c' // URL encoded \
+        /%2f/i, // URL encoded /
+        /%5c/i, // URL encoded \ (Windows path)
+        /\0/, // Null bytes
+        /%00/i, // URL encoded null byte
+        /^\s*[a-zA-Z]:[/\\]/, // Windows absolute paths (C:\, C:/) with optional leading whitespace
+        /^\\\\[^\\]/, // UNC paths (\\server\)
+        /^\// // Absolute Unix paths (/etc, /data, /root, etc.)
     ]
 
-    return dangerousPatterns.some((pattern) => path.toLowerCase().includes(pattern))
+    return dangerousPatterns.some((pattern) => pattern.test(path))
 }
 
 /**
