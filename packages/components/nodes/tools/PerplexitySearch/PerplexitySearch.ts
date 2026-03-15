@@ -151,7 +151,7 @@ class PerplexitySearch_Tools implements INode {
             description: description || undefined,
             maxResults: maxResults ? parseInt(maxResults, 10) : undefined,
             searchRecencyFilter: searchRecencyFilter || undefined,
-            searchDomainFilter: searchDomainFilter
+            searchDomainFilter: searchDomainFilter?.trim()
                 ? searchDomainFilter
                       .split(',')
                       .map((s) => s.trim())
