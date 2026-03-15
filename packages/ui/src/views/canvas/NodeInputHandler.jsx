@@ -48,6 +48,9 @@ import { Tab } from '@/ui-component/tabs/Tab'
 import { ConfigInput } from '@/views/agentflowsv2/ConfigInput'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
+import { TimePicker } from '@/ui-component/picker/TimePicker'
+import { WeekDaysPicker } from '@/ui-component/picker/WeekDaysPicker'
+import { MonthDaysPicker } from '@/ui-component/picker/MonthDaysPicker'
 
 import ToolDialog from '@/views/tools/ToolDialog'
 import AssistantDialog from '@/views/assistants/openai/AssistantDialog'
@@ -1211,6 +1214,29 @@ const NodeInputHandler = ({
                                     )}
                                 </div>
                             </>
+                        )}
+                        {inputParam.type === 'timePicker' && (
+                            <TimePicker
+                                disabled={disabled}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                placeholder={inputParam.placeholder}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
+                            />
+                        )}
+                        {inputParam.type === 'weekDaysPicker' && (
+                            <WeekDaysPicker
+                                disabled={disabled}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                options={inputParam.options}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
+                            />
+                        )}
+                        {inputParam.type === 'monthDaysPicker' && (
+                            <MonthDaysPicker
+                                disabled={disabled}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
+                            />
                         )}
                         {inputParam.type === 'array' && <ArrayRenderer inputParam={inputParam} data={data} disabled={disabled} />}
                         {/* CUSTOM INPUT LOGIC */}

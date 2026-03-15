@@ -5,6 +5,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { INodeParams } from 'flowise-components'
 import { IReactFlowEdge, IReactFlowNode } from '../../Interface'
+import { resolveScheduleCron } from '../schedule'
 
 interface IValidationResult {
     id: string
@@ -247,6 +248,14 @@ const checkFlowValidation = async (flowId: string, workspaceId?: string): Promis
                             }
                         }
                     }
+                }
+            }
+
+            // Validate schedule configuration on startAgentflow nodes with scheduleInput
+            if (node.data.name === 'startAgentflow' && node.data.inputs?.startInputType === 'scheduleInput') {
+                const cronResult = resolveScheduleCron(node.data.inputs)
+                if (!cronResult.valid) {
+                    nodeIssues.push(`Schedule configuration is invalid: ${cronResult.error}`)
                 }
             }
 

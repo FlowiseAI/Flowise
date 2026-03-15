@@ -22,6 +22,9 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
+import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
+import scheduleService, { resolveScheduleCron } from '../../services/schedule'
+import { ScheduleBeat } from '../../queue/ScheduleBeat'
 
 export const enum ChatflowErrorMessage {
     INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type',
@@ -110,7 +113,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
     try {
         const appServer = getRunningExpressApp()
 
-        await getChatflowById(chatflowId, workspaceId)
+        const chatflow = await getChatflowById(chatflowId, workspaceId)
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
 
@@ -125,6 +128,14 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
 
         // Delete all upsert history
         await appServer.AppDataSource.getRepository(UpsertHistory).delete({ chatflowid: chatflowId })
+
+        // delete schedules related to the chatflow if it's an agentflow
+        if (chatflow.type === EnumChatflowType.AGENTFLOW) {
+            const existingRecord = await scheduleService.disableSchedulesForTarget(chatflow.id, ScheduleTriggerType.AGENTFLOW, workspaceId)
+            if (existingRecord) {
+                await ScheduleBeat.getInstance().onScheduleChanged(existingRecord.id, 'delete')
+            }
+        }
 
         try {
             // Delete all uploads corresponding to this chatflow
@@ -308,6 +319,36 @@ const saveChatflow = async (
         dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
     }
 
+    // Check if the flow is agentflow and if it has a schedule node, if yes then notify the beat to sync the schedule
+    if (dbResponse.type === EnumChatflowType.AGENTFLOW) {
+        /*** Get chatflows and prepare data  ***/
+        const flowData = dbResponse.flowData
+        const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+        const nodes = (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow')
+        const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput' | 'scheduleInput'
+        if (startInputType === 'scheduleInput') {
+            const cronResult = resolveScheduleCron(startNode?.data?.inputs ?? {})
+            const scheduleTimezone = startNode?.data?.inputs?.scheduleTimezone || 'UTC'
+            const scheduleDefaultInput = startNode?.data?.inputs?.scheduleDefaultInput || ''
+            if (cronResult.valid) {
+                const record = await scheduleService.createOrUpdateSchedule({
+                    triggerType: ScheduleTriggerType.AGENTFLOW,
+                    targetId: dbResponse.id,
+                    nodeId: startNode?.id,
+                    cronExpression: cronResult.cronExpression!,
+                    timezone: scheduleTimezone,
+                    enabled: true,
+                    defaultInput: scheduleDefaultInput,
+                    workspaceId
+                })
+
+                // Notify the beat to sync the schedule
+                await ScheduleBeat.getInstance().onScheduleChanged(record.id, 'upsert')
+            }
+        }
+    }
+
     const productId = await appServer.identityManager.getProductIdFromSubscription(subscriptionId)
 
     await appServer.telemetry.sendTelemetry(
@@ -371,6 +412,54 @@ const updateChatflow = async (
     const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
     await _checkAndUpdateDocumentStoreUsage(newDbChatflow, chatflow.workspaceId)
     const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+
+    // Check if the flow is agentflow and if it has a schedule node, if yes then notify the beat to sync the schedule
+    let shouldDisableSchedule = false
+    if (dbResponse.type === EnumChatflowType.AGENTFLOW) {
+        const flowData = dbResponse.flowData
+        const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
+        const nodes = (parsedFlowData.nodes || []).filter((node) => node.data.name !== 'stickyNoteAgentflow')
+        const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput' | 'scheduleInput'
+        if (startInputType === 'scheduleInput') {
+            const cronResult = resolveScheduleCron(startNode?.data?.inputs ?? {})
+            const scheduleTimezone = startNode?.data?.inputs?.scheduleTimezone || 'UTC'
+            const scheduleDefaultInput = startNode?.data?.inputs?.scheduleDefaultInput || ''
+            if (cronResult.valid) {
+                const record = await scheduleService.createOrUpdateSchedule({
+                    triggerType: ScheduleTriggerType.AGENTFLOW,
+                    targetId: dbResponse.id,
+                    nodeId: startNode?.id,
+                    cronExpression: cronResult.cronExpression!,
+                    timezone: scheduleTimezone,
+                    enabled: true,
+                    defaultInput: scheduleDefaultInput,
+                    workspaceId
+                })
+
+                // Notify the beat to sync the schedule
+                await ScheduleBeat.getInstance().onScheduleChanged(record.id, 'upsert')
+            } else {
+                // If the schedule configuration is invalid, we should disable the existing schedule if it exists,
+                // to prevent potential issues caused by invalid schedule configuration
+                shouldDisableSchedule = true
+            }
+        } else {
+            // If the start node is not scheduleInput, then we need to disable the existing schedule if it exists
+            shouldDisableSchedule = true
+        }
+
+        if (shouldDisableSchedule) {
+            const existingRecord = await scheduleService.disableSchedulesForTarget(
+                dbResponse.id,
+                ScheduleTriggerType.AGENTFLOW,
+                workspaceId
+            )
+            if (existingRecord) {
+                await ScheduleBeat.getInstance().onScheduleChanged(existingRecord.id, 'delete')
+            }
+        }
+    }
 
     return dbResponse
 }

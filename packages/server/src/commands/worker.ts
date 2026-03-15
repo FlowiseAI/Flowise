@@ -16,6 +16,7 @@ interface CustomListener extends QueueEventsListener {
 export default class Worker extends BaseCommand {
     predictionWorkerId: string
     upsertionWorkerId: string
+    scheduleWorkerId: string
 
     async run(): Promise<void> {
         logger.info('Starting Flowise Worker...')
@@ -50,6 +51,12 @@ export default class Worker extends BaseCommand {
         const upsertionWorker = upsertionQueue.createWorker()
         this.upsertionWorkerId = upsertionWorker.id
         logger.info(`Upsertion Worker ${this.upsertionWorkerId} created`)
+
+        /** Schedule */
+        const scheduleQueue = queueManager.getQueue('schedule')
+        const scheduleWorker = scheduleQueue.createWorker()
+        this.scheduleWorkerId = scheduleWorker.id
+        logger.info(`Schedule Worker ${this.scheduleWorkerId} created`)
 
         // Keep the process running
         process.stdin.resume()
@@ -98,6 +105,10 @@ export default class Worker extends BaseCommand {
             const upsertWorker = queueManager.getQueue('upsert').getWorker()
             logger.info(`Shutting down Flowise Upsertion Worker ${this.upsertionWorkerId}...`)
             await upsertWorker.close()
+
+            const scheduleWorker = queueManager.getQueue('schedule').getWorker()
+            logger.info(`Shutting down Flowise Schedule Worker...`)
+            await scheduleWorker.close()
         } catch (error) {
             logger.error('There was an error shutting down Flowise Worker...', error)
             await this.failExit()

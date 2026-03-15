@@ -18,7 +18,7 @@ class Start_Agentflow implements INode {
     constructor() {
         this.label = 'Start'
         this.name = 'startAgentflow'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'Start'
         this.category = 'Agent Flows'
         this.description = 'Starting point of the agentflow'
@@ -40,6 +40,11 @@ class Start_Agentflow implements INode {
                         label: 'Form Input',
                         name: 'formInput',
                         description: 'Start the workflow with form inputs'
+                    },
+                    {
+                        label: 'Schedule Input',
+                        name: 'scheduleInput',
+                        description: 'Start the workflow on a recurring schedule (cron)'
                     }
                 ],
                 default: 'chatInput'
@@ -124,6 +129,135 @@ class Start_Agentflow implements INode {
                         ]
                     }
                 ]
+            },
+            {
+                label: 'Schedule Type',
+                name: 'scheduleType',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Visual Picker',
+                        name: 'visualPicker',
+                        description: 'Use a visual picker to select schedule options'
+                    },
+                    {
+                        label: 'Cron Expression',
+                        name: 'cronExpression',
+                        description: 'Use a cron expression to define the schedule'
+                    }
+                ],
+                show: {
+                    startInputType: 'scheduleInput'
+                }
+            },
+            {
+                label: 'Cron Expression',
+                name: 'scheduleCronExpression',
+                type: 'string',
+                placeholder: '0 9 * * 1-5',
+                description:
+                    'Standard 5-field cron expression (minute hour day month weekday). Example: "0 9 * * 1-5" runs at 09:00 every weekday.',
+                show: {
+                    startInputType: 'scheduleInput',
+                    scheduleType: 'cronExpression'
+                }
+            },
+            {
+                label: 'Frequency',
+                name: 'scheduleFrequency',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Hourly',
+                        name: 'hourly',
+                        description: 'Run every hour at the specified time'
+                    },
+                    {
+                        label: 'Daily',
+                        name: 'daily',
+                        description: 'Run every day at the specified time'
+                    },
+                    {
+                        label: 'Weekly',
+                        name: 'weekly',
+                        description: 'Run every week on the specified day and time'
+                    },
+                    {
+                        label: 'Monthly',
+                        name: 'monthly',
+                        description: 'Run every month on the specified date and time'
+                    }
+                ],
+                show: {
+                    startInputType: 'scheduleInput',
+                    scheduleType: 'visualPicker'
+                }
+            },
+            {
+                label: 'On Minute',
+                name: 'scheduleOnMinute',
+                type: 'number',
+                placeholder: '30',
+                description:
+                    'Minute of the hour when the schedule should run (0-59). For example, "30" means the schedule will run at the 30th minute of the hour.',
+                show: {
+                    startInputType: 'scheduleInput',
+                    scheduleType: 'visualPicker',
+                    scheduleFrequency: 'hourly'
+                }
+            },
+            {
+                label: 'On Time',
+                name: 'scheduleOnTime',
+                type: 'timePicker',
+                show: {
+                    startInputType: 'scheduleInput',
+                    scheduleType: 'visualPicker',
+                    scheduleFrequency: ['daily', 'weekly', 'monthly']
+                }
+            },
+            {
+                label: 'On Day of Week',
+                name: 'scheduleOnDayOfWeek',
+                type: 'weekDaysPicker',
+                show: {
+                    startInputType: 'scheduleInput',
+                    scheduleType: 'visualPicker',
+                    scheduleFrequency: 'weekly'
+                }
+            },
+            {
+                label: 'On Day of Month',
+                name: 'scheduleOnDayOfMonth',
+                type: 'monthDaysPicker',
+                show: {
+                    startInputType: 'scheduleInput',
+                    scheduleType: 'visualPicker',
+                    scheduleFrequency: 'monthly'
+                }
+            },
+            {
+                label: 'Timezone',
+                name: 'scheduleTimezone',
+                type: 'string',
+                placeholder: 'UTC',
+                description: 'IANA timezone name, e.g. America/New_York. Defaults to UTC.',
+                optional: true,
+                show: {
+                    startInputType: 'scheduleInput'
+                }
+            },
+            {
+                label: 'Default Input',
+                name: 'scheduleDefaultInput',
+                type: 'string',
+                placeholder: 'Run the daily report',
+                description: 'Default question/input passed to the flow when it is triggered by the scheduler.',
+                acceptVariable: true,
+                rows: 4,
+                show: {
+                    startInputType: 'scheduleInput'
+                }
             },
             {
                 label: 'Ephemeral Memory',
@@ -211,6 +345,14 @@ class Start_Agentflow implements INode {
                 form = options.agentflowRuntime.form
             }
             outputData.form = form
+        }
+
+        if (startInputType === 'scheduleInput') {
+            const defaultInput = nodeData.inputs?.scheduleDefaultInput as string
+            const effectiveInput = (typeof input === 'string' && input) || defaultInput || ''
+            inputData.question = effectiveInput
+            outputData.question = effectiveInput
+            outputData.scheduledAt = options.agentflowRuntime?.scheduledAt ?? new Date().toISOString()
         }
 
         if (startEphemeralMemory) {
