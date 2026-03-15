@@ -147,6 +147,19 @@ describe('sanitizeFlowDataForPublicEndpoint', () => {
         expect(sanitizeFlowDataForPublicEndpoint('')).toBe('')
     })
 
+    it('sanitizes sensitive headers even when inputParams is missing', () => {
+        const flowData = makeFlowData([
+            {
+                id: 'n0',
+                type: 'x',
+                data: { inputs: { headers: { Authorization: 'Bearer secret', 'Content-Type': 'application/json' } } }
+            }
+        ])
+        const result = JSON.parse(sanitizeFlowDataForPublicEndpoint(flowData))
+        expect(result.nodes[0].data.inputs.headers).not.toHaveProperty('Authorization')
+        expect(result.nodes[0].data.inputs.headers['Content-Type']).toBe('application/json')
+    })
+
     it('does not crash when a node has no inputParams', () => {
         const flowData = makeFlowData([{ id: 'n0', type: 'x', data: { inputs: { foo: 'bar' } } }])
         expect(() => sanitizeFlowDataForPublicEndpoint(flowData)).not.toThrow()

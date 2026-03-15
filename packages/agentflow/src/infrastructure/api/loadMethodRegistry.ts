@@ -1,11 +1,17 @@
 import type { CredentialsApi } from './credentials'
+import type { EmbeddingsApi } from './embeddings'
 import type { ChatModelsApi } from './models'
+import type { RuntimeStateApi } from './runtimeState'
+import type { StoresApi } from './stores'
 import type { ToolsApi } from './tools'
 
 export interface ApiServices {
     chatModelsApi: ChatModelsApi
     toolsApi: ToolsApi
     credentialsApi: CredentialsApi
+    storesApi: StoresApi
+    embeddingsApi: EmbeddingsApi
+    runtimeStateApi: RuntimeStateApi
 }
 
 /**
@@ -17,15 +23,24 @@ export interface ApiServices {
  * and must return a `Promise` of the option values to populate the node's dropdown.
  *
  * ### Built-in entries
- * - `listChatModels` — fetches available chat models via `GET /assistants/components/chatmodels`
+ * - `listModels` — fetches available chat models via `POST /node-load-method/agentAgentflow`
  * - `listTools` — fetches available tool components via `POST /node-load-method/toolAgentflow`
- * - `listCredentials` — fetches credentials filtered by `params.name` (credential component name)
- *   via `GET /credentials?credentialName=<name>`
+ * - `listStores` — fetches document stores via `POST /node-load-method/agentAgentflow`
+ * - `listVectorStores` — fetches vector stores via `POST /node-load-method/agentAgentflow`
+ * - `listEmbeddings` — fetches embedding models via `POST /node-load-method/agentAgentflow`
+ * - `listRuntimeStateKeys` — fetches runtime state keys via `POST /node-load-method/agentAgentflow`
+ * - `listCredentials` — fetches credentials filtered by `params.name` via `GET /credentials?credentialName=<name>`
  *
  */
 export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: Record<string, unknown>) => Promise<unknown>> = {
-    listChatModels: (apis) => apis.chatModelsApi.getChatModels(),
-    listTools: (apis) => apis.toolsApi.getAllTools(),
+    listModels: (apis) => apis.chatModelsApi.getChatModels(),
+    listTools: (apis, params) => apis.toolsApi.getAllTools(params?.nodeName as string | undefined),
+    listToolInputArgs: (apis, params) =>
+        apis.toolsApi.getToolInputArgs((params?.inputs as Record<string, unknown>) ?? {}, params?.nodeName as string | undefined),
+    listStores: (apis) => apis.storesApi.getStores(),
+    listVectorStores: (apis) => apis.storesApi.getVectorStores(),
+    listEmbeddings: (apis) => apis.embeddingsApi.getEmbeddings(),
+    listRuntimeStateKeys: (apis) => apis.runtimeStateApi.getRuntimeStateKeys(),
     listCredentials: (apis, params) => {
         const name = params?.name
         if (typeof name !== 'string') {
