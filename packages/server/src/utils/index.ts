@@ -65,6 +65,7 @@ import {
 
 export const QUESTION_VAR_PREFIX = 'question'
 export const FILE_ATTACHMENT_PREFIX = 'file_attachment'
+export const FILE_ATTACHMENT_BIN_PREFIX = 'file_attachment_bin'
 export const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 export const RUNTIME_MESSAGES_LENGTH_VAR_PREFIX = 'runtime_messages_length'
 export const LOOP_COUNT_VAR_PREFIX = 'loop_count'
@@ -503,6 +504,7 @@ type BuildFlowParams = {
     subscriptionId?: string
     usageCacheManager?: any
     uploadedFilesContent?: string
+    uploadedFilesBinaryContent?: string
     updateStorageUsage?: (orgId: string, workspaceId: string, totalSize: number, usageCacheManager?: any) => void
     checkStorage?: (orgId: string, subscriptionId: string, usageCacheManager: any) => Promise<any>
 }
@@ -520,6 +522,7 @@ export const buildFlow = async ({
     componentNodes,
     question,
     uploadedFilesContent,
+    uploadedFilesBinaryContent,
     chatHistory,
     apiMessageId,
     chatId,
@@ -569,6 +572,7 @@ export const buildFlow = async ({
         chatId,
         sessionId,
         chatHistory,
+        file_attachment_bin: uploadedFilesBinaryContent,
         ...overrideConfig
     }
     while (nodeQueue.length) {
@@ -600,7 +604,8 @@ export const buildFlow = async ({
                 flowData,
                 uploadedFilesContent,
                 availableVariables,
-                variableOverrides
+                variableOverrides,
+                uploadedFilesBinaryContent
             )
 
             if (isUpsert && stopNodeId && nodeId === stopNodeId) {
@@ -651,6 +656,7 @@ export const buildFlow = async ({
                     isUpsert,
                     dynamicVariables,
                     uploads,
+                    fileAttachmentBin: uploadedFilesBinaryContent,
                     baseURL,
                     componentNodes,
                     updateStorageUsage,
@@ -876,6 +882,7 @@ export const getVariableValue = async (
     isAcceptVariable = false,
     flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
+    uploadedFilesBinaryContent?: string,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
 ) => {
@@ -912,6 +919,10 @@ export const getVariableValue = async (
 
             if (isAcceptVariable && variableFullPath === FILE_ATTACHMENT_PREFIX) {
                 variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(uploadedFilesContent, false)
+            }
+
+            if (isAcceptVariable && variableFullPath === FILE_ATTACHMENT_BIN_PREFIX) {
+                variableDict[`{{${variableFullPath}}}`] = handleEscapeCharacters(uploadedFilesBinaryContent, false)
             }
 
             if (isAcceptVariable && variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
@@ -1029,7 +1040,8 @@ export const resolveVariables = async (
     flowConfig?: ICommonObject,
     uploadedFilesContent?: string,
     availableVariables: IVariable[] = [],
-    variableOverrides: ICommonObject[] = []
+    variableOverrides: ICommonObject[] = [],
+    uploadedFilesBinaryContent?: string
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
 
@@ -1047,6 +1059,7 @@ export const resolveVariables = async (
                         undefined,
                         flowConfig,
                         uploadedFilesContent,
+                        uploadedFilesBinaryContent,
                         availableVariables,
                         variableOverrides
                     )
@@ -1063,6 +1076,7 @@ export const resolveVariables = async (
                     isAcceptVariable,
                     flowConfig,
                     uploadedFilesContent,
+                    uploadedFilesBinaryContent,
                     availableVariables,
                     variableOverrides
                 )

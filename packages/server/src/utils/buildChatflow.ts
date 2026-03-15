@@ -148,6 +148,7 @@ const initEndingNode = async ({
     incomingInput,
     flowConfig,
     uploadedFilesContent,
+    uploadedFilesBinaryContent,
     availableVariables,
     apiOverrideStatus,
     nodeOverrides,
@@ -159,6 +160,7 @@ const initEndingNode = async ({
     incomingInput: IncomingInput
     flowConfig: IFlowConfig
     uploadedFilesContent: string
+    uploadedFilesBinaryContent: string
     availableVariables: IVariable[]
     apiOverrideStatus: boolean
     nodeOverrides: INodeOverrides
@@ -189,7 +191,8 @@ const initEndingNode = async ({
         flowConfig,
         uploadedFilesContent,
         availableVariables,
-        variableOverrides
+        variableOverrides,
+        uploadedFilesBinaryContent
     )
 
     logger.debug(`[server]: Running ${reactFlowNodeData.label} (${reactFlowNodeData.id})`)
@@ -320,6 +323,50 @@ export const executeFlow = async ({
     subscriptionId,
     productId
 }: IExecuteFlowParams) => {
+
+    const getUploadedFilesBinaryContent = (uploads?: IFileUpload[]): string => {
+        if (!uploads?.length) {
+            return ''
+        }
+
+        const binaryUploads = uploads
+            .map((upload) => {
+                if (!upload?.data || typeof upload.data !== 'string') {
+                    return null
+                }
+
+                let base64Data = ''
+                let mime = upload.mime ?? 'application/octet-stream'
+                let format: 'base64' | 'base64:utf8' = 'base64'
+
+                if (/^data:.*;base64,/i.test(upload.data)) {
+                    const [meta, parsedBase64Data = ''] = upload.data.split(',', 2)
+                    if (!parsedBase64Data) {
+                        return null
+                    }
+                    base64Data = parsedBase64Data
+                    mime = upload.mime ?? meta.replace(/^data:/i, '').replace(/;base64$/i, '')
+                } else {
+                    base64Data = Buffer.from(upload.data, 'utf8').toString('base64')
+                    format = 'base64:utf8'
+                }
+
+                return {
+                    name: upload.name ?? '',
+                    type: upload.type ?? '',
+                    mime,
+                    format,
+                    data: base64Data
+                }
+            })
+            .filter(
+                (item): item is { name: string; type: string; mime: string; format: 'base64' | 'base64:utf8'; data: string } =>
+                    item !== null
+            )
+
+        return binaryUploads.length ? JSON.stringify(binaryUploads) : ''
+    }
+
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
         history: [],
@@ -342,7 +389,9 @@ export const executeFlow = async ({
      */
     let fileUploads: IFileUpload[] = []
     let uploadedFilesContent = ''
+    let uploadedFilesBinaryContent = ''
     if (uploads) {
+        uploadedFilesBinaryContent = getUploadedFilesBinaryContent(cloneDeep(uploads))
         fileUploads = uploads
         for (let i = 0; i < fileUploads.length; i += 1) {
             await checkStorage(orgId, subscriptionId, usageCacheManager)
@@ -493,6 +542,7 @@ export const executeFlow = async ({
             baseURL,
             isInternal,
             uploadedFilesContent,
+            uploadedFilesBinaryContent,
             fileUploads,
             signal,
             isTool,
@@ -577,6 +627,7 @@ export const executeFlow = async ({
         componentNodes,
         question,
         uploadedFilesContent,
+        uploadedFilesBinaryContent,
         chatHistory,
         chatId,
         sessionId,
@@ -753,6 +804,7 @@ export const executeFlow = async ({
             incomingInput,
             flowConfig,
             uploadedFilesContent,
+            uploadedFilesBinaryContent,
             availableVariables,
             apiOverrideStatus,
             nodeOverrides,
@@ -776,6 +828,7 @@ export const executeFlow = async ({
             usageCacheManager,
             analytic: chatflow.analytic,
             uploads,
+            fileAttachmentBin: uploadedFilesBinaryContent,
             prependMessages,
             ...(isStreamValid && { sseStreamer, shouldStreamResponse: isStreamValid }),
             evaluationRunId,
@@ -826,6 +879,7 @@ export const executeFlow = async ({
                         sessionId,
                         chatId,
                         input: question,
+                        fileAttachmentBin: uploadedFilesBinaryContent,
                         postProcessing: {
                             rawOutput: resultText,
                             chatHistory: cloneDeep(chatHistory),

@@ -88,6 +88,7 @@ class CustomFunction_Utilities implements INode {
             chatflowId: options.chatflowid,
             sessionId: options.sessionId,
             chatId: options.chatId,
+            file_attachment_bin: options.fileAttachmentBin || '',
             rawOutput: options.postProcessing?.rawOutput || '',
             chatHistory: options.postProcessing?.chatHistory || [],
             sourceDocuments: options.postProcessing?.sourceDocuments,

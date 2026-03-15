@@ -397,6 +397,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     files?: Express.Multer.File[]
     fileUploads?: IFileUpload[]
     uploadedFilesContent?: string
+    uploadedFilesBinaryContent?: string
     isUpsert?: boolean
     isRecursive?: boolean
     parentExecutionId?: string
