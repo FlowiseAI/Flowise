@@ -1681,7 +1681,10 @@ class Agent_Agentflow implements INode {
         pastChatHistory = updatedPastMessages
         pastImageMessagesWithFileRef.push(...transformedPastMessages)
 
-        let pastMessages = [...pastChatHistory, ...runtimeChatHistory]
+        let pastMessages = [...pastChatHistory, ...runtimeChatHistory].map((msg: any) => ({
+            ...msg,
+            content: msg.content ?? ''
+        }))
         if (!runtimeChatHistory.length && input && typeof input === 'string') {
             /*
              * If this is the first node:
@@ -2059,7 +2062,7 @@ class Agent_Agentflow implements INode {
         messages.push({
             id: response.id,
             role: 'assistant',
-            content: response.content,
+            content: response.content ?? '',
             tool_calls: response.tool_calls,
             usage_metadata: response.usage_metadata
         })
@@ -2385,7 +2388,7 @@ class Agent_Agentflow implements INode {
         messages.push({
             id: response.id,
             role: 'assistant',
-            content: response.content,
+            content: response.content ?? '',
             tool_calls: response.tool_calls,
             usage_metadata: response.usage_metadata
         })

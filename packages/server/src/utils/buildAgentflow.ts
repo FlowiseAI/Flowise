@@ -1825,7 +1825,7 @@ export const executeAgentFlow = async ({
         .then((messages) =>
             messages.map((message) => {
                 const mappedMessage: any = {
-                    content: message.content,
+                    content: message.content ?? '',
                     role: message.role === 'userMessage' ? 'user' : 'assistant'
                 }
 
