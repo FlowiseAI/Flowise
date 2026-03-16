@@ -242,22 +242,21 @@ class Qdrant_VectorStores implements INode {
                 metadataPayloadKey
             }
 
-            if (qdrantCollectionConfiguration) {
-                qdrantCollectionConfiguration =
-                    typeof qdrantCollectionConfiguration === 'object'
-                        ? qdrantCollectionConfiguration
-                        : parseJsonBody(qdrantCollectionConfiguration)
-                dbConfig.collectionConfig = {
-                    ...qdrantCollectionConfiguration,
-                    vectors: {
-                        ...qdrantCollectionConfiguration.vectors,
-                        size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
-                        distance: qdrantSimilarity ?? 'Cosine'
+            try {
+                if (qdrantCollectionConfiguration) {
+                    qdrantCollectionConfiguration =
+                        typeof qdrantCollectionConfiguration === 'object'
+                            ? qdrantCollectionConfiguration
+                            : parseJsonBody(qdrantCollectionConfiguration)
+                    dbConfig.collectionConfig = {
+                        ...qdrantCollectionConfiguration,
+                        vectors: {
+                            ...qdrantCollectionConfiguration.vectors,
+                            size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                            distance: qdrantSimilarity ?? 'Cosine'
+                        }
                     }
                 }
-            }
-
-            try {
                 if (recordManager) {
                     const vectorStore = new QdrantVectorStore(embeddings, dbConfig)
                     await vectorStore.ensureCollection()
