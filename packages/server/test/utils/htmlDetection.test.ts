@@ -6,7 +6,7 @@
  * See: https://github.com/FlowiseAI/Flowise/issues/5527
  */
 
-const HTML_TAG_REGEX = /<[a-z][\s\S]*>/i
+const HTML_TAG_REGEX = /<[a-z][a-z0-9]*[^>]*>/i
 
 describe('HTML detection for TurndownService guard', () => {
     it('detects HTML tags', () => {

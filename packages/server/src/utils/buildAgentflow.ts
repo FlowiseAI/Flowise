@@ -249,7 +249,7 @@ export const resolveVariables = async (
 
         // Only apply TurndownService if value contains HTML tags to avoid
         // escaping Markdown characters in plain text (e.g., ## Heading -> \## Heading)
-        if (/<[a-z][\s\S]*>/i.test(value)) {
+        if (/<[a-z][a-z0-9]*[^>]*>/i.test(value)) {
             const turndownService = new TurndownService()
             value = turndownService.turndown(value)
             // After conversion, replace any escaped underscores with regular underscores
