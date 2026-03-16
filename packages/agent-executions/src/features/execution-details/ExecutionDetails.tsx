@@ -17,7 +17,7 @@ const MIN_DRAWER_WIDTH = 400
 const DEFAULT_DRAWER_WIDTH = typeof window !== 'undefined' ? window.innerWidth - 400 : 800
 const MAX_DRAWER_WIDTH = typeof window !== 'undefined' ? window.innerWidth : 1200
 
-interface ExecutionDetailsProps {
+export const ExecutionDetails: React.FC<{
     open?: boolean
     isPublic?: boolean
     execution?: ExecutionNode[] | null
@@ -26,18 +26,7 @@ interface ExecutionDetailsProps {
     onProceedSuccess?: () => void
     onUpdateSharing?: () => void
     onRefresh?: (executionId: string) => void
-}
-
-export const ExecutionDetails = ({
-    open,
-    isPublic,
-    execution,
-    metadata,
-    onClose,
-    onProceedSuccess,
-    onUpdateSharing,
-    onRefresh
-}: ExecutionDetailsProps) => {
+}> = ({ open, isPublic, execution, metadata, onClose, onProceedSuccess, onUpdateSharing, onRefresh }) => {
     const [drawerWidth, setDrawerWidth] = useState(Math.min(DEFAULT_DRAWER_WIDTH, MAX_DRAWER_WIDTH))
     const [executionTree, setExecutionTree] = useState<ExecutionTreeItem[]>([])
     const [expandedItems, setExpandedItems] = useState<string[]>([])
@@ -80,13 +69,12 @@ export const ExecutionDetails = ({
         document.removeEventListener('mouseup', handleMouseUp)
     }, [handleMouseMove])
 
-    const onSharePublicly = () => {
+    const onSharePublicly = async () => {
         const newIsPublic = !localMetadata.isPublic
-        updateExecutionApi.request(localMetadata.id, { isPublic: newIsPublic }).then(() => {
-            setLocalMetadata((prev) => ({ ...prev, isPublic: newIsPublic }))
-            config.onNotification?.(newIsPublic ? 'Execution shared publicly' : 'Execution is no longer public', 'success')
-            onUpdateSharing?.()
-        })
+        await updateExecutionApi.request(localMetadata.id, { isPublic: newIsPublic })
+        setLocalMetadata((prev) => ({ ...prev, isPublic: newIsPublic }))
+        config.onNotification?.(newIsPublic ? 'Execution shared publicly' : 'Execution is no longer public', 'success')
+        onUpdateSharing?.()
     }
 
     useEffect(() => {

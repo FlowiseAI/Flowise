@@ -1,7 +1,7 @@
 export interface Execution {
     id: string
     state: ExecutionState
-    executionData: string | ExecutionNode[]
+    executionData: ExecutionNode[]
     sessionId: string
     agentflowId: string
     agentflow?: {
@@ -62,12 +62,12 @@ export interface ExecutionTreeItem {
 }
 
 export interface ExecutionFilters {
-    state: string
-    startDate: Date | null
-    endDate: Date | null
-    agentflowId: string
-    agentflowName: string
-    sessionId: string
+    state?: string
+    startDate?: Date | null
+    endDate?: Date | null
+    agentflowId?: string
+    agentflowName?: string
+    sessionId?: string
 }
 
 export interface PaginatedResponse<T> {

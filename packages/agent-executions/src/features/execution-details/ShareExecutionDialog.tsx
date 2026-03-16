@@ -7,14 +7,12 @@ import { useConfigContext } from '../../infrastructure/store/ConfigContext'
 import { useApiContext } from '../../infrastructure/store/ApiContext'
 import { useApi } from '../../infrastructure/api/hooks'
 
-interface ShareExecutionDialogProps {
+export const ShareExecutionDialog: React.FC<{
     show: boolean
     executionId?: string
     onClose: () => void
     onUnshare?: () => void
-}
-
-export const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }: ShareExecutionDialogProps) => {
+}> = ({ show, executionId, onClose, onUnshare }) => {
     const config = useConfigContext()
     const { executionsApi } = useApiContext()
     const portalElement = config.portalElement || document.body
@@ -33,9 +31,9 @@ export const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }: 
         setTimeout(() => setCopied(false), 2000)
     }
 
-    const handleUnshare = () => {
+    const handleUnshare = async () => {
         if (executionId) {
-            updateExecutionApi.request(executionId, { isPublic: false })
+            await updateExecutionApi.request(executionId, { isPublic: false })
         }
         onUnshare?.()
         onClose()

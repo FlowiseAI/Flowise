@@ -33,16 +33,14 @@ import { useConfigContext } from '@/infrastructure/store/ConfigContext'
 import { useApiContext } from '@/infrastructure/store/ApiContext'
 import type { ExecutionNodeData, ExecutionMetadata } from '@/core/types'
 
-interface NodeExecutionDetailsProps {
+export const NodeExecutionDetails: React.FC<{
     data: ExecutionNodeData
     label?: string
     status?: string
     metadata?: ExecutionMetadata
     isPublic?: boolean
     onProceedSuccess?: (data: unknown) => void
-}
-
-export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, onProceedSuccess }: NodeExecutionDetailsProps) => {
+}> = ({ data, label, status, metadata, isPublic, onProceedSuccess }) => {
     const [dataView, setDataView] = useState('rendered')
     const [openFeedbackDialog, setOpenFeedbackDialog] = useState(false)
     const [feedback, setFeedback] = useState('')
@@ -971,7 +969,6 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     </Box>
 
                     <Dialog maxWidth='md' fullWidth open={openFeedbackDialog} onClose={() => !isLoading && setOpenFeedbackDialog(false)}>
-                        {/* {TODO: Add focus logic } */}
                         <DialogTitle variant='h5'>Provide Feedback</DialogTitle>
                         <DialogContent>
                             <TextField

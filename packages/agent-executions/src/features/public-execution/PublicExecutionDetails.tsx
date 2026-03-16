@@ -1,32 +1,22 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { omit } from 'lodash'
 import { Box, Card, Stack, Typography, CircularProgress } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { useTheme } from '@mui/material/styles'
 import { IconCircleXFilled } from '@tabler/icons-react'
 import { useApiContext } from '../../infrastructure/store/ApiContext'
-import { useApi } from '../../infrastructure/api/hooks'
+import { useApi } from '@/infrastructure/api/hooks'
 import { ExecutionDetails } from '../execution-details/ExecutionDetails'
 import type { Execution, ExecutionNode, ExecutionMetadata } from '@/core/types'
 
-interface PublicExecutionDetailsProps {
-    executionId: string
-}
-
-export const PublicExecutionDetails = ({ executionId }: PublicExecutionDetailsProps) => {
+export const PublicExecutionDetails: React.FC<{ executionId: string }> = ({ executionId }) => {
     const theme = useTheme()
     const { executionsApi } = useApiContext()
 
     const [execution, setExecution] = useState<ExecutionNode[] | null>(null)
     const [selectedMetadata, setSelectedMetadata] = useState<ExecutionMetadata>({} as ExecutionMetadata)
-    const [isLoading, setLoading] = useState(true)
 
     const getExecutionByIdPublicApi = useApi(executionsApi.getExecutionByIdPublic)
-
-    useEffect(() => {
-        getExecutionByIdPublicApi.request(executionId)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [executionId])
 
     useEffect(() => {
         if (getExecutionByIdPublicApi.data) {
@@ -45,12 +35,13 @@ export const PublicExecutionDetails = ({ executionId }: PublicExecutionDetailsPr
     }, [getExecutionByIdPublicApi.data])
 
     useEffect(() => {
-        setLoading(getExecutionByIdPublicApi.loading)
-    }, [getExecutionByIdPublicApi.loading])
+        getExecutionByIdPublicApi.request(executionId)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
         <>
-            {isLoading ? (
+            {getExecutionByIdPublicApi.loading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                     <CircularProgress size={60} />
                 </Box>
