@@ -201,8 +201,6 @@ const runPrediction = async (
         const visionChatModel = chain.llm as IVisionChatModal
         const messageContent = await addImagesToMessages(nodeData, options, visionChatModel.multiModalOption)
         if (messageContent?.length) {
-            // Change model to gpt-4-vision && max token to higher when using gpt-4-vision
-            visionChatModel.setVisionModel()
             // Add image to the message
             if (chain.prompt instanceof PromptTemplate) {
                 const existingPromptTemplate = chain.prompt.template as string
@@ -238,9 +236,6 @@ const runPrediction = async (
                 // @ts-ignore
                 chain.prompt.examplePrompt = newFewShotPromptTemplate
             }
-        } else {
-            // revert to previous values if image upload is empty
-            visionChatModel.revertToOriginalModel()
         }
     }
 

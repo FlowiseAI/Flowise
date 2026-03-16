@@ -15,18 +15,8 @@ export class ChatPerplexity extends LangchainChatPerplexity implements IVisionCh
         this.configuredMaxToken = fields?.maxTokens
     }
 
-    // Method to revert to the original model configuration
-    revertToOriginalModel(): void {
-        this.model = this.configuredModel
-        this.maxTokens = this.configuredMaxToken
-    }
-
     // Method to set multimodal options
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
-    }
-
-    setVisionModel(): void {
-        // pass
     }
 }

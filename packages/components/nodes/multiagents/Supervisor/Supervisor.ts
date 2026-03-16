@@ -2,16 +2,7 @@ import { flatten } from 'lodash'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { Runnable, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate } from '@langchain/core/prompts'
-import {
-    ICommonObject,
-    IMultiAgentNode,
-    INode,
-    INodeData,
-    INodeParams,
-    ITeamState,
-    IVisionChatModal,
-    MessageContentImageUrl
-} from '../../../src/Interface'
+import { ICommonObject, IMultiAgentNode, INode, INodeData, INodeParams, ITeamState, MessageContentImageUrl } from '../../../src/Interface'
 import { Moderation } from '../../moderation/Moderation'
 import { z } from 'zod/v3'
 import { StructuredTool } from '@langchain/core/tools'
@@ -709,17 +700,11 @@ const processImageMessage = async (
     let multiModalMessageContent: MessageContentImageUrl[] = []
 
     if (llmSupportsVision(llm)) {
-        const visionChatModel = llm as IVisionChatModal
         multiModalMessageContent = await addImagesToMessages(nodeData, options, llm.multiModalOption)
 
         if (multiModalMessageContent?.length) {
-            visionChatModel.setVisionModel()
-
             const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
-
             prompt.promptMessages.splice(index, 0, msg)
-        } else {
-            visionChatModel.revertToOriginalModel()
         }
     }
 

@@ -930,16 +930,7 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
         }
     }
 
-    revertToOriginalModel(): void {
-        this.model = this.configuredModel
-        this.maxOutputTokens = this.configuredMaxToken
-    }
-
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
-    }
-
-    setVisionModel(): void {
-        // pass
     }
 }

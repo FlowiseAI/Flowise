@@ -16,7 +16,6 @@ import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import {
-    IVisionChatModal,
     FlowiseMemory,
     ICommonObject,
     INode,
@@ -232,13 +231,6 @@ const prepareChain = async (nodeData: INodeData, options: ICommonObject, session
     let messageContent: MessageContentImageUrl[] = []
     if (llmSupportsVision(model)) {
         messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
-        const visionChatModel = model as IVisionChatModal
-        if (messageContent?.length) {
-            visionChatModel.setVisionModel()
-        } else {
-            // revert to previous values if image upload is empty
-            visionChatModel.revertToOriginalModel()
-        }
     }
 
     const chatPrompt = prepareChatPrompt(nodeData, messageContent)
