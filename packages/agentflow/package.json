@@ -69,8 +69,13 @@
     },
     "dependencies": {
         "@tabler/icons-react": "^3.7.0",
+        "@tiptap/extension-code-block-lowlight": "^3.4.3",
+        "@tiptap/extension-placeholder": "^2.11.5",
+        "@tiptap/react": "^2.11.5",
+        "@tiptap/starter-kit": "^2.11.5",
         "axios": "^1.7.2",
         "lodash": "^4.17.21",
+        "lowlight": "^3.3.0",
         "uuid": "^10.0.0"
     },
     "devDependencies": {

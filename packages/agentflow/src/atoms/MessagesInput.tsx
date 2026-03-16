@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Chip, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconArrowsMaximize, IconPlus, IconTrash, IconVariable } from '@tabler/icons-react'
 
+import { tokens } from '@/core/theme/tokens'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { ExpandTextDialog } from './ExpandTextDialog'
+
+const RichTextEditor = lazy(() => import('./RichTextEditor').then((m) => ({ default: m.RichTextEditor })))
 
 const MESSAGE_ROLES = [
     { label: 'System', value: 'system' },
@@ -60,8 +63,13 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
         [messages, inputParam, onDataChange]
     )
 
+    // Track latest inline content locally so the expand dialog always has fresh values,
+    // even if the parent hasn't round-tripped onDataChange back into data yet.
+    const latestContentRef = useRef<Map<number, string>>(new Map())
+
     const handleContentChange = useCallback(
         (index: number, content: string) => {
+            latestContentRef.current.set(index, content)
             const updated = [...messages]
             updated[index] = { ...updated[index], content }
             onDataChange?.({ inputParam, newValue: updated })
@@ -77,6 +85,13 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
     const handleDeleteMessage = useCallback(
         (indexToDelete: number) => {
             itemKeysRef.current.splice(indexToDelete, 1)
+            // Rebuild content ref with shifted indices
+            const newMap = new Map<number, string>()
+            latestContentRef.current.forEach((val, idx) => {
+                if (idx < indexToDelete) newMap.set(idx, val)
+                else if (idx > indexToDelete) newMap.set(idx - 1, val)
+            })
+            latestContentRef.current = newMap
             onDataChange?.({ inputParam, newValue: messages.filter((_, i) => i !== indexToDelete) })
         },
         [messages, inputParam, onDataChange]
@@ -92,6 +107,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
     const handleExpandConfirm = useCallback(
         (value: string) => {
             if (expandIndex !== null) {
+                latestContentRef.current.set(expandIndex, value)
                 handleContentChange(expandIndex, value)
             }
             setExpandIndex(null)
@@ -195,18 +211,15 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                                 <IconArrowsMaximize />
                             </IconButton>
                         </div>
-                        <TextField
-                            fullWidth
-                            multiline
-                            minRows={4}
-                            size='small'
-                            value={message.content}
-                            disabled={disabled}
-                            onChange={(e) => handleContentChange(index, e.target.value)}
-                            placeholder='Message content (supports {{ variable }} syntax)'
-                            data-testid={`content-input-${index}`}
-                            sx={{ mt: 1 }}
-                        />
+                        <Suspense fallback={<div style={{ minHeight: `${4 * tokens.typography.rowHeightRem}rem` }} />}>
+                            <RichTextEditor
+                                value={message.content}
+                                onChange={(html) => handleContentChange(index, html)}
+                                placeholder='Message content (supports {{ variable }} syntax)'
+                                disabled={disabled}
+                                rows={4}
+                            />
+                        </Suspense>
                     </Box>
                 </Box>
             ))}
@@ -224,16 +237,19 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                 Add {inputParam.label}
             </Button>
 
-            {/* Expand content dialog */}
-            <ExpandTextDialog
-                open={expandIndex !== null}
-                value={expandIndex !== null ? messages[expandIndex]?.content ?? '' : ''}
-                title='Content'
-                placeholder='Message content (supports {{ variable }} syntax)'
-                disabled={disabled}
-                onConfirm={handleExpandConfirm}
-                onCancel={handleExpandCancel}
-            />
+            {/* Expand content dialog — conditionally mounted so it always initializes fresh */}
+            {expandIndex !== null && (
+                <ExpandTextDialog
+                    open={true}
+                    value={latestContentRef.current.get(expandIndex) ?? messages[expandIndex]?.content ?? ''}
+                    title='Content'
+                    placeholder='Message content (supports {{ variable }} syntax)'
+                    disabled={disabled}
+                    mode='richtext'
+                    onConfirm={handleExpandConfirm}
+                    onCancel={handleExpandCancel}
+                />
+            )}
         </>
     )
 }

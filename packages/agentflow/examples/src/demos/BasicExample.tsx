@@ -28,9 +28,31 @@ const initialFlow: FlowData = {
                 hideInput: true,
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
             }
+        },
+        {
+            id: 'agentAgentflow_0',
+            type: 'agentflowNode',
+            position: { x: 250, y: 100 },
+            data: {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                color: '#4DD0E1',
+                outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
+            }
         }
     ],
-    edges: [],
+    edges: [
+        {
+            id: 'edge-1',
+            source: 'startAgentflow_0',
+            sourceHandle: 'startAgentflow_0-output-0',
+            target: 'agentAgentflow_0',
+            targetHandle: 'agentAgentflow_0',
+            type: 'agentflowEdge',
+            data: { sourceColor: '#7EE787', targetColor: '#4DD0E1' }
+        }
+    ],
     viewport: { x: 0, y: 0, zoom: 1 }
 }
 
