@@ -145,6 +145,7 @@ export function RichTextEditor({ value, onChange, placeholder, disabled = false,
         extensions: buildExtensions(placeholder),
         content: value,
         editable: !disabled,
+        autofocus: autoFocus ? 'end' : false,
         onUpdate: ({ editor: ed }: { editor: { getHTML: () => string } }) => {
             onChangeRef.current(ed.getHTML())
         }
@@ -163,14 +164,6 @@ export function RichTextEditor({ value, onChange, placeholder, disabled = false,
             editor.setEditable(!disabled)
         }
     }, [editor, disabled])
-
-    // Auto-focus
-    useEffect(() => {
-        if (autoFocus && editor) {
-            const timer = setTimeout(() => editor.commands.focus(), 100)
-            return () => clearTimeout(timer)
-        }
-    }, [autoFocus, editor])
 
     return (
         <Box data-testid='rich-text-editor'>

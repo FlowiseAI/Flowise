@@ -178,9 +178,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.0
         version: 18.2.21
-      '@types/uuid':
-        specifier: ^9.0.0
-        version: 9.0.8
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.18.2
         version: 8.55.0(@typescript-eslint/parser@8.55.0(eslint@8.57.0)(typescript@5.5.2))(eslint@8.57.0)(typescript@5.5.2)
