@@ -87,10 +87,11 @@ const StyledEditorContent = styled(EditorContent, {
 
             // Block element spacing (ProseMirror resets default margins)
             '& p, & h1, & h2, & h3, & h4, & h5, & h6, & ul, & ol, & pre, & blockquote': {
-                margin: '0.75em 0',
-                '&:first-of-type': { marginTop: 0 },
-                '&:last-of-type': { marginBottom: 0 }
+                margin: '0.75em 0'
             },
+            // Only collapse margins on the very first/last child of the editor
+            '& > :first-child': { marginTop: 0 },
+            '& > :last-child': { marginBottom: 0 },
 
             // List indentation & item spacing
             '& ul, & ol': {
@@ -113,17 +114,28 @@ const StyledEditorContent = styled(EditorContent, {
                 height: 0
             },
 
-            // Syntax highlight CSS custom properties (from design tokens)
-            '--code-bg': sh.background[mode],
-            '--code-color': sh.text[mode],
-            '--hljs-comment': sh.comment[mode],
-            '--hljs-variable': sh.variable[mode],
-            '--hljs-number': sh.number[mode],
-            '--hljs-string': sh.string[mode],
-            '--hljs-title': sh.title[mode],
-            '--hljs-keyword': sh.keyword[mode],
-            '--hljs-operator': sh.operator[mode],
-            '--hljs-punctuation': sh.punctuation[mode]
+            // Code block styling
+            '& pre': {
+                backgroundColor: sh.background[mode],
+                color: sh.text[mode],
+                borderRadius: '8px',
+                padding: '0.75em 1em',
+                overflow: 'auto',
+                '& code': {
+                    fontFamily: 'monospace',
+                    fontSize: '0.9em'
+                }
+            },
+
+            // Syntax highlight colors (lowlight adds .hljs-* classes)
+            '& .hljs-comment, & .hljs-quote': { color: sh.comment[mode] },
+            '& .hljs-variable, & .hljs-template-variable, & .hljs-attr': { color: sh.variable[mode] },
+            '& .hljs-number, & .hljs-literal': { color: sh.number[mode] },
+            '& .hljs-string, & .hljs-regexp': { color: sh.string[mode] },
+            '& .hljs-title, & .hljs-section, & .hljs-selector-id': { color: sh.title[mode] },
+            '& .hljs-keyword, & .hljs-selector-tag, & .hljs-built_in': { color: sh.keyword[mode] },
+            '& .hljs-operator, & .hljs-symbol': { color: sh.operator[mode] },
+            '& .hljs-punctuation': { color: sh.punctuation[mode] }
         }
     }
 })
