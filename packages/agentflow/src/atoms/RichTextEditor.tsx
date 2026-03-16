@@ -88,8 +88,8 @@ const StyledEditorContent = styled(EditorContent, {
             // Block element spacing (ProseMirror resets default margins)
             '& p, & h1, & h2, & h3, & h4, & h5, & h6, & ul, & ol, & pre, & blockquote': {
                 margin: '0.75em 0',
-                '&:first-child': { marginTop: 0 },
-                '&:last-child': { marginBottom: 0 }
+                '&:first-of-type': { marginTop: 0 },
+                '&:last-of-type': { marginBottom: 0 }
             },
 
             // List indentation & item spacing

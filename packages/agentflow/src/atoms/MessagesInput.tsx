@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
 
 import { Box, Button, Chip, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -47,12 +47,10 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
         [data.inputValues, inputParam.name]
     )
 
-    // Grow keys array when new items appear (e.g. on mount or external data changes)
-    useEffect(() => {
-        while (itemKeysRef.current.length < messages.length) {
-            itemKeysRef.current.push(`message-${idCounterRef.current++}`)
-        }
-    }, [messages.length])
+    // Grow keys array synchronously so keys are available on the first render
+    while (itemKeysRef.current.length < messages.length) {
+        itemKeysRef.current.push(`message-${idCounterRef.current++}`)
+    }
 
     const handleRoleChange = useCallback(
         (index: number, role: string) => {
@@ -198,7 +196,9 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                             </Typography>
                             <div style={{ flexGrow: 1 }} />
                             <Tooltip title='Type {{ to select variables'>
-                                <IconVariable size={20} style={{ color: 'teal' }} />
+                                <span style={{ display: 'inline-flex' }}>
+                                    <IconVariable size={20} style={{ color: 'teal' }} />
+                                </span>
                             </Tooltip>
                             <IconButton
                                 size='small'
