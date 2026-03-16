@@ -108,7 +108,7 @@ const StyledTreeItemLabelText = styled(Typography)(({ theme }) => ({
     color: theme.palette.text.primary
 }))
 
-function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, metadata, ...other }) {
+function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, agentflowId, sessionId, ...other }) {
     const [openDialog, setOpenDialog] = useState(false)
 
     const handleOpenDialog = (event) => {
@@ -186,7 +186,7 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, meta
                 <DialogContent onClick={(e) => e.stopPropagation()}>
                     {data ? (
                         <AgentExecutionsProvider apiBaseUrl={baseURL}>
-                            <NodeExecutionDetails data={data} label={label} metadata={metadata} />
+                            <NodeExecutionDetails data={data} label={label} agentflowId={agentflowId} sessionId={sessionId} />
                         </AgentExecutionsProvider>
                     ) : (
                         <Typography color='text.secondary'>No data available for this item</Typography>
@@ -209,7 +209,8 @@ CustomLabel.propTypes = {
     label: PropTypes.string,
     status: PropTypes.object,
     data: PropTypes.object,
-    metadata: PropTypes.object
+    agentflowId: PropTypes.string,
+    sessionId: PropTypes.string
 }
 
 CustomLabel.displayName = 'CustomLabel'
@@ -282,7 +283,8 @@ const CustomTreeItem = forwardRef(function CustomTreeItem(props, ref) {
                             label: item.label,
                             status,
                             data: item.data,
-                            metadata: { agentflowId, sessionId }
+                            agentflowId,
+                            sessionId
                         })}
                     />
                     <TreeItem2DragAndDropOverlay {...getDragAndDropOverlayProps()} />

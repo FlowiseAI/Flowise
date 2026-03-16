@@ -31,16 +31,17 @@ import SourceDocDialog from '@/atoms/SourceDocDialog'
 import { AGENTFLOW_ICONS } from '@/constants'
 import { useConfigContext } from '@/infrastructure/store/ConfigContext'
 import { useApiContext } from '@/infrastructure/store/ApiContext'
-import type { ExecutionNodeData, ExecutionMetadata } from '@/core/types'
+import type { ExecutionNodeData } from '@/core/types'
 
 export const NodeExecutionDetails: React.FC<{
     data: ExecutionNodeData
     label?: string
     status?: string
-    metadata?: ExecutionMetadata
+    agentflowId?: string
+    sessionId?: string
     isPublic?: boolean
     onProceedSuccess?: (data: unknown) => void
-}> = ({ data, label, status, metadata, isPublic, onProceedSuccess }) => {
+}> = ({ data, label, status, agentflowId, sessionId, isPublic, onProceedSuccess }) => {
     const [dataView, setDataView] = useState('rendered')
     const [openFeedbackDialog, setOpenFeedbackDialog] = useState(false)
     const [feedback, setFeedback] = useState('')
@@ -109,15 +110,15 @@ export const NodeExecutionDetails: React.FC<{
         setLoadingMessage(`Submitting feedback...`)
         const params = {
             question: feedbackText ? feedbackText : type.charAt(0).toUpperCase() + type.slice(1),
-            chatId: metadata?.sessionId,
+            chatId: sessionId,
             humanInput: { type, startNodeId: data.id, feedback: feedbackText }
         }
         try {
             let response
             if (isPublic) {
-                response = await predictionsApi.sendMessageAndGetPredictionPublic(metadata?.agentflowId ?? '', params)
+                response = await predictionsApi.sendMessageAndGetPredictionPublic(agentflowId ?? '', params)
             } else {
-                response = await predictionsApi.sendMessageAndGetPrediction(metadata?.agentflowId ?? '', params)
+                response = await predictionsApi.sendMessageAndGetPrediction(agentflowId ?? '', params)
             }
             if (response && response.data) {
                 config.onNotification?.('Successfully submitted response', 'success')
@@ -177,7 +178,7 @@ export const NodeExecutionDetails: React.FC<{
         try {
             const response = await axios.post(
                 `${baseURL}/api/v1/openai-assistants-file/download`,
-                { fileName: fileAnnotation.fileName, chatflowId: metadata?.agentflowId, chatId: metadata?.sessionId },
+                { fileName: fileAnnotation.fileName, chatflowId: agentflowId, chatId: sessionId },
                 { responseType: 'blob' }
             )
             const blob = new Blob([response.data], { type: response.headers['content-type'] })
@@ -314,9 +315,10 @@ export const NodeExecutionDetails: React.FC<{
                 {artifacts.map((artifact, artifactIndex) => {
                     if (artifact.type === 'png' || artifact.type === 'jpeg' || artifact.type === 'jpg') {
                         const imgSrc = artifact.data.startsWith('FILE-STORAGE::')
-                            ? `${baseURL}/api/v1/get-upload-file?chatflowId=${metadata?.agentflowId}&chatId=${
-                                  metadata?.sessionId
-                              }&fileName=${artifact.data.replace('FILE-STORAGE::', '')}`
+                            ? `${baseURL}/api/v1/get-upload-file?chatflowId=${agentflowId}&chatId=${sessionId}&fileName=${artifact.data.replace(
+                                  'FILE-STORAGE::',
+                                  ''
+                              )}`
                             : artifact.data
                         return renderFileImage(imgSrc, `artifact-${artifactIndex}`)
                     } else if (artifact.type === 'html') {
@@ -635,7 +637,7 @@ export const NodeExecutionDetails: React.FC<{
                                 {message.role === 'tool' && message.name && (
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, mt: 1, py: 1 }}>
                                         {renderToolAvatar(message.name as string, output?.availableTools || [])}
-                                        <Typography variant='body1'>
+                                        <Typography variant='body1' component='div'>
                                             {renderToolLabel(message.name as string, output?.availableTools || [])}
                                             {message.tool_call_id && (
                                                 <Chip
@@ -717,9 +719,9 @@ export const NodeExecutionDetails: React.FC<{
                                                 component='img'
                                                 image={
                                                     (content as Record<string, unknown>).type === 'stored-file'
-                                                        ? `${baseURL}/api/v1/get-upload-file?chatflowId=${metadata?.agentflowId}&chatId=${
-                                                              metadata?.sessionId
-                                                          }&fileName=${(content as Record<string, unknown>).name}`
+                                                        ? `${baseURL}/api/v1/get-upload-file?chatflowId=${agentflowId}&chatId=${sessionId}&fileName=${
+                                                              (content as Record<string, unknown>).name
+                                                          }`
                                                         : ((content as Record<string, unknown>).name as string)
                                                 }
                                                 onError={(e: React.SyntheticEvent<HTMLImageElement>) => {

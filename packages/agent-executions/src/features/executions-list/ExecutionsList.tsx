@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { Stack, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material'
-import { omit } from 'lodash'
 import { useApiContext } from '@/infrastructure/store/ApiContext'
 import type { GetAllExecutionsParams } from '@/infrastructure/api/executions'
 import { ExecutionsListTable } from './ExecutionsListTable'
@@ -8,7 +7,7 @@ import { ExecutionFilters } from './ExecutionFilters'
 import { ExecutionDetails } from '../execution-details/ExecutionDetails'
 import { EmptyState } from '@/atoms/EmptyState'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/atoms/TablePagination'
-import type { Execution, ExecutionNode, ExecutionMetadata } from '@/core/types'
+import type { Execution } from '@/core/types'
 import { useExecutionListState } from './state'
 import { useApi } from '@/infrastructure/api/hooks'
 
@@ -74,11 +73,9 @@ export const ExecutionsList = () => {
     }
 
     const handleDeleteExecutions = () => {
-        deleteExecutionsApi.request(state.selectedExecutionIds, {
-            onSuccess: () => {
-                actions.setSelectedExecutionIds([])
-                getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
-            }
+        deleteExecutionsApi.request(state.selectedExecutionIds).then(() => {
+            actions.setSelectedExecutionIds([])
+            getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
         })
         actions.closeDeleteDialog()
     }
@@ -102,7 +99,7 @@ export const ExecutionsList = () => {
                         isLoading={getAllExecutions.loading}
                         onSelectionChange={actions.setSelectedExecutionIds}
                         onExecutionRowClick={(execution) => {
-                            actions.openDrawer(execution.executionData, omit(execution, ['executionData']) as ExecutionMetadata)
+                            actions.openDrawer(execution)
                         }}
                     />
 
@@ -110,23 +107,24 @@ export const ExecutionsList = () => {
                         <TablePagination currentPage={state.currentPage} limit={state.pageLimit} total={total} onChange={onChange} />
                     )}
 
-                    <ExecutionDetails
-                        open={state.openDrawer}
-                        execution={state.selectedExecutionData}
-                        metadata={state.selectedMetadata}
-                        onClose={actions.closeDrawer}
-                        onProceedSuccess={() => {
-                            actions.closeDrawer()
-                            getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
-                        }}
-                        onUpdateSharing={() => {
-                            getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
-                        }}
-                        onRefresh={(executionId) => {
-                            getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
-                            getExecutionByIdApi.request(executionId)
-                        }}
-                    />
+                    {state.selectedExecution && (
+                        <ExecutionDetails
+                            open={state.openDrawer}
+                            execution={state.selectedExecution}
+                            onClose={actions.closeDrawer}
+                            onProceedSuccess={() => {
+                                actions.closeDrawer()
+                                getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
+                            }}
+                            onUpdateSharing={() => {
+                                getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
+                            }}
+                            onRefresh={(executionId) => {
+                                getAllExecutions.request({ page: state.currentPage, limit: state.pageLimit })
+                                getExecutionByIdApi.request(executionId)
+                            }}
+                        />
+                    )}
                 </>
             )}
 

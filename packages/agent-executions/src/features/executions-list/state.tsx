@@ -1,13 +1,12 @@
 import { useReducer, useMemo } from 'react'
 import { DEFAULT_ITEMS_PER_PAGE } from '@/atoms/TablePagination'
-import type { ExecutionFilters, ExecutionNode, ExecutionMetadata } from '@/core/types'
+import type { Execution, ExecutionFilters } from '@/core/types'
 
 export interface ExecutionListState {
     currentPage: number
     pageLimit: number
     openDrawer: boolean
-    selectedExecutionData: ExecutionNode[]
-    selectedMetadata: ExecutionMetadata
+    selectedExecution: Execution | null
     selectedExecutionIds: string[]
     openDeleteDialog: boolean
     filters: ExecutionFilters
@@ -30,10 +29,9 @@ type Action =
     | { type: 'SET_SELECTED_EXECUTION_IDS'; ids: string[] }
     | { type: 'OPEN_DELETE_DIALOG' }
     | { type: 'CLOSE_DELETE_DIALOG' }
-    | { type: 'OPEN_DRAWER'; executionData: ExecutionNode[]; metadata: ExecutionMetadata }
+    | { type: 'OPEN_DRAWER'; execution: Execution }
     | { type: 'CLOSE_DRAWER' }
     | { type: 'CONFIRM_DELETE' }
-    | { type: 'SET_EXECUTION_DETAIL'; executionData: ExecutionNode[]; metadata: ExecutionMetadata }
 
 function reducer(state: ExecutionListState, action: Action): ExecutionListState {
     switch (action.type) {
@@ -58,19 +56,15 @@ function reducer(state: ExecutionListState, action: Action): ExecutionListState 
             return {
                 ...state,
                 openDrawer: true,
-                selectedExecutionData: action.executionData,
-                selectedMetadata: action.metadata
+                selectedExecution: action.execution
             }
         case 'CLOSE_DRAWER':
             return { ...state, openDrawer: false }
         case 'CONFIRM_DELETE':
             return { ...state, selectedExecutionIds: [], openDeleteDialog: false }
-        case 'SET_EXECUTION_DETAIL':
-            return {
-                ...state,
-                selectedExecutionData: action.executionData,
-                selectedMetadata: action.metadata
-            }
+        default: {
+            return state
+        }
     }
 }
 
@@ -82,10 +76,9 @@ export interface ExecutionListActions {
     setSelectedExecutionIds: (ids: string[]) => void
     openDeleteDialog: () => void
     closeDeleteDialog: () => void
-    openDrawer: (executionData: ExecutionNode[], metadata: ExecutionMetadata) => void
+    openDrawer: (execution: Execution) => void
     closeDrawer: () => void
     confirmDelete: () => void
-    setExecutionDetail: (executionData: ExecutionNode[], metadata: ExecutionMetadata) => void
 }
 
 export function useExecutionListState(
@@ -103,11 +96,10 @@ export function useExecutionListState(
         currentPage: initialPage,
         pageLimit: initialPageLimit,
         openDrawer: false,
-        selectedExecutionData: [],
-        selectedMetadata: {} as ExecutionMetadata,
+        selectedExecution: {} as Execution,
         selectedExecutionIds: [],
         openDeleteDialog: false,
-        filters: { ...DEFAULT_FILTERS }
+        filters: DEFAULT_FILTERS
     })
 
     const actions = useMemo<ExecutionListActions>(
@@ -119,10 +111,9 @@ export function useExecutionListState(
             setSelectedExecutionIds: (ids) => dispatch({ type: 'SET_SELECTED_EXECUTION_IDS', ids }),
             openDeleteDialog: () => dispatch({ type: 'OPEN_DELETE_DIALOG' }),
             closeDeleteDialog: () => dispatch({ type: 'CLOSE_DELETE_DIALOG' }),
-            openDrawer: (executionData, metadata) => dispatch({ type: 'OPEN_DRAWER', executionData, metadata }),
+            openDrawer: (execution) => dispatch({ type: 'OPEN_DRAWER', execution }),
             closeDrawer: () => dispatch({ type: 'CLOSE_DRAWER' }),
-            confirmDelete: () => dispatch({ type: 'CONFIRM_DELETE' }),
-            setExecutionDetail: (executionData, metadata) => dispatch({ type: 'SET_EXECUTION_DETAIL', executionData, metadata })
+            confirmDelete: () => dispatch({ type: 'CONFIRM_DELETE' })
         }),
         []
     )

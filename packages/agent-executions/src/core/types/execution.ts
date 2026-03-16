@@ -38,20 +38,6 @@ export interface ExecutionNodeData {
     [key: string]: unknown
 }
 
-export interface ExecutionMetadata {
-    id: string
-    state: ExecutionState
-    sessionId: string
-    agentflowId: string
-    agentflow?: {
-        id?: string
-        name?: string
-    }
-    isPublic?: boolean
-    createdDate: string
-    updatedDate: string
-}
-
 export interface ExecutionTreeItem {
     id: string
     label: string

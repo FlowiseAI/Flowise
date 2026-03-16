@@ -14,4 +14,4 @@ export { useConfigContext } from './infrastructure/store/ConfigContext'
 export { useApiContext } from './infrastructure/store/ApiContext'
 
 // Types
-export type { AgentExecutionsConfig, Execution, ExecutionFilters, ExecutionMetadata, ExecutionNode, ExecutionTreeItem } from '@/core/types'
+export type { AgentExecutionsConfig, Execution, ExecutionFilters, ExecutionNode, ExecutionTreeItem } from '@/core/types'
