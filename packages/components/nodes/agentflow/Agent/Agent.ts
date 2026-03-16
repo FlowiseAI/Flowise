@@ -1336,11 +1336,14 @@ class Agent_Agentflow implements INode {
                 finalResponse = processedParts.filter((text) => text).join('\n')
             } else if (response.content && typeof response.content === 'string') {
                 finalResponse = response.content
-            } else if (response.content === '') {
+            } else if (response.content === '' || response.content == null) {
                 // Empty response content, this could happen when there is only image data
+                // or when content is null/undefined (e.g., when there are only tool_calls)
                 finalResponse = ''
             } else {
-                finalResponse = JSON.stringify(response, null, 2)
+                // Fallback: extract text content using the utility function
+                // instead of serializing the entire response object
+                finalResponse = extractResponseContent(response)
             }
 
             // Address built in tools

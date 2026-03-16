@@ -854,7 +854,8 @@ export const executeFlow = async ({
                     logger.log('[server]: Post Processing Error:', e)
                 }
             }
-        } else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
+        } else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2) + '\n```'
+        else if (result.content) resultText = result.content
         else resultText = JSON.stringify(result, null, 2)
 
         const apiMessage: Omit<IChatMessage, 'createdDate'> = {
