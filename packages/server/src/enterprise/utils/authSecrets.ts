@@ -80,12 +80,17 @@ export function getExpressSessionSecret(): string {
 }
 
 export function getJWTAuthTokenSecret(): string {
-    if (jwtAuthTokenSecret === undefined) throw new Error(NOT_INITIALIZED)
+    if (jwtAuthTokenSecret === undefined) {
+        // Fallback to weak default if initialization failed (e.g., docker with default .env)
+        return WEAK_DEFAULTS.JWT_AUTH_TOKEN_SECRET
+    }
     return jwtAuthTokenSecret
 }
 
 export function getJWTRefreshTokenSecret(): string {
-    if (jwtRefreshTokenSecret === undefined) throw new Error(NOT_INITIALIZED)
+    if (jwtRefreshTokenSecret === undefined) {
+        return WEAK_DEFAULTS.JWT_REFRESH_TOKEN_SECRET
+    }
     return jwtRefreshTokenSecret
 }
 
