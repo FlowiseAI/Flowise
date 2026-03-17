@@ -1,6 +1,6 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
-import { TokenTextSplitter, TokenTextSplitterParams } from 'langchain/text_splitter'
+import { TokenTextSplitter, TokenTextSplitterParams } from '@langchain/textsplitters'
 import { TiktokenEncoding } from '@dqbd/tiktoken'
 
 class TokenTextSplitter_TextSplitters implements INode {

@@ -23,7 +23,7 @@ class Astra_VectorStores implements INode {
     constructor() {
         this.label = 'Astra'
         this.name = 'Astra'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Astra'
         this.icon = 'astra.svg'
         this.category = 'Vector Stores'
@@ -47,11 +47,6 @@ class Astra_VectorStores implements INode {
                 label: 'Embeddings',
                 name: 'embeddings',
                 type: 'Embeddings'
-            },
-            {
-                label: 'Namespace',
-                name: 'astraNamespace',
-                type: 'string'
             },
             {
                 label: 'Collection',
@@ -105,7 +100,6 @@ class Astra_VectorStores implements INode {
             const docs = nodeData.inputs?.document as Document[]
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const vectorDimension = nodeData.inputs?.vectorDimension as number
-            const astraNamespace = nodeData.inputs?.astraNamespace as string
             const astraCollection = nodeData.inputs?.astraCollection as string
             const similarityMetric = nodeData.inputs?.similarityMetric as 'cosine' | 'euclidean' | 'dot_product' | undefined
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
@@ -122,7 +116,6 @@ class Astra_VectorStores implements INode {
 
             const astraConfig: AstraLibArgs = {
                 ...clientConfig,
-                namespace: astraNamespace ?? 'default_keyspace',
                 collection: astraCollection ?? credentialData.collectionName ?? 'flowise_test',
                 collectionOptions: {
                     vector: {
@@ -153,7 +146,6 @@ class Astra_VectorStores implements INode {
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const vectorDimension = nodeData.inputs?.vectorDimension as number
         const similarityMetric = nodeData.inputs?.similarityMetric as 'cosine' | 'euclidean' | 'dot_product' | undefined
-        const astraNamespace = nodeData.inputs?.astraNamespace as string
         const astraCollection = nodeData.inputs?.astraCollection as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
 
@@ -169,7 +161,6 @@ class Astra_VectorStores implements INode {
 
         const astraConfig: AstraLibArgs = {
             ...clientConfig,
-            namespace: astraNamespace ?? 'default_keyspace',
             collection: astraCollection ?? credentialData.collectionName ?? 'flowise_test',
             collectionOptions: {
                 vector: {

@@ -4,13 +4,37 @@ import type { AxiosInstance } from 'axios'
 
 import type { RequestInterceptor } from '@/core/types'
 
-import { type ChatflowsApi, createApiClient, createChatflowsApi, createNodesApi, type NodesApi } from '../api'
+import {
+    bindApiClient,
+    bindChatflowsApi,
+    bindChatModelsApi,
+    bindCredentialsApi,
+    bindEmbeddingsApi,
+    bindNodesApi,
+    bindRuntimeStateApi,
+    bindStoresApi,
+    bindToolsApi,
+    type ChatflowsApi,
+    type ChatModelsApi,
+    type CredentialsApi,
+    type EmbeddingsApi,
+    type NodesApi,
+    type RuntimeStateApi,
+    type StoresApi,
+    type ToolsApi
+} from '../api'
 
 interface ApiContextValue {
     client: AxiosInstance
     apiBaseUrl: string
     nodesApi: NodesApi
     chatflowsApi: ChatflowsApi
+    chatModelsApi: ChatModelsApi
+    toolsApi: ToolsApi
+    credentialsApi: CredentialsApi
+    storesApi: StoresApi
+    embeddingsApi: EmbeddingsApi
+    runtimeStateApi: RuntimeStateApi
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null)
@@ -28,17 +52,29 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
     interceptorRef.current = requestInterceptor
 
     const value = useMemo(() => {
-        const client = createApiClient(apiBaseUrl, token, (config) => {
+        const client = bindApiClient(apiBaseUrl, token, (config) => {
             return interceptorRef.current?.(config) ?? config
         })
-        const nodesApi = createNodesApi(client)
-        const chatflowsApi = createChatflowsApi(client)
+        const nodesApi = bindNodesApi(client)
+        const chatflowsApi = bindChatflowsApi(client)
+        const chatModelsApi = bindChatModelsApi(client)
+        const toolsApi = bindToolsApi(client)
+        const credentialsApi = bindCredentialsApi(client)
+        const storesApi = bindStoresApi(client)
+        const embeddingsApi = bindEmbeddingsApi(client)
+        const runtimeStateApi = bindRuntimeStateApi(client)
 
         return {
             client,
             apiBaseUrl,
             nodesApi,
-            chatflowsApi
+            chatflowsApi,
+            chatModelsApi,
+            toolsApi,
+            credentialsApi,
+            storesApi,
+            embeddingsApi,
+            runtimeStateApi
         }
     }, [apiBaseUrl, token])
 

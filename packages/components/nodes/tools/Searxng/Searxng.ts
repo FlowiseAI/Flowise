@@ -1,6 +1,7 @@
 import { Tool } from '@langchain/core/tools'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
+import { secureFetch } from '../../../src/httpSecurity'
 
 const defaultDesc =
     'A meta search engine. Useful for when you need to answer questions about current events. Input should be a search query. Output is a JSON array of the query results'
@@ -293,10 +294,10 @@ class SearxngSearch extends Tool {
         }
         const url = this.buildUrl('search', queryParams, this.apiBase as string)
 
-        const resp = await fetch(url, {
+        const resp = await secureFetch(url, {
             method: 'POST',
             headers: this.headers,
-            signal: AbortSignal.timeout(5 * 1000) // 5 seconds
+            signal: AbortSignal.timeout(5 * 1000) as any // node-fetch AbortSignal type predates native AbortSignal
         })
 
         if (!resp.ok) {

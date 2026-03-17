@@ -200,7 +200,10 @@ export function validateNode(node: FlowNode, availableNodes?: NodeData[]): Valid
             continue
         }
 
-        // Check required inputs, skipping hidden params
+        // Check required inputs, skipping hidden params.
+        // asyncOptions and asyncMultiOptions values are stored in inputValues just like options;
+        // evaluateParamVisibility correctly uses those values to resolve show/hide conditions on
+        // dependent fields, so async-driven visibility is handled automatically here.
         if (!param.optional && evaluateParamVisibility(param, inputValues) && isEmptyValue(inputValues[param.name])) {
             errors.push({
                 nodeId: node.id,

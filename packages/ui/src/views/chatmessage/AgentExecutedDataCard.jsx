@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, forwardRef, memo } from 'react'
+import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
 // MUI
@@ -32,8 +33,14 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import ErrorIcon from '@mui/icons-material/Error'
 import { IconButton } from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconArrowsMaximize, IconLoader, IconCircleXFilled, IconRelationOneToManyFilled } from '@tabler/icons-react'
+import {
+    IconArrowsMaximize,
+    IconLoader,
+    IconCircleXFilled,
+    IconRelationOneToManyFilled,
+    IconChevronDown,
+    IconChevronRight
+} from '@tabler/icons-react'
 
 // Project imports
 import { useTheme } from '@mui/material/styles'
@@ -321,7 +328,9 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
     const [executionTree, setExecution] = useState([])
     const [expandedItems, setExpandedItems] = useState([])
     const [selectedItem, setSelectedItem] = useState(null)
+    const [isAccordionExpanded, setIsAccordionExpanded] = useState(false)
     const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
 
     const getAllNodeIds = (nodes) => {
         let ids = []
@@ -650,29 +659,52 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
     }, [])
 
     return (
-        <Box sx={{ display: 'flex', height: '100%', width: '100%', mt: 2 }}>
+        <Box sx={{ borderRadius: 2, display: 'flex', height: '100%', width: '100%', mt: 2 }}>
             <Accordion
+                expanded={isAccordionExpanded}
+                onChange={(e, expanded) => setIsAccordionExpanded(expanded)}
                 sx={{
-                    width: '100%'
+                    width: '100%',
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)',
+                    backgroundColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.02)' : 'white',
+                    '&:before': {
+                        display: 'none'
+                    },
+                    '&.Mui-expanded': {
+                        margin: 0
+                    }
                 }}
             >
                 <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
                     sx={{
                         '& .MuiAccordionSummary-content': {
                             alignItems: 'center'
+                        },
+                        '& .MuiAccordionSummary-expandIconWrapper': {
+                            display: 'none'
+                        },
+                        '&:hover': {
+                            backgroundColor: customization.isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
                         }
                     }}
                 >
+                    <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, mr: 1 }}>
+                        {isAccordionExpanded ? (
+                            <IconChevronDown size={16} color={theme.palette.text.secondary} />
+                        ) : (
+                            <IconChevronRight size={16} color={theme.palette.text.secondary} />
+                        )}
+                    </Box>
                     {executionTree.length > 0 &&
                         (() => {
                             const execStatus = status ?? getExecutionStatus(executionTree)
                             return (
-                                <Box sx={{ mr: 1, fontSize: '1.2rem' }}>
+                                <Box sx={{ mr: 1, fontSize: '1.2rem', display: 'flex', alignItems: 'center' }}>
                                     <Box
                                         component={getIconFromStatus(execStatus, theme)}
                                         sx={{
-                                            mr: 1,
                                             fontSize: '1.2rem',
                                             color: getIconColor(execStatus)
                                         }}
@@ -680,7 +712,14 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
                                 </Box>
                             )
                         })()}
-                    <Typography>Process Flow</Typography>
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            fontWeight: 500
+                        }}
+                    >
+                        Process Flow
+                    </Typography>
                 </AccordionSummary>
                 <Divider />
                 <AccordionDetails>

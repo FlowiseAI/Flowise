@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
 import { IDocument, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { getFileFromStorage, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
 
@@ -192,7 +192,7 @@ class Pdf_DocumentLoaders implements INode {
 
     private async extractDocs(usage: string, bf: Buffer, legacyBuild: boolean, textSplitter: TextSplitter, docs: IDocument[]) {
         if (usage === 'perFile') {
-            const loader = new PDFLoader(new Blob([bf]), {
+            const loader = new PDFLoader(new Blob([new Uint8Array(bf)]), {
                 splitPages: false,
                 pdfjs: () =>
                     // @ts-ignore
@@ -206,7 +206,7 @@ class Pdf_DocumentLoaders implements INode {
                 docs.push(...(await loader.load()))
             }
         } else {
-            const loader = new PDFLoader(new Blob([bf]), {
+            const loader = new PDFLoader(new Blob([new Uint8Array(bf)]), {
                 pdfjs: () =>
                     // @ts-ignore
                     legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')

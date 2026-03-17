@@ -16,7 +16,7 @@ class IBMWatsonx_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'IBM Watsonx Embeddings'
+        this.label = 'IBM Watsonx Embedding'
         this.name = 'ibmEmbedding'
         this.version = 1.0
         this.type = 'WatsonxEmbeddings'
