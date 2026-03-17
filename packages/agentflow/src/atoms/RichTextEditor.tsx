@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
@@ -90,8 +90,8 @@ const StyledEditorContent = styled(EditorContent, {
                 margin: '0.75em 0'
             },
             // Only collapse margins on the very first/last child of the editor
-            '& > :first-child': { marginTop: 0 },
-            '& > :last-child': { marginBottom: 0 },
+            '& > :first-of-type': { marginTop: '0.25em' },
+            '& > :last-of-type': { marginBottom: '0.25em' },
 
             // List indentation & item spacing
             '& ul, & ol': {
@@ -153,8 +153,13 @@ export function RichTextEditor({ value, onChange, placeholder, disabled = false,
         onChangeRef.current = onChange
     }, [onChange])
 
+    // Memoize extensions — TipTap's useEditor ignores extensions changes after
+    // initial mount, so placeholder is effectively read-once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const extensions = useMemo(() => buildExtensions(placeholder), [])
+
     const editor = useEditor({
-        extensions: buildExtensions(placeholder),
+        extensions,
         content: value,
         editable: !disabled,
         autofocus: autoFocus ? 'end' : false,
