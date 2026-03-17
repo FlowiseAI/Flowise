@@ -8,29 +8,74 @@ import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRec
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 import { VectorStore } from '@langchain/core/vectorstores'
-import { parseHostPort } from './weaviateClientUtils'
+
+/**
+ * Parses a host string into host and optional port.
+ * Handles IPv6 bracket notation (e.g. "[::1]:8080") and plain "host:port".
+ */
+export function parseHostPort(host: string): { host: string; port?: number } {
+    const ipv6Match = host.match(/^\[([^\]]+)\](?::(\d+))?$/)
+    if (ipv6Match) {
+        const port = ipv6Match[2] ? parseInt(ipv6Match[2], 10) : undefined
+        return { host: ipv6Match[1], port: isNaN(port as number) ? undefined : port }
+    }
+    const lastColon = host.lastIndexOf(':')
+    if (lastColon > 0) {
+        const maybePart = host.substring(lastColon + 1)
+        const port = parseInt(maybePart, 10)
+        if (!isNaN(port) && String(port) === maybePart) {
+            return { host: host.substring(0, lastColon), port }
+        }
+    }
+    return { host }
+}
 
 async function createWeaviateClient(
-    scheme: string,
-    host: string,
+    weaviateConnectionType: string,
+    rawHost: string,
+    httpSecure?: boolean,
+    rawGrpcHost?: string,
+    grpcSecure?: boolean,
     apiKey?: string
 ): Promise<Awaited<ReturnType<typeof weaviate.connectToCustom>>> {
-    const { host: httpHost, port } = parseHostPort(host)
-    const httpSecure = scheme === 'https'
-    const defaultPort = httpSecure ? 443 : 8080
-    const httpPort = port ?? defaultPort
+    if (weaviateConnectionType === 'cloud') {
+        if (!apiKey) {
+            throw new Error('API key is required for cloud connection')
+        }
+        return weaviate.connectToWeaviateCloud(rawHost, {
+            authCredentials: new weaviate.ApiKey(apiKey)
+        })
+    }
+
+    const { host: extractedHttpHost, port: extractedHttpPort } = parseHostPort(rawHost)
+    const { host: extractedGrpcHost, port: extractedGrpcPort } = parseHostPort(rawGrpcHost ?? '')
+
+    if (weaviateConnectionType === 'local') {
+        const options: Parameters<typeof weaviate.connectToLocal>[0] = {
+            host: extractedHttpHost,
+            port: extractedHttpPort,
+            grpcPort: extractedGrpcPort,
+            authCredentials: apiKey ? new weaviate.ApiKey(apiKey) : undefined
+        }
+        return weaviate.connectToLocal(options)
+    }
+
+    const httpHost = extractedHttpHost
+    const httpPort = extractedHttpPort ?? 8080
+
+    const grpcHost = extractedGrpcHost
+    const grpcPort = extractedGrpcPort ?? 50051
 
     const options: Parameters<typeof weaviate.connectToCustom>[0] = {
         httpHost,
         httpPort,
         httpSecure,
-        grpcHost: httpHost,
-        grpcPort: 50051,
-        grpcSecure: httpSecure
+        grpcHost,
+        grpcPort,
+        grpcSecure,
+        authCredentials: apiKey ? new weaviate.ApiKey(apiKey) : undefined
     }
-    if (apiKey) {
-        options.authCredentials = new weaviate.ApiKey(apiKey)
-    }
+
     return weaviate.connectToCustom(options)
 }
 
@@ -51,7 +96,7 @@ class Weaviate_VectorStores implements INode {
     constructor() {
         this.label = 'Weaviate'
         this.name = 'weaviate'
-        this.version = 4.0
+        this.version = 5.0
         this.type = 'Weaviate'
         this.icon = 'weaviate.png'
         this.category = 'Vector Stores'
@@ -87,32 +132,71 @@ class Weaviate_VectorStores implements INode {
                 optional: true
             },
             {
-                label: 'Weaviate Scheme',
-                name: 'weaviateScheme',
+                label: 'Weaviate Connection Type',
+                name: 'weaviateConnectionType',
                 type: 'options',
-                default: 'https',
                 options: [
                     {
-                        label: 'https',
-                        name: 'https'
+                        label: 'Cloud',
+                        name: 'cloud'
                     },
                     {
-                        label: 'http',
-                        name: 'http'
+                        label: 'Local',
+                        name: 'local'
+                    },
+                    {
+                        label: 'Custom',
+                        name: 'custom'
                     }
-                ]
+                ],
+                default: 'cloud'
             },
             {
-                label: 'Weaviate Host',
+                label: 'Weaviate Host/URL',
                 name: 'weaviateHost',
                 type: 'string',
-                placeholder: 'localhost:8080'
+                placeholder: 'localhost:8080',
+                description: 'The host/URL to connect to the Weaviate server. Use REST Endpoint for cloud connection.'
+            },
+            {
+                label: 'HTTP Secure',
+                name: 'weaviateHttpSecure',
+                type: 'boolean',
+                default: true,
+                additionalParams: true,
+                optional: true,
+                show: {
+                    weaviateConnectionType: 'custom'
+                }
+            },
+            {
+                label: 'GRPC Host/URL',
+                name: 'weaviateGrpcHost',
+                type: 'string',
+                placeholder: 'localhost:50051',
+                additionalParams: true,
+                optional: true,
+                show: {
+                    weaviateConnectionType: 'custom'
+                }
+            },
+            {
+                label: 'GRPC Secure',
+                name: 'weaviateGrpcSecure',
+                type: 'boolean',
+                default: true,
+                additionalParams: true,
+                optional: true,
+                show: {
+                    weaviateConnectionType: 'custom'
+                }
             },
             {
                 label: 'Weaviate Index',
                 name: 'weaviateIndex',
                 type: 'string',
-                placeholder: 'Test'
+                placeholder: 'Test',
+                description: 'The collection name to use. Must start with capital letter.'
             },
             {
                 label: 'Weaviate Text Key',
@@ -177,8 +261,11 @@ class Weaviate_VectorStores implements INode {
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
-            const weaviateScheme = nodeData.inputs?.weaviateScheme as string
             const weaviateHost = nodeData.inputs?.weaviateHost as string
+            const weaviateGrpcHost = nodeData.inputs?.weaviateGrpcHost as string
+            const weaviateHttpSecure = nodeData.inputs?.weaviateHttpSecure as boolean
+            const weaviateGrpcSecure = nodeData.inputs?.weaviateGrpcSecure as boolean
+            const weaviateConnectionType = nodeData.inputs?.weaviateConnectionType as string
             const weaviateIndex = nodeData.inputs?.weaviateIndex as string
             const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
             const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
@@ -189,8 +276,14 @@ class Weaviate_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
 
-            const client = await createWeaviateClient(weaviateScheme, weaviateHost, weaviateApiKey)
-
+            const client = await createWeaviateClient(
+                weaviateConnectionType,
+                weaviateHost,
+                weaviateHttpSecure,
+                weaviateGrpcHost,
+                weaviateGrpcSecure,
+                weaviateApiKey
+            )
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
             for (let i = 0; i < flattenDocs.length; i += 1) {
@@ -236,8 +329,11 @@ class Weaviate_VectorStores implements INode {
             }
         },
         async delete(nodeData: INodeData, ids: string[], options: ICommonObject): Promise<void> {
-            const weaviateScheme = nodeData.inputs?.weaviateScheme as string
             const weaviateHost = nodeData.inputs?.weaviateHost as string
+            const weaviateGrpcHost = nodeData.inputs?.weaviateGrpcHost as string
+            const weaviateHttpSecure = nodeData.inputs?.weaviateHttpSecure as boolean
+            const weaviateGrpcSecure = nodeData.inputs?.weaviateGrpcSecure as boolean
+            const weaviateConnectionType = nodeData.inputs?.weaviateConnectionType as string
             const weaviateIndex = nodeData.inputs?.weaviateIndex as string
             const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
             const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
@@ -247,7 +343,14 @@ class Weaviate_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
 
-            const client = await createWeaviateClient(weaviateScheme, weaviateHost, weaviateApiKey)
+            const client = await createWeaviateClient(
+                weaviateConnectionType,
+                weaviateHost,
+                weaviateHttpSecure,
+                weaviateGrpcHost,
+                weaviateGrpcSecure,
+                weaviateApiKey
+            )
 
             const obj: WeaviateLibArgs = {
                 //@ts-ignore
@@ -283,8 +386,11 @@ class Weaviate_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const weaviateScheme = nodeData.inputs?.weaviateScheme as string
         const weaviateHost = nodeData.inputs?.weaviateHost as string
+        const weaviateGrpcHost = nodeData.inputs?.weaviateGrpcHost as string
+        const weaviateHttpSecure = nodeData.inputs?.weaviateHttpSecure as boolean
+        const weaviateGrpcSecure = nodeData.inputs?.weaviateGrpcSecure as boolean
+        const weaviateConnectionType = nodeData.inputs?.weaviateConnectionType as string
         const weaviateIndex = nodeData.inputs?.weaviateIndex as string
         const weaviateTextKey = nodeData.inputs?.weaviateTextKey as string
         const weaviateMetadataKeys = nodeData.inputs?.weaviateMetadataKeys as string
@@ -294,7 +400,14 @@ class Weaviate_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
 
-        const client = await createWeaviateClient(weaviateScheme, weaviateHost, weaviateApiKey)
+        const client = await createWeaviateClient(
+            weaviateConnectionType,
+            weaviateHost,
+            weaviateHttpSecure,
+            weaviateGrpcHost,
+            weaviateGrpcSecure,
+            weaviateApiKey
+        )
 
         const obj: WeaviateLibArgs = {
             //@ts-ignore
