@@ -24,6 +24,15 @@ export function bindNodesApi(client: AxiosInstance) {
         },
 
         /**
+         * Call a loadMethod on a specific node (e.g. listRegions on awsChatBedrock).
+         * Maps to POST /node-load-method/{nodeName} with { loadMethod, ...body }.
+         */
+        loadNodeMethod: async (nodeName: string, loadMethod: string, body?: Record<string, unknown>): Promise<unknown> => {
+            const response = await client.post(`/node-load-method/${nodeName}`, { loadMethod, ...body })
+            return response.data
+        },
+
+        /**
          * Get node icon URL
          */
         getNodeIconUrl: (instanceUrl: string, nodeName: string): string => {

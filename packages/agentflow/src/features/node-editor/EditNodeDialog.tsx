@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { useUpdateNodeInternals } from 'reactflow'
 
 import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typography } from '@mui/material'
@@ -11,6 +11,7 @@ import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 import { AsyncInput } from './AsyncInput'
+import { ConfigInput } from './ConfigInput'
 import { useDynamicOutputPorts } from './useDynamicOutputPorts'
 
 /** Array param names that should render as MessagesInput instead of generic ArrayInput. */
@@ -55,6 +56,10 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const isConditionNode = data?.name === 'conditionAgentflow'
     const { cleanupOrphanedEdges } = useDynamicOutputPorts(data?.id ?? '', isConditionNode)
 
+    // Ref to read current data
+    const dataRef = useRef(data)
+    dataRef.current = data
+
     const onNodeLabelChange = () => {
         if (!data || !nodeNameRef.current) return
 
@@ -63,6 +68,30 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
         setData({ ...data, label: newLabel })
         updateNodeInternals(data.id)
     }
+
+    const onConfigChange = useCallback(
+        (configKey: string, configValues: Record<string, unknown>, arrayContext?: { parentParamName: string; arrayIndex: number }) => {
+            const current = dataRef.current
+            if (!current) return
+
+            let updatedInputValues: Record<string, unknown>
+
+            if (arrayContext) {
+                // Array-based config: write into the nested array item
+                const currentArray = [...((current.inputValues?.[arrayContext.parentParamName] as Record<string, unknown>[]) ?? [])]
+                const updatedItem = { ...(currentArray[arrayContext.arrayIndex] ?? {}), [configKey]: configValues }
+                currentArray[arrayContext.arrayIndex] = updatedItem
+                updatedInputValues = { ...current.inputValues, [arrayContext.parentParamName]: currentArray }
+            } else {
+                // Top-level config
+                updatedInputValues = { ...current.inputValues, [configKey]: configValues }
+            }
+
+            updateNodeData(current.id, { inputValues: updatedInputValues })
+            setData({ ...current, inputValues: updatedInputValues })
+        },
+        [updateNodeData]
+    )
 
     const onCustomDataChange = ({ inputParam, newValue }: { inputParam: InputParam; newValue: unknown }) => {
         if (!data) return
@@ -309,6 +338,8 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                     onDataChange={onCustomDataChange}
                                     itemParameters={inputParam.type === 'array' ? arrayItemParameters[inputParam.name] : undefined}
                                     AsyncInputComponent={AsyncInput}
+                                    ConfigInputComponent={ConfigInput}
+                                    onConfigChange={onConfigChange}
                                 />
                             )
                         })}
