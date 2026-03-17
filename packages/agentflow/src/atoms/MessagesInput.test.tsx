@@ -275,7 +275,7 @@ describe('MessagesInput', () => {
         expect(expandTextarea.value).toBe('Edited inline')
     })
 
-    it('should shift latestContentRef indices when a preceding message is deleted', async () => {
+    it('should preserve latestContentRef entries when a preceding message is deleted', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputValues: {

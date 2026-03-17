@@ -61,11 +61,12 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
 
     // Track latest inline content locally so the expand dialog always has fresh values,
     // even if the parent hasn't round-tripped onDataChange back into data yet.
-    const latestContentRef = useRef<Map<number, string>>(new Map())
+    // Keyed by itemKeysRef values so deletes are a simple Map.delete() with no index rebasing.
+    const latestContentRef = useRef<Map<string, string>>(new Map())
 
     const handleContentChange = useCallback(
         (index: number, content: string) => {
-            latestContentRef.current.set(index, content)
+            latestContentRef.current.set(itemKeysRef.current[index], content)
             const updated = [...messages]
             updated[index] = { ...updated[index], content }
             onDataChange?.({ inputParam, newValue: updated })
@@ -80,14 +81,8 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
 
     const handleDeleteMessage = useCallback(
         (indexToDelete: number) => {
+            latestContentRef.current.delete(itemKeysRef.current[indexToDelete])
             itemKeysRef.current.splice(indexToDelete, 1)
-            // Rebuild content ref with shifted indices
-            const newMap = new Map<number, string>()
-            latestContentRef.current.forEach((val, idx) => {
-                if (idx < indexToDelete) newMap.set(idx, val)
-                else if (idx > indexToDelete) newMap.set(idx - 1, val)
-            })
-            latestContentRef.current = newMap
             onDataChange?.({ inputParam, newValue: messages.filter((_, i) => i !== indexToDelete) })
         },
         [messages, inputParam, onDataChange]
@@ -103,7 +98,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
     const handleExpandConfirm = useCallback(
         (value: string) => {
             if (expandIndex !== null) {
-                latestContentRef.current.set(expandIndex, value)
+                latestContentRef.current.set(itemKeysRef.current[expandIndex], value)
                 handleContentChange(expandIndex, value)
             }
             setExpandIndex(null)
@@ -237,7 +232,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
             {expandIndex !== null && (
                 <ExpandTextDialog
                     open={true}
-                    value={latestContentRef.current.get(expandIndex) ?? messages[expandIndex]?.content ?? ''}
+                    value={latestContentRef.current.get(itemKeysRef.current[expandIndex]) ?? messages[expandIndex]?.content ?? ''}
                     title='Content'
                     placeholder='Message content (supports {{ variable }} syntax)'
                     disabled={disabled}
