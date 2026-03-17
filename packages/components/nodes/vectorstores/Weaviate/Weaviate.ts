@@ -1,5 +1,5 @@
 import { flatten } from 'lodash'
-import weaviate, { WeaviateClient, ApiKey } from 'weaviate-ts-client'
+import weaviate from 'weaviate-client'
 import { WeaviateLibArgs, WeaviateStore } from '@langchain/weaviate'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
@@ -8,6 +8,41 @@ import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRec
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 import { VectorStore } from '@langchain/core/vectorstores'
+
+function parseHostPort(host: string): { host: string; port: number } {
+    const parts = host.split(':')
+    if (parts.length >= 2) {
+        const port = parseInt(parts[parts.length - 1], 10)
+        if (!isNaN(port)) {
+            return { host: parts.slice(0, -1).join(':'), port }
+        }
+    }
+    return { host, port: 8080 }
+}
+
+async function createWeaviateClient(
+    scheme: string,
+    host: string,
+    apiKey?: string
+): Promise<Awaited<ReturnType<typeof weaviate.connectToCustom>>> {
+    const { host: httpHost, port } = parseHostPort(host)
+    const httpSecure = scheme === 'https'
+    const defaultPort = httpSecure ? 443 : 8080
+    const httpPort = port || defaultPort
+
+    const options: Parameters<typeof weaviate.connectToCustom>[0] = {
+        httpHost,
+        httpPort,
+        httpSecure,
+        grpcHost: httpHost,
+        grpcPort: 50051,
+        grpcSecure: httpSecure
+    }
+    if (apiKey) {
+        options.authCredentials = new weaviate.ApiKey(apiKey)
+    }
+    return weaviate.connectToCustom(options)
+}
 
 class Weaviate_VectorStores implements INode {
     label: string
@@ -164,13 +199,7 @@ class Weaviate_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
 
-            const clientConfig: any = {
-                scheme: weaviateScheme,
-                host: weaviateHost
-            }
-            if (weaviateApiKey) clientConfig.apiKey = new ApiKey(weaviateApiKey)
-
-            const client: WeaviateClient = weaviate.client(clientConfig)
+            const client = await createWeaviateClient(weaviateScheme, weaviateHost, weaviateApiKey)
 
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
@@ -228,13 +257,7 @@ class Weaviate_VectorStores implements INode {
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
 
-            const clientConfig: any = {
-                scheme: weaviateScheme,
-                host: weaviateHost
-            }
-            if (weaviateApiKey) clientConfig.apiKey = new ApiKey(weaviateApiKey)
-
-            const client: WeaviateClient = weaviate.client(clientConfig)
+            const client = await createWeaviateClient(weaviateScheme, weaviateHost, weaviateApiKey)
 
             const obj: WeaviateLibArgs = {
                 //@ts-ignore
@@ -281,13 +304,7 @@ class Weaviate_VectorStores implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const weaviateApiKey = getCredentialParam('weaviateApiKey', credentialData, nodeData)
 
-        const clientConfig: any = {
-            scheme: weaviateScheme,
-            host: weaviateHost
-        }
-        if (weaviateApiKey) clientConfig.apiKey = new ApiKey(weaviateApiKey)
-
-        const client: WeaviateClient = weaviate.client(clientConfig)
+        const client = await createWeaviateClient(weaviateScheme, weaviateHost, weaviateApiKey)
 
         const obj: WeaviateLibArgs = {
             //@ts-ignore
