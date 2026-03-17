@@ -13,7 +13,7 @@ interface CacheEntry {
  */
 function buildCacheKey(method: string, url: string, data?: unknown): string {
     const parts = [method.toUpperCase(), url]
-    if (data !== undefined && data !== null) {
+    if (data != null) {
         parts.push(JSON.stringify(data))
     }
     return parts.join('::')
@@ -119,7 +119,6 @@ export function withDeduplication(client: AxiosInstance, cacheTtlMs: number = DE
         post: deduplicatedPost,
         clearCache() {
             cache.clear()
-            inFlight.clear()
         }
     }) as DeduplicatedClient
 }
