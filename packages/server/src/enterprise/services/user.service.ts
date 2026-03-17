@@ -202,9 +202,9 @@ export class UserService {
                     syncQueryRunner = this.dataSource.createQueryRunner()
                     await syncQueryRunner.connect()
                     const orgUsers = await organizationUserService.readOrganizationUserByUserId(updatedUser.id as string, syncQueryRunner)
-                    const orgUsersCreatedByUser = orgUsers.filter((ou) => ou.createdBy === updatedUser.id)
-                    if (orgUsersCreatedByUser.length === 1) {
-                        const org = await organizationService.readOrganizationById(orgUsersCreatedByUser[0].organizationId, syncQueryRunner)
+                    const ownerOrgLinks = orgUsers.filter((ou) => ou.isOrgOwner)
+                    if (ownerOrgLinks.length === 1) {
+                        const org = await organizationService.readOrganizationById(ownerOrgLinks[0].organizationId, syncQueryRunner)
                         if (org?.customerId) {
                             await appServer.identityManager.updateStripeCustomerEmail(org.customerId, updatedUser.email as string)
                         }

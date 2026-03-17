@@ -271,7 +271,7 @@ export class StripeManager {
     }
 
     public async updateCustomerEmail(customerId: string, email: string) {
-        if (!this.stripe) return
+        if (!this.stripe) throw new Error('Stripe is not initialized')
         await this.stripe.customers.update(customerId, { email })
     }
 

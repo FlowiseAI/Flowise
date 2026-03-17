@@ -313,7 +313,7 @@ export class IdentityManager {
     }
 
     public async updateStripeCustomerEmail(customerId: string, email: string) {
-        if (!this.stripeManager) return
+        if (!this.stripeManager) throw new Error('Stripe manager is not initialized')
         await this.stripeManager.updateCustomerEmail(customerId, email)
     }
 
