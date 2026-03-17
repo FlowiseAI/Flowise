@@ -153,10 +153,7 @@ export function RichTextEditor({ value, onChange, placeholder, disabled = false,
         onChangeRef.current = onChange
     }, [onChange])
 
-    // Memoize extensions — TipTap's useEditor ignores extensions changes after
-    // initial mount, so placeholder is effectively read-once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const extensions = useMemo(() => buildExtensions(placeholder), [])
+    const extensions = useMemo(() => buildExtensions(placeholder), [placeholder])
 
     const editor = useEditor({
         extensions,
