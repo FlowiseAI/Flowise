@@ -2,13 +2,15 @@ import axios, { AxiosInstance } from 'axios'
 
 import type { RequestInterceptor } from '@/core/types'
 
+import { type DeduplicatedClient, withDeduplication } from './deduplicatedClient'
+
 /**
  * Creates a configured axios client for API calls
  * @param apiBaseUrl - Base URL of the Flowise server
  * @param token - Authentication token (optional)
  * @param requestInterceptor - Optional callback to customize outgoing requests
  */
-export function bindApiClient(apiBaseUrl: string, token?: string, requestInterceptor?: RequestInterceptor): AxiosInstance {
+export function bindApiClient(apiBaseUrl: string, token?: string, requestInterceptor?: RequestInterceptor): DeduplicatedClient {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json'
     }
@@ -52,7 +54,7 @@ export function bindApiClient(apiBaseUrl: string, token?: string, requestInterce
         }
     )
 
-    return client
+    return withDeduplication(client)
 }
 
 export type { AxiosInstance }
