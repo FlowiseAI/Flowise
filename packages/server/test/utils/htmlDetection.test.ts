@@ -31,6 +31,7 @@ describe('HTML detection for TurndownService guard', () => {
         expect(HTML_TAG_REGEX.test('Hello world')).toBe(false)
         expect(HTML_TAG_REGEX.test('You are a helpful assistant')).toBe(false)
         expect(HTML_TAG_REGEX.test('')).toBe(false)
+        expect(HTML_TAG_REGEX.test('a < b and c > d')).toBe(false)
     })
 
     it('does not match template variables', () => {
