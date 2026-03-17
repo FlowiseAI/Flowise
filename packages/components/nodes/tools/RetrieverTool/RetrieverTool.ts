@@ -197,9 +197,9 @@ class Retriever_Tools implements INode {
             if (retrieverToolMetadataFilter) {
                 const flowObj = flowConfig
 
-                const metadatafilter =
+                const metadataFilter =
                     typeof retrieverToolMetadataFilter === 'object' ? retrieverToolMetadataFilter : JSON.parse(retrieverToolMetadataFilter)
-                const newMetadataFilter = resolveFlowObjValue(metadatafilter, flowObj)
+                const newMetadataFilter = resolveFlowObjValue(metadataFilter, flowObj)
 
                 if (newMetadataFilter && typeof newMetadataFilter === 'object' && Object.keys(newMetadataFilter).length > 0) {
                     const vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore

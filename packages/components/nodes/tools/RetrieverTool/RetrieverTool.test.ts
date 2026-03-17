@@ -83,11 +83,11 @@ describe('RetrieverTool metadata filter guard', () => {
             const retrieverToolMetadataFilter = '{}'
 
             if (retrieverToolMetadataFilter) {
-                const metadatafilter =
+                const metadataFilter =
                     typeof retrieverToolMetadataFilter === 'object'
                         ? retrieverToolMetadataFilter
                         : JSON.parse(retrieverToolMetadataFilter)
-                const newMetadataFilter = resolveFlowObjValue(metadatafilter, {})
+                const newMetadataFilter = resolveFlowObjValue(metadataFilter, {})
 
                 if (newMetadataFilter && typeof newMetadataFilter === 'object' && Object.keys(newMetadataFilter).length > 0) {
                     mockVectorStore.filter = newMetadataFilter
