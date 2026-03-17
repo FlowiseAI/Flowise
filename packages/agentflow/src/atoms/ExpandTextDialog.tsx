@@ -1,10 +1,8 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Box, Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material'
 
-import { tokens } from '@/core/theme/tokens'
-
-const RichTextEditor = lazy(() => import('./RichTextEditor').then((m) => ({ default: m.RichTextEditor })))
+import { RichTextEditor } from './RichTextEditor.lazy'
 
 export interface ExpandTextDialogProps {
     open: boolean
@@ -62,16 +60,14 @@ export function ExpandTextDialog({
                             overflowX: 'hidden'
                         }}
                     >
-                        <Suspense fallback={<div style={{ minHeight: `${15 * tokens.typography.rowHeightRem}rem` }} />}>
-                            <RichTextEditor
-                                value={localValue}
-                                onChange={setLocalValue}
-                                placeholder={placeholder}
-                                disabled={disabled}
-                                rows={15}
-                                autoFocus
-                            />
-                        </Suspense>
+                        <RichTextEditor
+                            value={localValue}
+                            onChange={setLocalValue}
+                            placeholder={placeholder}
+                            disabled={disabled}
+                            rows={15}
+                            autoFocus
+                        />
                     </Box>
                 ) : (
                     <TextField

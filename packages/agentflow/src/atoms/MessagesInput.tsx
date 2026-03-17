@@ -1,15 +1,13 @@
-import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { Box, Button, Chip, IconButton, MenuItem, Select, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconArrowsMaximize, IconPlus, IconTrash, IconVariable } from '@tabler/icons-react'
 
-import { tokens } from '@/core/theme/tokens'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { ExpandTextDialog } from './ExpandTextDialog'
-
-const RichTextEditor = lazy(() => import('./RichTextEditor').then((m) => ({ default: m.RichTextEditor })))
+import { RichTextEditor } from './RichTextEditor.lazy'
 
 const MESSAGE_ROLES = [
     { label: 'System', value: 'system' },
@@ -211,15 +209,13 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                                 <IconArrowsMaximize />
                             </IconButton>
                         </div>
-                        <Suspense fallback={<div style={{ minHeight: `${4 * tokens.typography.rowHeightRem}rem` }} />}>
-                            <RichTextEditor
-                                value={message.content}
-                                onChange={(html) => handleContentChange(index, html)}
-                                placeholder='Message content (supports {{ variable }} syntax)'
-                                disabled={disabled}
-                                rows={4}
-                            />
-                        </Suspense>
+                        <RichTextEditor
+                            value={message.content}
+                            onChange={(html) => handleContentChange(index, html)}
+                            placeholder='Message content (supports {{ variable }} syntax)'
+                            disabled={disabled}
+                            rows={4}
+                        />
                     </Box>
                 </Box>
             ))}

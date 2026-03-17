@@ -19,7 +19,9 @@ const baseConfig = {
         // TipTap + lowlight ship ESM-only — Jest (CJS) cannot import them,
         // so we redirect to lightweight CJS stubs under src/__mocks__/.
         '^@tiptap/(.+)$': '<rootDir>/src/__mocks__/@tiptap/$1.ts',
-        '^lowlight$': '<rootDir>/src/__mocks__/lowlight.ts'
+        '^lowlight$': '<rootDir>/src/__mocks__/lowlight.ts',
+        // Bypass React.lazy wrappers — resolve Foo.lazy → Foo so tests render synchronously
+        '(.*)\\.lazy$': '$1'
     }
 }
 
