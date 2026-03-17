@@ -10,16 +10,7 @@ import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from '@langchain/classic/agents'
 import { getBaseClasses, transformBracesWithColon } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import {
-    IVisionChatModal,
-    FlowiseMemory,
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeParams,
-    IUsedTool,
-    IServerSideEventStreamer
-} from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool, IServerSideEventStreamer } from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
@@ -241,12 +232,9 @@ const prepareAgent = async (
     })
 
     if (llmSupportsVision(model)) {
-        const visionChatModel = model as IVisionChatModal
         const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
-            visionChatModel.setVisionModel()
-
             // Pop the `agent_scratchpad` MessagePlaceHolder
             let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
             if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
@@ -264,8 +252,6 @@ const prepareAgent = async (
 
             // Add the `agent_scratchpad` MessagePlaceHolder back
             prompt.promptMessages.push(messagePlaceholder)
-        } else {
-            visionChatModel.revertToOriginalModel()
         }
     }
 

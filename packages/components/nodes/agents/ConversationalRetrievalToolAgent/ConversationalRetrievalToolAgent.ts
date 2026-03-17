@@ -13,16 +13,7 @@ import {
     createTextOnlyOutputParser
 } from '../../../src/utils'
 import { type ToolsAgentStep } from '@langchain/classic/agents/openai/output_parser'
-import {
-    FlowiseMemory,
-    ICommonObject,
-    INode,
-    INodeData,
-    INodeParams,
-    IServerSideEventStreamer,
-    IUsedTool,
-    IVisionChatModal
-} from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, IUsedTool } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
@@ -279,12 +270,9 @@ const prepareAgent = async (
     ])
 
     if (llmSupportsVision(model)) {
-        const visionChatModel = model as IVisionChatModal
         const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
         if (messageContent?.length) {
-            visionChatModel.setVisionModel()
-
             // Pop the `agent_scratchpad` MessagePlaceHolder
             let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
             if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
@@ -302,8 +290,6 @@ const prepareAgent = async (
 
             // Add the `agent_scratchpad` MessagePlaceHolder back
             prompt.promptMessages.push(messagePlaceholder)
-        } else {
-            visionChatModel.revertToOriginalModel()
         }
     }
 

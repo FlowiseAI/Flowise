@@ -1,6 +1,85 @@
-import { validateMimeTypeAndExtensionMatch, validateVectorStorePath } from '../src/validator'
+import { isPathTraversal, isUnsafeFilePath, validateMimeTypeAndExtensionMatch, validateVectorStorePath } from '../src/validator'
 import path from 'path'
 import { getUserHome } from '../src/utils'
+
+describe('isPathTraversal', () => {
+    describe('returns true for dangerous patterns', () => {
+        it.each([
+            ['directory traversal (..)', '../etc/passwd'],
+            ['multiple levels of traversal', '../../sensitive'],
+            ['bare double-dot', '..'],
+            ['Windows absolute path', 'C:\\windows'],
+            ['Windows absolute path with forward slash', 'C:/windows'],
+            ['Windows absolute path with leading whitespace', ' C:\\windows'],
+            ['UNC path', '\\\\server\\share'],
+            ['URL encoded dot (%2e)', '%2e%2e/etc'],
+            ['URL encoded dot uppercase (%2E)', '%2E%2E'],
+            ['mixed encoding (.%2e)', '.%2e/etc'],
+            ['mixed encoding (%2e.)', '%2e./etc'],
+            ['URL encoded forward slash (%2f)', '%2f'],
+            ['URL encoded forward slash uppercase (%2F)', '%2F'],
+            ['URL encoded backslash (%5c)', '%5c'],
+            ['URL encoded backslash uppercase (%5C)', '%5C'],
+            ['null byte', 'path\0name'],
+            ['URL encoded null byte (%00)', 'path%00name'],
+            ['absolute Unix path', '/etc/passwd'],
+            ['absolute Unix root', '/']
+        ])('should detect %s: %s', (_description, input) => {
+            expect(isPathTraversal(input)).toBe(true)
+        })
+    })
+
+    describe('returns false for safe inputs', () => {
+        it.each([
+            ['simple filename with extension', 'filename.txt'],
+            ['plain name without extension', 'myfile'],
+            ['empty string', ''],
+            ['name with underscores', 'hello_world'],
+            ['relative path with slash', 'uploads/file.txt']
+        ])('should not flag %s: %s', (_description, input) => {
+            expect(isPathTraversal(input)).toBe(false)
+        })
+    })
+
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it.each([
+            ['absolute Unix path', '/data/uploads'],
+            ['mixed encoding', '.%2e/etc'],
+            ['directory traversal', '../etc/passwd'],
+            ['Windows absolute path', 'C:\\windows']
+        ])('should return false for %s when safety disabled', (_desc, input) => {
+            expect(isPathTraversal(input)).toBe(false)
+        })
+    })
+})
+
+describe('isUnsafeFilePath', () => {
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it.each([
+            ['absolute Unix path', '/data/uploads'],
+            ['directory traversal', '../etc/passwd'],
+            ['Windows absolute path', 'C:\\windows'],
+            ['null byte', 'path\0name'],
+            ['control character', 'path\x01name']
+        ])('should return false for %s when safety disabled', (_desc, input) => {
+            expect(isUnsafeFilePath(input)).toBe(false)
+        })
+    })
+})
 
 describe('validateMimeTypeAndExtensionMatch', () => {
     describe('valid cases', () => {
@@ -357,6 +436,33 @@ describe('validateVectorStorePath', () => {
             const result = validateVectorStorePath(mixedPath)
 
             expect(result).toBe(path.normalize(mixedPath))
+        })
+    })
+
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it('should allow arbitrary absolute Unix path', () => {
+            expect(validateVectorStorePath('/data/faiss-store')).toBe('/data/faiss-store')
+        })
+
+        it('should allow path outside allowed directories (/tmp)', () => {
+            expect(validateVectorStorePath('/tmp/mystore')).toBe('/tmp/mystore')
+        })
+
+        it('should allow path containing .. without throwing', () => {
+            const result = validateVectorStorePath('../mystore')
+            expect(typeof result).toBe('string')
+        })
+
+        it('should return default path when undefined', () => {
+            const userHome = getUserHome()
+            expect(validateVectorStorePath(undefined)).toBe(path.join(userHome, '.flowise', 'vectorstore'))
         })
     })
 })

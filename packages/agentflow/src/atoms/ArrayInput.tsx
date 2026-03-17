@@ -6,7 +6,7 @@ import { IconPlus, IconTrash } from '@tabler/icons-react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { type AsyncInputProps, NodeInputHandler } from './NodeInputHandler'
+import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
 
 export interface ArrayInputProps {
     inputParam: InputParam
@@ -15,6 +15,12 @@ export interface ArrayInputProps {
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
     itemParameters?: InputParam[][]
     AsyncInputComponent?: ComponentType<AsyncInputProps>
+    ConfigInputComponent?: ComponentType<ConfigInputComponentProps>
+    onConfigChange?: (
+        configKey: string,
+        configValues: Record<string, unknown>,
+        arrayContext?: { parentParamName: string; arrayIndex: number }
+    ) => void
 }
 
 export function ArrayInput({
@@ -23,7 +29,9 @@ export function ArrayInput({
     disabled = false,
     onDataChange,
     itemParameters: itemParametersProp,
-    AsyncInputComponent
+    AsyncInputComponent,
+    ConfigInputComponent,
+    onConfigChange
 }: ArrayInputProps) {
     const theme = useTheme()
 
@@ -185,6 +193,10 @@ export function ArrayInput({
                                     disablePadding={false}
                                     onDataChange={itemHandlers[index]}
                                     AsyncInputComponent={AsyncInputComponent}
+                                    ConfigInputComponent={ConfigInputComponent}
+                                    onConfigChange={onConfigChange}
+                                    arrayIndex={index}
+                                    parentArrayParam={inputParam}
                                 />
                             ))}
                     </Box>

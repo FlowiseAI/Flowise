@@ -413,8 +413,6 @@ export interface IVisionChatModal {
     configuredModel: string
     multiModalOption: IMultiModalOption
     configuredMaxToken?: number
-    setVisionModel(): void
-    revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
 }
 

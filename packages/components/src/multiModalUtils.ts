@@ -48,4 +48,5 @@ export const getImageUploads = (uploads: IFileUpload[]) => {
     return uploads.filter((upload: IFileUpload) => upload.mime.startsWith('image/'))
 }
 
-export const llmSupportsVision = (value: any): value is IVisionChatModal => !!value?.multiModalOption
+export const llmSupportsVision = (value: any): value is IVisionChatModal =>
+    !!value?.multiModalOption && value.multiModalOption.image?.allowImageUploads === true

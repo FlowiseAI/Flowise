@@ -14,9 +14,6 @@ import {
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses } from '../../../src/utils'
 
-const DEFAULT_IMAGE_MAX_TOKEN = 8192
-const DEFAULT_IMAGE_MODEL = 'gemini-1.5-flash-latest'
-
 class ChatVertexAI extends LcChatVertexAI implements IVisionChatModal {
     configuredModel: string
     configuredMaxToken: number
@@ -35,20 +32,8 @@ class ChatVertexAI extends LcChatVertexAI implements IVisionChatModal {
         this.configuredMaxToken = fields?.maxOutputTokens ?? 2048
     }
 
-    revertToOriginalModel(): void {
-        this.modelName = this.configuredModel
-        this.maxOutputTokens = this.configuredMaxToken
-    }
-
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
-    }
-
-    setVisionModel(): void {
-        if (!this.modelName.startsWith('claude-3')) {
-            this.modelName = DEFAULT_IMAGE_MODEL
-            this.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : DEFAULT_IMAGE_MAX_TOKEN
-        }
     }
 }
 

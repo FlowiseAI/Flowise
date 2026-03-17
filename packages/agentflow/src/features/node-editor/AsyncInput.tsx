@@ -8,9 +8,24 @@ import type { AsyncInputProps } from '@/atoms'
 import type { NodeOption } from '@/core/types'
 import { useAsyncOptions } from '@/infrastructure/api/hooks'
 
+/**
+ * Build the params object for useAsyncOptions.
+ * Only includes inputValues when the loadMethod actually needs them (e.g. listToolInputArgs).
+ * Including them unconditionally causes every keystroke in sibling text fields to change the
+ * serialised paramsKey, triggering unnecessary refetches for all async dropdowns.
+ */
+function buildAsyncParams(
+    loadMethod: string | undefined,
+    nodeName: string | undefined,
+    inputValues: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined {
+    const needsInputs = loadMethod === 'listToolInputArgs'
+    if (!nodeName && !(needsInputs && inputValues)) return undefined
+    return { ...(nodeName ? { nodeName } : {}), ...(needsInputs && inputValues ? { inputs: inputValues } : {}) }
+}
+
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
-    const params =
-        nodeName || inputValues ? { ...(nodeName ? { nodeName } : {}), ...(inputValues ? { inputs: inputValues } : {}) } : undefined
+    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,
@@ -92,8 +107,7 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, in
 }
 
 function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
-    const params =
-        nodeName || inputValues ? { ...(nodeName ? { nodeName } : {}), ...(inputValues ? { inputs: inputValues } : {}) } : undefined
+    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,
