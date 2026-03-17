@@ -8,17 +8,7 @@ import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRec
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 import { VectorStore } from '@langchain/core/vectorstores'
-
-function parseHostPort(host: string): { host: string; port: number } {
-    const parts = host.split(':')
-    if (parts.length >= 2) {
-        const port = parseInt(parts[parts.length - 1], 10)
-        if (!isNaN(port)) {
-            return { host: parts.slice(0, -1).join(':'), port }
-        }
-    }
-    return { host, port: 8080 }
-}
+import { parseHostPort } from './weaviateClientUtils'
 
 async function createWeaviateClient(
     scheme: string,
@@ -28,7 +18,7 @@ async function createWeaviateClient(
     const { host: httpHost, port } = parseHostPort(host)
     const httpSecure = scheme === 'https'
     const defaultPort = httpSecure ? 443 : 8080
-    const httpPort = port || defaultPort
+    const httpPort = port ?? defaultPort
 
     const options: Parameters<typeof weaviate.connectToCustom>[0] = {
         httpHost,
