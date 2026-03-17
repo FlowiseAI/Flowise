@@ -71,7 +71,7 @@
         "@tabler/icons-react": "^3.7.0",
         "axios": "^1.7.2",
         "lodash": "^4.17.21",
-        "uuid": "^9.0.1"
+        "uuid": "^10.0.0"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.6.3",
@@ -81,7 +81,6 @@
         "@types/lodash": "^4.14.195",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@types/uuid": "^9.0.0",
         "@typescript-eslint/eslint-plugin": "^8.18.2",
         "@typescript-eslint/parser": "^8.18.2",
         "@vitejs/plugin-react": "^4.2.0",

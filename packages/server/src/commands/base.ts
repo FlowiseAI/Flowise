@@ -106,6 +106,7 @@ export abstract class BaseCommand extends Command {
         CUSTOM_MCP_PROTOCOL: Flags.string(),
         HTTP_DENY_LIST: Flags.string(),
         HTTP_SECURITY_CHECK: Flags.string(),
+        PATH_TRAVERSAL_SAFETY: Flags.string(),
         TRUST_PROXY: Flags.string(),
 
         // Auth

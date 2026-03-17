@@ -8,7 +8,7 @@ import type { RequestInterceptor } from '@/core/types'
  * @param token - Authentication token (optional)
  * @param requestInterceptor - Optional callback to customize outgoing requests
  */
-export function createApiClient(apiBaseUrl: string, token?: string, requestInterceptor?: RequestInterceptor): AxiosInstance {
+export function bindApiClient(apiBaseUrl: string, token?: string, requestInterceptor?: RequestInterceptor): AxiosInstance {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json'
     }

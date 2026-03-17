@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "3.0.13",
+    "version": "3.1.0",
     "description": "Flowiseai Server",
     "main": "dist/index",
     "types": "dist/index.d.ts",
@@ -87,7 +87,6 @@
         "@types/passport": "^1.0.16",
         "@types/passport-jwt": "^4.0.1",
         "@types/passport-local": "^1.0.38",
-        "@types/uuid": "^9.0.7",
         "async-mutex": "^0.4.0",
         "axios": "1.12.0",
         "bcryptjs": "^2.4.3",
@@ -128,7 +127,7 @@
         "mysql2": "^3.11.3",
         "nanoid": "3",
         "nodemailer": "^7.0.7",
-        "openai": "^4.96.0",
+        "openai": "6.19.0",
         "passport": "^0.7.0",
         "passport-auth0": "^1.4.4",
         "passport-cookie": "^1.0.9",
@@ -148,7 +147,7 @@
         "stripe": "^15.6.0",
         "turndown": "^7.2.0",
         "typeorm": "^0.3.6",
-        "uuid": "^9.0.1",
+        "uuid": "^10.0.0",
         "winston": "^3.9.0",
         "winston-azure-blob": "^1.5.0",
         "winston-daily-rotate-file": "^5.0.0"
