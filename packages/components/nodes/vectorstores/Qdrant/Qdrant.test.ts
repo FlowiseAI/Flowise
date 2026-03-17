@@ -8,12 +8,12 @@
  * See: https://github.com/FlowiseAI/Flowise/issues/5030
  */
 
-// Inline parseJsonBody to avoid TS import issues
-const parseJsonBody = (str) => {
+// Inline parseJsonBody matching real behavior: throws on invalid JSON
+const parseJsonBody = (str: string): any => {
     try {
         return JSON.parse(str)
-    } catch {
-        return {}
+    } catch (error: any) {
+        throw new Error(`Invalid JSON format in body. Original error: ${error.message}`)
     }
 }
 
@@ -23,7 +23,7 @@ describe('Qdrant collection configuration in upsert', () => {
         const qdrantVectorDimension = '768'
         const qdrantSimilarity = 'Cosine'
 
-        const dbConfig = {
+        const dbConfig: any = {
             collectionName: 'test',
             collectionConfig: {
                 vectors: {
@@ -34,9 +34,7 @@ describe('Qdrant collection configuration in upsert', () => {
         }
 
         const parsed =
-            typeof qdrantCollectionConfiguration === 'object'
-                ? qdrantCollectionConfiguration
-                : parseJsonBody(qdrantCollectionConfiguration)
+            typeof qdrantCollectionConfiguration === 'object' ? qdrantCollectionConfiguration : parseJsonBody(qdrantCollectionConfiguration)
 
         dbConfig.collectionConfig = {
             ...parsed,
@@ -54,11 +52,11 @@ describe('Qdrant collection configuration in upsert', () => {
     })
 
     it('should merge collection configuration when provided as object', () => {
-        const qdrantCollectionConfiguration = { shard_number: 2, on_disk_payload: true }
+        const qdrantCollectionConfiguration: any = { shard_number: 2, on_disk_payload: true }
         const qdrantVectorDimension = null
         const qdrantSimilarity = 'Euclid'
 
-        const dbConfig = {
+        const dbConfig: any = {
             collectionConfig: {
                 vectors: {
                     size: 1536,
@@ -68,9 +66,7 @@ describe('Qdrant collection configuration in upsert', () => {
         }
 
         const parsed =
-            typeof qdrantCollectionConfiguration === 'object'
-                ? qdrantCollectionConfiguration
-                : parseJsonBody(qdrantCollectionConfiguration)
+            typeof qdrantCollectionConfiguration === 'object' ? qdrantCollectionConfiguration : parseJsonBody(qdrantCollectionConfiguration)
 
         dbConfig.collectionConfig = {
             ...parsed,
@@ -88,9 +84,9 @@ describe('Qdrant collection configuration in upsert', () => {
     })
 
     it('should preserve default config when no collection configuration is provided', () => {
-        const qdrantCollectionConfiguration = undefined
+        const qdrantCollectionConfiguration: any = undefined
 
-        const dbConfig = {
+        const dbConfig: any = {
             collectionConfig: {
                 vectors: {
                     size: 1536,
@@ -126,5 +122,47 @@ describe('Qdrant collection configuration in upsert', () => {
         expect(result.vectors.on_disk).toBe(true)
         expect(result.vectors.size).toBe(1536)
         expect(result.vectors.distance).toBe('Cosine')
+    })
+
+    it('should handle invalid JSON configuration gracefully inside try/catch', () => {
+        const qdrantCollectionConfiguration = 'not valid json {'
+        const qdrantVectorDimension = '768'
+        const qdrantSimilarity = 'Cosine'
+
+        const dbConfig: any = {
+            collectionConfig: {
+                vectors: {
+                    size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                    distance: qdrantSimilarity ?? 'Cosine'
+                }
+            }
+        }
+
+        // Simulate the try/catch block in the upsert method
+        try {
+            if (qdrantCollectionConfiguration) {
+                const parsed =
+                    typeof qdrantCollectionConfiguration === 'object'
+                        ? qdrantCollectionConfiguration
+                        : parseJsonBody(qdrantCollectionConfiguration)
+                dbConfig.collectionConfig = {
+                    ...parsed,
+                    vectors: {
+                        ...parsed.vectors,
+                        size: qdrantVectorDimension ? parseInt(qdrantVectorDimension, 10) : 1536,
+                        distance: qdrantSimilarity ?? 'Cosine'
+                    }
+                }
+            }
+            // Should not reach here with invalid JSON
+            fail('Expected parseJsonBody to throw on invalid JSON')
+        } catch (e: any) {
+            // parseJsonBody throws on invalid JSON — the try/catch in upsert handles this
+            expect(e.message).toContain('Invalid JSON')
+        }
+
+        // dbConfig should retain its original default values
+        expect(dbConfig.collectionConfig.vectors.size).toBe(768)
+        expect(dbConfig.collectionConfig.vectors.distance).toBe('Cosine')
     })
 })
