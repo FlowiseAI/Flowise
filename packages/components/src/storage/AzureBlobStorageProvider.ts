@@ -2,9 +2,9 @@ import { BlobServiceClient, ContainerClient, StorageSharedKeyCredential } from '
 import multer from 'multer'
 import { MulterAzureStorage } from 'multer-azure-blob-storage'
 import { v4 as uuidv4 } from 'uuid'
+import { winstonAzureBlob } from 'winston-azure-blob'
 import { BaseStorageProvider } from './BaseStorageProvider'
 import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
-import { winstonAzureBlob } from 'winston-azure-blob'
 
 /**
  * Extends MulterAzureStorage to set file.path from file.blobName after upload.
@@ -281,7 +281,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
         return multer({ storage: azureStorage })
     }
 
-    getLoggerTransports(logType: 'server' | 'error' | 'requests'): any[] {
+    getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit'): any[] {
         const connectionString = process.env.AZURE_BLOB_STORAGE_CONNECTION_STRING
         const accountName = process.env.AZURE_BLOB_STORAGE_ACCOUNT_NAME
         const accountKey = process.env.AZURE_BLOB_STORAGE_ACCOUNT_KEY
@@ -325,7 +325,18 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
                     level: 'debug'
                 })
             ]
+        } else if (logType === 'audit') {
+            return [
+                winstonAzureBlob({
+                    ...baseConfig,
+                    blobName: 'logs/audit/audit',
+                    rotatePeriod: 'YYYY-MM-DD',
+                    extension: '.log.jsonl',
+                    level: 'info'
+                })
+            ]
         }
+
         return []
     }
 }

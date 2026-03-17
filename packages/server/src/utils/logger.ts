@@ -1,8 +1,8 @@
-import * as fs from 'fs'
-import config from './config' // should be replaced by node-config or similar
-import { createLogger, transports, format } from 'winston'
 import { NextFunction, Request, Response } from 'express'
 import { StorageProviderFactory } from 'flowise-components'
+import * as fs from 'fs'
+import { createLogger, format, transports } from 'winston'
+import config from './config' // should be replaced by node-config or similar
 
 const { combine, timestamp, printf, errors } = format
 
@@ -12,6 +12,7 @@ const provider = StorageProviderFactory.getProvider()
 const serverTransports = provider.getLoggerTransports('server', config)
 const errorTransports = provider.getLoggerTransports('error', config)
 const requestTransports = provider.getLoggerTransports('requests', config)
+const auditTransports = provider.getLoggerTransports('audit', config)
 
 // expect the log dir be relative to the projects root
 const logDir = config.logging.dir
@@ -142,5 +143,12 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
 
     next()
 }
+
+export const auditLogger = createLogger({
+    format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
+    defaultMeta: { package: 'server' },
+    exitOnError: false,
+    transports: [...(process.env.DEBUG === 'true' ? [new transports.Console()] : []), ...auditTransports]
+})
 
 export default logger
