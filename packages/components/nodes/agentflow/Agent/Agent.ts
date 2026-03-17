@@ -2375,7 +2375,7 @@ class Agent_Agentflow implements INode {
                 usedTools.push({
                     tool: toolCall.name || 'tool',
                     toolInput: toolCall.args,
-                    toolOutput: response.content
+                    toolOutput: response.content ?? ''
                 })
             }
         }
