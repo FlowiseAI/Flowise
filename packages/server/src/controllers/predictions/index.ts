@@ -64,6 +64,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     chatId = req.body.chatId ?? req.body.overrideConfig?.sessionId ?? uuidv4()
                     req.body.chatId = chatId
                 }
+                const isQueueMode = process.env.MODE === MODE.QUEUE
                 try {
                     sseStreamer.addExternalClient(chatId, res)
                     res.setHeader('Content-Type', 'text/event-stream')
@@ -72,9 +73,17 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     res.setHeader('X-Accel-Buffering', 'no') //nginx config: https://serverfault.com/a/801629
                     res.flushHeaders()
 
-                    if (process.env.MODE === MODE.QUEUE) {
-                        getRunningExpressApp().redisSubscriber.subscribe(chatId)
+                    if (isQueueMode) {
+                        await getRunningExpressApp().redisSubscriber.subscribe(chatId)
                     }
+
+                    // Detect client disconnect (browser close, network timeout, ALB idle timeout)
+                    res.on('close', async () => {
+                        sseStreamer.removeClient(chatId)
+                        if (isQueueMode) {
+                            await getRunningExpressApp().redisSubscriber.unsubscribe(chatId)
+                        }
+                    })
 
                     const apiResponse = await predictionsServices.buildChatflow(req)
                     sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
@@ -84,6 +93,9 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                     }
                     next(error)
                 } finally {
+                    if (isQueueMode && chatId) {
+                        await getRunningExpressApp().redisSubscriber.unsubscribe(chatId)
+                    }
                     sseStreamer.removeClient(chatId)
                 }
             } else {
