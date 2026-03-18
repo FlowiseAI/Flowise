@@ -1309,7 +1309,8 @@ export class AnalyticHandler {
             lunary: {},
             langWatch: {},
             arize: {},
-            phoenix: {}
+            phoenix: {},
+            opik: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
