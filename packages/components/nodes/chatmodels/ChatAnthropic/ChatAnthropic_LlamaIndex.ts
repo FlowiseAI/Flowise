@@ -88,13 +88,17 @@ class ChatAnthropic_LlamaIndex_ChatModels implements INode {
         const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
 
         const obj: Partial<Anthropic> = {
-            temperature: parseFloat(temperature),
             model: modelName,
             apiKey: anthropicApiKey
         }
 
+        const parsedTemperature = parseFloat(temperature)
+        if (!isNaN(parsedTemperature)) obj.temperature = parsedTemperature
+
         if (maxTokensToSample) obj.maxTokens = parseInt(maxTokensToSample, 10)
-        if (topP) obj.topP = parseFloat(topP)
+
+        const parsedTopP = parseFloat(topP)
+        if (!isNaN(parsedTopP) && parsedTopP >= 0) obj.topP = parsedTopP
 
         const model = new Anthropic(obj)
         return model
