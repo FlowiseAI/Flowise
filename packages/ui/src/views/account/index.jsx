@@ -84,6 +84,7 @@ const AccountSettings = () => {
     const [purchasedSeats, setPurchasedSeats] = useState(0)
     const [occupiedSeats, setOccupiedSeats] = useState(0)
     const [totalSeats, setTotalSeats] = useState(0)
+    const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false)
 
     const predictionsUsageInPercent = useMemo(() => {
         return usage ? calculatePercentage(usage.predictions?.usage, usage.predictions?.limit) : 0
@@ -103,6 +104,7 @@ const AccountSettings = () => {
     const updateAdditionalSeatsApi = useApi(userApi.updateAdditionalSeats)
     const getCurrentUsageApi = useApi(userApi.getCurrentUsage)
     const logoutApi = useApi(accountApi.logout)
+    const deleteAccountApi = useApi(accountApi.deleteAccount)
 
     useEffect(() => {
         if (currentUser) {
@@ -153,6 +155,13 @@ const AccountSettings = () => {
             console.error(e)
         }
     }, [logoutApi.data])
+
+    useEffect(() => {
+        if (deleteAccountApi.data?.message === 'Account deleted') {
+            store.dispatch(logoutSuccess())
+            window.location.href = '/login'
+        }
+    }, [deleteAccountApi.data])
 
     useEffect(() => {
         if (openRemoveSeatsDialog || openAddSeatsDialog) {
@@ -828,6 +837,63 @@ const AccountSettings = () => {
                                 </Box>
                             </SettingsSection>
                         )}
+                        {isCloud && (
+                            <>
+                                <SettingsSection title='Delete Account'>
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3, 1fr)'
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                gridColumn: 'span 2 / span 2',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'start',
+                                                justifyContent: 'center',
+                                                gap: 1,
+                                                px: 2.5,
+                                                py: 2
+                                            }}
+                                        >
+                                            <Typography variant='body2' color='text.secondary'>
+                                                Once deleted you will be logged out and your subscription will be cancelled.
+                                            </Typography>
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'end',
+                                                gap: 2,
+                                                px: 2.5,
+                                                py: 2
+                                            }}
+                                        >
+                                            <Button
+                                                variant='contained'
+                                                color='error'
+                                                onClick={() => setOpenDeleteAccountDialog(true)}
+                                                disabled={deleteAccountApi.loading}
+                                                sx={{ borderRadius: 2, height: 40 }}
+                                            >
+                                                {deleteAccountApi.loading ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <CircularProgress size={16} color='inherit' />
+                                                        Deleting...
+                                                    </Box>
+                                                ) : (
+                                                    'Delete your account'
+                                                )}
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                </SettingsSection>
+                            </>
+                        )}
                     </>
                 )}
             </Stack>
@@ -1380,6 +1446,33 @@ const AccountSettings = () => {
                         </Button>
                     </DialogActions>
                 )}
+            </Dialog>
+            {/* Delete Account Confirmation Dialog */}
+            <Dialog
+                fullWidth
+                maxWidth='xs'
+                open={openDeleteAccountDialog}
+                onClose={() => !deleteAccountApi.loading && setOpenDeleteAccountDialog(false)}
+            >
+                <DialogTitle>Delete Account</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Once deleted you will be logged out and your subscription will be cancelled. This action cannot be undone.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDeleteAccountDialog(false)} disabled={deleteAccountApi.loading}>
+                        Cancel
+                    </Button>
+                    <Button
+                        variant='contained'
+                        color='error'
+                        onClick={() => deleteAccountApi.request()}
+                        disabled={deleteAccountApi.loading}
+                    >
+                        {deleteAccountApi.loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm'}
+                    </Button>
+                </DialogActions>
             </Dialog>
         </MainCard>
     )

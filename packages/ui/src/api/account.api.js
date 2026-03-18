@@ -10,6 +10,7 @@ const getBillingData = () => client.post('/account/billing')
 const logout = () => client.post('/account/logout')
 const getBasicAuth = () => client.get('/account/basic-auth')
 const checkBasicAuth = (body) => client.post('/account/basic-auth', body)
+const deleteAccount = () => client.delete('/account/delete')
 
 export default {
     getBillingData,
@@ -21,5 +22,6 @@ export default {
     resetPassword,
     logout,
     getBasicAuth,
-    checkBasicAuth
+    checkBasicAuth,
+    deleteAccount
 }
