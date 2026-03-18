@@ -1,7 +1,20 @@
 import { ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 
-import { Box, FormControlLabel, IconButton, MenuItem, Select, Switch, TextField, Tooltip, TooltipProps, Typography } from '@mui/material'
+import {
+    Box,
+    Button,
+    FormControlLabel,
+    IconButton,
+    MenuItem,
+    Popover,
+    Select,
+    Switch,
+    TextField,
+    Tooltip,
+    TooltipProps,
+    Typography
+} from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
 import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
@@ -9,6 +22,10 @@ import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
 import type { InputAnchor, InputParam, NodeData } from '@/core/types'
 
+import { CodeInput } from './inputs/CodeInput'
+import { JsonInput } from './inputs/JsonInput'
+import type { VariableItem } from './inputs/SelectVariable'
+import { SelectVariable } from './inputs/SelectVariable'
 import ArrayInput from './ArrayInput'
 import { ExpandTextDialog } from './ExpandTextDialog'
 
@@ -66,6 +83,8 @@ export interface NodeInputHandlerProps {
     arrayIndex?: number | null
     /** For array-based configs: the parent array InputParam definition. */
     parentArrayParam?: InputParam | null
+    /** Variable items for the SelectVariable popover (injected from features layer). */
+    variableItems?: VariableItem[]
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -87,7 +106,8 @@ export function NodeInputHandler({
     ConfigInputComponent,
     onConfigChange,
     arrayIndex = null,
-    parentArrayParam = null
+    parentArrayParam = null,
+    variableItems
 }: NodeInputHandlerProps) {
     const theme = useTheme()
     const ref = useRef<HTMLDivElement>(null)
@@ -95,6 +115,7 @@ export function NodeInputHandler({
 
     const [position, setPosition] = useState(0)
     const [expandOpen, setExpandOpen] = useState(false)
+    const [variableAnchorEl, setVariableAnchorEl] = useState<HTMLElement | null>(null)
 
     const handleDataChange = useCallback(
         (newValue: unknown) => {
@@ -134,6 +155,19 @@ export function NodeInputHandler({
         },
         [handleDataChange]
     )
+
+    const handleVariableSelect = useCallback(
+        (variableString: string) => {
+            if (!inputParam) return
+            const current = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
+            const currentStr = typeof current === 'string' ? current : JSON.stringify(current)
+            handleDataChange(currentStr + variableString)
+            setVariableAnchorEl(null)
+        },
+        [inputParam, data.inputValues, handleDataChange]
+    )
+
+    const showVariableButton = !!(inputParam?.acceptVariable && variableItems && variableItems.length > 0)
 
     const renderInput = () => {
         if (!inputParam) return null
@@ -229,6 +263,38 @@ export function NodeInputHandler({
                     />
                 )
             }
+
+            case 'json':
+                return (
+                    <JsonInput
+                        value={typeof value === 'string' ? value : JSON.stringify(value || {})}
+                        onChange={(json) => handleDataChange(json)}
+                        disabled={disabled}
+                        variableItems={variableItems}
+                    />
+                )
+
+            case 'code':
+                return (
+                    <>
+                        <CodeInput
+                            value={typeof value === 'string' ? value : ''}
+                            onChange={(code) => handleDataChange(code)}
+                            language={inputParam.codeLanguage}
+                            disabled={disabled}
+                        />
+                        {inputParam.codeExample && !disabled && (
+                            <Button
+                                size='small'
+                                variant='text'
+                                sx={{ mt: 0.5, textTransform: 'none' }}
+                                onClick={() => handleDataChange(inputParam.codeExample)}
+                            >
+                                See Example
+                            </Button>
+                        )}
+                    </>
+                )
 
             case 'array':
                 return (
@@ -352,9 +418,16 @@ export function NodeInputHandler({
                                 {!inputParam?.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
                             </Typography>
                             <div style={{ flexGrow: 1 }} />
-                            {inputParam?.acceptVariable && inputParam?.type === 'string' && (
-                                <Tooltip title='Type {{ to select variables'>
-                                    <IconVariable size={20} style={{ color: 'teal' }} />
+                            {showVariableButton && (
+                                <Tooltip title='Select variable'>
+                                    <IconButton
+                                        size='small'
+                                        sx={{ height: 25, width: 25 }}
+                                        disabled={disabled}
+                                        onClick={(e) => setVariableAnchorEl(e.currentTarget)}
+                                    >
+                                        <IconVariable size={20} style={{ color: 'teal' }} />
+                                    </IconButton>
                                 </Tooltip>
                             )}
                             {isExpandable && (
@@ -389,6 +462,19 @@ export function NodeInputHandler({
                     onConfirm={handleExpandConfirm}
                     onCancel={() => setExpandOpen(false)}
                 />
+            )}
+
+            {showVariableButton && (
+                <Popover
+                    open={!!variableAnchorEl}
+                    anchorEl={variableAnchorEl}
+                    onClose={() => setVariableAnchorEl(null)}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    slotProps={{ paper: { sx: { width: 320, maxHeight: 400 } } }}
+                >
+                    <SelectVariable items={variableItems!} onSelect={handleVariableSelect} />
+                </Popover>
             )}
         </div>
     )

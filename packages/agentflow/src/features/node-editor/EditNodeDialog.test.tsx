@@ -17,7 +17,7 @@ const mockCleanupOrphanedEdges = jest.fn()
 
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
-        state: {},
+        state: { nodes: [], edges: [] },
         updateNodeData: mockUpdateNodeData
     }),
     useConfigContext: () => ({

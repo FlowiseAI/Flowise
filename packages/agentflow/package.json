@@ -68,12 +68,19 @@
         "reactflow": "^11.5.0"
     },
     "dependencies": {
+        "@codemirror/lang-javascript": "^6.2.0",
+        "@codemirror/lang-json": "^6.0.0",
+        "@codemirror/lang-python": "^6.1.0",
         "@tabler/icons-react": "^3.7.0",
         "@tiptap/extension-code-block-lowlight": "^3.4.3",
         "@tiptap/extension-placeholder": "^2.11.5",
         "@tiptap/react": "^2.11.5",
         "@tiptap/starter-kit": "^2.11.5",
+        "@uiw/codemirror-theme-sublime": "^4.21.0",
+        "@uiw/codemirror-theme-vscode": "^4.21.0",
+        "@uiw/react-codemirror": "^4.21.0",
         "axios": "^1.7.2",
+        "flowise-react-json-view": "^1.21.7",
         "lodash": "^4.17.21",
         "lowlight": "^3.3.0",
         "uuid": "^10.0.0"
