@@ -267,6 +267,196 @@ describe('NodeInputHandler – loadConfig rendering', () => {
     })
 })
 
+// Mock CodeInput and JsonInput to avoid pulling in heavy dependencies
+jest.mock('./inputs/CodeInput', () => ({
+    CodeInput: ({ value, language, disabled }: { value: string; language?: string; disabled?: boolean }) => (
+        <textarea data-testid='code-input' data-language={language} value={value} readOnly={disabled} onChange={() => {}} />
+    )
+}))
+
+jest.mock('./inputs/JsonInput', () => ({
+    JsonInput: ({ value, disabled }: { value: string; disabled?: boolean }) => (
+        <div data-testid='json-input' data-value={value} data-disabled={disabled} />
+    )
+}))
+
+jest.mock('./inputs/SelectVariable', () => ({
+    SelectVariable: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
+        <div data-testid='select-variable'>
+            {items.map((item, i) => (
+                <button key={i} data-testid={`var-${item.value}`} onClick={() => onSelect(item.value)}>
+                    {item.value}
+                </button>
+            ))}
+        </div>
+    )
+}))
+
+describe('NodeInputHandler – json type', () => {
+    it('renders JsonInput for json type', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'json' })}
+                data={{ ...baseNodeData, inputValues: { myField: '{"key":"val"}' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.getByTestId('json-input')).toBeTruthy()
+        expect(screen.getByTestId('json-input')).toHaveAttribute('data-value', '{"key":"val"}')
+    })
+
+    it('renders a button for json with acceptVariable and variableItems', () => {
+        const variableItems = [{ label: 'question', value: '{{question}}', category: 'Chat Context' }]
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'json', acceptVariable: true, label: 'Override Config' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        expect(screen.getByRole('button', { name: 'Override Config' })).toBeTruthy()
+        expect(screen.queryByTestId('json-input')).toBeNull()
+    })
+
+    it('renders inline JsonInput for json with acceptVariable but no variableItems', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'json', acceptVariable: true })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.getByTestId('json-input')).toBeTruthy()
+    })
+})
+
+describe('NodeInputHandler – code type', () => {
+    it('renders CodeInput for code type', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'code', codeLanguage: 'javascript' })}
+                data={{ ...baseNodeData, inputValues: { myField: 'const x = 1' } }}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        const editor = screen.getByTestId('code-input')
+        expect(editor).toBeTruthy()
+        expect(editor).toHaveValue('const x = 1')
+        expect(editor).toHaveAttribute('data-language', 'javascript')
+    })
+
+    it('shows expand icon for code type', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'code' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.getByTitle('Expand')).toBeTruthy()
+    })
+
+    it('shows See Example button when codeExample is set', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'code', codeExample: 'console.log("hi")' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.getByText('See Example')).toBeTruthy()
+    })
+
+    it('sets value to codeExample when See Example is clicked', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'code', codeExample: 'console.log("hi")' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        fireEvent.click(screen.getByText('See Example'))
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: expect.objectContaining({ type: 'code' }),
+            newValue: 'console.log("hi")'
+        })
+    })
+
+    it('does not show See Example when no codeExample', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'code' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.queryByText('See Example')).toBeNull()
+    })
+})
+
+describe('NodeInputHandler – variable popover', () => {
+    it('shows variable icon when acceptVariable and variableItems are provided for string type', () => {
+        const variableItems = [{ label: 'question', value: '{{question}}', category: 'Chat Context' }]
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string', acceptVariable: true })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        // The variable icon is rendered inside a Tooltip > IconButton
+        expect(screen.getByTestId('icon-variable')).toBeTruthy()
+    })
+
+    it('does not show variable icon without acceptVariable', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string' })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        expect(screen.queryByTestId('icon-variable')).toBeNull()
+    })
+
+    it('does not show variable icon with empty variableItems', () => {
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string', acceptVariable: true })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={[]}
+            />
+        )
+
+        expect(screen.queryByTestId('icon-variable')).toBeNull()
+    })
+})
+
 describe('NodeInputHandler – credential type rendering', () => {
     const StubAsyncInput: ComponentType<AsyncInputProps> = ({ onChange }) => (
         <button data-testid='credential-select' onClick={() => onChange('cred-id-123')}>

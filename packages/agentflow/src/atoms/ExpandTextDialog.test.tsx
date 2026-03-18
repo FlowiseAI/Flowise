@@ -4,6 +4,12 @@ import { ExpandTextDialog } from './ExpandTextDialog'
 
 // TipTap modules are auto-mocked via moduleNameMapper in jest.config.js
 
+jest.mock('./inputs/CodeInput', () => ({
+    CodeInput: ({ value, language }: { value: string; language?: string }) => (
+        <textarea data-testid='code-input' data-language={language} value={value} onChange={() => {}} />
+    )
+}))
+
 const mockOnConfirm = jest.fn()
 const mockOnCancel = jest.fn()
 
@@ -69,6 +75,33 @@ describe('ExpandTextDialog', () => {
 
         const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
         expect(textarea).toHaveAttribute('placeholder', 'Type here...')
+    })
+
+    // --- Code mode ---
+
+    describe('mode="code"', () => {
+        it('should render CodeInput instead of TextField', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='const x = 1'
+                    mode='code'
+                    language='javascript'
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByTestId('code-input')).toBeInTheDocument()
+            expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
+        })
+
+        it('should show Save and Cancel buttons in code mode', () => {
+            render(<ExpandTextDialog open={true} value='' mode='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+        })
     })
 
     // --- Rich text mode ---
