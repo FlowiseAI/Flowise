@@ -1,6 +1,6 @@
-import { isPathTraversal, isUnsafeFilePath, validateMimeTypeAndExtensionMatch, validateVectorStorePath } from '../src/validator'
+import { isPathTraversal, isUnsafeFilePath, validateMimeTypeAndExtensionMatch, validateVectorStorePath } from './validator'
 import path from 'path'
-import { getUserHome } from '../src/utils'
+import { getUserHome } from './utils'
 
 describe('isPathTraversal', () => {
     describe('returns true for dangerous patterns', () => {

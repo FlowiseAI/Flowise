@@ -1,4 +1,4 @@
-import { validatePythonCodeForDataFrame } from '../src/pythonCodeValidator'
+import { validatePythonCodeForDataFrame } from './pythonCodeValidator'
 
 describe('validatePythonCodeForDataFrame', () => {
     describe('reported bypass: multi-name import with alias', () => {

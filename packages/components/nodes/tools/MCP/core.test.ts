@@ -4,7 +4,7 @@ import {
     validateArgsForLocalFileAccess,
     validateEnvironmentVariables,
     validateMCPServerConfig
-} from '../../../../nodes/tools/MCP/core'
+} from './core'
 
 describe('MCP Security Validations', () => {
     describe('validateCommandFlags', () => {
