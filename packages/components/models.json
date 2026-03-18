@@ -1784,6 +1784,14 @@
             "name": "minimax",
             "models": [
                 {
+                    "label": "MiniMax-M2.7",
+                    "name": "MiniMax-M2.7"
+                },
+                {
+                    "label": "MiniMax-M2.7-highspeed",
+                    "name": "MiniMax-M2.7-highspeed"
+                },
+                {
                     "label": "MiniMax-M2.5",
                     "name": "MiniMax-M2.5"
                 },

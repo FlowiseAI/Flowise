@@ -44,7 +44,7 @@ class ChatMiniMax_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'MiniMax-M2.5'
+                default: 'MiniMax-M2.7'
             },
             {
                 label: 'Temperature',
