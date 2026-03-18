@@ -53,7 +53,7 @@ export function CodeInput({ value, onChange, language = 'javascript', disabled =
             <CodeMirror
                 value={value || ''}
                 height={height}
-                theme={isDarkMode ? vscodeDark : sublime}
+                theme={isDarkMode ? (language === 'json' ? sublime : vscodeDark) : 'light'}
                 extensions={extensions}
                 onChange={onChange}
                 readOnly={disabled}

@@ -472,6 +472,8 @@ export function NodeInputHandler({
                     title={inputParam?.label}
                     placeholder={inputParam?.placeholder}
                     disabled={disabled}
+                    mode={inputParam?.type === 'code' ? 'code' : 'text'}
+                    language={inputParam?.type === 'code' ? inputParam.codeLanguage : undefined}
                     onConfirm={handleExpandConfirm}
                     onCancel={() => setExpandOpen(false)}
                 />
