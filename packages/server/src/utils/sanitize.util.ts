@@ -1,5 +1,5 @@
 import { User } from '../enterprise/database/entities/user.entity'
-import { isValidIPAddress } from './ipValidation'
+import { isIPv4, isIPv6, isValidIPAddress } from './ipValidation'
 
 export function sanitizeNullBytes(obj: any): any {
     const stack = [obj]
@@ -43,6 +43,33 @@ export function sanitizeUser(user: Partial<User>) {
 }
 
 /**
+ * Expands an IPv6 string to exactly 8 groups of 16-bit hex, handling :: and IPv4-mapped form.
+ */
+function expandIPv6ToGroups(ip: string): string[] {
+    let parts = ip.split(':')
+
+    // IPv4-mapped: last segment can be dotted decimal (e.g. 192.168.1.1)
+    const last = parts[parts.length - 1]
+    if (last?.includes('.')) {
+        const octets = last.split('.').map(Number)
+        if (octets.length === 4 && octets.every((n) => n >= 0 && n <= 255)) {
+            const high = (octets[0] << 8) | octets[1]
+            const low = (octets[2] << 8) | octets[3]
+            parts = [...parts.slice(0, -1), high.toString(16), low.toString(16)]
+        }
+    }
+
+    if (parts.includes('')) {
+        const emptyIdx = parts.indexOf('')
+        const zeroCount = 8 - (parts.length - 1)
+        const zeros = Array(zeroCount).fill('0000')
+        parts = [...parts.slice(0, emptyIdx), ...zeros, ...parts.slice(emptyIdx + 1)]
+    }
+
+    return parts.map((p) => p.padStart(4, '0').toLowerCase())
+}
+
+/**
  * Masks the last octet of an IP address for privacy (GDPR compliance).
  *
  * This function sanitizes IP addresses by masking identifying information while
@@ -53,26 +80,24 @@ export function sanitizeUser(user: Partial<User>) {
  * @returns The sanitized IP address with masked octets/bits, or 'unknown' if invalid
  */
 export function sanitizeIPAddress(ip: string): string {
-    // Validate first
     if (!isValidIPAddress(ip)) {
         return 'unknown'
     }
 
-    // Handle IPv4
-    const ipv4Parts = ip.split('.')
-    if (ipv4Parts.length === 4) {
-        ipv4Parts[3] = 'xxx'
-        return ipv4Parts.join('.')
+    if (isIPv4(ip)) {
+        const parts = ip.split('.')
+        parts[3] = 'xxx'
+        return parts.join('.')
     }
 
-    // Handle IPv6 - mask last 64 bits
-    if (ip.includes(':')) {
-        const parts = ip.split(':')
-        const masked = parts.slice(0, Math.ceil(parts.length / 2)).join(':')
-        return `${masked}:xxxx:xxxx:xxxx:xxxx`
+    if (isIPv6(ip)) {
+        const groups = expandIPv6ToGroups(ip)
+        if (groups.length !== 8) return 'unknown'
+        const prefix = groups.slice(0, 4).join(':')
+        return `${prefix}:xxxx:xxxx:xxxx:xxxx`
     }
 
-    return 'xxx.xxx.xxx.xxx'
+    return 'unknown'
 }
 
 /**

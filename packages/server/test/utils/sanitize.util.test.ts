@@ -361,9 +361,9 @@ describe('Sanitization Utilities', () => {
                 expect(result).toContain(':xxxx:xxxx:xxxx:xxxx')
             })
 
-            it('should mask IPv4-mapped IPv6 address (masks IPv4 portion)', () => {
+            it('should mask IPv4-mapped IPv6 address (masks last 64 bits as IPv6)', () => {
                 const result = sanitizeIPAddress('::ffff:192.168.1.1')
-                expect(result).toBe('::ffff:192.168.1.xxx')
+                expect(result).toBe('0000:0000:0000:0000:xxxx:xxxx:xxxx:xxxx')
             })
         })
 
@@ -442,16 +442,29 @@ describe('Sanitization Utilities', () => {
                 })
             })
 
-            it('should return fallback mask if IP passes validation but has unexpected format', () => {
-                // Mock isValidIPAddress to return true for an unusual format
+            it('should return "unknown" if IP passes validation but has unexpected format', () => {
                 const ipValidation = require('../../src/utils/ipValidation')
                 const mockIsValid = jest.spyOn(ipValidation, 'isValidIPAddress')
                 mockIsValid.mockReturnValueOnce(true)
 
                 const result = sanitizeIPAddress('unusual-format')
-                expect(result).toBe('xxx.xxx.xxx.xxx')
+                expect(result).toBe('unknown')
 
                 mockIsValid.mockRestore()
+            })
+
+            it('should return "unknown" when IPv6 expands to non-8 groups (defensive)', () => {
+                const ipValidation = require('../../src/utils/ipValidation')
+                jest.spyOn(ipValidation, 'isValidIPAddress').mockReturnValueOnce(true)
+                jest.spyOn(ipValidation, 'isIPv4').mockReturnValueOnce(false)
+                jest.spyOn(ipValidation, 'isIPv6').mockReturnValueOnce(true)
+
+                const result = sanitizeIPAddress('1:2:3:4:5:6:7:8:9')
+                expect(result).toBe('unknown')
+
+                ipValidation.isValidIPAddress.mockRestore()
+                ipValidation.isIPv4.mockRestore()
+                ipValidation.isIPv6.mockRestore()
             })
         })
     })

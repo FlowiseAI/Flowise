@@ -10,6 +10,8 @@ jest.mock('../../src/utils', () => ({
 }))
 
 jest.mock('../../src/utils/ipValidation', () => ({
+    isIPv4: jest.fn(),
+    isIPv6: jest.fn(),
     isValidIPAddress: jest.fn()
 }))
 
@@ -50,6 +52,8 @@ describe('utils/telemetry.ts', () => {
         utils.getAppVersion.mockResolvedValue('3.0.13')
 
         ipValidation.isValidIPAddress.mockReturnValue(true)
+        ipValidation.isIPv4.mockReturnValue(true)
+        ipValidation.isIPv6.mockReturnValue(false)
         geoip.lookup.mockReturnValue({ country: 'US', region: 'CA' })
     })
 
