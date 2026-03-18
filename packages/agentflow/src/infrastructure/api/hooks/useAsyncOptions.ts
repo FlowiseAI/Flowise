@@ -64,9 +64,6 @@ export function useAsyncOptions({ loadMethod, credentialNames, params }: UseAsyn
                     result = credentials.map((c) => ({ label: c.name, name: c.id }))
                 } else if (loadMethod) {
                     const fn = getLoadMethod(loadMethod)
-                    if (!fn) {
-                        throw new Error(`Unknown loadMethod: "${loadMethod}"`)
-                    }
                     const apis: ApiServices = {
                         chatModelsApi,
                         toolsApi,

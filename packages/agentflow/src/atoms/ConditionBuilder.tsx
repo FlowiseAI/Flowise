@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -7,6 +7,7 @@ import { IconPlus, IconTrash } from '@tabler/icons-react'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { NodeInputHandler } from './NodeInputHandler'
+import { useStableKeys } from './useStableKeys'
 
 export interface ConditionBuilderProps {
     inputParam: InputParam
@@ -29,20 +30,13 @@ export function ConditionBuilder({
     itemParameters: itemParametersProp
 }: ConditionBuilderProps) {
     const theme = useTheme()
-    const idCounterRef = useRef(0)
-    const itemKeysRef = useRef<string[]>([])
 
     const arrayItems = useMemo(
         () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
         [data.inputValues, inputParam.name]
     )
 
-    // Grow keys array when new items appear (e.g. on mount or external data changes)
-    useEffect(() => {
-        while (itemKeysRef.current.length < arrayItems.length) {
-            itemKeysRef.current.push(`condition-${idCounterRef.current++}`)
-        }
-    }, [arrayItems.length])
+    const { keys: effectiveKeys, removeKey } = useStableKeys(arrayItems.length, 'condition')
 
     const itemParameters = useMemo<InputParam[][]>(
         () => itemParametersProp ?? arrayItems.map(() => inputParam.array || []),
@@ -85,10 +79,10 @@ export function ConditionBuilder({
 
     const handleDeleteItem = useCallback(
         (indexToDelete: number) => {
-            itemKeysRef.current.splice(indexToDelete, 1)
+            removeKey(indexToDelete)
             onDataChange?.({ inputParam, newValue: arrayItems.filter((_, i) => i !== indexToDelete) })
         },
-        [arrayItems, inputParam, onDataChange]
+        [arrayItems, inputParam, onDataChange, removeKey]
     )
 
     const itemHandlers = useMemo(
@@ -111,7 +105,7 @@ export function ConditionBuilder({
 
                 return (
                     <Box
-                        key={itemKeysRef.current[index]}
+                        key={effectiveKeys[index]}
                         sx={{
                             p: 2,
                             mt: 2,

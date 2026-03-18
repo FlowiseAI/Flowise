@@ -83,19 +83,79 @@ describe('loadMethodRegistry', () => {
     })
 
     describe('listRegions', () => {
-        it('should call nodesApi.loadNodeMethod() with nodeName and listRegions', async () => {
+        it('should call nodesApi.loadNodeMethod() with nodeName, listRegions, and currentNode.inputs', async () => {
             const mockRegions = [{ name: 'us-east-1', label: 'US East (N. Virginia)' }]
             ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockRegions)
 
-            const result = await loadMethodRegistry['listRegions'](mockApis, { nodeName: 'awsChatBedrock' })
-            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsChatBedrock', 'listRegions')
+            const fn = getLoadMethod('listRegions')
+            const result = await fn(mockApis, { nodeName: 'awsChatBedrock' })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsChatBedrock', 'listRegions', {
+                currentNode: { inputs: {} }
+            })
             expect(result).toEqual(mockRegions)
         })
 
         it('should reject when nodeName param is missing', async () => {
-            await expect(loadMethodRegistry['listRegions'](mockApis)).rejects.toThrow(
-                '`listRegions` requires a string `nodeName` parameter.'
-            )
+            const fn = getLoadMethod('listRegions')
+            await expect(fn(mockApis)).rejects.toThrow('loadMethod "listRegions" requires a string "nodeName" parameter.')
+        })
+    })
+
+    describe('listActions', () => {
+        it('should call nodesApi.loadNodeMethod() with nodeName, listActions, and currentNode.inputs', async () => {
+            const mockActions = [{ name: 'GITHUB_CREATE_ISSUE', label: 'Create Issue' }]
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockActions)
+
+            const fn = getLoadMethod('listActions')
+            const result = await fn(mockApis, { nodeName: 'composio', inputs: { appName: 'github' } })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('composio', 'listActions', {
+                currentNode: { inputs: { appName: 'github' } }
+            })
+            expect(result).toEqual(mockActions)
+        })
+
+        it('should pass empty inputs when inputs param is omitted', async () => {
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue([])
+
+            const fn = getLoadMethod('listActions')
+            await fn(mockApis, { nodeName: 'composio' })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('composio', 'listActions', {
+                currentNode: { inputs: {} }
+            })
+        })
+
+        it('should reject when nodeName param is missing', async () => {
+            const fn = getLoadMethod('listActions')
+            await expect(fn(mockApis)).rejects.toThrow('loadMethod "listActions" requires a string "nodeName" parameter.')
+        })
+    })
+
+    describe('listTables', () => {
+        it('should call nodesApi.loadNodeMethod() with nodeName, listTables, and currentNode.inputs', async () => {
+            const mockTables = [{ name: 'my-table', label: 'my-table' }]
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockTables)
+
+            const fn = getLoadMethod('listTables')
+            const result = await fn(mockApis, { nodeName: 'awsDynamoDBKVStorage', inputs: { region: 'us-east-1' } })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsDynamoDBKVStorage', 'listTables', {
+                currentNode: { inputs: { region: 'us-east-1' } }
+            })
+            expect(result).toEqual(mockTables)
+        })
+
+        it('should pass empty inputs when inputs param is omitted', async () => {
+            ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue([])
+
+            const fn = getLoadMethod('listTables')
+            await fn(mockApis, { nodeName: 'awsDynamoDBKVStorage' })
+            expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsDynamoDBKVStorage', 'listTables', {
+                currentNode: { inputs: {} }
+            })
+        })
+
+        it('should reject when nodeName param is missing', async () => {
+            const fn = getLoadMethod('listTables')
+            await expect(fn(mockApis)).rejects.toThrow('loadMethod "listTables" requires a string "nodeName" parameter.')
         })
     })
 
@@ -130,8 +190,27 @@ describe('getLoadMethod', () => {
         expect(typeof fn).toBe('function')
     })
 
-    it('should return undefined for an unknown key', () => {
-        const fn = getLoadMethod('unknownMethod')
-        expect(fn).toBeUndefined()
+    it('should return a generic fallback function for an unregistered key', () => {
+        const fn = getLoadMethod('listTopics')
+        expect(fn).toBeDefined()
+        expect(typeof fn).toBe('function')
+    })
+
+    it('generic fallback should call nodesApi.loadNodeMethod with nodeName, the loadMethod name, and currentNode.inputs', async () => {
+        const mockTopics = [{ name: 'my-topic', label: 'my-topic' }]
+        ;(mockApis.nodesApi.loadNodeMethod as jest.Mock).mockResolvedValue(mockTopics)
+
+        const fn = getLoadMethod('listTopics')
+        const result = await fn(mockApis, { nodeName: 'awsSNS', inputs: { region: 'us-east-1' } })
+
+        expect(mockApis.nodesApi.loadNodeMethod).toHaveBeenCalledWith('awsSNS', 'listTopics', {
+            currentNode: { inputs: { region: 'us-east-1' } }
+        })
+        expect(result).toEqual(mockTopics)
+    })
+
+    it('generic fallback should reject when nodeName is missing', async () => {
+        const fn = getLoadMethod('listTopics')
+        await expect(fn(mockApis)).rejects.toThrow('loadMethod "listTopics" requires a string "nodeName" parameter.')
     })
 })

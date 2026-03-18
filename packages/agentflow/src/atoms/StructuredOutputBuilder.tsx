@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -6,6 +6,8 @@ import { IconArrowsMaximize, IconInfoCircle, IconPlus, IconTrash } from '@tabler
 
 import { ExpandTextDialog } from '@/atoms'
 import type { InputParam, NodeData } from '@/core/types'
+
+import { useStableKeys } from './useStableKeys'
 
 const OUTPUT_TYPES = [
     { label: 'String', value: 'string' },
@@ -40,20 +42,13 @@ export interface StructuredOutputBuilderProps {
  */
 export function StructuredOutputBuilder({ inputParam, data, disabled = false, onDataChange }: StructuredOutputBuilderProps) {
     const theme = useTheme()
-    const idCounterRef = useRef(0)
-    const itemKeysRef = useRef<string[]>([])
 
     const entries = useMemo(
         () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as StructuredOutputEntry[]) : []),
         [data.inputValues, inputParam.name]
     )
 
-    // Grow keys array when new items appear (e.g. on mount or external data changes)
-    useEffect(() => {
-        while (itemKeysRef.current.length < entries.length) {
-            itemKeysRef.current.push(`output-${idCounterRef.current++}`)
-        }
-    }, [entries.length])
+    const { keys: effectiveKeys, removeKey } = useStableKeys(entries.length, 'output')
 
     const handleFieldChange = useCallback(
         (index: number, field: string, value: string) => {
@@ -79,10 +74,10 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
 
     const handleDeleteEntry = useCallback(
         (indexToDelete: number) => {
-            itemKeysRef.current.splice(indexToDelete, 1)
+            removeKey(indexToDelete)
             onDataChange?.({ inputParam, newValue: entries.filter((_, i) => i !== indexToDelete) })
         },
-        [entries, inputParam, onDataChange]
+        [entries, inputParam, onDataChange, removeKey]
     )
 
     const isDeleteVisible = !inputParam.minItems || entries.length > inputParam.minItems
@@ -100,7 +95,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
 
             {entries.map((entry, index) => (
                 <Box
-                    key={itemKeysRef.current[index]}
+                    key={effectiveKeys[index]}
                     sx={{
                         p: 2,
                         mt: 2,
