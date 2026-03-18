@@ -145,8 +145,17 @@ describe('ExecuteFlow_Agentflow', () => {
             streamFileAnnotationsEvent: jest.fn()
         }
 
+        const mockArtifacts = [{ type: 'image', data: 'base64data' }]
+        const mockAnnotations = [{ fileName: 'report.pdf' }]
+
         ;(secureAxiosRequest as jest.Mock).mockResolvedValue({
-            data: { text: 'Streamed response', sourceDocuments: mockDocs, usedTools: mockTools }
+            data: {
+                text: 'Streamed response',
+                sourceDocuments: mockDocs,
+                usedTools: mockTools,
+                artifacts: mockArtifacts,
+                fileAnnotations: mockAnnotations
+            }
         })
 
         await node.run(makeNodeData(), '', makeOptions({ isLastNode: true, sseStreamer }))
@@ -154,6 +163,8 @@ describe('ExecuteFlow_Agentflow', () => {
         expect(sseStreamer.streamTokenEvent).toHaveBeenCalledWith('chat-123', 'Streamed response')
         expect(sseStreamer.streamSourceDocumentsEvent).toHaveBeenCalledWith('chat-123', mockDocs)
         expect(sseStreamer.streamUsedToolsEvent).toHaveBeenCalledWith('chat-123', mockTools)
+        expect(sseStreamer.streamArtifactsEvent).toHaveBeenCalledWith('chat-123', mockArtifacts)
+        expect(sseStreamer.streamFileAnnotationsEvent).toHaveBeenCalledWith('chat-123', mockAnnotations)
     })
 
     it('does not stream metadata when not isLastNode', async () => {

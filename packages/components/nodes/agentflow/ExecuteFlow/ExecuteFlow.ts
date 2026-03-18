@@ -205,10 +205,7 @@ class ExecuteFlow_Agentflow implements INode {
             const response = await secureAxiosRequest(requestConfig)
 
             let resultText = ''
-            const sourceDocuments = response.data.sourceDocuments || null
-            const usedTools = response.data.usedTools || null
-            const artifacts = response.data.artifacts || null
-            const fileAnnotations = response.data.fileAnnotations || null
+            const { sourceDocuments, usedTools, artifacts, fileAnnotations } = response.data
 
             if (response.data.text) resultText = response.data.text
             else if (response.data.json) resultText = '```json\n' + JSON.stringify(response.data.json, null, 2)
