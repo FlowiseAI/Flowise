@@ -4,6 +4,9 @@ import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 import {
     Box,
     Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
     FormControlLabel,
     IconButton,
     MenuItem,
@@ -116,6 +119,7 @@ export function NodeInputHandler({
     const [position, setPosition] = useState(0)
     const [expandOpen, setExpandOpen] = useState(false)
     const [variableAnchorEl, setVariableAnchorEl] = useState<HTMLElement | null>(null)
+    const [jsonDialogOpen, setJsonDialogOpen] = useState(false)
 
     const handleDataChange = useCallback(
         (newValue: unknown) => {
@@ -264,15 +268,24 @@ export function NodeInputHandler({
                 )
             }
 
-            case 'json':
-                return (
-                    <JsonInput
-                        value={typeof value === 'string' ? value : JSON.stringify(value || {})}
-                        onChange={(json) => handleDataChange(json)}
-                        disabled={disabled}
-                        variableItems={variableItems}
-                    />
-                )
+            case 'json': {
+                const jsonStr = typeof value === 'string' ? value : JSON.stringify(value || {})
+                if (inputParam.acceptVariable && variableItems && variableItems.length > 0) {
+                    // acceptVariable: show a button that opens a dialog with JsonInput + variable support
+                    return (
+                        <Button
+                            sx={{ borderRadius: 25, width: '100%', mb: 0, mt: 2 }}
+                            variant='outlined'
+                            disabled={disabled}
+                            onClick={() => setJsonDialogOpen(true)}
+                        >
+                            {inputParam.label}
+                        </Button>
+                    )
+                }
+                // No acceptVariable: render inline JSON tree
+                return <JsonInput value={jsonStr} onChange={(json) => handleDataChange(json)} disabled={disabled} />
+            }
 
             case 'code':
                 return (
@@ -464,7 +477,7 @@ export function NodeInputHandler({
                 />
             )}
 
-            {showVariableButton && (
+            {showVariableButton && inputParam?.type !== 'json' && (
                 <Popover
                     open={!!variableAnchorEl}
                     anchorEl={variableAnchorEl}
@@ -475,6 +488,20 @@ export function NodeInputHandler({
                 >
                     <SelectVariable items={variableItems!} onSelect={handleVariableSelect} />
                 </Popover>
+            )}
+
+            {inputParam?.type === 'json' && inputParam.acceptVariable && variableItems && variableItems.length > 0 && (
+                <Dialog open={jsonDialogOpen} onClose={() => setJsonDialogOpen(false)} fullWidth maxWidth='sm'>
+                    <DialogTitle>{inputParam.label}</DialogTitle>
+                    <DialogContent>
+                        <JsonInput
+                            value={expandValue}
+                            onChange={(json) => handleDataChange(json)}
+                            disabled={disabled}
+                            variableItems={variableItems}
+                        />
+                    </DialogContent>
+                </Dialog>
             )}
         </div>
     )
