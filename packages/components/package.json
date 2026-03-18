@@ -99,7 +99,7 @@
         "@opentelemetry/sdk-trace-base": "1.27.0",
         "@opentelemetry/semantic-conventions": "1.27.0",
         "@pinecone-database/pinecone": "4.0.0",
-        "@qdrant/js-client-rest": "^1.9.0",
+        "@qdrant/js-client-rest": "^1.17.0",
         "@stripe/agent-toolkit": "^0.1.20",
         "@supabase/supabase-js": "^2.29.0",
         "@types/js-yaml": "^4.0.5",
