@@ -77,14 +77,6 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                         await getRunningExpressApp().redisSubscriber.subscribe(chatId)
                     }
 
-                    // Detect client disconnect (browser close, network timeout, ALB idle timeout)
-                    res.on('close', async () => {
-                        sseStreamer.removeClient(chatId)
-                        if (isQueueMode) {
-                            await getRunningExpressApp().redisSubscriber.unsubscribe(chatId)
-                        }
-                    })
-
                     const apiResponse = await predictionsServices.buildChatflow(req)
                     sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
                 } catch (error) {
