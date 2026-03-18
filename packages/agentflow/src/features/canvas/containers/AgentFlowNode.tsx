@@ -2,6 +2,7 @@ import { memo, useEffect, useRef, useState } from 'react'
 
 import { Box, Typography } from '@mui/material'
 
+import { tokens } from '@/core/theme/tokens'
 import type { NodeData } from '@/core/types'
 import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
@@ -70,7 +71,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
             <CardWrapper
                 content={false}
                 sx={{
-                    borderColor: hasValidationErrors ? '#FFB938' : stateColor,
+                    borderColor: hasValidationErrors ? tokens.colors.border.validation : stateColor,
                     borderWidth: hasValidationErrors ? '2px' : '1px',
                     boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
                     minHeight,

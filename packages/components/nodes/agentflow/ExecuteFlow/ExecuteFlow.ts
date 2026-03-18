@@ -7,7 +7,8 @@ import {
     INodeParams,
     IServerSideEventStreamer
 } from '../../../src/Interface'
-import axios, { AxiosRequestConfig } from 'axios'
+import { AxiosRequestConfig } from 'axios'
+import { secureAxiosRequest } from '../../../src/httpSecurity'
 import { getCredentialData, getCredentialParam, processTemplateVariables, parseJsonBody } from '../../../src/utils'
 import { DataSource } from 'typeorm'
 import { BaseMessageLike } from '@langchain/core/messages'
@@ -201,7 +202,7 @@ class ExecuteFlow_Agentflow implements INode {
                 }
             }
 
-            const response = await axios(requestConfig)
+            const response = await secureAxiosRequest(requestConfig)
 
             let resultText = ''
             if (response.data.text) resultText = response.data.text

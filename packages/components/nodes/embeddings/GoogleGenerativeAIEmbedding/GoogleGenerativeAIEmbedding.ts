@@ -36,7 +36,7 @@ class GoogleGenerativeAIEmbedding_Embeddings implements INode {
     credential: INodeParams
 
     constructor() {
-        this.label = 'GoogleGenerativeAI Embeddings'
+        this.label = 'Google Gemini Embedding'
         this.name = 'googleGenerativeAiEmbeddings'
         this.version = 2.0
         this.type = 'GoogleGenerativeAiEmbeddings'

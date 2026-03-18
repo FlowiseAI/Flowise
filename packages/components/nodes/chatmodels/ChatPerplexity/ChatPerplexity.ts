@@ -18,7 +18,7 @@ class ChatPerplexity_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatPerplexity'
+        this.label = 'Perplexity'
         this.name = 'chatPerplexity'
         this.version = 0.1
         this.type = 'ChatPerplexity'

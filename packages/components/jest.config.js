@@ -17,6 +17,10 @@ module.exports = {
         // use these imports, so stubbing them out is safe.
         // Note: @langchain/core is NOT stubbed here because it ships CJS builds
         // (e.g. tools.cjs) that Jest can require() normally.
-        '^@modelcontextprotocol/sdk/(.*)$': '<rootDir>/test/__mocks__/esm-stub.js'
+        '^@modelcontextprotocol/sdk/(.*)$': '<rootDir>/test/__mocks__/esm-stub.js',
+        // multer-azure-blob-storage transitively pulls in azure-storage -> request@2.88.2 -> uuid/v4.
+        // The uuid/v4 sub-path no longer exists in modern uuid versions, breaking module resolution.
+        // Tests don't exercise Azure storage, so stubbing it out avoids the chain entirely.
+        '^multer-azure-blob-storage$': '<rootDir>/test/__mocks__/esm-stub.js'
     }
 }

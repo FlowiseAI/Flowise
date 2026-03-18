@@ -97,24 +97,42 @@ export async function checkDenyList(url: string): Promise<void> {
 }
 
 /**
+ * Optional TLS options for secureAxiosRequest (e.g. custom CA for mutual TLS or private CAs).
+ */
+export interface SecureRequestAgentOptions {
+    ca?: string | string[] | Buffer
+}
+
+/**
  * Makes a secure HTTP request that validates all URLs in redirect chains against the deny list
- * @param config - Axios request configuration
+ * @param config - Axios request configuration (httpsAgent/httpAgent are ignored; use agentOptions for custom CA)
  * @param maxRedirects - Maximum number of redirects to follow (default: 5)
+ * @param agentOptions - Optional TLS options (e.g. { ca } for custom CA PEM)
  * @returns Promise<AxiosResponse>
  * @throws Error if any URL in the redirect chain is denied
  */
-export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirects: number = 5): Promise<AxiosResponse> {
+export async function secureAxiosRequest(
+    config: AxiosRequestConfig,
+    maxRedirects: number = 5,
+    agentOptions?: SecureRequestAgentOptions
+): Promise<AxiosResponse> {
     let currentUrl = config.url
     if (!currentUrl) {
         throw new Error('secureAxiosRequest: url is required')
     }
 
     let redirects = 0
-    let currentConfig = { ...config, maxRedirects: 0, validateStatus: () => true } // Disable automatic redirects, accept all status codes
+    let currentConfig: AxiosRequestConfig = {
+        ...config,
+        maxRedirects: 0,
+        validateStatus: () => true,
+        httpsAgent: undefined,
+        httpAgent: undefined
+    } // Disable automatic redirects; agents set per-request below
 
     while (redirects <= maxRedirects) {
         const target = await resolveAndValidate(currentUrl)
-        const agent = createPinnedAgent(target)
+        const agent = createPinnedAgent(target, agentOptions)
 
         currentConfig = {
             ...currentConfig,
@@ -168,17 +186,23 @@ export async function secureAxiosRequest(config: AxiosRequestConfig, maxRedirect
  * @param url - URL to fetch
  * @param init - Fetch request options
  * @param maxRedirects - Maximum number of redirects to follow (default: 5)
+ * @param agentOptions - Optional TLS options (e.g. { ca } for custom CA PEM)
  * @returns Promise<Response>
  * @throws Error if any URL in the redirect chain is denied
  */
-export async function secureFetch(url: string, init?: RequestInit, maxRedirects: number = 5): Promise<Response> {
+export async function secureFetch(
+    url: string,
+    init?: RequestInit,
+    maxRedirects: number = 5,
+    agentOptions?: SecureRequestAgentOptions
+): Promise<Response> {
     let currentUrl = url
     let redirectCount = 0
     let currentInit = { ...init, redirect: 'manual' as const } // Disable automatic redirects
 
     while (redirectCount <= maxRedirects) {
         const resolved = await resolveAndValidate(currentUrl)
-        const agent = createPinnedAgent(resolved)
+        const agent = createPinnedAgent(resolved, agentOptions)
 
         const response = await fetch(currentUrl, { ...currentInit, agent: () => agent })
 
@@ -263,12 +287,13 @@ async function resolveAndValidate(url: string): Promise<ResolvedTarget> {
     }
 }
 
-function createPinnedAgent(target: ResolvedTarget): http.Agent | https.Agent {
+function createPinnedAgent(target: ResolvedTarget, options?: { ca?: string | string[] | Buffer }): http.Agent | https.Agent {
     const Agent = target.protocol === 'https' ? https.Agent : http.Agent
 
     return new Agent({
         lookup: (_host, _opts, cb) => {
             cb(null, target.ip, target.family)
-        }
+        },
+        ...options
     })
 }

@@ -61,7 +61,8 @@ function AgentflowCanvas({
         setDirty,
         setReactFlowInstance,
         closeEditDialog,
-        registerLocalStateSetters
+        registerLocalStateSetters,
+        registerOnFlowChange
     } = useAgentflowContext()
     const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
@@ -101,6 +102,13 @@ function AgentflowCanvas({
     useEffect(() => {
         registerLocalStateSetters(setLocalNodes, setLocalEdges)
     }, [registerLocalStateSetters, setLocalNodes, setLocalEdges])
+
+    // Register onFlowChange callback so context-level updates (e.g. updateNodeData)
+    // can notify the parent of flow changes
+    useEffect(() => {
+        registerOnFlowChange(onFlowChange)
+        return () => registerOnFlowChange(undefined)
+    }, [registerOnFlowChange, onFlowChange])
 
     // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
@@ -322,6 +330,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
     const {
         apiBaseUrl,
         token,
+        requestInterceptor,
         initialFlow,
         components,
         onFlowChange,
@@ -340,6 +349,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         <AgentflowProvider
             apiBaseUrl={apiBaseUrl}
             token={token}
+            requestInterceptor={requestInterceptor}
             isDarkMode={isDarkMode}
             components={components}
             readOnly={readOnly}

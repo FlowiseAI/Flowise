@@ -1,4 +1,5 @@
 import path from 'path'
+import sanitize from 'sanitize-filename'
 import { getUserHome, isAllowedUploadMimeType, mapMimeTypeToExt } from './utils'
 
 /**
@@ -32,17 +33,28 @@ export const isValidURL = (url: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isPathTraversal = (path: string): boolean => {
-    // Check for common path traversal patterns
+    // PATH_TRAVERSAL_SAFETY defaults to true; must be explicitly set to 'false' to disable
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return false
+    }
+
+    // Normalize %2e → . before checking for .. to catch mixed-encoding bypasses
+    // e.g. .%2e/, %2e./, %2e%2e all become ../
+    if (/\.\./.test(path.replace(/%2e/gi, '.'))) {
+        return true
+    }
+
     const dangerousPatterns = [
-        '..', // Directory traversal
-        '/', // Root directory
-        '\\', // Windows root directory
-        '%2e', // URL encoded .
-        '%2f', // URL encoded /
-        '%5c' // URL encoded \
+        /%2f/i, // URL encoded /
+        /%5c/i, // URL encoded \ (Windows path)
+        /\0/, // Null bytes
+        /%00/i, // URL encoded null byte
+        /^\s*[a-zA-Z]:[/\\]/, // Windows absolute paths (C:\, C:/) with optional leading whitespace
+        /^\\\\[^\\]/, // UNC paths (\\server\)
+        /^\// // Absolute Unix paths (/etc, /data, /root, etc.)
     ]
 
-    return dangerousPatterns.some((pattern) => path.toLowerCase().includes(pattern))
+    return dangerousPatterns.some((pattern) => pattern.test(path))
 }
 
 /**
@@ -51,6 +63,10 @@ export const isPathTraversal = (path: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isUnsafeFilePath = (filePath: string): boolean => {
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return false
+    }
+
     if (!filePath || typeof filePath !== 'string') {
         return true
     }
@@ -190,6 +206,14 @@ const getAllowedVectorStoreBaseDirs = (): string[] => {
  * @throws {Error} If path validation fails or path is outside allowed directories
  */
 export const validateVectorStorePath = (userProvidedPath: string | undefined): string => {
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        if (!userProvidedPath || userProvidedPath.trim() === '') {
+            return path.join(getUserHome(), '.flowise', 'vectorstore')
+        }
+        const bypassPath = userProvidedPath.trim()
+        return path.isAbsolute(bypassPath) ? bypassPath : path.resolve(path.join(getUserHome(), '.flowise', bypassPath))
+    }
+
     // If no path provided, use default secure location
     if (!userProvidedPath || userProvidedPath.trim() === '') {
         return path.join(getUserHome(), '.flowise', 'vectorstore')
@@ -259,4 +283,38 @@ export const validateVectorStorePath = (userProvidedPath: string | undefined): s
     }
 
     return resolvedPath
+}
+
+/**
+ * Sanitize a file name to prevent path traversal attacks.
+ * Strips common storage prefixes, extracts the basename, runs it through
+ * the `sanitize-filename` package, and rejects anything that still looks unsafe.
+ *
+ * @param {string} name The file name to sanitize
+ */
+export const sanitizeFileName = (name: string): string => {
+    if (!name || typeof name !== 'string') {
+        throw new Error('Invalid file name: name is required')
+    }
+    // Strip the FILE-STORAGE:: prefix if present
+    let stripped = name.replace(/^FILE-STORAGE::/, '')
+    // Decode percent-encoded traversal sequences before basename extraction
+    try {
+        stripped = decodeURIComponent(stripped)
+    } catch (_) {
+        // If decoding fails the raw string is fine — basename will still strip dirs
+    }
+    // Normalize backslashes to forward slashes so path.basename works on all
+    // platforms (on Linux, path.basename does not treat \ as a separator)
+    stripped = stripped.replace(/\\/g, '/')
+    // Extract only the base filename — removes all directory components
+    let baseName = path.basename(stripped)
+    // Run through sanitize-filename to strip OS-reserved chars, control chars, etc.
+    baseName = sanitize(baseName)
+    // Remove leading dots to prevent hidden files or relative path references
+    baseName = baseName.replace(/^\.+/, '')
+    if (!baseName || isUnsafeFilePath(baseName)) {
+        throw new Error(`Invalid or unsafe file name: ${name}`)
+    }
+    return baseName
 }
