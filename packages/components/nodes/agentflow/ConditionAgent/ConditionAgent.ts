@@ -2,6 +2,7 @@ import { AnalyticHandler } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import {
+    getNumTokensWithTimeout,
     getPastChatHistoryImageMessages,
     getUniqueImageMessages,
     processMessagesWithImages,
@@ -565,22 +566,6 @@ class ConditionAgent_Agentflow implements INode {
     }
 
     /**
-     * Get token count with timeout to prevent hangs when tiktoken.pages.dev is unreachable.
-     * Falls back to approximate count (~4 chars per token) on timeout or error.
-     */
-    private async getNumTokensWithTimeout(llmNodeInstance: BaseChatModel, text: string, timeoutMs: number = 3000): Promise<number> {
-        try {
-            const tokenCountPromise = llmNodeInstance.getNumTokens(text)
-            const timeoutPromise = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Token counting timed out')), timeoutMs)
-            )
-            return await Promise.race([tokenCountPromise, timeoutPromise])
-        } catch {
-            return Math.ceil(text.length / 4)
-        }
-    }
-
-    /**
      * Handles conversation summary buffer memory type
      */
     private async handleSummaryBuffer(
@@ -594,7 +579,7 @@ class ConditionAgent_Agentflow implements INode {
 
         // Convert past messages to a format suitable for token counting
         const messagesString = pastMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-        const tokenCount = await this.getNumTokensWithTimeout(llmNodeInstance, messagesString)
+        const tokenCount = await getNumTokensWithTimeout(llmNodeInstance, messagesString)
 
         if (tokenCount > maxTokenLimit) {
             // Calculate how many messages to summarize (messages that exceed the token limit)
@@ -609,7 +594,7 @@ class ConditionAgent_Agentflow implements INode {
                     messagesToSummarize.push(poppedMessage)
                     // Recalculate token count for remaining messages
                     const remainingMessagesString = remainingMessages.map((msg: any) => `${msg.role}: ${msg.content}`).join('\n')
-                    currBufferLength = await this.getNumTokensWithTimeout(llmNodeInstance, remainingMessagesString)
+                    currBufferLength = await getNumTokensWithTimeout(llmNodeInstance, remainingMessagesString)
                 }
             }
 

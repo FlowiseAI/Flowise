@@ -1,3 +1,4 @@
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { BaseMessage, MessageContentImageUrl, AIMessageChunk } from '@langchain/core/messages'
 import { getImageUploads } from '../../src/multiModalUtils'
 import { addSingleFileToStorage, getFileFromStorage } from '../../src/storageUtils'
@@ -6,6 +7,20 @@ import { BaseMessageLike } from '@langchain/core/messages'
 import { IFlowState } from './Interface.Agentflow'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
 import fetch from 'node-fetch'
+
+/**
+ * Get token count with timeout to prevent hangs when tiktoken.pages.dev is unreachable.
+ * Falls back to approximate count (~4 chars per token) on timeout or error.
+ */
+export async function getNumTokensWithTimeout(llmNodeInstance: BaseChatModel, text: string, timeoutMs: number = 3000): Promise<number> {
+    try {
+        const tokenCountPromise = llmNodeInstance.getNumTokens(text)
+        const timeoutPromise = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Token counting timed out')), timeoutMs))
+        return await Promise.race([tokenCountPromise, timeoutPromise])
+    } catch {
+        return Math.ceil(text.length / 4)
+    }
+}
 
 export const addImagesToMessages = async (
     options: ICommonObject,
