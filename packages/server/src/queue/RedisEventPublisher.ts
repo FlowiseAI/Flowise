@@ -108,6 +108,22 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         this.safePublish(chatId, JSON.stringify({ chatId, eventType: 'token', data }))
     }
 
+    streamThinkingEvent(chatId: string, data: string, duration?: number) {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    eventType: 'thinking',
+                    data,
+                    duration
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming thinking event:', error)
+        }
+    }
+
     streamSourceDocumentsEvent(chatId: string, data: any) {
         this.safePublish(chatId, JSON.stringify({ chatId, eventType: 'sourceDocuments', data }))
     }

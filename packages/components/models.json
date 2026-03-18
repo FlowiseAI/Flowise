@@ -4,6 +4,20 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-opus-4-6-v1",
+                    "name": "anthropic.claude-opus-4-6-v1",
+                    "description": "Claude 4.6 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "anthropic.claude-sonnet-4-6",
+                    "name": "anthropic.claude-sonnet-4-6",
+                    "description": "Claude 4.6 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
                     "label": "anthropic.claude-opus-4-5-20251101-v1:0",
                     "name": "anthropic.claude-opus-4-5-20251101-v1:0",
                     "description": "Claude 4.5 Opus",
@@ -383,6 +397,30 @@
                     "output_cost": 4.4e-6
                 },
                 {
+                    "label": "o3",
+                    "name": "o3",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "o3-pro",
+                    "name": "o3-pro",
+                    "input_cost": 2e-5,
+                    "output_cost": 8e-5
+                },
+                {
+                    "label": "o4-mini",
+                    "name": "o4-mini",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
+                },
+                {
+                    "label": "codex-mini",
+                    "name": "codex-mini",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 6e-6
+                },
+                {
                     "label": "o1",
                     "name": "o1",
                     "input_cost": 0.000015,
@@ -453,6 +491,18 @@
                     "name": "gpt-4.1-mini",
                     "input_cost": 0.0000004,
                     "output_cost": 0.0000016
+                },
+                {
+                    "label": "gpt-4.1-nano",
+                    "name": "gpt-4.1-nano",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
+                },
+                {
+                    "label": "gpt-5-pro",
+                    "name": "gpt-5-pro",
+                    "input_cost": 2.1e-5,
+                    "output_cost": 1.68e-4
                 },
                 {
                     "label": "gpt-5-chat-latest",
@@ -536,6 +586,20 @@
         {
             "name": "chatAnthropic",
             "models": [
+                {
+                    "label": "claude-opus-4-6",
+                    "name": "claude-opus-4-6",
+                    "description": "Claude 4.6 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "claude-sonnet-4-6",
+                    "name": "claude-sonnet-4-6",
+                    "description": "Claude 4.6 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
                 {
                     "label": "claude-opus-4-5",
                     "name": "claude-opus-4-5",
@@ -666,10 +730,22 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
-                    "label": "gemini-3-pro-preview",
-                    "name": "gemini-3-pro-preview",
+                    "label": "gemini-3.1-pro-preview",
+                    "name": "gemini-3.1-pro-preview",
                     "input_cost": 0.00002,
                     "output_cost": 0.00012
+                },
+                {
+                    "label": "gemini-3.1-flash-lite-preview",
+                    "name": "gemini-3.1-flash-lite-preview",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "gemini-3.1-flash-image-preview",
+                    "name": "gemini-3.1-flash-image-preview",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.000067
                 },
                 {
                     "label": "gemini-3-flash-preview",
@@ -754,10 +830,16 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
-                    "label": "gemini-3-pro-preview",
-                    "name": "gemini-3-pro-preview",
+                    "label": "gemini-3.1-pro-preview",
+                    "name": "gemini-3.1-pro-preview",
                     "input_cost": 0.00002,
                     "output_cost": 0.00012
+                },
+                {
+                    "label": "gemini-3.1-flash-lite-preview",
+                    "name": "gemini-3.1-flash-lite-preview",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.0000015
                 },
                 {
                     "label": "gemini-3-flash-preview",
@@ -830,6 +912,20 @@
                     "name": "gemini-1.0-pro-vision",
                     "input_cost": 1.25e-7,
                     "output_cost": 3.75e-7
+                },
+                {
+                    "label": "claude-opus-4-6",
+                    "name": "claude-opus-4-6",
+                    "description": "Claude 4.6 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "claude-sonnet-4-6",
+                    "name": "claude-sonnet-4-6",
+                    "description": "Claude 4.6 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-opus-4-5@20251101",
@@ -1138,6 +1234,18 @@
             "name": "chatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5.4",
+                    "name": "gpt-5.4",
+                    "input_cost": 0.0000025,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "gpt-5.4-pro",
+                    "name": "gpt-5.4-pro",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00018
+                },
+                {
                     "label": "gpt-5.2",
                     "name": "gpt-5.2",
                     "input_cost": 0.00000175,
@@ -1244,6 +1352,12 @@
                     "name": "gpt-4o-2024-05-13",
                     "input_cost": 2.5e-6,
                     "output_cost": 0.00001
+                },
+                {
+                    "label": "o4-mini (latest)",
+                    "name": "o4-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 },
                 {
                     "label": "o3-mini (latest)",
@@ -1376,12 +1490,6 @@
                     "name": "gpt-3.5-turbo-16k-0613",
                     "input_cost": 0.000003,
                     "output_cost": 0.000004
-                },
-                {
-                    "label": "o4-mini",
-                    "name": "o4-mini",
-                    "input_cost": 1.5e-7,
-                    "output_cost": 6e-7
                 }
             ]
         },

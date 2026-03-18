@@ -17,7 +17,7 @@ class ChatCohere_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatCohere'
+        this.label = 'Cohere'
         this.name = 'chatCohere'
         this.version = 3.0
         this.type = 'ChatCohere'

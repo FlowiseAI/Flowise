@@ -38,13 +38,11 @@ import {
     IMessage,
     FlowiseMemory,
     IFileUpload,
-    getS3Config
+    StorageProviderFactory
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
-import multer from 'multer'
-import multerS3 from 'multer-s3'
-import MulterGoogleCloudStorage from 'multer-cloud-storage'
+
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
@@ -1997,38 +1995,8 @@ export function generateId() {
 }
 
 export const getMulterStorage = () => {
-    const storageType = process.env.STORAGE_TYPE ? process.env.STORAGE_TYPE : 'local'
-
-    if (storageType === 's3') {
-        const s3Client = getS3Config().s3Client
-        const Bucket = getS3Config().Bucket
-
-        const upload = multer({
-            storage: multerS3({
-                s3: s3Client,
-                bucket: Bucket,
-                metadata: function (req, file, cb) {
-                    cb(null, { fieldName: file.fieldname, originalName: file.originalname })
-                },
-                key: function (req, file, cb) {
-                    cb(null, `${generateId()}`)
-                }
-            })
-        })
-        return upload
-    } else if (storageType === 'gcs') {
-        return multer({
-            storage: new MulterGoogleCloudStorage({
-                projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
-                bucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME,
-                keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
-                uniformBucketLevelAccess: Boolean(process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS) ?? true,
-                destination: `uploads/${generateId()}`
-            })
-        })
-    } else {
-        return multer({ dest: getUploadPath() })
-    }
+    const provider = StorageProviderFactory.getProvider()
+    return provider.getMulterStorage()
 }
 
 /**

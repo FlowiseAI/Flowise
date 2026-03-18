@@ -1,7 +1,7 @@
 import { omit } from 'lodash'
 import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { ApifyDatasetLoader } from '@langchain/community/document_loaders/web/apify_dataset'
 import { Document } from '@langchain/core/documents'
 

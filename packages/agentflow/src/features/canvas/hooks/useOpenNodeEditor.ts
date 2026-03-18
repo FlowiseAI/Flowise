@@ -20,11 +20,9 @@ export function useOpenNodeEditor() {
             if (!node) return
 
             // Find the node schema from available nodes (contains InputParam[] definitions)
+            // Fall back to node.data.inputs when the API schema isn't available
             const nodeSchema = availableNodes.find((n) => n.name === node.data.name)
-            if (!nodeSchema) return
-
-            // Get inputParams from schema (API returns 'inputs' property as InputParam[])
-            const inputParams = nodeSchema.inputs || []
+            const inputParams = nodeSchema?.inputs || node.data.inputs || []
 
             // Ensure inputValues object exists for storing user input
             const nodeDataWithInputValues: NodeData = {

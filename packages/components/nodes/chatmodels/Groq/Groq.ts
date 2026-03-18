@@ -17,7 +17,7 @@ class Groq_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'GroqChat'
+        this.label = 'Groq'
         this.name = 'groqChat'
         this.version = 4.0
         this.type = 'GroqChat'
@@ -90,7 +90,7 @@ class Groq_ChatModels implements INode {
         const groqApiKey = getCredentialParam('groqApiKey', credentialData, nodeData)
 
         const obj: ChatGroqInput = {
-            modelName,
+            model: modelName,
             temperature: parseFloat(temperature),
             apiKey: groqApiKey,
             streaming: streaming ?? true

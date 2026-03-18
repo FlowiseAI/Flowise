@@ -1,13 +1,11 @@
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { ChatBedrockConverseInput, ChatBedrockConverse } from '@langchain/aws'
 import { BedrockChat } from './FlowiseAWSChatBedrock'
 
-/**
- * @author Michael Connor <mlconnor@yahoo.com>
- */
 class AWSChatBedrock_ChatModels implements INode {
     label: string
     name: string
@@ -21,7 +19,7 @@ class AWSChatBedrock_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'AWS ChatBedrock'
+        this.label = 'AWS Bedrock'
         this.name = 'awsChatBedrock'
         this.version = 6.1
         this.type = 'AWSChatBedrock'
@@ -80,6 +78,15 @@ class AWSChatBedrock_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Allow Image Uploads',
+                name: 'allowImageUploads',
+                type: 'boolean',
+                description:
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
@@ -98,15 +105,6 @@ class AWSChatBedrock_ChatModels implements INode {
                 optional: true,
                 additionalParams: true,
                 default: 200
-            },
-            {
-                label: 'Allow Image Uploads',
-                name: 'allowImageUploads',
-                type: 'boolean',
-                description:
-                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
-                default: false,
-                optional: true
             },
             {
                 label: 'Latency Optimized',
@@ -163,19 +161,12 @@ class AWSChatBedrock_ChatModels implements INode {
          * Bedrock's credential provider falls back to the AWS SDK to fetch
          * credentials from the running environment.
          * When specified, we override the default provider with configured values.
+         * Supports STS AssumeRole when a Role ARN is configured in the credential.
          * @see https://github.com/aws/aws-sdk-js-v3/blob/main/packages/credential-provider-node/README.md
          */
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        if (credentialData && Object.keys(credentialData).length !== 0) {
-            const credentialApiKey = getCredentialParam('awsKey', credentialData, nodeData)
-            const credentialApiSecret = getCredentialParam('awsSecret', credentialData, nodeData)
-            const credentialApiSession = getCredentialParam('awsSession', credentialData, nodeData)
-
-            obj.credentials = {
-                accessKeyId: credentialApiKey,
-                secretAccessKey: credentialApiSecret,
-                sessionToken: credentialApiSession
-            }
+        const credentialConfig = await getAWSCredentialConfig(nodeData, options, iRegion)
+        if (credentialConfig.credentials) {
+            obj.credentials = credentialConfig.credentials
         }
         if (cache) obj.cache = cache
 

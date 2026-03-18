@@ -1,6 +1,6 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { AgentExecutor } from 'langchain/agents'
-import { LLMChain } from 'langchain/chains'
+import { AgentExecutor } from '@langchain/classic/agents'
+import { LLMChain } from '@langchain/classic/chains'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptTemplate } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
@@ -204,7 +204,7 @@ json.dumps(my_dict)`
                 )
             }
             try {
-                const code = `import pandas as pd\n${pythonCode}`
+                const code = `import pandas as pd\nimport numpy as np\n${pythonCode}`
                 // TODO: get print console output
                 finalResult = await pyodide.runPythonAsync(code)
             } catch (error) {

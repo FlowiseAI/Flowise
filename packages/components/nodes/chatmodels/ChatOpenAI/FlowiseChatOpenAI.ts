@@ -15,17 +15,8 @@ export class ChatOpenAI extends LangchainChatOpenAI implements IVisionChatModal 
         this.configuredMaxToken = fields?.maxTokens
     }
 
-    revertToOriginalModel(): void {
-        this.model = this.configuredModel
-        this.maxTokens = this.configuredMaxToken
-    }
-
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
-    }
-
-    setVisionModel(): void {
-        // pass
     }
 
     addBuiltInTools(builtInTool: Record<string, any>): void {

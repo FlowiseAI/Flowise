@@ -15,6 +15,8 @@ class TogetherAI_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'TogetherAI'
@@ -24,6 +26,8 @@ class TogetherAI_LLMs implements INode {
         this.icon = 'togetherai.png'
         this.category = 'LLMs'
         this.description = 'Wrapper around TogetherAI large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use TogetherAI Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(TogetherAI)]
         this.credential = {
             label: 'Connect Credential',

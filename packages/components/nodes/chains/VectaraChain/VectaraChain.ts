@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import { Document } from '@langchain/core/documents'
 import { VectaraStore } from '@langchain/community/vectorstores/vectara'
-import { VectorDBQAChain } from 'langchain/chains'
+import { VectorDBQAChain } from '@langchain/classic/chains'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { checkInputs, Moderation } from '../../moderation/Moderation'

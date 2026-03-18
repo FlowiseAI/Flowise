@@ -1,25 +1,27 @@
 import { RefObject, useCallback } from 'react'
 import { useReactFlow } from 'reactflow'
 
-import { getUniqueNodeId, getUniqueNodeLabel, initNode } from '@/core'
+import { getUniqueNodeId, getUniqueNodeLabel, initNode, resolveNodeType } from '@/core'
 import type { FlowNode, NodeData } from '@/core/types'
+import { checkNodePlacementConstraints, findParentIterationNode } from '@/core/validation'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 // Offset to center the dropped node on the cursor position.
 // Approximate half of a typical node's width/height.
-const DROP_OFFSET_X = 100
-const DROP_OFFSET_Y = 50
+export const DROP_OFFSET_X = 100
+export const DROP_OFFSET_Y = 50
 
 interface UseDragAndDropProps {
     nodes: FlowNode[]
     setLocalNodes: React.Dispatch<React.SetStateAction<FlowNode[]>>
     reactFlowWrapper: RefObject<HTMLDivElement>
+    onConstraintViolation?: (message: string) => void
 }
 
 /**
  * Hook for handling drag and drop of nodes onto the canvas
  */
-export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper }: UseDragAndDropProps) {
+export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper, onConstraintViolation }: UseDragAndDropProps) {
     const { setDirty } = useAgentflowContext()
     const reactFlowInstance = useReactFlow()
 
@@ -52,14 +54,26 @@ export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper }: UseDr
                     y: event.clientY - reactFlowBounds.top - DROP_OFFSET_Y
                 })
 
+                // Check placement constraints (start node, nested iteration, human input in iteration)
+                const constraintCheck = checkNodePlacementConstraints(nodes, nodeData.name, position)
+                if (!constraintCheck.valid) {
+                    onConstraintViolation?.(constraintCheck.message!)
+                    return
+                }
+
+                // Determine if dropped inside an iteration node
+                const parentNode = findParentIterationNode(nodes, position)
+
                 const newId = getUniqueNodeId(nodeData, nodes)
                 const newLabel = getUniqueNodeLabel(nodeData, nodes)
                 const initializedData = initNode(nodeData, newId, true)
+
                 const newNode: FlowNode = {
                     id: newId,
-                    type: 'agentflowNode',
-                    position,
-                    data: { ...initializedData, label: newLabel }
+                    type: resolveNodeType(nodeData.type ?? ''),
+                    position: parentNode ? { x: position.x - parentNode.position.x, y: position.y - parentNode.position.y } : position,
+                    data: { ...initializedData, label: newLabel },
+                    ...(parentNode ? { parentNode: parentNode.id, extent: 'parent' as const } : {})
                 }
 
                 setLocalNodes((nds) => [...nds, newNode])
@@ -68,7 +82,7 @@ export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper }: UseDr
                 console.error('[Agentflow] Failed to parse dropped node data:', error)
             }
         },
-        [nodes, reactFlowInstance, setLocalNodes, setDirty, reactFlowWrapper]
+        [nodes, reactFlowInstance, setLocalNodes, setDirty, reactFlowWrapper, onConstraintViolation]
     )
 
     return {

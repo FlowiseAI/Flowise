@@ -13,6 +13,8 @@ class Sambanova_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'Sambanova'
@@ -22,6 +24,8 @@ class Sambanova_LLMs implements INode {
         this.icon = 'sambanova.png'
         this.category = 'LLMs'
         this.description = 'Wrapper around Sambanova API for large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use Sambanova Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
         this.credential = {
             label: 'Connect Credential',

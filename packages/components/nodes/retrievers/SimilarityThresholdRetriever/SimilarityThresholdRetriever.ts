@@ -1,5 +1,5 @@
 import { VectorStore } from '@langchain/core/vectorstores'
-import { ScoreThresholdRetriever } from 'langchain/retrievers/score_threshold'
+import { ScoreThresholdRetriever } from '@langchain/classic/retrievers/score_threshold'
 import { INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src'
 
@@ -103,11 +103,11 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
         retriever.filter = vectorStore?.lc_kwargs?.filter ?? (vectorStore as any).filter
 
         if (output === 'retriever') return retriever
-        else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
+        else if (output === 'document') return await retriever._getRelevantDocuments(query ? query : input)
         else if (output === 'text') {
             let finaltext = ''
 
-            const docs = await retriever.getRelevantDocuments(query ? query : input)
+            const docs = await retriever._getRelevantDocuments(query ? query : input)
 
             for (const doc of docs) finaltext += `${doc.pageContent}\n`
 
