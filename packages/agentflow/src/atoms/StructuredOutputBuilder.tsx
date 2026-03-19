@@ -272,7 +272,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                     title='JSON Schema'
                     placeholder='{ "key": { "type": "string", "description": "..." } }'
                     disabled={disabled}
-                    mode='code'
+                    inputType='code'
                     language='json'
                     onConfirm={(val) => {
                         handleFieldChange(expandOpen.index, 'jsonSchema', val)
