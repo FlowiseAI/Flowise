@@ -624,4 +624,30 @@ export class AccountService {
             )
         }
     }
+
+    /**
+     * Sync Stripe customer email when user changes their email (CLOUD only).
+     * Expects exactly one org where the user is org owner; updates that org's Stripe customer email.
+     */
+    public async syncStripeCustomerEmailAfterUserEmailChange(userId: string, newEmail: string) {
+        if (this.identityManager.getPlatformType() !== Platform.CLOUD) return
+
+        let queryRunner: QueryRunner | undefined
+        try {
+            queryRunner = this.dataSource.createQueryRunner()
+            await queryRunner.connect()
+            const orgUsers = await this.organizationUserService.readOrganizationUserByUserId(userId, queryRunner)
+            const ownerOrgLinks = orgUsers.filter((ou) => ou.isOrgOwner)
+            if (ownerOrgLinks.length === 1) {
+                const org = await this.organizationservice.readOrganizationById(ownerOrgLinks[0].organizationId, queryRunner)
+                if (org?.customerId) {
+                    await this.identityManager.updateStripeCustomerEmail(org.customerId, newEmail)
+                }
+            }
+        } catch (error) {
+            logger.warn(`Failed to update Stripe customer email for user ${userId}:`, error)
+        } finally {
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
+        }
+    }
 }

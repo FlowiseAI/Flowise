@@ -4,6 +4,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { User } from '../database/entities/user.entity'
+import { AccountService } from '../services/account.service'
 import { UserErrorMessage, UserService } from '../services/user.service'
 
 export class UserController {
@@ -60,7 +61,10 @@ export class UserController {
             if (currentUser.id !== id) {
                 throw new InternalFlowiseError(StatusCodes.FORBIDDEN, UserErrorMessage.USER_NOT_FOUND)
             }
-            const user = await userService.updateUser(req.body)
+            const accountService = new AccountService()
+            const user = await userService.updateUser(req.body, {
+                onEmailChanged: (userId, newEmail) => accountService.syncStripeCustomerEmailAfterUserEmailChange(userId, newEmail)
+            })
             return res.status(StatusCodes.OK).json(user)
         } catch (error) {
             next(error)

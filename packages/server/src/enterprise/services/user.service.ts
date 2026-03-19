@@ -4,16 +4,12 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import logger from '../../utils/logger'
 import { sanitizeUser } from '../../utils/sanitize.util'
 import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
-import { Platform } from '../../Interface'
 import { User, UserStatus } from '../database/entities/user.entity'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
 import { compareHash, getHash } from '../utils/encryption.util'
 import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
-import { OrganizationService } from './organization.service'
-import { OrganizationUserService } from './organization-user.service'
 
 export const enum UserErrorMessage {
     EXPIRED_TEMP_TOKEN = 'Expired Temporary Token',
@@ -140,7 +136,10 @@ export class UserService {
         return newUser
     }
 
-    public async updateUser(newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string }) {
+    public async updateUser(
+        newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string },
+        options?: { onEmailChanged?: (userId: string, newEmail: string) => Promise<void> }
+    ) {
         let queryRunner: QueryRunner | undefined
         let updatedUser: Partial<User>
         try {
@@ -187,33 +186,15 @@ export class UserService {
             await this.saveUser(updatedUser, queryRunner)
             await queryRunner.commitTransaction()
 
-            // Invalidate all sessions for this user if password was changed
-            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
-                await destroyAllSessionsForUser(updatedUser.id as string)
+            const passwordChanged = !!(newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword)
+            const emailChanged = !!(updatedUser.email && updatedUser.email !== currentEmail)
+
+            if (emailChanged && updatedUser.email && options?.onEmailChanged) {
+                await options.onEmailChanged(updatedUser.id as string, updatedUser.email)
             }
 
-            // Update Stripe customer email when user changes email (CLOUD only; expect exactly one org)
-            const appServer = getRunningExpressApp()
-            if (appServer.identityManager.getPlatformType() === Platform.CLOUD && updatedUser.email && updatedUser.email !== currentEmail) {
-                const organizationUserService = new OrganizationUserService()
-                const organizationService = new OrganizationService()
-                let syncQueryRunner: QueryRunner | undefined
-                try {
-                    syncQueryRunner = this.dataSource.createQueryRunner()
-                    await syncQueryRunner.connect()
-                    const orgUsers = await organizationUserService.readOrganizationUserByUserId(updatedUser.id as string, syncQueryRunner)
-                    const ownerOrgLinks = orgUsers.filter((ou) => ou.isOrgOwner)
-                    if (ownerOrgLinks.length === 1) {
-                        const org = await organizationService.readOrganizationById(ownerOrgLinks[0].organizationId, syncQueryRunner)
-                        if (org?.customerId) {
-                            await appServer.identityManager.updateStripeCustomerEmail(org.customerId, updatedUser.email as string)
-                        }
-                    }
-                } catch (stripeError) {
-                    logger.warn(`Failed to update Stripe customer email for user ${updatedUser.id}:`, stripeError)
-                } finally {
-                    if (syncQueryRunner && !syncQueryRunner.isReleased) await syncQueryRunner.release()
-                }
+            if (passwordChanged || emailChanged) {
+                await destroyAllSessionsForUser(updatedUser.id as string)
             }
         } catch (error) {
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
