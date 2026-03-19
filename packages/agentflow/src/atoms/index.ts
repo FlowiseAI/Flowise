@@ -10,4 +10,5 @@ export { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler 
 // from ./RichTextEditor would defeat code-splitting since barrel imports are resolved eagerly.
 export type { RichTextEditorProps } from './RichTextEditor'
 export { RichTextEditor } from './RichTextEditor.lazy'
+export { ScenariosInput, type ScenariosInputProps } from './ScenariosInput'
 export { StructuredOutputBuilder, type StructuredOutputBuilderProps, type StructuredOutputEntry } from './StructuredOutputBuilder'

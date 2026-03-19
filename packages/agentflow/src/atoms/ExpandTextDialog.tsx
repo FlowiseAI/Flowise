@@ -10,8 +10,9 @@ export interface ExpandTextDialogProps {
     title?: string
     placeholder?: string
     disabled?: boolean
-    /** Editor mode — 'text' renders a plain TextField, 'richtext' renders the TipTap RichTextEditor. */
-    mode?: 'text' | 'richtext'
+    /** The input param type — determines which editor to render. 'string' uses the TipTap RichTextEditor; others fall back to a plain TextField. */
+    // TODO: handle 'code' type separately with a dedicated CodeMirror editor
+    inputType?: string
     onConfirm: (value: string) => void
     onCancel: () => void
 }
@@ -26,7 +27,7 @@ export function ExpandTextDialog({
     title,
     placeholder,
     disabled = false,
-    mode = 'text',
+    inputType = 'string',
     onConfirm,
     onCancel
 }: ExpandTextDialogProps) {
@@ -51,7 +52,7 @@ export function ExpandTextDialog({
                         {title}
                     </Typography>
                 )}
-                {mode === 'richtext' ? (
+                {inputType === 'string' ? (
                     <Box
                         sx={{
                             borderRadius: '12px',

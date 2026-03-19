@@ -14,8 +14,31 @@ jest.mock('reactflow', () => ({
     useUpdateNodeInternals: () => jest.fn()
 }))
 
+jest.mock('./RichTextEditor.lazy', () => ({
+    RichTextEditor: ({
+        value,
+        onChange,
+        placeholder,
+        disabled
+    }: {
+        value: string
+        onChange: (v: string) => void
+        placeholder?: string
+        disabled?: boolean
+    }) => (
+        <textarea
+            data-testid='rich-text-editor'
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder || ''}
+            disabled={disabled}
+        />
+    )
+}))
+
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-expand' />,
+    IconInfoCircle: () => <span data-testid='icon-info-circle' />,
     IconVariable: () => <span data-testid='icon-variable' />,
     IconRefresh: () => <span data-testid='icon-refresh' />
 }))
@@ -77,7 +100,7 @@ describe('NodeInputHandler – static types', () => {
 })
 
 describe('NodeInputHandler – expand dialog', () => {
-    it('should open expand dialog when expand icon is clicked on multiline string field', () => {
+    it('should render richtext inline and in expand dialog for multiline string field', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'string', rows: 4 })}
@@ -87,13 +110,19 @@ describe('NodeInputHandler – expand dialog', () => {
             />
         )
 
-        fireEvent.click(screen.getByTitle('Expand'))
+        // Inline editor is a RichTextEditor
+        const editors = screen.getAllByTestId('rich-text-editor')
+        expect(editors[0]).toHaveValue('Some long text')
 
-        const expandInput = screen.getByTestId('expand-content-input').querySelector('textarea')!
-        expect(expandInput).toHaveValue('Some long text')
+        // Expand opens a second RichTextEditor (not a plain textarea)
+        fireEvent.click(screen.getByTitle('Expand'))
+        const expandedEditors = screen.getAllByTestId('rich-text-editor')
+        expect(expandedEditors).toHaveLength(2)
+        expect(expandedEditors[1]).toHaveValue('Some long text')
+        expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
     })
 
-    it('should save expanded content via onDataChange on confirm', () => {
+    it('should save expanded richtext content via onDataChange on confirm', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'string', rows: 4 })}
@@ -105,8 +134,9 @@ describe('NodeInputHandler – expand dialog', () => {
 
         fireEvent.click(screen.getByTitle('Expand'))
 
-        const expandTextarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
-        fireEvent.change(expandTextarea, { target: { value: 'Expanded text' } })
+        // Target the expand dialog's editor (second instance)
+        const editors = screen.getAllByTestId('rich-text-editor')
+        fireEvent.change(editors[1], { target: { value: 'Expanded text' } })
         fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
         expect(mockOnDataChange).toHaveBeenCalledWith({

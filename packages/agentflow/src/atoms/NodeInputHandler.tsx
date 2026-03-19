@@ -5,12 +5,13 @@ import { Box, FormControlLabel, IconButton, MenuItem, Select, Switch, TextField,
 import Autocomplete from '@mui/material/Autocomplete'
 import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconInfoCircle, IconVariable } from '@tabler/icons-react'
 
 import type { InputAnchor, InputParam, NodeData } from '@/core/types'
 
 import ArrayInput from './ArrayInput'
 import { ExpandTextDialog } from './ExpandTextDialog'
+import { RichTextEditor } from './RichTextEditor.lazy'
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -142,6 +143,28 @@ export function NodeInputHandler({
 
         switch (inputParam.type) {
             case 'string':
+                if (isExpandable) {
+                    return (
+                        <RichTextEditor
+                            value={typeof value === 'string' ? value : ''}
+                            onChange={(html) => handleDataChange(html)}
+                            placeholder={inputParam.placeholder}
+                            disabled={disabled}
+                            rows={inputParam.rows || 4}
+                        />
+                    )
+                }
+                return (
+                    <TextField
+                        fullWidth
+                        size='small'
+                        disabled={disabled}
+                        placeholder={inputParam.placeholder}
+                        value={value}
+                        onChange={(e) => handleDataChange(e.target.value)}
+                        sx={{ mt: 1 }}
+                    />
+                )
             case 'password':
             case 'number':
                 return (
@@ -149,9 +172,7 @@ export function NodeInputHandler({
                         fullWidth
                         size='small'
                         disabled={disabled}
-                        type={inputParam.type === 'password' ? 'password' : inputParam.type === 'number' ? 'number' : 'text'}
-                        multiline={!!inputParam.rows && inputParam.rows > 1}
-                        rows={inputParam.rows || undefined}
+                        type={inputParam.type === 'password' ? 'password' : 'number'}
                         placeholder={inputParam.placeholder}
                         value={value}
                         onChange={(e) => handleDataChange(e.target.value)}
@@ -350,6 +371,13 @@ export function NodeInputHandler({
                             <Typography>
                                 {inputParam?.label}
                                 {!inputParam?.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                                {inputParam?.description && (
+                                    <Tooltip title={inputParam.description} placement='top'>
+                                        <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: 6, cursor: 'pointer' }}>
+                                            <IconInfoCircle size={16} style={{ opacity: 0.6 }} />
+                                        </span>
+                                    </Tooltip>
+                                )}
                             </Typography>
                             <div style={{ flexGrow: 1 }} />
                             {inputParam?.acceptVariable && inputParam?.type === 'string' && (
@@ -386,6 +414,7 @@ export function NodeInputHandler({
                     title={inputParam?.label}
                     placeholder={inputParam?.placeholder}
                     disabled={disabled}
+                    inputType={inputParam?.type}
                     onConfirm={handleExpandConfirm}
                     onCancel={() => setExpandOpen(false)}
                 />

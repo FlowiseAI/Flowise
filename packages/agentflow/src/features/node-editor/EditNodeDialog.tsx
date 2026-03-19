@@ -5,7 +5,7 @@ import { Avatar, Box, ButtonBase, Dialog, DialogContent, Stack, TextField, Typog
 import { useTheme } from '@mui/material/styles'
 import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-react'
 
-import { ConditionBuilder, MessagesInput, NodeInputHandler, StructuredOutputBuilder } from '@/atoms'
+import { ConditionBuilder, MessagesInput, NodeInputHandler, ScenariosInput, StructuredOutputBuilder } from '@/atoms'
 import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
 import { buildDynamicOutputAnchors, evaluateFieldVisibility } from '@/core/utils'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
@@ -54,7 +54,11 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
     const [arrayItemParameters, setArrayItemParameters] = useState<Record<string, InputParam[][]>>({})
 
     const isConditionNode = data?.name === 'conditionAgentflow'
-    const { cleanupOrphanedEdges } = useDynamicOutputPorts(data?.id ?? '', isConditionNode)
+    const isConditionAgentNode = data?.name === 'conditionAgentAgentflow'
+    const hasDynamicPorts = isConditionNode || isConditionAgentNode
+    // conditionAgentflow has an Else port; conditionAgentAgentflow does not
+    const includeElse = !isConditionAgentNode
+    const { cleanupOrphanedEdges } = useDynamicOutputPorts(data?.id ?? '', hasDynamicPorts, includeElse)
 
     // Ref to read current data
     const dataRef = useRef(data)
@@ -105,13 +109,23 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
         setInputParams(updatedParams)
         setArrayItemParameters(computeArrayItemParameters(inputParams, updatedInputValues))
 
-        // When conditions array changes, merge inputValues and outputAnchors
-        // into a single updateNodeData call to avoid stale-closure overwrites.
+        // When conditions/scenarios array changes, merge inputValues, outputAnchors,
+        // and cleaned edges into a single updateNodeData call so that onFlowChange
+        // fires once with the complete updated state.
         if (isConditionNode && inputParam.name === 'conditions' && Array.isArray(newValue)) {
             const outputAnchors = buildDynamicOutputAnchors(data.id, newValue.length, 'Condition', true)
-            updateNodeData(data.id, { inputValues: updatedInputValues, outputAnchors })
+            const cleanedEdges = cleanupOrphanedEdges(newValue.length)
+            updateNodeData(data.id, { inputValues: updatedInputValues, outputAnchors }, cleanedEdges)
             setData({ ...data, inputValues: updatedInputValues, outputAnchors })
-            cleanupOrphanedEdges(newValue.length)
+            return
+        }
+
+        if (isConditionAgentNode && inputParam.name === 'conditionAgentScenarios' && Array.isArray(newValue)) {
+            // ConditionAgent outputs match scenario count exactly (no separate Else port)
+            const outputAnchors = buildDynamicOutputAnchors(data.id, newValue.length, 'Scenario', false)
+            const cleanedEdges = cleanupOrphanedEdges(newValue.length)
+            updateNodeData(data.id, { inputValues: updatedInputValues, outputAnchors }, cleanedEdges)
+            setData({ ...data, inputValues: updatedInputValues, outputAnchors })
             return
         }
 
@@ -131,6 +145,17 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             if (dialogProps.data.label) setNodeName(dialogProps.data.label)
         }
     }, [dialogProps])
+
+    // Reset state when dialog closes so the next node opens with clean state
+    useEffect(() => {
+        if (!show) {
+            setData(null)
+            setInputParams([])
+            setArrayItemParameters({})
+            setNodeName('')
+            setEditingNodeName(false)
+        }
+    }, [show])
 
     if (!show) return null
 
@@ -298,6 +323,19 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                         disabled={dialogProps.disabled}
                                         onDataChange={onCustomDataChange}
                                         itemParameters={arrayItemParameters[inputParam.name]}
+                                    />
+                                )
+                            }
+
+                            // Render ScenariosInput for condition agent's scenarios array
+                            if (isConditionAgentNode && inputParam.type === 'array' && inputParam.name === 'conditionAgentScenarios') {
+                                return (
+                                    <ScenariosInput
+                                        key={index}
+                                        inputParam={inputParam}
+                                        data={data}
+                                        disabled={dialogProps.disabled}
+                                        onDataChange={onCustomDataChange}
                                     />
                                 )
                             }

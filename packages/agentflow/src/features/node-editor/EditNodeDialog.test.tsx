@@ -33,7 +33,7 @@ jest.mock('./useDynamicOutputPorts', () => ({
 
 jest.mock('@/core/utils', () => ({
     ...jest.requireActual('@/core/utils'),
-    buildDynamicOutputAnchors: (nodeId: string, count: number, labelPrefix: string) => {
+    buildDynamicOutputAnchors: (nodeId: string, count: number, labelPrefix: string, includeElse: boolean = true) => {
         const anchors = []
         for (let i = 0; i < count; i++) {
             anchors.push({
@@ -44,7 +44,9 @@ jest.mock('@/core/utils', () => ({
                 description: `${labelPrefix} ${i}`
             })
         }
-        anchors.push({ id: `${nodeId}-output-${count}`, name: `${count}`, label: `${count}`, type: labelPrefix, description: 'Else' })
+        if (includeElse) {
+            anchors.push({ id: `${nodeId}-output-${count}`, name: `${count}`, label: `${count}`, type: labelPrefix, description: 'Else' })
+        }
         return anchors
     }
 }))
@@ -187,6 +189,32 @@ jest.mock('@/atoms', () => ({
                     }}
                 >
                     Add Condition
+                </button>
+            </div>
+        )
+    },
+    ScenariosInput: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        return (
+            <div data-testid='scenarios-input'>
+                <button
+                    data-testid='add-scenario'
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentArray, { scenario: '' }]
+                        })
+                    }}
+                >
+                    Add Scenario
                 </button>
             </div>
         )
@@ -666,17 +694,95 @@ describe('EditNodeDialog', () => {
 
             fireEvent.click(screen.getByTestId('add-condition'))
 
-            // Should merge inputValues and outputAnchors into a single updateNodeData call
-            expect(mockUpdateNodeData).toHaveBeenCalledWith('conditionAgentflow_0', {
-                inputValues: expect.objectContaining({ conditions: expect.any(Array) }),
-                outputAnchors: expect.arrayContaining([
-                    expect.objectContaining({ description: 'Condition 0' }),
-                    expect.objectContaining({ description: 'Condition 1' }),
-                    expect.objectContaining({ description: 'Else' })
-                ])
-            })
-            // Should call cleanupOrphanedEdges with the new count
+            // Should merge inputValues, outputAnchors, and cleaned edges into a single updateNodeData call
             expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
+            expect(mockUpdateNodeData).toHaveBeenCalledWith(
+                'conditionAgentflow_0',
+                {
+                    inputValues: expect.objectContaining({ conditions: expect.any(Array) }),
+                    outputAnchors: expect.arrayContaining([
+                        expect.objectContaining({ description: 'Condition 0' }),
+                        expect.objectContaining({ description: 'Condition 1' }),
+                        expect.objectContaining({ description: 'Else' })
+                    ])
+                },
+                undefined // cleanupOrphanedEdges returns undefined when no edges removed
+            )
+        })
+
+        it('should render ScenariosInput for conditionAgentAgentflow node', () => {
+            const scenarioParams: InputParam[] = [
+                {
+                    name: 'conditionAgentScenarios',
+                    label: 'Scenarios',
+                    type: 'array',
+                    array: [{ name: 'scenario', label: 'Scenario', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+
+            const scenarioData: NodeData = {
+                id: 'conditionAgentAgentflow_0',
+                name: 'conditionAgentAgentflow',
+                label: 'Condition Agent',
+                inputValues: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: scenarioParams, data: scenarioData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('scenarios-input')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the scenarios param
+            expect(screen.queryByTestId('input-handler-conditionAgentScenarios')).not.toBeInTheDocument()
+        })
+
+        it('should merge outputAnchors into a single updateNodeData call when scenarios change', () => {
+            const scenarioParams: InputParam[] = [
+                {
+                    name: 'conditionAgentScenarios',
+                    label: 'Scenarios',
+                    type: 'array',
+                    array: [{ name: 'scenario', label: 'Scenario', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+
+            const scenarioData: NodeData = {
+                id: 'conditionAgentAgentflow_0',
+                name: 'conditionAgentAgentflow',
+                label: 'Condition Agent',
+                inputValues: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: scenarioParams, data: scenarioData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-scenario'))
+
+            // Adding to 1 item → 2 items → 2 anchors (Scenario 0, Scenario 1) — no Else port
+            expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
+            expect(mockUpdateNodeData).toHaveBeenCalledWith(
+                'conditionAgentAgentflow_0',
+                {
+                    inputValues: expect.objectContaining({ conditionAgentScenarios: expect.any(Array) }),
+                    outputAnchors: expect.arrayContaining([
+                        expect.objectContaining({ description: 'Scenario 0' }),
+                        expect.objectContaining({ description: 'Scenario 1' })
+                    ])
+                },
+                undefined // cleanupOrphanedEdges returns undefined when no edges removed
+            )
+            // Verify no Else anchor
+            const call = mockUpdateNodeData.mock.calls[0]
+            expect(call[1].outputAnchors).toHaveLength(2)
         })
 
         it('should render MessagesInput for agentMessages param on Agent node', () => {
