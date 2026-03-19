@@ -1207,8 +1207,8 @@
                     "description": "Largest model for demanding tasks"
                 },
                 {
-                    "label": "zai-glm-4.6",
-                    "name": "zai-glm-4.6",
+                    "label": "zai-glm-4.7",
+                    "name": "zai-glm-4.7",
                     "description": "Advanced reasoning and complex problem-solving"
                 }
             ]
