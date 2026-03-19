@@ -171,7 +171,12 @@ export function NodeInputHandler({
         [inputParam, data.inputValues, handleDataChange]
     )
 
-    const showVariableButton = !!(inputParam?.acceptVariable && variableItems && variableItems.length > 0)
+    const showVariableButton = !!(
+        inputParam?.acceptVariable &&
+        variableItems &&
+        variableItems.length > 0 &&
+        ['string', 'password', 'code'].includes(inputParam?.type ?? '')
+    )
 
     const renderInput = () => {
         if (!inputParam) return null

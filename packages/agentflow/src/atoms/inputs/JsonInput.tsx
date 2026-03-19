@@ -108,7 +108,6 @@ export function JsonInput({ value, onChange, disabled = false, variableItems }: 
                         role='button'
                         aria-label='JSON Editor'
                         tabIndex={0}
-                        key={JSON.stringify(myValue)}
                     >
                         <ReactJson
                             theme={jsonTheme}
