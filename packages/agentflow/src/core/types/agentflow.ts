@@ -41,7 +41,7 @@ export interface AgentflowProps {
     /** Initial flow data to render */
     initialFlow?: FlowData
 
-    /** Flow ID for loading existing flow */
+    /** Flow ID (placeholder — not yet implemented; reserved for future use such as executing or prediction API) */
     flowId?: string
 
     /** Array of allowed node component names to show in palette */

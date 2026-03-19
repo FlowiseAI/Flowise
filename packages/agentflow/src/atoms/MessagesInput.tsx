@@ -232,7 +232,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                     title='Content'
                     placeholder='Message content (supports {{ variable }} syntax)'
                     disabled={disabled}
-                    mode='richtext'
+                    inputType='string'
                     onConfirm={handleExpandConfirm}
                     onCancel={handleExpandCancel}
                 />
