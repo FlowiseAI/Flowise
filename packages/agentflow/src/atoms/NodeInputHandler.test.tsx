@@ -145,6 +145,24 @@ describe('NodeInputHandler – expand dialog', () => {
         })
     })
 
+    it('should reflect updated data prop in expand dialog after rerender', () => {
+        const param = makeParam({ type: 'string', rows: 4 })
+        const initialData = { ...baseNodeData, inputValues: { myField: '' } }
+
+        const { rerender } = render(
+            <NodeInputHandler inputParam={param} data={initialData} isAdditionalParams onDataChange={mockOnDataChange} />
+        )
+
+        // Simulate parent updating data after user types in inline editor
+        const updatedData = { ...baseNodeData, inputValues: { myField: '<p>Updated instructions</p>' } }
+        rerender(<NodeInputHandler inputParam={param} data={updatedData} isAdditionalParams onDataChange={mockOnDataChange} />)
+
+        // Open expand dialog — it should show the updated value, not the initial empty value
+        fireEvent.click(screen.getByTitle('Expand'))
+        const editors = screen.getAllByTestId('rich-text-editor')
+        expect(editors[1]).toHaveValue('<p>Updated instructions</p>')
+    })
+
     it('should not show expand icon for non-multiline string fields', () => {
         render(
             <NodeInputHandler

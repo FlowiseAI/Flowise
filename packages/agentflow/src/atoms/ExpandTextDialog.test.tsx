@@ -82,6 +82,41 @@ describe('ExpandTextDialog', () => {
         expect(textarea).toHaveAttribute('placeholder', 'Type here...')
     })
 
+    it('should show current value when opened after value changed while closed', () => {
+        const { rerender } = render(
+            <ExpandTextDialog open={false} value='' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
+
+        // Simulate value changing while dialog is closed (user typing in inline editor)
+        rerender(<ExpandTextDialog open={false} value='Updated text' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        // Open the dialog — it should show the updated value, not the initial empty value
+        rerender(<ExpandTextDialog open={true} value='Updated text' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(textarea).toHaveValue('Updated text')
+    })
+
+    it('should reset to current value when re-opened after cancel', () => {
+        const { rerender } = render(
+            <ExpandTextDialog open={true} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
+
+        // User types in the dialog then cancels
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        fireEvent.change(textarea, { target: { value: 'Unsaved edits' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+        // Close the dialog
+        rerender(<ExpandTextDialog open={false} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        // Re-open — should show the original value, not the unsaved edits
+        rerender(<ExpandTextDialog open={true} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        const textarea2 = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(textarea2).toHaveValue('Original')
+    })
+
     // --- Rich text mode ---
 
     describe('inputType="string" (richtext)', () => {

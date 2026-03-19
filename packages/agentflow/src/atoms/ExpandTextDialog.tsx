@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { Box, Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material'
 
@@ -32,13 +32,17 @@ export function ExpandTextDialog({
     onCancel
 }: ExpandTextDialogProps) {
     const [localValue, setLocalValue] = useState(value)
+    const [prevOpen, setPrevOpen] = useState(open)
 
-    // Sync local state when the value prop changes while dialog is open
-    useEffect(() => {
-        if (open) {
-            setLocalValue(value)
-        }
-    }, [open, value])
+    // Sync localValue synchronously when the dialog opens so the TipTap editor
+    // initialises with the correct content (useEffect would leave a one-render
+    // gap where localValue is stale, causing the editor to show empty/old text).
+    if (open && !prevOpen) {
+        setLocalValue(value)
+        setPrevOpen(true)
+    } else if (!open && prevOpen) {
+        setPrevOpen(false)
+    }
 
     const handleConfirm = useCallback(() => {
         onConfirm(localValue)
