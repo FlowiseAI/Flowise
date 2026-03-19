@@ -19,32 +19,34 @@ beforeEach(() => {
 
 describe('ExpandTextDialog', () => {
     it('should not render content when closed', () => {
-        render(<ExpandTextDialog open={false} value='' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        render(<ExpandTextDialog open={false} value='' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
     })
 
     it('should render with the provided value when open', () => {
-        render(<ExpandTextDialog open={true} value='Hello world' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        render(<ExpandTextDialog open={true} value='Hello world' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
         expect(textarea).toHaveValue('Hello world')
     })
 
     it('should render title when provided', () => {
-        render(<ExpandTextDialog open={true} value='' title='Content' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        render(
+            <ExpandTextDialog open={true} value='' title='Content' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
 
         expect(screen.getByText('Content')).toBeInTheDocument()
     })
 
     it('should not render title when not provided', () => {
-        render(<ExpandTextDialog open={true} value='' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        render(<ExpandTextDialog open={true} value='' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         expect(screen.queryByRole('heading')).not.toBeInTheDocument()
     })
 
     it('should call onConfirm with edited value when Save is clicked', () => {
-        render(<ExpandTextDialog open={true} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        render(<ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
         fireEvent.change(textarea, { target: { value: 'Updated' } })
@@ -54,7 +56,7 @@ describe('ExpandTextDialog', () => {
     })
 
     it('should call onCancel when Cancel is clicked', () => {
-        render(<ExpandTextDialog open={true} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        render(<ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 
@@ -64,7 +66,14 @@ describe('ExpandTextDialog', () => {
 
     it('should disable textarea and Save button when disabled', () => {
         render(
-            <ExpandTextDialog open={true} value='test' inputType='code' disabled={true} onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            <ExpandTextDialog
+                open={true}
+                value='test'
+                inputType='number'
+                disabled={true}
+                onConfirm={mockOnConfirm}
+                onCancel={mockOnCancel}
+            />
         )
 
         const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
@@ -77,7 +86,7 @@ describe('ExpandTextDialog', () => {
             <ExpandTextDialog
                 open={true}
                 value=''
-                inputType='code'
+                inputType='number'
                 placeholder='Type here...'
                 onConfirm={mockOnConfirm}
                 onCancel={mockOnCancel}
@@ -90,14 +99,16 @@ describe('ExpandTextDialog', () => {
 
     it('should show current value when opened after value changed while closed', () => {
         const { rerender } = render(
-            <ExpandTextDialog open={false} value='' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            <ExpandTextDialog open={false} value='' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
         )
 
         // Simulate value changing while dialog is closed (user typing in inline editor)
-        rerender(<ExpandTextDialog open={false} value='Updated text' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        rerender(
+            <ExpandTextDialog open={false} value='Updated text' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
 
         // Open the dialog — it should show the updated value, not the initial empty value
-        rerender(<ExpandTextDialog open={true} value='Updated text' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        rerender(<ExpandTextDialog open={true} value='Updated text' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
         expect(textarea).toHaveValue('Updated text')
@@ -105,7 +116,7 @@ describe('ExpandTextDialog', () => {
 
     it('should reset to current value when re-opened after cancel', () => {
         const { rerender } = render(
-            <ExpandTextDialog open={true} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            <ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
         )
 
         // User types in the dialog then cancels
@@ -114,13 +125,56 @@ describe('ExpandTextDialog', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 
         // Close the dialog
-        rerender(<ExpandTextDialog open={false} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        rerender(<ExpandTextDialog open={false} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         // Re-open — should show the original value, not the unsaved edits
-        rerender(<ExpandTextDialog open={true} value='Original' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        rerender(<ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
         const textarea2 = screen.getByTestId('expand-content-input').querySelector('textarea')!
         expect(textarea2).toHaveValue('Original')
+    })
+
+    // --- Code mode ---
+
+    describe('inputType="code"', () => {
+        it('should render CodeInput instead of TextField', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='const x = 1'
+                    inputType='code'
+                    language='javascript'
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByTestId('code-input')).toBeInTheDocument()
+            expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+        })
+
+        it('should pass language prop to CodeInput', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='{}'
+                    inputType='code'
+                    language='json'
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByTestId('code-input')).toHaveAttribute('data-language', 'json')
+        })
+
+        it('should show Save and Cancel buttons in code mode', () => {
+            render(<ExpandTextDialog open={true} value='' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+        })
     })
 
     // --- Rich text mode ---
@@ -139,11 +193,12 @@ describe('ExpandTextDialog', () => {
             expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
         })
 
-        it('should render plain TextField for non-string input types', () => {
-            render(<ExpandTextDialog open={true} value='Hello' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+        it('should render plain TextField for non-string, non-code input types', () => {
+            render(<ExpandTextDialog open={true} value='Hello' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
 
             expect(screen.getByTestId('expand-content-input')).toBeInTheDocument()
             expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('code-input')).not.toBeInTheDocument()
         })
 
         it('should still show Save and Cancel buttons in richtext mode', () => {
