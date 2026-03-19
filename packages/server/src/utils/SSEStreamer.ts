@@ -11,15 +11,19 @@ type Client = {
 }
 
 export class SSEStreamer implements IServerSideEventStreamer {
-    clients: { [id: string]: Client } = {}
+    private readonly clients: Map<string, Client> = new Map()
     private heartbeatInterval: NodeJS.Timeout | null = null
 
+    hasClient(chatId: string): boolean {
+        return this.clients.has(chatId)
+    }
+
     addExternalClient(chatId: string, res: Response) {
-        this.clients[chatId] = { clientType: 'EXTERNAL', response: res, started: false }
+        this.clients.set(chatId, { clientType: 'EXTERNAL', response: res, started: false })
     }
 
     addClient(chatId: string, res: Response) {
-        this.clients[chatId] = { clientType: 'INTERNAL', response: res, started: false }
+        this.clients.set(chatId, { clientType: 'INTERNAL', response: res, started: false })
     }
 
     /**
@@ -27,19 +31,19 @@ export class SSEStreamer implements IServerSideEventStreamer {
      * the client is automatically removed to prevent further writes to a dead connection.
      */
     private safeWrite(chatId: string, data: string): boolean {
-        const client = this.clients[chatId]
+        const client = this.clients.get(chatId)
         if (!client) return false
         try {
             client.response.write(data)
             return true
         } catch {
-            delete this.clients[chatId]
+            this.clients.delete(chatId)
             return false
         }
     }
 
     removeClient(chatId: string) {
-        const client = this.clients[chatId]
+        const client = this.clients.get(chatId)
         if (client) {
             try {
                 const clientResponse = {
@@ -51,7 +55,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
             } catch {
                 // Client already disconnected, ignore write errors
             } finally {
-                delete this.clients[chatId]
+                this.clients.delete(chatId)
             }
         }
     }
@@ -65,7 +69,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamStartEvent(chatId: string, data: string) {
-        const client = this.clients[chatId]
+        const client = this.clients.get(chatId)
         // prevent multiple start events being streamed to the client
         if (client && !client.started) {
             const clientResponse = {
@@ -87,7 +91,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamThinkingEvent(chatId: string, data: string, duration?: number) {
-        const client = this.clients[chatId]
+        const client = this.clients.get(chatId)
         if (client) {
             const clientResponse = {
                 event: 'thinking',
@@ -268,7 +272,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamTTSAbortEvent(chatId: string, chatMessageId: string): void {
-        const client = this.clients[chatId]
+        const client = this.clients.get(chatId)
         if (client) {
             try {
                 const clientResponse = {
@@ -280,15 +284,14 @@ export class SSEStreamer implements IServerSideEventStreamer {
             } catch {
                 // Client already disconnected, ignore write errors
             } finally {
-                delete this.clients[chatId]
+                this.clients.delete(chatId)
             }
         }
     }
 
     startHeartbeat(intervalMs: number = 30_000) {
         this.heartbeatInterval = setInterval(() => {
-            const clientIds = Object.keys(this.clients)
-            for (const chatId of clientIds) {
+            for (const chatId of this.clients.keys()) {
                 // SSE comment line — ignored by clients but keeps the connection alive through ALB/proxies
                 this.safeWrite(chatId, ':heartbeat\n\n')
             }

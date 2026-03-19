@@ -125,7 +125,7 @@ export class RedisEventSubscriber {
 
     startPeriodicCleanup(intervalMs: number = 60_000) {
         this.cleanupInterval = setInterval(() => {
-            const staleChannels = Array.from(this.subscribedChannels).filter((channel) => !this.sseStreamer.clients[channel])
+            const staleChannels = Array.from(this.subscribedChannels).filter((channel) => !this.sseStreamer.hasClient(channel))
             if (staleChannels.length > 0) {
                 for (const channel of staleChannels) {
                     this.unsubscribe(channel)
