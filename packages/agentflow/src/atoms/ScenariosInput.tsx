@@ -18,7 +18,8 @@ export interface ScenariosInputProps {
 
 /**
  * Array input for ConditionAgent scenario strings.
- * Each entry creates a dynamic output anchor (Scenario 0, Scenario 1, ... Else).
+ * Each entry creates a dynamic output anchor (e.g., Scenario 0, Scenario 1).
+ * The UI also includes a visual indicator for the implicit "Else" case, which executes when no scenarios match.
  * Simpler than ConditionBuilder — each item has a single string field.
  */
 export function ScenariosInput({ inputParam, data, disabled = false, onDataChange }: ScenariosInputProps) {

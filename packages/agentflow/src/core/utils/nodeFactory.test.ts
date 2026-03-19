@@ -298,8 +298,8 @@ describe('initNode', () => {
                 }
             ],
             outputs: [
-                { label: '0', name: '0', description: 'Condition 0' },
-                { label: '1', name: '1', description: 'Else' }
+                { label: '0', name: '0', type: 'output' },
+                { label: '1', name: '1', type: 'output' }
             ]
         } as Partial<NodeData>)
 
