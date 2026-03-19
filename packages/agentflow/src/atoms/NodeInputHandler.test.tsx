@@ -316,19 +316,19 @@ describe('NodeInputHandler – loadConfig rendering', () => {
 })
 
 // Mock CodeInput and JsonInput to avoid pulling in heavy dependencies
-jest.mock('./inputs/CodeInput', () => ({
+jest.mock('./CodeInput', () => ({
     CodeInput: ({ value, language, disabled }: { value: string; language?: string; disabled?: boolean }) => (
         <textarea data-testid='code-input' data-language={language} value={value} readOnly={disabled} onChange={() => {}} />
     )
 }))
 
-jest.mock('./inputs/JsonInput', () => ({
+jest.mock('./JsonInput', () => ({
     JsonInput: ({ value, disabled }: { value: string; disabled?: boolean }) => (
         <div data-testid='json-input' data-value={value} data-disabled={disabled} />
     )
 }))
 
-jest.mock('./inputs/SelectVariable', () => ({
+jest.mock('./SelectVariable', () => ({
     SelectVariable: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
         <div data-testid='select-variable'>
             {items.map((item, i) => (

@@ -14,7 +14,7 @@ jest.mock('@tabler/icons-react', () => ({
     IconTrash: () => <span data-testid='icon-trash' />
 }))
 
-jest.mock('./inputs/CodeInput', () => ({
+jest.mock('./CodeInput', () => ({
     CodeInput: ({ value, onChange, language }: { value: string; onChange: (v: string) => void; language?: string }) => (
         <textarea data-testid='code-input' data-language={language} value={value} onChange={(e) => onChange(e.target.value)} />
     )

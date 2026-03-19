@@ -7,7 +7,7 @@ import { IconArrowsMaximize, IconInfoCircle, IconPlus, IconTrash } from '@tabler
 import { ExpandTextDialog } from '@/atoms'
 import type { InputParam, NodeData } from '@/core/types'
 
-import { CodeInput } from './inputs/CodeInput'
+import { CodeInput } from './CodeInput'
 import { useStableKeys } from './useStableKeys'
 
 const OUTPUT_TYPES = [

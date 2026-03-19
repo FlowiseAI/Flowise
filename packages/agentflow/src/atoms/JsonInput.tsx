@@ -51,8 +51,12 @@ export function JsonInput({ value, onChange, disabled = false, variableItems }: 
     }, [value])
 
     // ── Per-key variable popover state ───────────────────────────────────────
-    const [mouseUpKey, setMouseUpKey] = useState('')
+    const mouseUpKeyRef = useRef('')
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+    // Counter that increments on variable injection to force ReactJson remount.
+    // ReactJson doesn't re-render when `src` changes via setState — it manages
+    // its own internal tree. Bumping the key forces a fresh mount with the new data.
+    const [remountKey, setRemountKey] = useState(0)
     const openPopOver = Boolean(anchorEl)
 
     const handleClosePopOver = useCallback(() => {
@@ -62,12 +66,13 @@ export function JsonInput({ value, onChange, disabled = false, variableItems }: 
     const setNewVal = useCallback(
         (val: string) => {
             setMyValue((prev) => {
-                const updated = { ...prev, [mouseUpKey]: val }
+                const updated = { ...prev, [mouseUpKeyRef.current]: val }
                 onChange(JSON.stringify(updated))
                 return updated
             })
+            setRemountKey((k) => k + 1)
         },
-        [mouseUpKey, onChange]
+        [onChange]
     )
 
     // ── Clipboard ────────────────────────────────────────────────────────────
@@ -110,6 +115,7 @@ export function JsonInput({ value, onChange, disabled = false, variableItems }: 
                         tabIndex={0}
                     >
                         <ReactJson
+                            key={remountKey}
                             theme={jsonTheme}
                             style={JSON_STYLE}
                             src={myValue}
@@ -119,7 +125,7 @@ export function JsonInput({ value, onChange, disabled = false, variableItems }: 
                             enableClipboard={onClipboardCopy}
                             onMouseUp={(event: { name: string; currentTarget: HTMLElement }) => {
                                 if (hasVariables) {
-                                    setMouseUpKey(event.name)
+                                    mouseUpKeyRef.current = event.name
                                     setAnchorEl(event.currentTarget)
                                 }
                             }}

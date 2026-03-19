@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import type { VariableItem } from '@/atoms/inputs'
+import type { VariableItem } from '@/atoms/SelectVariable'
 import type { FlowEdge, FlowNode } from '@/core/types'
 import { useAgentflowContext } from '@/infrastructure/store'
 

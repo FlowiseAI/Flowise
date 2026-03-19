@@ -25,13 +25,13 @@ import { IconArrowsMaximize, IconInfoCircle, IconVariable } from '@tabler/icons-
 
 import type { InputAnchor, InputParam, NodeData } from '@/core/types'
 
-import { CodeInput } from './inputs/CodeInput'
-import { JsonInput } from './inputs/JsonInput'
-import type { VariableItem } from './inputs/SelectVariable'
-import { SelectVariable } from './inputs/SelectVariable'
 import ArrayInput from './ArrayInput'
+import { CodeInput } from './CodeInput'
 import { ExpandTextDialog } from './ExpandTextDialog'
+import { JsonInput } from './JsonInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
+import type { VariableItem } from './SelectVariable'
+import { SelectVariable } from './SelectVariable'
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {

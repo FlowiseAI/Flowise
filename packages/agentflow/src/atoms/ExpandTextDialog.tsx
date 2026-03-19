@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { Box, Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material'
 
-import { CodeInput } from './inputs/CodeInput'
+import { CodeInput } from './CodeInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
 
 export interface ExpandTextDialogProps {

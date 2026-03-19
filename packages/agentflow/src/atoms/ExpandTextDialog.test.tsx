@@ -4,7 +4,7 @@ import { ExpandTextDialog } from './ExpandTextDialog'
 
 // TipTap modules are auto-mocked via moduleNameMapper in jest.config.js
 
-jest.mock('./inputs/CodeInput', () => ({
+jest.mock('./CodeInput', () => ({
     CodeInput: ({ value, language }: { value: string; language?: string }) => (
         <textarea data-testid='code-input' data-language={language} value={value} onChange={() => {}} />
     )
