@@ -31,7 +31,8 @@ function computeArrayItemParameters(params: InputParam[], inputValues: Record<st
     const result: Record<string, InputParam[][]> = {}
     for (const param of params) {
         if (param.type === 'array' && param.array) {
-            const items = (inputValues[param.name] as Record<string, unknown>[]) || []
+            const raw = inputValues[param.name]
+            const items = Array.isArray(raw) ? (raw as Record<string, unknown>[]) : []
             result[param.name] = items.map((_, index) => evaluateFieldVisibility(param.array!, inputValues, index))
         }
     }

@@ -102,6 +102,19 @@ jest.mock('@/atoms', () => ({
                             Change {index}
                         </button>
                     ))}
+                    {currentArray.map((item, index) => (
+                        <button
+                            key={`set-type-options-${index}`}
+                            data-testid={`set-type-options-${inputParam.name}-${index}`}
+                            onClick={() => {
+                                const newArray = [...currentArray]
+                                newArray[index] = { ...newArray[index], type: 'options' }
+                                onDataChange({ inputParam, newValue: newArray })
+                            }}
+                        >
+                            Set Type Options {index}
+                        </button>
+                    ))}
                 </div>
             )
         }
@@ -227,6 +240,77 @@ jest.mock('@tabler/icons-react', () => ({
     IconPencil: () => <span data-testid='icon-pencil' />,
     IconX: () => <span data-testid='icon-x' />
 }))
+
+// --- Start Node Fixture Factory ---
+/**
+ * Creates the full set of Start node input params used across multiple tests.
+ * The `overrides` parameter allows individual tests to customise specific params
+ * (e.g. omitting array children to test the chatInput-hidden case).
+ */
+function createStartNodeInputParams(overrides?: { includeFormInputTypesArray?: boolean }): InputParam[] {
+    const includeArray = overrides?.includeFormInputTypesArray ?? true
+
+    return [
+        {
+            id: 'startInputType',
+            name: 'startInputType',
+            label: 'Input Type',
+            type: 'options',
+            options: [
+                { label: 'Chat Input', name: 'chatInput' },
+                { label: 'Form Input', name: 'formInput' }
+            ],
+            default: 'chatInput'
+        } as InputParam,
+        {
+            id: 'formTitle',
+            name: 'formTitle',
+            label: 'Form Title',
+            type: 'string',
+            show: { startInputType: 'formInput' }
+        } as InputParam,
+        {
+            id: 'formDescription',
+            name: 'formDescription',
+            label: 'Form Description',
+            type: 'string',
+            show: { startInputType: 'formInput' }
+        } as InputParam,
+        {
+            id: 'formInputTypes',
+            name: 'formInputTypes',
+            label: 'Form Input Types',
+            type: 'array',
+            show: { startInputType: 'formInput' },
+            ...(includeArray
+                ? {
+                      array: [
+                          { id: 'type', name: 'type', label: 'Type', type: 'options', default: 'string' } as InputParam,
+                          { id: 'label', name: 'label', label: 'Label', type: 'string' } as InputParam,
+                          { id: 'name', name: 'name', label: 'Variable Name', type: 'string' } as InputParam,
+                          {
+                              id: 'addOptions',
+                              name: 'addOptions',
+                              label: 'Add Options',
+                              type: 'array',
+                              show: { 'formInputTypes[$index].type': 'options' },
+                              array: [{ id: 'option', name: 'option', label: 'Option', type: 'string' } as InputParam]
+                          } as InputParam
+                      ]
+                  }
+                : {})
+        } as InputParam
+    ]
+}
+
+function createStartNodeData(inputValues: Record<string, unknown>): NodeData {
+    return {
+        id: 'startAgentflow_0',
+        name: 'startAgentflow',
+        label: 'Start',
+        inputValues
+    } as NodeData
+}
 
 describe('EditNodeDialog', () => {
     const nodeData: NodeData = {
@@ -968,6 +1052,99 @@ describe('EditNodeDialog', () => {
             })
         })
 
+        it('Start node: formInputTypes shows addOptions only when type is "options"', () => {
+            const startInputParams = createStartNodeInputParams()
+            const startData = createStartNodeData({
+                startInputType: 'formInput',
+                formTitle: 'My Form',
+                formDescription: 'Fill it out',
+                formInputTypes: [
+                    { type: 'options', label: 'Color', name: 'color', addOptions: [{ option: 'Red' }] },
+                    { type: 'string', label: 'Name', name: 'userName' }
+                ]
+            })
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: startInputParams, data: startData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // formTitle, formDescription, and formInputTypes should all be visible
+            expect(screen.getByTestId('input-handler-formTitle')).toBeInTheDocument()
+            expect(screen.getByTestId('input-handler-formDescription')).toBeInTheDocument()
+            expect(screen.getByTestId('input-handler-formInputTypes')).toBeInTheDocument()
+
+            // itemParameters should be computed for formInputTypes (2 items)
+            const handler = screen.getByTestId('input-handler-formInputTypes')
+            expect(handler).toHaveAttribute('data-item-params-count', '2')
+        })
+
+        it('Start node: hides formTitle/formDescription/formInputTypes when chatInput is selected', () => {
+            // Use the factory without array children — not needed for this visibility test
+            const startInputParams = createStartNodeInputParams({ includeFormInputTypesArray: false })
+            const startData = createStartNodeData({ startInputType: 'chatInput' })
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: startInputParams, data: startData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Form fields should be hidden when chatInput is selected
+            expect(screen.queryByTestId('input-handler-formTitle')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-formInputTypes')).not.toBeInTheDocument()
+        })
+
+        it('Start node: changing Type dropdown recomputes itemParameters dynamically', () => {
+            // Start with two formInputTypes rows, both type=string (addOptions hidden for both)
+            const startInputParams = createStartNodeInputParams()
+            const startData = createStartNodeData({
+                startInputType: 'formInput',
+                formTitle: 'My Form',
+                formDescription: '',
+                formInputTypes: [
+                    { type: 'string', label: 'Name', name: 'userName' },
+                    { type: 'string', label: 'Age', name: 'age' }
+                ]
+            })
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: startInputParams, data: startData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Verify initial itemParameters count is 2 (one per row)
+            const handler = screen.getByTestId('input-handler-formInputTypes')
+            expect(handler).toHaveAttribute('data-item-params-count', '2')
+
+            // Simulate changing the first row's Type from "string" to "options"
+            // This fires onCustomDataChange -> computeArrayItemParameters
+            fireEvent.click(screen.getByTestId('set-type-options-formInputTypes-0'))
+
+            // After the change, updateNodeData should have been called with the updated array
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('startAgentflow_0', {
+                inputValues: expect.objectContaining({
+                    formInputTypes: [
+                        { type: 'options', label: 'Name', name: 'userName' },
+                        { type: 'string', label: 'Age', name: 'age' }
+                    ]
+                })
+            })
+
+            // itemParameters should still have 2 entries (one per array item)
+            // The recomputation happens via setArrayItemParameters in onCustomDataChange
+            const updatedHandler = screen.getByTestId('input-handler-formInputTypes')
+            expect(updatedHandler).toHaveAttribute('data-item-params-count', '2')
+        })
+
         it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {
             const arrayParams: InputParam[] = [
                 {
@@ -1004,6 +1181,35 @@ describe('EditNodeDialog', () => {
             // itemParameters should have one entry per array item (2 items → count = 2)
             const handler = screen.getByTestId('input-handler-items')
             expect(handler).toHaveAttribute('data-item-params-count', '2')
+        })
+
+        it('should not crash when a non-array field changes while array params exist', () => {
+            const mixedParams: InputParam[] = [
+                { name: 'title', label: 'Title', type: 'string' } as InputParam,
+                {
+                    name: 'items',
+                    label: 'Items',
+                    type: 'array',
+                    array: [{ id: 'key', name: 'key', label: 'Key', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{
+                        inputParams: mixedParams,
+                        data: { ...nodeData, inputValues: { title: 'hello', items: [{ key: 'a' }] } },
+                        disabled: false
+                    }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Changing the string field should not throw "items.map is not a function"
+            expect(() => {
+                fireEvent.click(screen.getByTestId('change-title'))
+            }).not.toThrow()
         })
     })
 })

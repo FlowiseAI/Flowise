@@ -67,7 +67,7 @@ export interface InputParam {
     type: string
     default?: unknown
     optional?: boolean
-    options?: Array<{ label: string; name: string } | string>
+    options?: Array<{ label: string; name: string; description?: string } | string>
     placeholder?: string
     rows?: number
     description?: string

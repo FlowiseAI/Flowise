@@ -242,14 +242,26 @@ export function NodeInputHandler({
                         onChange={(e) => handleDataChange(e.target.value)}
                         sx={{ mt: 1 }}
                     >
-                        {inputParam.options?.map((option) => (
-                            <MenuItem
-                                key={typeof option === 'string' ? option : option.name}
-                                value={typeof option === 'string' ? option : option.name}
-                            >
-                                {typeof option === 'string' ? option : option.label}
-                            </MenuItem>
-                        ))}
+                        {inputParam.options?.map((option) => {
+                            const isObj = typeof option !== 'string'
+                            const key = isObj ? option.name : option
+                            const label = isObj ? option.label : option
+                            const desc = isObj ? option.description : undefined
+                            return (
+                                <MenuItem key={key} value={key}>
+                                    {desc ? (
+                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                            <Typography variant='body2'>{label}</Typography>
+                                            <Typography variant='caption' color='text.secondary'>
+                                                {desc}
+                                            </Typography>
+                                        </Box>
+                                    ) : (
+                                        label
+                                    )}
+                                </MenuItem>
+                            )
+                        })}
                     </Select>
                 )
 
