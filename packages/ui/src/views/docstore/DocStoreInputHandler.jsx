@@ -41,22 +41,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
 
     const handleDataChange = ({ inputParam, newValue }) => {
         data.inputs[inputParam.name] = newValue
-        const allowedShowHideInputTypes = [
-            'boolean',
-            'asyncOptions',
-            'asyncMultiOptions',
-            'options',
-            'multiOptions',
-            'string',
-            'password',
-            'number',
-            'code',
-            'json',
-            'datagrid',
-            'array',
-            'file'
-        ]
-        if (allowedShowHideInputTypes.includes(inputParam.type) && nodeDataChangeHandler) {
+        if (nodeDataChangeHandler) {
             nodeDataChangeHandler({ nodeId: data.id, inputParam, newValue })
         }
     }
@@ -94,7 +79,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
 
     const onExpandDialogSave = (newValue, inputParamName) => {
         setShowExpandDialog(false)
-        handleDataChange({ inputParam: { name: inputParamName }, newValue })
+        data.inputs[inputParamName] = newValue
     }
 
     const getCredential = () => {
@@ -202,7 +187,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                         theme={customization.isDarkMode ? 'dark' : 'light'}
                                         lang={'js'}
                                         placeholder={inputParam.placeholder}
-                                        onValueChange={(code) => handleDataChange({ inputParam, newValue: code })}
+                                        onValueChange={(code) => (data.inputs[inputParam.name] = code)}
                                         basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
                                     />
                                 </div>
@@ -213,7 +198,8 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 key={data.inputs[inputParam.name]}
                                 disabled={disabled}
                                 inputParam={inputParam}
-                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onBlur={(newValue) => handleDataChange({ inputParam, newValue })}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                 nodeId={data.id}
                             />
@@ -221,7 +207,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                         {inputParam.type === 'json' && (
                             <JsonEditorInput
                                 disabled={disabled}
-                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                 isDarkMode={customization.isDarkMode}
                             />
