@@ -1,5 +1,5 @@
 import { get } from 'lodash'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { DataSource } from 'typeorm'
 import { StructuredTool } from '@langchain/core/tools'
 import { ChatMistralAI } from '@langchain/mistralai'
@@ -8,14 +8,7 @@ import { Runnable, RunnableConfig, mergeConfigs } from '@langchain/core/runnable
 import { AIMessage, BaseMessage, HumanMessage, MessageContentImageUrl, ToolMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { addImagesToMessages, llmSupportsVision } from '../../src/multiModalUtils'
-import {
-    ICommonObject,
-    IDatabaseEntity,
-    INodeData,
-    ISeqAgentsState,
-    IVisionChatModal,
-    ConversationHistorySelection
-} from '../../src/Interface'
+import { ICommonObject, IDatabaseEntity, INodeData, ISeqAgentsState, ConversationHistorySelection } from '../../src/Interface'
 import { getVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../src/utils'
 import { ChatPromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 
@@ -136,14 +129,7 @@ export const processImageMessage = async (llm: BaseChatModel, nodeData: INodeDat
     let multiModalMessageContent: MessageContentImageUrl[] = []
 
     if (llmSupportsVision(llm)) {
-        const visionChatModel = llm as IVisionChatModal
         multiModalMessageContent = await addImagesToMessages(nodeData, options, llm.multiModalOption)
-
-        if (multiModalMessageContent?.length) {
-            visionChatModel.setVisionModel()
-        } else {
-            visionChatModel.revertToOriginalModel()
-        }
     }
 
     return multiModalMessageContent

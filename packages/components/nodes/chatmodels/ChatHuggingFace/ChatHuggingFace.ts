@@ -16,7 +16,7 @@ class ChatHuggingFace_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatHuggingFace'
+        this.label = 'HuggingFace'
         this.name = 'chatHuggingFace'
         this.version = 3.0
         this.type = 'ChatHuggingFace'

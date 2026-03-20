@@ -3,7 +3,9 @@ import type { Node } from 'reactflow'
 import { makeFlowEdge, makeFlowNode, makeNodeData } from '@test-utils/factories'
 import { act, renderHook } from '@testing-library/react'
 
+import { isValidConnectionAgentflowV2 } from '@/core'
 import type { FlowEdge, FlowNode, NodeData } from '@/core/types'
+import { checkNodePlacementConstraints } from '@/core/validation'
 
 import { useFlowHandlers } from './useFlowHandlers'
 
@@ -29,7 +31,12 @@ jest.mock('@/core', () => ({
     getUniqueNodeId: jest.fn((_data: NodeData, _nodes: FlowNode[]) => 'new-node-1'),
     getUniqueNodeLabel: jest.fn((_data: NodeData, _nodes: FlowNode[]) => 'New Node 1'),
     initNode: jest.fn((data: NodeData, id: string) => ({ ...data, id })),
-    isValidConnectionAgentflowV2: jest.fn(() => true)
+    isValidConnectionAgentflowV2: jest.fn(() => true),
+    resolveNodeType: jest.fn(() => 'agentflowNode')
+}))
+
+jest.mock('@/core/validation', () => ({
+    checkNodePlacementConstraints: jest.fn(() => ({ valid: true }))
 }))
 
 describe('useFlowHandlers', () => {
@@ -98,6 +105,69 @@ describe('useFlowHandlers', () => {
             })
 
             expect(mockSetDirty).toHaveBeenCalledWith(true)
+        })
+
+        it('should not connect when isValidConnectionAgentflowV2 returns false', () => {
+            ;(isValidConnectionAgentflowV2 as jest.Mock).mockReturnValueOnce(false)
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'a', target: 'b', sourceHandle: null, targetHandle: null })
+            })
+
+            expect(setLocalEdges).not.toHaveBeenCalled()
+            expect(mockSetDirty).not.toHaveBeenCalled()
+            expect(onFlowChange).not.toHaveBeenCalled()
+        })
+
+        it('should compute numeric edgeLabel for conditionAgentflow source', () => {
+            nodes = [makeFlowNode('c', { data: { id: 'c', name: 'conditionAgentflow', label: 'Condition' } }), makeFlowNode('b')]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'c', target: 'b', sourceHandle: 'c-output-2', targetHandle: null })
+            })
+
+            expect(onFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    edges: expect.arrayContaining([expect.objectContaining({ data: expect.objectContaining({ edgeLabel: '2' }) })])
+                })
+            )
+        })
+
+        it('should compute numeric edgeLabel for conditionAgentAgentflow source', () => {
+            nodes = [
+                makeFlowNode('ca', { data: { id: 'ca', name: 'conditionAgentAgentflow', label: 'Condition Agent' } }),
+                makeFlowNode('b')
+            ]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'ca', target: 'b', sourceHandle: 'ca-output-1', targetHandle: null })
+            })
+
+            expect(onFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    edges: expect.arrayContaining([expect.objectContaining({ data: expect.objectContaining({ edgeLabel: '1' }) })])
+                })
+            )
+        })
+
+        it('should compute proceed/reject edgeLabel for humanInputAgentflow source', () => {
+            nodes = [makeFlowNode('h', { data: { id: 'h', name: 'humanInputAgentflow', label: 'Human Input' } }), makeFlowNode('b')]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'h', target: 'b', sourceHandle: 'h-output-0', targetHandle: null })
+            })
+
+            expect(onFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    edges: expect.arrayContaining([
+                        expect.objectContaining({ data: expect.objectContaining({ edgeLabel: 'proceed', isHumanInput: true }) })
+                    ])
+                })
+            )
         })
 
         it('should not call onFlowChange when source or target is missing', () => {
@@ -285,6 +355,19 @@ describe('useFlowHandlers', () => {
             })
 
             expect(mockSetDirty).toHaveBeenCalledWith(true)
+        })
+
+        it('should not add node when placement constraint fails', () => {
+            ;(checkNodePlacementConstraints as jest.Mock).mockReturnValueOnce({ valid: false, message: 'Only one start node' })
+            const onConstraintViolation = jest.fn()
+            const { result } = renderUseFlowHandlers({ availableNodes, onConstraintViolation })
+
+            act(() => {
+                result.current.handleAddNode('llmAgentflow')
+            })
+
+            expect(onConstraintViolation).toHaveBeenCalledWith('Only one start node')
+            expect(setLocalNodes).not.toHaveBeenCalled()
         })
 
         it('should do nothing when nodeType is not found in availableNodes', () => {

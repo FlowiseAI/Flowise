@@ -49,17 +49,19 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                         <IconCopy size={20} />
                     </IconButton>
                 )}
-                <IconButton
-                    size='small'
-                    title='Edit'
-                    onClick={handleEditClick}
-                    sx={{
-                        color: isDarkMode ? 'white' : theme.palette.grey[600],
-                        '&:hover': { color: theme.palette.primary.main }
-                    }}
-                >
-                    <IconEdit size={20} />
-                </IconButton>
+                {nodeName !== 'stickyNoteAgentflow' && (
+                    <IconButton
+                        size='small'
+                        title='Edit'
+                        onClick={handleEditClick}
+                        sx={{
+                            color: isDarkMode ? 'white' : theme.palette.grey[600],
+                            '&:hover': { color: theme.palette.primary.main }
+                        }}
+                    >
+                        <IconEdit size={20} />
+                    </IconButton>
+                )}
                 <IconButton
                     size='small'
                     title='Delete'

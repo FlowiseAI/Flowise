@@ -61,7 +61,10 @@ function NodeOutputHandlesComponent({ outputAnchors, nodeColor, isHovered, nodeR
     }, [nodeRef, nodeId, updateNodeInternals])
 
     const getAnchorPosition = (index: number) => {
-        const spacing = nodeHeight / (outputAnchors.length + 1)
+        // Use measured nodeHeight if available, otherwise fallback to minimum calculated height
+        // This ensures handles are positioned correctly even before ResizeObserver fires
+        const effectiveHeight = nodeHeight > 0 ? nodeHeight : getMinimumNodeHeight(outputAnchors.length)
+        const spacing = effectiveHeight / (outputAnchors.length + 1)
         return spacing * (index + 1)
     }
 

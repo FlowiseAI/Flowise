@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import { createNodesApi } from './nodes'
+import { bindNodesApi } from './nodes'
 
 const mockClient = {
     get: jest.fn()
@@ -10,8 +10,8 @@ beforeEach(() => {
     jest.clearAllMocks()
 })
 
-describe('createNodesApi', () => {
-    const api = createNodesApi(mockClient)
+describe('bindNodesApi', () => {
+    const api = bindNodesApi(mockClient)
 
     describe('getAllNodes', () => {
         it('should call GET /nodes', async () => {
