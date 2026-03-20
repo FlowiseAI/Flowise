@@ -241,6 +241,10 @@ export function NodeInputHandler({
                         value={value || ''}
                         onChange={(e) => handleDataChange(e.target.value)}
                         sx={{ mt: 1 }}
+                        renderValue={(selected) => {
+                            const match = inputParam.options?.find((o) => (typeof o === 'string' ? o : o.name) === selected)
+                            return match ? (typeof match === 'string' ? match : match.label) : String(selected)
+                        }}
                     >
                         {inputParam.options?.map((option) => {
                             const isObj = typeof option !== 'string'
