@@ -17,15 +17,18 @@ const KEY_SEPARATOR = '#'
 const MAX_KEY_LENGTH = 2048 // DynamoDB limit for partition key
 
 // Helper function to create DynamoDB client
-function createDynamoDBClient(credentials: AWSCredentials, region: string): DynamoDBClient {
-    return new DynamoDBClient({
-        region,
-        credentials: {
+function createDynamoDBClient(credentials: AWSCredentials | undefined, region: string): DynamoDBClient {
+    const config: { region: string; credentials?: { accessKeyId: string; secretAccessKey: string; sessionToken?: string } } = { region }
+
+    if (credentials) {
+        config.credentials = {
             accessKeyId: credentials.accessKeyId,
             secretAccessKey: credentials.secretAccessKey,
             ...(credentials.sessionToken && { sessionToken: credentials.sessionToken })
         }
-    })
+    }
+
+    return new DynamoDBClient(config)
 }
 
 // Helper function to build full key with optional prefix
@@ -246,11 +249,11 @@ class AWSDynamoDBKVStorage_Tools implements INode {
         ]
     }
 
-    loadMethods: Record<string, (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>> = {
-        listTables: async (nodeData: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> => {
+    loadMethods: Record<string, (_nodeData: INodeData, _options?: ICommonObject) => Promise<INodeOptionsValue[]>> = {
+        listTables: async (_nodeData: INodeData, _options?: ICommonObject): Promise<INodeOptionsValue[]> => {
             try {
-                const credentials = await getAWSCredentials(nodeData, options ?? {})
-                const region = (nodeData.inputs?.region as string) || DEFAULT_AWS_REGION
+                const credentials = await getAWSCredentials(_nodeData, _options ?? {})
+                const region = (_nodeData.inputs?.region as string) || DEFAULT_AWS_REGION
                 const dynamoClient = createDynamoDBClient(credentials, region)
 
                 const listCommand = new ListTablesCommand({})

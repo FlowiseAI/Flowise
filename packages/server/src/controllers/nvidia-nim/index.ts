@@ -45,7 +45,7 @@ const pullImage = async (req: Request, res: Response, next: NextFunction) => {
         const imageTag = req.body.imageTag
         const apiKey = req.body.apiKey
         await NimContainerManager.pullImage(imageTag, apiKey)
-        return res.send(`Pulling image ${imageTag}`)
+        return res.send('Pulling image')
     } catch (error) {
         next(error)
     }
@@ -62,7 +62,7 @@ const startContainer = async (req: Request, res: Response, next: NextFunction) =
             return res.status(400).send('nimRelaxMemConstraints must be 0 or 1')
         }
         await NimContainerManager.startContainer(imageTag, apiKey, hostPort, nimRelaxMemConstraints)
-        return res.send(`Starting container ${imageTag}`)
+        return res.send('Starting container')
     } catch (error) {
         next(error)
     }
@@ -74,7 +74,7 @@ const getImage = async (req: Request, res: Response, next: NextFunction) => {
         const images = await NimContainerManager.userImageLibrary()
         const image = images.find((img: any) => img.tag === imageTag)
         if (!image) {
-            return res.status(404).send(`Image ${imageTag} not found`)
+            return res.status(404).send('Image not found')
         }
         return res.json(image)
     } catch (error) {
@@ -91,7 +91,7 @@ const getContainer = async (req: Request, res: Response, next: NextFunction) => 
         const images = await NimContainerManager.userImageLibrary()
         const image = images.find((img: any) => img.tag === imageTag)
         if (!image) {
-            return res.status(404).send(`Image ${imageTag} not found`)
+            return res.status(404).send('Image not found')
         }
 
         const containers = await NimContainerManager.listRunningContainers()
@@ -103,14 +103,14 @@ const getContainer = async (req: Request, res: Response, next: NextFunction) => 
                 return res.json(portInUse)
             } else {
                 return res.status(409).send({
-                    message: `Port ${port} is already in use by another container`,
+                    message: 'Port is already in use by another container',
                     container: portInUse
                 })
             }
         }
 
         // If no container found with matching port, return 404
-        return res.status(404).send(`Container of ${imageTag} with port ${port} not found`)
+        return res.status(404).send('Container not found')
     } catch (error) {
         next(error)
     }

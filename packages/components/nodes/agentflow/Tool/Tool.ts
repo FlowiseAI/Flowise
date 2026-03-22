@@ -236,11 +236,11 @@ class Tool_Agentflow implements INode {
             // ex: \["a", "b", "c", "d", "e"\]
             let cleanedValue = value
                 .replace(/\\"/g, '"') // \" -> "
-                .replace(/\\\\/g, '\\') // \\ -> \
                 .replace(/\\\[/g, '[') // \[ -> [
                 .replace(/\\\]/g, ']') // \] -> ]
                 .replace(/\\\{/g, '{') // \{ -> {
                 .replace(/\\\}/g, '}') // \} -> }
+                .replace(/\\\\/g, '\\') // \\ -> \ (unescape backslash last)
 
             // Try to parse as JSON if it looks like JSON/array
             if (

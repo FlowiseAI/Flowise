@@ -1,6 +1,18 @@
 import { CommonType, ICommonObject, ICondition, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import removeMarkdown from 'remove-markdown'
 
+/**
+ * Unescapes a regex pattern that was escaped by Flowise input handling.
+ * Flowise escapes these characters: \ → \\, [ → \[, ] → \], * → \*
+ * We reverse this to get the user's intended regex pattern.
+ */
+const unescapeRegexPattern = (escaped: string): string => {
+    return escaped
+        .replace(/\\\\/g, '\0') // Preserve intentional backslashes
+        .replace(/\\([[\]*])/g, '$1') // Unescape only: [ ] *
+        .replace(/\0/g, '\\') // Restore preserved backslashes
+}
+
 class Condition_Agentflow implements INode {
     label: string
     name: string
@@ -275,6 +287,14 @@ class Condition_Agentflow implements INode {
             smaller: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) < (Number(value2) || 0),
             smallerEqual: (value1: CommonType, value2: CommonType) => (Number(value1) || 0) <= (Number(value2) || 0),
             startsWith: (value1: CommonType, value2: CommonType) => (value1 as string).startsWith(value2 as string),
+            regex: (value1: CommonType, value2: CommonType) => {
+                try {
+                    const pattern = unescapeRegexPattern((value2 || '').toString())
+                    return new RegExp(pattern).test((value1 || '').toString())
+                } catch {
+                    return false
+                }
+            },
             isEmpty: (value1: CommonType) => [undefined, null, ''].includes(value1 as string),
             notEmpty: (value1: CommonType) => ![undefined, null, ''].includes(value1 as string)
         }

@@ -1,11 +1,6 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import {
-    getCredentialData,
-    getCredentialParam,
-    handleDocumentLoaderDocuments,
-    handleDocumentLoaderMetadata,
-    handleDocumentLoaderOutput
-} from '../../../src/utils'
+import { handleDocumentLoaderDocuments, handleDocumentLoaderMetadata, handleDocumentLoaderOutput } from '../../../src/utils'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { S3Client, GetObjectCommand, S3ClientConfig, ListObjectsV2Command, ListObjectsV2Output } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
@@ -158,18 +153,9 @@ class S3_DocumentLoaders implements INode {
         const output = nodeData.outputs?.output as string
 
         let credentials: S3ClientConfig['credentials'] | undefined
-
         if (nodeData.credential) {
-            const credentialData = await getCredentialData(nodeData.credential, options)
-            const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-            const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
-
-            if (accessKeyId && secretAccessKey) {
-                credentials = {
-                    accessKeyId,
-                    secretAccessKey
-                }
-            }
+            const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
+            credentials = credentialConfig.credentials
         }
 
         let s3Config: S3ClientConfig = {

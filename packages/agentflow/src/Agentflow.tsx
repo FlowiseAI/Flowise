@@ -4,7 +4,7 @@ import ReactFlow, { Background, Controls, MiniMap, ReactFlowProvider, useEdgesSt
 import { IconSparkles } from '@tabler/icons-react'
 
 import { tokens } from './core/theme'
-import type { AgentFlowInstance, AgentflowProps, FlowData, FlowEdge, FlowNode } from './core/types'
+import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
 import {
     AgentflowHeader,
     ConnectionLine,
@@ -42,16 +42,24 @@ function AgentflowCanvas({
 }: {
     initialFlow?: FlowData
     readOnly?: boolean
-    onFlowChange?: (flow: FlowData) => void
-    onSave?: (flow: FlowData) => void
-    onFlowGenerated?: (flow: FlowData) => void
+    onFlowChange?: FlowDataCallback
+    onSave?: FlowDataCallback
+    onFlowGenerated?: FlowDataCallback
     showDefaultHeader?: boolean
     showDefaultPalette?: boolean
     enableGenerator?: boolean
     renderHeader?: AgentflowProps['renderHeader']
     renderNodePalette?: AgentflowProps['renderNodePalette']
 }) {
-    const { state, setNodes, setEdges, setDirty, setReactFlowInstance, closeEditDialog, registerLocalStateSetters } = useAgentflowContext()
+    const {
+        state,
+        syncNodesFromReactFlow,
+        syncEdgesFromReactFlow,
+        setDirty,
+        setReactFlowInstance,
+        closeEditDialog,
+        registerLocalStateSetters
+    } = useAgentflowContext()
     const { isDarkMode } = useConfigContext()
     const agentflow = useAgentflow()
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
@@ -82,15 +90,15 @@ function AgentflowCanvas({
 
     // Sync local ReactFlow state to context (when user interacts with canvas)
     useEffect(() => {
-        setNodes(nodes as FlowNode[])
-    }, [nodes, setNodes])
+        syncNodesFromReactFlow(nodes as FlowNode[])
+    }, [nodes, syncNodesFromReactFlow])
 
     useEffect(() => {
-        setEdges(edges as FlowEdge[])
-    }, [edges, setEdges])
+        syncEdgesFromReactFlow(edges as FlowEdge[])
+    }, [edges, syncEdgesFromReactFlow])
 
     // Flow handlers
-    const { handleConnect, handleNodesChange, handleEdgesChange, handleAddNode } = useFlowHandlers({
+    const { handleConnect, handleNodesChange, handleNodeDragStop, handleEdgesChange, handleAddNode } = useFlowHandlers({
         nodes: nodes as FlowNode[],
         edges: edges as FlowEdge[],
         setLocalNodes: setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>,
@@ -130,8 +138,21 @@ function AgentflowCanvas({
     const handleSave = useCallback(() => {
         if (onSave) {
             onSave(agentflow.getFlow())
+            setDirty(false)
         }
-    }, [onSave, agentflow])
+    }, [onSave, agentflow, setDirty])
+
+    // Keyboard shortcut: Cmd+S / Ctrl+S to save
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+                e.preventDefault()
+                handleSave()
+            }
+        }
+        document.addEventListener('keydown', onKeyDown)
+        return () => document.removeEventListener('keydown', onKeyDown)
+    }, [handleSave])
 
     // Header props
     const headerProps = createHeaderProps(
@@ -195,6 +216,7 @@ function AgentflowCanvas({
                         onNodesChange={handleNodesChange}
                         onEdgesChange={handleEdgesChange}
                         onConnect={handleConnect}
+                        onNodeDragStop={handleNodeDragStop}
                         onInit={setReactFlowInstance}
                         nodeTypes={nodeTypes}
                         edgeTypes={edgeTypes}
@@ -300,9 +322,9 @@ const AgentflowCanvasWithRef = forwardRef<
     {
         initialFlow?: FlowData
         readOnly?: boolean
-        onFlowChange?: (flow: FlowData) => void
-        onSave?: (flow: FlowData) => void
-        onFlowGenerated?: (flow: FlowData) => void
+        onFlowChange?: FlowDataCallback
+        onSave?: FlowDataCallback
+        onFlowGenerated?: FlowDataCallback
         showDefaultHeader?: boolean
         showDefaultPalette?: boolean
         enableGenerator?: boolean

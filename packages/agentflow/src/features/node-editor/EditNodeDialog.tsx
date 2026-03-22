@@ -6,20 +6,15 @@ import { useTheme } from '@mui/material/styles'
 import { IconCheck, IconInfoCircle, IconPencil, IconX } from '@tabler/icons-react'
 
 import { NodeInputHandler } from '@/atoms'
-import type { InputParam, NodeData } from '@/core/types'
+import type { EditDialogProps, InputParam, NodeData } from '@/core/types'
 import { useAgentflowContext, useConfigContext } from '@/infrastructure/store'
 
 export interface EditNodeDialogProps {
     show: boolean
-    dialogProps: {
-        inputParams?: InputParam[]
-        data?: NodeData
-        disabled?: boolean
-    }
+    dialogProps: EditDialogProps
     onCancel: () => void
 }
 
-// TODO: Integrate with canvas node click/double-click to open this dialog for editing node properties
 /**
  * Dialog for editing node properties
  */

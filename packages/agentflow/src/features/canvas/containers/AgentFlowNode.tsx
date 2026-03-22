@@ -1,5 +1,4 @@
 import { memo, useEffect, useRef, useState } from 'react'
-import { useUpdateNodeInternals } from 'reactflow'
 
 import { Box, Typography } from '@mui/material'
 
@@ -31,7 +30,6 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
     const { isDarkMode } = useConfigContext()
     const { apiBaseUrl } = useApiContext()
     const ref = useRef<HTMLDivElement>(null)
-    const updateNodeInternals = useUpdateNodeInternals()
     const { openNodeEditor } = useOpenNodeEditor()
 
     const [isHovered, setIsHovered] = useState(false)
@@ -51,14 +49,6 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
 
     const outputAnchors = data.outputAnchors ?? []
     const minHeight = getMinimumNodeHeight(outputAnchors.length)
-
-    useEffect(() => {
-        if (ref.current) {
-            setTimeout(() => {
-                updateNodeInternals(data.id)
-            }, 10)
-        }
-    }, [data, ref, updateNodeInternals])
 
     useEffect(() => {
         if (data.warning) {

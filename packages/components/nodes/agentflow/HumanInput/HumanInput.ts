@@ -186,7 +186,7 @@ class HumanInput_Agentflow implements INode {
                 }
             ]
             const input = { ...humanInput, messages }
-            const output = { conditions: outcomes }
+            const output = { content: humanInput.feedback || humanInput.type, conditions: outcomes }
 
             const nodeOutput = {
                 id: nodeData.id,
