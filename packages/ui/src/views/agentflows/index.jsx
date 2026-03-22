@@ -45,19 +45,19 @@ const Agentflows = () => {
     const { error, setError } = useError()
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
-    const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
+    const [view, setView] = useState(localStorage.getItem('agentFlowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
     const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(parseInt(localStorage.getItem('flowPageSize') || DEFAULT_ITEMS_PER_PAGE))
+    const [pageLimit, setPageLimit] = useState(() => Number(localStorage.getItem('agentFlowPageSize') || DEFAULT_ITEMS_PER_PAGE))
     const [total, setTotal] = useState(0)
 
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
-        localStorage.setItem('flowPageSize', pageLimit)
+        localStorage.setItem('agentFlowPageSize', pageLimit)
         refresh(page, pageLimit, agentflowVersion)
     }
 
@@ -71,7 +71,7 @@ const Agentflows = () => {
 
     const handleChange = (event, nextView) => {
         if (nextView === null) return
-        localStorage.setItem('flowDisplayStyle', nextView)
+        localStorage.setItem('agentFlowDisplayStyle', nextView)
         setView(nextView)
     }
 
