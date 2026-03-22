@@ -1,7 +1,7 @@
 import { AzureOpenAIInput, AzureChatOpenAI as LangchainAzureChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, isReasoningModelOpenAI } from '../../../src/utils'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { AzureChatOpenAI } from './FlowiseAzureChatOpenAI'
 import { OpenAI as OpenAIClient } from 'openai'
@@ -25,7 +25,7 @@ class AzureChatOpenAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Azure ChatOpenAI'
+        this.label = 'Azure OpenAI'
         this.name = 'azureChatOpenAI'
         this.version = 7.1
         this.type = 'AzureChatOpenAI'
@@ -51,7 +51,8 @@ class AzureChatOpenAI_ChatModels implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'asyncOptions',
-                loadMethod: 'listModels'
+                loadMethod: 'listModels',
+                freeSolo: true
             },
             {
                 label: 'Temperature',
@@ -78,52 +79,6 @@ class AzureChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'Top Probability',
-                name: 'topP',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Frequency Penalty',
-                name: 'frequencyPenalty',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Presence Penalty',
-                name: 'presencePenalty',
-                type: 'number',
-                step: 0.1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Timeout',
-                name: 'timeout',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'BasePath',
-                name: 'basepath',
-                type: 'string',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'BaseOptions',
-                name: 'baseOptions',
-                type: 'json',
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -133,31 +88,8 @@ class AzureChatOpenAI_ChatModels implements INode {
                 optional: true
             },
             {
-                label: 'Image Resolution',
-                description: 'This parameter controls the resolution in which the model views the image.',
-                name: 'imageResolution',
-                type: 'options',
-                options: [
-                    {
-                        label: 'Low',
-                        name: 'low'
-                    },
-                    {
-                        label: 'High',
-                        name: 'high'
-                    },
-                    {
-                        label: 'Auto',
-                        name: 'auto'
-                    }
-                ],
-                default: 'low',
-                optional: false,
-                additionalParams: true
-            },
-            {
                 label: 'Reasoning',
-                description: 'Whether the model supports reasoning. Only applicable for reasoning models.',
+                description: 'Whether the model supports reasoning. Only applicable for reasoning models (gpt-5 and o-series models only)',
                 name: 'reasoning',
                 type: 'boolean',
                 default: false,
@@ -166,7 +98,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning Effort',
-                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.',
+                description: 'Constrains effort on reasoning. Only applicable for reasoning models (gpt-5 and o-series models only)',
                 name: 'reasoningEffort',
                 type: 'options',
                 options: [
@@ -211,6 +143,54 @@ class AzureChatOpenAI_ChatModels implements INode {
                 show: {
                     reasoning: true
                 }
+            },
+            {
+                label: 'Top Probability',
+                name: 'topP',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Frequency Penalty',
+                name: 'frequencyPenalty',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Presence Penalty',
+                name: 'presencePenalty',
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Timeout',
+                name: 'timeout',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Base Path',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
+                additionalParams: true
+            },
+            {
+                label: 'Base Options',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                description: 'Default headers to include with every request to the API.',
+                additionalParams: true
             }
         ]
     }
@@ -244,7 +224,6 @@ class AzureChatOpenAI_ChatModels implements INode {
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
-        const imageResolution = nodeData.inputs?.imageResolution as string
 
         const obj: ChatOpenAIFields & Partial<AzureOpenAIInput> = {
             temperature: parseFloat(temperature),
@@ -256,7 +235,7 @@ class AzureChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
@@ -273,7 +252,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                 console.error('Error parsing base options', exception)
             }
         }
-        if (modelName.includes('o1') || modelName.includes('o3') || modelName.includes('gpt-5')) {
+        if (isReasoningModelOpenAI(modelName)) {
             delete obj.temperature
             delete obj.stop
             const reasoning: OpenAIClient.Reasoning = {}
@@ -284,17 +263,11 @@ class AzureChatOpenAI_ChatModels implements INode {
                 reasoning.summary = reasoningSummary
             }
             obj.reasoning = reasoning
-
-            if (maxTokens) {
-                delete obj.maxTokens
-                obj.maxCompletionTokens = parseInt(maxTokens, 10)
-            }
         }
 
         const multiModalOption: IMultiModalOption = {
             image: {
-                allowImageUploads: allowImageUploads ?? false,
-                imageResolution
+                allowImageUploads: allowImageUploads ?? false
             }
         }
 

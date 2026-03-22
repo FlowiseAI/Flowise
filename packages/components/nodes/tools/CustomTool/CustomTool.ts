@@ -1,7 +1,7 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { convertSchemaToZod, getBaseClasses, getVars } from '../../../src/utils'
 import { DynamicStructuredTool } from './core'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { DataSource } from 'typeorm'
 import { SecureZodSchemaParser } from '../../../src/secureZodParser'
 

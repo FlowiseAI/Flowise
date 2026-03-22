@@ -16,6 +16,8 @@ class OpenAI_LLMs implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'OpenAI'
@@ -25,6 +27,8 @@ class OpenAI_LLMs implements INode {
         this.icon = 'openai.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around OpenAI large language models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'Use OpenAI Chat Models instead'
         this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -111,17 +115,19 @@ class OpenAI_LLMs implements INode {
                 additionalParams: true
             },
             {
-                label: 'BasePath',
+                label: 'Base Path',
                 name: 'basepath',
                 type: 'string',
                 optional: true,
+                description: 'Override the default base URL for the API, e.g., "https://api.example.com/v2/',
                 additionalParams: true
             },
             {
-                label: 'BaseOptions',
+                label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
+                description: 'Default headers to include with every request to the API.',
                 additionalParams: true
             }
         ]

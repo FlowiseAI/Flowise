@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import Placeholder from '@tiptap/extension-placeholder'
 import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
+import { Markdown } from '@tiptap/markdown'
 import { styled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -15,8 +16,15 @@ import { CustomMention } from '@/utils/customMention'
 
 const lowlight = createLowlight(common)
 
+// Detect if content is legacy HTML (from old getHTML() storage) vs markdown
+const isHtmlContent = (content) => {
+    if (!content || typeof content !== 'string') return false
+    return /<(?:p|div|span|h[1-6]|ul|ol|li|br|code|pre|blockquote|table|strong|em)\b/i.test(content)
+}
+
 // define your extension array
 const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
+    Markdown,
     StarterKit.configure({
         codeBlock: false
     }),
@@ -131,14 +139,29 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
                 ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],
-            content: value,
+            content: '',
             onUpdate: ({ editor }) => {
-                onChange(editor.getHTML())
+                try {
+                    onChange(editor.getMarkdown())
+                } catch {
+                    onChange(editor.getHTML())
+                }
             },
             editable: !disabled
         },
         [availableNodesForVariable]
     )
+
+    // Load initial content after editor is ready, detecting HTML vs markdown
+    useEffect(() => {
+        if (editor && value) {
+            if (isHtmlContent(value)) {
+                editor.commands.setContent(value)
+            } else {
+                editor.commands.setContent(value, { contentType: 'markdown' })
+            }
+        }
+    }, [editor]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Box sx={{ mt: 1, border: '' }}>

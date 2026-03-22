@@ -6,3 +6,6 @@ export { generateExportFlowData } from './flowExport'
 
 // Field visibility engine
 export { evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValues } from './fieldVisibility'
+
+// Dynamic output anchor utilities
+export { buildDynamicOutputAnchors, parseOutputHandleIndex } from './dynamicOutputAnchors'

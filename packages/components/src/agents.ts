@@ -1,7 +1,7 @@
 import { flatten } from 'lodash'
 import { ChainValues } from '@langchain/core/utils/types'
 import { AgentStep, AgentAction } from '@langchain/core/agents'
-import { BaseMessage, FunctionMessage, AIMessage, isBaseMessage } from '@langchain/core/messages'
+import { BaseMessage, FunctionMessage, AIMessage, isAIMessage } from '@langchain/core/messages'
 import { ToolCall } from '@langchain/core/messages/tool'
 import { OutputParserException, BaseOutputParser, BaseLLMOutputParser } from '@langchain/core/output_parsers'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
@@ -12,7 +12,7 @@ import { Serializable } from '@langchain/core/load/serializable'
 import { renderTemplate } from '@langchain/core/prompts'
 import { ChatGeneration } from '@langchain/core/outputs'
 import { Document } from '@langchain/core/documents'
-import { BaseChain, SerializedLLMChain } from 'langchain/chains'
+import { BaseChain, SerializedLLMChain } from '@langchain/classic/chains'
 import {
     CreateReactAgentParams,
     AgentExecutorInput,
@@ -21,8 +21,8 @@ import {
     BaseMultiActionAgent,
     RunnableAgent,
     StoppingMethod
-} from 'langchain/agents'
-import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
+} from '@langchain/classic/agents'
+import { formatLogToString } from '@langchain/classic/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
 import { getErrorMessage } from './error'
 
@@ -753,7 +753,7 @@ export const formatAgentSteps = (steps: AgentStep[]): BaseMessage[] =>
             } else {
                 content = observation
             }
-            return new FunctionMessage(content, action.tool)
+            return new FunctionMessage({ content, name: action.tool })
         }
         if ('messageLog' in action && action.messageLog !== undefined) {
             const log = action.messageLog as BaseMessage[]
@@ -778,7 +778,7 @@ export const createReactAgent = async ({ llm, tools, prompt }: CreateReactAgentP
         tool_names: toolNames.join(', ')
     })
     // TODO: Add .bind to core runnable interface.
-    const llmWithStop = (llm as BaseLanguageModel).bind({
+    const llmWithStop = (llm as BaseLanguageModel).withConfig({
         stop: ['\nObservation:']
     })
     const agent = RunnableSequence.from([
@@ -964,7 +964,7 @@ export class ToolCallingAgentOutputParser extends AgentMultiActionOutputParser {
     }
 
     async parseResult(generations: ChatGeneration[]) {
-        if ('message' in generations[0] && isBaseMessage(generations[0].message)) {
+        if ('message' in generations[0] && isAIMessage(generations[0].message)) {
             return parseAIMessageToToolAction(generations[0].message)
         }
         throw new Error('parseResult on ToolCallingAgentOutputParser only works on ChatGeneration output')
