@@ -1,4 +1,3 @@
-import { ICommonObject } from 'flowise-components'
 import { stripProtectedFields } from '../../utils/stripProtectedFields'
 import { extractResponseContent, ICommonObject } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
