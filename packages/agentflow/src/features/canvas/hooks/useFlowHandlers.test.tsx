@@ -120,6 +120,56 @@ describe('useFlowHandlers', () => {
             expect(onFlowChange).not.toHaveBeenCalled()
         })
 
+        it('should compute numeric edgeLabel for conditionAgentflow source', () => {
+            nodes = [makeFlowNode('c', { data: { id: 'c', name: 'conditionAgentflow', label: 'Condition' } }), makeFlowNode('b')]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'c', target: 'b', sourceHandle: 'c-output-2', targetHandle: null })
+            })
+
+            expect(onFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    edges: expect.arrayContaining([expect.objectContaining({ data: expect.objectContaining({ edgeLabel: '2' }) })])
+                })
+            )
+        })
+
+        it('should compute numeric edgeLabel for conditionAgentAgentflow source', () => {
+            nodes = [
+                makeFlowNode('ca', { data: { id: 'ca', name: 'conditionAgentAgentflow', label: 'Condition Agent' } }),
+                makeFlowNode('b')
+            ]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'ca', target: 'b', sourceHandle: 'ca-output-1', targetHandle: null })
+            })
+
+            expect(onFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    edges: expect.arrayContaining([expect.objectContaining({ data: expect.objectContaining({ edgeLabel: '1' }) })])
+                })
+            )
+        })
+
+        it('should compute proceed/reject edgeLabel for humanInputAgentflow source', () => {
+            nodes = [makeFlowNode('h', { data: { id: 'h', name: 'humanInputAgentflow', label: 'Human Input' } }), makeFlowNode('b')]
+            const { result } = renderUseFlowHandlers()
+
+            act(() => {
+                result.current.handleConnect({ source: 'h', target: 'b', sourceHandle: 'h-output-0', targetHandle: null })
+            })
+
+            expect(onFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    edges: expect.arrayContaining([
+                        expect.objectContaining({ data: expect.objectContaining({ edgeLabel: 'proceed', isHumanInput: true }) })
+                    ])
+                })
+            )
+        })
+
         it('should not call onFlowChange when source or target is missing', () => {
             const { result } = renderUseFlowHandlers()
 

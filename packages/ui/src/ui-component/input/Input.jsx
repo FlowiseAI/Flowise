@@ -5,7 +5,7 @@ import { useTheme } from '@mui/material/styles'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
-export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlur, disabled = false }) => {
     const theme = useTheme()
     const [myValue, setMyValue] = useState(value ?? '')
     const [anchorEl, setAnchorEl] = useState(null)
@@ -70,6 +70,9 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                             setMyValue(e.target.value)
                             onChange(e.target.value)
                         }}
+                        onBlur={(e) => {
+                            if (onBlur) onBlur(e.target.value)
+                        }}
                         inputProps={{
                             step: inputParam.step ?? 1,
                             style: {
@@ -105,6 +108,9 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
                         onChange={(e) => {
                             setMyValue(e.target.value)
                             onChange(e.target.value)
+                        }}
+                        onBlur={(e) => {
+                            if (onBlur) onBlur(e.target.value)
                         }}
                         inputProps={{
                             step: inputParam.step ?? 1,
@@ -153,6 +159,7 @@ Input.propTypes = {
     inputParam: PropTypes.object,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     onChange: PropTypes.func,
+    onBlur: PropTypes.func,
     disabled: PropTypes.bool,
     nodes: PropTypes.array,
     edges: PropTypes.array,

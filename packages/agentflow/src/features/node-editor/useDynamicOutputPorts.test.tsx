@@ -4,7 +4,6 @@ import { useDynamicOutputPorts } from './useDynamicOutputPorts'
 
 // --- Mocks ---
 const mockUpdateNodeInternals = jest.fn()
-const mockSetEdges = jest.fn()
 let mockEdges: Array<{ id: string; source: string; target: string; sourceHandle?: string }> = []
 
 jest.mock('reactflow', () => ({
@@ -13,8 +12,7 @@ jest.mock('reactflow', () => ({
 
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
-        state: { edges: mockEdges },
-        setEdges: mockSetEdges
+        state: { edges: mockEdges }
     })
 }))
 
@@ -24,7 +22,7 @@ describe('useDynamicOutputPorts', () => {
         mockEdges = []
     })
 
-    it('should remove orphaned edges when count decreases', () => {
+    it('should return cleaned edges removing orphaned handles', () => {
         mockEdges = [
             { id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' },
             { id: 'edge-1', source: 'node-1', target: 'node-3', sourceHandle: 'node-1-output-1' },
@@ -35,26 +33,20 @@ describe('useDynamicOutputPorts', () => {
 
         const { result } = renderHook(() => useDynamicOutputPorts('node-1'))
 
-        // Set initial count to 3 (outputs: 0, 1, 2, 3=Else)
+        // count=1, includeElse=true → totalNewAnchors=2 → keep indices 0,1 only
+        let cleanedEdges: ReturnType<typeof result.current.cleanupOrphanedEdges>
         act(() => {
-            result.current.cleanupOrphanedEdges(3)
+            cleanedEdges = result.current.cleanupOrphanedEdges(1)
         })
 
-        mockSetEdges.mockClear()
-
-        // Reduce to 1 (outputs: 0, 1=Else) — edges at index 2 and 3 should be removed
-        act(() => {
-            result.current.cleanupOrphanedEdges(1)
-        })
-
-        expect(mockSetEdges).toHaveBeenCalledWith([
+        expect(cleanedEdges!).toEqual([
             { id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' },
             { id: 'edge-1', source: 'node-1', target: 'node-3', sourceHandle: 'node-1-output-1' },
             { id: 'edge-other', source: 'node-9', target: 'node-10', sourceHandle: 'node-9-output-0' }
         ])
     })
 
-    it('should call updateNodeInternals after cleanup', () => {
+    it('should call updateNodeInternals', () => {
         const { result } = renderHook(() => useDynamicOutputPorts('node-1'))
 
         act(() => {
@@ -64,50 +56,38 @@ describe('useDynamicOutputPorts', () => {
         expect(mockUpdateNodeInternals).toHaveBeenCalledWith('node-1')
     })
 
-    it('should not call setEdges when count increases', () => {
+    it('should return undefined when no edges are removed', () => {
         mockEdges = [{ id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' }]
 
         const { result } = renderHook(() => useDynamicOutputPorts('node-1'))
 
-        // Set initial count
+        // count=3, includeElse=true → totalNewAnchors=4, edge at index 0 is fine
+        let cleanedEdges: ReturnType<typeof result.current.cleanupOrphanedEdges>
         act(() => {
-            result.current.cleanupOrphanedEdges(1)
+            cleanedEdges = result.current.cleanupOrphanedEdges(3)
         })
 
-        mockSetEdges.mockClear()
-
-        // Increase count — no edges should be removed
-        act(() => {
-            result.current.cleanupOrphanedEdges(3)
-        })
-
-        expect(mockSetEdges).not.toHaveBeenCalled()
+        expect(cleanedEdges!).toBeUndefined()
     })
 
-    it('should not call setEdges on first call (no previous count)', () => {
-        mockEdges = [{ id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' }]
+    it('should return undefined when enabled is false', () => {
+        mockEdges = [
+            { id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' },
+            { id: 'edge-1', source: 'node-1', target: 'node-3', sourceHandle: 'node-1-output-1' }
+        ]
 
-        const { result } = renderHook(() => useDynamicOutputPorts('node-1'))
-
-        act(() => {
-            result.current.cleanupOrphanedEdges(2)
-        })
-
-        expect(mockSetEdges).not.toHaveBeenCalled()
-    })
-
-    it('should be inert when enabled is false', () => {
         const { result } = renderHook(() => useDynamicOutputPorts('node-1', false))
 
+        let cleanedEdges: ReturnType<typeof result.current.cleanupOrphanedEdges>
         act(() => {
-            result.current.cleanupOrphanedEdges(2)
+            cleanedEdges = result.current.cleanupOrphanedEdges(0)
         })
 
-        expect(mockSetEdges).not.toHaveBeenCalled()
+        expect(cleanedEdges!).toBeUndefined()
         expect(mockUpdateNodeInternals).not.toHaveBeenCalled()
     })
 
-    it('should preserve edges from other nodes when cleaning up', () => {
+    it('should preserve edges from other nodes and edges without sourceHandle', () => {
         mockEdges = [
             { id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' },
             { id: 'edge-1', source: 'node-1', target: 'node-3', sourceHandle: 'node-1-output-1' },
@@ -117,21 +97,33 @@ describe('useDynamicOutputPorts', () => {
 
         const { result } = renderHook(() => useDynamicOutputPorts('node-1'))
 
-        // Set initial count to 2
+        // count=0, includeElse=true → totalNewAnchors=1 → keep only index 0
+        let cleanedEdges: ReturnType<typeof result.current.cleanupOrphanedEdges>
         act(() => {
-            result.current.cleanupOrphanedEdges(2)
-        })
-        mockSetEdges.mockClear()
-
-        // Reduce to 0 (only Else anchor at index 0)
-        act(() => {
-            result.current.cleanupOrphanedEdges(0)
+            cleanedEdges = result.current.cleanupOrphanedEdges(0)
         })
 
-        expect(mockSetEdges).toHaveBeenCalledWith([
+        expect(cleanedEdges!).toEqual([
             { id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' },
             { id: 'edge-other', source: 'node-9', target: 'node-10', sourceHandle: 'node-9-output-0' },
             { id: 'edge-no-handle', source: 'node-1', target: 'node-5' }
         ])
+    })
+
+    it('should respect includeElse=false for conditionAgent nodes', () => {
+        mockEdges = [
+            { id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' },
+            { id: 'edge-1', source: 'node-1', target: 'node-3', sourceHandle: 'node-1-output-1' }
+        ]
+
+        const { result } = renderHook(() => useDynamicOutputPorts('node-1', true, false))
+
+        // count=1, includeElse=false → totalNewAnchors=1 → keep only index 0
+        let cleanedEdges: ReturnType<typeof result.current.cleanupOrphanedEdges>
+        act(() => {
+            cleanedEdges = result.current.cleanupOrphanedEdges(1)
+        })
+
+        expect(cleanedEdges!).toEqual([{ id: 'edge-0', source: 'node-1', target: 'node-2', sourceHandle: 'node-1-output-0' }])
     })
 })

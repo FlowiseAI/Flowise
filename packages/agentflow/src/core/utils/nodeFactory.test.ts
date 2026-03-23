@@ -282,4 +282,36 @@ describe('initNode', () => {
             expect.objectContaining({ id: 'conditionAgentflow_0-output-1', name: '1', label: '1', description: 'Else' })
         )
     })
+
+    it('should generate dynamic outputAnchors for conditionAgentAgentflow nodes', () => {
+        const conditionAgentNodeData = makeNodeData({
+            name: 'conditionAgentAgentflow',
+            label: 'Condition Agent',
+            inputs: [
+                {
+                    id: 'conditionAgentScenarios',
+                    name: 'conditionAgentScenarios',
+                    label: 'Scenarios',
+                    type: 'array',
+                    default: [{ scenario: '' }, { scenario: '' }],
+                    array: [{ id: 'scenario', name: 'scenario', label: 'Scenario', type: 'string' }]
+                }
+            ],
+            outputs: [
+                { label: '0', name: '0', type: 'output' },
+                { label: '1', name: '1', type: 'output' }
+            ]
+        } as Partial<NodeData>)
+
+        const result = initNode(conditionAgentNodeData, 'conditionAgentAgentflow_0')
+
+        // 2 default scenarios → 2 anchors (Scenario 0, Scenario 1) — no Else port
+        expect(result.outputAnchors).toHaveLength(2)
+        expect(result.outputAnchors![0]).toEqual(
+            expect.objectContaining({ id: 'conditionAgentAgentflow_0-output-0', name: '0', label: '0', description: 'Scenario 0' })
+        )
+        expect(result.outputAnchors![1]).toEqual(
+            expect.objectContaining({ id: 'conditionAgentAgentflow_0-output-1', name: '1', label: '1', description: 'Scenario 1' })
+        )
+    })
 })

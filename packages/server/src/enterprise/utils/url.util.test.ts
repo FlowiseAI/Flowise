@@ -1,11 +1,11 @@
 import { describe, expect, it, afterEach } from '@jest/globals'
 
-jest.mock('../../../src/utils/logger', () => ({
+jest.mock('../../utils/logger', () => ({
     __esModule: true,
     default: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn() }
 }))
 
-import { getSecureAppUrl, getSecureTokenLink } from '../../../src/enterprise/utils/url.util'
+import { getSecureAppUrl, getSecureTokenLink } from './url.util'
 
 describe('URL Security Utilities', () => {
     const originalEnv = process.env.APP_URL

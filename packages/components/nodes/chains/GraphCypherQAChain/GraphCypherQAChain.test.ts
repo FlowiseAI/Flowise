@@ -1,8 +1,4 @@
-import {
-    sanitizeUserInput,
-    detectPromptInjection,
-    validateCypherQuery
-} from '../../../../nodes/chains/GraphCypherQAChain/GraphCypherQAChain'
+import { sanitizeUserInput, detectPromptInjection, validateCypherQuery } from './GraphCypherQAChain'
 
 describe('GraphCypherQAChain Security Functions', () => {
     describe('sanitizeUserInput', () => {
