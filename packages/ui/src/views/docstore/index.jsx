@@ -106,9 +106,7 @@ const Documents = () => {
                     store.id === docStoreId
                         ? {
                               ...store,
-                              ...(updatedDocStoreData || {}),
-                              name: updatedDocStoreData?.name ?? store.name,
-                              description: updatedDocStoreData?.description ?? store.description
+                              ...(updatedDocStoreData || {})
                           }
                         : store
                 )
