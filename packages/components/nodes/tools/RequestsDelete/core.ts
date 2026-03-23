@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { secureFetch } from '../../../src/httpSecurity'
 import { parseJsonBody } from '../../../src/utils'

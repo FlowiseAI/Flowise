@@ -13,14 +13,42 @@ jest.mock('reactflow', () => ({
     useUpdateNodeInternals: () => mockUpdateNodeInternals
 }))
 
+const mockCleanupOrphanedEdges = jest.fn()
+
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
-        state: {},
+        state: { nodes: [], edges: [] },
         updateNodeData: mockUpdateNodeData
     }),
     useConfigContext: () => ({
         isDarkMode: false
     })
+}))
+
+jest.mock('./useDynamicOutputPorts', () => ({
+    useDynamicOutputPorts: () => ({
+        cleanupOrphanedEdges: mockCleanupOrphanedEdges
+    })
+}))
+
+jest.mock('@/core/utils', () => ({
+    ...jest.requireActual('@/core/utils'),
+    buildDynamicOutputAnchors: (nodeId: string, count: number, labelPrefix: string, includeElse: boolean = true) => {
+        const anchors = []
+        for (let i = 0; i < count; i++) {
+            anchors.push({
+                id: `${nodeId}-output-${i}`,
+                name: `${i}`,
+                label: `${i}`,
+                type: labelPrefix,
+                description: `${labelPrefix} ${i}`
+            })
+        }
+        if (includeElse) {
+            anchors.push({ id: `${nodeId}-output-${count}`, name: `${count}`, label: `${count}`, type: labelPrefix, description: 'Else' })
+        }
+        return anchors
+    }
 }))
 
 jest.mock('@/atoms', () => ({
@@ -74,6 +102,19 @@ jest.mock('@/atoms', () => ({
                             Change {index}
                         </button>
                     ))}
+                    {currentArray.map((item, index) => (
+                        <button
+                            key={`set-type-options-${index}`}
+                            data-testid={`set-type-options-${inputParam.name}-${index}`}
+                            onClick={() => {
+                                const newArray = [...currentArray]
+                                newArray[index] = { ...newArray[index], type: 'options' }
+                                onDataChange({ inputParam, newValue: newArray })
+                            }}
+                        >
+                            Set Type Options {index}
+                        </button>
+                    ))}
                 </div>
             )
         }
@@ -86,6 +127,110 @@ jest.mock('@/atoms', () => ({
                 </button>
             </div>
         )
+    },
+    MessagesInput: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentMessages = (data.inputValues?.[inputParam.name] as Array<{ role: string; content: string }>) || []
+        return (
+            <div data-testid={`messages-input-${inputParam.name}`}>
+                <button
+                    data-testid={`add-message-${inputParam.name}`}
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentMessages, { role: 'user', content: '' }]
+                        })
+                    }}
+                >
+                    Add Message
+                </button>
+            </div>
+        )
+    },
+    StructuredOutputBuilder: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentEntries = (data.inputValues?.[inputParam.name] as Array<{ key: string; type: string; description: string }>) || []
+        return (
+            <div data-testid={`structured-output-${inputParam.name}`}>
+                <button
+                    data-testid={`add-output-${inputParam.name}`}
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentEntries, { key: '', type: 'string', description: '' }]
+                        })
+                    }}
+                >
+                    Add Output
+                </button>
+            </div>
+        )
+    },
+    ConditionBuilder: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        return (
+            <div data-testid='condition-builder'>
+                <button
+                    data-testid='add-condition'
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentArray, { type: 'string', value1: '', operation: 'equal', value2: '' }]
+                        })
+                    }}
+                >
+                    Add Condition
+                </button>
+            </div>
+        )
+    },
+    ScenariosInput: ({
+        inputParam,
+        onDataChange,
+        data
+    }: {
+        inputParam: InputParam
+        data: NodeData
+        onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+    }) => {
+        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        return (
+            <div data-testid='scenarios-input'>
+                <button
+                    data-testid='add-scenario'
+                    onClick={() => {
+                        onDataChange({
+                            inputParam,
+                            newValue: [...currentArray, { scenario: '' }]
+                        })
+                    }}
+                >
+                    Add Scenario
+                </button>
+            </div>
+        )
     }
 }))
 
@@ -95,6 +240,77 @@ jest.mock('@tabler/icons-react', () => ({
     IconPencil: () => <span data-testid='icon-pencil' />,
     IconX: () => <span data-testid='icon-x' />
 }))
+
+// --- Start Node Fixture Factory ---
+/**
+ * Creates the full set of Start node input params used across multiple tests.
+ * The `overrides` parameter allows individual tests to customise specific params
+ * (e.g. omitting array children to test the chatInput-hidden case).
+ */
+function createStartNodeInputParams(overrides?: { includeFormInputTypesArray?: boolean }): InputParam[] {
+    const includeArray = overrides?.includeFormInputTypesArray ?? true
+
+    return [
+        {
+            id: 'startInputType',
+            name: 'startInputType',
+            label: 'Input Type',
+            type: 'options',
+            options: [
+                { label: 'Chat Input', name: 'chatInput' },
+                { label: 'Form Input', name: 'formInput' }
+            ],
+            default: 'chatInput'
+        } as InputParam,
+        {
+            id: 'formTitle',
+            name: 'formTitle',
+            label: 'Form Title',
+            type: 'string',
+            show: { startInputType: 'formInput' }
+        } as InputParam,
+        {
+            id: 'formDescription',
+            name: 'formDescription',
+            label: 'Form Description',
+            type: 'string',
+            show: { startInputType: 'formInput' }
+        } as InputParam,
+        {
+            id: 'formInputTypes',
+            name: 'formInputTypes',
+            label: 'Form Input Types',
+            type: 'array',
+            show: { startInputType: 'formInput' },
+            ...(includeArray
+                ? {
+                      array: [
+                          { id: 'type', name: 'type', label: 'Type', type: 'options', default: 'string' } as InputParam,
+                          { id: 'label', name: 'label', label: 'Label', type: 'string' } as InputParam,
+                          { id: 'name', name: 'name', label: 'Variable Name', type: 'string' } as InputParam,
+                          {
+                              id: 'addOptions',
+                              name: 'addOptions',
+                              label: 'Add Options',
+                              type: 'array',
+                              show: { 'formInputTypes[$index].type': 'options' },
+                              array: [{ id: 'option', name: 'option', label: 'Option', type: 'string' } as InputParam]
+                          } as InputParam
+                      ]
+                  }
+                : {})
+        } as InputParam
+    ]
+}
+
+function createStartNodeData(inputValues: Record<string, unknown>): NodeData {
+    return {
+        id: 'startAgentflow_0',
+        name: 'startAgentflow',
+        label: 'Start',
+        inputValues
+    } as NodeData
+}
 
 describe('EditNodeDialog', () => {
     const nodeData: NodeData = {
@@ -303,6 +519,90 @@ describe('EditNodeDialog', () => {
     })
 
     // ========================================================================
+    // Async-driven Field Visibility (FLOWISE-233 integration)
+    // ========================================================================
+
+    describe('async-driven visibility', () => {
+        it('shows a field hidden by an asyncOptions value when that value is selected', () => {
+            const asyncParams: InputParam[] = [
+                { id: 'model', name: 'model', label: 'Model', type: 'asyncOptions', loadMethod: 'listModels' } as InputParam,
+                { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'test-value' } } as InputParam
+            ]
+            const asyncData: NodeData = { ...nodeData, id: 'node-async', inputValues: { model: '' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Temperature is hidden while model is empty
+            expect(screen.queryByTestId('input-handler-temperature')).not.toBeInTheDocument()
+
+            // User picks a value from the async dropdown
+            fireEvent.click(screen.getByTestId('change-model'))
+
+            // Visibility engine re-runs: temperature is now shown
+            expect(screen.getByTestId('input-handler-temperature')).toBeInTheDocument()
+        })
+
+        it('shows a field hidden by an asyncMultiOptions value when that value is selected', () => {
+            const asyncParams: InputParam[] = [
+                {
+                    id: 'tools',
+                    name: 'tools',
+                    label: 'Tools',
+                    type: 'asyncMultiOptions',
+                    loadMethod: 'listTools',
+                    optional: true
+                } as InputParam,
+                { id: 'cfg', name: 'toolConfig', label: 'Tool Config', type: 'string', show: { tools: 'test-value' } } as InputParam
+            ]
+            const asyncData: NodeData = { ...nodeData, id: 'node-multi', inputValues: { tools: '' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.queryByTestId('input-handler-toolConfig')).not.toBeInTheDocument()
+
+            fireEvent.click(screen.getByTestId('change-tools'))
+
+            expect(screen.getByTestId('input-handler-toolConfig')).toBeInTheDocument()
+        })
+
+        it('hides a field when asyncOptions value no longer satisfies its show condition', () => {
+            const asyncParams: InputParam[] = [
+                { id: 'model', name: 'model', label: 'Model', type: 'asyncOptions', loadMethod: 'listModels' } as InputParam,
+                { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'gpt-4o' } } as InputParam
+            ]
+            // Start with temperature visible (model === 'gpt-4o')
+            const asyncData: NodeData = { ...nodeData, id: 'node-hide', inputValues: { model: 'gpt-4o', temperature: '0.5' } }
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: asyncParams, data: asyncData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('input-handler-temperature')).toBeInTheDocument()
+
+            // Changing model fires onDataChange with 'test-value', which no longer satisfies show: { model: 'gpt-4o' }
+            fireEvent.click(screen.getByTestId('change-model'))
+
+            expect(screen.queryByTestId('input-handler-temperature')).not.toBeInTheDocument()
+        })
+    })
+
+    // ========================================================================
     // Integration Tests - Array Input
     // ========================================================================
 
@@ -421,6 +721,430 @@ describe('EditNodeDialog', () => {
             expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
         })
 
+        it('should render ConditionBuilder for conditionAgentflow node', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('condition-builder')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the conditions param
+            expect(screen.queryByTestId('input-handler-conditions')).not.toBeInTheDocument()
+        })
+
+        it('should merge outputAnchors into a single updateNodeData call when conditions change', () => {
+            const conditionParams: InputParam[] = [
+                {
+                    name: 'conditions',
+                    label: 'Conditions',
+                    type: 'array',
+                    array: [{ name: 'type', label: 'Type', type: 'options' } as InputParam]
+                } as InputParam
+            ]
+
+            const conditionData: NodeData = {
+                id: 'conditionAgentflow_0',
+                name: 'conditionAgentflow',
+                label: 'Condition',
+                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: conditionParams, data: conditionData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-condition'))
+
+            // Should merge inputValues, outputAnchors, and cleaned edges into a single updateNodeData call
+            expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
+            expect(mockUpdateNodeData).toHaveBeenCalledWith(
+                'conditionAgentflow_0',
+                {
+                    inputValues: expect.objectContaining({ conditions: expect.any(Array) }),
+                    outputAnchors: expect.arrayContaining([
+                        expect.objectContaining({ description: 'Condition 0' }),
+                        expect.objectContaining({ description: 'Condition 1' }),
+                        expect.objectContaining({ description: 'Else' })
+                    ])
+                },
+                undefined // cleanupOrphanedEdges returns undefined when no edges removed
+            )
+        })
+
+        it('should render ScenariosInput for conditionAgentAgentflow node', () => {
+            const scenarioParams: InputParam[] = [
+                {
+                    name: 'conditionAgentScenarios',
+                    label: 'Scenarios',
+                    type: 'array',
+                    array: [{ name: 'scenario', label: 'Scenario', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+
+            const scenarioData: NodeData = {
+                id: 'conditionAgentAgentflow_0',
+                name: 'conditionAgentAgentflow',
+                label: 'Condition Agent',
+                inputValues: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: scenarioParams, data: scenarioData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('scenarios-input')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the scenarios param
+            expect(screen.queryByTestId('input-handler-conditionAgentScenarios')).not.toBeInTheDocument()
+        })
+
+        it('should merge outputAnchors into a single updateNodeData call when scenarios change', () => {
+            const scenarioParams: InputParam[] = [
+                {
+                    name: 'conditionAgentScenarios',
+                    label: 'Scenarios',
+                    type: 'array',
+                    array: [{ name: 'scenario', label: 'Scenario', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+
+            const scenarioData: NodeData = {
+                id: 'conditionAgentAgentflow_0',
+                name: 'conditionAgentAgentflow',
+                label: 'Condition Agent',
+                inputValues: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: scenarioParams, data: scenarioData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-scenario'))
+
+            // Adding to 1 item → 2 items → 2 anchors (Scenario 0, Scenario 1) — no Else port
+            expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
+            expect(mockUpdateNodeData).toHaveBeenCalledWith(
+                'conditionAgentAgentflow_0',
+                {
+                    inputValues: expect.objectContaining({ conditionAgentScenarios: expect.any(Array) }),
+                    outputAnchors: expect.arrayContaining([
+                        expect.objectContaining({ description: 'Scenario 0' }),
+                        expect.objectContaining({ description: 'Scenario 1' })
+                    ])
+                },
+                undefined // cleanupOrphanedEdges returns undefined when no edges removed
+            )
+            // Verify no Else anchor
+            const call = mockUpdateNodeData.mock.calls[0]
+            expect(call[1].outputAnchors).toHaveLength(2)
+        })
+
+        it('should render MessagesInput for agentMessages param on Agent node', () => {
+            const agentParams: InputParam[] = [
+                {
+                    name: 'agentMessages',
+                    label: 'Messages',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const agentData: NodeData = {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputValues: {
+                    agentMessages: [{ role: 'system', content: 'You are helpful' }]
+                }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: agentParams, data: agentData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('messages-input-agentMessages')).toBeInTheDocument()
+            // Should NOT render generic NodeInputHandler for the messages param
+            expect(screen.queryByTestId('input-handler-agentMessages')).not.toBeInTheDocument()
+        })
+
+        it('should render MessagesInput for llmMessages param on LLM node', () => {
+            const llmParams: InputParam[] = [
+                {
+                    name: 'llmMessages',
+                    label: 'Messages',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const llmData: NodeData = {
+                id: 'llmAgentflow_0',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputValues: { llmMessages: [] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog show={true} dialogProps={{ inputParams: llmParams, data: llmData, disabled: false }} onCancel={jest.fn()} />
+            )
+
+            expect(screen.getByTestId('messages-input-llmMessages')).toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-llmMessages')).not.toBeInTheDocument()
+        })
+
+        it('should propagate MessagesInput data changes through onCustomDataChange', () => {
+            const agentParams: InputParam[] = [
+                {
+                    name: 'agentMessages',
+                    label: 'Messages',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const agentData: NodeData = {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputValues: { agentMessages: [{ role: 'system', content: 'Hello' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: agentParams, data: agentData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            fireEvent.click(screen.getByTestId('add-message-agentMessages'))
+
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('agentAgentflow_0', {
+                inputValues: {
+                    agentMessages: [
+                        { role: 'system', content: 'Hello' },
+                        { role: 'user', content: '' }
+                    ]
+                }
+            })
+        })
+
+        it('should render StructuredOutputBuilder for agentStructuredOutput param', () => {
+            const agentParams: InputParam[] = [
+                {
+                    name: 'agentStructuredOutput',
+                    label: 'JSON Structured Output',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const agentData: NodeData = {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputValues: {
+                    agentStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
+                }
+            } as NodeData
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: agentParams, data: agentData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            expect(screen.getByTestId('structured-output-agentStructuredOutput')).toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-agentStructuredOutput')).not.toBeInTheDocument()
+        })
+
+        it('should render StructuredOutputBuilder for llmStructuredOutput param', () => {
+            const llmParams: InputParam[] = [
+                {
+                    name: 'llmStructuredOutput',
+                    label: 'JSON Structured Output',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const llmData: NodeData = {
+                id: 'llmAgentflow_0',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputValues: { llmStructuredOutput: [] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog show={true} dialogProps={{ inputParams: llmParams, data: llmData, disabled: false }} onCancel={jest.fn()} />
+            )
+
+            expect(screen.getByTestId('structured-output-llmStructuredOutput')).toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-llmStructuredOutput')).not.toBeInTheDocument()
+        })
+
+        it('should propagate StructuredOutputBuilder data changes through onCustomDataChange', () => {
+            const llmParams: InputParam[] = [
+                {
+                    name: 'llmStructuredOutput',
+                    label: 'JSON Structured Output',
+                    type: 'array',
+                    optional: true
+                } as InputParam
+            ]
+
+            const llmData: NodeData = {
+                id: 'llmAgentflow_0',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputValues: { llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }] }
+            } as NodeData
+
+            render(
+                <EditNodeDialog show={true} dialogProps={{ inputParams: llmParams, data: llmData, disabled: false }} onCancel={jest.fn()} />
+            )
+
+            fireEvent.click(screen.getByTestId('add-output-llmStructuredOutput'))
+
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('llmAgentflow_0', {
+                inputValues: {
+                    llmStructuredOutput: [
+                        { key: 'name', type: 'string', description: '' },
+                        { key: '', type: 'string', description: '' }
+                    ]
+                }
+            })
+        })
+
+        it('Start node: formInputTypes shows addOptions only when type is "options"', () => {
+            const startInputParams = createStartNodeInputParams()
+            const startData = createStartNodeData({
+                startInputType: 'formInput',
+                formTitle: 'My Form',
+                formDescription: 'Fill it out',
+                formInputTypes: [
+                    { type: 'options', label: 'Color', name: 'color', addOptions: [{ option: 'Red' }] },
+                    { type: 'string', label: 'Name', name: 'userName' }
+                ]
+            })
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: startInputParams, data: startData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // formTitle, formDescription, and formInputTypes should all be visible
+            expect(screen.getByTestId('input-handler-formTitle')).toBeInTheDocument()
+            expect(screen.getByTestId('input-handler-formDescription')).toBeInTheDocument()
+            expect(screen.getByTestId('input-handler-formInputTypes')).toBeInTheDocument()
+
+            // itemParameters should be computed for formInputTypes (2 items)
+            const handler = screen.getByTestId('input-handler-formInputTypes')
+            expect(handler).toHaveAttribute('data-item-params-count', '2')
+        })
+
+        it('Start node: hides formTitle/formDescription/formInputTypes when chatInput is selected', () => {
+            // Use the factory without array children — not needed for this visibility test
+            const startInputParams = createStartNodeInputParams({ includeFormInputTypesArray: false })
+            const startData = createStartNodeData({ startInputType: 'chatInput' })
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: startInputParams, data: startData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Form fields should be hidden when chatInput is selected
+            expect(screen.queryByTestId('input-handler-formTitle')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('input-handler-formInputTypes')).not.toBeInTheDocument()
+        })
+
+        it('Start node: changing Type dropdown recomputes itemParameters dynamically', () => {
+            // Start with two formInputTypes rows, both type=string (addOptions hidden for both)
+            const startInputParams = createStartNodeInputParams()
+            const startData = createStartNodeData({
+                startInputType: 'formInput',
+                formTitle: 'My Form',
+                formDescription: '',
+                formInputTypes: [
+                    { type: 'string', label: 'Name', name: 'userName' },
+                    { type: 'string', label: 'Age', name: 'age' }
+                ]
+            })
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{ inputParams: startInputParams, data: startData, disabled: false }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Verify initial itemParameters count is 2 (one per row)
+            const handler = screen.getByTestId('input-handler-formInputTypes')
+            expect(handler).toHaveAttribute('data-item-params-count', '2')
+
+            // Simulate changing the first row's Type from "string" to "options"
+            // This fires onCustomDataChange -> computeArrayItemParameters
+            fireEvent.click(screen.getByTestId('set-type-options-formInputTypes-0'))
+
+            // After the change, updateNodeData should have been called with the updated array
+            expect(mockUpdateNodeData).toHaveBeenCalledWith('startAgentflow_0', {
+                inputValues: expect.objectContaining({
+                    formInputTypes: [
+                        { type: 'options', label: 'Name', name: 'userName' },
+                        { type: 'string', label: 'Age', name: 'age' }
+                    ]
+                })
+            })
+
+            // itemParameters should still have 2 entries (one per array item)
+            // The recomputation happens via setArrayItemParameters in onCustomDataChange
+            const updatedHandler = screen.getByTestId('input-handler-formInputTypes')
+            expect(updatedHandler).toHaveAttribute('data-item-params-count', '2')
+        })
+
         it('should compute and pass itemParameters to NodeInputHandler matching array item count', () => {
             const arrayParams: InputParam[] = [
                 {
@@ -457,6 +1181,35 @@ describe('EditNodeDialog', () => {
             // itemParameters should have one entry per array item (2 items → count = 2)
             const handler = screen.getByTestId('input-handler-items')
             expect(handler).toHaveAttribute('data-item-params-count', '2')
+        })
+
+        it('should not crash when a non-array field changes while array params exist', () => {
+            const mixedParams: InputParam[] = [
+                { name: 'title', label: 'Title', type: 'string' } as InputParam,
+                {
+                    name: 'items',
+                    label: 'Items',
+                    type: 'array',
+                    array: [{ id: 'key', name: 'key', label: 'Key', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+
+            render(
+                <EditNodeDialog
+                    show={true}
+                    dialogProps={{
+                        inputParams: mixedParams,
+                        data: { ...nodeData, inputValues: { title: 'hello', items: [{ key: 'a' }] } },
+                        disabled: false
+                    }}
+                    onCancel={jest.fn()}
+                />
+            )
+
+            // Changing the string field should not throw "items.map is not a function"
+            expect(() => {
+                fireEvent.click(screen.getByTestId('change-title'))
+            }).not.toThrow()
         })
     })
 })

@@ -1,7 +1,7 @@
 import { Callbacks } from '@langchain/core/callbacks/manager'
 import { Document } from '@langchain/core/documents'
 import axios from 'axios'
-import { BaseDocumentCompressor } from 'langchain/retrievers/document_compressors'
+import { BaseDocumentCompressor } from '@langchain/classic/retrievers/document_compressors'
 
 export class JinaRerank extends BaseDocumentCompressor {
     private jinaAPIKey: string

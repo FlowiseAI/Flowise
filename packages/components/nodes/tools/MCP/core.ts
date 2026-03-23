@@ -2,7 +2,7 @@ import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResult
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { z } from 'zod'
+import { z, type ZodTypeAny } from 'zod/v3'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
@@ -172,17 +172,17 @@ export async function MCPTool({
 function createSchemaModel(
     inputSchema: {
         type: 'object'
-        properties?: import('zod').objectOutputType<{}, import('zod').ZodTypeAny, 'passthrough'> | undefined
+        properties?: Record<string, unknown>
     } & { [k: string]: unknown }
-): any {
+): z.ZodObject<Record<string, ZodTypeAny>> {
     if (inputSchema.type !== 'object' || !inputSchema.properties) {
         throw new Error('Invalid schema type or missing properties')
     }
 
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key, _]) => {
+    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key]) => {
         acc[key] = z.any()
         return acc
-    }, {} as Record<string, import('zod').ZodTypeAny>)
+    }, {} as Record<string, ZodTypeAny>)
 
     return z.object(schemaProperties)
 }
@@ -190,7 +190,7 @@ function createSchemaModel(
 export const validateArgsForLocalFileAccess = (args: string[]): void => {
     const dangerousPatterns = [
         // Absolute paths
-        /^\/[^/]/, // Unix absolute paths starting with /
+        /^\//, // Unix absolute paths starting with /
         /^[a-zA-Z]:\\/, // Windows absolute paths like C:\
 
         // Relative paths that could escape current directory
@@ -286,7 +286,9 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
             '-c', // Execute shell commands
             '--call', // Execute shell commands
             '--shell-auto-fallback', // Shell execution fallback
-            '-y' // Auto-confirms installation prompts
+            '-y', // Auto-confirms installation prompts
+            '--yes', // Auto-confirms installation prompts
+            '--node-options' // Passes arbitrary Node flags to underlying process, bypassing node flag blocklist
         ],
         node: [
             '-e', // Execute JavaScript code
@@ -295,7 +297,13 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
             '--print', // Evaluate and print JavaScript code
             '--inspect', // Enable remote debugging (security risk)
             '--inspect-brk', // Enable remote debugging with breakpoint (security risk)
-            '--experimental-policy' // Could load malicious policies
+            '--experimental-policy', // Could load malicious policies
+            '-r', // Short alias for --require
+            '--require', // Preload a CommonJS module before script runs
+            '--loader', // Custom ES module loader hook (code execution)
+            '--experimental-loader', // Same as --loader, older Node alias
+            '--import', // Preload ESM module before entry script (Node 18+)
+            '--env-file' // Read env vars from a local file (Node 20+, local file access)
         ],
         python: [
             '-c', // Execute Python code
@@ -307,15 +315,22 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
         ],
         docker: [
             'run', // Run containers (too powerful)
+            'build', // Pulls a container and executes the run instructions
             'exec', // Execute in containers
+            'compose', // Subcommand that starts containers (same risk as run)
             '-v', // Mount host filesystems
             '--volume', // Mount host filesystems
+            '--mount', // Alternative to -v/--volume for mounting host paths
+            '--volumes-from', // Mount volumes from another container (filesystem access)
             '--privileged', // Privileged mode
             '--cap-add', // Add capabilities
             '--security-opt', // Modify security options
+            '--device', // Add host device files to container (privilege escalation)
+            '--entrypoint', // Override container entrypoint (arbitrary code execution)
             '--network', // Host network access (catches --network=host and --network host)
             '--pid', // Host PID namespace (catches --pid=host and --pid host)
-            '--ipc' // Host IPC namespace (catches --ipc=host and --ipc host)
+            '--ipc', // Host IPC namespace (catches --ipc=host and --ipc host)
+            '--env-file' // Read env vars from a local host file (local file access)
         ]
     }
 

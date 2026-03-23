@@ -200,6 +200,18 @@ class GoogleDocs_Tools implements INode {
                 },
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Include Tabs Content',
+                name: 'includeTabsContent',
+                type: 'boolean',
+                description: 'Whether to include content from all document tabs. If disabled, only the first tab is returned.',
+                default: false,
+                show: {
+                    actions: ['getDocument', 'getTextContent']
+                },
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -240,6 +252,7 @@ class GoogleDocs_Tools implements INode {
         if (nodeData.inputs?.replaceText) nodeInputs.replaceText = nodeData.inputs.replaceText
         if (nodeData.inputs?.newText) nodeInputs.newText = nodeData.inputs.newText
         if (nodeData.inputs?.matchCase !== undefined) nodeInputs.matchCase = nodeData.inputs.matchCase
+        if (nodeData.inputs?.includeTabsContent !== undefined) nodeInputs.includeTabsContent = nodeData.inputs.includeTabsContent
 
         // Media parameters
         if (nodeData.inputs?.imageUrl) nodeInputs.imageUrl = nodeData.inputs.imageUrl

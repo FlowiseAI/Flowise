@@ -184,7 +184,8 @@ export function validateNode(node: FlowNode, availableNodes?: NodeData[]): Valid
         })
     }
 
-    const inputParams = node.data.inputs || []
+    const schemaFromAvailable = availableNodes?.find((n) => n.name === node.data.name)
+    const inputParams = schemaFromAvailable?.inputs || node.data.inputs || []
     const inputValues = node.data.inputValues || {}
 
     for (const param of inputParams) {
@@ -200,8 +201,11 @@ export function validateNode(node: FlowNode, availableNodes?: NodeData[]): Valid
             continue
         }
 
-        // Check required inputs, skipping hidden params
-        if (!param.optional && evaluateParamVisibility(param, inputValues) && isEmptyValue(inputValues[param.name])) {
+        // Check required inputs, skipping hidden params.
+        // asyncOptions and asyncMultiOptions values are stored in inputValues just like options;
+        // evaluateParamVisibility correctly uses those values to resolve show/hide conditions on
+        // dependent fields, so async-driven visibility is handled automatically here.
+        if (!param.optional && evaluateParamVisibility(param, inputValues) && isEmptyValue(inputValues[param.name] ?? param.default)) {
             errors.push({
                 nodeId: node.id,
                 message: `${param.label || param.name} is required`,

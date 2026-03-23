@@ -1,5 +1,6 @@
 import { ICommonObject } from 'flowise-components'
 import { stripProtectedFields } from '../../utils/stripProtectedFields'
+import { extractResponseContent, ICommonObject } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, isEqual, uniqWith } from 'lodash'
 import OpenAI from 'openai'
@@ -198,7 +199,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any, workspace
 
             const openai = new OpenAI({ apiKey: openAIApiKey })
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).delete({ id: assistantId })
-            if (isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
+            if (isDeleteBoth) await openai.beta.assistants.delete(assistantDetails.id)
             return dbResponse
         } catch (error: any) {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error deleting assistant - ${getErrorMessage(error)}`)
@@ -548,8 +549,7 @@ const generateAssistantInstruction = async (task: string, selectedChatModel: ICo
                     content: ASSISTANT_PROMPT_GENERATOR.replace('{{task}}', task)
                 }
             ])
-            const content = response?.content || response.kwargs?.content
-
+            const content = extractResponseContent(response)
             return { content }
         }
 

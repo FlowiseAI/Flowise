@@ -10,8 +10,20 @@ export function bindToolsApi(client: AxiosInstance) {
         /**
          * Get all available tools
          */
-        getAllTools: async (): Promise<Tool[]> => {
-            const response = await client.post('/node-load-method/toolAgentflow', { loadMethod: 'listTools' })
+        getAllTools: async (nodeName = 'toolAgentflow'): Promise<Tool[]> => {
+            const response = await client.post(`/node-load-method/${encodeURIComponent(nodeName)}`, { loadMethod: 'listTools' })
+            return response.data
+        },
+
+        /**
+         * Get input argument names for the currently selected tool.
+         * Passes current node inputs as `currentNode.inputs` so the server can resolve the selected tool.
+         */
+        getToolInputArgs: async (inputs: Record<string, unknown>, nodeName = 'toolAgentflow'): Promise<Tool[]> => {
+            const response = await client.post(`/node-load-method/${encodeURIComponent(nodeName)}`, {
+                loadMethod: 'listToolInputArgs',
+                currentNode: { inputs }
+            })
             return response.data
         }
     }

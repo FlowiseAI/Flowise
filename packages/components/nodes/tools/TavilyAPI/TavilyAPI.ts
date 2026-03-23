@@ -1,4 +1,4 @@
-import { TavilySearchResults } from '@langchain/community/tools/tavily_search'
+import { TavilySearch } from '@langchain/tavily'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -150,7 +150,7 @@ class TavilyAPI_Tools implements INode {
             type: 'credential',
             credentialNames: ['tavilyApi']
         }
-        this.baseClasses = [this.type, ...getBaseClasses(TavilySearchResults)]
+        this.baseClasses = [this.type, ...getBaseClasses(TavilySearch)]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -187,7 +187,7 @@ class TavilyAPI_Tools implements INode {
         if (includeDomains) config.includeDomains = includeDomains.split(',').map((d) => d.trim())
         if (excludeDomains) config.excludeDomains = excludeDomains.split(',').map((d) => d.trim())
 
-        return new TavilySearchResults(config)
+        return new TavilySearch(config)
     }
 }
 
