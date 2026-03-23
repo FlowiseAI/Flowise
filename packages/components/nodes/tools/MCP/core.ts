@@ -15,6 +15,8 @@ export class MCPToolkit extends BaseToolkit {
     client: Client | null = null
     serverParams: StdioServerParameters | any
     transportType: 'stdio' | 'sse'
+    /** Extra HTTP headers per HTTP/SSE connection; overrides static toolkit headers for the same names. */
+    getDynamicHeaders?: () => Promise<Record<string, string>>
     constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
         super()
         this.serverParams = serverParams
@@ -22,7 +24,7 @@ export class MCPToolkit extends BaseToolkit {
     }
 
     // Method to create a new client with transport
-    async createClient(): Promise<Client> {
+    async createClient(dynamicHeaders?: Record<string, string>): Promise<Client> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -54,11 +56,13 @@ export class MCPToolkit extends BaseToolkit {
 
             const baseUrl = new URL(this.serverParams.url)
             await checkDenyList(this.serverParams.url)
+            const mergedHeaders = { ...this.serverParams?.headers, ...dynamicHeaders }
+            const headers = Object.keys(mergedHeaders).length > 0 ? mergedHeaders : undefined
             try {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new StreamableHTTPClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         }
                     })
                 } else {
@@ -66,16 +70,16 @@ export class MCPToolkit extends BaseToolkit {
                 }
                 await client.connect(transport)
             } catch (error) {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new SSEClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         },
                         eventSourceInit: {
                             fetch: async (url, init) => {
                                 return secureFetch(url.toString(), {
                                     ...(init as any),
-                                    headers: this.serverParams.headers
+                                    headers
                                 }) as any
                             }
                         }
@@ -147,8 +151,8 @@ export async function MCPTool({
 }): Promise<Tool> {
     return tool(
         async (input): Promise<string> => {
-            // Create a new client for this request
-            const client = await toolkit.createClient()
+            const dynamicHeaders = toolkit.getDynamicHeaders ? await toolkit.getDynamicHeaders() : {}
+            const client = await toolkit.createClient(dynamicHeaders)
 
             try {
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
