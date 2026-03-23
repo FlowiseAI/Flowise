@@ -33,6 +33,6 @@ router.post(
 )
 
 // DELETE FILES
-router.patch(['/', '/:id'], checkPermission('assistants:delete'), openaiAssistantsVectorStoreController.deleteFilesFromAssistantVectorStore)
+router.patch(['/', '/:id'], checkPermission('assistants:update'), openaiAssistantsVectorStoreController.deleteFilesFromAssistantVectorStore)
 
 export default router
