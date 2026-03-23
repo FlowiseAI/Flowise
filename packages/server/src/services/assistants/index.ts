@@ -1,4 +1,5 @@
 import { ICommonObject } from 'flowise-components'
+import { stripProtectedFields } from '../../utils/stripProtectedFields'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, isEqual, uniqWith } from 'lodash'
 import OpenAI from 'openai'
@@ -32,7 +33,8 @@ const createAssistant = async (requestBody: any, orgId: string, workspaceId: str
             // For CUSTOM assistants the credential field is a client-generated UUID used as an
             // internal identifier, not a reference to the Credential entity, so no lookup is needed.
             const newAssistant = new Assistant()
-            Object.assign(newAssistant, requestBody)
+            Object.assign(newAssistant, stripProtectedFields(requestBody))
+            newAssistant.workspaceId = workspaceId
 
             const assistant = appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
@@ -316,16 +318,7 @@ const updateAssistant = async (assistantId: string, requestBody: any, workspaceI
         }
 
         if (assistant.type === 'CUSTOM') {
-            const body = requestBody
-            // Explicit allowlist — mutate only allowed fields on the fetched entity.
-            // Never use merge() with an intermediate entity: TypeORM iterates all metadata
-            // columns during merge, which can overwrite workspaceId, id, and timestamps
-            // even when those fields are absent from the source object.
-            if (body.details !== undefined) assistant.details = body.details
-            // For CUSTOM assistants the credential field is a client-generated UUID used as an
-            // internal identifier, not a reference to the Credential entity, so no lookup is needed.
-            if (body.credential !== undefined) assistant.credential = body.credential
-            if (body.iconSrc !== undefined) assistant.iconSrc = body.iconSrc
+            Object.assign(assistant, stripProtectedFields(requestBody))
 
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
             return dbResponse
