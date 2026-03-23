@@ -4,7 +4,7 @@ import {
     validateArgsForLocalFileAccess,
     validateEnvironmentVariables,
     validateMCPServerConfig
-} from '../../../../nodes/tools/MCP/core'
+} from './core'
 
 describe('MCP Security Validations', () => {
     describe('validateCommandFlags', () => {
@@ -31,6 +31,22 @@ describe('MCP Security Validations', () => {
                 expect(() => {
                     validateCommandFlags('npx', ['-y', 'https://test-malicious-download.com'])
                 }).toThrow("Argument '-y' is not allowed for command 'npx'")
+            })
+
+            it('should block --yes flag', () => {
+                expect(() => {
+                    validateCommandFlags('npx', ['--yes', 'https://test-malicious-download.com'])
+                }).toThrow("Argument '--yes' is not allowed for command 'npx'")
+            })
+
+            it('should block --node-options flag', () => {
+                expect(() => {
+                    validateCommandFlags('npx', ['--node-options', '--eval malicious'])
+                }).toThrow("Argument '--node-options' is not allowed for command 'npx'")
+
+                expect(() => {
+                    validateCommandFlags('npx', ['--node-options=--eval malicious'])
+                }).toThrow("contains flag '--node-options'")
             })
 
             it('should block case variations', () => {
@@ -81,6 +97,42 @@ describe('MCP Security Validations', () => {
                 expect(() => {
                     validateCommandFlags('node', ['--inspect-brk'])
                 }).toThrow("Argument '--inspect-brk' is not allowed for command 'node'")
+            })
+
+            it('should block -r/--require flags', () => {
+                expect(() => {
+                    validateCommandFlags('node', ['-r', 'malicious-module'])
+                }).toThrow("Argument '-r' is not allowed for command 'node'")
+
+                expect(() => {
+                    validateCommandFlags('node', ['--require', 'malicious-module'])
+                }).toThrow("Argument '--require' is not allowed for command 'node'")
+            })
+
+            it('should block --loader/--experimental-loader flags', () => {
+                expect(() => {
+                    validateCommandFlags('node', ['--loader', './malicious-loader.mjs'])
+                }).toThrow("Argument '--loader' is not allowed for command 'node'")
+
+                expect(() => {
+                    validateCommandFlags('node', ['--experimental-loader', './malicious-loader.mjs'])
+                }).toThrow("Argument '--experimental-loader' is not allowed for command 'node'")
+            })
+
+            it('should block --import flag', () => {
+                expect(() => {
+                    validateCommandFlags('node', ['--import', './malicious.mjs'])
+                }).toThrow("Argument '--import' is not allowed for command 'node'")
+            })
+
+            it('should block --env-file flag', () => {
+                expect(() => {
+                    validateCommandFlags('node', ['--env-file', '.env'])
+                }).toThrow("Argument '--env-file' is not allowed for command 'node'")
+
+                expect(() => {
+                    validateCommandFlags('node', ['--env-file=.env'])
+                }).toThrow("contains flag '--env-file'")
             })
 
             it('should allow legitimate node usage', () => {
@@ -189,6 +241,56 @@ describe('MCP Security Validations', () => {
                 }).toThrow("Argument '--ipc' is not allowed for command 'docker'")
             })
 
+            it('should block --mount flag', () => {
+                expect(() => {
+                    validateCommandFlags('docker', ['--mount', 'type=bind,source=/,target=/host'])
+                }).toThrow("Argument '--mount' is not allowed for command 'docker'")
+
+                expect(() => {
+                    validateCommandFlags('docker', ['--mount=type=bind,source=/,target=/host'])
+                }).toThrow("contains flag '--mount'")
+            })
+
+            it('should block --device flag', () => {
+                expect(() => {
+                    validateCommandFlags('docker', ['--device', '/dev/sda'])
+                }).toThrow("Argument '--device' is not allowed for command 'docker'")
+            })
+
+            it('should block --entrypoint flag', () => {
+                expect(() => {
+                    validateCommandFlags('docker', ['--entrypoint', '/bin/sh'])
+                }).toThrow("Argument '--entrypoint' is not allowed for command 'docker'")
+            })
+
+            it('should block compose subcommand', () => {
+                expect(() => {
+                    validateCommandFlags('docker', ['compose', 'up'])
+                }).toThrow("Argument 'compose' is not allowed for command 'docker'")
+            })
+
+            it('should block --volumes-from flag', () => {
+                expect(() => {
+                    validateCommandFlags('docker', ['--volumes-from', 'other-container'])
+                }).toThrow("Argument '--volumes-from' is not allowed for command 'docker'")
+            })
+
+            it('should block --env-file flag', () => {
+                expect(() => {
+                    validateCommandFlags('docker', ['--env-file', '/etc/secrets'])
+                }).toThrow("Argument '--env-file' is not allowed for command 'docker'")
+
+                expect(() => {
+                    validateCommandFlags('docker', ['--env-file=/etc/secrets'])
+                }).toThrow("contains flag '--env-file'")
+            })
+
+            it('should block build subcommand', () => {
+                expect(() => {
+                    validateCommandFlags('docker', ['build', 'https://evil.com/'])
+                }).toThrow("Argument 'build' is not allowed for command 'docker'")
+            })
+
             it('should allow safe docker usage', () => {
                 expect(() => {
                     validateCommandFlags('docker', ['ps'])
@@ -268,6 +370,12 @@ describe('MCP Security Validations', () => {
 
             expect(() => {
                 validateArgsForLocalFileAccess(['C:\\Windows\\System32'])
+            }).toThrow('Argument contains potential local file access')
+        })
+
+        it('should block double-slash absolute paths', () => {
+            expect(() => {
+                validateArgsForLocalFileAccess(['//etc/passwd'])
             }).toThrow('Argument contains potential local file access')
         })
 

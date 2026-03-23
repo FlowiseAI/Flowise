@@ -1,4 +1,4 @@
-import { sanitizeFlowDataForPublicEndpoint } from '../../src/utils/sanitizeFlowData'
+import { sanitizeFlowDataForPublicEndpoint } from './sanitizeFlowData'
 
 const makeFlowData = (nodes: object[], edges: object[] = []) => JSON.stringify({ nodes, edges, viewport: { x: 0, y: 0, zoom: 1 } })
 

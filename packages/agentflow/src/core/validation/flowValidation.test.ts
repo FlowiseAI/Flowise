@@ -144,6 +144,31 @@ describe('validateNode', () => {
         expect(errors).toHaveLength(0)
     })
 
+    it('should not warn when required field has a default value and no explicit inputValue', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'agentAgentflow'),
+            data: {
+                id: 'a',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputs: [
+                    {
+                        id: 'p1',
+                        name: 'agentReturnResponseAs',
+                        label: 'Return Response As',
+                        type: 'options',
+                        optional: false,
+                        default: 'userMessage'
+                    }
+                ],
+                inputValues: {}
+            }
+        }
+        const errors = validateNode(node)
+        const responseErrors = errors.filter((e) => e.message.includes('Return Response As'))
+        expect(responseErrors).toHaveLength(0)
+    })
+
     it('should skip hidden fields (show condition not met)', () => {
         const node: FlowNode = {
             ...makeNode('a', 'llmAgentflow'),
@@ -320,6 +345,54 @@ describe('validateNode', () => {
         const errors = validateNode(node)
         // calcConfig is visible and empty → should be flagged
         expect(errors).toContainEqual(expect.objectContaining({ message: 'Calculator Config is required' }))
+    })
+
+    // --- availableNodes schema fallback ---
+    it('should use availableNodes input definitions when node.data.inputs is missing', () => {
+        const availableNodes = [
+            makeNodeData({
+                name: 'llmAgentflow',
+                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }]
+            })
+        ]
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                // No inputs on node — schema comes from availableNodes
+                inputValues: {}
+            }
+        }
+        const errors = validateNode(node, availableNodes)
+        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Model is required' }))
+    })
+
+    it('should prefer availableNodes schema over node.data.inputs', () => {
+        const availableNodes = [
+            makeNodeData({
+                name: 'llmAgentflow',
+                inputs: [
+                    { id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false },
+                    { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false }
+                ]
+            })
+        ]
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                // Stale/partial inputs on node — availableNodes has the full schema
+                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
+                inputValues: {}
+            }
+        }
+        const errors = validateNode(node, availableNodes)
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Model is required' }))
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Temperature is required' }))
     })
 
     // --- Nested config validation ---
