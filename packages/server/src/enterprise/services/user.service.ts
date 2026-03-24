@@ -25,7 +25,8 @@ export const enum UserErrorMessage {
     USER_NOT_FOUND = 'User Not Found',
     USER_FOUND_MULTIPLE = 'User Found Multiple',
     INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password',
-    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match'
+    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match',
+    EMAIL_CHANGE_USE_CONFIRM_LINK = 'Use the confirm email change link from your email to complete this action.'
 }
 export class UserService {
     private telemetry: Telemetry

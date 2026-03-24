@@ -52,7 +52,6 @@ export class UserController {
 
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
-            const userService = new UserService()
             const currentUser = req.user
             if (!currentUser) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.USER_NOT_FOUND)
@@ -62,10 +61,10 @@ export class UserController {
                 throw new InternalFlowiseError(StatusCodes.FORBIDDEN, UserErrorMessage.USER_NOT_FOUND)
             }
             const accountService = new AccountService()
-            const user = await userService.updateUser(req.body, {
-                onEmailChanged: (userId, newEmail) => accountService.syncStripeCustomerEmailAfterUserEmailChange(userId, newEmail)
-            })
-            return res.status(StatusCodes.OK).json(user)
+            const result = await accountService.updateAuthenticatedUserProfile(currentUser.id, req.body, (userId, newEmail) =>
+                accountService.syncStripeCustomerEmailAfterUserEmailChange(userId, newEmail)
+            )
+            return res.status(StatusCodes.OK).json(result)
         } catch (error) {
             next(error)
         }
