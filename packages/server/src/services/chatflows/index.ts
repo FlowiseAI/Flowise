@@ -1,6 +1,6 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { In } from 'typeorm'
+import { Brackets, In } from 'typeorm'
 import { validate as isValidUUID } from 'uuid'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
@@ -220,16 +220,21 @@ const getAllChatflowsCount = async (type?: ChatflowType, workspaceId?: string): 
     }
 }
 
-const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise<any> => {
+const getChatflowByApiKey = async (apiKeyId: string, workspaceId: string, keyonly?: unknown): Promise<any> => {
     try {
         // Here we only get chatflows that are bounded by the apikeyid and chatflows that are not bounded by any apikey
         const appServer = getRunningExpressApp()
         let query = appServer.AppDataSource.getRepository(ChatFlow)
             .createQueryBuilder('cf')
-            .where('cf.apikeyid = :apikeyid', { apikeyid: apiKeyId })
-        if (keyonly === undefined) {
-            query = query.orWhere('cf.apikeyid IS NULL').orWhere('cf.apikeyid = ""')
-        }
+            .where('cf.workspaceId = :workspaceId', { workspaceId })
+            .andWhere(
+                new Brackets((qb) => {
+                    qb.where('cf.apikeyid = :apikeyid', { apikeyid: apiKeyId })
+                    if (keyonly === undefined) {
+                        qb.orWhere('cf.apikeyid IS NULL').orWhere('cf.apikeyid = ""')
+                    }
+                })
+            )
 
         const dbResponse = await query.orderBy('cf.name', 'ASC').getMany()
         if (dbResponse.length < 1) {

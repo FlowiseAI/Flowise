@@ -60,7 +60,7 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId: string) 
                         ...getWorkspaceSearchOptions(workspaceId)
                     }
                     const credentials = await appServer.AppDataSource.getRepository(Credential).findBy(searchOptions)
-                    dbResponse.push(...credentials)
+                    dbResponse.push(...credentials.map((c) => omit(c, ['encryptedData'])))
                 }
             } else {
                 const searchOptions = {
@@ -68,7 +68,7 @@ const getAllCredentials = async (paramCredentialName: any, workspaceId: string) 
                     ...getWorkspaceSearchOptions(workspaceId)
                 }
                 const credentials = await appServer.AppDataSource.getRepository(Credential).findBy(searchOptions)
-                dbResponse = [...credentials]
+                dbResponse = credentials.map((c) => omit(c, ['encryptedData']))
             }
             // get shared credentials
             if (workspaceId) {
