@@ -23,8 +23,11 @@ export class MCPToolkit extends BaseToolkit {
         this.transportType = transportType
     }
 
-    // Method to create a new client with transport
-    async createClient(dynamicHeaders: Record<string, string> = {}): Promise<Client> {
+    /**
+     * Creates a new MCP client and connects it via the configured transport.
+     * @param injectHeaders - Additional HTTP headers merged over static `serverParams.headers` for this connection. Used to pass per-invocation headers (e.g. from {@link getToolCallHeaders}) into SSE/HTTP transports.
+     */
+    async createClient(injectHeaders: Record<string, string> = {}): Promise<Client> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -56,7 +59,7 @@ export class MCPToolkit extends BaseToolkit {
 
             const baseUrl = new URL(this.serverParams.url)
             await checkDenyList(this.serverParams.url)
-            const mergedHeaders = { ...this.serverParams?.headers, ...dynamicHeaders }
+            const mergedHeaders = { ...this.serverParams?.headers, ...injectHeaders }
             const headers = Object.keys(mergedHeaders).length > 0 ? mergedHeaders : undefined
             try {
                 if (headers) {
@@ -151,6 +154,7 @@ export async function MCPTool({
 }): Promise<Tool> {
     return tool(
         async (input): Promise<string> => {
+            // Create a new client for this request
             const toolCallHeaders = await toolkit.getToolCallHeaders?.()
             const client = await toolkit.createClient(toolCallHeaders)
 
