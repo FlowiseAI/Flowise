@@ -66,7 +66,13 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
     try {
         const appServer = getRunningExpressApp()
         const newEval = new Evaluation()
-        Object.assign(newEval, body)
+        newEval.name = body.name
+        newEval.evaluationType = body.evaluationType
+        newEval.chatflowId = body.chatflowId
+        newEval.chatflowName = body.chatflowName
+        newEval.datasetId = body.datasetId
+        newEval.datasetName = body.datasetName
+        newEval.workspaceId = workspaceId
         newEval.status = EvaluationStatus.PENDING
 
         const row = appServer.AppDataSource.getRepository(Evaluation).create(newEval)

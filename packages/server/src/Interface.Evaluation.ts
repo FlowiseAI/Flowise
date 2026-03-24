@@ -82,7 +82,8 @@ export class EvaluatorDTO {
 
     static toEntity(body: any): Evaluator {
         const newDs = new Evaluator()
-        Object.assign(newDs, body)
+        newDs.name = body.name
+        newDs.type = body.type
         let config: any = {}
         if (body.type === 'llm') {
             config = {
