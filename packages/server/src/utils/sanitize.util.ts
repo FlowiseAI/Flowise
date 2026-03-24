@@ -144,14 +144,32 @@ export function sanitizeAuditMetadata(metadata: Record<string, any> | undefined 
         'cvv'
     ]
 
-    const sanitized: Record<string, any> = { ...metadata }
-
-    for (const key of Object.keys(sanitized)) {
+    function sanitizeValue(value: any, key: string): any {
         const lowerKey = key.toLowerCase()
-        if (sensitiveFields.some((field) => lowerKey.includes(field))) {
-            sanitized[key] = '********'
+        const isSensitive = sensitiveFields.some((field) => lowerKey.includes(field))
+
+        if (isSensitive) {
+            return '********'
         }
+
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+            return sanitizeObject(value)
+        }
+
+        if (Array.isArray(value)) {
+            return value.map((item, index) => sanitizeValue(item, `${key}[${index}]`))
+        }
+
+        return value
     }
 
-    return sanitizeNullBytes(sanitized)
+    function sanitizeObject(obj: Record<string, any>): Record<string, any> {
+        const result: Record<string, any> = {}
+        for (const key of Object.keys(obj)) {
+            result[key] = sanitizeValue(obj[key], key)
+        }
+        return result
+    }
+
+    return sanitizeNullBytes(sanitizeObject(metadata))
 }

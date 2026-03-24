@@ -495,6 +495,52 @@ describe('Sanitization Utilities', () => {
             const input = { userAgent: 'Moz\u0000illa/5.0' }
             expect(sanitizeAuditMetadata(input)).toEqual({ userAgent: 'Mozilla/5.0' })
         })
+
+        it('should recursively sanitize nested objects with sensitive keys', () => {
+            const input = {
+                configuration: {
+                    apiKey: 'secret-key-123',
+                    timeout: 30
+                },
+                settings: {
+                    password: 'mypassword'
+                }
+            }
+
+            expect(sanitizeAuditMetadata(input)).toEqual({
+                configuration: {
+                    apiKey: '********',
+                    timeout: 30
+                },
+                settings: {
+                    password: '********'
+                }
+            })
+        })
+
+        it('should sanitize arrays when key name is not sensitive', () => {
+            const input = {
+                items: [{ apiKey: 'secret1' }, { apiKey: 'secret2' }],
+                ports: [8080, 3000]
+            }
+
+            expect(sanitizeAuditMetadata(input)).toEqual({
+                items: [{ apiKey: '********' }, { apiKey: '********' }],
+                ports: [8080, 3000]
+            })
+        })
+
+        it('should redact entire value when key itself is sensitive, even if it is an array', () => {
+            const input = {
+                tokens: ['token1', 'token2'],
+                passwords: ['pass1', 'pass2']
+            }
+
+            expect(sanitizeAuditMetadata(input)).toEqual({
+                tokens: '********',
+                passwords: '********'
+            })
+        })
     })
 
     describe('Integration scenarios', () => {
