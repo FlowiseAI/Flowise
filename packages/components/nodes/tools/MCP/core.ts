@@ -15,7 +15,7 @@ export class MCPToolkit extends BaseToolkit {
     client: Client | null = null
     serverParams: StdioServerParameters | any
     transportType: 'stdio' | 'sse'
-    /** Extra HTTP headers per HTTP/SSE connection; overrides static toolkit headers for the same names. */
+    /** Per-invocation HTTP headers injected at tools/call time; overrides static toolkit headers for the same names. */
     getToolCallHeaders?: () => Promise<Record<string, string>>
     constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
         super()
