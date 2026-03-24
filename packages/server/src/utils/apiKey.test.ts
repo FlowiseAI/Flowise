@@ -1,4 +1,4 @@
-import { compareKeys, generateAPIKey, generateSecretHash } from '../../src/utils/apiKey'
+import { compareKeys, generateAPIKey, generateSecretHash } from './apiKey'
 
 describe('Api Key', () => {
     it('should be able to generate a new api key', () => {

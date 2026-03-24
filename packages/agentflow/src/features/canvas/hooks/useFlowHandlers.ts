@@ -56,15 +56,29 @@ export function useFlowHandlers({
             const sourceNode = nodes.find((n) => n.id === params.source)
             const targetNode = nodes.find((n) => n.id === params.target)
 
-            const sourceColor = getNodeColor(sourceNode?.data?.name || '')
+            const sourceName = sourceNode?.data?.name || ''
+            const sourceColor = getNodeColor(sourceName)
             const targetColor = getNodeColor(targetNode?.data?.name || '')
+
+            // Compute edge label for nodes with dynamic output ports
+            let edgeLabel: string | undefined
+            if (sourceName === 'conditionAgentflow' || sourceName === 'conditionAgentAgentflow') {
+                const raw = params.sourceHandle?.split('-').pop() || '0'
+                edgeLabel = (isNaN(Number(raw)) ? 0 : raw).toString()
+            }
+            if (sourceName === 'humanInputAgentflow') {
+                const raw = params.sourceHandle?.split('-').pop() || '0'
+                edgeLabel = raw === '0' ? 'proceed' : 'reject'
+            }
 
             const newEdge = {
                 ...params,
                 type: 'agentflowEdge',
                 data: {
                     sourceColor,
-                    targetColor
+                    targetColor,
+                    edgeLabel,
+                    isHumanInput: sourceName === 'humanInputAgentflow'
                 }
             }
             // Use functional updater to avoid stale edge state from rapid sequential connections

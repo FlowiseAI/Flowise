@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
-import { isIPv4, isIPv6, isValidIPAddress } from '../../src/utils/ipValidation'
+import { isIPv4, isIPv6, isValidIPAddress } from './ipValidation'
 
 describe('IP Address Validation Utilities', () => {
     describe('isValidIPAddress', () => {

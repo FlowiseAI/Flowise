@@ -196,6 +196,54 @@ describe('evaluateFieldVisibility', () => {
     })
 })
 
+describe('evaluateFieldVisibility – nested array $index pattern (Start node formInputTypes)', () => {
+    // Mirrors the Start node's formInputTypes definition:
+    // addOptions has show: { 'formInputTypes[$index].type': 'options' }
+    const addOptionsParam = makeParam({
+        name: 'addOptions',
+        label: 'Add Options',
+        type: 'array',
+        show: { 'formInputTypes[$index].type': 'options' }
+    })
+
+    const typeParam = makeParam({ name: 'type', label: 'Type', type: 'options' })
+    const labelParam = makeParam({ name: 'label', label: 'Label', type: 'string' })
+
+    const arraySubFields = [typeParam, labelParam, addOptionsParam]
+
+    it('shows addOptions when type is "options" at given index', () => {
+        const inputValues = {
+            formInputTypes: [
+                { type: 'options', label: 'Pick one' },
+                { type: 'string', label: 'Name' }
+            ]
+        }
+
+        const row0 = evaluateFieldVisibility(arraySubFields, inputValues, 0)
+        expect(row0.find((p) => p.name === 'addOptions')!.display).toBe(true)
+        expect(row0.find((p) => p.name === 'type')!.display).toBe(true)
+
+        const row1 = evaluateFieldVisibility(arraySubFields, inputValues, 1)
+        expect(row1.find((p) => p.name === 'addOptions')!.display).toBe(false)
+        expect(row1.find((p) => p.name === 'type')!.display).toBe(true)
+    })
+
+    it('hides addOptions when type changes from "options" to "string"', () => {
+        const inputValues = {
+            formInputTypes: [{ type: 'string', label: 'Name' }]
+        }
+
+        const row0 = evaluateFieldVisibility(arraySubFields, inputValues, 0)
+        expect(row0.find((p) => p.name === 'addOptions')!.display).toBe(false)
+    })
+
+    it('handles missing array gracefully (defaults to empty)', () => {
+        const inputValues = {} // formInputTypes not yet set
+        const row0 = evaluateFieldVisibility(arraySubFields, inputValues, 0)
+        expect(row0.find((p) => p.name === 'addOptions')!.display).toBe(false)
+    })
+})
+
 describe('stripHiddenFieldValues', () => {
     it('removes hidden keys and retains visible ones', () => {
         const params = [makeParam({ name: 'visible', show: { mode: 'api' } }), makeParam({ name: 'hidden', hide: { mode: 'api' } })]
