@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { Box, Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material'
 
+import { CodeInput } from './CodeInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
 
 export interface ExpandTextDialogProps {
@@ -10,8 +11,10 @@ export interface ExpandTextDialogProps {
     title?: string
     placeholder?: string
     disabled?: boolean
-    /** Editor mode — 'text' renders a plain TextField, 'richtext' renders the TipTap RichTextEditor. */
-    mode?: 'text' | 'richtext'
+    /** The input param type — determines which editor to render. 'string' uses the TipTap RichTextEditor, 'code' renders CodeInput; others fall back to a plain TextField. */
+    inputType?: string
+    /** Language hint for 'code' mode (e.g. 'javascript', 'python', 'json'). */
+    language?: string
     onConfirm: (value: string) => void
     onCancel: () => void
 }
@@ -26,18 +29,23 @@ export function ExpandTextDialog({
     title,
     placeholder,
     disabled = false,
-    mode = 'text',
+    inputType = 'string',
+    language,
     onConfirm,
     onCancel
 }: ExpandTextDialogProps) {
     const [localValue, setLocalValue] = useState(value)
+    const [prevOpen, setPrevOpen] = useState(open)
 
-    // Sync local state when the value prop changes while dialog is open
-    useEffect(() => {
-        if (open) {
-            setLocalValue(value)
-        }
-    }, [open, value])
+    // Sync localValue synchronously when the dialog opens so the TipTap editor
+    // initialises with the correct content (useEffect would leave a one-render
+    // gap where localValue is stale, causing the editor to show empty/old text).
+    if (open && !prevOpen) {
+        setLocalValue(value)
+        setPrevOpen(true)
+    } else if (!open && prevOpen) {
+        setPrevOpen(false)
+    }
 
     const handleConfirm = useCallback(() => {
         onConfirm(localValue)
@@ -51,7 +59,15 @@ export function ExpandTextDialog({
                         {title}
                     </Typography>
                 )}
-                {mode === 'richtext' ? (
+                {inputType === 'code' ? (
+                    <CodeInput
+                        value={localValue}
+                        onChange={setLocalValue}
+                        language={language}
+                        disabled={disabled}
+                        height='calc(100vh - 220px)'
+                    />
+                ) : inputType === 'string' ? (
                     <Box
                         sx={{
                             borderRadius: '12px',

@@ -7,6 +7,7 @@ import { IconArrowsMaximize, IconInfoCircle, IconPlus, IconTrash } from '@tabler
 import { ExpandTextDialog } from '@/atoms'
 import type { InputParam, NodeData } from '@/core/types'
 
+import { CodeInput } from './CodeInput'
 import { useStableKeys } from './useStableKeys'
 
 const OUTPUT_TYPES = [
@@ -218,17 +219,12 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                                     <IconArrowsMaximize />
                                 </IconButton>
                             </div>
-                            <TextField
-                                fullWidth
-                                multiline
-                                minRows={4}
-                                size='small'
+                            <CodeInput
                                 value={entry.jsonSchema ?? ''}
+                                onChange={(val) => handleFieldChange(index, 'jsonSchema', val)}
+                                language='json'
                                 disabled={disabled}
-                                onChange={(e) => handleFieldChange(index, 'jsonSchema', e.target.value)}
-                                placeholder='{ "key": { "type": "string", "description": "..." } }'
-                                sx={{ mt: 1 }}
-                                data-testid={`json-schema-${index}`}
+                                height='200px'
                             />
                         </Box>
                     )}
@@ -276,6 +272,8 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                     title='JSON Schema'
                     placeholder='{ "key": { "type": "string", "description": "..." } }'
                     disabled={disabled}
+                    inputType='code'
+                    language='json'
                     onConfirm={(val) => {
                         handleFieldChange(expandOpen.index, 'jsonSchema', val)
                         setExpandOpen(null)

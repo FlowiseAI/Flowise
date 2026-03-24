@@ -1207,8 +1207,8 @@
                     "description": "Largest model for demanding tasks"
                 },
                 {
-                    "label": "zai-glm-4.6",
-                    "name": "zai-glm-4.6",
+                    "label": "zai-glm-4.7",
+                    "name": "zai-glm-4.7",
                     "description": "Advanced reasoning and complex problem-solving"
                 }
             ]
@@ -1244,6 +1244,18 @@
                     "name": "gpt-5.4-pro",
                     "input_cost": 0.00003,
                     "output_cost": 0.00018
+                },
+                {
+                    "label": "gpt-5.4-mini",
+                    "name": "gpt-5.4-mini",
+                    "input_cost": 0.00000075,
+                    "output_cost": 0.0000045
+                },
+                {
+                    "label": "gpt-5.4-nano",
+                    "name": "gpt-5.4-nano",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.00000125
                 },
                 {
                     "label": "gpt-5.2",

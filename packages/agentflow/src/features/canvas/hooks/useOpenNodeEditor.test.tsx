@@ -20,7 +20,7 @@ jest.mock('./useFlowNodes', () => ({
 }))
 
 let mockNodes: ReturnType<typeof makeFlowNode>[] = []
-let mockAvailableNodes: { name: string; inputs?: { name: string }[] }[] = []
+let mockAvailableNodes: { name: string; inputs?: { name: string }[]; credential?: { name: string; type: string } }[] = []
 
 describe('useOpenNodeEditor', () => {
     beforeEach(() => {
@@ -110,6 +110,31 @@ describe('useOpenNodeEditor', () => {
             expect.objectContaining({ name: 'customNode' }),
             [{ name: 'apiField' }] // API schema wins over data.inputs
         )
+    })
+
+    it('should prepend credential param to inputParams when schema has credential', () => {
+        mockAvailableNodes = [
+            {
+                name: 'llmAgentflow',
+                inputs: [{ name: 'model' }],
+                credential: { name: 'credential', type: 'credential' }
+            }
+        ]
+        const { result } = renderHook(() => useOpenNodeEditor())
+        result.current.openNodeEditor('node-1')
+
+        expect(mockOpenEditDialog).toHaveBeenCalledWith('node-1', expect.objectContaining({ name: 'llmAgentflow' }), [
+            { name: 'credential', type: 'credential' },
+            { name: 'model' }
+        ])
+    })
+
+    it('should not prepend credential when schema has no credential', () => {
+        mockAvailableNodes = [{ name: 'llmAgentflow', inputs: [{ name: 'model' }] }]
+        const { result } = renderHook(() => useOpenNodeEditor())
+        result.current.openNodeEditor('node-1')
+
+        expect(mockOpenEditDialog).toHaveBeenCalledWith('node-1', expect.objectContaining({ name: 'llmAgentflow' }), [{ name: 'model' }])
     })
 
     it('should open dialog with empty inputs when schema has no inputs', () => {

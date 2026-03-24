@@ -2,6 +2,15 @@ import type { ApiServices } from './loadMethodRegistry'
 import { getLoadMethod, loadMethodRegistry } from './loadMethodRegistry'
 
 const mockApis: ApiServices = {
+    chatflowsApi: {
+        getAllChatflows: jest.fn(),
+        getChatflow: jest.fn(),
+        createChatflow: jest.fn(),
+        updateChatflow: jest.fn(),
+        deleteChatflow: jest.fn(),
+        generateAgentflow: jest.fn(),
+        getChatModels: jest.fn()
+    },
     chatModelsApi: {
         getChatModels: jest.fn()
     },
@@ -156,6 +165,39 @@ describe('loadMethodRegistry', () => {
         it('should reject when nodeName param is missing', async () => {
             const fn = getLoadMethod('listTables')
             await expect(fn(mockApis)).rejects.toThrow('loadMethod "listTables" requires a string "nodeName" parameter.')
+        })
+    })
+
+    describe('listFlows', () => {
+        it('should call chatflowsApi.getAllChatflows() and map to label/name/description', async () => {
+            const mockChatflows = [
+                { id: 'cf-1', name: 'My Chatflow', type: 'CHATFLOW' },
+                { id: 'cf-2', name: 'My Agentflow', type: 'AGENTFLOW' },
+                { id: 'cf-3', name: 'My Multi', type: 'MULTIAGENT' }
+            ]
+            ;(mockApis.chatflowsApi.getAllChatflows as jest.Mock).mockResolvedValue(mockChatflows)
+
+            const result = await loadMethodRegistry['listFlows'](mockApis)
+            expect(mockApis.chatflowsApi.getAllChatflows).toHaveBeenCalled()
+            expect(result).toEqual([
+                { label: 'My Chatflow', name: 'cf-1', description: 'Chatflow' },
+                { label: 'My Agentflow', name: 'cf-2', description: 'Agentflow V2' },
+                { label: 'My Multi', name: 'cf-3', description: 'Agentflow V1' }
+            ])
+        })
+
+        it('should return empty array when there are no chatflows', async () => {
+            ;(mockApis.chatflowsApi.getAllChatflows as jest.Mock).mockResolvedValue([])
+
+            const result = await loadMethodRegistry['listFlows'](mockApis)
+            expect(result).toEqual([])
+        })
+
+        it('should fall back to "Chatflow" description for unknown type', async () => {
+            ;(mockApis.chatflowsApi.getAllChatflows as jest.Mock).mockResolvedValue([{ id: 'cf-1', name: 'Unknown', type: 'UNKNOWN' }])
+
+            const result = await loadMethodRegistry['listFlows'](mockApis)
+            expect(result).toEqual([{ label: 'Unknown', name: 'cf-1', description: 'Chatflow' }])
         })
     })
 

@@ -188,6 +188,11 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
             const conditions = initialInputValues.conditions
             const conditionCount = Array.isArray(conditions) ? conditions.length : 0
             outputAnchors = buildDynamicOutputAnchors(newNodeId, conditionCount, 'Condition', true)
+        } else if (nodeData.name === 'conditionAgentAgentflow') {
+            // ConditionAgent outputs match scenario count exactly (no separate Else port)
+            const scenarios = initialInputValues.conditionAgentScenarios
+            const scenarioCount = Array.isArray(scenarios) ? scenarios.length : 0
+            outputAnchors = buildDynamicOutputAnchors(newNodeId, scenarioCount, 'Scenario', false)
         } else {
             outputAnchors = createAgentFlowOutputs(nodeData, newNodeId)
         }
