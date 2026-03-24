@@ -2,7 +2,7 @@ import { Document } from '@langchain/core/documents'
 import { VectorStore, VectorStoreRetriever, VectorStoreRetrieverInput } from '@langchain/core/vectorstores'
 import { INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { convertStructuredSchemaToZod } from '../../sequentialagents/commonUtils'
 
 const queryPrefix = 'query'
@@ -126,7 +126,9 @@ class ExtractMetadataRetriever_Retrievers implements INode {
                 const structuredOutput = z.object(convertStructuredSchemaToZod(llmStructuredOutput))
 
                 // @ts-ignore
-                llm = llm.withStructuredOutput(structuredOutput)
+                llm = llm.withStructuredOutput(structuredOutput, {
+                    method: 'functionCalling'
+                })
             } catch (exception) {
                 console.error(exception)
             }

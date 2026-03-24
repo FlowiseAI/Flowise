@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { StructuredTool } from '@langchain/core/tools'
