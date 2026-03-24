@@ -16,7 +16,7 @@ export class MCPToolkit extends BaseToolkit {
     serverParams: StdioServerParameters | any
     transportType: 'stdio' | 'sse'
     /** Extra HTTP headers per HTTP/SSE connection; overrides static toolkit headers for the same names. */
-    getDynamicHeaders?: () => Promise<Record<string, string>>
+    getToolCallHeaders?: () => Promise<Record<string, string>>
     constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
         super()
         this.serverParams = serverParams
@@ -24,7 +24,7 @@ export class MCPToolkit extends BaseToolkit {
     }
 
     // Method to create a new client with transport
-    async createClient(dynamicHeaders?: Record<string, string>): Promise<Client> {
+    async createClient(dynamicHeaders: Record<string, string> = {}): Promise<Client> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -151,8 +151,8 @@ export async function MCPTool({
 }): Promise<Tool> {
     return tool(
         async (input): Promise<string> => {
-            const dynamicHeaders = toolkit.getDynamicHeaders ? await toolkit.getDynamicHeaders() : {}
-            const client = await toolkit.createClient(dynamicHeaders)
+            const toolCallHeaders = await toolkit.getToolCallHeaders?.()
+            const client = await toolkit.createClient(toolCallHeaders)
 
             try {
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
