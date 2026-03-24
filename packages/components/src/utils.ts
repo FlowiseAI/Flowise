@@ -118,7 +118,7 @@ export const availableDependencies = [
     'replicate',
     'srt-parser-2',
     'typeorm',
-    'weaviate-ts-client'
+    'weaviate-client'
 ]
 
 const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']

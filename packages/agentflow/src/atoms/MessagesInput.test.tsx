@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
@@ -12,6 +12,32 @@ jest.mock('@tabler/icons-react', () => ({
     IconPlus: () => <span data-testid='icon-plus' />,
     IconTrash: () => <span data-testid='icon-trash' />,
     IconVariable: () => <span data-testid='icon-variable' />
+}))
+
+// Replace the TipTap-based RichTextEditor with a plain textarea so tests can
+// simulate content changes via fireEvent.change without TipTap internals.
+jest.mock('./RichTextEditor', () => ({
+    RichTextEditor: ({
+        value,
+        onChange,
+        disabled,
+        placeholder
+    }: {
+        value: string
+        onChange: (html: string) => void
+        disabled?: boolean
+        placeholder?: string
+    }) => (
+        <div data-testid='rich-text-editor'>
+            <textarea
+                data-testid='tiptap-editor-content'
+                value={value}
+                disabled={disabled}
+                placeholder={placeholder}
+                onChange={(e) => onChange(e.target.value)}
+            />
+        </div>
+    )
 }))
 
 describe('MessagesInput', () => {
@@ -44,7 +70,7 @@ describe('MessagesInput', () => {
         expect(screen.getByRole('button', { name: /Add Messages/i })).toBeInTheDocument()
     })
 
-    it('should render existing messages with field labels, role and content', () => {
+    it('should render existing messages with field labels, role and content', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputValues: {
@@ -73,11 +99,10 @@ describe('MessagesInput', () => {
         const roleSelects = screen.getAllByRole('combobox')
         expect(roleSelects).toHaveLength(2)
 
-        // Content textareas
-        const textareas = screen.getAllByRole('textbox')
-        expect(textareas).toHaveLength(2)
-        expect(textareas[0]).toHaveValue('You are a helpful assistant')
-        expect(textareas[1]).toHaveValue('{{ question }}')
+        // Content fields rendered as rich text editors (TipTap) — lazy-loaded
+        await waitFor(() => {
+            expect(screen.getAllByTestId('rich-text-editor')).toHaveLength(2)
+        })
     })
 
     // --- Add ---
@@ -163,9 +188,9 @@ describe('MessagesInput', () => {
         })
     })
 
-    // --- Content change ---
+    // --- Content field ---
 
-    it('should update content when textarea changes', () => {
+    it('should render rich text editor for content field', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputValues: {
@@ -175,7 +200,23 @@ describe('MessagesInput', () => {
 
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
-        const textarea = screen.getByRole('textbox')
+        expect(await screen.findByTestId('rich-text-editor')).toBeInTheDocument()
+        expect(screen.getByTestId('tiptap-editor-content')).toBeInTheDocument()
+    })
+
+    // --- Content change ---
+
+    it('should update content when RichTextEditor fires onChange', async () => {
+        const dataWithMessages: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                agentMessages: [{ role: 'system', content: 'Initial' }]
+            }
+        } as NodeData
+
+        render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
+
+        const textarea = await screen.findByTestId('tiptap-editor-content')
         fireEvent.change(textarea, { target: { value: 'Updated content' } })
 
         expect(mockOnDataChange).toHaveBeenCalledWith({
@@ -184,7 +225,7 @@ describe('MessagesInput', () => {
         })
     })
 
-    it('should support variable syntax in content', () => {
+    it('should support variable syntax in content via RichTextEditor', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputValues: {
@@ -194,7 +235,7 @@ describe('MessagesInput', () => {
 
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
-        const textarea = screen.getByRole('textbox')
+        const textarea = await screen.findByTestId('tiptap-editor-content')
         fireEvent.change(textarea, { target: { value: '{{ question }}' } })
 
         expect(mockOnDataChange).toHaveBeenCalledWith({
@@ -203,9 +244,84 @@ describe('MessagesInput', () => {
         })
     })
 
+    // --- latestContentRef: expand dialog uses fresh inline edits ---
+
+    it('should open expand dialog with latest inline content even before parent re-renders', async () => {
+        const dataWithMessages: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                agentMessages: [{ role: 'user', content: 'Original' }]
+            }
+        } as NodeData
+
+        render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
+
+        // Edit inline content (parent has NOT re-rendered with new data yet)
+        const textarea = await screen.findByTestId('tiptap-editor-content')
+        fireEvent.change(textarea, { target: { value: 'Edited inline' } })
+
+        // Open expand dialog
+        fireEvent.click(screen.getByTitle('Expand'))
+
+        // Wait for the lazy-loaded RichTextEditor inside the expand dialog to mount
+        await waitFor(() => {
+            expect(screen.getAllByTestId('tiptap-editor-content')).toHaveLength(2)
+        })
+
+        // The expand dialog should show the edited value from latestContentRef,
+        // not the stale 'Original' from messages prop
+        const editors = screen.getAllByTestId('tiptap-editor-content')
+        const expandTextarea = editors[editors.length - 1] as HTMLTextAreaElement
+        expect(expandTextarea.value).toBe('Edited inline')
+    })
+
+    it('should preserve latestContentRef entries when a preceding message is deleted', async () => {
+        const dataWithMessages: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                agentMessages: [
+                    { role: 'system', content: 'System prompt' },
+                    { role: 'user', content: 'User message' },
+                    { role: 'assistant', content: 'Assistant reply' }
+                ]
+            }
+        } as NodeData
+
+        const { rerender } = render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
+
+        // Edit the third message (index 2) inline
+        const textareas = await screen.findAllByTestId('tiptap-editor-content')
+        fireEvent.change(textareas[2], { target: { value: 'Edited assistant reply' } })
+
+        // Delete the first message (index 0) — this should shift index 2 → 1 in latestContentRef
+        const deleteButtons = screen.getAllByTitle('Delete')
+        fireEvent.click(deleteButtons[0])
+
+        // Simulate parent re-rendering with updated data (first message removed)
+        const updatedData: NodeData = {
+            ...mockNodeData,
+            inputValues: {
+                agentMessages: [
+                    { role: 'user', content: 'User message' },
+                    { role: 'assistant', content: 'Assistant reply' }
+                ]
+            }
+        } as NodeData
+        rerender(<MessagesInput inputParam={mockInputParam} data={updatedData} onDataChange={mockOnDataChange} />)
+
+        // Open expand for the second message (was index 2, now index 1)
+        const expandButtons = screen.getAllByTitle('Expand')
+        fireEvent.click(expandButtons[1])
+
+        // The expand dialog should show the edited content from the shifted ref
+        const editors = screen.getAllByTestId('tiptap-editor-content')
+        const expandTextarea = editors[editors.length - 1] as HTMLTextAreaElement
+        expect(expandTextarea.value).toBe('Edited assistant reply')
+    })
+
     // --- Disabled state ---
 
-    it('should disable all controls when disabled prop is true', () => {
+    it('should disable all controls when disabled prop is true', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputValues: {
@@ -221,8 +337,8 @@ describe('MessagesInput', () => {
         // Delete button disabled
         expect(screen.getByTitle('Delete')).toBeDisabled()
 
-        // Textarea disabled
-        expect(screen.getByRole('textbox')).toBeDisabled()
+        // Rich text editor is rendered (disabled state is handled by TipTap internally)
+        expect(await screen.findByTestId('rich-text-editor')).toBeInTheDocument()
     })
 
     // --- minItems constraint ---
@@ -309,9 +425,9 @@ describe('MessagesInput', () => {
         expect(screen.getByRole('button', { name: /Add Messages/i })).not.toBeDisabled()
     })
 
-    // --- Expand dialog ---
+    // --- Expand dialog (now uses rich text mode with TipTap) ---
 
-    it('should open expand dialog with current content when expand icon is clicked', () => {
+    it('should open expand dialog with rich text editor when expand icon is clicked', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputValues: {
@@ -323,13 +439,15 @@ describe('MessagesInput', () => {
 
         fireEvent.click(screen.getByTitle('Expand'))
 
-        const expandInput = screen.getByTestId('expand-content-input').querySelector('textarea')!
-        expect(expandInput).toHaveValue('Hello world')
+        // Inline editor + expand dialog editor = 2 rich text editors
+        await waitFor(() => {
+            expect(screen.getAllByTestId('rich-text-editor')).toHaveLength(2)
+        })
         expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
     })
 
-    it('should save expanded content and close dialog on confirm', () => {
+    it('should call onConfirm with current value when Save is clicked in expand dialog', () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputValues: {
@@ -340,14 +458,12 @@ describe('MessagesInput', () => {
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
         fireEvent.click(screen.getByTitle('Expand'))
-
-        const expandTextarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
-        fireEvent.change(expandTextarea, { target: { value: 'Expanded content' } })
         fireEvent.click(screen.getByRole('button', { name: 'Save' }))
 
+        // Save fires onDataChange with the current content (unchanged since TipTap is mocked)
         expect(mockOnDataChange).toHaveBeenCalledWith({
             inputParam: mockInputParam,
-            newValue: [{ role: 'user', content: 'Expanded content' }]
+            newValue: [{ role: 'user', content: 'Original' }]
         })
     })
 
@@ -362,9 +478,6 @@ describe('MessagesInput', () => {
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
         fireEvent.click(screen.getByTitle('Expand'))
-
-        const expandTextarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
-        fireEvent.change(expandTextarea, { target: { value: 'Discarded' } })
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
 
         expect(mockOnDataChange).not.toHaveBeenCalled()
