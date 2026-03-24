@@ -1,9 +1,12 @@
 import type { AxiosInstance } from 'axios'
 
+import type { NodeData } from '@/core/types'
+
 import { bindNodesApi } from './nodes'
 
 const mockClient = {
-    get: jest.fn()
+    get: jest.fn(),
+    post: jest.fn()
 } as unknown as jest.Mocked<AxiosInstance>
 
 beforeEach(() => {
@@ -32,6 +35,24 @@ describe('bindNodesApi', () => {
             const result = await api.getNodeByName('llmAgentflow')
             expect(mockClient.get).toHaveBeenCalledWith('/nodes/llmAgentflow')
             expect(result).toEqual(mockNode)
+        })
+    })
+
+    describe('getNodeConfig', () => {
+        it('should map SDK fields to legacy field names for the server', async () => {
+            const mockConfig = [{ node: 'LLM', nodeId: 'node-1', label: 'Model Name', name: 'modelName', type: 'string' }]
+            ;(mockClient.post as jest.Mock).mockResolvedValue({ data: mockConfig })
+
+            const inputs = [{ id: 'i1', name: 'modelName', label: 'Model Name', type: 'string' }]
+            const inputValues = { modelName: 'gpt-4' }
+            const nodeData: NodeData = { id: 'node-1', name: 'llmAgentflow', label: 'LLM', inputs, inputValues }
+            const result = await api.getNodeConfig(nodeData)
+            // Server expects inputParams (definitions) and inputs (values)
+            expect(mockClient.post).toHaveBeenCalledWith(
+                '/node-config',
+                expect.objectContaining({ inputParams: inputs, inputs: inputValues })
+            )
+            expect(result).toEqual(mockConfig)
         })
     })
 

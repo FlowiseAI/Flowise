@@ -35,6 +35,7 @@ const mockApis: ApiServices = {
     nodesApi: {
         getAllNodes: jest.fn(),
         getNodeByName: jest.fn(),
+        getNodeConfig: jest.fn(),
         getNodeIconUrl: jest.fn(),
         loadNodeMethod: jest.fn()
     }
