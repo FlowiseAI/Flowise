@@ -15,14 +15,19 @@ export class MCPToolkit extends BaseToolkit {
     client: Client | null = null
     serverParams: StdioServerParameters | any
     transportType: 'stdio' | 'sse'
+    /** Per-invocation HTTP headers injected at tools/call time; overrides static toolkit headers for the same names. */
+    getToolCallHeaders?: () => Promise<Record<string, string>>
     constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
         super()
         this.serverParams = serverParams
         this.transportType = transportType
     }
 
-    // Method to create a new client with transport
-    async createClient(): Promise<Client> {
+    /**
+     * Creates a new MCP client and connects it via the configured transport.
+     * @param injectHeaders - Additional HTTP headers merged over static `serverParams.headers` for this connection. Used to pass per-invocation headers (e.g. from {@link getToolCallHeaders}) into SSE/HTTP transports.
+     */
+    async createClient(injectHeaders: Record<string, string> = {}): Promise<Client> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -54,11 +59,13 @@ export class MCPToolkit extends BaseToolkit {
 
             const baseUrl = new URL(this.serverParams.url)
             await checkDenyList(this.serverParams.url)
+            const mergedHeaders = { ...this.serverParams?.headers, ...injectHeaders }
+            const headers = Object.keys(mergedHeaders).length > 0 ? mergedHeaders : undefined
             try {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new StreamableHTTPClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         }
                     })
                 } else {
@@ -66,16 +73,16 @@ export class MCPToolkit extends BaseToolkit {
                 }
                 await client.connect(transport)
             } catch (error) {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new SSEClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         },
                         eventSourceInit: {
                             fetch: async (url, init) => {
                                 return secureFetch(url.toString(), {
                                     ...(init as any),
-                                    headers: this.serverParams.headers
+                                    headers
                                 }) as any
                             }
                         }
@@ -148,7 +155,8 @@ export async function MCPTool({
     return tool(
         async (input): Promise<string> => {
             // Create a new client for this request
-            const client = await toolkit.createClient()
+            const toolCallHeaders = await toolkit.getToolCallHeaders?.()
+            const client = await toolkit.createClient(toolCallHeaders)
 
             try {
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
