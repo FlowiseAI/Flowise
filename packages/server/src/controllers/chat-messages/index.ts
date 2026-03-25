@@ -122,6 +122,7 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
         if (feedbackTypeFilters) {
             feedbackTypeFilters = getFeedbackTypeFilters(feedbackTypeFilters)
         }
+        const { page, limit } = getPageAndLimitParams(req)
         const apiResponse = await chatMessagesService.getAllInternalChatMessages(
             req.params.id,
             [ChatType.INTERNAL],
@@ -134,7 +135,9 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
             messageId,
             feedback,
             feedbackTypeFilters,
-            activeWorkspaceId
+            activeWorkspaceId,
+            page,
+            limit
         )
         return res.json(parseAPIResponse(apiResponse))
     } catch (error) {

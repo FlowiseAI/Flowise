@@ -100,6 +100,8 @@ export const utilGetChatMessage = async ({
         }
     }
 
+    const shouldPaginate = page > -1 && pageSize > -1
+
     const messages = await appServer.AppDataSource.getRepository(ChatMessage).find({
         where: {
             chatflowid,
@@ -115,7 +117,9 @@ export const utilGetChatMessage = async ({
         },
         order: {
             createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
-        }
+        },
+        skip: shouldPaginate ? pageSize * (page - 1) : undefined,
+        take: shouldPaginate ? pageSize : undefined
     })
 
     return messages
