@@ -23,7 +23,7 @@ const getAssistantVectorStore = async (credentialId: string, vectorStoreId: stri
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const dbResponse = await openai.vectorStores.retrieve(vectorStoreId)
         return dbResponse
     } catch (error) {
@@ -50,7 +50,7 @@ const listAssistantVectorStore = async (credentialId: string) => {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const dbResponse = await openai.vectorStores.list()
         return dbResponse.data
     } catch (error) {
@@ -77,7 +77,7 @@ const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.Vect
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const dbResponse = await openai.vectorStores.create(obj)
         return dbResponse
     } catch (error) {
@@ -108,7 +108,7 @@ const updateAssistantVectorStore = async (
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const dbResponse = await openai.vectorStores.update(vectorStoreId, obj)
         const vectorStoreFiles = await openai.vectorStores.files.list(vectorStoreId)
         if (vectorStoreFiles.data?.length) {
@@ -144,7 +144,7 @@ const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: s
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const dbResponse = await openai.vectorStores.del(vectorStoreId)
         return dbResponse
     } catch (error) {
@@ -175,7 +175,7 @@ const uploadFilesToAssistantVectorStore = async (
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const uploadedFiles = []
         for (const file of files) {
             const fileBuffer = await getFileFromUpload(file.filePath)
@@ -228,7 +228,7 @@ const deleteFilesFromAssistantVectorStore = async (credentialId: string, vectorS
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const deletedFileIds = []
         let count = 0
         for (const file of file_ids) {

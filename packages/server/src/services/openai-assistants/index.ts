@@ -27,7 +27,7 @@ const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
         if (!openAIApiKey) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const retrievedAssistants = await openai.beta.assistants.list()
         const dbResponse = retrievedAssistants.data
         return dbResponse
@@ -56,7 +56,7 @@ const getSingleOpenaiAssistant = async (credentialId: string, assistantId: strin
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
 
-        const openai = new OpenAI({ apiKey: openAIApiKey })
+        const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
         const dbResponse = await openai.beta.assistants.retrieve(assistantId)
         const resp = await openai.files.list()
         const existingFiles = resp.data ?? []
@@ -97,7 +97,7 @@ const uploadFilesToAssistant = async (credentialId: string, files: { filePath: s
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
     }
 
-    const openai = new OpenAI({ apiKey: openAIApiKey })
+    const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
     const uploadedFiles = []
 
     for (const file of files) {

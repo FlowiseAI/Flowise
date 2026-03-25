@@ -64,7 +64,7 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
             if (!openAIApiKey) {
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
-            const openai = new OpenAI({ apiKey: openAIApiKey })
+            const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
 
             // Prepare tools
             let tools = []
@@ -191,7 +191,7 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any, workspace
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
 
-            const openai = new OpenAI({ apiKey: openAIApiKey })
+            const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).delete({ id: assistantId })
             if (isDeleteBoth) await openai.beta.assistants.del(assistantDetails.id)
             return dbResponse
@@ -326,7 +326,7 @@ const updateAssistant = async (assistantId: string, requestBody: any, workspaceI
                 throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
             }
 
-            const openai = new OpenAI({ apiKey: openAIApiKey })
+            const openai = new OpenAI({ apiKey: openAIApiKey, timeout: 60000, maxRetries: 3 })
 
             let tools = []
             if (assistantDetails.tools) {
