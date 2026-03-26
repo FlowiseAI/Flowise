@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { TextSplitter } from '@langchain/textsplitters'
 import { Document } from '@langchain/core/documents'
 
@@ -94,7 +94,7 @@ class CRWClient {
         return resp.json() as Promise<CRWScrapeResult>
     }
 
-    async crawl(url: string, params: CRWCrawlParams): Promise<CRWCrawlResult> {
+    async crawl(url: string, params: CRWCrawlParams, crawlTimeoutMs?: number): Promise<CRWCrawlResult> {
         const body = { url, ...params, integration: 'flowise' }
         const startResp = await fetch(`${this.apiUrl}/v1/crawl`, {
             method: 'POST',
@@ -112,7 +112,7 @@ class CRWClient {
 
         // Poll until completed or failed
         const jobId = startData.id
-        const maxWaitMs = 5 * 60 * 1000 // 5 minutes
+        const maxWaitMs = crawlTimeoutMs ?? 5 * 60 * 1000 // default 5 minutes
         const pollIntervalMs = 2000
         const startTime = Date.now()
 
@@ -134,7 +134,7 @@ class CRWClient {
                 throw new Error('CRW crawl job failed')
             }
         }
-        throw new Error('CRW crawl timed out after 5 minutes')
+        throw new Error(`CRW crawl timed out after ${Math.round(maxWaitMs / 1000 / 60)} minutes`)
     }
 
     async map(url: string, params: CRWMapParams): Promise<CRWMapResult> {
@@ -360,6 +360,16 @@ class CRW_DocumentLoaders implements INode {
                 show: { crwType: ['crawl'] },
                 description: 'Maximum number of pages to scrape'
             },
+            {
+                label: 'Crawl Timeout (minutes)',
+                name: 'crawlTimeout',
+                type: 'number',
+                default: 5,
+                optional: true,
+                additionalParams: true,
+                show: { crwType: ['crawl'] },
+                description: 'Maximum time in minutes to wait for the crawl job to complete'
+            },
 
             // --- Map-specific inputs ---
             {
@@ -428,7 +438,7 @@ class CRW_DocumentLoaders implements INode {
                 onlyMainContent: onlyMainContent ?? true
             }
             if (renderJs && renderJs !== 'auto') params.renderJs = renderJs
-            if (waitFor) params.waitFor = waitFor
+            if (waitFor !== undefined && waitFor !== null) params.waitFor = waitFor
             if (cssSelector) params.cssSelector = cssSelector
             if (xpath) params.xpath = xpath
             if (includeTags) params.includeTags = includeTags.split(',').map((s) => s.trim())
@@ -467,6 +477,7 @@ class CRW_DocumentLoaders implements INode {
             const onlyMainContent = nodeData.inputs?.onlyMainContent as boolean
             const maxDepth = nodeData.inputs?.maxDepth as number | undefined
             const maxPages = nodeData.inputs?.maxPages as number | undefined
+            const crawlTimeout = nodeData.inputs?.crawlTimeout as number | undefined
 
             const params: CRWCrawlParams = {
                 formats: ['markdown'],
@@ -475,7 +486,8 @@ class CRW_DocumentLoaders implements INode {
             if (maxDepth !== undefined) params.maxDepth = maxDepth
             if (maxPages !== undefined) params.maxPages = maxPages
 
-            const result = await client.crawl(url, params)
+            const crawlTimeoutMs = crawlTimeout ? crawlTimeout * 60 * 1000 : undefined
+            const result = await client.crawl(url, params, crawlTimeoutMs)
             if (!result.success || !result.data) {
                 throw new Error('CRW crawl returned no data')
             }
@@ -531,7 +543,7 @@ class CRW_DocumentLoaders implements INode {
 
         // --- Output selection ---
         if (output === 'text') {
-            return docs.map((doc) => doc.pageContent).join('\n\n')
+            return handleEscapeCharacters(docs.map((doc) => doc.pageContent).join('\n\n'), false)
         }
         return docs
     }

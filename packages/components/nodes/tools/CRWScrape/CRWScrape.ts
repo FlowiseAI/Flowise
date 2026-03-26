@@ -22,7 +22,7 @@ class CRWClient {
 
     async scrape(
         url: string,
-        params: { onlyMainContent?: boolean; renderJs?: string; formats?: string[]; stealth?: boolean }
+        params: { onlyMainContent?: boolean; renderJs?: string; formats?: string[] }
     ): Promise<{ success: boolean; data?: { markdown?: string; html?: string; plainText?: string } }> {
         const body = { url, ...params, integration: 'flowise' }
         const resp = await fetch(`${this.apiUrl}/v1/scrape`, {
