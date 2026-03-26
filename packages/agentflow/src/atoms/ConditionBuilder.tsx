@@ -4,6 +4,7 @@ import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 
+import { getDefaultValueForType } from '@/core/primitives'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { NodeInputHandler } from './NodeInputHandler'
@@ -58,20 +59,7 @@ export function ConditionBuilder({
         const newItem: Record<string, unknown> = {}
         if (inputParam.array) {
             for (const field of inputParam.array) {
-                if (field.default != null) {
-                    newItem[field.name] = field.default
-                } else {
-                    switch (field.type) {
-                        case 'number':
-                            newItem[field.name] = 0
-                            break
-                        case 'boolean':
-                            newItem[field.name] = false
-                            break
-                        default:
-                            newItem[field.name] = ''
-                    }
-                }
+                newItem[field.name] = getDefaultValueForType(field)
             }
         }
         onDataChange?.({ inputParam, newValue: [...arrayItems, newItem] })

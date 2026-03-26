@@ -1,12 +1,16 @@
-import { Fragment } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 
 import { Box, CircularProgress, IconButton, TextField, Typography } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
-import { IconRefresh } from '@tabler/icons-react'
+import { IconEdit, IconRefresh } from '@tabler/icons-react'
 
 import type { AsyncInputProps } from '@/atoms'
 import type { NodeOption } from '@/core/types'
 import { useAsyncOptions } from '@/infrastructure/api/hooks'
+
+import { CreateCredentialDialog } from './CreateCredentialDialog'
+
+const CREATE_NEW_SENTINEL = '-create-'
 
 /**
  * Build the params object for useAsyncOptions.
@@ -25,6 +29,93 @@ function buildAsyncParams(
 }
 
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
+    const isCredential = !!inputParam.credentialNames?.length
+    const [createDialogOpen, setCreateDialogOpen] = useState(false)
+    const [editDialogOpen, setEditDialogOpen] = useState(false)
+    const [reloadKey, setReloadKey] = useState(0)
+    // Holds the credential ID that was just created/edited. Passed directly to
+    // the remounted AsyncOptionsDropdown so it doesn't depend on the parent
+    // state cascade (which may not have flushed yet when inside ConfigInput).
+    const [pendingValue, setPendingValue] = useState<string | null>(null)
+
+    const effectiveValue = pendingValue ?? value
+    const selectedCredentialId = isCredential && typeof effectiveValue === 'string' && effectiveValue ? effectiveValue : null
+
+    const handleCreated = useCallback(
+        (newCredentialId: string) => {
+            setCreateDialogOpen(false)
+            onChange(newCredentialId)
+            setPendingValue(newCredentialId)
+            setReloadKey((k) => k + 1)
+        },
+        [onChange]
+    )
+
+    const handleEdited = useCallback(
+        (credentialId: string) => {
+            setEditDialogOpen(false)
+            onChange(credentialId)
+            setPendingValue(credentialId)
+            setReloadKey((k) => k + 1)
+        },
+        [onChange]
+    )
+
+    return (
+        <>
+            <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1 }}>
+                <AsyncOptionsDropdown
+                    key={reloadKey}
+                    inputParam={inputParam}
+                    value={pendingValue ?? value}
+                    disabled={disabled}
+                    onChange={(v) => {
+                        setPendingValue(null)
+                        onChange(v)
+                    }}
+                    nodeName={nodeName}
+                    inputValues={inputValues}
+                    isCredential={isCredential}
+                    onCreateNew={() => setCreateDialogOpen(true)}
+                />
+                {selectedCredentialId && (
+                    <IconButton title='Edit Credential' color='primary' size='small' onClick={() => setEditDialogOpen(true)}>
+                        <IconEdit size={18} />
+                    </IconButton>
+                )}
+            </Box>
+            {isCredential && (
+                <CreateCredentialDialog
+                    open={createDialogOpen}
+                    credentialNames={inputParam.credentialNames!}
+                    onClose={() => setCreateDialogOpen(false)}
+                    onCreated={handleCreated}
+                />
+            )}
+            {isCredential && selectedCredentialId && (
+                <CreateCredentialDialog
+                    open={editDialogOpen}
+                    credentialNames={inputParam.credentialNames!}
+                    onClose={() => setEditDialogOpen(false)}
+                    onCreated={handleEdited}
+                    editCredentialId={selectedCredentialId}
+                />
+            )}
+        </>
+    )
+}
+
+/** Inner component that owns the useAsyncOptions hook. Remounted via key to force a fresh fetch. */
+function AsyncOptionsDropdown({
+    inputParam,
+    value,
+    disabled,
+    onChange,
+    nodeName,
+    inputValues,
+    isCredential,
+    onCreateNew
+}: AsyncInputProps & { isCredential: boolean; onCreateNew: () => void }) {
     const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
@@ -45,34 +136,51 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, in
         )
     }
 
-    const matchedValue = options.find((o) => o.name === value) ?? null
+    // Append "- Create New -" sentinel for credential dropdowns
+    const displayOptions = isCredential ? [...options, { label: '- Create New -', name: CREATE_NEW_SENTINEL }] : options
+
+    const matchedValue = displayOptions.find((o) => o.name === value) ?? null
 
     return (
         <Autocomplete<NodeOption>
             size='small'
             disabled={disabled}
-            options={options}
+            options={displayOptions}
             value={matchedValue}
             getOptionLabel={(o) => o.label}
             isOptionEqualToValue={(o, v) => o.name === v.name}
-            onChange={(_e, selection) => onChange(selection?.name ?? '')}
+            onChange={(_e, selection) => {
+                if (selection?.name === CREATE_NEW_SENTINEL) {
+                    onCreateNew()
+                    return
+                }
+                onChange(selection?.name ?? '')
+            }}
             loading={loading}
             noOptionsText={loading ? 'Loading…' : 'No options available'}
-            sx={{ mt: 1 }}
+            sx={{ flexGrow: 1 }}
             renderOption={(props, option) => (
                 <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {option.imageSrc && (
-                        <Box
-                            component='img'
-                            src={option.imageSrc}
-                            alt={option.label}
-                            sx={{ width: 30, height: 30, padding: '1px', borderRadius: '50%', flexShrink: 0 }}
-                        />
+                    {option.name === CREATE_NEW_SENTINEL ? (
+                        <Typography variant='h5' color='primary'>
+                            {option.label}
+                        </Typography>
+                    ) : (
+                        <>
+                            {option.imageSrc && (
+                                <Box
+                                    component='img'
+                                    src={option.imageSrc}
+                                    alt={option.label}
+                                    sx={{ width: 30, height: 30, padding: '1px', borderRadius: '50%', flexShrink: 0 }}
+                                />
+                            )}
+                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant='h5'>{option.label}</Typography>
+                                {option.description && <Typography variant='caption'>{option.description}</Typography>}
+                            </Box>
+                        </>
                     )}
-                    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant='h5'>{option.label}</Typography>
-                        {option.description && <Typography variant='caption'>{option.description}</Typography>}
-                    </Box>
                 </Box>
             )}
             renderInput={(params) => (
