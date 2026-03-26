@@ -113,6 +113,15 @@ class ChatOpenAICustom_ChatModels implements INode {
                 type: 'json',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Stop Sequence',
+                name: 'stopSequence',
+                type: 'string',
+                placeholder: 'Enter a comma-separated list of stop words',
+                description: 'List of stop words to use when generating. Use comma to separate multiple stop words.',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -129,6 +138,7 @@ class ChatOpenAICustom_ChatModels implements INode {
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
         const cache = nodeData.inputs?.cache as BaseCache
+        const stopSequence = nodeData.inputs?.stopSequence as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -147,6 +157,10 @@ class ChatOpenAICustom_ChatModels implements INode {
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+        if (stopSequence) {
+            const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
+            obj.stop = stopSequenceArray
+        }
 
         let parsedBaseOptions: any | undefined = undefined
 
