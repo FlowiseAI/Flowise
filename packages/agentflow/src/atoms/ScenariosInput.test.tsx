@@ -25,9 +25,12 @@ jest.mock('./NodeInputHandler', () => ({
 }))
 
 jest.mock('@tabler/icons-react', () => ({
-    IconInfoCircle: () => <span data-testid='icon-info' />,
     IconPlus: () => <span data-testid='icon-plus' />,
     IconTrash: () => <span data-testid='icon-trash' />
+}))
+
+jest.mock('./TooltipWithParser', () => ({
+    TooltipWithParser: ({ title }: { title: string }) => <span data-testid='tooltip-with-parser'>{title}</span>
 }))
 
 const scenarioInputParam: InputParam = {
@@ -61,7 +64,7 @@ describe('ScenariosInput', () => {
         const paramWithDesc: InputParam = { ...scenarioInputParam, description: 'Define scenarios for splitting' }
         render(<ScenariosInput inputParam={paramWithDesc} data={mockNodeData} onDataChange={mockOnDataChange} />)
 
-        expect(screen.getByTestId('icon-info')).toBeInTheDocument()
+        expect(screen.getByTestId('tooltip-with-parser')).toBeInTheDocument()
     })
 
     it('should render scenario items with "Scenario N" labels', () => {

@@ -32,6 +32,10 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
             // Custom card color (now type-safe thanks to types.ts)
             card: {
                 main: tokens.colors.background.card[mode]
+            },
+            warningBanner: {
+                background: tokens.colors.semantic.warningBg,
+                text: tokens.colors.semantic.warningText
             }
         },
         typography: {

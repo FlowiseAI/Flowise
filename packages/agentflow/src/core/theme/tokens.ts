@@ -41,6 +41,8 @@ const baseColors = {
     success: '#4caf50',
     error: '#f44336',
     warning: '#ff9800',
+    warningBg: '#fefcbf',
+    warningText: '#744210',
     info: '#2196f3',
 
     // Node type colors (brand colors)
@@ -112,6 +114,8 @@ export const tokens = {
             success: baseColors.success,
             error: baseColors.error,
             warning: baseColors.warning,
+            warningBg: baseColors.warningBg,
+            warningText: baseColors.warningText,
             info: baseColors.info
         },
 

@@ -1,12 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
-import { Box, Button, Chip, IconButton, Tooltip, Typography } from '@mui/material'
+import { Box, Button, Chip, IconButton, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react'
+import { IconPlus, IconTrash } from '@tabler/icons-react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
 import { NodeInputHandler } from './NodeInputHandler'
+import { TooltipWithParser } from './TooltipWithParser'
 import { useStableKeys } from './useStableKeys'
 
 export interface ScenariosInputProps {
@@ -79,14 +80,8 @@ export function ScenariosInput({ inputParam, data, disabled = false, onDataChang
         <Box sx={{ p: 2 }}>
             <Typography>
                 {inputParam.label}
-                {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                {inputParam.description && (
-                    <Tooltip title={inputParam.description} placement='top'>
-                        <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: 6, cursor: 'pointer' }}>
-                            <IconInfoCircle size={16} style={{ opacity: 0.6 }} />
-                        </span>
-                    </Tooltip>
-                )}
+                {!inputParam.optional && <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>}
+                {inputParam.description && <TooltipWithParser title={inputParam.description} />}
             </Typography>
 
             {arrayItems.map((itemValues, index) => {
