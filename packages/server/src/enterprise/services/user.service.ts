@@ -150,14 +150,8 @@ export class UserService {
                 if (!updateUserData) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
             }
 
-            newUserData.createdBy = oldUserData.createdBy
-
             if (newUserData.name) {
                 this.validateUserName(newUserData.name)
-            }
-
-            if (newUserData.status) {
-                this.validateUserStatus(newUserData.status)
             }
 
             if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
@@ -176,7 +170,23 @@ export class UserService {
                 newUserData.tokenExpiry = undefined
             }
 
-            updatedUser = queryRunner.manager.merge(User, oldUserData, newUserData)
+            const safePatch: Partial<User> = {
+                createdBy: oldUserData.createdBy // always preserve from DB
+            }
+
+            if (newUserData.name) {
+                safePatch.name = newUserData.name
+            }
+
+            safePatch.updatedBy = newUserData.updatedBy // always set (controller forces req.user.id)
+            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
+                // credential/tempToken/tokenExpiry were set by the validated workflow above
+                safePatch.credential = newUserData.credential
+                safePatch.tempToken = newUserData.tempToken
+                safePatch.tokenExpiry = newUserData.tokenExpiry
+            }
+
+            updatedUser = queryRunner.manager.merge(User, oldUserData, safePatch)
             await queryRunner.startTransaction()
             await this.saveUser(updatedUser, queryRunner)
             await queryRunner.commitTransaction()
