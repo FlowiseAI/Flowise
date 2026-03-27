@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import mcpEndpointService from '../../services/mcp-server/endpoint'
+import mcpEndpointService from '../../services/mcp-endpoint'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import logger from '../../utils/logger'
 

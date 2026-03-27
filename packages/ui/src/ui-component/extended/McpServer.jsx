@@ -13,6 +13,7 @@ import { SwitchInput } from '@/ui-component/switch/Switch'
 
 // Hooks
 import useConfirm from '@/hooks/useConfirm'
+import useApi from '@/hooks/useApi'
 
 // store
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
@@ -37,8 +38,9 @@ const McpServer = ({ dialogProps }) => {
     const [description, setDescription] = useState('')
     const [token, setToken] = useState('')
     const [loading, setLoading] = useState(false)
-    const [initialLoading, setInitialLoading] = useState(true)
     const [hasExistingConfig, setHasExistingConfig] = useState(false)
+
+    const getMcpServerConfigApi = useApi(mcpServerApi.getMcpServerConfig)
     const [toolNameError, setToolNameError] = useState('')
 
     const chatflowId = dialogProps?.chatflow?.id
@@ -191,36 +193,24 @@ const McpServer = ({ dialogProps }) => {
         }
     }
 
-    // Load existing config on mount
     useEffect(() => {
-        const loadConfig = async () => {
-            if (!dialogProps.chatflow?.id) {
-                setInitialLoading(false)
-                return
-            }
-
-            try {
-                const resp = await mcpServerApi.getMcpServerConfig(dialogProps.chatflow.id)
-                if (resp.data) {
-                    setMcpEnabled(resp.data.enabled || false)
-                    setToolName(resp.data.toolName || '')
-                    setDescription(resp.data.description || '')
-                    setToken(resp.data.token || '')
-                    setHasExistingConfig(true)
-                }
-            } catch {
-                // No config yet — leave defaults
-            } finally {
-                setInitialLoading(false)
-            }
+        if (dialogProps.chatflow?.id) {
+            getMcpServerConfigApi.request(dialogProps.chatflow.id)
         }
-
-        loadConfig()
-
-        return () => {}
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
 
-    if (initialLoading) {
+    useEffect(() => {
+        if (getMcpServerConfigApi.data) {
+            setMcpEnabled(getMcpServerConfigApi.data.enabled || false)
+            setToolName(getMcpServerConfigApi.data.toolName || '')
+            setDescription(getMcpServerConfigApi.data.description || '')
+            setToken(getMcpServerConfigApi.data.token || '')
+            setHasExistingConfig(true)
+        }
+    }, [getMcpServerConfigApi.data])
+
+    if (getMcpServerConfigApi.loading) {
         return (
             <Box sx={{ p: 2, textAlign: 'center' }}>
                 <Typography>Loading MCP Server configuration...</Typography>
@@ -364,7 +354,7 @@ const McpServer = ({ dialogProps }) => {
                             />
                             <Alert severity='info' sx={{ mt: 1.5 }}>
                                 Use the URL above as the MCP endpoint and pass the token as a Bearer token in the Authorization header.
-                                Configure your MCP client with: <code>Authorization: Bearer {'<token>'}</code>
+                                Configure your MCP client with: <code style={{ display: 'block' }}>Authorization: Bearer {'<token>'}</code>
                             </Alert>
                         </Box>
                     )}

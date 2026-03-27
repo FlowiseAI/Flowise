@@ -5,6 +5,7 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { IMcpServerConfig } from '../../Interface'
 
 const toolNameSchema = z
     .string()
@@ -29,13 +30,6 @@ function validateWithZod<T>(schema: z.ZodSchema<T>, data: unknown): T {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, result.error.errors[0].message)
     }
     return result.data
-}
-
-export interface IMcpServerConfig {
-    enabled: boolean
-    token: string
-    description?: string
-    toolName?: string
 }
 
 /**
@@ -64,7 +58,7 @@ const getMcpServerConfig = async (chatflowId: string, workspaceId: string): Prom
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: { id: chatflowId, ...(workspaceId ? { workspaceId } : {}) }
+            where: { id: chatflowId, workspaceId }
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
@@ -90,7 +84,7 @@ const createMcpServerConfig = async (
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: { id: chatflowId, ...(workspaceId ? { workspaceId } : {}) }
+            where: { id: chatflowId, workspaceId }
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
@@ -135,7 +129,7 @@ const updateMcpServerConfig = async (
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: { id: chatflowId, ...(workspaceId ? { workspaceId } : {}) }
+            where: { id: chatflowId, workspaceId }
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
@@ -172,7 +166,7 @@ const deleteMcpServerConfig = async (chatflowId: string, workspaceId: string): P
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: { id: chatflowId, ...(workspaceId ? { workspaceId } : {}) }
+            where: { id: chatflowId, workspaceId }
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
@@ -200,7 +194,7 @@ const refreshMcpToken = async (chatflowId: string, workspaceId: string): Promise
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: { id: chatflowId, ...(workspaceId ? { workspaceId } : {}) }
+            where: { id: chatflowId, workspaceId }
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)

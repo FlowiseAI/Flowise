@@ -422,6 +422,13 @@ export interface IVariableOverride {
     enabled: boolean
 }
 
+export interface IMcpServerConfig {
+    enabled: boolean
+    token: string
+    description?: string
+    toolName?: string
+}
+
 // DocumentStore related
 export * from './Interface.DocumentStore'
 

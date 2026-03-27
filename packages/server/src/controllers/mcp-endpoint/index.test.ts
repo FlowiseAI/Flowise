@@ -12,7 +12,7 @@ const mockHandleMcpSseRequest = jest.fn()
 const mockHandleMcpSseMessageRequest = jest.fn()
 const mockHandleMcpDeleteRequest = jest.fn()
 
-jest.mock('../../src/services/mcp-server/endpoint', () => ({
+jest.mock('../../services/mcp-endpoint', () => ({
     __esModule: true,
     default: {
         handleMcpRequest: (...args: any[]) => mockHandleMcpRequest(...args),
@@ -24,7 +24,7 @@ jest.mock('../../src/services/mcp-server/endpoint', () => ({
 
 const mockGetRateLimiter = jest.fn().mockReturnValue((_req: any, _res: any, next: any) => next())
 
-jest.mock('../../src/utils/rateLimit', () => ({
+jest.mock('../../utils/rateLimit', () => ({
     RateLimiterManager: {
         getInstance: () => ({
             getRateLimiter: () => mockGetRateLimiter()
@@ -32,7 +32,7 @@ jest.mock('../../src/utils/rateLimit', () => ({
     }
 }))
 
-jest.mock('../../src/utils/logger', () => ({
+jest.mock('../../utils/logger', () => ({
     __esModule: true,
     default: {
         debug: jest.fn(),
@@ -43,7 +43,7 @@ jest.mock('../../src/utils/logger', () => ({
 }))
 
 // Import after mocking
-import mcpEndpointController from '../../src/controllers/mcp-endpoint'
+import mcpEndpointController from '.'
 
 // Helper: create mock Express objects
 function mockReq(overrides: Record<string, any> = {}): Request {

@@ -8,9 +8,10 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { utilBuildChatflow } from '../../utils/buildChatflow'
 import { createMockRequest } from '../../utils/mockRequest'
-import mcpServerService, { IMcpServerConfig } from './index'
+import mcpServerService from '../mcp-server/index'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import logger from '../../utils/logger'
+import { IMcpServerConfig } from '../../Interface'
 
 // Active SSE transport sessions: sessionId → { transport, mcpServer, chatflowId }
 interface SseSession {
@@ -21,7 +22,7 @@ interface SseSession {
 const sseSessions = new Map<string, SseSession>()
 
 // Maximum concurrent SSE sessions per chatflow (prevents resource exhaustion)
-const MAX_SSE_SESSIONS_PER_CHATFLOW = 20
+export const MAX_SSE_SESSIONS_PER_CHATFLOW = 20
 
 /**
  * Build the MCP tool name from config + chatflow

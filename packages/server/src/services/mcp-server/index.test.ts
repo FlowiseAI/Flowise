@@ -6,7 +6,7 @@
  * toolName validation, and parseMcpConfig.
  */
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../src/errors/internalFlowiseError'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 
 // Mock typeorm decorators before any entity import (virtual: true for pnpm resolution)
 jest.mock(
@@ -25,7 +25,7 @@ jest.mock(
 const mockFindOne = jest.fn()
 const mockSave = jest.fn()
 
-jest.mock('../../src/utils/getRunningExpressApp', () => ({
+jest.mock('../../utils/getRunningExpressApp', () => ({
     getRunningExpressApp: () => ({
         AppDataSource: {
             getRepository: () => ({
@@ -37,7 +37,8 @@ jest.mock('../../src/utils/getRunningExpressApp', () => ({
 }))
 
 // Import after mocking
-import mcpServerService, { IMcpServerConfig } from '../../src/services/mcp-server/index'
+import mcpServerService from '.'
+import { IMcpServerConfig } from '../../Interface'
 
 // Helper: create a mock ChatFlow entity
 function makeChatflow(overrides: Record<string, any> = {}) {
