@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 // material-ui
 import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
@@ -14,10 +14,12 @@ import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // API
 import useApi from '@/hooks/useApi'
 import documentsApi from '@/api/documentstore'
+import useDocumentStoreCreationGuide from '@/hooks/onboarding/useDocumentStoreCreationGuide'
 
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
@@ -33,8 +35,11 @@ const Documents = () => {
     const theme = useTheme()
 
     const navigate = useNavigate()
+    const location = useLocation()
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
     const { error } = useError()
+    const { startGuide } = useDocumentStoreCreationGuide()
+    const { goTo } = useOverlay()
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
@@ -61,6 +66,7 @@ const Documents = () => {
     }
 
     const goToDocumentStore = (id) => {
+        goTo('docstore:detail')
         navigate('/document-stores/' + id)
     }
 
@@ -73,11 +79,13 @@ const Documents = () => {
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
+        goTo('docstore:creating')
     }
 
     const onConfirm = () => {
         setShowDialog(false)
         applyFilters(currentPage, pageLimit)
+        goTo('docstore:click-card')
     }
 
     useEffect(() => {
@@ -85,6 +93,19 @@ const Documents = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    // Auto-start guide when navigating from QuickStart
+    useEffect(() => {
+        const state = location.state
+        if (state?.startGuide && state?.guideType === 'create_docstore') {
+            // Clear state to prevent re-triggering
+            navigate('.', { replace: true, state: undefined })
+            // Start guide after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                startGuide()
+            }, 500)
+        }
+    }, [location.state, navigate, startGuide])
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -199,6 +220,7 @@ const Documents = () => {
                             onClick={addNew}
                             startIcon={<IconPlus />}
                             id='btn_createVariable'
+                            data-onboarding='add-docstore-button'
                         >
                             Add New
                         </StyledPermissionButton>
@@ -217,7 +239,7 @@ const Documents = () => {
                     ) : (
                         <React.Fragment>
                             {!view || view === 'card' ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Box data-onboarding='docstore-grid' display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                                     {docStores?.filter(filterDocStores).map((data, index) => (
                                         <DocumentStoreCard
                                             key={index}

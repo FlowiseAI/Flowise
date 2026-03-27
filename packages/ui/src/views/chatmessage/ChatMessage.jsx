@@ -185,7 +185,7 @@ CardWithDeleteOverlay.propTypes = {
     onDelete: PropTypes.func
 }
 
-const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
+const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews, onPredictionComplete }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -1070,6 +1070,13 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
             if (isChatFlowAvailableToStream) {
                 fetchResponseFromEventStream(chatflowid, params)
+                //  NOTE: Should be called outside the SSE stream handlers to ensure
+                // it's called in the proper React context and after all state updates are complete
+                setTimeout(() => {
+                    if (onPredictionComplete) {
+                        onPredictionComplete()
+                    }
+                }, 5000)
             } else {
                 const response = await predictionApi.sendMessageAndGetPrediction(chatflowid, params)
                 if (response.data) {
@@ -1108,6 +1115,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     setTimeout(() => {
                         inputRef.current?.focus()
                         scrollToBottom()
+                        if (onPredictionComplete) {
+                            onPredictionComplete()
+                        }
                     }, 100)
                 }
             }
@@ -3239,7 +3249,12 @@ ChatMessage.propTypes = {
     isAgentCanvas: PropTypes.bool,
     isDialog: PropTypes.bool,
     previews: PropTypes.array,
-    setPreviews: PropTypes.func
+    setPreviews: PropTypes.func,
+    onPredictionComplete: PropTypes.func
+}
+
+ChatMessage.defaultProps = {
+    onPredictionComplete: undefined
 }
 
 export default memo(ChatMessage)

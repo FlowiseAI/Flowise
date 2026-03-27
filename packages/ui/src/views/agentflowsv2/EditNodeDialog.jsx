@@ -10,6 +10,7 @@ import { IconPencil, IconX, IconCheck, IconInfoCircle } from '@tabler/icons-reac
 import { useTheme } from '@mui/material/styles'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import { showHideInputParams } from '@/utils/genericHelper'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
@@ -24,6 +25,9 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
     const [data, setData] = useState({})
     const [isEditingNodeName, setEditingNodeName] = useState(null)
     const [nodeName, setNodeName] = useState('')
+
+    // Onboarding
+    const { getCurrentStep, goTo } = useOverlay()
 
     const onNodeLabelChange = () => {
         reactFlowInstance.setNodes((nds) =>
@@ -98,6 +102,51 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 
+    const handleOnboardingOnEdit = () => {
+        const currentStep = getCurrentStep()
+        if (!currentStep) return
+
+        setTimeout(() => {
+            switch (currentStep.id) {
+                case 'agent-creation:rename-condition-agent':
+                    goTo('agent-creation:renaming-condition-agent')
+                    break
+                case 'agent-creation:rename-billing-agent':
+                    goTo('agent-creation:renaming-billing-agent')
+                    break
+                case 'agent-creation:rename-general-agent':
+                    goTo('agent-creation:renaming-general-agent')
+                    break
+                default:
+                    break
+            }
+        }, 200)
+    }
+
+    const handleOnboardingOnCheck = () => {
+        const currentStep = getCurrentStep()
+        if (!currentStep) return
+
+        setTimeout(() => {
+            switch (currentStep.id) {
+                case 'agent-creation:renaming-condition-agent':
+                case 'agent-creation:save-condition-agent':
+                    goTo('agent-creation:select-model-condition-agent')
+                    break
+                case 'agent-creation:renaming-billing-agent':
+                case 'agent-creation:save-billing-agent':
+                    goTo('agent-creation:select-model-billing-agent')
+                    break
+                case 'agent-creation:renaming-general-agent':
+                case 'agent-creation:save-general-agent':
+                    goTo('agent-creation:select-model-general-agent')
+                    break
+                default:
+                    break
+            }
+        }, 200)
+    }
+
     const component = show ? (
         <Dialog
             onClose={onCancel}
@@ -125,7 +174,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                 </Typography>
 
                                 {data?.id && (
-                                    <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
+                                    <ButtonBase data-onboarding='edit-name-button' title='Edit Name' sx={{ borderRadius: '50%' }}>
                                         <Avatar
                                             variant='rounded'
                                             sx={{
@@ -141,7 +190,10 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                                 }
                                             }}
                                             color='inherit'
-                                            onClick={() => setEditingNodeName(true)}
+                                            onClick={() => {
+                                                setEditingNodeName(true)
+                                                handleOnboardingOnEdit()
+                                            }}
                                         >
                                             <IconPencil stroke={1.5} size='1rem' />
                                         </Avatar>
@@ -166,12 +218,13 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                             setNodeName(nodeNameRef.current.value)
                                             onNodeLabelChange()
                                             setEditingNodeName(false)
+                                            handleOnboardingOnCheck()
                                         } else if (e.key === 'Escape') {
                                             setEditingNodeName(false)
                                         }
                                     }}
                                 />
-                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase data-onboarding='save-name-button' title='Save Name' sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -192,6 +245,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                             setNodeName(nodeNameRef.current.value)
                                             onNodeLabelChange()
                                             setEditingNodeName(false)
+                                            handleOnboardingOnCheck()
                                         }}
                                     >
                                         <IconCheck stroke={1.5} size='1rem' />

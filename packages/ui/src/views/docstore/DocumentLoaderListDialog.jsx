@@ -118,6 +118,7 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
                     />
                 </Box>
                 <List
+                    data-onboarding='document-loader-list'
                     sx={{
                         width: '100%',
                         display: 'grid',

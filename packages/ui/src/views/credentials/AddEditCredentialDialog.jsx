@@ -26,6 +26,7 @@ import useApi from '@/hooks/useApi'
 // utils
 import useNotifier from '@/utils/useNotifier'
 import { initializeDefaultNodeData } from '@/utils/genericHelper'
+import { useOverlay } from '@/utils/overlay/useOverlay'
 
 // const
 import { baseURL, REDACTED_CREDENTIAL_VALUE } from '@/store/constant'
@@ -36,6 +37,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
+    const { goTo } = useOverlay()
 
     // ==============================|| Snackbar ||============================== //
 
@@ -118,6 +120,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
     }, [show, dispatch])
 
     const addNewCredential = async () => {
+        goTo('chatflow-creation:saving-credential')
         try {
             const obj = {
                 name,
@@ -139,6 +142,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     }
                 })
                 onConfirm(createResp.data.id)
+                goTo('chatflow-creation:credential-saved')
             }
         } catch (error) {
             if (setError) setError(error)
@@ -441,7 +445,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     </Box>
                 )}
                 {!shared && componentCredential && componentCredential.label && (
-                    <Box sx={{ p: 2 }}>
+                    <Box data-onboarding='dialog-credential-name' sx={{ p: 2 }}>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
                                 Credential Name
@@ -491,6 +495,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             <DialogActions>
                 {!shared && (
                     <StyledButton
+                        data-onboarding='dialog-credential-confirm-button'
                         disabled={!name}
                         variant='contained'
                         onClick={() => (dialogProps.type === 'ADD' ? addNewCredential() : saveCredential())}

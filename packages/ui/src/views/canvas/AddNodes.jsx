@@ -4,6 +4,9 @@ import PropTypes from 'prop-types'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
+
+// overlay
+import { useOverlay } from '@/utils/overlay/useOverlay'
 import {
     Accordion,
     AccordionSummary,
@@ -74,6 +77,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
+    const { getCurrentStep, goTo } = useOverlay()
 
     const [searchValue, setSearchValue] = useState('')
     const [nodes, setNodes] = useState({})
@@ -341,7 +345,56 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
     }
 
     const handleToggle = () => {
-        setOpen((prevOpen) => !prevOpen)
+        setOpen((prevOpen) => {
+            const willOpen = !prevOpen
+
+            if (willOpen) {
+                handleOnboardingOnToggle()
+            }
+
+            return willOpen
+        })
+    }
+
+    const handleOnboardingOnToggle = () => {
+        const currentStep = getCurrentStep()
+        if (!currentStep) return
+        setTimeout(() => {
+            switch (currentStep.id) {
+                // Chatflow creation guide steps
+                case 'chatflow-creation:node-panel-intro':
+                case 'chatflow-creation:browsing-node-panel':
+                    goTo('chatflow-creation:drag-node')
+                    break
+                case 'chatflow-creation:drag-node':
+                case 'chatflow-creation:dragging-node':
+                    goTo('chatflow-creation:canvas-tips')
+                    break
+                case 'chatflow-creation:add-second-node':
+                case 'chatflow-creation:adding-second-node':
+                    goTo('chatflow-creation:add-chat-model')
+                    break
+                case 'chatflow-creation:add-third-node':
+                case 'chatflow-creation:adding-third-node':
+                    goTo('chatflow-creation:add-memory')
+                    break
+                // Agentflow creation guide steps
+                case 'agent-creation:add-router-agent':
+                case 'agent-creation:adding-router-agent':
+                    goTo('agent-creation:drag-condition-agent')
+                    break
+                case 'agent-creation:add-billing-agent':
+                case 'agent-creation:adding-billing-agent':
+                    goTo('agent-creation:drag-billing-agent')
+                    break
+                case 'agent-creation:add-general-agent':
+                case 'agent-creation:adding-general-agent':
+                    goTo('agent-creation:drag-general-agent')
+                    break
+                default:
+                    break
+            }
+        }, 200)
     }
 
     const onDragStart = (event, node) => {
@@ -416,6 +469,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                 aria-label='add'
                 title='Add Node'
                 onClick={handleToggle}
+                data-onboarding='node-panel'
             >
                 {open ? <IconMinus /> : <IconPlus />}
             </StyledFab>
@@ -464,6 +518,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                     ]
                 }}
                 sx={{ zIndex: 1000 }}
+                data-onboarding='node-panel-popper'
             >
                 {({ TransitionProps }) => (
                     <Transitions in={open} {...TransitionProps}>
