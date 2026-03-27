@@ -1,4 +1,5 @@
-import type { FlowNode, NodeData, OutputAnchor } from '../types'
+import { getDefaultValueForType } from '../primitives'
+import type { FlowNode, InputParam, NodeData, OutputAnchor } from '../types'
 
 import { buildDynamicOutputAnchors } from './dynamicOutputAnchors'
 
@@ -55,11 +56,11 @@ export function getUniqueNodeLabel(nodeData: NodeData, nodes: FlowNode[]): strin
  * Initialize default values for node parameters.
  * Falls back to '' for params without a default — needed by show/hide condition evaluation.
  */
-function initializeDefaultNodeData(nodeParams: Array<{ name: string; default?: unknown }>): Record<string, unknown> {
+function initializeDefaultNodeData(nodeParams: Pick<InputParam, 'name' | 'type' | 'default' | 'options'>[]): Record<string, unknown> {
     const initialValues: Record<string, unknown> = {}
 
     for (const input of nodeParams) {
-        initialValues[input.name] = input.default ?? ''
+        initialValues[input.name] = getDefaultValueForType(input)
     }
 
     return initialValues
@@ -90,12 +91,12 @@ function createAgentFlowOutputs(nodeData: NodeData, newNodeId: string): Array<{ 
 
 /**
  * Pick only the properties that belong to NodeData from a server API response.
- * Strips server-only metadata (filePath, badge, author, loadMethods, etc.)
+ * Strips server-only metadata (filePath, author, loadMethods, etc.)
  * and runtime-only state (status, error, warning, hint, validationErrors)
  * that should not be persisted in flow data.
  *
- * Mirrors the allowlist used by generateExportFlowData in agentflow v2
- * (packages/ui/src/utils/genericHelper.js).
+ * Preserves component metadata needed at runtime (badge, tags, documentation)
+ * for display in the NodeInfoDialog.
  */
 function pickNodeData(raw: NodeData): NodeData {
     return {
@@ -114,7 +115,10 @@ function pickNodeData(raw: NodeData): NodeData {
         outputAnchors: raw.outputAnchors,
         color: raw.color,
         icon: raw.icon,
-        hideInput: raw.hideInput
+        hideInput: raw.hideInput,
+        badge: raw.badge,
+        tags: raw.tags,
+        documentation: raw.documentation
     }
 }
 

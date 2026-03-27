@@ -9,9 +9,12 @@ const mockOnDataChange = jest.fn()
 
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-arrows-maximize' />,
-    IconInfoCircle: () => <span data-testid='icon-info-circle' />,
     IconPlus: () => <span data-testid='icon-plus' />,
     IconTrash: () => <span data-testid='icon-trash' />
+}))
+
+jest.mock('./TooltipWithParser', () => ({
+    TooltipWithParser: ({ title }: { title: string }) => <span data-testid='tooltip-with-parser'>{title}</span>
 }))
 
 jest.mock('./CodeInput', () => ({
@@ -366,7 +369,7 @@ describe('StructuredOutputBuilder', () => {
         render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
 
         expect(screen.getByText('Enum Values')).toBeInTheDocument()
-        expect(screen.getByTestId('icon-info-circle')).toBeInTheDocument()
+        expect(screen.getByTestId('tooltip-with-parser')).toBeInTheDocument()
     })
 
     it('should render info icon and expand icon next to JSON Schema label', () => {
@@ -380,7 +383,7 @@ describe('StructuredOutputBuilder', () => {
         render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
 
         expect(screen.getByText('JSON Schema')).toBeInTheDocument()
-        expect(screen.getByTestId('icon-info-circle')).toBeInTheDocument()
+        expect(screen.getByTestId('tooltip-with-parser')).toBeInTheDocument()
         expect(screen.getByTitle('Expand')).toBeInTheDocument()
     })
 

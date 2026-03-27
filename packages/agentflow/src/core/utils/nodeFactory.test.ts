@@ -223,14 +223,17 @@ describe('initNode', () => {
             badge: 'NEW',
             author: 'Flowise',
             documentation: 'https://docs.example.com',
+            tags: ['LLM', 'OpenAI'],
             loadMethods: { listModels: () => Promise.resolve([]) }
         } as Partial<NodeData>)
         const result = initNode(nodeData, 'n1')
         expect(result).not.toHaveProperty('filePath')
-        expect(result).not.toHaveProperty('badge')
         expect(result).not.toHaveProperty('author')
-        expect(result).not.toHaveProperty('documentation')
         expect(result).not.toHaveProperty('loadMethods')
+        // badge, tags, documentation are preserved for NodeInfoDialog display
+        expect(result.badge).toBe('NEW')
+        expect(result.tags).toEqual(['LLM', 'OpenAI'])
+        expect(result.documentation).toBe('https://docs.example.com')
     })
 
     it('should strip runtime-only state from node data', () => {
