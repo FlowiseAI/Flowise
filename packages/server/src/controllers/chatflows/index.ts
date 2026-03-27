@@ -99,7 +99,7 @@ const getChatflowByApiKey = async (req: Request, res: Response, next: NextFuncti
         if (!apikey) {
             return res.status(401).send('Unauthorized')
         }
-        const apiResponse = await chatflowsService.getChatflowByApiKey(apikey.id, req.query.keyonly)
+        const apiResponse = await chatflowsService.getChatflowByApiKey(apikey.id, apikey.workspaceId, req.query.keyonly)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

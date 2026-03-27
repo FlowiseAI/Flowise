@@ -9,6 +9,7 @@ import { useCallback, useRef, useState } from 'react'
 
 import type { AgentFlowInstance, FlowData, ValidationResult } from '@flowiseai/agentflow'
 import { Agentflow } from '@flowiseai/agentflow'
+import { InternalAxiosRequestConfig } from 'axios'
 
 import { apiBaseUrl, token } from '../config'
 import { FlowStatePanel } from '../FlowStatePanel'
@@ -28,9 +29,31 @@ const initialFlow: FlowData = {
                 hideInput: true,
                 outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
             }
+        },
+        {
+            id: 'agentAgentflow_0',
+            type: 'agentflowNode',
+            position: { x: 250, y: 100 },
+            data: {
+                id: 'agentAgentflow_0',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                color: '#4DD0E1',
+                outputAnchors: [{ id: 'agentAgentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
+            }
         }
     ],
-    edges: [],
+    edges: [
+        {
+            id: 'edge-1',
+            source: 'startAgentflow_0',
+            sourceHandle: 'startAgentflow_0-output-0',
+            target: 'agentAgentflow_0',
+            targetHandle: 'agentAgentflow_0',
+            type: 'agentflowEdge',
+            data: { sourceColor: '#7EE787', targetColor: '#4DD0E1' }
+        }
+    ],
     viewport: { x: 0, y: 0, zoom: 1 }
 }
 
@@ -115,6 +138,13 @@ export function BasicExample() {
                         onFlowChange={handleFlowChange}
                         onSave={handleSave}
                         showDefaultHeader={true}
+                        requestInterceptor={(config: InternalAxiosRequestConfig) => {
+                            // pass cookies if no token is provided
+                            if (!token) {
+                                config.withCredentials = true
+                            }
+                            return config
+                        }}
                     />
                 </div>
                 <FlowStatePanel currentFlow={currentFlow} savedFlow={savedFlow} changeCount={changeCount} />
@@ -129,5 +159,6 @@ export const BasicExampleProps = {
     initialFlow: 'FlowData',
     onFlowChange: '(flow: FlowData) => void',
     onSave: '(flow: FlowData) => void',
-    showDefaultHeader: true
+    showDefaultHeader: true,
+    requestInterceptor: '(config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig'
 }

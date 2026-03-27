@@ -166,7 +166,7 @@ export const toolAgentFlow = {
                         id: 'chatOpenAI_0-input-stopSequence-string'
                     },
                     {
-                        label: 'BaseOptions',
+                        label: 'Base Options',
                         name: 'baseOptions',
                         type: 'json',
                         optional: true,
@@ -182,30 +182,6 @@ export const toolAgentFlow = {
                         default: false,
                         optional: true,
                         id: 'chatOpenAI_0-input-allowImageUploads-boolean'
-                    },
-                    {
-                        label: 'Image Resolution',
-                        description: 'This parameter controls the resolution in which the model views the image.',
-                        name: 'imageResolution',
-                        type: 'options',
-                        options: [
-                            {
-                                label: 'Low',
-                                name: 'low'
-                            },
-                            {
-                                label: 'High',
-                                name: 'high'
-                            },
-                            {
-                                label: 'Auto',
-                                name: 'auto'
-                            }
-                        ],
-                        default: 'low',
-                        optional: false,
-                        additionalParams: true,
-                        id: 'chatOpenAI_0-input-imageResolution-options'
                     }
                 ],
                 inputAnchors: [
@@ -231,8 +207,7 @@ export const toolAgentFlow = {
                     proxyUrl: '',
                     stopSequence: '',
                     baseOptions: '',
-                    allowImageUploads: '',
-                    imageResolution: 'low'
+                    allowImageUploads: ''
                 },
                 outputAnchors: [
                     {

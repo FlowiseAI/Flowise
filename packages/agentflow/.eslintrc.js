@@ -81,6 +81,9 @@ module.exports = {
         'import/first': 'error',
         'import/newline-after-import': 'error',
         'import/no-duplicates': 'error',
+        // Allow autoFocus on custom components (e.g. RichTextEditor in dialogs) — they manage
+        // focus programmatically per WAI-ARIA dialog patterns. Native elements are still flagged.
+        'jsx-a11y/no-autofocus': ['error', { ignoreNonDOM: true }],
         'prettier/prettier': 'error',
         // Ban @/features alias — features use relative imports internally, and no other
         // layer should import from features (enforced by import/no-restricted-paths below).
@@ -116,8 +119,8 @@ module.exports = {
                     {
                         target: './src/atoms',
                         from: './src/core',
-                        except: ['./types'],
-                        message: 'Atoms can only import types from core/types, not utilities or business logic.'
+                        except: ['./types', './theme', './primitives'],
+                        message: 'Atoms can only import from core/types, core/theme, and core/primitives.'
                     },
                     // core/ cannot import from anything (leaf node)
                     {

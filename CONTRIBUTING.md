@@ -116,6 +116,40 @@ Flowise has 3 different modules in a single mono repository.
 
 11. Commit code and submit Pull Request from forked branch pointing to [Flowise main](https://github.com/FlowiseAI/Flowise/tree/main).
 
+### Testing
+
+-   Unit tests are **co-located** with their source files — a test for `Foo.ts` lives in `Foo.test.ts` in the same directory. This is the standard used across all packages in this repo.
+
+-   Run tests per package:
+
+    ```bash
+    cd packages/server && pnpm test
+    cd packages/components && pnpm test
+    cd packages/agentflow && pnpm test
+    ```
+
+    Or from the repo root using `--filter`:
+
+    ```bash
+    pnpm --filter flowise-components test
+    pnpm --filter @flowiseai/agentflow test
+    pnpm --filter "./packages/server" test # root and server share the same package name.
+    ```
+
+-   Or run all tests from the repo root:
+
+    ```bash
+    pnpm test
+    ```
+
+-   When adding new functionality, place your test file next to the source file it tests:
+
+    ```
+    packages/components/nodes/tools/MyTool/
+    ├── MyTool.ts
+    └── MyTool.test.ts        ← co-located test
+    ```
+
 ## 🌱 Env Variables
 
 Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
@@ -123,6 +157,7 @@ Flowise support different environment variables to configure your instance. You 
 | Variable                             | Description                                                                                                                                                                                                                                                                       | Type                                             | Default                             |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
 | PORT                                 | The HTTP port Flowise runs on                                                                                                                                                                                                                                                     | Number                                           | 3000                                |
+| CORS_ALLOW_CREDENTIALS               | Enables CORS `Access-Control-Allow-Credentials` when `true`                                                                                                                                                                                                                       | Boolean                                          | false                               |
 | CORS_ORIGINS                         | The allowed origins for all cross-origin HTTP calls                                                                                                                                                                                                                               | String                                           |                                     |
 | IFRAME_ORIGINS                       | The allowed origins for iframe src embedding                                                                                                                                                                                                                                      | String                                           |                                     |
 | FLOWISE_FILE_SIZE_LIMIT              | Upload File Size Limit                                                                                                                                                                                                                                                            | String                                           | 50mb                                |

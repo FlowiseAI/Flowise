@@ -1,12 +1,12 @@
 import { omit } from 'lodash'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
-import { TextLoader } from 'langchain/document_loaders/fs/text'
-import { JSONLinesLoader, JSONLoader } from 'langchain/document_loaders/fs/json'
+import { TextSplitter } from '@langchain/textsplitters'
+import { TextLoader } from '@langchain/classic/document_loaders/fs/text'
+import { JSONLinesLoader, JSONLoader } from '@langchain/classic/document_loaders/fs/json'
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
-import { BaseDocumentLoader } from 'langchain/document_loaders/base'
+import { BaseDocumentLoader } from '@langchain/classic/document_loaders/base'
 import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 import { Document } from '@langchain/core/documents'
@@ -156,14 +156,14 @@ class File_DocumentLoaders implements INode {
                 for (const file of files) {
                     if (!file) continue
                     const fileData = await getFileFromStorage(file, orgId, chatflowid, options.chatId)
-                    const blob = new Blob([fileData])
+                    const blob = new Blob([new Uint8Array(fileData)])
                     fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
                 }
             } else {
                 for (const file of files) {
                     if (!file) continue
                     const fileData = await getFileFromStorage(file, orgId, chatflowid)
-                    const blob = new Blob([fileData])
+                    const blob = new Blob([new Uint8Array(fileData)])
                     fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
                 }
             }

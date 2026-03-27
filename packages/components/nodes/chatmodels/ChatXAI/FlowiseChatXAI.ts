@@ -14,16 +14,7 @@ export class ChatXAI extends LCChatXAI implements IVisionChatModal {
         this.configuredMaxToken = fields?.maxTokens
     }
 
-    revertToOriginalModel(): void {
-        this.modelName = this.configuredModel
-        this.maxTokens = this.configuredMaxToken
-    }
-
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
-    }
-
-    setVisionModel(): void {
-        // pass
     }
 }
