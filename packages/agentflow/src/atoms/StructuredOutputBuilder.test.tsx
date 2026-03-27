@@ -9,9 +9,18 @@ const mockOnDataChange = jest.fn()
 
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-arrows-maximize' />,
-    IconInfoCircle: () => <span data-testid='icon-info-circle' />,
     IconPlus: () => <span data-testid='icon-plus' />,
     IconTrash: () => <span data-testid='icon-trash' />
+}))
+
+jest.mock('./TooltipWithParser', () => ({
+    TooltipWithParser: ({ title }: { title: string }) => <span data-testid='tooltip-with-parser'>{title}</span>
+}))
+
+jest.mock('./CodeInput', () => ({
+    CodeInput: ({ value, onChange, language }: { value: string; onChange: (v: string) => void; language?: string }) => (
+        <textarea data-testid='code-input' data-language={language} value={value} onChange={(e) => onChange(e.target.value)} />
+    )
 }))
 
 jest.mock('@/atoms/ExpandTextDialog', () => ({
@@ -219,7 +228,7 @@ describe('StructuredOutputBuilder', () => {
 
         expect(screen.getByText('Enum Values')).toBeInTheDocument()
         expect(screen.getByTestId('enum-values-0')).toBeInTheDocument()
-        expect(screen.queryByTestId('json-schema-0')).not.toBeInTheDocument()
+        expect(screen.queryByTestId('code-input')).not.toBeInTheDocument()
     })
 
     it('should show JSON Schema field when type is "jsonArray"', () => {
@@ -233,7 +242,7 @@ describe('StructuredOutputBuilder', () => {
         render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
 
         expect(screen.getByText('JSON Schema')).toBeInTheDocument()
-        expect(screen.getByTestId('json-schema-0')).toBeInTheDocument()
+        expect(screen.getByTestId('code-input')).toBeInTheDocument()
         expect(screen.queryByTestId('enum-values-0')).not.toBeInTheDocument()
     })
 
@@ -360,7 +369,7 @@ describe('StructuredOutputBuilder', () => {
         render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
 
         expect(screen.getByText('Enum Values')).toBeInTheDocument()
-        expect(screen.getByTestId('icon-info-circle')).toBeInTheDocument()
+        expect(screen.getByTestId('tooltip-with-parser')).toBeInTheDocument()
     })
 
     it('should render info icon and expand icon next to JSON Schema label', () => {
@@ -374,7 +383,7 @@ describe('StructuredOutputBuilder', () => {
         render(<StructuredOutputBuilder inputParam={mockInputParam} data={dataWithEntries} onDataChange={mockOnDataChange} />)
 
         expect(screen.getByText('JSON Schema')).toBeInTheDocument()
-        expect(screen.getByTestId('icon-info-circle')).toBeInTheDocument()
+        expect(screen.getByTestId('tooltip-with-parser')).toBeInTheDocument()
         expect(screen.getByTitle('Expand')).toBeInTheDocument()
     })
 

@@ -15,14 +15,19 @@ export class MCPToolkit extends BaseToolkit {
     client: Client | null = null
     serverParams: StdioServerParameters | any
     transportType: 'stdio' | 'sse'
+    /** Per-invocation HTTP headers injected at tools/call time; overrides static toolkit headers for the same names. */
+    getToolCallHeaders?: () => Promise<Record<string, string>>
     constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
         super()
         this.serverParams = serverParams
         this.transportType = transportType
     }
 
-    // Method to create a new client with transport
-    async createClient(): Promise<Client> {
+    /**
+     * Creates a new MCP client and connects it via the configured transport.
+     * @param injectHeaders - Additional HTTP headers merged over static `serverParams.headers` for this connection. Used to pass per-invocation headers (e.g. from {@link getToolCallHeaders}) into SSE/HTTP transports.
+     */
+    async createClient(injectHeaders: Record<string, string> = {}): Promise<Client> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -54,11 +59,13 @@ export class MCPToolkit extends BaseToolkit {
 
             const baseUrl = new URL(this.serverParams.url)
             await checkDenyList(this.serverParams.url)
+            const mergedHeaders = { ...this.serverParams?.headers, ...injectHeaders }
+            const headers = Object.keys(mergedHeaders).length > 0 ? mergedHeaders : undefined
             try {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new StreamableHTTPClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         }
                     })
                 } else {
@@ -66,16 +73,16 @@ export class MCPToolkit extends BaseToolkit {
                 }
                 await client.connect(transport)
             } catch (error) {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new SSEClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         },
                         eventSourceInit: {
                             fetch: async (url, init) => {
                                 return secureFetch(url.toString(), {
                                     ...(init as any),
-                                    headers: this.serverParams.headers
+                                    headers
                                 }) as any
                             }
                         }
@@ -148,7 +155,8 @@ export async function MCPTool({
     return tool(
         async (input): Promise<string> => {
             // Create a new client for this request
-            const client = await toolkit.createClient()
+            const toolCallHeaders = await toolkit.getToolCallHeaders?.()
+            const client = await toolkit.createClient(toolCallHeaders)
 
             try {
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
@@ -190,7 +198,7 @@ function createSchemaModel(
 export const validateArgsForLocalFileAccess = (args: string[]): void => {
     const dangerousPatterns = [
         // Absolute paths
-        /^\/[^/]/, // Unix absolute paths starting with /
+        /^\//, // Unix absolute paths starting with /
         /^[a-zA-Z]:\\/, // Windows absolute paths like C:\
 
         // Relative paths that could escape current directory
@@ -286,7 +294,9 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
             '-c', // Execute shell commands
             '--call', // Execute shell commands
             '--shell-auto-fallback', // Shell execution fallback
-            '-y' // Auto-confirms installation prompts
+            '-y', // Auto-confirms installation prompts
+            '--yes', // Auto-confirms installation prompts
+            '--node-options' // Passes arbitrary Node flags to underlying process, bypassing node flag blocklist
         ],
         node: [
             '-e', // Execute JavaScript code
@@ -295,7 +305,13 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
             '--print', // Evaluate and print JavaScript code
             '--inspect', // Enable remote debugging (security risk)
             '--inspect-brk', // Enable remote debugging with breakpoint (security risk)
-            '--experimental-policy' // Could load malicious policies
+            '--experimental-policy', // Could load malicious policies
+            '-r', // Short alias for --require
+            '--require', // Preload a CommonJS module before script runs
+            '--loader', // Custom ES module loader hook (code execution)
+            '--experimental-loader', // Same as --loader, older Node alias
+            '--import', // Preload ESM module before entry script (Node 18+)
+            '--env-file' // Read env vars from a local file (Node 20+, local file access)
         ],
         python: [
             '-c', // Execute Python code
@@ -307,15 +323,22 @@ export const validateCommandFlags = (command: string, args: string[]): void => {
         ],
         docker: [
             'run', // Run containers (too powerful)
+            'build', // Pulls a container and executes the run instructions
             'exec', // Execute in containers
+            'compose', // Subcommand that starts containers (same risk as run)
             '-v', // Mount host filesystems
             '--volume', // Mount host filesystems
+            '--mount', // Alternative to -v/--volume for mounting host paths
+            '--volumes-from', // Mount volumes from another container (filesystem access)
             '--privileged', // Privileged mode
             '--cap-add', // Add capabilities
             '--security-opt', // Modify security options
+            '--device', // Add host device files to container (privilege escalation)
+            '--entrypoint', // Override container entrypoint (arbitrary code execution)
             '--network', // Host network access (catches --network=host and --network host)
             '--pid', // Host PID namespace (catches --pid=host and --pid host)
-            '--ipc' // Host IPC namespace (catches --ipc=host and --ipc host)
+            '--ipc', // Host IPC namespace (catches --ipc=host and --ipc host)
+            '--env-file' // Read env vars from a local host file (local file access)
         ]
     }
 

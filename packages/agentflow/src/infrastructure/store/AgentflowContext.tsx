@@ -3,6 +3,7 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import { cloneDeep } from 'lodash'
 
+import { getDefaultValueForType } from '@/core/primitives'
 import type {
     AgentflowAction,
     AgentflowState,
@@ -66,7 +67,7 @@ export interface AgentflowContextValue {
     // Node operations
     deleteNode: (nodeId: string) => void
     duplicateNode: (nodeId: string, distance?: number) => void
-    updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>) => void
+    updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>, edges?: FlowEdge[]) => void
 
     // Edge operations
     deleteEdge: (edgeId: string) => void
@@ -216,7 +217,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                     if (isConnectionString(value)) {
                         // Reset string connections to parameter default
                         const inputParam = newNode.data.inputs?.find((p) => p.name === inputName)
-                        newNode.data.inputValues[inputName] = inputParam?.default ?? ''
+                        newNode.data.inputValues[inputName] = inputParam ? getDefaultValueForType(inputParam) : ''
                     } else if (Array.isArray(value)) {
                         // Filter out connection strings from arrays
                         newNode.data.inputValues[inputName] = value.filter((item) => !isConnectionString(item))
@@ -230,7 +231,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     )
 
     const updateNodeData = useCallback(
-        (nodeId: string, data: Partial<FlowNode['data']>) => {
+        (nodeId: string, data: Partial<FlowNode['data']>, edges?: FlowEdge[]) => {
             const newNodes = state.nodes.map((node) => {
                 if (node.id === nodeId) {
                     return {
@@ -241,12 +242,13 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 return node
             })
 
-            syncStateUpdate({ nodes: newNodes })
+            const effectiveEdges = edges ?? state.edges
+            syncStateUpdate({ nodes: newNodes, ...(edges !== undefined && { edges }) })
 
             // Notify parent of flow change (e.g. node data edits from EditNodeDialog)
             if (onFlowChangeRef.current) {
                 const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
-                onFlowChangeRef.current({ nodes: newNodes, edges: state.edges, viewport })
+                onFlowChangeRef.current({ nodes: newNodes, edges: effectiveEdges, viewport })
             }
         },
         [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]

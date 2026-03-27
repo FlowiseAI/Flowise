@@ -7,9 +7,11 @@ import { useAsyncOptions } from './useAsyncOptions'
 const mockGetChatModels = jest.fn()
 const mockGetAllTools = jest.fn()
 const mockGetCredentialsByName = jest.fn()
+const mockGetAllChatflows = jest.fn()
 
 // Stable API objects — same reference on every render so they don't re-trigger the effect
 const mockApiContext = {
+    chatflowsApi: { getAllChatflows: mockGetAllChatflows },
     chatModelsApi: { getChatModels: mockGetChatModels },
     toolsApi: { getAllTools: mockGetAllTools },
     credentialsApi: { getAllCredentials: jest.fn(), getCredentialsByName: mockGetCredentialsByName },
@@ -92,6 +94,26 @@ describe('useAsyncOptions', () => {
         expect(mockGetCredentialsByName).toHaveBeenCalledWith(['openAIApi', 'anthropicApi'])
         expect(result.current.options).toHaveLength(2)
         expect(result.current.options[0]).toEqual({ label: 'OpenAI Key', name: 'c1' })
+    })
+
+    it('listFlows: populates options with label/name/description mapped from chatflows', async () => {
+        mockGetAllChatflows.mockResolvedValue([
+            { id: 'cf-1', name: 'Support Bot', type: 'CHATFLOW' },
+            { id: 'cf-2', name: 'Sales Agent', type: 'AGENTFLOW' },
+            { id: 'cf-3', name: 'Multi Agent', type: 'MULTIAGENT' }
+        ])
+
+        const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listFlows' }))
+
+        await waitFor(() => expect(result.current.loading).toBe(false))
+
+        expect(mockGetAllChatflows).toHaveBeenCalledTimes(1)
+        expect(result.current.options).toEqual([
+            { name: 'cf-1', label: 'Support Bot', description: 'Chatflow' },
+            { name: 'cf-2', label: 'Sales Agent', description: 'Agentflow V2' },
+            { name: 'cf-3', label: 'Multi Agent', description: 'Agentflow V1' }
+        ])
+        expect(result.current.error).toBeNull()
     })
 
     it('API error: sets error message, loading false', async () => {

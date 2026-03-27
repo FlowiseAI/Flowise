@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import type { NodeData } from '@/core/types'
+import type { NodeConfigEntry, NodeData } from '@/core/types'
 
 /**
  * Create nodes API functions bound to a client instance
@@ -20,6 +20,33 @@ export function bindNodesApi(client: AxiosInstance) {
          */
         getNodeByName: async (name: string): Promise<NodeData> => {
             const response = await client.get(`/nodes/${name}`)
+            return response.data
+        },
+
+        /**
+         * Call a loadMethod on a specific node (e.g. listRegions on awsChatBedrock).
+         * Maps to POST /node-load-method/{nodeName} with { loadMethod, ...body }.
+         */
+        loadNodeMethod: async (nodeName: string, loadMethod: string, body?: Record<string, unknown>): Promise<unknown> => {
+            const response = await client.post(`/node-load-method/${nodeName}`, { loadMethod, ...body })
+            return response.data
+        },
+
+        /**
+         * Get node configuration (override configs) for a node.
+         * Posts the node data to /node-config and returns an array of config entries.
+         *
+         * The server expects legacy field names: `inputParams` (parameter definitions)
+         * and `inputs` (user values). The SDK uses `inputs` and `inputValues` respectively,
+         * so we map them here.
+         */
+        getNodeConfig: async (data: NodeData): Promise<NodeConfigEntry[]> => {
+            const payload = {
+                ...data,
+                inputParams: data.inputs,
+                inputs: data.inputValues
+            }
+            const response = await client.post('/node-config', payload)
             return response.data
         },
 

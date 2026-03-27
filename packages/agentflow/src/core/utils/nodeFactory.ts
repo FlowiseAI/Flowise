@@ -1,4 +1,5 @@
-import type { FlowNode, NodeData, OutputAnchor } from '../types'
+import { getDefaultValueForType } from '../primitives'
+import type { FlowNode, InputParam, NodeData, OutputAnchor } from '../types'
 
 import { buildDynamicOutputAnchors } from './dynamicOutputAnchors'
 
@@ -55,11 +56,11 @@ export function getUniqueNodeLabel(nodeData: NodeData, nodes: FlowNode[]): strin
  * Initialize default values for node parameters.
  * Falls back to '' for params without a default — needed by show/hide condition evaluation.
  */
-function initializeDefaultNodeData(nodeParams: Array<{ name: string; default?: unknown }>): Record<string, unknown> {
+function initializeDefaultNodeData(nodeParams: Pick<InputParam, 'name' | 'type' | 'default' | 'options'>[]): Record<string, unknown> {
     const initialValues: Record<string, unknown> = {}
 
     for (const input of nodeParams) {
-        initialValues[input.name] = input.default ?? ''
+        initialValues[input.name] = getDefaultValueForType(input)
     }
 
     return initialValues
@@ -90,12 +91,12 @@ function createAgentFlowOutputs(nodeData: NodeData, newNodeId: string): Array<{ 
 
 /**
  * Pick only the properties that belong to NodeData from a server API response.
- * Strips server-only metadata (filePath, badge, author, loadMethods, etc.)
+ * Strips server-only metadata (filePath, author, loadMethods, etc.)
  * and runtime-only state (status, error, warning, hint, validationErrors)
  * that should not be persisted in flow data.
  *
- * Mirrors the allowlist used by generateExportFlowData in agentflow v2
- * (packages/ui/src/utils/genericHelper.js).
+ * Preserves component metadata needed at runtime (badge, tags, documentation)
+ * for display in the NodeInfoDialog.
  */
 function pickNodeData(raw: NodeData): NodeData {
     return {
@@ -114,7 +115,10 @@ function pickNodeData(raw: NodeData): NodeData {
         outputAnchors: raw.outputAnchors,
         color: raw.color,
         icon: raw.icon,
-        hideInput: raw.hideInput
+        hideInput: raw.hideInput,
+        badge: raw.badge,
+        tags: raw.tags,
+        documentation: raw.documentation
     }
 }
 
@@ -162,6 +166,21 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
         }
     }
 
+    // Credential — extract top-level credential property and prepend to input definitions
+    const rawCredential = (nodeData as Record<string, unknown>).credential as
+        | { name?: string; label?: string; type?: string; credentialNames?: string[]; optional?: boolean }
+        | undefined
+
+    if (rawCredential?.credentialNames?.length) {
+        inputDefinitions.unshift({
+            ...rawCredential,
+            id: `${newNodeId}-input-FLOWISE_CREDENTIAL_ID-credential`,
+            name: 'FLOWISE_CREDENTIAL_ID',
+            label: rawCredential.label ?? 'Credential',
+            type: 'credential'
+        })
+    }
+
     // Initialize default input values from definitions using initializeDefaultNodeData
     const initialInputValues = initializeDefaultNodeData(inputDefinitions)
 
@@ -173,6 +192,11 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
             const conditions = initialInputValues.conditions
             const conditionCount = Array.isArray(conditions) ? conditions.length : 0
             outputAnchors = buildDynamicOutputAnchors(newNodeId, conditionCount, 'Condition', true)
+        } else if (nodeData.name === 'conditionAgentAgentflow') {
+            // ConditionAgent outputs match scenario count exactly (no separate Else port)
+            const scenarios = initialInputValues.conditionAgentScenarios
+            const scenarioCount = Array.isArray(scenarios) ? scenarios.length : 0
+            outputAnchors = buildDynamicOutputAnchors(newNodeId, scenarioCount, 'Scenario', false)
         } else {
             outputAnchors = createAgentFlowOutputs(nodeData, newNodeId)
         }
