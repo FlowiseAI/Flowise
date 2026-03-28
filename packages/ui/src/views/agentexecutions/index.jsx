@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
@@ -20,8 +20,11 @@ import {
     DialogTitle,
     IconButton,
     Tooltip,
-    useTheme
+    useTheme,
+    Autocomplete,
+    Popper
 } from '@mui/material'
+import { styled } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -32,6 +35,7 @@ import { Available } from '@/ui-component/rbac/available'
 // API
 import useApi from '@/hooks/useApi'
 import executionsApi from '@/api/executions'
+import chatflowsApi from '@/api/chatflows'
 import { useSelector } from 'react-redux'
 
 // icons
@@ -51,13 +55,23 @@ const AgentExecutions = () => {
     const customization = useSelector((state) => state.customization)
     const borderColor = theme.palette.grey[900] + 25
 
+    const StyledPopper = styled(Popper)(({ theme }) => ({
+        boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
+        borderRadius: '10px',
+        '& .MuiAutocomplete-listbox': {
+            boxSizing: 'border-box'
+        }
+    }))
+
     const getAllExecutions = useApi(executionsApi.getAllExecutions)
     const deleteExecutionsApi = useApi(executionsApi.deleteExecutions)
     const getExecutionByIdApi = useApi(executionsApi.getExecutionById)
+    const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
 
     const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
     const [executions, setExecutions] = useState([])
+    const [agentflowOptions, setAgentflowOptions] = useState([])
     const [openDrawer, setOpenDrawer] = useState(false)
     const [selectedExecutionData, setSelectedExecutionData] = useState([])
     const [selectedMetadata, setSelectedMetadata] = useState({})
@@ -71,6 +85,11 @@ const AgentExecutions = () => {
         agentflowName: '',
         sessionId: ''
     })
+
+    const selectedAgentflow = useMemo(
+        () => agentflowOptions.find((opt) => opt.id === filters.agentflowId) || null,
+        [agentflowOptions, filters.agentflowId]
+    )
 
     const handleFilterChange = (field, value) => {
         setFilters({
@@ -173,6 +192,7 @@ const AgentExecutions = () => {
 
     useEffect(() => {
         getAllExecutions.request({ page: 1, limit: DEFAULT_ITEMS_PER_PAGE })
+        getAllAgentflows.request('AGENTFLOW', { page: 1, limit: 1000 })
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -189,6 +209,16 @@ const AgentExecutions = () => {
             }
         }
     }, [getAllExecutions.data])
+
+    useEffect(() => {
+        if (getAllAgentflows.data?.data) {
+            const options = getAllAgentflows.data.data.map((flow) => ({
+                id: flow.id,
+                name: flow.name
+            }))
+            setAgentflowOptions(options)
+        }
+    }, [getAllAgentflows.data])
 
     useEffect(() => {
         setLoading(getAllExecutions.loading)
@@ -316,17 +346,33 @@ const AgentExecutions = () => {
                                 />
                             </Grid>
                             <Grid sx={{ ml: -1 }} item xs={12} md={2}>
-                                <TextField
+                                <Autocomplete
                                     fullWidth
-                                    label='Agentflow'
-                                    value={filters.agentflowName}
-                                    onChange={(e) => handleFilterChange('agentflowName', e.target.value)}
                                     size='small'
+                                    options={agentflowOptions}
+                                    getOptionLabel={(option) => option.name || ''}
+                                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                                    value={selectedAgentflow}
+                                    onChange={(e, newValue) => {
+                                        setFilters((prev) => ({
+                                            ...prev,
+                                            agentflowId: newValue?.id || '',
+                                            agentflowName: newValue?.name || ''
+                                        }))
+                                    }}
+                                    PopperComponent={StyledPopper}
+                                    ListboxProps={{
+                                        style: { maxHeight: '300px' }
+                                    }}
                                     sx={{
                                         '& .MuiOutlinedInput-notchedOutline': {
                                             borderColor: borderColor
+                                        },
+                                        '& .MuiSvgIcon-root': {
+                                            color: customization.isDarkMode ? '#fff' : 'inherit'
                                         }
                                     }}
+                                    renderInput={(params) => <TextField {...params} label='Agentflow' />}
                                 />
                             </Grid>
                             <Grid sx={{ ml: -1 }} item xs={12} md={2}>
