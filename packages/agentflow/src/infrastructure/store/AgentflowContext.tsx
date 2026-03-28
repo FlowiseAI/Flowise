@@ -3,6 +3,7 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import { cloneDeep } from 'lodash'
 
+import { getDefaultValueForType } from '@/core/primitives'
 import type {
     AgentflowAction,
     AgentflowState,
@@ -216,7 +217,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                     if (isConnectionString(value)) {
                         // Reset string connections to parameter default
                         const inputParam = newNode.data.inputs?.find((p) => p.name === inputName)
-                        newNode.data.inputValues[inputName] = inputParam?.default ?? ''
+                        newNode.data.inputValues[inputName] = inputParam ? getDefaultValueForType(inputParam) : ''
                     } else if (Array.isArray(value)) {
                         // Filter out connection strings from arrays
                         newNode.data.inputValues[inputName] = value.filter((item) => !isConnectionString(item))

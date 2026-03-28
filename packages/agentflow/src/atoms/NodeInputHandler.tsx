@@ -7,12 +7,8 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
-    FormControlLabel,
     IconButton,
-    MenuItem,
     Popover,
-    Select,
-    Switch,
     TextField,
     Tooltip,
     TooltipProps,
@@ -21,17 +17,20 @@ import {
 import Autocomplete from '@mui/material/Autocomplete'
 import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconInfoCircle, IconVariable } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
 import type { InputAnchor, InputParam, NodeData } from '@/core/types'
 
 import ArrayInput from './ArrayInput'
 import { CodeInput } from './CodeInput'
+import { Dropdown } from './Dropdown'
 import { ExpandTextDialog } from './ExpandTextDialog'
 import { JsonInput } from './JsonInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
 import type { VariableItem } from './SelectVariable'
 import { SelectVariable } from './SelectVariable'
+import { SwitchInput } from './SwitchInput'
+import { TooltipWithParser } from './TooltipWithParser'
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -224,50 +223,20 @@ export function NodeInputHandler({
                 )
 
             case 'boolean':
+                return <SwitchInput disabled={disabled} value={!!value} onChange={(checked) => handleDataChange(checked)} />
+
+            case 'options': {
+                const dropdownOptions = (inputParam.options ?? []).map((opt) => (typeof opt === 'string' ? { label: opt, name: opt } : opt))
                 return (
-                    <FormControlLabel
-                        control={<Switch disabled={disabled} checked={!!value} onChange={(e) => handleDataChange(e.target.checked)} />}
-                        label=''
-                        sx={{ mt: 1 }}
+                    <Dropdown
+                        disabled={disabled}
+                        name={inputParam.name}
+                        options={dropdownOptions}
+                        onSelect={(newValue) => handleDataChange(newValue)}
+                        value={String(value || '')}
                     />
                 )
-
-            case 'options':
-                return (
-                    <Select
-                        fullWidth
-                        size='small'
-                        disabled={disabled}
-                        value={value || ''}
-                        onChange={(e) => handleDataChange(e.target.value)}
-                        sx={{ mt: 1 }}
-                        renderValue={(selected) => {
-                            const match = inputParam.options?.find((o) => (typeof o === 'string' ? o : o.name) === selected)
-                            return match ? (typeof match === 'string' ? match : match.label) : String(selected)
-                        }}
-                    >
-                        {inputParam.options?.map((option) => {
-                            const isObj = typeof option !== 'string'
-                            const key = isObj ? option.name : option
-                            const label = isObj ? option.label : option
-                            const desc = isObj ? option.description : undefined
-                            return (
-                                <MenuItem key={key} value={key}>
-                                    {desc ? (
-                                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                            <Typography variant='body2'>{label}</Typography>
-                                            <Typography variant='caption' color='text.secondary'>
-                                                {desc}
-                                            </Typography>
-                                        </Box>
-                                    ) : (
-                                        label
-                                    )}
-                                </MenuItem>
-                            )
-                        })}
-                    </Select>
-                )
+            }
 
             case 'multiOptions': {
                 // Stored as JSON-serialized array of names, e.g. '["option1","option2"]'
@@ -442,7 +411,7 @@ export function NodeInputHandler({
                     <Box sx={{ p: 2 }}>
                         <Typography>
                             {inputAnchor.label}
-                            {!inputAnchor.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                            {!inputAnchor.optional && <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>}
                         </Typography>
                     </Box>
                 </>
@@ -470,14 +439,8 @@ export function NodeInputHandler({
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                             <Typography>
                                 {inputParam?.label}
-                                {!inputParam?.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                {inputParam?.description && (
-                                    <Tooltip title={inputParam.description} placement='top'>
-                                        <span style={{ display: 'inline-flex', verticalAlign: 'middle', marginLeft: 6, cursor: 'pointer' }}>
-                                            <IconInfoCircle size={16} style={{ opacity: 0.6 }} />
-                                        </span>
-                                    </Tooltip>
-                                )}
+                                {!inputParam?.optional && <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>}
+                                {inputParam?.description && <TooltipWithParser title={inputParam.description} />}
                             </Typography>
                             <div style={{ flexGrow: 1 }} />
                             {showVariableButton && (
@@ -488,7 +451,7 @@ export function NodeInputHandler({
                                         disabled={disabled}
                                         onClick={(e) => setVariableAnchorEl(e.currentTarget)}
                                     >
-                                        <IconVariable size={20} style={{ color: 'teal' }} />
+                                        <IconVariable size={20} style={{ color: theme.palette.info.main }} />
                                     </IconButton>
                                 </Tooltip>
                             )}

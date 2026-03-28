@@ -20,7 +20,11 @@ const mockApis: ApiServices = {
     },
     credentialsApi: {
         getAllCredentials: jest.fn(),
-        getCredentialsByName: jest.fn()
+        getCredentialsByName: jest.fn(),
+        getComponentCredentialSchema: jest.fn(),
+        createCredential: jest.fn(),
+        getCredentialById: jest.fn(),
+        updateCredential: jest.fn()
     },
     storesApi: {
         getStores: jest.fn(),

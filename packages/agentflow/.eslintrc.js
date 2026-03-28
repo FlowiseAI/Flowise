@@ -119,8 +119,8 @@ module.exports = {
                     {
                         target: './src/atoms',
                         from: './src/core',
-                        except: ['./types', './theme'],
-                        message: 'Atoms can only import from core/types and core/theme, not utilities or business logic.'
+                        except: ['./types', './theme', './primitives'],
+                        message: 'Atoms can only import from core/types, core/theme, and core/primitives.'
                     },
                     // core/ cannot import from anything (leaf node)
                     {

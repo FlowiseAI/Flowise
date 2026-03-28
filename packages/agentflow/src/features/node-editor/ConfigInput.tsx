@@ -2,10 +2,11 @@ import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState }
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { Accordion, AccordionDetails, AccordionSummary, Box, Typography } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { alpha, useTheme } from '@mui/material/styles'
 import { IconSettings } from '@tabler/icons-react'
 
 import { type AsyncInputProps, NodeInputHandler } from '@/atoms'
+import { getDefaultValueForType } from '@/core/primitives'
 import type { InputParam, NodeData } from '@/core/types'
 import { evaluateFieldVisibility, initNode } from '@/core/utils'
 import { useApiContext } from '@/infrastructure/store'
@@ -33,12 +34,14 @@ export interface ConfigInputProps {
 function initializeDefaults(params: InputParam[]): Record<string, unknown> {
     const defaults: Record<string, unknown> = {}
     for (const p of params) {
-        defaults[p.name] = p.default ?? ''
+        defaults[p.name] = getDefaultValueForType(p)
     }
     return defaults
 }
 
-/** Read the current selection value from parent data, handling array context. */
+/** Read the current selection value from parent data, handling array context.
+ *  When data is already scoped to the array item (ArrayInput passes itemData),
+ *  the parent array won't exist in data.inputValues — fall back to direct read. */
 function readCurrentValue(
     data: NodeData,
     paramName: string,
@@ -50,12 +53,14 @@ function readCurrentValue(
         if (Array.isArray(arr) && arr[arrayIndex]) {
             return arr[arrayIndex][paramName] as string | undefined
         }
-        return undefined
+        // data may already be scoped to the array item (via ArrayInput's itemData)
+        return data.inputValues?.[paramName] as string | undefined
     }
     return data.inputValues?.[paramName] as string | undefined
 }
 
-/** Read existing config from parent data, handling array context. */
+/** Read existing config from parent data, handling array context.
+ *  Falls back to direct read when data is already item-scoped. */
 function readExistingConfig(
     data: NodeData,
     paramName: string,
@@ -68,7 +73,8 @@ function readExistingConfig(
         if (Array.isArray(arr) && arr[arrayIndex]) {
             return arr[arrayIndex][configKey] as Record<string, unknown> | undefined
         }
-        return undefined
+        // data may already be scoped to the array item (via ArrayInput's itemData)
+        return data.inputValues?.[configKey] as Record<string, unknown> | undefined
     }
     return data.inputValues?.[configKey] as Record<string, unknown> | undefined
 }
@@ -196,7 +202,7 @@ export function ConfigInput({
                 mt: 1,
                 mb: 1,
                 border: 1,
-                borderColor: theme.palette.grey[900] + 25,
+                borderColor: alpha(theme.palette.grey[900], 0.25),
                 borderRadius: 2
             }}
         >
