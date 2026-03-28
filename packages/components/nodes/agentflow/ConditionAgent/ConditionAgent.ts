@@ -408,18 +408,18 @@ class ConditionAgent_Agentflow implements INode {
                 await analyticHandlers.onLLMEnd(llmIds, analyticsOutput, { model: modelName, provider: model })
             }
 
+            const responseContent = extractResponseContent(response)
+
             let calledOutputName: string
             try {
-                const parsedResponse = this.parseJsonMarkdown(response.content as string)
+                const parsedResponse = this.parseJsonMarkdown(responseContent)
                 if (!parsedResponse.output || typeof parsedResponse.output !== 'string') {
                     throw new Error('LLM response is missing the "output" key or it is not a string.')
                 }
                 calledOutputName = parsedResponse.output
             } catch (error) {
                 throw new Error(
-                    `Failed to parse a valid scenario from the LLM's response. Please check if the model is capable of following JSON output instructions. Raw LLM Response: "${
-                        response.content as string
-                    }"`
+                    `Failed to parse a valid scenario from the LLM's response. Please check if the model is capable of following JSON output instructions. Raw LLM Response: "${responseContent}"`
                 )
             }
 
