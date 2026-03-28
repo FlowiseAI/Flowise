@@ -391,11 +391,12 @@ class ConditionAgent_Agentflow implements INode {
             // Calculate execution time
             const endTime = Date.now()
             const timeDelta = endTime - startTime
+            const responseContent = extractResponseContent(response)
 
             // End analytics tracking (pass structured output with usage metadata)
             if (analyticHandlers && llmIds) {
                 const analyticsOutput: any = {
-                    content: extractResponseContent(response)
+                    content: responseContent
                 }
                 // Include usage metadata if available
                 if (response.usage_metadata) {
@@ -407,9 +408,6 @@ class ConditionAgent_Agentflow implements INode {
                 }
                 await analyticHandlers.onLLMEnd(llmIds, analyticsOutput, { model: modelName, provider: model })
             }
-
-            const responseContent = extractResponseContent(response)
-
             let calledOutputName: string
             try {
                 const parsedResponse = this.parseJsonMarkdown(responseContent)
@@ -472,7 +470,7 @@ class ConditionAgent_Agentflow implements INode {
 
             const output: any = {
                 conditions,
-                content: extractResponseContent(response),
+                content: responseContent,
                 timeMetadata: {
                     start: startTime,
                     end: endTime,
