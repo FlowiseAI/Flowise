@@ -95,7 +95,7 @@ describe('chatflowsService', () => {
             const stringFields = ['chatbotConfig', 'apiConfig', 'analytic', 'speechToText', 'textToSpeech', 'followUpPrompts', 'category']
             for (const field of stringFields) {
                 const data = { ...validImportData, [field]: 123 }
-                expect(() => validateChatflowImportData(data)).toThrow(`"${field}" must be a string`)
+                expect(() => validateChatflowImportData(data)).toThrow("Import data " + field + " must be a string if provided")
             }
         })
 
