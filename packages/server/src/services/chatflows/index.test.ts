@@ -102,7 +102,7 @@ describe('chatflowsService', () => {
         it('should reject non-boolean optional boolean fields', () => {
             for (const field of ['deployed', 'isPublic']) {
                 const data = { ...validImportData, [field]: 'yes' }
-                expect(() => validateChatflowImportData(data)).toThrow(`"${field}" must be a boolean`)
+                expect(() => validateChatflowImportData(data)).toThrow("Import data " + field + " must be a boolean if provided")
             }
         })
 
