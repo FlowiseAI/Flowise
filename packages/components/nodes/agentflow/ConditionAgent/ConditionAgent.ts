@@ -1,7 +1,6 @@
 import { AnalyticHandler } from '../../../src/handler'
 import { ICommonObject, IMessage, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
-import { ContentBlock } from 'langchain'
 import { getPastChatHistoryImageMessages, getUniqueImageMessages, processMessagesWithImages, revertBase64ImagesToFileRefs } from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
@@ -409,15 +408,12 @@ class ConditionAgent_Agentflow implements INode {
                 await analyticHandlers.onLLMEnd(llmIds, analyticsOutput, { model: modelName, provider: model })
             }
 
-            // Only convert to string if all content items are text (no inlineData or other special types)
-            if (Array.isArray(response.content) && response.content.length > 0) {
-                const hasNonTextContent = response.content.some(
-                    (item: any) => item.type === 'inlineData' || item.type === 'executableCode' || item.type === 'codeExecutionResult'
-                )
-                if (!hasNonTextContent) {
-                    const responseContents = response.content as ContentBlock.Text[]
-                    response.content = responseContents.map((item) => item.text).join('')
-                }
+            // Normalize array content to string by extracting only text blocks
+            if (Array.isArray(response.content)) {
+                response.content = response.content
+                    .filter((item: any) => item.type === 'text' && typeof item.text === 'string')
+                    .map((item: any) => item.text)
+                    .join('')
             }
 
             let calledOutputName: string
