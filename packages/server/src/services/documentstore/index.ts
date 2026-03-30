@@ -567,7 +567,8 @@ const _splitIntoChunks = async (
     appDataSource: DataSource,
     componentNodes: IComponentNodes,
     data: IDocumentStoreLoaderForPreview,
-    workspaceId?: string
+    workspaceId?: string,
+    baseURL?: string
 ) => {
     try {
         let splitterInstance = null
@@ -597,6 +598,11 @@ const _splitIntoChunks = async (
             logger,
             processRaw: true,
             workspaceId
+        }
+        
+        // Add baseURL to options if provided
+        if (baseURL) {
+            options.baseURL = baseURL
         }
         const docNodeInstance = new nodeModule.nodeClass()
         let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
@@ -667,7 +673,8 @@ const previewChunksMiddleware = async (
     orgId: string,
     workspaceId: string,
     subscriptionId: string,
-    usageCacheManager: UsageCacheManager
+    usageCacheManager: UsageCacheManager,
+    baseURL?: string
 ) => {
     try {
         const appServer = getRunningExpressApp()
@@ -682,7 +689,8 @@ const previewChunksMiddleware = async (
             isPreviewOnly: true,
             orgId,
             workspaceId,
-            subscriptionId
+            subscriptionId,
+            baseURL
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -708,7 +716,7 @@ const previewChunksMiddleware = async (
     }
 }
 
-export const previewChunks = async ({ appDataSource, componentNodes, data, orgId, workspaceId }: IExecutePreviewLoader) => {
+export const previewChunks = async ({ appDataSource, componentNodes, data, orgId, workspaceId, baseURL }: IExecutePreviewLoader) => {
     try {
         if (data.preview) {
             if (
@@ -722,7 +730,7 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
         if (!data.rehydrated) {
             await _normalizeFilePaths(appDataSource, data, null, orgId)
         }
-        let docs = await _splitIntoChunks(appDataSource, componentNodes, data, workspaceId)
+        let docs = await _splitIntoChunks(appDataSource, componentNodes, data, workspaceId, baseURL)
         const totalChunks = docs.length
         // if -1, return all chunks
         if (data.previewChunkCount === -1) data.previewChunkCount = totalChunks
@@ -833,7 +841,8 @@ export const processLoader = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    usageCacheManager
+    usageCacheManager,
+    baseURL
 }: IExecuteProcessLoader) => {
     const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
         id: data.storeId,
@@ -854,7 +863,8 @@ export const processLoader = async ({
         orgId,
         workspaceId,
         subscriptionId,
-        usageCacheManager
+        usageCacheManager,
+        baseURL
     )
     return getDocumentStoreFileChunks(appDataSource, data.storeId as string, docLoaderId, workspaceId)
 }
@@ -866,7 +876,8 @@ const processLoaderMiddleware = async (
     workspaceId: string,
     subscriptionId: string,
     usageCacheManager: UsageCacheManager,
-    isInternalRequest = false
+    isInternalRequest = false,
+    baseURL?: string
 ) => {
     try {
         const appServer = getRunningExpressApp()
@@ -884,7 +895,8 @@ const processLoaderMiddleware = async (
             orgId,
             workspaceId,
             subscriptionId,
-            usageCacheManager
+            usageCacheManager,
+            baseURL
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -925,7 +937,8 @@ const _saveChunksToStorage = async (
     orgId: string,
     workspaceId: string,
     subscriptionId: string,
-    usageCacheManager: UsageCacheManager
+    usageCacheManager: UsageCacheManager,
+    baseURL?: string
 ) => {
     const re = new RegExp('^data.*;base64', 'i')
 
@@ -942,7 +955,8 @@ const _saveChunksToStorage = async (
             orgId,
             workspaceId,
             subscriptionId,
-            usageCacheManager
+            usageCacheManager,
+            baseURL
         })
 
         //step 3: remove all files associated with the loader
@@ -1680,7 +1694,8 @@ const upsertDocStore = async (
     orgId: string,
     workspaceId: string,
     subscriptionId: string,
-    usageCacheManager: UsageCacheManager
+    usageCacheManager: UsageCacheManager,
+    baseURL?: string
 ) => {
     const docId = data.docId
     let metadata = {}
@@ -1935,7 +1950,8 @@ const upsertDocStore = async (
             orgId,
             workspaceId,
             subscriptionId,
-            usageCacheManager
+            usageCacheManager,
+            baseURL
         })
         const newDocId = result.docId
 
@@ -1986,7 +2002,8 @@ export const executeDocStoreUpsert = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    usageCacheManager
+    usageCacheManager,
+    baseURL
 }: IExecuteDocStoreUpsert) => {
     const results = []
     for (const item of totalItems) {
@@ -2001,7 +2018,8 @@ export const executeDocStoreUpsert = async ({
             orgId,
             workspaceId,
             subscriptionId,
-            usageCacheManager
+            usageCacheManager,
+            baseURL
         )
         results.push(res)
     }
@@ -2015,7 +2033,8 @@ const upsertDocStoreMiddleware = async (
     orgId: string,
     workspaceId: string,
     subscriptionId: string,
-    usageCacheManager: UsageCacheManager
+    usageCacheManager: UsageCacheManager,
+    baseURL?: string
 ) => {
     const appServer = getRunningExpressApp()
     const componentNodes = appServer.nodesPool.componentNodes
@@ -2034,7 +2053,8 @@ const upsertDocStoreMiddleware = async (
             orgId,
             workspaceId,
             subscriptionId,
-            usageCacheManager
+            usageCacheManager,
+            baseURL
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -2066,7 +2086,8 @@ const refreshDocStoreMiddleware = async (
     orgId: string,
     workspaceId: string,
     subscriptionId: string,
-    usageCacheManager: UsageCacheManager
+    usageCacheManager: UsageCacheManager,
+    baseURL: string
 ) => {
     const appServer = getRunningExpressApp()
     const componentNodes = appServer.nodesPool.componentNodes
@@ -2109,7 +2130,8 @@ const refreshDocStoreMiddleware = async (
             orgId,
             workspaceId,
             subscriptionId,
-            usageCacheManager
+            usageCacheManager,
+            baseURL
         }
 
         if (process.env.MODE === MODE.QUEUE) {

@@ -311,6 +311,8 @@ const processLoader = async (req: Request, res: Response, next: NextFunction) =>
         const docLoaderId = req.params.loaderId
         const body = req.body
         const isInternalRequest = req.headers['x-request-from'] === 'internal'
+        const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
+        const baseURL = `${httpProtocol}://${req.get('host')}`
         const apiResponse = await documentStoreService.processLoaderMiddleware(
             body,
             docLoaderId,
@@ -318,7 +320,8 @@ const processLoader = async (req: Request, res: Response, next: NextFunction) =>
             workspaceId,
             subscriptionId,
             getRunningExpressApp().usageCacheManager,
-            isInternalRequest
+            isInternalRequest,
+            baseURL
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -430,12 +433,15 @@ const previewFileChunks = async (req: Request, res: Response, next: NextFunction
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
         body.preview = true
+        const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
+        const baseURL = `${httpProtocol}://${req.get('host')}`
         const apiResponse = await documentStoreService.previewChunksMiddleware(
             body,
             orgId,
             workspaceId,
             subscriptionId,
-            getRunningExpressApp().usageCacheManager
+            getRunningExpressApp().usageCacheManager,
+            baseURL
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -629,6 +635,8 @@ const upsertDocStoreMiddleware = async (req: Request, res: Response, next: NextF
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
         const files = (req.files as Express.Multer.File[]) || []
+        const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
+        const baseURL = `${httpProtocol}://${req.get('host')}`
         const apiResponse = await documentStoreService.upsertDocStoreMiddleware(
             req.params.id,
             body,
@@ -636,7 +644,8 @@ const upsertDocStoreMiddleware = async (req: Request, res: Response, next: NextF
             orgId,
             workspaceId,
             subscriptionId,
-            getRunningExpressApp().usageCacheManager
+            getRunningExpressApp().usageCacheManager,
+            baseURL
         )
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS
@@ -674,13 +683,16 @@ const refreshDocStoreMiddleware = async (req: Request, res: Response, next: Next
         }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
+        const httpProtocol = req.get('x-forwarded-proto') || req.get('X-Forwarded-Proto') || req.protocol
+        const baseURL = `${httpProtocol}://${req.get('host')}`
         const apiResponse = await documentStoreService.refreshDocStoreMiddleware(
             req.params.id,
             body,
             orgId,
             workspaceId,
             subscriptionId,
-            getRunningExpressApp().usageCacheManager
+            getRunningExpressApp().usageCacheManager,
+            baseURL
         )
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS

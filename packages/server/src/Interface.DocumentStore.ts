@@ -138,18 +138,21 @@ export interface IExecuteDocStoreUpsert extends IUpsertQueueAppServer {
     totalItems: IDocumentStoreUpsertData[]
     files: Express.Multer.File[]
     isRefreshAPI: boolean
+    baseURL?: string
 }
 
 export interface IExecutePreviewLoader extends Omit<IUpsertQueueAppServer, 'telemetry'> {
     data: IDocumentStoreLoaderForPreview
     isPreviewOnly: boolean
     telemetry?: Telemetry
+    baseURL?: string
 }
 
 export interface IExecuteProcessLoader extends IUpsertQueueAppServer {
     data: IDocumentStoreLoaderForPreview
     docLoaderId: string
     isProcessWithoutUpsert: boolean
+    baseURL?: string
 }
 
 export interface IExecuteVectorStoreInsert extends IUpsertQueueAppServer {
