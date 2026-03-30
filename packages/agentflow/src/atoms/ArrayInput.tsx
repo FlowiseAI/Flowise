@@ -4,6 +4,7 @@ import { Box, Button, Chip, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 
+import { getDefaultValueForType } from '@/core/primitives'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
@@ -75,23 +76,7 @@ export function ArrayInput({
 
         if (inputParam.array) {
             for (const field of inputParam.array) {
-                if (field.default !== undefined) {
-                    newItem[field.name] = field.default
-                } else {
-                    switch (field.type) {
-                        case 'number':
-                            newItem[field.name] = 0
-                            break
-                        case 'boolean':
-                            newItem[field.name] = false
-                            break
-                        case 'array':
-                            newItem[field.name] = []
-                            break
-                        default:
-                            newItem[field.name] = ''
-                    }
-                }
+                newItem[field.name] = getDefaultValueForType(field)
             }
         }
 

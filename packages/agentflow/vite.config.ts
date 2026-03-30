@@ -46,6 +46,7 @@ export default defineConfig(({ mode }) => {
                         'react/jsx-runtime': 'jsxRuntime',
                         '@mui/material': 'MaterialUI',
                         '@mui/material/styles': 'MaterialUIStyles',
+                        '@mui/icons-material': 'MaterialUIIcons',
                         '@emotion/react': 'emotionReact',
                         '@emotion/styled': 'emotionStyled',
                         reactflow: 'ReactFlow'

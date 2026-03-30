@@ -21,6 +21,7 @@ function pickExportNodeData(data: NodeData): NodeData {
         color: data.color,
         hideInput: data.hideInput,
         baseClasses: data.baseClasses,
+        tags: data.tags,
         category: data.category,
         description: data.description,
         inputs: data.inputs,

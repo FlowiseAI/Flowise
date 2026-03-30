@@ -95,6 +95,7 @@ const updateTool = async (toolId: string, toolBody: any, workspaceId: string): P
         const updateTool = new Tool()
         Object.assign(updateTool, toolBody)
         appServer.AppDataSource.getRepository(Tool).merge(tool, updateTool)
+        tool.workspaceId = workspaceId // defense-in-depth: never trust client-supplied workspaceId
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
         return dbResponse
     } catch (error) {

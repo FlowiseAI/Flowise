@@ -8,13 +8,14 @@ import type { NodeData } from '@/core/types'
 import { useAgentflowContext, useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { NodeIcon } from '../components/NodeIcon'
-import { NodeInfoDialog } from '../components/NodeInfoDialog'
 import { NodeInputHandle } from '../components/NodeInputHandle'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
 import { NodeStatusIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
+
+import { NodeInfoDialog } from './NodeInfoDialog'
 
 export interface IterationNodeProps {
     data: NodeData
@@ -162,14 +163,7 @@ function IterationNodeComponent({ data }: IterationNodeProps) {
                 </Box>
             </CardWrapper>
 
-            <NodeInfoDialog
-                open={showInfoDialog}
-                onClose={() => setShowInfoDialog(false)}
-                label={data.label}
-                name={data.name}
-                nodeId={data.id}
-                description={data.description}
-            />
+            <NodeInfoDialog open={showInfoDialog} onClose={() => setShowInfoDialog(false)} data={data} />
         </div>
     )
 }

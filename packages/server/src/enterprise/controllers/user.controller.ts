@@ -56,11 +56,11 @@ export class UserController {
             if (!currentUser) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.USER_NOT_FOUND)
             }
-            const { id } = req.body
+            const { id, name, oldPassword, newPassword, confirmPassword } = req.body
             if (currentUser.id !== id) {
                 throw new InternalFlowiseError(StatusCodes.FORBIDDEN, UserErrorMessage.USER_NOT_FOUND)
             }
-            const user = await userService.updateUser(req.body)
+            const user = await userService.updateUser({ id, name, updatedBy: currentUser.id, oldPassword, newPassword, confirmPassword })
             return res.status(StatusCodes.OK).json(user)
         } catch (error) {
             next(error)
