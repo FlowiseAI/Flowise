@@ -21,6 +21,10 @@ export interface NodeData {
     icon?: string
     selected?: boolean
     hideInput?: boolean
+    // Metadata from component definition
+    badge?: string
+    tags?: string[]
+    documentation?: string
     // Status properties
     status?: 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'STOPPED' | 'TERMINATED'
     error?: string
@@ -84,6 +88,16 @@ export interface InputParam {
     credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
     codeLanguage?: string // Language hint for code editor (e.g. 'javascript', 'python', 'json')
     codeExample?: string // Example code snippet shown via an "Example" button
+}
+
+export interface NodeConfigEntry {
+    node: string
+    nodeId: string
+    label: string
+    name: string
+    type: string
+    enabled?: boolean
+    schema?: Record<string, string> | Array<{ name: string; type: string }>
 }
 
 export interface EdgeData {

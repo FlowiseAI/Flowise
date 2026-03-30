@@ -18,9 +18,17 @@ const createTool = async (req: Request, res: Response, next: NextFunction) => {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: toolsController.createTool - workspace ${workspaceId} not found!`)
         }
         const body = req.body
-        body.workspaceId = workspaceId
+        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
+        const toolBody: Record<string, unknown> = {}
+        if (body.name !== undefined) toolBody.name = body.name
+        if (body.description !== undefined) toolBody.description = body.description
+        if (body.color !== undefined) toolBody.color = body.color
+        if (body.iconSrc !== undefined) toolBody.iconSrc = body.iconSrc
+        if (body.schema !== undefined) toolBody.schema = body.schema
+        if (body.func !== undefined) toolBody.func = body.func
+        toolBody.workspaceId = workspaceId
 
-        const apiResponse = await toolsService.createTool(body, orgId)
+        const apiResponse = await toolsService.createTool(toolBody, orgId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -84,7 +92,16 @@ const updateTool = async (req: Request, res: Response, next: NextFunction) => {
         if (!workspaceId) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: toolsController.updateTool - workspace ${workspaceId} not found!`)
         }
-        const apiResponse = await toolsService.updateTool(req.params.id, req.body, workspaceId)
+        const body = req.body
+        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
+        const toolBody: Record<string, unknown> = {}
+        if (body.name !== undefined) toolBody.name = body.name
+        if (body.description !== undefined) toolBody.description = body.description
+        if (body.color !== undefined) toolBody.color = body.color
+        if (body.iconSrc !== undefined) toolBody.iconSrc = body.iconSrc
+        if (body.schema !== undefined) toolBody.schema = body.schema
+        if (body.func !== undefined) toolBody.func = body.func
+        const apiResponse = await toolsService.updateTool(req.params.id, toolBody, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

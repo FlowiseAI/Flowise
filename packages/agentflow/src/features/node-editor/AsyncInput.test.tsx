@@ -15,8 +15,29 @@ jest.mock('reactflow', () => ({
 
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-expand' />,
+    IconEdit: () => <span data-testid='icon-edit' />,
     IconVariable: () => <span data-testid='icon-variable' />,
     IconRefresh: () => <span data-testid='icon-refresh' />
+}))
+
+jest.mock('./CreateCredentialDialog', () => ({
+    CreateCredentialDialog: ({
+        open,
+        onCreated,
+        onClose,
+        editCredentialId
+    }: {
+        open: boolean
+        onCreated: (id: string) => void
+        onClose: () => void
+        editCredentialId?: string
+    }) =>
+        open ? (
+            <div data-testid={editCredentialId ? 'edit-credential-dialog' : 'create-credential-dialog'}>
+                <button onClick={() => onCreated(editCredentialId ?? 'new-cred-id')}>{editCredentialId ? 'Save' : 'Create'}</button>
+                <button onClick={onClose}>Close</button>
+            </div>
+        ) : null
 }))
 
 interface MockAsyncResult {
@@ -416,5 +437,191 @@ describe('NodeInputHandler – asyncMultiOptions', () => {
 
         expect(screen.getByText('Tool A')).toBeTruthy()
         expect(screen.getByText('Tool B')).toBeTruthy()
+    })
+})
+
+describe('AsyncInput – Create New credential', () => {
+    it('"- Create New -" option appears when credentialNames is set', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'My API Key', name: 'cred-1' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', credentialNames: ['openAIApi'] })}
+                value=''
+                disabled={false}
+                onChange={jest.fn()}
+            />
+        )
+
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => {
+            expect(screen.getByText('- Create New -')).toBeTruthy()
+        })
+    })
+
+    it('"- Create New -" does NOT appear for non-credential async dropdowns', async () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'GPT-4o', name: 'gpt-4o' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='' disabled={false} onChange={jest.fn()} />)
+
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => {
+            expect(screen.getByText('GPT-4o')).toBeTruthy()
+        })
+        expect(screen.queryByText('- Create New -')).toBeNull()
+    })
+
+    it('selecting "- Create New -" opens CreateCredentialDialog and does not call onChange', async () => {
+        const mockChange = jest.fn()
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'My API Key', name: 'cred-1' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', credentialNames: ['openAIApi'] })}
+                value=''
+                disabled={false}
+                onChange={mockChange}
+            />
+        )
+
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => screen.getByText('- Create New -'))
+        fireEvent.click(screen.getByText('- Create New -'))
+
+        expect(mockChange).not.toHaveBeenCalled()
+        expect(screen.getByTestId('create-credential-dialog')).toBeTruthy()
+    })
+
+    it('after credential creation, onChange is called with new ID and component remounts to refetch', async () => {
+        const mockChange = jest.fn()
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'My API Key', name: 'cred-1' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', credentialNames: ['openAIApi'] })}
+                value=''
+                disabled={false}
+                onChange={mockChange}
+            />
+        )
+
+        const initialCallCount = mockUseAsyncOptions.mock.calls.length
+
+        // Open dropdown and select "- Create New -"
+        fireEvent.mouseDown(screen.getByRole('combobox'))
+        await waitFor(() => screen.getByText('- Create New -'))
+        fireEvent.click(screen.getByText('- Create New -'))
+
+        // Click the Create button in the mocked dialog
+        fireEvent.click(screen.getByText('Create'))
+
+        expect(mockChange).toHaveBeenCalledWith('new-cred-id')
+        // The inner dropdown component remounts (via key change), re-running useAsyncOptions
+        expect(mockUseAsyncOptions.mock.calls.length).toBeGreaterThan(initialCallCount)
+    })
+})
+
+describe('AsyncInput – Edit credential', () => {
+    it('edit button does NOT appear when no credential is selected', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'My API Key', name: 'cred-1' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', credentialNames: ['openAIApi'] })}
+                value=''
+                disabled={false}
+                onChange={jest.fn()}
+            />
+        )
+
+        expect(screen.queryByTitle('Edit Credential')).toBeNull()
+    })
+
+    it('edit button appears when a credential is selected', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'My API Key', name: 'cred-1' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', credentialNames: ['openAIApi'] })}
+                value='cred-1'
+                disabled={false}
+                onChange={jest.fn()}
+            />
+        )
+
+        expect(screen.getByTitle('Edit Credential')).toBeTruthy()
+    })
+
+    it('edit button does NOT appear for non-credential async dropdowns', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'GPT-4o', name: 'gpt-4o' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='gpt-4o' disabled={false} onChange={jest.fn()} />)
+
+        expect(screen.queryByTitle('Edit Credential')).toBeNull()
+    })
+
+    it('clicking edit button opens the edit dialog', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'My API Key', name: 'cred-1' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', credentialNames: ['openAIApi'] })}
+                value='cred-1'
+                disabled={false}
+                onChange={jest.fn()}
+            />
+        )
+
+        fireEvent.click(screen.getByTitle('Edit Credential'))
+        expect(screen.getByTestId('edit-credential-dialog')).toBeTruthy()
+    })
+
+    it('after editing, onChange is called with credential ID and component remounts to refetch', () => {
+        const mockChange = jest.fn()
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'My API Key', name: 'cred-1' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', credentialNames: ['openAIApi'] })}
+                value='cred-1'
+                disabled={false}
+                onChange={mockChange}
+            />
+        )
+
+        const initialCallCount = mockUseAsyncOptions.mock.calls.length
+
+        fireEvent.click(screen.getByTitle('Edit Credential'))
+        fireEvent.click(screen.getByText('Save'))
+
+        expect(mockChange).toHaveBeenCalledWith('cred-1')
+        expect(mockUseAsyncOptions.mock.calls.length).toBeGreaterThan(initialCallCount)
     })
 })
