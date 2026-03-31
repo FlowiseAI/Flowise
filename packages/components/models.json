@@ -96,7 +96,7 @@
                 },
                 {
                     "label": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "name": "anthropic.claude-3.5-sonnet-20240620-v1:0",
+                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
                     "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
