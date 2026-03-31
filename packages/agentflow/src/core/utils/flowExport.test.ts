@@ -50,8 +50,8 @@ describe('generateExportFlowData', () => {
                         category: 'Agent Flows',
                         description: 'An LLM node',
                         icon: 'llm.svg',
-                        inputs: [{ id: 'i1', name: 'model', label: 'Model', type: 'string' }],
-                        inputValues: { model: 'gpt-4' },
+                        inputParams: [{ id: 'i1', name: 'model', label: 'Model', type: 'string' }],
+                        inputs: { model: 'gpt-4' },
                         inputAnchors: [],
                         outputAnchors: [],
                         outputs: []
@@ -70,7 +70,7 @@ describe('generateExportFlowData', () => {
         expect(data.icon).toBe('llm.svg')
         expect(data.category).toBe('Agent Flows')
         expect(data.description).toBe('An LLM node')
-        expect(data.inputValues).toEqual({ model: 'gpt-4' })
+        expect(data.inputs).toEqual({ model: 'gpt-4' })
     })
 
     it('should strip runtime-only state from exported data', () => {
@@ -108,13 +108,13 @@ describe('generateExportFlowData', () => {
                         id: 'a',
                         name: 'llm',
                         label: 'LLM',
-                        inputs: [
+                        inputParams: [
                             { id: 'i1', name: 'apiKey', label: 'API Key', type: 'password' },
                             { id: 'i2', name: 'upload', label: 'Upload', type: 'file' },
                             { id: 'i3', name: 'dir', label: 'Directory', type: 'folder' },
                             { id: 'i4', name: 'model', label: 'Model', type: 'string' }
                         ],
-                        inputValues: {
+                        inputs: {
                             apiKey: 'sk-secret',
                             upload: 'base64data',
                             dir: '/some/path',
@@ -126,7 +126,7 @@ describe('generateExportFlowData', () => {
             edges: []
         }
         const result = generateExportFlowData(flowData)
-        const values = result.nodes[0].data.inputValues!
+        const values = result.nodes[0].data.inputs as Record<string, unknown>
         expect(values).not.toHaveProperty('apiKey')
         expect(values).not.toHaveProperty('upload')
         expect(values).not.toHaveProperty('dir')

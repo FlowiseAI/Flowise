@@ -46,8 +46,8 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
     const theme = useTheme()
 
     const entries = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as StructuredOutputEntry[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as StructuredOutputEntry[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(entries.length, 'output')
