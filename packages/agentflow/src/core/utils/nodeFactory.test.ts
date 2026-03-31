@@ -1,10 +1,24 @@
-import { makeFlowNode, makeNodeData } from '@test-utils/factories'
+import { makeFlowNode, makeNodeDataSchema } from '@test-utils/factories'
 
-import type { NodeData } from '../types'
+import type { NodeData, NodeDataSchema } from '../types'
 
-import { getUniqueNodeId, getUniqueNodeLabel, initNode } from './nodeFactory'
+import { getUniqueNodeId, getUniqueNodeLabel, initNode, resolveNodeType } from './nodeFactory'
 
 const makeNode = (id: string, name: string, label: string) => makeFlowNode(id, { data: { id, name, label } })
+
+describe('resolveNodeType', () => {
+    it('should resolve StickyNote type to stickyNote', () => {
+        expect(resolveNodeType('StickyNote')).toBe('stickyNote')
+    })
+
+    it('should resolve Iteration type to iteration', () => {
+        expect(resolveNodeType('Iteration')).toBe('iteration')
+    })
+
+    it('should default to agentflowNode for unknown types', () => {
+        expect(resolveNodeType('UnknownType')).toBe('agentflowNode')
+    })
+})
 
 describe('getUniqueNodeId', () => {
     it('should return name_0 when no nodes exist', () => {
@@ -50,87 +64,79 @@ describe('getUniqueNodeLabel', () => {
 
 describe('initNode', () => {
     it('should set the new node id on the returned data', () => {
-        const result = initNode(makeNodeData(), 'node_0')
+        const result = initNode(makeNodeDataSchema(), 'node_0')
         expect(result.id).toBe('node_0')
     })
 
-    it('should classify whitelisted input types as inputs (definitions)', () => {
-        const nodeData = makeNodeData({
+    it('should classify whitelisted input types as inputParams (definitions)', () => {
+        const nodeData = makeNodeDataSchema({
             inputs: [
                 { id: '', name: 'temp', label: 'Temperature', type: 'number' },
                 { id: '', name: 'model', label: 'Model', type: 'options', default: 'gpt-4' },
                 { id: '', name: 'code', label: 'Code', type: 'code' }
-            ] as NodeData['inputs']
+            ]
         })
         const result = initNode(nodeData, 'n1')
-        expect(result.inputs).toHaveLength(3)
-        result.inputs!.forEach((p) => {
+        expect(result.inputParams).toHaveLength(3)
+        result.inputParams!.forEach((p) => {
             expect(p.id).toMatch(/^n1-input-/)
         })
     })
 
+    it('should generate input param ids using newNodeId, name, and type', () => {
+        const nodeData = makeNodeDataSchema({
+            inputs: [
+                { id: '', name: 'foo', label: 'Foo', type: 'string' },
+                { id: '', name: 'bar', label: 'Bar', type: 'number' }
+            ]
+        })
+        const result = initNode(nodeData, 'n1')
+        expect(result.inputParams).toEqual([
+            expect.objectContaining({ id: 'n1-input-foo-string' }),
+            expect.objectContaining({ id: 'n1-input-bar-number' })
+        ])
+    })
+
     it('should classify non-whitelisted input types as inputAnchors', () => {
-        const nodeData = makeNodeData({
+        const nodeData = makeNodeDataSchema({
             inputs: [
                 { id: '', name: 'llm', label: 'LLM', type: 'BaseChatModel' },
                 { id: '', name: 'memory', label: 'Memory', type: 'BaseMemory' }
-            ] as NodeData['inputs']
+            ]
         })
         const result = initNode(nodeData, 'n1')
         expect(result.inputAnchors).toHaveLength(2)
-        expect(result.inputs).toHaveLength(0)
+        expect(result.inputParams).toHaveLength(0)
     })
 
     it('should split mixed input types between params and anchors', () => {
-        const nodeData = makeNodeData({
+        const nodeData = makeNodeDataSchema({
             inputs: [
                 { id: '', name: 'temp', label: 'Temperature', type: 'number' },
                 { id: '', name: 'llm', label: 'LLM', type: 'BaseChatModel' },
                 { id: '', name: 'prompt', label: 'Prompt', type: 'string' }
-            ] as NodeData['inputs']
+            ]
         })
         const result = initNode(nodeData, 'n1')
-        expect(result.inputs).toHaveLength(2)
+        expect(result.inputParams).toHaveLength(2)
         expect(result.inputAnchors).toHaveLength(1)
         expect(result.inputAnchors![0].name).toBe('llm')
     })
 
     it('should initialize default values for params', () => {
-        const nodeData = makeNodeData({
+        const nodeData = makeNodeDataSchema({
             inputs: [
                 { id: '', name: 'temp', label: 'Temperature', type: 'number', default: 0.7 },
                 { id: '', name: 'model', label: 'Model', type: 'string' }
-            ] as NodeData['inputs']
+            ]
         })
         const result = initNode(nodeData, 'n1')
-        expect(result.inputValues!['temp']).toBe(0.7)
-        // initNode uses initializeDefaultNodeData which falls back to '' for params
-        // without an explicit default value. This ensures all params have a value
-        // for show/hide condition evaluation.
-        expect(result.inputValues!['model']).toBe('')
+        expect(result.inputs!['temp']).toBe(0.7)
+        expect(result.inputs!['model']).toBe('')
     })
 
-    it('should preserve existing inputValues over defaults', () => {
-        const nodeData = makeNodeData({
-            inputValues: { temp: 0.9 },
-            inputs: [{ id: '', name: 'temp', label: 'Temperature', type: 'number', default: 0.7 }] as NodeData['inputs']
-        })
-        const result = initNode(nodeData, 'n1')
-        expect(result.inputValues!['temp']).toBe(0.9)
-    })
-
-    it('should fall back to inputAnchors when inputs is absent', () => {
-        const nodeData = makeNodeData({
-            inputAnchors: [{ id: '', name: 'llm', label: 'LLM', type: 'BaseChatModel' }] as NodeData['inputAnchors']
-        })
-        const result = initNode(nodeData, 'n1')
-        expect(result.inputAnchors).toHaveLength(1)
-        expect(result.inputAnchors![0].id).toBe('n1-input-llm-BaseChatModel')
-    })
-
-    // Output anchor tests (exercises createAgentFlowOutputs)
     it('should create a single default output anchor for agentflow nodes', () => {
-        const result = initNode(makeNodeData({ name: 'llmAgentflow', label: 'LLM' }), 'n1')
+        const result = initNode(makeNodeDataSchema({ name: 'llmAgentflow', label: 'LLM' }), 'n1')
         expect(result.outputAnchors).toHaveLength(1)
         expect(result.outputAnchors![0]).toEqual({
             id: 'n1-output-llmAgentflow',
@@ -140,7 +146,9 @@ describe('initNode', () => {
     })
 
     it('should create one output anchor per output entry', () => {
-        const nodeData = makeNodeData({
+        const nodeData = makeNodeDataSchema({
+            name: 'testNode',
+            label: 'Test Node',
             outputs: [
                 { label: 'Out1', name: 'out1', type: 'string' },
                 { label: 'Out2', name: 'out2', type: 'string' }
@@ -148,38 +156,47 @@ describe('initNode', () => {
         })
         const result = initNode(nodeData, 'n1')
         expect(result.outputAnchors).toHaveLength(2)
-        expect(result.outputAnchors![0].id).toBe('n1-output-0')
-        expect(result.outputAnchors![1].id).toBe('n1-output-1')
+        expect(result.outputAnchors![0]).toEqual({
+            id: 'n1-output-0',
+            label: 'Test Node',
+            name: 'testNode'
+        })
+        expect(result.outputAnchors![1]).toEqual({
+            id: 'n1-output-1',
+            label: 'Test Node',
+            name: 'testNode'
+        })
     })
 
     it('should return empty outputAnchors when hideOutput is true', () => {
-        const nodeData = makeNodeData({ hideOutput: true } as Partial<NodeData>)
+        const nodeData = makeNodeDataSchema({ hideOutput: true } as Partial<NodeDataSchema>)
         const result = initNode(nodeData, 'n1')
         expect(result.outputAnchors).toHaveLength(0)
     })
 
     it('should return empty outputAnchors when isAgentflow is false', () => {
-        const result = initNode(makeNodeData(), 'n1', false)
+        const result = initNode(makeNodeDataSchema(), 'n1', false)
         expect(result.outputAnchors).toHaveLength(0)
     })
 
     it('should prepend credential param when node has credential property', () => {
-        const nodeData = makeNodeData({
-            inputs: [{ id: '', name: 'temperature', label: 'Temperature', type: 'number', default: 0.9 }] as NodeData['inputs'],
+        const nodeData: Partial<NodeDataSchema> = {
+            name: 'testNode',
+            label: 'Test',
+            inputs: [{ id: '', name: 'temperature', label: 'Temperature', type: 'number', default: 0.9 }],
             credential: {
                 label: 'AWS Credential',
-                name: 'credential',
                 type: 'credential',
                 credentialNames: ['awsApi'],
                 optional: true
             }
-        } as Partial<NodeData>)
+        }
+        const nodeDataSchema = makeNodeDataSchema(nodeData)
 
-        const result = initNode(nodeData, 'n1', false)
+        const result = initNode(nodeDataSchema, 'n1', false)
 
-        // Credential should be first, followed by regular params
-        expect(result.inputs).toHaveLength(2)
-        expect(result.inputs![0]).toEqual(
+        expect(result.inputParams).toHaveLength(2)
+        expect(result.inputParams![0]).toEqual(
             expect.objectContaining({
                 name: 'FLOWISE_CREDENTIAL_ID',
                 label: 'AWS Credential',
@@ -187,64 +204,61 @@ describe('initNode', () => {
                 credentialNames: ['awsApi']
             })
         )
-        expect(result.inputs![1].name).toBe('temperature')
-        // Default value for credential should be empty string
-        expect(result.inputValues!['FLOWISE_CREDENTIAL_ID']).toBe('')
+        expect(result.inputParams![1].name).toBe('temperature')
+        expect(result.inputs!['FLOWISE_CREDENTIAL_ID']).toBe('')
     })
 
     it('should not add credential param when node has no credential property', () => {
-        const nodeData = makeNodeData({
-            inputs: [{ id: '', name: 'temperature', label: 'Temperature', type: 'number' }] as NodeData['inputs']
+        const nodeData = makeNodeDataSchema({
+            inputs: [{ id: '', name: 'temperature', label: 'Temperature', type: 'number' }]
         })
         const result = initNode(nodeData, 'n1', false)
-        expect(result.inputs).toHaveLength(1)
-        expect(result.inputs![0].name).toBe('temperature')
+        expect(result.inputParams).toHaveLength(1)
+        expect(result.inputParams![0].name).toBe('temperature')
     })
 
     it('should not add credential param when credentialNames is empty', () => {
-        const nodeData = makeNodeData({
-            inputs: [{ id: '', name: 'temperature', label: 'Temperature', type: 'number' }] as NodeData['inputs'],
+        const nodeData = makeNodeDataSchema({
+            inputs: [{ id: '', name: 'temperature', label: 'Temperature', type: 'number' }],
             credential: {
                 label: 'Credential',
-                name: 'credential',
                 type: 'credential',
                 credentialNames: []
             }
-        } as Partial<NodeData>)
+        })
 
         const result = initNode(nodeData, 'n1', false)
-        expect(result.inputs).toHaveLength(1)
-        expect(result.inputs![0].name).toBe('temperature')
+        expect(result.inputParams).toHaveLength(1)
+        expect(result.inputParams![0].name).toBe('temperature')
     })
 
     it('should strip server-only metadata like filePath from node data', () => {
-        const nodeData = makeNodeData({
+        const nodeData = makeNodeDataSchema({
             filePath: '/some/server/path/Agent.js',
             badge: 'NEW',
             author: 'Flowise',
             documentation: 'https://docs.example.com',
             tags: ['LLM', 'OpenAI'],
             loadMethods: { listModels: () => Promise.resolve([]) }
-        } as Partial<NodeData>)
+        } as Partial<NodeDataSchema>)
         const result = initNode(nodeData, 'n1')
         expect(result).not.toHaveProperty('filePath')
         expect(result).not.toHaveProperty('author')
         expect(result).not.toHaveProperty('loadMethods')
-        // badge, tags, documentation are preserved for NodeInfoDialog display
         expect(result.badge).toBe('NEW')
         expect(result.tags).toEqual(['LLM', 'OpenAI'])
         expect(result.documentation).toBe('https://docs.example.com')
     })
 
     it('should strip runtime-only state from node data', () => {
-        const nodeData = makeNodeData({
+        const nodeData = makeNodeDataSchema({
             status: 'FINISHED',
             error: 'some error',
             warning: 'some warning',
             hint: 'some hint',
             validationErrors: ['error1'],
             selected: true
-        } as Partial<NodeData>)
+        } as Partial<NodeDataSchema>)
         const result = initNode(nodeData, 'n1')
         expect(result).not.toHaveProperty('status')
         expect(result).not.toHaveProperty('error')
@@ -255,7 +269,7 @@ describe('initNode', () => {
     })
 
     it('should generate dynamic outputAnchors for conditionAgentflow nodes', () => {
-        const conditionNodeData = makeNodeData({
+        const conditionNodeData = makeNodeDataSchema({
             name: 'conditionAgentflow',
             label: 'Condition',
             inputs: [
@@ -272,11 +286,10 @@ describe('initNode', () => {
                 { label: '0', name: '0', type: 'Condition' },
                 { label: '1', name: '1', type: 'Condition' }
             ]
-        } as Partial<NodeData>)
+        })
 
         const result = initNode(conditionNodeData, 'conditionAgentflow_0')
 
-        // 1 condition → Condition 0 + Else = 2 anchors
         expect(result.outputAnchors).toHaveLength(2)
         expect(result.outputAnchors![0]).toEqual(
             expect.objectContaining({ id: 'conditionAgentflow_0-output-0', name: '0', label: '0', description: 'Condition 0' })
@@ -287,7 +300,7 @@ describe('initNode', () => {
     })
 
     it('should generate dynamic outputAnchors for conditionAgentAgentflow nodes', () => {
-        const conditionAgentNodeData = makeNodeData({
+        const conditionAgentNodeData = makeNodeDataSchema({
             name: 'conditionAgentAgentflow',
             label: 'Condition Agent',
             inputs: [
@@ -304,11 +317,10 @@ describe('initNode', () => {
                 { label: '0', name: '0', type: 'output' },
                 { label: '1', name: '1', type: 'output' }
             ]
-        } as Partial<NodeData>)
+        })
 
         const result = initNode(conditionAgentNodeData, 'conditionAgentAgentflow_0')
 
-        // 2 default scenarios → 2 anchors (Scenario 0, Scenario 1) — no Else port
         expect(result.outputAnchors).toHaveLength(2)
         expect(result.outputAnchors![0]).toEqual(
             expect.objectContaining({ id: 'conditionAgentAgentflow_0-output-0', name: '0', label: '0', description: 'Scenario 0' })

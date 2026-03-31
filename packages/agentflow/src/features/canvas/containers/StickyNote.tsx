@@ -21,7 +21,7 @@ function StickyNoteComponent({ data }: StickyNoteProps) {
     const { updateNodeData } = useAgentflowContext()
     const ref = useRef<HTMLDivElement>(null)
 
-    const [inputParam] = data.inputs || []
+    const [inputParam] = data.inputParams || []
     const [isHovered, setIsHovered] = useState(false)
 
     const { stateColor, backgroundColor } = useNodeColors({
@@ -57,14 +57,18 @@ function StickyNoteComponent({ data }: StickyNoteProps) {
                         multiline
                         rows={3}
                         placeholder={inputParam?.placeholder || 'Add a note...'}
-                        value={data.inputValues?.[inputParam?.name || 'note'] ?? inputParam?.default ?? ''}
+                        value={
+                            (data.inputs?.[inputParam?.name || 'note'] as string | undefined) ??
+                            (inputParam?.default as string | undefined) ??
+                            ''
+                        }
                         onChange={(e) => {
                             if (inputParam) {
-                                const updatedInputValues = {
-                                    ...data.inputValues,
+                                const nextInputs = {
+                                    ...(data.inputs ?? {}),
                                     [inputParam.name]: e.target.value
                                 }
-                                updateNodeData(data.id, { inputValues: updatedInputValues })
+                                updateNodeData(data.id, { inputs: nextInputs })
                             }
                         }}
                         sx={{

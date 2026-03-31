@@ -1,5 +1,4 @@
 import { DEFAULT_AGENTFLOW_NODES } from '../node-config'
-import type { NodeData } from '../types'
 
 /**
  * Filter nodes based on allowed components list
@@ -7,7 +6,7 @@ import type { NodeData } from '../types'
  * @param allowedComponents - Array of allowed node names (optional)
  * @returns Filtered array of nodes
  */
-export function filterNodesByComponents(allNodes: NodeData[], allowedComponents?: string[]): NodeData[] {
+export function filterNodesByComponents<T extends { name: string }>(allNodes: T[], allowedComponents?: string[]): T[] {
     // If no filter specified, return all agentflow nodes
     if (!allowedComponents || allowedComponents.length === 0) {
         return allNodes.filter((node) => DEFAULT_AGENTFLOW_NODES.includes(node.name))
@@ -28,9 +27,9 @@ export function isAgentflowNode(nodeName: string): boolean {
 }
 
 /**
- * Group nodes by category
+ * Group nodes by category (palette API entries or any node-like object with `category`).
  */
-export function groupNodesByCategory(nodes: NodeData[]): Record<string, NodeData[]> {
+export function groupNodesByCategory<T extends { category?: string }>(nodes: T[]): Record<string, T[]> {
     return nodes.reduce((acc, node) => {
         const category = node.category || 'Other'
         if (!acc[category]) {
@@ -38,5 +37,5 @@ export function groupNodesByCategory(nodes: NodeData[]): Record<string, NodeData
         }
         acc[category].push(node)
         return acc
-    }, {} as Record<string, NodeData[]>)
+    }, {} as Record<string, T[]>)
 }

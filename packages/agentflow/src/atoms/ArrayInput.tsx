@@ -40,8 +40,8 @@ export function ArrayInput({
     // Derive array items directly from props (single source of truth)
     // Memoized to prevent unnecessary re-renders of child hooks
     const arrayItems = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as Record<string, unknown>[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(arrayItems.length, 'item')
@@ -117,7 +117,7 @@ export function ArrayInput({
                 // Create item-specific data context for nested NodeInputHandler
                 const itemData: NodeData = {
                     ...data,
-                    inputValues: itemValues
+                    inputs: itemValues
                 }
 
                 return (

@@ -205,22 +205,22 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             }
 
             // Update IDs in all anchor arrays to match new node ID
-            updateAnchorIds(newNode.data.inputs, nodeId, newNodeId)
+            updateAnchorIds(newNode.data.inputParams, nodeId, newNodeId)
             updateAnchorIds(newNode.data.inputAnchors, nodeId, newNodeId)
             updateAnchorIds(newNode.data.outputAnchors, nodeId, newNodeId)
 
             // Clear connected input values by resetting to defaults
-            if (newNode.data.inputValues) {
-                for (const inputName in newNode.data.inputValues) {
-                    const value = newNode.data.inputValues[inputName]
+            if (newNode.data.inputs) {
+                for (const inputName in newNode.data.inputs) {
+                    const value = newNode.data.inputs[inputName]
 
                     if (isConnectionString(value)) {
                         // Reset string connections to parameter default
-                        const inputParam = newNode.data.inputs?.find((p) => p.name === inputName)
-                        newNode.data.inputValues[inputName] = inputParam ? getDefaultValueForType(inputParam) : ''
+                        const inputParam = newNode.data.inputParams?.find((p) => p.name === inputName)
+                        newNode.data.inputs[inputName] = inputParam ? getDefaultValueForType(inputParam) : ''
                     } else if (Array.isArray(value)) {
                         // Filter out connection strings from arrays
-                        newNode.data.inputValues[inputName] = value.filter((item) => !isConnectionString(item))
+                        newNode.data.inputs[inputName] = value.filter((item) => !isConnectionString(item))
                     }
                 }
             }
