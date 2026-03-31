@@ -85,6 +85,7 @@ const AccountSettings = () => {
     const [occupiedSeats, setOccupiedSeats] = useState(0)
     const [totalSeats, setTotalSeats] = useState(0)
     const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false)
+    const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
 
     const predictionsUsageInPercent = useMemo(() => {
         return usage ? calculatePercentage(usage.predictions?.usage, usage.predictions?.limit) : 0
@@ -860,7 +861,8 @@ const AccountSettings = () => {
                                             }}
                                         >
                                             <Typography variant='body2' color='text.secondary'>
-                                                Once deleted you will be logged out and your subscription will be cancelled.
+                                                Permanently deletes all your data and cancels your subscription. This action cannot be
+                                                undone.
                                             </Typography>
                                         </Box>
                                         <Box
@@ -1452,23 +1454,51 @@ const AccountSettings = () => {
                 fullWidth
                 maxWidth='xs'
                 open={openDeleteAccountDialog}
-                onClose={() => !deleteAccountApi.loading && setOpenDeleteAccountDialog(false)}
+                onClose={() => {
+                    if (!deleteAccountApi.loading) {
+                        setOpenDeleteAccountDialog(false)
+                        setDeleteConfirmationText('')
+                    }
+                }}
             >
                 <DialogTitle>Delete Account</DialogTitle>
                 <DialogContent>
-                    <Typography>
-                        Once deleted you will be logged out and your subscription will be cancelled. This action cannot be undone.
-                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                        <Typography>
+                            This will permanently delete your account and all associated data. Your subscription will be cancelled
+                            immediately and you will be logged out. This action cannot be undone and there is no way to recover your data.
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Typography variant='body2'>
+                                To confirm, please type <strong>permanently delete</strong> below:
+                            </Typography>
+                            <OutlinedInput
+                                id='deleteConfirmation'
+                                type='text'
+                                fullWidth
+                                placeholder='permanently delete'
+                                value={deleteConfirmationText}
+                                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                                disabled={deleteAccountApi.loading}
+                            />
+                        </Box>
+                    </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpenDeleteAccountDialog(false)} disabled={deleteAccountApi.loading}>
+                    <Button
+                        onClick={() => {
+                            setOpenDeleteAccountDialog(false)
+                            setDeleteConfirmationText('')
+                        }}
+                        disabled={deleteAccountApi.loading}
+                    >
                         Cancel
                     </Button>
                     <Button
                         variant='contained'
                         color='error'
-                        onClick={() => deleteAccountApi.request()}
-                        disabled={deleteAccountApi.loading}
+                        onClick={() => deleteAccountApi.request({ confirmationText: deleteConfirmationText })}
+                        disabled={deleteAccountApi.loading || deleteConfirmationText !== 'permanently delete'}
                     >
                         {deleteAccountApi.loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm'}
                     </Button>

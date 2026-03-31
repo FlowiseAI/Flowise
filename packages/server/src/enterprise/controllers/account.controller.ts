@@ -144,6 +144,11 @@ export class AccountController {
     public async delete(req: Request, res: Response, next: NextFunction) {
         let queryRunner: QueryRunner | undefined
         try {
+            const { confirmationText } = req.body
+            if (confirmationText !== 'permanently delete') {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Confirmation text must match "permanently delete"')
+            }
+
             queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
             await queryRunner.connect()
             if (!req.user || !req.ip) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
