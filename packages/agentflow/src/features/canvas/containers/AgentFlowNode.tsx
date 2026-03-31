@@ -105,7 +105,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                             >
                                 {data.label}
                             </Typography>
-                            <NodeModelConfigs inputs={data.inputValues} />
+                            <NodeModelConfigs inputs={data.inputs} />
                         </Box>
                     </Box>
 

@@ -24,23 +24,23 @@ function pickExportNodeData(data: NodeData): NodeData {
         tags: data.tags,
         category: data.category,
         description: data.description,
-        inputs: data.inputs,
+        inputParams: data.inputParams,
         inputAnchors: data.inputAnchors,
         outputAnchors: data.outputAnchors,
         outputs: data.outputs,
         icon: data.icon
     }
 
-    // Strip sensitive values from inputValues (password, file, folder)
-    if (data.inputValues) {
-        const inputDefsByName = new Map((data.inputs || []).map((i) => [i.name, i]))
+    // Strip sensitive values from inputs (password, file, folder)
+    if (data.inputs) {
+        const inputDefsByName = new Map((data.inputParams || []).map((i) => [i.name, i]))
         const cleanedValues: Record<string, unknown> = {}
-        for (const [key, value] of Object.entries(data.inputValues)) {
+        for (const [key, value] of Object.entries(data.inputs)) {
             const inputDef = inputDefsByName.get(key)
             if (inputDef && SENSITIVE_INPUT_TYPES.has(inputDef.type)) continue
             cleanedValues[key] = value
         }
-        exported.inputValues = cleanedValues
+        exported.inputs = cleanedValues
     }
 
     return exported

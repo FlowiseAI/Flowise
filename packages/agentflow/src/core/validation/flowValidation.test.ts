@@ -1,4 +1,4 @@
-import { makeFlowEdge, makeFlowNode, makeNodeData } from '@test-utils/factories'
+import { makeFlowEdge, makeFlowNode, makeNodeDataSchema } from '@test-utils/factories'
 
 import type { FlowEdge, FlowNode } from '../types'
 
@@ -121,8 +121,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
-                inputValues: {}
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
+                inputs: {}
             }
         }
         const errors = validateNode(node)
@@ -136,22 +136,22 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: true }],
-                inputValues: {}
+                inputParams: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: true }],
+                inputs: {}
             }
         }
         const errors = validateNode(node)
         expect(errors).toHaveLength(0)
     })
 
-    it('should not warn when required field has a default value and no explicit inputValue', () => {
+    it('should not warn when required field has a default value and no explicit input value', () => {
         const node: FlowNode = {
             ...makeNode('a', 'agentAgentflow'),
             data: {
                 id: 'a',
                 name: 'agentAgentflow',
                 label: 'Agent',
-                inputs: [
+                inputParams: [
                     {
                         id: 'p1',
                         name: 'agentReturnResponseAs',
@@ -161,7 +161,7 @@ describe('validateNode', () => {
                         default: 'userMessage'
                     }
                 ],
-                inputValues: {}
+                inputs: {}
             }
         }
         const errors = validateNode(node)
@@ -176,8 +176,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: false, show: { mode: 'api' } }],
-                inputValues: { mode: 'local' }
+                inputParams: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: false, show: { mode: 'api' } }],
+                inputs: { mode: 'local' }
             }
         }
         const errors = validateNode(node)
@@ -193,8 +193,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
-                inputValues: {}
+                inputParams: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
+                inputs: {}
             }
         }
         const errors = validateNode(node)
@@ -211,8 +211,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
-                inputValues: { credential: 'some-credential-id' }
+                inputParams: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
+                inputs: { credential: 'some-credential-id' }
             }
         }
         const errors = validateNode(node)
@@ -228,7 +228,7 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'conditionAgentflow',
                 label: 'Condition',
-                inputs: [
+                inputParams: [
                     {
                         id: 'conds',
                         name: 'conditions',
@@ -237,7 +237,7 @@ describe('validateNode', () => {
                         array: [{ id: 'f1', name: 'fieldName', label: 'Field Name', type: 'string', optional: false }]
                     }
                 ],
-                inputValues: {
+                inputs: {
                     conditions: [{ fieldName: '' }, { fieldName: 'valid' }]
                 }
             }
@@ -256,8 +256,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
-                inputValues: {}
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
+                inputs: {}
             }
         }
         const errors = validateNode(node)
@@ -271,8 +271,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
-                inputValues: { model: 'gpt-4o' }
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
+                inputs: { model: 'gpt-4o' }
             }
         }
         const errors = validateNode(node)
@@ -288,11 +288,11 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [
+                inputParams: [
                     { id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' },
                     { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false, show: { model: 'gpt-4o' } }
                 ],
-                inputValues: { model: 'claude-3' } // temperature is hidden
+                inputs: { model: 'claude-3' } // temperature is hidden
             }
         }
         const errors = validateNode(node)
@@ -308,11 +308,11 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [
+                inputParams: [
                     { id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' },
                     { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false, show: { model: 'gpt-4o' } }
                 ],
-                inputValues: { model: 'gpt-4o' } // temperature is visible but empty
+                inputs: { model: 'gpt-4o' } // temperature is visible but empty
             }
         }
         const errors = validateNode(node)
@@ -327,7 +327,7 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'agentNode',
                 label: 'Agent',
-                inputs: [
+                inputParams: [
                     { id: 'p1', name: 'tools', label: 'Tools', type: 'asyncMultiOptions', optional: true, loadMethod: 'listTools' },
                     {
                         id: 'p2',
@@ -339,7 +339,7 @@ describe('validateNode', () => {
                     }
                 ],
                 // JSON array string — calcConfig should be visible
-                inputValues: { tools: '["calculator","search"]' }
+                inputs: { tools: '["calculator","search"]' }
             }
         }
         const errors = validateNode(node)
@@ -348,9 +348,9 @@ describe('validateNode', () => {
     })
 
     // --- availableNodes schema fallback ---
-    it('should use availableNodes input definitions when node.data.inputs is missing', () => {
+    it('should use availableNodes input definitions when node.data.inputParams is missing', () => {
         const availableNodes = [
-            makeNodeData({
+            makeNodeDataSchema({
                 name: 'llmAgentflow',
                 inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }]
             })
@@ -361,17 +361,17 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                // No inputs on node — schema comes from availableNodes
-                inputValues: {}
+                // No inputParams on node — schema comes from availableNodes
+                inputs: {}
             }
         }
         const errors = validateNode(node, availableNodes)
         expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Model is required' }))
     })
 
-    it('should prefer availableNodes schema over node.data.inputs', () => {
+    it('should prefer availableNodes schema over node.data.inputParams', () => {
         const availableNodes = [
-            makeNodeData({
+            makeNodeDataSchema({
                 name: 'llmAgentflow',
                 inputs: [
                     { id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false },
@@ -385,9 +385,9 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                // Stale/partial inputs on node — availableNodes has the full schema
-                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
-                inputValues: {}
+                // Stale/partial inputParams on node — availableNodes has the full schema
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
+                inputs: {}
             }
         }
         const errors = validateNode(node, availableNodes)
@@ -398,7 +398,7 @@ describe('validateNode', () => {
     // --- Nested config validation ---
     it('should validate nested component config required fields', () => {
         const availableNodes = [
-            makeNodeData({
+            makeNodeDataSchema({
                 name: 'openAIChat',
                 inputs: [{ id: 'ak', name: 'apiKey', label: 'API Key', type: 'string', optional: false }]
             })
@@ -409,8 +409,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'model', name: 'model', label: 'Chat Model', type: 'string' }],
-                inputValues: {
+                inputParams: [{ id: 'model', name: 'model', label: 'Chat Model', type: 'string' }],
+                inputs: {
                     model: 'openAIChat',
                     modelConfig: { apiKey: '' }
                 }

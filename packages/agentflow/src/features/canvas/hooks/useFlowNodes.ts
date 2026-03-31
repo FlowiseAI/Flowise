@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import type { NodeData } from '@/core/types'
+import type { NodeDataSchema } from '@/core/types'
 import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 /**
@@ -9,7 +9,7 @@ import { useApiContext, useConfigContext } from '@/infrastructure/store'
 export function useFlowNodes() {
     const { nodesApi } = useApiContext()
     const { components: allowedComponents } = useConfigContext()
-    const [availableNodes, setAvailableNodes] = useState<NodeData[]>([])
+    const [availableNodes, setAvailableNodes] = useState<NodeDataSchema[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<Error | null>(null)
 
@@ -17,7 +17,7 @@ export function useFlowNodes() {
         const loadNodes = async () => {
             setIsLoading(true)
             setError(null)
-            let agentflowNodes: NodeData[] = []
+            let agentflowNodes: NodeDataSchema[] = []
 
             try {
                 const allNodes = await nodesApi.getAllNodes()

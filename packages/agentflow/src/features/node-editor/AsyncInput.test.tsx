@@ -70,7 +70,7 @@ const baseNodeData: NodeData = {
     id: 'node-1',
     name: 'testNode',
     label: 'Test Node',
-    inputValues: {}
+    inputs: {}
 }
 
 const makeParam = (overrides: Partial<InputParam>): InputParam => ({
@@ -217,7 +217,7 @@ describe('NodeInputHandler – asyncOptions', () => {
 
         const nodeDataWithValue: NodeData = {
             ...baseNodeData,
-            inputValues: { myField: 'gpt-4o' }
+            inputs: { myField: 'gpt-4o' }
         }
 
         render(
@@ -237,7 +237,7 @@ describe('NodeInputHandler – asyncOptions', () => {
 })
 
 describe('AsyncInput (direct) – asyncOptions', () => {
-    it('passes undefined params when nodeName and inputValues are absent', () => {
+    it('passes undefined params when nodeName and inputs are absent', () => {
         mockUseAsyncOptions.mockReturnValue(idleResult())
 
         render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='' disabled={false} onChange={jest.fn()} />)
@@ -289,7 +289,7 @@ describe('AsyncInput (direct) – asyncOptions', () => {
 })
 
 describe('AsyncInput (direct) – asyncMultiOptions', () => {
-    it('passes undefined params when nodeName and inputValues are absent', () => {
+    it('passes undefined params when nodeName and inputs are absent', () => {
         mockUseAsyncOptions.mockReturnValue(idleResult())
 
         render(<AsyncInput inputParam={makeParam({ type: 'asyncMultiOptions' })} value='' disabled={false} onChange={jest.fn()} />)
@@ -349,7 +349,7 @@ describe('NodeInputHandler – asyncMultiOptions', () => {
 
         const nodeDataWithValue: NodeData = {
             ...baseNodeData,
-            inputValues: { myField: '["tool-a"]' }
+            inputs: { myField: '["tool-a"]' }
         }
 
         render(
@@ -394,7 +394,7 @@ describe('NodeInputHandler – asyncMultiOptions', () => {
 
         const nodeDataWithBadValue: NodeData = {
             ...baseNodeData,
-            inputValues: { myField: '[not valid json' }
+            inputs: { myField: '[not valid json' }
         }
 
         render(
@@ -422,7 +422,7 @@ describe('NodeInputHandler – asyncMultiOptions', () => {
 
         const nodeDataWithArrayValue: NodeData = {
             ...baseNodeData,
-            inputValues: { myField: ['tool-a', 'tool-b'] }
+            inputs: { myField: ['tool-a', 'tool-b'] }
         }
 
         render(

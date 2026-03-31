@@ -61,9 +61,9 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
         const upstreamNodes = getUpstreamNodes(nodeId, nodes, edges)
         for (const node of upstreamNodes) {
             const displayName =
-                (node.data.inputValues?.chainName as string) ??
-                (node.data.inputValues?.functionName as string) ??
-                (node.data.inputValues?.variableName as string) ??
+                (node.data.inputs?.chainName as string) ??
+                (node.data.inputs?.functionName as string) ??
+                (node.data.inputs?.variableName as string) ??
                 node.data.label ??
                 node.data.id
 
@@ -78,7 +78,7 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
         // ── Flow state variables from startAgentflow node ────────────────
         const startNode = nodes.find((n) => n.data.name === 'startAgentflow')
         if (startNode) {
-            const startState = startNode.data.inputValues?.startState
+            const startState = startNode.data.inputs?.startState
             if (Array.isArray(startState)) {
                 for (const entry of startState) {
                     if (entry && typeof entry === 'object' && 'key' in entry && typeof entry.key === 'string') {

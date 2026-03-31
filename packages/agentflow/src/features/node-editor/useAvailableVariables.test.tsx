@@ -24,7 +24,7 @@ function makeNode(id: string, name: string, overrides: Record<string, unknown> =
             id,
             name,
             label: name,
-            inputValues: {},
+            inputs: {},
             ...overrides
         }
     }
@@ -71,7 +71,7 @@ describe('useAvailableVariables', () => {
     })
 
     it('uses chainName/functionName/variableName for display label when available', () => {
-        mockState.nodes = [makeNode('func_0', 'customFunction', { inputValues: { functionName: 'myFunc' }, label: 'Custom Function' })]
+        mockState.nodes = [makeNode('func_0', 'customFunction', { inputs: { functionName: 'myFunc' }, label: 'Custom Function' })]
         mockState.edges = [{ source: 'func_0', target: 'target_0' }]
 
         const { result } = renderHook(() => useAvailableVariables('target_0'))
@@ -83,7 +83,7 @@ describe('useAvailableVariables', () => {
     it('returns flow state variables from startAgentflow node', () => {
         mockState.nodes = [
             makeNode('start_0', 'startAgentflow', {
-                inputValues: {
+                inputs: {
                     startState: [{ key: 'count' }, { key: 'userName' }]
                 }
             })
@@ -110,7 +110,7 @@ describe('useAvailableVariables', () => {
     it('handles malformed startState entries gracefully', () => {
         mockState.nodes = [
             makeNode('start_0', 'startAgentflow', {
-                inputValues: {
+                inputs: {
                     startState: [{ key: 'valid' }, null, { noKey: true }, 42]
                 }
             })

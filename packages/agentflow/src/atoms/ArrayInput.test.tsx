@@ -44,7 +44,7 @@ describe('ArrayInput', () => {
         id: 'node-1',
         name: 'testNode',
         label: 'Test Node',
-        inputValues: {}
+        inputs: {}
     } as NodeData
 
     beforeEach(() => {
@@ -55,7 +55,7 @@ describe('ArrayInput', () => {
     it('should render existing items correctly', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'value1', field2: 10 },
                     { field1: 'value2', field2: 20 }
@@ -101,7 +101,7 @@ describe('ArrayInput', () => {
     it('should delete item and verify item removed from array', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'value1', field2: 10 },
                     { field1: 'value2', field2: 20 }
@@ -128,7 +128,7 @@ describe('ArrayInput', () => {
     it('should handle nested field changes and update parent array', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ field1: 'initial', field2: 5 }]
             }
         } as NodeData
@@ -161,7 +161,7 @@ describe('ArrayInput', () => {
     it('should disable buttons when disabled prop is true', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ field1: 'value1', field2: 10 }]
             }
         } as NodeData
@@ -189,7 +189,7 @@ describe('ArrayInput', () => {
 
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ visible: 'test', hidden: 'should-not-show' }]
             }
         } as NodeData
@@ -207,7 +207,7 @@ describe('ArrayInput', () => {
     it('should render multiple items with correct indices', () => {
         const dataWithMultipleItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'item1', field2: 1 },
                     { field1: 'item2', field2: 2 },
@@ -265,7 +265,7 @@ describe('ArrayInput', () => {
 
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'value1', field2: 10 },
                     { field1: 'value2', field2: 20 }
@@ -329,7 +329,7 @@ describe('ArrayInput', () => {
 
         const dataWithNestedArray: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 formInputTypes: [
                     {
                         type: 'options',
@@ -371,7 +371,7 @@ describe('ArrayInput', () => {
 
         const dataWithNestedArray: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 formInputTypes: [{ type: 'string', label: 'Name' }]
             }
         } as NodeData
@@ -402,7 +402,7 @@ describe('ArrayInput', () => {
 
         const dataWithTwoRows: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 formInputTypes: [
                     { type: 'options', label: 'Color', addOptions: [{ option: 'Red' }] },
                     { type: 'string', label: 'Name' }
@@ -444,7 +444,7 @@ describe('ArrayInput', () => {
         // inputParam.array has both fields with no display flag (both would show)
         const dataWithItem: NodeData = {
             ...mockNodeData,
-            inputValues: { testArray: [{ field1: 'value', field2: 10 }] }
+            inputs: { testArray: [{ field1: 'value', field2: 10 }] }
         } as NodeData
 
         // Parent (EditNodeDialog) has evaluated field2 as hidden
@@ -474,7 +474,7 @@ describe('ArrayInput', () => {
 
         const dataWithOneItem: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ field1: 'value1', field2: 10 }]
             }
         } as NodeData

@@ -51,7 +51,7 @@ const baseNodeData: NodeData = {
     id: 'node-1',
     name: 'testNode',
     label: 'Test Node',
-    inputValues: {}
+    inputs: {}
 }
 
 const makeParam = (overrides: Partial<InputParam>): InputParam => ({
@@ -104,7 +104,7 @@ describe('NodeInputHandler – expand dialog', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'string', rows: 4 })}
-                data={{ ...baseNodeData, inputValues: { myField: 'Some long text' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'Some long text' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
@@ -126,7 +126,7 @@ describe('NodeInputHandler – expand dialog', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'string', rows: 4 })}
-                data={{ ...baseNodeData, inputValues: { myField: 'Original' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'Original' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
@@ -147,14 +147,14 @@ describe('NodeInputHandler – expand dialog', () => {
 
     it('should reflect updated data prop in expand dialog after rerender', () => {
         const param = makeParam({ type: 'string', rows: 4 })
-        const initialData = { ...baseNodeData, inputValues: { myField: '' } }
+        const initialData = { ...baseNodeData, inputs: { myField: '' } }
 
         const { rerender } = render(
             <NodeInputHandler inputParam={param} data={initialData} isAdditionalParams onDataChange={mockOnDataChange} />
         )
 
         // Simulate parent updating data after user types in inline editor
-        const updatedData = { ...baseNodeData, inputValues: { myField: '<p>Updated instructions</p>' } }
+        const updatedData = { ...baseNodeData, inputs: { myField: '<p>Updated instructions</p>' } }
         rerender(<NodeInputHandler inputParam={param} data={updatedData} isAdditionalParams onDataChange={mockOnDataChange} />)
 
         // Open expand dialog — it should show the updated value, not the initial empty value
@@ -241,7 +241,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -257,7 +257,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: false })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -273,7 +273,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: '' } }}
+                data={{ ...baseNodeData, inputs: { myField: '' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -289,7 +289,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -303,7 +303,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -345,7 +345,7 @@ describe('NodeInputHandler – json type', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'json' })}
-                data={{ ...baseNodeData, inputValues: { myField: '{"key":"val"}' } }}
+                data={{ ...baseNodeData, inputs: { myField: '{"key":"val"}' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
@@ -390,7 +390,7 @@ describe('NodeInputHandler – code type', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'code', codeLanguage: 'javascript' })}
-                data={{ ...baseNodeData, inputValues: { myField: 'const x = 1' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'const x = 1' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
