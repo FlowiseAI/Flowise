@@ -56,7 +56,7 @@ const mockNodeData: NodeData = {
     id: 'conditionAgentflow_0',
     name: 'conditionAgentflow',
     label: 'Condition',
-    inputValues: {}
+    inputs: {}
 } as NodeData
 
 describe('ConditionBuilder', () => {
@@ -67,7 +67,7 @@ describe('ConditionBuilder', () => {
     it('should render condition items with "Condition N" labels', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [
                     { type: 'string', value1: '', operation: 'equal', value2: '' },
                     { type: 'number', value1: '', operation: 'larger', value2: '' }
@@ -108,7 +108,7 @@ describe('ConditionBuilder', () => {
     it('should delete a condition item', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [
                     { type: 'string', value1: 'a', operation: 'equal', value2: 'b' },
                     { type: 'number', value1: '1', operation: 'larger', value2: '0' }
@@ -130,7 +130,7 @@ describe('ConditionBuilder', () => {
     it('should handle nested field changes within a condition', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: 'hello', operation: 'equal', value2: 'world' }]
             }
         } as NodeData
@@ -149,7 +149,7 @@ describe('ConditionBuilder', () => {
     it('should disable buttons when disabled prop is true', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }]
             }
         } as NodeData
@@ -164,7 +164,7 @@ describe('ConditionBuilder', () => {
         const inputParamWithMin: InputParam = { ...conditionInputParam, minItems: 1 }
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }]
             }
         } as NodeData
@@ -177,7 +177,7 @@ describe('ConditionBuilder', () => {
     it('should use itemParameters for field visibility when provided', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [{ type: 'string', value1: '', operation: 'isEmpty', value2: '' }]
             }
         } as NodeData
@@ -210,7 +210,7 @@ describe('ConditionBuilder', () => {
     it('should render fields for each condition item', () => {
         const data: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditions: [
                     { type: 'string', value1: '', operation: 'equal', value2: '' },
                     { type: 'number', value1: '', operation: 'larger', value2: '' }

@@ -40,8 +40,8 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
     const theme = useTheme()
 
     const messages = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as MessageEntry[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as MessageEntry[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(messages.length, 'message')

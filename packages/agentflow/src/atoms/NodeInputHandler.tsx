@@ -148,9 +148,9 @@ export function NodeInputHandler({
 
     const expandValue = useMemo(() => {
         if (!inputParam) return ''
-        const v = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
+        const v = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
         return typeof v === 'string' ? v : JSON.stringify(v)
-    }, [data.inputValues, inputParam])
+    }, [data.inputs, inputParam])
 
     const handleExpandConfirm = useCallback(
         (value: string) => {
@@ -163,12 +163,12 @@ export function NodeInputHandler({
     const handleVariableSelect = useCallback(
         (variableString: string) => {
             if (!inputParam) return
-            const current = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
+            const current = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
             const currentStr = typeof current === 'string' ? current : JSON.stringify(current)
             handleDataChange(currentStr + variableString)
             setVariableAnchorEl(null)
         },
-        [inputParam, data.inputValues, handleDataChange]
+        [inputParam, data.inputs, handleDataChange]
     )
 
     const showVariableButton = !!(
@@ -181,7 +181,7 @@ export function NodeInputHandler({
     const renderInput = () => {
         if (!inputParam) return null
 
-        const value = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
+        const value = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
 
         switch (inputParam.type) {
             case 'string':
@@ -345,7 +345,7 @@ export function NodeInputHandler({
                             disabled={disabled}
                             onChange={(v) => handleDataChange(v)}
                             nodeName={data.name}
-                            inputValues={data.inputValues as Record<string, unknown> | undefined}
+                            inputValues={data.inputs as Record<string, unknown> | undefined}
                         />
                         {inputParam.loadConfig && ConfigInputComponent && value && onConfigChange && (
                             <ConfigInputComponent
@@ -370,7 +370,7 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onChange={(v) => handleDataChange(v)}
                         nodeName={data.name}
-                        inputValues={data.inputValues as Record<string, unknown> | undefined}
+                        inputValues={data.inputs as Record<string, unknown> | undefined}
                     />
                 )
 

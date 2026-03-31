@@ -20,7 +20,7 @@ export interface ConfigInputProps {
     arrayIndex?: number | null // For array-based configs: the index of the array item.
     parentArrayParam?: InputParam | null // For array-based configs: the parent array param definition.
     onConfigChange: (
-        // Callback to persist config values to the parent node's inputValues.
+        // Callback to persist config values to the parent node's `data.inputs` map.
         configKey: string,
         configValues: Record<string, unknown>,
         arrayContext?: { parentParamName: string; arrayIndex: number }
@@ -41,7 +41,7 @@ function initializeDefaults(params: InputParam[]): Record<string, unknown> {
 
 /** Read the current selection value from parent data, handling array context.
  *  When data is already scoped to the array item (ArrayInput passes itemData),
- *  the parent array won't exist in data.inputValues — fall back to direct read. */
+ *  the parent array won't exist in data.inputs — fall back to direct read. */
 function readCurrentValue(
     data: NodeData,
     paramName: string,
@@ -49,14 +49,14 @@ function readCurrentValue(
     parentArrayParam?: InputParam | null
 ): string | undefined {
     if (arrayIndex != null && parentArrayParam) {
-        const arr = data.inputValues?.[parentArrayParam.name]
+        const arr = data.inputs?.[parentArrayParam.name]
         if (Array.isArray(arr) && arr[arrayIndex]) {
             return arr[arrayIndex][paramName] as string | undefined
         }
         // data may already be scoped to the array item (via ArrayInput's itemData)
-        return data.inputValues?.[paramName] as string | undefined
+        return data.inputs?.[paramName] as string | undefined
     }
-    return data.inputValues?.[paramName] as string | undefined
+    return data.inputs?.[paramName] as string | undefined
 }
 
 /** Read existing config from parent data, handling array context.
@@ -69,14 +69,14 @@ function readExistingConfig(
 ): Record<string, unknown> | undefined {
     const configKey = `${paramName}Config`
     if (arrayIndex != null && parentArrayParam) {
-        const arr = data.inputValues?.[parentArrayParam.name]
+        const arr = data.inputs?.[parentArrayParam.name]
         if (Array.isArray(arr) && arr[arrayIndex]) {
             return arr[arrayIndex][configKey] as Record<string, unknown> | undefined
         }
         // data may already be scoped to the array item (via ArrayInput's itemData)
-        return data.inputValues?.[configKey] as Record<string, unknown> | undefined
+        return data.inputs?.[configKey] as Record<string, unknown> | undefined
     }
-    return data.inputValues?.[configKey] as Record<string, unknown> | undefined
+    return data.inputs?.[configKey] as Record<string, unknown> | undefined
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ export function ConfigInput({
             return existing
         }
         // No saved config or selection mismatch — fall back to defaults
-        const paramDefs = (configNodeData.inputs ?? []) as InputParam[]
+        const paramDefs = (configNodeData.inputParams ?? []) as InputParam[]
         return { ...initializeDefaults(paramDefs), [inputParam.name]: currentSelection }
     }, [configNodeData, data, inputParam.name, arrayIndex, parentArrayParam, currentSelection])
 
@@ -135,7 +135,7 @@ export function ConfigInput({
 
     const configInputParams = useMemo((): InputParam[] => {
         if (!configNodeData) return []
-        const paramDefs = (configNodeData.inputs ?? []) as InputParam[]
+        const paramDefs = (configNodeData.inputParams ?? []) as InputParam[]
         return evaluateFieldVisibility(paramDefs, configInputValues)
     }, [configNodeData, configInputValues])
 
@@ -159,7 +159,7 @@ export function ConfigInput({
                 setConfigNodeData(initialized)
 
                 // Persist initial config to parent
-                const paramDefs = (initialized.inputs ?? []) as InputParam[]
+                const paramDefs = (initialized.inputParams ?? []) as InputParam[]
                 const existing = readExistingConfig(dataRef.current, inputParam.name, arrayIndex, parentArrayParam)
                 const values =
                     existing && existing[inputParam.name] === currentSelection
@@ -192,7 +192,7 @@ export function ConfigInput({
 
     const configData: NodeData = {
         ...configNodeData,
-        inputValues: configInputValues
+        inputs: configInputValues
     }
 
     return (
