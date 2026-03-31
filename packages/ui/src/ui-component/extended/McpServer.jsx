@@ -20,7 +20,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import useNotifier from '@/utils/useNotifier'
 
 // API
-import mcpServerApi from '@/api/mcpServer'
+import mcpServerApi from '@/api/mcpserver'
 import chatflowsApi from '@/api/chatflows'
 
 const McpServer = ({ dialogProps }) => {
@@ -199,6 +199,19 @@ const McpServer = ({ dialogProps }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
+
+    useEffect(() => {
+        if (getMcpServerConfigApi.error) {
+            showError(
+                `Failed to load MCP Server configuration: ${
+                    typeof getMcpServerConfigApi.error.response?.data === 'object'
+                        ? getMcpServerConfigApi.error.response.data.message
+                        : getMcpServerConfigApi.error.response?.data || getMcpServerConfigApi.error.message
+                }`
+            )
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getMcpServerConfigApi.error])
 
     useEffect(() => {
         if (getMcpServerConfigApi.data) {

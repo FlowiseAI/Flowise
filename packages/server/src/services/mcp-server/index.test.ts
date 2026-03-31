@@ -101,10 +101,10 @@ describe('mcpServerService', () => {
             expect(result).toEqual(config)
         })
 
-        it('returns null when chatflow has no config', async () => {
+        it('returns disabled config when chatflow has no config', async () => {
             mockFindOne.mockResolvedValue(makeChatflow())
             const result = await mcpServerService.getMcpServerConfig('chatflow-1', 'ws-1')
-            expect(result).toBeNull()
+            expect(result).toEqual({ enabled: false, token: '', description: '', toolName: '' })
         })
 
         it('throws NOT_FOUND when chatflow does not exist', async () => {

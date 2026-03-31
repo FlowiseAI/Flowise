@@ -54,7 +54,7 @@ function parseMcpConfig(chatflow: ChatFlow): IMcpServerConfig | null {
 /**
  * Get MCP server config for a chatflow
  */
-const getMcpServerConfig = async (chatflowId: string, workspaceId: string): Promise<IMcpServerConfig | null> => {
+const getMcpServerConfig = async (chatflowId: string, workspaceId: string): Promise<IMcpServerConfig> => {
     try {
         const appServer = getRunningExpressApp()
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
@@ -63,7 +63,8 @@ const getMcpServerConfig = async (chatflowId: string, workspaceId: string): Prom
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
         }
-        return parseMcpConfig(chatflow)
+        const config = parseMcpConfig(chatflow)
+        return config || { enabled: false, token: '', description: '', toolName: '' }
     } catch (error) {
         if (error instanceof InternalFlowiseError) throw error
         throw new InternalFlowiseError(

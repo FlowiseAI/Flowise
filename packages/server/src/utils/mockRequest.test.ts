@@ -1,4 +1,4 @@
-import { createMockRequest } from '../../src/utils/mockRequest'
+import { createMockRequest } from './mockRequest'
 import { Request } from 'express'
 
 describe('createMockRequest', () => {
