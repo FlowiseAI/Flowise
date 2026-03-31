@@ -2,8 +2,8 @@ import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core
 import { BaseLLMOutputParser, BaseOutputParser } from '@langchain/core/output_parsers'
 import { HumanMessage } from '@langchain/core/messages'
 import { ChatPromptTemplate, FewShotPromptTemplate, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
-import { OutputFixingParser } from 'langchain/output_parsers'
-import { LLMChain } from 'langchain/chains'
+import { OutputFixingParser } from '@langchain/classic/output_parsers'
+import { LLMChain } from '@langchain/classic/chains'
 import {
     IVisionChatModal,
     ICommonObject,
@@ -201,8 +201,6 @@ const runPrediction = async (
         const visionChatModel = chain.llm as IVisionChatModal
         const messageContent = await addImagesToMessages(nodeData, options, visionChatModel.multiModalOption)
         if (messageContent?.length) {
-            // Change model to gpt-4-vision && max token to higher when using gpt-4-vision
-            visionChatModel.setVisionModel()
             // Add image to the message
             if (chain.prompt instanceof PromptTemplate) {
                 const existingPromptTemplate = chain.prompt.template as string
@@ -238,9 +236,6 @@ const runPrediction = async (
                 // @ts-ignore
                 chain.prompt.examplePrompt = newFewShotPromptTemplate
             }
-        } else {
-            // revert to previous values if image upload is empty
-            visionChatModel.revertToOriginalModel()
         }
     }
 

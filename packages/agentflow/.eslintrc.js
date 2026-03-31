@@ -7,8 +7,10 @@ const crossFeatureRules = features.map((feature) => ({
 }))
 
 module.exports = {
+    root: true,
     extends: [
         'eslint:recommended',
+        'plugin:markdown/recommended',
         'plugin:react/recommended',
         'plugin:react/jsx-runtime',
         'plugin:react-hooks/recommended',
@@ -27,6 +29,11 @@ module.exports = {
     settings: {
         react: {
             version: 'detect'
+        },
+        'import/resolver': {
+            typescript: {
+                project: './tsconfig.json'
+            }
         }
     },
     plugins: ['react', 'react-hooks', '@typescript-eslint', 'unused-imports', 'jsx-a11y', 'simple-import-sort', 'import'],
@@ -74,7 +81,25 @@ module.exports = {
         'import/first': 'error',
         'import/newline-after-import': 'error',
         'import/no-duplicates': 'error',
+        // Allow autoFocus on custom components (e.g. RichTextEditor in dialogs) — they manage
+        // focus programmatically per WAI-ARIA dialog patterns. Native elements are still flagged.
+        'jsx-a11y/no-autofocus': ['error', { ignoreNonDOM: true }],
         'prettier/prettier': 'error',
+        // Ban @/features alias — features use relative imports internally, and no other
+        // layer should import from features (enforced by import/no-restricted-paths below).
+        // This catches any remaining edge case where the alias would bypass zone checks.
+        'no-restricted-imports': [
+            'error',
+            {
+                patterns: [
+                    {
+                        group: ['@/features', '@/features/*'],
+                        message:
+                            '@/features alias is not allowed. Features use relative imports internally; other layers cannot import from features.'
+                    }
+                ]
+            }
+        ],
         // Architectural boundary enforcement
         'import/no-restricted-paths': [
             'error',
@@ -94,8 +119,8 @@ module.exports = {
                     {
                         target: './src/atoms',
                         from: './src/core',
-                        except: ['./types'],
-                        message: 'Atoms can only import types from core/types, not utilities or business logic.'
+                        except: ['./types', './theme', './primitives'],
+                        message: 'Atoms can only import from core/types, core/theme, and core/primitives.'
                     },
                     // core/ cannot import from anything (leaf node)
                     {

@@ -30,9 +30,8 @@ src/
 ```
 atoms/
 ├── MainCard.tsx            # Styled card wrapper
-├── Input.tsx               # Basic input component
-├── ConfirmDialog.tsx       # Confirmation dialog with context
 ├── NodeInputHandler.tsx    # Form input for node properties
+├── ...                     # Other UI primitives
 └── index.ts                # Central export
 ```
 
@@ -43,7 +42,7 @@ atoms/
 -   No API calls
 -   Stateless or minimal local state
 -   Imported by features, never the reverse
--   **Forbidden**: Importing from `features/` or `infrastructure/` (except types from `core/types` for prop definitions)
+-   **Forbidden**: Importing from `features/` or `infrastructure/` (except types from `core/types` for prop definitions, design tokens from `core/theme`, and primitives from `core/primitives`)
 
 **Goal:** 100% visual consistency.
 
@@ -59,41 +58,35 @@ features/
 │   ├── containers/         # Smart components with state/logic
 │   │   ├── AgentFlowNode.tsx
 │   │   ├── AgentFlowEdge.tsx
-│   │   ├── StickyNote.tsx
-│   │   ├── IterationNode.tsx
+│   │   ├── ...             # Other node containers
 │   │   └── index.ts
 │   ├── components/         # Presentational components
-│   │   ├── AgentflowHeader.tsx
 │   │   ├── ConnectionLine.tsx
-│   │   ├── NodeToolbarActions.tsx
-│   │   ├── NodeStatusIndicator.tsx
-│   │   ├── NodeInfoDialog.tsx
-│   │   ├── NodeModelConfigs.tsx
+│   │   ├── NodeOutputHandles.tsx
+│   │   ├── ...             # Other presentational components
 │   │   └── index.ts
 │   ├── hooks/              # Canvas-related hooks
-│   │   ├── useFlowNodes.ts
 │   │   ├── useFlowHandlers.ts
 │   │   ├── useDragAndDrop.ts
+│   │   ├── ...             # Other canvas hooks
 │   │   └── index.ts
 │   ├── styled.ts           # Styled components
-│   ├── nodeIcons.tsx       # Icon utilities
-│   ├── canvas.css          # Co-located styles
 │   └── index.ts            # Public API
 │
 ├── node-palette/           # Add nodes drawer
 │   ├── AddNodesDrawer.tsx
-│   ├── StyledFab.tsx
 │   ├── search.ts           # Feature-specific utility (private)
-│   └── index.ts            # Exports: AddNodesDrawer, StyledFab
+│   ├── ...
+│   └── index.ts
 │
 ├── generator/              # AI flow generation
 │   ├── GenerateFlowDialog.tsx
-│   ├── SuggestionChips.tsx
-│   └── index.ts            # Exports: GenerateFlowDialog
+│   ├── ...
+│   └── index.ts
 │
 └── node-editor/            # Node property editing
     ├── EditNodeDialog.tsx
-    └── index.ts            # Exports: EditNodeDialog
+    └── index.ts
 ```
 
 **Rules:**
@@ -117,21 +110,26 @@ features/
 core/
 ├── types/                  # Global interfaces (Node, Edge, Flow)
 │   └── index.ts
+├── primitives/             # Domain-free utilities (safe for atoms)
+│   ├── inputDefaults.ts    # getDefaultValueForType
+│   └── index.ts
 ├── node-config/            # Node configuration (icons, colors, default types)
 │   ├── nodeIcons.ts        # AGENTFLOW_ICONS, DEFAULT_AGENTFLOW_NODES
-│   ├── nodeIconUtils.ts    # getAgentflowIcon, getNodeColor
-│   └── index.ts
+│   └── ...
 ├── node-catalog/           # Node catalog and filtering logic
-│   ├── nodeFilters.ts      # filterNodesByComponents, isAgentflowNode, groupNodesByCategory
-│   └── index.ts
+│   ├── nodeFilters.ts      # filterNodesByComponents, isAgentflowNode
+│   └── ...
+├── theme/                  # Design tokens and MUI theming
+│   ├── tokens.ts           # Color palettes, spacing, shadows
+│   ├── createAgentflowTheme.ts
+│   └── ...
 ├── validation/             # Flow validation logic
 │   ├── flowValidation.ts   # validateFlow, validateNode
-│   └── index.ts
-├── utils/                  # Generic utilities
-│   ├── nodeFactory.ts      # initNode, getUniqueNodeId, getUniqueNodeLabel
-│   ├── connectionValidation.ts # isValidConnectionAgentflowV2
-│   ├── flowExport.ts       # generateExportFlowData
-│   └── index.ts
+│   ├── connectionValidation.ts  # isValidConnectionAgentflowV2
+│   └── ...
+├── utils/                  # Domain-aware utilities (NOT importable by atoms)
+│   ├── nodeFactory.ts      # initNode, getUniqueNodeId
+│   └── ...
 └── index.ts                # Barrel export (use sparingly)
 ```
 
@@ -142,6 +140,15 @@ core/
 -   No side effects
 -   Pure functions where possible
 -   Can be tested in isolation
+
+#### `core/primitives/` vs `core/utils/`
+
+`core/` contains two utility directories with different import permissions:
+
+-   **`primitives/`** — Domain-free, general-purpose functions with no knowledge of nodes, flows, or any business concept. These are pure data transformations (e.g., computing a default value from a type string). **Safe to import from `atoms/`.**
+-   **`utils/`** — Domain-aware utilities that understand node structures, flow data, or validation logic (e.g., `initNode`, `buildDynamicOutputAnchors`). **Only importable by `features/` and `infrastructure/`.**
+
+When adding a new utility, ask: _"Does this function need to know what a Node or Flow is?"_ If no → `primitives/`. If yes → `utils/`.
 
 **Goal:** To be the framework-agnostic source of truth.
 
@@ -155,17 +162,13 @@ core/
 infrastructure/
 ├── api/                    # API client layer (network requests)
 │   ├── client.ts           # Axios factory
-│   ├── nodes.ts            # Nodes API endpoints
-│   ├── chatflows.ts        # Chatflows API endpoints
-│   ├── hooks/
-│   │   └── useApi.ts       # API hook (co-located)
+│   ├── ...                 # Endpoint modules (nodes, chatflows, etc.)
 │   └── index.ts
 │
 └── store/                  # State management
-    ├── ApiContext.tsx      # API client context
-    ├── ConfigContext.tsx   # Configuration context
     ├── AgentflowContext.tsx # Flow state context
-    ├── useFlowInstance.ts  # ReactFlow instance hook
+    ├── agentflowReducer.ts # Reducer for flow state actions
+    ├── ...                 # Other contexts (ApiContext, ConfigContext)
     └── index.ts
 ```
 
@@ -219,7 +222,7 @@ infrastructure/
 
 -   `features` → `atoms`, `infrastructure`, `core` ✅
 -   `infrastructure` → `core` ✅
--   `atoms` → `core/types` only (for type definitions) ✅
+-   `atoms` → `core/types`, `core/theme`, and `core/primitives` only ✅
 -   `core` → nothing (leaf node) ✅
 -   **Atoms and Core are "leaf" nodes** - they cannot import from `features/` or `infrastructure/`
 
@@ -356,6 +359,6 @@ import { useFlowHandlers } from '@features/canvas/hooks/useFlowHandlers'
 | Type        | Convention                | Example                               |
 | ----------- | ------------------------- | ------------------------------------- |
 | Component   | PascalCase.tsx            | `AgentFlowNode.tsx`                   |
-| Hook        | camelCase.ts (use prefix) | `useFlowInstance.ts`                  |
+| Hook        | camelCase.ts (use prefix) | `useFlowHandlers.ts`                  |
 | Logic/Types | camelCase.ts              | `flowValidation.ts`, `nodeFilters.ts` |
 | Styles      | kebab-case (co-located)   | `canvas.css`                          |

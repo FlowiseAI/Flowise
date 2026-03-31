@@ -1,5 +1,5 @@
 import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from '@langchain/classic/memory'
 import { Moderation } from '../nodes/moderation/Moderation'
 
 /**
@@ -105,6 +105,8 @@ export interface INodeParams {
     hide?: INodeDisplay
     generateDocStoreDescription?: boolean
     generateInstruction?: boolean
+    minItems?: number
+    maxItems?: number
 }
 
 export interface INodeExecutionData {
@@ -411,8 +413,6 @@ export interface IVisionChatModal {
     configuredModel: string
     multiModalOption: IMultiModalOption
     configuredMaxToken?: number
-    setVisionModel(): void
-    revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
 }
 
@@ -426,6 +426,7 @@ export * from './Interface.Evaluation'
 export interface IServerSideEventStreamer {
     streamStartEvent(chatId: string, data: any): void
     streamTokenEvent(chatId: string, data: string): void
+    streamThinkingEvent(chatId: string, data: string, duration?: number): void
     streamCustomEvent(chatId: string, eventType: string, data: any): void
     streamSourceDocumentsEvent(chatId: string, data: any): void
     streamUsedToolsEvent(chatId: string, data: any): void
@@ -458,7 +459,7 @@ export enum FollowUpPromptProvider {
 }
 
 export type FollowUpPromptProviderConfig = {
-    [key in FollowUpPromptProvider]: {
+    [_key in FollowUpPromptProvider]: {
         credentialId: string
         modelName: string
         baseUrl: string

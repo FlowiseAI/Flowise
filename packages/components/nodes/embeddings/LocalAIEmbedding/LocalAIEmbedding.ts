@@ -15,7 +15,7 @@ class LocalAIEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'LocalAI Embeddings'
+        this.label = 'LocalAI Embedding'
         this.name = 'localAIEmbeddings'
         this.version = 1.0
         this.type = 'LocalAI Embeddings'

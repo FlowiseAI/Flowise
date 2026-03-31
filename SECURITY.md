@@ -3,6 +3,7 @@
 At Flowise, we prioritize security and continuously work to safeguard our systems. However, vulnerabilities can still exist. If you identify a security issue, please report it to us so we can address it promptly. Your cooperation helps us better protect our platform and users.
 
 ### Scope
+
 -   Flowise Cloud: cloud.flowiseai.com
 -   Public Flowise Repositories
 
@@ -31,7 +32,6 @@ At Flowise, we prioritize security and continuously work to safeguard our system
 -   Known vulnerabilities in used libraries (unless exploitability can be proven)
 -   Static application security testing findings
 
-
 ### Reporting Guidelines
 
 -   Submit your findings to https://github.com/FlowiseAI/Flowise/security
@@ -46,9 +46,10 @@ At Flowise, we prioritize security and continuously work to safeguard our system
 
 ### Disclosure Terms
 
-The Flowise team believes that transparency is important and public bug bounty reports are a valuable source of knowledge for bug bounty researchers. However, the Flowise team may have legitimate reasons not to disclose vulnerabilities. 
+The Flowise team believes that transparency is important and public bug bounty reports are a valuable source of knowledge for bug bounty researchers. However, the Flowise team may have legitimate reasons not to disclose vulnerabilities.
 
 Do not discuss or disclose vulnerability information without prior written consent. If you plan on presenting your research, please share a draft with us at least 45 days in advance for review. Avoid including:
+
 -   Data from any Flowise customer projects
 -   Flowise user/customer information
 -   Details about Flowise employees, contractors, or partners
@@ -63,7 +64,7 @@ We will validate submissions within the below timelines.
 | Medium | 15 business days |
 | Low | 15 business days |
 
-Your report will be kept *confidential*, and your details will not be shared without your consent. The Flowise team will triage and adjust severity or CVSS score if necessary.
+Your report will be kept _confidential_, and your details will not be shared without your consent. The Flowise team will triage and adjust severity or CVSS score if necessary.
 We appreciate your efforts in helping us maintain a secure platform and look forward to working together to resolve any issues responsibly.
 
 ### Remediation
@@ -72,15 +73,16 @@ Once the report has been verified, the Flowise team will plan the remediation st
 Below is the estimated time to remediate the triaged security reports.
 
 | Triaged Severity | Estimated Time to Remediate |
-| ---------------------- | ---------------- |
-| Critical | 30 business days |
-| High | 60 business days |
-| Medium | 90 business days |
+| ---------------- | --------------------------- |
+| Critical         | 30 business days            |
+| High             | 60 business days            |
+| Medium           | 90 business days            |
 
 ### Public Disclosure Timeline
 
 Public Disclosure occurs exactly 30 days after the next official release that includes the security patch. This period gives Flowise users a time to adopt the patched version before technical vulnerability details are made public, mitigating the risk of immediate post-disclosure exploitation.
 
 #### Reaching out to the Security team
+
 To report a new vulnerability, please submit a Github security Security Advisory report.
 If you have any questions or concerns about the existing Security Advisory, please contact security-team@flowiseai.com.

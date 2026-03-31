@@ -69,6 +69,18 @@ export class SSEStreamer implements IServerSideEventStreamer {
         }
     }
 
+    streamThinkingEvent(chatId: string, data: string, duration?: number) {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'thinking',
+                data: data,
+                duration: duration
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+
     streamSourceDocumentsEvent(chatId: string, data: any) {
         const client = this.clients[chatId]
         if (client) {
@@ -206,7 +218,8 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamErrorEvent(chatId: string, msg: string) {
-        if (msg.includes('401 Incorrect API key provided')) msg = '401 Invalid model key or Incorrect local model configuration.'
+        if (msg.includes('401 Incorrect API key provided'))
+            msg = '401 Unauthorized – check your API key and ensure it has access to the requested model.'
         const client = this.clients[chatId]
         if (client) {
             const clientResponse = {

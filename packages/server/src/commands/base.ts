@@ -68,6 +68,10 @@ export abstract class BaseCommand extends Command {
         GOOGLE_CLOUD_STORAGE_PROJ_ID: Flags.string(),
         GOOGLE_CLOUD_STORAGE_BUCKET_NAME: Flags.string(),
         GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS: Flags.string(),
+        AZURE_BLOB_STORAGE_CONNECTION_STRING: Flags.string(),
+        AZURE_BLOB_STORAGE_ACCOUNT_NAME: Flags.string(),
+        AZURE_BLOB_STORAGE_ACCOUNT_KEY: Flags.string(),
+        AZURE_BLOB_STORAGE_CONTAINER_NAME: Flags.string(),
 
         // Credentials / Secret Keys
         SECRETKEY_STORAGE_TYPE: Flags.string(),
@@ -101,6 +105,8 @@ export abstract class BaseCommand extends Command {
         CUSTOM_MCP_SECURITY_CHECK: Flags.string(),
         CUSTOM_MCP_PROTOCOL: Flags.string(),
         HTTP_DENY_LIST: Flags.string(),
+        HTTP_SECURITY_CHECK: Flags.string(),
+        PATH_TRAVERSAL_SAFETY: Flags.string(),
         TRUST_PROXY: Flags.string(),
 
         // Auth

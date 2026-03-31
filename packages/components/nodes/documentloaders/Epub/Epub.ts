@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
 import { IDocument, ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { getFileFromStorage, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
 import { EPubLoader } from '@langchain/community/document_loaders/fs/epub'
 
