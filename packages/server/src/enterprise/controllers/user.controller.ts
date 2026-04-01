@@ -56,7 +56,7 @@ export class UserController {
             if (!currentUser) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, UserErrorMessage.USER_NOT_FOUND)
             }
-            const { id, name, oldPassword, newPassword, confirmPassword } = req.body
+            const { id } = req.body
             if (currentUser.id !== id) {
                 throw new InternalFlowiseError(StatusCodes.FORBIDDEN, UserErrorMessage.USER_NOT_FOUND)
             }
