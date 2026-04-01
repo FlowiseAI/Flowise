@@ -25,7 +25,8 @@
 
 -   **Visual Canvas** — Drag-and-drop flow editor built on ReactFlow with zoom, pan, minimap, and fit-to-view controls
 -   **15 Built-in Node Types** — Start, Agent, LLM, Condition, Condition Agent, Human Input, Loop, Direct Reply, Custom Function, Tool, Retriever, Sticky Note, HTTP, Iteration, and Execute Flow
--   **Node Editor Dialog** — Modal for editing node parameters with dynamic input types (text, number, boolean, dropdown, arrays, async options)
+-   **Node Editor Dialog** — Modal for editing node parameters with dynamic input types (text, number, boolean, dropdown, arrays, JSON, code, variable selector, async options)
+-   **Credential Management** — Create and edit credentials inline from the node editor
 -   **Rich Text Editor** — TipTap-based editor with syntax highlighting for JavaScript, TypeScript, Python, and JSON (lazy-loaded)
 -   **Specialized Input Components** — Condition builder, messages input (role + content), and structured output schema builder
 -   **AI Flow Generator** — Generate flows from natural language descriptions with model selection
@@ -62,7 +63,7 @@ export default function App() {
             <Agentflow apiBaseUrl='http://localhost:3000' token='your-api-key' />
         </div>
     )
-}
+}
 ```
 
 ### With Initial Flow Data and Callbacks
@@ -109,7 +110,7 @@ export default function App() {
             />
         </div>
     )
-}
+}
 ```
 
 ## Props
@@ -181,21 +182,6 @@ The following node types are available in the palette by default. Use the `compo
 ### Design Note
 
 `<Agentflow>` is an **uncontrolled component**. The `initialFlow` prop seeds the canvas state on mount, but the component owns its own state afterward. Use the `ref` for imperative access and `onFlowChange` to observe changes.
-
-## Exports
-
-Beyond the main `<Agentflow>` component, the package exports utilities for advanced usage:
-
-```ts
-// Main component and provider
-// Types
-
-// Hooks
-// Validation
-// Node utilities
-
-// Field visibility helpers
-```
 
 ## Development
 

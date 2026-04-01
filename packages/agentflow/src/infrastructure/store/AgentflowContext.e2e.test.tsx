@@ -61,18 +61,18 @@ describe('AgentflowContext E2E', () => {
             // Step 3: Edit agent node parameters
             act(() => {
                 result.current.updateNodeData('agent-1', {
-                    inputValues: { model: 'gpt-4', temperature: 0.7 }
+                    inputs: { model: 'gpt-4', temperature: 0.7 }
                 })
             })
 
             const updatedAgent = result.current.state.nodes.find((n) => n.id === 'agent-1')
-            expect(updatedAgent?.data.inputValues).toEqual({ model: 'gpt-4', temperature: 0.7 })
+            expect(updatedAgent?.data.inputs).toEqual({ model: 'gpt-4', temperature: 0.7 })
 
             // Step 4: Verify flow data is complete for save
             const flowData = result.current.getFlowData()
             expect(flowData.nodes).toHaveLength(3)
             expect(flowData.edges).toHaveLength(2)
-            expect(flowData.nodes.find((n) => n.id === 'agent-1')?.data.inputValues).toEqual({
+            expect(flowData.nodes.find((n) => n.id === 'agent-1')?.data.inputs).toEqual({
                 model: 'gpt-4',
                 temperature: 0.7
             })
