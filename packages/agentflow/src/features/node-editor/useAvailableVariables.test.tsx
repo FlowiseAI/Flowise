@@ -38,33 +38,51 @@ describe('useAvailableVariables', () => {
         mockState.edges = []
     })
 
-    it('always returns global variables (question, chat_history, file_attachment)', () => {
+    it('always returns global variables (chat context + flow variables)', () => {
         const { result } = renderHook(() => useAvailableVariables('node_0'))
 
         const labels = result.current.map((i) => i.label)
+        // Chat Context
         expect(labels).toContain('question')
         expect(labels).toContain('chat_history')
+        expect(labels).toContain('current_date_time')
+        expect(labels).toContain('runtime_messages_length')
+        expect(labels).toContain('loop_count')
         expect(labels).toContain('file_attachment')
-        expect(result.current).toHaveLength(3)
+        // Flow Variables
+        expect(labels).toContain('$flow.sessionId')
+        expect(labels).toContain('$flow.chatId')
+        expect(labels).toContain('$flow.chatflowId')
+        expect(result.current).toHaveLength(9)
     })
 
     it('returns upstream node outputs based on edges', () => {
+        mockState.nodes = [makeNode('llm_0', 'llmAgentflow'), makeNode('agent_0', 'agentAgentflow')]
+        mockState.edges = [{ source: 'llm_0', target: 'agent_0' }]
+
+        const { result } = renderHook(() => useAvailableVariables('agent_0'))
+
+        const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
+        expect(nodeOutputs).toHaveLength(1)
+        expect(nodeOutputs[0].value).toBe('{{llm_0.data.instance}}')
+        expect(nodeOutputs[0].label).toBe('llmAgentflow')
+    })
+
+    it('excludes startAgentflow from node outputs', () => {
         mockState.nodes = [makeNode('start_0', 'startAgentflow'), makeNode('agent_0', 'agentAgentflow')]
         mockState.edges = [{ source: 'start_0', target: 'agent_0' }]
 
         const { result } = renderHook(() => useAvailableVariables('agent_0'))
 
         const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
-        expect(nodeOutputs).toHaveLength(1)
-        expect(nodeOutputs[0].value).toBe('{{start_0.data.instance}}')
-        expect(nodeOutputs[0].label).toBe('startAgentflow')
+        expect(nodeOutputs).toHaveLength(0)
     })
 
     it('does not return downstream node outputs', () => {
-        mockState.nodes = [makeNode('start_0', 'startAgentflow'), makeNode('agent_0', 'agentAgentflow')]
-        mockState.edges = [{ source: 'start_0', target: 'agent_0' }]
+        mockState.nodes = [makeNode('llm_0', 'llmAgentflow'), makeNode('agent_0', 'agentAgentflow')]
+        mockState.edges = [{ source: 'llm_0', target: 'agent_0' }]
 
-        const { result } = renderHook(() => useAvailableVariables('start_0'))
+        const { result } = renderHook(() => useAvailableVariables('llm_0'))
 
         const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
         expect(nodeOutputs).toHaveLength(0)

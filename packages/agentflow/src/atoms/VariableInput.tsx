@@ -2,19 +2,24 @@ import { useEffect, useMemo, useRef } from 'react'
 
 import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
+import { mergeAttributes } from '@tiptap/core'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Placeholder from '@tiptap/extension-placeholder'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-// Individual language imports instead of lowlight/common to tree-shake highlight.js
-// (~400 KB savings by shipping 4 languages instead of 37)
 import javascript from 'highlight.js/lib/languages/javascript'
 import json from 'highlight.js/lib/languages/json'
 import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
+import { CustomMention } from '@/core/primitives/customMention'
 import { tokens } from '@/core/theme/tokens'
+
+import { createSuggestionConfig } from './suggestionConfig'
+import type { SuggestionItem } from './SuggestionDropdown'
+
+export type { SuggestionItem }
 
 const lowlight = createLowlight()
 lowlight.register('javascript', javascript)
@@ -22,31 +27,21 @@ lowlight.register('json', json)
 lowlight.register('python', python)
 lowlight.register('typescript', typescript)
 
-export interface RichTextEditorProps {
-    /** HTML content */
+export interface VariableInputProps {
     value: string
-    /** Called with the updated HTML string on every edit */
-    onChange: (html: string) => void
+    onChange: (value: string) => void
     placeholder?: string
     disabled?: boolean
-    /** Number of visible text rows (controls editor height) */
+    /** Number of visible text rows. When set, renders as a multiline editor and uses markdown serialization. */
     rows?: number
-    /** Auto-focus when the editor mounts */
-    autoFocus?: boolean
+    /** Available variables for autocomplete when typing `{{` */
+    suggestionItems?: SuggestionItem[]
 }
 
-/* ── TipTap extensions (no mention/variable support — that belongs in features/) ── */
-
-const buildExtensions = (placeholder?: string) => [
-    StarterKit.configure({ codeBlock: false }),
-    CodeBlockLowlight.configure({ lowlight, enableTabIndentation: true, tabSize: 2 }),
-    ...(placeholder ? [Placeholder.configure({ placeholder })] : [])
-]
-
-/* ── Styled wrapper ── */
+/* ── Styled wrapper matching RichTextEditor styling ── */
 
 const StyledEditorContent = styled(EditorContent, {
-    shouldForwardProp: (prop) => prop !== 'rows'
+    shouldForwardProp: (prop) => !['rows', 'disabled'].includes(prop as string)
 })<{ rows?: number; disabled?: boolean }>(({ theme, rows, disabled }) => {
     const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
     const sh = tokens.colors.syntaxHighlight
@@ -76,26 +71,7 @@ const StyledEditorContent = styled(EditorContent, {
                 outline: 'none'
             },
 
-            // Block element spacing (ProseMirror resets default margins)
-            '& p, & h1, & h2, & h3, & h4, & h5, & h6, & ul, & ol, & pre, & blockquote': {
-                margin: '0.75em 0'
-            },
-            // Only collapse margins on the very first/last child of the editor
-            '& > :first-of-type': { marginTop: '0.25em' },
-            '& > :last-of-type': { marginBottom: '0.25em' },
-
-            // List indentation & item spacing
-            '& ul, & ol': {
-                paddingLeft: '1.5em'
-            },
-            '& li': {
-                marginBottom: '0.25em'
-            },
-            '& li > p': {
-                margin: '0.25em 0'
-            },
-
-            // Placeholder styling
+            // Placeholder
             '& p.is-editor-empty:first-of-type::before': {
                 content: 'attr(data-placeholder)',
                 float: 'left',
@@ -105,6 +81,28 @@ const StyledEditorContent = styled(EditorContent, {
                 height: 0
             },
 
+            // Mention (variable) chip styling — matches original UI green style
+            '& .mention': {
+                backgroundColor: mode === 'dark' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.08)',
+                borderRadius: '4px',
+                padding: '1px 4px',
+                fontWeight: 600,
+                color: mode === 'dark' ? '#81c784' : '#2e7d32',
+                whiteSpace: 'nowrap'
+            },
+
+            // Block element spacing
+            '& p, & h1, & h2, & h3, & h4, & h5, & h6, & ul, & ol, & pre, & blockquote': {
+                margin: '0.75em 0'
+            },
+            '& > :first-of-type': { marginTop: '0.25em' },
+            '& > :last-of-type': { marginBottom: '0.25em' },
+
+            // List indentation
+            '& ul, & ol': { paddingLeft: '1.5em' },
+            '& li': { marginBottom: '0.25em' },
+            '& li > p': { margin: '0.25em 0' },
+
             // Code block styling
             '& pre': {
                 backgroundColor: sh.background[mode],
@@ -112,13 +110,10 @@ const StyledEditorContent = styled(EditorContent, {
                 borderRadius: '8px',
                 padding: '0.75em 1em',
                 overflow: 'auto',
-                '& code': {
-                    fontFamily: 'monospace',
-                    fontSize: '0.9em'
-                }
+                '& code': { fontFamily: 'monospace', fontSize: '0.9em' }
             },
 
-            // Syntax highlight colors (lowlight adds .hljs-* classes)
+            // Syntax highlight colors
             '& .hljs-comment, & .hljs-quote': { color: sh.comment[mode] },
             '& .hljs-variable, & .hljs-template-variable, & .hljs-attr': { color: sh.variable[mode] },
             '& .hljs-number, & .hljs-literal': { color: sh.number[mode] },
@@ -132,26 +127,62 @@ const StyledEditorContent = styled(EditorContent, {
 })
 
 /**
- * A TipTap-based rich text editor atom with code block syntax highlighting.
+ * A TipTap-based text input with `{{ variable }}` mention support.
  *
- * This is a "dumb" UI primitive — it receives all data via props and owns no
- * business logic. Variable/mention support lives in the features layer.
+ * When the user types `{{`, a suggestion dropdown appears anchored to the cursor
+ * with available variables. Selecting a variable inserts it as a styled mention chip
+ * that renders as `{{variableName}}` in the output text.
+ *
+ * Serialization matches the UI's RichInput behavior:
+ * This is the agentflow equivalent of the UI package's RichInput component.
  */
-export function RichTextEditor({ value, onChange, placeholder, disabled = false, rows, autoFocus = false }: RichTextEditorProps) {
-    // Keep a ref to the latest onChange so the TipTap onUpdate callback never goes stale
+export function VariableInput({ value, onChange, placeholder, disabled = false, rows, suggestionItems }: VariableInputProps) {
     const onChangeRef = useRef(onChange)
     useEffect(() => {
         onChangeRef.current = onChange
     }, [onChange])
 
-    const extensions = useMemo(() => buildExtensions(placeholder), [placeholder])
+    const suggestionConfig = useMemo(
+        () => (suggestionItems?.length ? createSuggestionConfig(suggestionItems) : undefined),
+        [suggestionItems]
+    )
+
+    const extensions = useMemo(
+        () => [
+            StarterKit.configure({
+                codeBlock: false
+            }),
+            CodeBlockLowlight.configure({ lowlight, enableTabIndentation: true, tabSize: 2 }),
+            ...(placeholder ? [Placeholder.configure({ placeholder })] : []),
+            ...(suggestionConfig
+                ? [
+                      CustomMention.configure({
+                          HTMLAttributes: { class: 'mention' },
+                          renderHTML({ options, node }) {
+                              return [
+                                  'span',
+                                  mergeAttributes(this.HTMLAttributes ?? {}, options.HTMLAttributes),
+                                  `${options.suggestion?.char ?? '{{'}${node.attrs.label ?? node.attrs.id}}}`
+                              ]
+                          },
+                          suggestion: suggestionConfig,
+                          deleteTriggerWithBackspace: true
+                      })
+                  ]
+                : [])
+        ],
+        [placeholder, suggestionConfig]
+    )
 
     const editor = useEditor({
         extensions,
-        content: value,
+        content: value || '',
         editable: !disabled,
-        autofocus: autoFocus ? 'end' : false,
-        onUpdate: ({ editor: ed }: { editor: { getHTML: () => string } }) => {
+        onUpdate: ({ editor: ed }) => {
+            // Always use HTML serialization. The @tiptap/markdown v3 getMarkdown()
+            // returns empty strings (known issue with the MarkdownManager in v3.20.4).
+            // HTML round-trips correctly because the Mention extension's parseHTML
+            // matches on span[data-type="mention"] with data-id/data-label attributes.
             onChangeRef.current(ed.getHTML())
         }
     })
@@ -163,15 +194,13 @@ export function RichTextEditor({ value, onChange, placeholder, disabled = false,
         }
     }, [editor, value])
 
-    // Sync editable state when disabled prop changes
+    // Sync editable state
     useEffect(() => {
-        if (editor) {
-            editor.setEditable(!disabled)
-        }
+        if (editor) editor.setEditable(!disabled)
     }, [editor, disabled])
 
     return (
-        <Box data-testid='rich-text-editor'>
+        <Box data-testid='variable-input' sx={{ mt: 1 }}>
             <StyledEditorContent editor={editor} rows={rows} disabled={disabled} />
         </Box>
     )
