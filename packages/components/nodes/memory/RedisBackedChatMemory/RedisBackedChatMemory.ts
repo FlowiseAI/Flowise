@@ -1,5 +1,5 @@
 import { Redis, RedisOptions } from 'ioredis'
-import { BufferMemory, BufferMemoryInput } from 'langchain/memory'
+import { BufferMemory, BufferMemoryInput } from '@langchain/classic/memory'
 import { mapStoredMessageToChatMessage, BaseMessage, AIMessage, HumanMessage } from '@langchain/core/messages'
 import { INode, INodeData, INodeParams, ICommonObject, MessageType, IMessage, MemoryMethods, FlowiseMemory } from '../../../src/Interface'
 import {
@@ -168,7 +168,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             const id = overrideSessionId ? overrideSessionId : this.sessionId
             const rawStoredMessages = await client.lrange(id, this.windowSize ? this.windowSize * -1 : 0, -1)
             const orderedMessages = rawStoredMessages.reverse().map((message) => JSON.parse(message))
-            const baseMessages = orderedMessages.map(mapStoredMessageToChatMessage)
+            const baseMessages: BaseMessage[] = orderedMessages.map(mapStoredMessageToChatMessage)
             if (prependMessages?.length) {
                 baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages, this.orgId)))
             }

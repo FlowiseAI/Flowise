@@ -3,7 +3,18 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import { cloneDeep } from 'lodash'
 
-import type { AgentflowAction, AgentflowState, FlowConfig, FlowData, FlowEdge, FlowNode, InputParam, NodeData } from '@/core/types'
+import { getDefaultValueForType } from '@/core/primitives'
+import type {
+    AgentflowAction,
+    AgentflowState,
+    FlowConfig,
+    FlowData,
+    FlowDataCallback,
+    FlowEdge,
+    FlowNode,
+    InputParam,
+    NodeData
+} from '@/core/types'
 import { getUniqueNodeId } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
@@ -56,7 +67,7 @@ export interface AgentflowContextValue {
     // Node operations
     deleteNode: (nodeId: string) => void
     duplicateNode: (nodeId: string, distance?: number) => void
-    updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>) => void
+    updateNodeData: (nodeId: string, data: Partial<FlowNode['data']>, edges?: FlowEdge[]) => void
 
     // Edge operations
     deleteEdge: (edgeId: string) => void
@@ -71,6 +82,9 @@ export interface AgentflowContextValue {
 
     // Register ReactFlow local state setters
     registerLocalStateSetters: (setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => void
+
+    // Register onFlowChange callback (called by AgentflowCanvas)
+    registerOnFlowChange: (callback: FlowDataCallback | undefined) => void
 }
 
 const AgentflowContext = createContext<AgentflowContextValue | null>(null)
@@ -94,6 +108,13 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     const registerLocalStateSetters = useCallback((setLocalNodes: NodesSetter, setLocalEdges: EdgesSetter) => {
         localNodesSetterRef.current = setLocalNodes
         localEdgesSetterRef.current = setLocalEdges
+    }, [])
+
+    // Store onFlowChange callback ref (registered by AgentflowCanvas)
+    const onFlowChangeRef = useRef<FlowDataCallback | undefined>(undefined)
+
+    const registerOnFlowChange = useCallback((callback: FlowDataCallback | undefined) => {
+        onFlowChangeRef.current = callback
     }, [])
 
     // Helper function to synchronize state updates between context and ReactFlow
@@ -184,22 +205,22 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             }
 
             // Update IDs in all anchor arrays to match new node ID
-            updateAnchorIds(newNode.data.inputs, nodeId, newNodeId)
+            updateAnchorIds(newNode.data.inputParams, nodeId, newNodeId)
             updateAnchorIds(newNode.data.inputAnchors, nodeId, newNodeId)
             updateAnchorIds(newNode.data.outputAnchors, nodeId, newNodeId)
 
             // Clear connected input values by resetting to defaults
-            if (newNode.data.inputValues) {
-                for (const inputName in newNode.data.inputValues) {
-                    const value = newNode.data.inputValues[inputName]
+            if (newNode.data.inputs) {
+                for (const inputName in newNode.data.inputs) {
+                    const value = newNode.data.inputs[inputName]
 
                     if (isConnectionString(value)) {
                         // Reset string connections to parameter default
-                        const inputParam = newNode.data.inputs?.find((p) => p.name === inputName)
-                        newNode.data.inputValues[inputName] = inputParam?.default ?? ''
+                        const inputParam = newNode.data.inputParams?.find((p) => p.name === inputName)
+                        newNode.data.inputs[inputName] = inputParam ? getDefaultValueForType(inputParam) : ''
                     } else if (Array.isArray(value)) {
                         // Filter out connection strings from arrays
-                        newNode.data.inputValues[inputName] = value.filter((item) => !isConnectionString(item))
+                        newNode.data.inputs[inputName] = value.filter((item) => !isConnectionString(item))
                     }
                 }
             }
@@ -210,7 +231,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
     )
 
     const updateNodeData = useCallback(
-        (nodeId: string, data: Partial<FlowNode['data']>) => {
+        (nodeId: string, data: Partial<FlowNode['data']>, edges?: FlowEdge[]) => {
             const newNodes = state.nodes.map((node) => {
                 if (node.id === nodeId) {
                     return {
@@ -221,9 +242,16 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 return node
             })
 
-            syncStateUpdate({ nodes: newNodes })
+            const effectiveEdges = edges ?? state.edges
+            syncStateUpdate({ nodes: newNodes, ...(edges !== undefined && { edges }) })
+
+            // Notify parent of flow change (e.g. node data edits from EditNodeDialog)
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: newNodes, edges: effectiveEdges, viewport })
+            }
         },
-        [state.nodes, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     // Edge operations
@@ -288,7 +316,8 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         closeEditDialog,
         getFlowData,
         reset,
-        registerLocalStateSetters
+        registerLocalStateSetters,
+        registerOnFlowChange
     }
 
     return <AgentflowContext.Provider value={value}>{children}</AgentflowContext.Provider>

@@ -44,7 +44,7 @@ describe('ArrayInput', () => {
         id: 'node-1',
         name: 'testNode',
         label: 'Test Node',
-        inputValues: {}
+        inputs: {}
     } as NodeData
 
     beforeEach(() => {
@@ -55,7 +55,7 @@ describe('ArrayInput', () => {
     it('should render existing items correctly', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'value1', field2: 10 },
                     { field1: 'value2', field2: 20 }
@@ -101,7 +101,7 @@ describe('ArrayInput', () => {
     it('should delete item and verify item removed from array', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'value1', field2: 10 },
                     { field1: 'value2', field2: 20 }
@@ -128,7 +128,7 @@ describe('ArrayInput', () => {
     it('should handle nested field changes and update parent array', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ field1: 'initial', field2: 5 }]
             }
         } as NodeData
@@ -161,7 +161,7 @@ describe('ArrayInput', () => {
     it('should disable buttons when disabled prop is true', () => {
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ field1: 'value1', field2: 10 }]
             }
         } as NodeData
@@ -189,7 +189,7 @@ describe('ArrayInput', () => {
 
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ visible: 'test', hidden: 'should-not-show' }]
             }
         } as NodeData
@@ -207,7 +207,7 @@ describe('ArrayInput', () => {
     it('should render multiple items with correct indices', () => {
         const dataWithMultipleItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'item1', field2: 1 },
                     { field1: 'item2', field2: 2 },
@@ -265,7 +265,7 @@ describe('ArrayInput', () => {
 
         const dataWithItems: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [
                     { field1: 'value1', field2: 10 },
                     { field1: 'value2', field2: 20 }
@@ -306,12 +306,145 @@ describe('ArrayInput', () => {
         })
     })
 
-    // Test 12: itemParameters prop overrides inputParam.array display flags
+    // Test 12: Nested array sub-fields render recursively
+    it('should render nested array sub-fields (e.g., addOptions inside formInputTypes)', () => {
+        const nestedArrayParam: InputParam = {
+            id: 'formInputTypes',
+            name: 'formInputTypes',
+            label: 'Form Input Type',
+            type: 'array',
+            array: [
+                { id: 'type', name: 'type', label: 'Type', type: 'options', default: 'string' } as InputParam,
+                { id: 'label', name: 'label', label: 'Label', type: 'string' } as InputParam,
+                {
+                    id: 'addOptions',
+                    name: 'addOptions',
+                    label: 'Add Options',
+                    type: 'array',
+                    display: true,
+                    array: [{ id: 'option', name: 'option', label: 'Option', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+        }
+
+        const dataWithNestedArray: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                formInputTypes: [
+                    {
+                        type: 'options',
+                        label: 'Color',
+                        addOptions: [{ option: 'Red' }, { option: 'Blue' }]
+                    }
+                ]
+            }
+        } as NodeData
+
+        render(<ArrayInput inputParam={nestedArrayParam} data={dataWithNestedArray} onDataChange={mockOnDataChange} />)
+
+        // The parent array item renders
+        expect(screen.getByText('0')).toBeInTheDocument()
+
+        // The nested array sub-field (addOptions) is rendered via NodeInputHandler
+        // Since our mock NodeInputHandler renders a div with data-testid, the addOptions field should appear
+        expect(screen.getByTestId('input-handler-addOptions')).toBeInTheDocument()
+    })
+
+    it('should hide nested array sub-fields when display is false', () => {
+        const nestedArrayParam: InputParam = {
+            id: 'formInputTypes',
+            name: 'formInputTypes',
+            label: 'Form Input Type',
+            type: 'array',
+            array: [
+                { id: 'type', name: 'type', label: 'Type', type: 'options' } as InputParam,
+                {
+                    id: 'addOptions',
+                    name: 'addOptions',
+                    label: 'Add Options',
+                    type: 'array',
+                    display: false,
+                    array: [{ id: 'option', name: 'option', label: 'Option', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+        }
+
+        const dataWithNestedArray: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                formInputTypes: [{ type: 'string', label: 'Name' }]
+            }
+        } as NodeData
+
+        render(<ArrayInput inputParam={nestedArrayParam} data={dataWithNestedArray} onDataChange={mockOnDataChange} />)
+
+        expect(screen.getByTestId('input-handler-type')).toBeInTheDocument()
+        expect(screen.queryByTestId('input-handler-addOptions')).not.toBeInTheDocument()
+    })
+
+    it('should use itemParameters to control nested array visibility per row', () => {
+        const nestedArrayParam: InputParam = {
+            id: 'formInputTypes',
+            name: 'formInputTypes',
+            label: 'Form Input Type',
+            type: 'array',
+            array: [
+                { id: 'type', name: 'type', label: 'Type', type: 'options' } as InputParam,
+                {
+                    id: 'addOptions',
+                    name: 'addOptions',
+                    label: 'Add Options',
+                    type: 'array',
+                    array: [{ id: 'option', name: 'option', label: 'Option', type: 'string' } as InputParam]
+                } as InputParam
+            ]
+        }
+
+        const dataWithTwoRows: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                formInputTypes: [
+                    { type: 'options', label: 'Color', addOptions: [{ option: 'Red' }] },
+                    { type: 'string', label: 'Name' }
+                ]
+            }
+        } as NodeData
+
+        // Row 0: addOptions visible (type = options)
+        // Row 1: addOptions hidden (type = string)
+        const itemParameters: InputParam[][] = [
+            [
+                { id: 'type', name: 'type', label: 'Type', type: 'options', display: true } as InputParam,
+                { id: 'addOptions', name: 'addOptions', label: 'Add Options', type: 'array', display: true } as InputParam
+            ],
+            [
+                { id: 'type', name: 'type', label: 'Type', type: 'options', display: true } as InputParam,
+                { id: 'addOptions', name: 'addOptions', label: 'Add Options', type: 'array', display: false } as InputParam
+            ]
+        ]
+
+        render(
+            <ArrayInput
+                inputParam={nestedArrayParam}
+                data={dataWithTwoRows}
+                onDataChange={mockOnDataChange}
+                itemParameters={itemParameters}
+            />
+        )
+
+        // Both rows show their Type field
+        expect(screen.getAllByTestId('input-handler-type')).toHaveLength(2)
+
+        // Only row 0 shows addOptions (row 1 has display: false)
+        expect(screen.getAllByTestId('input-handler-addOptions')).toHaveLength(1)
+    })
+
+    // Test 13: itemParameters prop overrides inputParam.array display flags
     it('should use itemParameters prop for field visibility when provided, ignoring inputParam.array display flags', () => {
         // inputParam.array has both fields with no display flag (both would show)
         const dataWithItem: NodeData = {
             ...mockNodeData,
-            inputValues: { testArray: [{ field1: 'value', field2: 10 }] }
+            inputs: { testArray: [{ field1: 'value', field2: 10 }] }
         } as NodeData
 
         // Parent (EditNodeDialog) has evaluated field2 as hidden
@@ -341,7 +474,7 @@ describe('ArrayInput', () => {
 
         const dataWithOneItem: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 testArray: [{ field1: 'value1', field2: 10 }]
             }
         } as NodeData

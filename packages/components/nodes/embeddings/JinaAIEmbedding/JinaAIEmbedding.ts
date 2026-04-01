@@ -25,7 +25,7 @@ class JinaAIEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Jina Embeddings'
+        this.label = 'Jina Embedding'
         this.name = 'jinaEmbeddings'
         this.version = 3.0
         this.type = 'JinaEmbeddings'

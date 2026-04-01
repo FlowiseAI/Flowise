@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { getFileFromStorage, handleEscapeCharacters } from '../../../src'
 
@@ -102,7 +102,7 @@ class Docx_DocumentLoaders implements INode {
             for (const file of files) {
                 if (!file) continue
                 const fileData = await getFileFromStorage(file, orgId, chatflowid)
-                const blob = new Blob([fileData])
+                const blob = new Blob([new Uint8Array(fileData)])
                 const loader = new DocxLoader(blob)
 
                 if (textSplitter) {

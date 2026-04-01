@@ -4,8 +4,6 @@
 
 import type { InternalAxiosRequestConfig } from 'axios'
 
-import type { NodeData } from './node'
-
 export type RequestInterceptor = (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig
 
 export interface Chatflow {
@@ -26,13 +24,16 @@ export interface ApiResponse<T> {
     status: number
 }
 
-export type ChatModel = Omit<NodeData, 'id'>
-
-export interface Tool {
+export interface NodeOption {
     label: string
     name: string
+    description?: string
     imageSrc?: string
 }
+
+export type ChatModel = NodeOption
+
+export type Tool = NodeOption
 
 export interface Credential {
     id: string
@@ -41,4 +42,31 @@ export interface Credential {
     createdDate?: string
     updatedDate?: string
     workspaceID?: string
+}
+
+export interface CredentialSchemaInput {
+    label: string
+    name: string
+    type: 'password' | 'string' | 'number' | 'boolean' | 'options' | 'json'
+    default?: unknown
+    optional?: boolean
+    description?: string
+    placeholder?: string
+    options?: Array<{ label: string; name: string }>
+    hidden?: boolean
+    rows?: number
+    warning?: string
+}
+
+export interface ComponentCredentialSchema {
+    label: string
+    name: string
+    description?: string
+    inputs?: CredentialSchemaInput[]
+}
+
+export interface CreateCredentialBody {
+    name: string
+    credentialName: string
+    plainDataObj: Record<string, unknown>
 }

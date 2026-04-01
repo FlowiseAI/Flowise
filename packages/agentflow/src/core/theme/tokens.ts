@@ -41,6 +41,8 @@ const baseColors = {
     success: '#4caf50',
     error: '#f44336',
     warning: '#ff9800',
+    warningBg: '#fefcbf',
+    warningText: '#744210',
     info: '#2196f3',
 
     // Node type colors (brand colors)
@@ -112,6 +114,8 @@ export const tokens = {
             success: baseColors.success,
             error: baseColors.error,
             warning: baseColors.warning,
+            warningBg: baseColors.warningBg,
+            warningText: baseColors.warningText,
             info: baseColors.info
         },
 
@@ -126,6 +130,20 @@ export const tokens = {
             background: {
                 dots: { light: baseColors.darkGray800, dark: baseColors.darkGray700 }
             }
+        },
+
+        // Syntax highlight colors for code blocks (TipTap/lowlight)
+        syntaxHighlight: {
+            background: { light: '#f5f5f5', dark: '#2d2d2d' },
+            text: { light: '#333333', dark: '#d4d4d4' },
+            comment: { light: '#6a9955', dark: '#6a9955' },
+            variable: { light: '#d73a49', dark: '#9cdcfe' },
+            number: { light: '#e36209', dark: '#b5cea8' },
+            string: { light: '#22863a', dark: '#ce9178' },
+            title: { light: '#6f42c1', dark: '#dcdcaa' },
+            keyword: { light: '#005cc5', dark: '#569cd6' },
+            operator: { light: '#333333', dark: '#d4d4d4' },
+            punctuation: { light: '#333333', dark: '#d4d4d4' }
         },
 
         // Gradient definitions - referenced from base
@@ -157,6 +175,17 @@ export const tokens = {
         minimap: '0 2px 8px rgba(0, 0, 0, 0.1)',
         controls: '0 2px 8px rgba(0, 0, 0, 0.1)',
         stickyNote: '0 2px 4px rgba(0, 0, 0, 0.1)'
+    },
+
+    // Typography
+    typography: {
+        /** Matches MUI OutlinedInput's default line-height (1.4375em) so the
+         *  RichTextEditor aligns with standard TextField height at the same row count. */
+        rowHeightRem: 1.4375,
+        /** Single-line editor height — approximates MUI small input (38.4px) */
+        singleLineHeightRem: 2.4,
+        /** Tighter line-height for single-line mode to vertically center text */
+        singleLineLineHeightEm: 0.875
     },
 
     // Border radius scale

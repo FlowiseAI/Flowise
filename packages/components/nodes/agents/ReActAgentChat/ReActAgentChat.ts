@@ -1,12 +1,12 @@
 import { flatten } from 'lodash'
-import { AgentExecutor } from 'langchain/agents'
+import { AgentExecutor } from '@langchain/classic/agents'
 import { ChatPromptTemplate, HumanMessagePromptTemplate } from '@langchain/core/prompts'
 import { Tool } from '@langchain/core/tools'
 import type { PromptTemplate } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { pull } from 'langchain/hub'
 import { additionalCallbacks } from '../../../src/handler'
-import { IVisionChatModal, FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { createReactAgent } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
@@ -24,6 +24,8 @@ class ReActAgentChat_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
+    badge: string
+    deprecateMessage: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'ReAct Agent for Chat Models'
@@ -33,6 +35,9 @@ class ReActAgentChat_Agents implements INode {
         this.category = 'Agents'
         this.icon = 'agent.svg'
         this.description = 'Agent that uses the ReAct logic to decide what action to take, optimized to be used with Chat Models'
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage =
+            'ReAct Agent for Chat Models is deprecated and will be removed in a future release. Use Agent from AgentFlow instead.'
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
         this.inputs = [
             {
@@ -100,14 +105,10 @@ class ReActAgentChat_Agents implements INode {
         let chatPromptTemplate = undefined
 
         if (llmSupportsVision(model)) {
-            const visionChatModel = model as IVisionChatModal
             const messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
 
             if (messageContent?.length) {
-                // Change model to vision supported
-                visionChatModel.setVisionModel()
                 const oldTemplate = prompt.template as string
-
                 const msg = HumanMessagePromptTemplate.fromTemplate([
                     ...messageContent,
                     {
@@ -116,9 +117,6 @@ class ReActAgentChat_Agents implements INode {
                 ])
                 msg.inputVariables = prompt.inputVariables
                 chatPromptTemplate = ChatPromptTemplate.fromMessages([msg])
-            } else {
-                // revert to previous values if image upload is empty
-                visionChatModel.revertToOriginalModel()
             }
         }
 

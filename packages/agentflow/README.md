@@ -21,6 +21,23 @@
 
 `@flowiseai/agentflow` is a React-based flow editor for creating AI agent workflows. It provides a visual canvas built on ReactFlow for connecting AI agents, LLMs, tools, and logic nodes.
 
+## Features
+
+-   **Visual Canvas** — Drag-and-drop flow editor built on ReactFlow with zoom, pan, minimap, and fit-to-view controls
+-   **15 Built-in Node Types** — Start, Agent, LLM, Condition, Condition Agent, Human Input, Loop, Direct Reply, Custom Function, Tool, Retriever, Sticky Note, HTTP, Iteration, and Execute Flow
+-   **Node Editor Dialog** — Modal for editing node parameters with dynamic input types (text, number, boolean, dropdown, arrays, JSON, code, variable selector, async options)
+-   **Credential Management** — Create and edit credentials inline from the node editor
+-   **Rich Text Editor** — TipTap-based editor with syntax highlighting for JavaScript, TypeScript, Python, and JSON (lazy-loaded)
+-   **Specialized Input Components** — Condition builder, messages input (role + content), and structured output schema builder
+-   **AI Flow Generator** — Generate flows from natural language descriptions with model selection
+-   **Flow Validation** — Detects empty flows, missing start nodes, disconnected nodes, cycles, hanging edges, and per-node input errors with visual feedback
+-   **Dark Mode** — Full light/dark theme support via design tokens and CSS variables
+-   **Read-Only Mode** — Disable editing for view-only embedding
+-   **Custom Rendering** — Replace the default header and node palette with your own components via render props
+-   **Imperative API** — Programmatic control via ref (`getFlow`, `validate`, `fitView`, `clear`, `addNode`, `toJSON`)
+-   **Request Interceptor** — Customize outgoing API requests (headers, credentials) via an Axios interceptor callback
+-   **Keyboard Shortcuts** — Cmd/Ctrl+S to save
+
 ## Installation
 
 ```bash
@@ -46,7 +63,7 @@ export default function App() {
             <Agentflow apiBaseUrl='http://localhost:3000' token='your-api-key' />
         </div>
     )
-}
+}
 ```
 
 ### With Initial Flow Data and Callbacks
@@ -93,7 +110,7 @@ export default function App() {
             />
         </div>
     )
-}
+}
 ```
 
 ## Props
@@ -138,6 +155,29 @@ The `requestInterceptor` callback runs inside the Axios request pipeline and has
 -   Only pass **trusted, developer-authored** functions. Never use dynamically evaluated code (`eval`, `new Function`, etc.) or user-generated input as the interceptor.
 -   Follow the **principle of least privilege** — only read or modify the specific config properties you need (e.g., `withCredentials`, custom headers).
 -   If the interceptor throws, the error is caught, logged, and the **original unmodified config** is used so the request still proceeds safely.
+
+### Node Types
+
+The following node types are available in the palette by default. Use the `components` prop to restrict which types are shown.
+
+<!-- prettier-ignore -->
+| Node Type                  | Description                          |
+| -------------------------- | ------------------------------------ |
+| `startAgentflow`           | Entry point (required, always shown) |
+| `agentAgentflow`           | AI agent execution                   |
+| `llmAgentflow`             | LLM / language model call            |
+| `conditionAgentflow`       | Conditional branching                |
+| `conditionAgentAgentflow`  | Agent-level conditional branching    |
+| `humanInputAgentflow`      | Wait for user input                  |
+| `loopAgentflow`            | Loop / iteration                     |
+| `directReplyAgentflow`     | Direct response to user              |
+| `customFunctionAgentflow`  | Custom JavaScript function           |
+| `toolAgentflow`            | Tool integration                     |
+| `retrieverAgentflow`       | Data retrieval                       |
+| `stickyNoteAgentflow`      | Canvas annotation (not connectable)  |
+| `httpAgentflow`            | HTTP request                         |
+| `iterationAgentflow`       | Iteration / map-reduce container     |
+| `executeFlowAgentflow`     | Execute a sub-flow                   |
 
 ### Design Note
 

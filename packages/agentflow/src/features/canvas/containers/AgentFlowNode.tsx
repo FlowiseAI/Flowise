@@ -7,7 +7,6 @@ import type { NodeData } from '@/core/types'
 import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { NodeIcon } from '../components/NodeIcon'
-import { NodeInfoDialog } from '../components/NodeInfoDialog'
 import { NodeInputHandle } from '../components/NodeInputHandle'
 import { NodeModelConfigs } from '../components/NodeModelConfigs'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
@@ -16,6 +15,8 @@ import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useOpenNodeEditor } from '../hooks'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
+
+import { NodeInfoDialog } from './NodeInfoDialog'
 
 /** Width of the node icon container in pixels (theme.spacing(6.25) = 50px) */
 const NODE_ICON_CONTAINER_WIDTH = 50
@@ -104,7 +105,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                             >
                                 {data.label}
                             </Typography>
-                            <NodeModelConfigs inputs={data.inputValues} />
+                            <NodeModelConfigs inputs={data.inputs} />
                         </Box>
                     </Box>
 
@@ -118,14 +119,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 </Box>
             </CardWrapper>
 
-            <NodeInfoDialog
-                open={showInfoDialog}
-                onClose={() => setShowInfoDialog(false)}
-                label={data.label}
-                name={data.name}
-                nodeId={data.id}
-                description={data.description}
-            />
+            <NodeInfoDialog open={showInfoDialog} onClose={() => setShowInfoDialog(false)} data={data} />
         </div>
     )
 }

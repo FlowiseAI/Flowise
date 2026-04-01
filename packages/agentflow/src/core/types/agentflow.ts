@@ -7,7 +7,7 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import type { RequestInterceptor } from './api'
 import type { FlowData, FlowDataCallback, FlowNode } from './flow'
-import type { NodeData } from './node'
+import type { NodeDataSchema } from './node'
 import type { ValidationResult } from './validation'
 
 // ============================================================================
@@ -23,7 +23,7 @@ export interface HeaderRenderProps {
 }
 
 export interface PaletteRenderProps {
-    availableNodes: NodeData[]
+    availableNodes: NodeDataSchema[]
     onAddNode: (nodeType: string, position?: { x: number; y: number }) => void
 }
 
@@ -41,7 +41,7 @@ export interface AgentflowProps {
     /** Initial flow data to render */
     initialFlow?: FlowData
 
-    /** Flow ID for loading existing flow */
+    /** Flow ID (placeholder — not yet implemented; reserved for future use such as executing or prediction API) */
     flowId?: string
 
     /** Array of allowed node component names to show in palette */

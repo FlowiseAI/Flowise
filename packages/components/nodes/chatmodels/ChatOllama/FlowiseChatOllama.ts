@@ -13,15 +13,7 @@ export class ChatOllama extends LCChatOllama implements IVisionChatModal {
         this.configuredModel = fields?.model ?? ''
     }
 
-    revertToOriginalModel(): void {
-        this.model = this.configuredModel
-    }
-
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
-    }
-
-    setVisionModel(): void {
-        // pass
     }
 }

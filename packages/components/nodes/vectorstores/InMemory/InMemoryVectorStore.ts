@@ -1,5 +1,5 @@
 import { flatten } from 'lodash'
-import { MemoryVectorStore } from 'langchain/vectorstores/memory'
+import { MemoryVectorStore } from '@langchain/classic/vectorstores/memory'
 import { Embeddings } from '@langchain/core/embeddings'
 import { Document } from '@langchain/core/documents'
 import { INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'

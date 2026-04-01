@@ -23,16 +23,14 @@ export const addImagesToMessages = async (
                     imageContent.push({
                         type: 'image_url',
                         image_url: {
-                            url: bf,
-                            detail: multiModalOption.image.imageResolution ?? 'low'
+                            url: bf
                         }
                     })
                 } else if (upload.type == 'url' && bf) {
                     imageContent.push({
                         type: 'image_url',
                         image_url: {
-                            url: bf,
-                            detail: multiModalOption.image.imageResolution ?? 'low'
+                            url: bf
                         }
                     })
                 }
@@ -50,4 +48,5 @@ export const getImageUploads = (uploads: IFileUpload[]) => {
     return uploads.filter((upload: IFileUpload) => upload.mime.startsWith('image/'))
 }
 
-export const llmSupportsVision = (value: any): value is IVisionChatModal => !!value?.multiModalOption
+export const llmSupportsVision = (value: any): value is IVisionChatModal =>
+    !!value?.multiModalOption && value.multiModalOption.image?.allowImageUploads === true

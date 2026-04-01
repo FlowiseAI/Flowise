@@ -1,4 +1,4 @@
-import { makeFlowEdge, makeFlowNode, makeNodeData } from '@test-utils/factories'
+import { makeFlowEdge, makeFlowNode, makeNodeDataSchema } from '@test-utils/factories'
 
 import type { FlowEdge, FlowNode } from '../types'
 
@@ -121,8 +121,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
-                inputValues: {}
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
+                inputs: {}
             }
         }
         const errors = validateNode(node)
@@ -136,12 +136,37 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: true }],
-                inputValues: {}
+                inputParams: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: true }],
+                inputs: {}
             }
         }
         const errors = validateNode(node)
         expect(errors).toHaveLength(0)
+    })
+
+    it('should not warn when required field has a default value and no explicit input value', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'agentAgentflow'),
+            data: {
+                id: 'a',
+                name: 'agentAgentflow',
+                label: 'Agent',
+                inputParams: [
+                    {
+                        id: 'p1',
+                        name: 'agentReturnResponseAs',
+                        label: 'Return Response As',
+                        type: 'options',
+                        optional: false,
+                        default: 'userMessage'
+                    }
+                ],
+                inputs: {}
+            }
+        }
+        const errors = validateNode(node)
+        const responseErrors = errors.filter((e) => e.message.includes('Return Response As'))
+        expect(responseErrors).toHaveLength(0)
     })
 
     it('should skip hidden fields (show condition not met)', () => {
@@ -151,8 +176,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: false, show: { mode: 'api' } }],
-                inputValues: { mode: 'local' }
+                inputParams: [{ id: 'p1', name: 'apiKey', label: 'API Key', type: 'string', optional: false, show: { mode: 'api' } }],
+                inputs: { mode: 'local' }
             }
         }
         const errors = validateNode(node)
@@ -168,8 +193,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
-                inputValues: {}
+                inputParams: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
+                inputs: {}
             }
         }
         const errors = validateNode(node)
@@ -186,8 +211,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
-                inputValues: { credential: 'some-credential-id' }
+                inputParams: [{ id: 'cred', name: 'credential', label: 'Credential', type: 'string', optional: false }],
+                inputs: { credential: 'some-credential-id' }
             }
         }
         const errors = validateNode(node)
@@ -203,7 +228,7 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'conditionAgentflow',
                 label: 'Condition',
-                inputs: [
+                inputParams: [
                     {
                         id: 'conds',
                         name: 'conditions',
@@ -212,7 +237,7 @@ describe('validateNode', () => {
                         array: [{ id: 'f1', name: 'fieldName', label: 'Field Name', type: 'string', optional: false }]
                     }
                 ],
-                inputValues: {
+                inputs: {
                     conditions: [{ fieldName: '' }, { fieldName: 'valid' }]
                 }
             }
@@ -223,10 +248,157 @@ describe('validateNode', () => {
         expect(item2Errors).toHaveLength(0)
     })
 
+    // --- asyncOptions / asyncMultiOptions validation ---
+    it('should warn when required asyncOptions field is visible and empty', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
+                inputs: {}
+            }
+        }
+        const errors = validateNode(node)
+        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Model is required' }))
+    })
+
+    it('should not warn when asyncOptions field has a selected value', () => {
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' }],
+                inputs: { model: 'gpt-4o' }
+            }
+        }
+        const errors = validateNode(node)
+        const modelErrors = errors.filter((e) => e.message.includes('Model'))
+        expect(modelErrors).toHaveLength(0)
+    })
+
+    it('should not warn about a field that is hidden by an asyncOptions value', () => {
+        // Field B has show: { model: 'gpt-4o' }. When model !== 'gpt-4o', field B is hidden.
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputParams: [
+                    { id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' },
+                    { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false, show: { model: 'gpt-4o' } }
+                ],
+                inputs: { model: 'claude-3' } // temperature is hidden
+            }
+        }
+        const errors = validateNode(node)
+        const tempErrors = errors.filter((e) => e.message.includes('Temperature'))
+        expect(tempErrors).toHaveLength(0)
+    })
+
+    it('should warn about a required field made visible by asyncOptions value', () => {
+        // When model === 'gpt-4o', Temperature becomes required and is empty.
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                inputParams: [
+                    { id: 'p1', name: 'model', label: 'Model', type: 'asyncOptions', optional: false, loadMethod: 'listModels' },
+                    { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false, show: { model: 'gpt-4o' } }
+                ],
+                inputs: { model: 'gpt-4o' } // temperature is visible but empty
+            }
+        }
+        const errors = validateNode(node)
+        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Temperature is required' }))
+    })
+
+    it('should correctly resolve asyncMultiOptions JSON array value for show/hide conditions', () => {
+        // Field B shows when tools includes 'calculator'. asyncMultiOptions stores as JSON array string.
+        const node: FlowNode = {
+            ...makeNode('a', 'agentNode'),
+            data: {
+                id: 'a',
+                name: 'agentNode',
+                label: 'Agent',
+                inputParams: [
+                    { id: 'p1', name: 'tools', label: 'Tools', type: 'asyncMultiOptions', optional: true, loadMethod: 'listTools' },
+                    {
+                        id: 'p2',
+                        name: 'calcConfig',
+                        label: 'Calculator Config',
+                        type: 'string',
+                        optional: false,
+                        show: { tools: ['calculator'] }
+                    }
+                ],
+                // JSON array string — calcConfig should be visible
+                inputs: { tools: '["calculator","search"]' }
+            }
+        }
+        const errors = validateNode(node)
+        // calcConfig is visible and empty → should be flagged
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Calculator Config is required' }))
+    })
+
+    // --- availableNodes schema fallback ---
+    it('should use availableNodes input definitions when node.data.inputParams is missing', () => {
+        const availableNodes = [
+            makeNodeDataSchema({
+                name: 'llmAgentflow',
+                inputs: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }]
+            })
+        ]
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                // No inputParams on node — schema comes from availableNodes
+                inputs: {}
+            }
+        }
+        const errors = validateNode(node, availableNodes)
+        expect(errors).toContainEqual(expect.objectContaining({ type: 'warning', message: 'Model is required' }))
+    })
+
+    it('should prefer availableNodes schema over node.data.inputParams', () => {
+        const availableNodes = [
+            makeNodeDataSchema({
+                name: 'llmAgentflow',
+                inputs: [
+                    { id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false },
+                    { id: 'p2', name: 'temperature', label: 'Temperature', type: 'number', optional: false }
+                ]
+            })
+        ]
+        const node: FlowNode = {
+            ...makeNode('a', 'llmAgentflow'),
+            data: {
+                id: 'a',
+                name: 'llmAgentflow',
+                label: 'LLM',
+                // Stale/partial inputParams on node — availableNodes has the full schema
+                inputParams: [{ id: 'p1', name: 'model', label: 'Model', type: 'string', optional: false }],
+                inputs: {}
+            }
+        }
+        const errors = validateNode(node, availableNodes)
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Model is required' }))
+        expect(errors).toContainEqual(expect.objectContaining({ message: 'Temperature is required' }))
+    })
+
     // --- Nested config validation ---
     it('should validate nested component config required fields', () => {
         const availableNodes = [
-            makeNodeData({
+            makeNodeDataSchema({
                 name: 'openAIChat',
                 inputs: [{ id: 'ak', name: 'apiKey', label: 'API Key', type: 'string', optional: false }]
             })
@@ -237,8 +409,8 @@ describe('validateNode', () => {
                 id: 'a',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputs: [{ id: 'model', name: 'model', label: 'Chat Model', type: 'string' }],
-                inputValues: {
+                inputParams: [{ id: 'model', name: 'model', label: 'Chat Model', type: 'string' }],
+                inputs: {
                     model: 'openAIChat',
                     modelConfig: { apiKey: '' }
                 }

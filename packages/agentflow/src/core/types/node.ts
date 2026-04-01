@@ -2,8 +2,11 @@
 // Node & Edge Data Types
 // ============================================================================
 
-export interface NodeData {
-    id: string
+/**
+ * Shared metadata between GET /api/v1/nodes payloads and canvas {@link NodeData}.
+ * Excludes `inputs` (API: schema array vs canvas: value map) and other API-only or canvas-only fields.
+ */
+export interface NodeDefinitionBase {
     name: string
     label: string
     type?: string
@@ -11,23 +14,37 @@ export interface NodeData {
     description?: string
     version?: number
     baseClasses?: string[]
-    inputs?: InputParam[] // Parameter definitions from API
-    inputValues?: Record<string, unknown> // Actual values entered by users
     outputs?: NodeOutput[]
-    inputAnchors?: InputAnchor[]
-    outputAnchors?: OutputAnchor[]
-    // Visual properties
     color?: string
     icon?: string
-    selected?: boolean
     hideInput?: boolean
+    badge?: string
+    tags?: string[]
+    documentation?: string
+    credential?: { credentialNames?: string[]; label?: string; type?: string; optional?: boolean }
+    inputAnchors?: InputAnchor[]
+    outputAnchors?: OutputAnchor[]
+    selected?: boolean
+    [key: string]: unknown
+}
+
+/**
+ * Used for GET /api/v1/nodes, the node palette, drag payloads, and `initNode()` → {@link NodeData}.
+ */
+export interface NodeDataSchema extends NodeDefinitionBase {
+    inputs?: InputParam[] // Schema array (from API or equivalent definitions)
+}
+
+export interface NodeData extends NodeDefinitionBase {
+    id: string
+    inputParams?: InputParam[] // Parameter definitions
+    inputs?: Record<string, unknown> // Actual values entered by users
     // Status properties
     status?: 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'STOPPED' | 'TERMINATED'
     error?: string
     warning?: string
     hint?: string
     validationErrors?: string[]
-    [key: string]: unknown
 }
 
 export interface NodeInput {
@@ -57,6 +74,7 @@ export interface OutputAnchor {
     name: string
     label: string
     type: string
+    description?: string
 }
 
 export interface InputParam {
@@ -66,7 +84,7 @@ export interface InputParam {
     type: string
     default?: unknown
     optional?: boolean
-    options?: Array<{ label: string; name: string } | string>
+    options?: Array<{ label: string; name: string; description?: string } | string>
     placeholder?: string
     rows?: number
     description?: string
@@ -76,8 +94,23 @@ export interface InputParam {
     hide?: Record<string, unknown>
     display?: boolean
     minItems?: number
-    maxItems?: number
+    maxItems?: number // No agentflow nodes set this today — supported for forward-compat
     array?: InputParam[] // Sub-field definitions for array-type params
+    loadMethod?: string // Registry key for async option loading (asyncOptions / asyncMultiOptions)
+    loadConfig?: boolean // When true, renders a config accordion beneath the async dropdown for the selected component
+    credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
+    codeLanguage?: string // Language hint for code editor (e.g. 'javascript', 'python', 'json')
+    codeExample?: string // Example code snippet shown via an "Example" button
+}
+
+export interface NodeConfigEntry {
+    node: string
+    nodeId: string
+    label: string
+    name: string
+    type: string
+    enabled?: boolean
+    schema?: Record<string, string> | Array<{ name: string; type: string }>
 }
 
 export interface EdgeData {
