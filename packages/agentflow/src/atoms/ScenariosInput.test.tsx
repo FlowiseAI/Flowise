@@ -25,9 +25,12 @@ jest.mock('./NodeInputHandler', () => ({
 }))
 
 jest.mock('@tabler/icons-react', () => ({
-    IconInfoCircle: () => <span data-testid='icon-info' />,
     IconPlus: () => <span data-testid='icon-plus' />,
     IconTrash: () => <span data-testid='icon-trash' />
+}))
+
+jest.mock('./TooltipWithParser', () => ({
+    TooltipWithParser: ({ title }: { title: string }) => <span data-testid='tooltip-with-parser'>{title}</span>
 }))
 
 const scenarioInputParam: InputParam = {
@@ -42,7 +45,7 @@ const mockNodeData = makeNodeData({
     id: 'conditionAgentAgentflow_0',
     name: 'conditionAgentAgentflow',
     label: 'Condition Agent',
-    inputValues: {}
+    inputs: {}
 })
 
 describe('ScenariosInput', () => {
@@ -61,13 +64,13 @@ describe('ScenariosInput', () => {
         const paramWithDesc: InputParam = { ...scenarioInputParam, description: 'Define scenarios for splitting' }
         render(<ScenariosInput inputParam={paramWithDesc} data={mockNodeData} onDataChange={mockOnDataChange} />)
 
-        expect(screen.getByTestId('icon-info')).toBeInTheDocument()
+        expect(screen.getByTestId('tooltip-with-parser')).toBeInTheDocument()
     })
 
     it('should render scenario items with "Scenario N" labels', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }, { scenario: 'User is angry' }]
             }
         })
@@ -105,7 +108,7 @@ describe('ScenariosInput', () => {
     it('should delete a scenario item', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }, { scenario: 'User is angry' }]
             }
         })
@@ -124,7 +127,7 @@ describe('ScenariosInput', () => {
     it('should handle nested field changes within a scenario', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }]
             }
         })
@@ -143,7 +146,7 @@ describe('ScenariosInput', () => {
     it('should disable buttons when disabled prop is true', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }]
             }
         })
@@ -158,7 +161,7 @@ describe('ScenariosInput', () => {
         const inputParamWithMin: InputParam = { ...scenarioInputParam, minItems: 1 }
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }]
             }
         })
@@ -171,7 +174,7 @@ describe('ScenariosInput', () => {
     it('should render fields for each scenario item', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }, { scenario: 'User is angry' }]
             }
         })
@@ -184,7 +187,7 @@ describe('ScenariosInput', () => {
     it('should append to existing scenarios when adding', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'Existing scenario' }]
             }
         })

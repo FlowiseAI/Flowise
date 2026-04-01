@@ -4,6 +4,7 @@ import { Box, Button, Chip, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 
+import { getDefaultValueForType } from '@/core/primitives'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
@@ -39,8 +40,8 @@ export function ArrayInput({
     // Derive array items directly from props (single source of truth)
     // Memoized to prevent unnecessary re-renders of child hooks
     const arrayItems = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as Record<string, unknown>[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(arrayItems.length, 'item')
@@ -75,23 +76,7 @@ export function ArrayInput({
 
         if (inputParam.array) {
             for (const field of inputParam.array) {
-                if (field.default !== undefined) {
-                    newItem[field.name] = field.default
-                } else {
-                    switch (field.type) {
-                        case 'number':
-                            newItem[field.name] = 0
-                            break
-                        case 'boolean':
-                            newItem[field.name] = false
-                            break
-                        case 'array':
-                            newItem[field.name] = []
-                            break
-                        default:
-                            newItem[field.name] = ''
-                    }
-                }
+                newItem[field.name] = getDefaultValueForType(field)
             }
         }
 
@@ -132,7 +117,7 @@ export function ArrayInput({
                 // Create item-specific data context for nested NodeInputHandler
                 const itemData: NodeData = {
                     ...data,
-                    inputValues: itemValues
+                    inputs: itemValues
                 }
 
                 return (

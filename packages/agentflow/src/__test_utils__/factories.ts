@@ -1,4 +1,4 @@
-import type { FlowEdge, FlowNode, NodeData } from '@/core/types'
+import type { FlowEdge, FlowNode, NodeData, NodeDataSchema } from '@/core/types'
 
 /**
  * Create a {@link FlowNode} with sensible defaults.
@@ -48,3 +48,15 @@ export const makeFlowEdge = (source: string, target: string, overrides?: Partial
  */
 export const makeNodeData = (overrides?: Partial<NodeData>): NodeData =>
     ({ id: '', name: 'testNode', label: 'Test Node', ...overrides } as NodeData)
+
+/**
+ * Create a {@link NodeDataSchema} descriptor (component definition / catalog shape).
+ *
+ * Useful for testing initNode, validateFlow/validateNode (availableNodes), and nodeFactory.
+ *
+ * @example
+ * makeNodeDataSchema()
+ * makeNodeDataSchema({ name: 'llmAgentflow', inputs: [{ id: '', name: 'temp', label: 'Temperature', type: 'number' }] })
+ */
+export const makeNodeDataSchema = (overrides?: Partial<NodeDataSchema>): NodeDataSchema =>
+    ({ name: 'testNode', label: 'Test Node', ...overrides } as NodeDataSchema)

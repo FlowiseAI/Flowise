@@ -1,13 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Tooltip, Typography } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
-import { IconArrowsMaximize, IconInfoCircle, IconPlus, IconTrash } from '@tabler/icons-react'
+import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Typography } from '@mui/material'
+import { alpha, useTheme } from '@mui/material/styles'
+import { IconArrowsMaximize, IconPlus, IconTrash } from '@tabler/icons-react'
 
 import { ExpandTextDialog } from '@/atoms'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { CodeInput } from './CodeInput'
+import { TooltipWithParser } from './TooltipWithParser'
 import { useStableKeys } from './useStableKeys'
 
 const OUTPUT_TYPES = [
@@ -45,8 +46,8 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
     const theme = useTheme()
 
     const entries = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as StructuredOutputEntry[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as StructuredOutputEntry[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(entries.length, 'output')
@@ -102,7 +103,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         mt: 2,
                         mb: 1,
                         border: 1,
-                        borderColor: theme.palette.grey[900] + 25,
+                        borderColor: alpha(theme.palette.grey[900], 0.25),
                         borderRadius: 2,
                         position: 'relative'
                     }}
@@ -119,7 +120,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                                 width: '35px',
                                 right: 10,
                                 top: 10,
-                                '&:hover': { color: 'red' }
+                                '&:hover': { color: theme.palette.error.main }
                             }}
                         >
                             <IconTrash />
@@ -134,7 +135,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                             <Typography>
                                 Key
-                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                                <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
                             </Typography>
                         </div>
                         <TextField
@@ -153,7 +154,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                             <Typography>
                                 Type
-                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                                <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
                             </Typography>
                         </div>
                         <Select
@@ -178,11 +179,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         <Box sx={{ p: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <Typography>Enum Values</Typography>
-                                <Tooltip title='Enum values. Separated by comma' placement='top'>
-                                    <span style={{ display: 'inline-flex', marginLeft: 6, cursor: 'pointer' }}>
-                                        <IconInfoCircle size={16} style={{ opacity: 0.6 }} />
-                                    </span>
-                                </Tooltip>
+                                <TooltipWithParser title='Enum values. Separated by comma' />
                             </div>
                             <TextField
                                 fullWidth
@@ -202,11 +199,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         <Box sx={{ p: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                 <Typography>JSON Schema</Typography>
-                                <Tooltip title='JSON schema for the structured output' placement='top'>
-                                    <span style={{ display: 'inline-flex', marginLeft: 6, cursor: 'pointer' }}>
-                                        <IconInfoCircle size={16} style={{ opacity: 0.6 }} />
-                                    </span>
-                                </Tooltip>
+                                <TooltipWithParser title='JSON schema for the structured output' />
                                 <div style={{ flexGrow: 1 }} />
                                 <IconButton
                                     size='small'
@@ -234,7 +227,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                             <Typography>
                                 Description
-                                <span style={{ color: 'red' }}>&nbsp;*</span>
+                                <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
                             </Typography>
                         </div>
                         <TextField

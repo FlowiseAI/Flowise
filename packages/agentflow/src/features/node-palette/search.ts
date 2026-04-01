@@ -1,4 +1,4 @@
-import type { NodeData } from '@/core'
+import type { NodeDataSchema } from '@/core'
 import { groupNodesByCategory } from '@/core'
 
 export { groupNodesByCategory }
@@ -85,7 +85,7 @@ export function fuzzyScore(searchTerm: string, text: string): number {
 /**
  * Score and sort nodes by fuzzy search relevance
  */
-export function searchNodes(nodes: NodeData[], searchValue: string): NodeData[] {
+export function searchNodes(nodes: NodeDataSchema[], searchValue: string): NodeDataSchema[] {
     // Return all nodes unsorted if search is empty
     if (!searchValue || searchValue.trim() === '') {
         return nodes
