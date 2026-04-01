@@ -91,15 +91,12 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamThinkingEvent(chatId: string, data: string, duration?: number) {
-        const client = this.clients.get(chatId)
-        if (client) {
-            const clientResponse = {
-                event: 'thinking',
-                data: data,
-                duration: duration
-            }
-            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        const clientResponse = {
+            event: 'thinking',
+            data: data,
+            duration: duration
         }
+        this.safeWrite(chatId, 'message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
 
     streamSourceDocumentsEvent(chatId: string, data: any) {

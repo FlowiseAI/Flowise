@@ -156,7 +156,7 @@ export class RedisEventSubscriber {
     }
 
     private handleEvent(message: string) {
-        let event: { eventType?: string; chatId?: string; chatMessageId?: string; data?: any }
+        let event: { eventType?: string; chatId?: string; chatMessageId?: string; data?: any; duration?: number }
         try {
             event = JSON.parse(message)
         } catch (err) {
@@ -164,7 +164,7 @@ export class RedisEventSubscriber {
             return
         }
 
-        const { eventType, chatId, chatMessageId, data } = event
+        const { eventType, chatId, chatMessageId, data, duration } = event
         if (!eventType || chatId === undefined) {
             logger.warn(`[RedisEventSubscriber] Invalid event shape (missing eventType or chatId):`, { event })
             return
@@ -180,6 +180,9 @@ export class RedisEventSubscriber {
                     break
                 case 'token':
                     this.sseStreamer.streamTokenEvent(chatId, data)
+                    break
+                case 'thinking':
+                    this.sseStreamer.streamThinkingEvent(chatId, typeof data === 'string' ? data : String(data ?? ''), duration)
                     break
                 case 'sourceDocuments':
                     this.sseStreamer.streamSourceDocumentsEvent(chatId, data)
