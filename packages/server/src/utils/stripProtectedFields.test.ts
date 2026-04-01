@@ -1,4 +1,4 @@
-import { PROTECTED_FIELDS, stripProtectedFields } from '../../src/utils/stripProtectedFields'
+import { PROTECTED_FIELDS, stripProtectedFields } from './stripProtectedFields'
 
 describe('stripProtectedFields', () => {
     it('removes id from input', () => {

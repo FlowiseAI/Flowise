@@ -1,18 +1,19 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { QueryRunner } from 'typeorm'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../../enterprise/services/workspace-user.service'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ChatflowType } from '../../Interface'
 import apiKeyService from '../../services/apikey'
 import chatflowsService from '../../services/chatflows'
+import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { getPageAndLimitParams } from '../../utils/pagination'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
-import { getPageAndLimitParams } from '../../utils/pagination'
-import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../../enterprise/services/workspace-user.service'
-import { QueryRunner } from 'typeorm'
-import { GeneralErrorMessage } from '../../utils/constants'
 import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
+import { stripProtectedFields } from '../../utils/stripProtectedFields'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -152,20 +153,8 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         await checkUsageLimit('flows', subscriptionId, getRunningExpressApp().usageCacheManager, existingChatflowCount + newChatflowCount)
 
         const newChatFlow = new ChatFlow()
-        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
-        if (body.name !== undefined) newChatFlow.name = body.name
-        if (body.flowData !== undefined) newChatFlow.flowData = body.flowData
-        if (body.deployed !== undefined) newChatFlow.deployed = body.deployed
-        if (body.isPublic !== undefined) newChatFlow.isPublic = body.isPublic
-        if (body.apikeyid !== undefined) newChatFlow.apikeyid = body.apikeyid
-        if (body.chatbotConfig !== undefined) newChatFlow.chatbotConfig = body.chatbotConfig
-        if (body.apiConfig !== undefined) newChatFlow.apiConfig = body.apiConfig
-        if (body.analytic !== undefined) newChatFlow.analytic = body.analytic
-        if (body.speechToText !== undefined) newChatFlow.speechToText = body.speechToText
-        if (body.textToSpeech !== undefined) newChatFlow.textToSpeech = body.textToSpeech
-        if (body.followUpPrompts !== undefined) newChatFlow.followUpPrompts = body.followUpPrompts
-        if (body.category !== undefined) newChatFlow.category = body.category
-        if (body.type !== undefined) newChatFlow.type = body.type
+        Object.assign(newChatFlow, stripProtectedFields(body))
+
         newChatFlow.workspaceId = workspaceId
         const apiResponse = await chatflowsService.saveChatflow(
             newChatFlow,
@@ -207,20 +196,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
         const updateChatFlow = new ChatFlow()
-        // Explicit allowlist — id/workspaceId/timestamps must not be overrideable by client
-        if (body.name !== undefined) updateChatFlow.name = body.name
-        if (body.flowData !== undefined) updateChatFlow.flowData = body.flowData
-        if (body.deployed !== undefined) updateChatFlow.deployed = body.deployed
-        if (body.isPublic !== undefined) updateChatFlow.isPublic = body.isPublic
-        if (body.apikeyid !== undefined) updateChatFlow.apikeyid = body.apikeyid
-        if (body.chatbotConfig !== undefined) updateChatFlow.chatbotConfig = body.chatbotConfig
-        if (body.apiConfig !== undefined) updateChatFlow.apiConfig = body.apiConfig
-        if (body.analytic !== undefined) updateChatFlow.analytic = body.analytic
-        if (body.speechToText !== undefined) updateChatFlow.speechToText = body.speechToText
-        if (body.textToSpeech !== undefined) updateChatFlow.textToSpeech = body.textToSpeech
-        if (body.followUpPrompts !== undefined) updateChatFlow.followUpPrompts = body.followUpPrompts
-        if (body.category !== undefined) updateChatFlow.category = body.category
-        if (body.type !== undefined) updateChatFlow.type = body.type
+        Object.assign(updateChatFlow, stripProtectedFields(body))
 
         updateChatFlow.id = chatflow.id
         const rateLimiterManager = RateLimiterManager.getInstance()
