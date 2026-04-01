@@ -2,7 +2,7 @@
  * Custom Node Example
  *
  * Demonstrates how a node can carry its own InputParam[] definitions
- * in data.inputs, bypassing the API schema. The node includes show/hide
+ * in data.inputParams, bypassing the API schema. The node includes show/hide
  * conditions so double-clicking it opens the real EditNodeDialog with
  * conditional field visibility.
  *
@@ -170,7 +170,7 @@ const customNodeInputParams: InputParam[] = [
 
 // ── Canvas flow data with a custom node carrying its own input definitions ─
 
-const initialInputValues: Record<string, unknown> = { provider: '', enableMemory: false, outputFormat: 'text' }
+const initialInputs: Record<string, unknown> = { provider: '', enableMemory: false, outputFormat: 'text' }
 
 const canvasFlow: FlowData = {
     nodes: [
@@ -183,8 +183,8 @@ const canvasFlow: FlowData = {
                 name: 'customNodeDemo',
                 label: 'Custom Node',
                 color: '#64B5F6',
-                inputs: customNodeInputParams,
-                inputValues: initialInputValues,
+                inputParams: customNodeInputParams,
+                inputs: initialInputs,
                 outputAnchors: [{ id: 'customNode_0-output-0', name: 'output', label: 'Output', type: 'string' }]
             }
         }
@@ -277,12 +277,12 @@ function VisibilityStatePanel({ inputValues }: { inputValues: Record<string, unk
 // ── Component ──────────────────────────────────────────────────────────────
 
 export function CustomNodeExample() {
-    const [inputValues, setInputValues] = useState<Record<string, unknown>>(initialInputValues)
+    const [inputValues, setInputValues] = useState<Record<string, unknown>>(initialInputs)
 
     const handleFlowChange = useCallback((flow: FlowData) => {
         const node = flow.nodes.find((n) => n.id === 'customNode_0')
-        if (node?.data?.inputValues) {
-            setInputValues(node.data.inputValues)
+        if (node?.data?.inputs) {
+            setInputValues(node.data.inputs)
         }
     }, [])
 
@@ -322,7 +322,7 @@ export function CustomNodeExample() {
 export const CustomNodeExampleProps = {
     apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    initialFlow: 'FlowData (custom node with data.inputs)',
+    initialFlow: 'FlowData (custom node with data.inputParams + data.inputs)',
     onFlowChange: '(flow: FlowData) => void',
     renderHeader: '(props: HeaderRenderProps) => ReactNode'
 }

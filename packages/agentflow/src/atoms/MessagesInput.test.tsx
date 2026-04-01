@@ -52,7 +52,7 @@ describe('MessagesInput', () => {
         id: 'node-1',
         name: 'agentAgentflow',
         label: 'Agent',
-        inputValues: {}
+        inputs: {}
     } as NodeData
 
     beforeEach(() => {
@@ -73,7 +73,7 @@ describe('MessagesInput', () => {
     it('should render existing messages with field labels, role and content', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [
                     { role: 'system', content: 'You are a helpful assistant' },
                     { role: 'user', content: '{{ question }}' }
@@ -121,7 +121,7 @@ describe('MessagesInput', () => {
     it('should append to existing messages when adding', () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'system', content: 'Hello' }]
             }
         } as NodeData
@@ -144,7 +144,7 @@ describe('MessagesInput', () => {
     it('should delete a message and call onDataChange with updated array', () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [
                     { role: 'system', content: 'System message' },
                     { role: 'user', content: 'User message' }
@@ -168,7 +168,7 @@ describe('MessagesInput', () => {
     it('should update role when dropdown changes', () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: 'Hello' }]
             }
         } as NodeData
@@ -193,7 +193,7 @@ describe('MessagesInput', () => {
     it('should render rich text editor for content field', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'system', content: 'Initial' }]
             }
         } as NodeData
@@ -209,7 +209,7 @@ describe('MessagesInput', () => {
     it('should update content when RichTextEditor fires onChange', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'system', content: 'Initial' }]
             }
         } as NodeData
@@ -228,7 +228,7 @@ describe('MessagesInput', () => {
     it('should support variable syntax in content via RichTextEditor', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: '' }]
             }
         } as NodeData
@@ -249,7 +249,7 @@ describe('MessagesInput', () => {
     it('should open expand dialog with latest inline content even before parent re-renders', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: 'Original' }]
             }
         } as NodeData
@@ -278,7 +278,7 @@ describe('MessagesInput', () => {
     it('should preserve latestContentRef entries when a preceding message is deleted', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [
                     { role: 'system', content: 'System prompt' },
                     { role: 'user', content: 'User message' },
@@ -300,7 +300,7 @@ describe('MessagesInput', () => {
         // Simulate parent re-rendering with updated data (first message removed)
         const updatedData: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [
                     { role: 'user', content: 'User message' },
                     { role: 'assistant', content: 'Assistant reply' }
@@ -324,7 +324,7 @@ describe('MessagesInput', () => {
     it('should disable all controls when disabled prop is true', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'system', content: 'Hello' }]
             }
         } as NodeData
@@ -351,7 +351,7 @@ describe('MessagesInput', () => {
 
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: 'Only message' }]
             }
         } as NodeData
@@ -369,7 +369,7 @@ describe('MessagesInput', () => {
 
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [
                     { role: 'system', content: 'First' },
                     { role: 'user', content: 'Second' }
@@ -394,7 +394,7 @@ describe('MessagesInput', () => {
 
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [
                     { role: 'system', content: 'First' },
                     { role: 'user', content: 'Second' }
@@ -415,7 +415,7 @@ describe('MessagesInput', () => {
 
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: 'Only one' }]
             }
         } as NodeData
@@ -430,7 +430,7 @@ describe('MessagesInput', () => {
     it('should open expand dialog with rich text editor when expand icon is clicked', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: 'Hello world' }]
             }
         } as NodeData
@@ -450,7 +450,7 @@ describe('MessagesInput', () => {
     it('should call onConfirm with current value when Save is clicked in expand dialog', () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: 'Original' }]
             }
         } as NodeData
@@ -470,7 +470,7 @@ describe('MessagesInput', () => {
     it('should close dialog without saving on cancel', () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: 'Original' }]
             }
         } as NodeData
@@ -488,7 +488,7 @@ describe('MessagesInput', () => {
     it('should render all four role options in the dropdown', () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 agentMessages: [{ role: 'user', content: '' }]
             }
         } as NodeData
