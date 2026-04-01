@@ -275,9 +275,9 @@ class ExecuteFlow_Agentflow implements INode {
                         role: returnRole,
                         content: resultText,
                         name: nodeData?.label ? nodeData?.label.toLowerCase().replace(/\s/g, '_').trim() : nodeData?.id,
-                        ...(((flattenedArtifacts.length > 0) ||
+                        ...((flattenedArtifacts.length > 0 ||
                             (fileAnnotations && fileAnnotations.length > 0) ||
-                            (flattenedUsedTools.length > 0)) && {
+                            flattenedUsedTools.length > 0) && {
                             additional_kwargs: {
                                 ...(flattenedArtifacts.length > 0 && { artifacts: flattenedArtifacts }),
                                 ...(fileAnnotations && fileAnnotations.length > 0 && { fileAnnotations }),
