@@ -50,7 +50,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
                     event: 'end',
                     data: '[DONE]'
                 }
-                client.response.write('message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+                client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
                 client.response.end()
             } catch {
                 // Client already disconnected, ignore write errors
@@ -189,7 +189,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
             event: 'abort',
             data: '[DONE]'
         }
-        this.safeWrite(chatId, 'message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        this.safeWrite(chatId, 'message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
 
     streamEndEvent(_: string) {
@@ -203,7 +203,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
             event: 'error',
             data: msg
         }
-        this.safeWrite(chatId, 'message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        this.safeWrite(chatId, 'message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
 
     streamMetadataEvent(chatId: string, apiResponse: any) {
