@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
 import { DataSource, QueryRunner } from 'typeorm'
@@ -17,8 +18,17 @@ import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspa
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { getJWTAuthTokenSecret } from '../utils/authSecrets'
 import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
-import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
+import { EMAIL_CHANGE_JWT_TYP, isEmailChangeJwtShape, signEmailChangeJwt, verifyEmailChangeJwt } from '../utils/emailChangeJwt.util'
+import {
+    isSmtpConfigured,
+    sendEmailChangeConfirmationEmail,
+    sendPasswordResetEmail,
+    sendVerificationEmailForCloud,
+    sendWorkspaceAdd,
+    sendWorkspaceInvite
+} from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
 import { getSecureAppUrl, getSecureTokenLink } from '../utils/url.util'
 import { validatePasswordOrThrow } from '../utils/validation.util'
@@ -26,6 +36,7 @@ import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
 import { RoleErrorMessage, RoleService } from './role.service'
+import { sanitizeUser } from '../../utils/sanitize.util'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
@@ -64,6 +75,32 @@ export class AccountService {
         this.identityManager = appServer.identityManager
     }
 
+    /** Cloud always sends; open source / enterprise require SMTP to be configured. */
+    private canSendTransactionalEmail(): boolean {
+        return this.identityManager.getPlatformType() === Platform.CLOUD || isSmtpConfigured()
+    }
+
+    private async sendInviteEmailIfAllowed(send: () => Promise<void>, context: string) {
+        if (this.canSendTransactionalEmail()) {
+            await send()
+        } else {
+            logger.warn(`Skipping transactional email (${context}): SMTP is not configured`)
+        }
+    }
+
+    /** Prevents email-change JWTs from being consumed by verify / reset-password flows. */
+    private assertNotEmailChangeJwt(token: string | undefined | null) {
+        if (!isEmailChangeJwtShape(token)) return
+        try {
+            const payload = jwt.verify(token, getJWTAuthTokenSecret()) as JwtPayload
+            if (payload.typ === EMAIL_CHANGE_JWT_TYP) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EMAIL_CHANGE_USE_CONFIRM_LINK)
+            }
+        } catch (err) {
+            if (err instanceof InternalFlowiseError) throw err
+        }
+    }
+
     private initializeAccountDTO(data: AccountDTO) {
         data.organization = data.organization || {}
         data.organizationUser = data.organizationUser || {}
@@ -75,6 +112,9 @@ export class AccountService {
     }
 
     public async resendVerificationEmail({ email }: { email: string }) {
+        if (!this.canSendTransactionalEmail()) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.SMTP_NOT_CONFIGURED)
+        }
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -317,7 +357,10 @@ export class AccountService {
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
                         ? getSecureTokenLink('/register', data.user.tempToken!)
                         : getSecureAppUrl('/register')
-                await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                await this.sendInviteEmailIfAllowed(
+                    () => sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType()),
+                    'workspace-invite'
+                )
                 data.user = await this.userService.createNewUser(data.user, queryRunner)
 
                 data.organizationUser.organizationId = data.workspace.organizationId
@@ -391,29 +434,49 @@ export class AccountService {
                 if (workspaceUser.length === 1) {
                     oldWorkspaceUser = workspaceUser[0]
                     if (oldWorkspaceUser.workspace.name === WorkspaceName.DEFAULT_PERSONAL_WORKSPACE) {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType()
+                        await this.sendInviteEmailIfAllowed(
+                            () =>
+                                sendWorkspaceInvite(
+                                    data.user.email!,
+                                    data.workspace.name!,
+                                    registerLink,
+                                    this.identityManager.getPlatformType()
+                                ),
+                            'workspace-invite'
                         )
                     } else {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType(),
-                            'update'
+                        await this.sendInviteEmailIfAllowed(
+                            () =>
+                                sendWorkspaceInvite(
+                                    data.user.email!,
+                                    data.workspace.name!,
+                                    registerLink,
+                                    this.identityManager.getPlatformType(),
+                                    'update'
+                                ),
+                            'workspace-invite-update'
                         )
                     }
                 } else {
-                    await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                    await this.sendInviteEmailIfAllowed(
+                        () =>
+                            sendWorkspaceInvite(
+                                data.user.email!,
+                                data.workspace.name!,
+                                registerLink,
+                                this.identityManager.getPlatformType()
+                            ),
+                        'workspace-invite'
+                    )
                 }
             } else {
                 data.organizationUser.updatedBy = data.user.createdBy
 
                 const dashboardLink = getSecureAppUrl()
-                await sendWorkspaceAdd(data.user.email!, data.workspace.name!, dashboardLink)
+                await this.sendInviteEmailIfAllowed(
+                    () => sendWorkspaceAdd(data.user.email!, data.workspace.name!, dashboardLink),
+                    'workspace-add'
+                )
             }
 
             workspace.updatedBy = data.user.createdBy
@@ -514,6 +577,7 @@ export class AccountService {
         try {
             await queryRunner.startTransaction()
             if (!data.user.tempToken) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+            this.assertNotEmailChangeJwt(data.user.tempToken)
             const user = await this.userService.readUserByToken(data.user.tempToken, queryRunner)
             if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
             data.user = user
@@ -534,6 +598,9 @@ export class AccountService {
 
     public async forgotPassword(data: AccountDTO) {
         data = this.initializeAccountDTO(data)
+        if (!this.canSendTransactionalEmail()) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.SMTP_NOT_CONFIGURED)
+        }
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -569,6 +636,7 @@ export class AccountService {
         await queryRunner.connect()
         try {
             if (!data.user.tempToken) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+            this.assertNotEmailChangeJwt(data.user.tempToken)
 
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
@@ -622,6 +690,206 @@ export class AccountService {
                 'Logout Success',
                 user.ssoToken ? 'SSO' : 'Email/Password'
             )
+        }
+    }
+
+    public async initiateEmailChange(userId: string, newEmail: string) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            await queryRunner.startTransaction()
+            const user = await this.userService.readUserById(userId, queryRunner)
+            if (!user?.email) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            const expiryInHours = process.env.INVITE_TOKEN_EXPIRY_IN_HOURS ? parseInt(process.env.INVITE_TOKEN_EXPIRY_IN_HOURS) : 24
+            const { token, tokenExpiry } = signEmailChangeJwt(userId, newEmail, expiryInHours)
+
+            const merged = queryRunner.manager.merge(User, user, {
+                tempToken: token,
+                tokenExpiry
+            })
+            await this.userService.saveUser(merged, queryRunner)
+
+            const confirmLink = getSecureTokenLink('/confirm-email-change', token)
+            await sendEmailChangeConfirmationEmail(user.email, confirmLink, newEmail)
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    public async confirmEmailChange(data: { user: { tempToken?: string } }) {
+        const token = data.user?.tempToken
+        if (!token) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+
+        let userId: string
+        let newEmail: string
+        try {
+            ;({ userId, newEmail } = verifyEmailChangeJwt(token))
+        } catch (e) {
+            if (e instanceof jwt.TokenExpiredError) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
+            }
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+        }
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const user = await this.userService.readUserById(userId, queryRunner)
+            if (!user || user.tempToken !== token) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            const taken = await this.userService.readUserByEmail(newEmail, queryRunner)
+            if (taken && taken.id !== user.id) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
+            }
+
+            await this.userService.updateUser(
+                {
+                    id: user.id,
+                    updatedBy: user.id,
+                    email: newEmail,
+                    tempToken: null,
+                    tokenExpiry: null
+                },
+                {
+                    onEmailChanged: (uid, em) => this.syncStripeCustomerEmailAfterUserEmailChange(uid, em)
+                }
+            )
+
+            return { message: 'success' }
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    public async updateAuthenticatedUserProfile(
+        currentUserId: string,
+        body: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string },
+        onEmailChanged: (userId: string, newEmail: string) => Promise<void>
+    ) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const dbUser = await this.userService.readUserById(currentUserId, queryRunner)
+            if (!dbUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            const platform = this.identityManager.getPlatformType()
+            const newEmailRaw = body.email?.trim()
+            const emailChanging = newEmailRaw !== undefined && newEmailRaw.toLowerCase() !== (dbUser.email || '').toLowerCase()
+
+            const useEmailChangeConfirmation = emailChanging && (platform === Platform.CLOUD || isSmtpConfigured())
+
+            const passwordChanging = !!(body.oldPassword && body.newPassword && body.confirmPassword)
+            const nameChanging = body.name !== undefined && body.name !== dbUser.name
+
+            if (emailChanging && useEmailChangeConfirmation) {
+                this.userService.validateUserEmail(newEmailRaw)
+                const taken = await this.userService.readUserByEmail(newEmailRaw, queryRunner)
+                if (taken && taken.id !== dbUser.id) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
+                }
+
+                if (passwordChanging || nameChanging) {
+                    await this.userService.updateUser(
+                        {
+                            id: currentUserId,
+                            updatedBy: currentUserId,
+                            name: body.name !== undefined ? body.name : dbUser.name,
+                            email: dbUser.email,
+                            oldPassword: body.oldPassword,
+                            newPassword: body.newPassword,
+                            confirmPassword: body.confirmPassword
+                        },
+                        {}
+                    )
+                }
+
+                await this.initiateEmailChange(currentUserId, newEmailRaw!)
+
+                const readRunner = this.dataSource.createQueryRunner()
+                await readRunner.connect()
+                try {
+                    const refreshed = await this.userService.readUserById(currentUserId, readRunner)
+                    return {
+                        user: sanitizeUser({ ...refreshed }) as Partial<User>,
+                        emailChangePending: true,
+                        pendingEmail: newEmailRaw
+                    }
+                } finally {
+                    await readRunner.release()
+                }
+            }
+
+            if (emailChanging && !useEmailChangeConfirmation) {
+                this.userService.validateUserEmail(newEmailRaw)
+                const taken = await this.userService.readUserByEmail(newEmailRaw, queryRunner)
+                if (taken && taken.id !== dbUser.id) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
+                }
+
+                const user = await this.userService.updateUser(
+                    {
+                        id: currentUserId,
+                        updatedBy: currentUserId,
+                        ...(body.name !== undefined ? { name: body.name } : {}),
+                        email: body.email,
+                        oldPassword: body.oldPassword,
+                        newPassword: body.newPassword,
+                        confirmPassword: body.confirmPassword,
+                        tempToken: null,
+                        tokenExpiry: null
+                    },
+                    { onEmailChanged }
+                )
+                return { user }
+            }
+
+            const user = await this.userService.updateUser(
+                {
+                    id: currentUserId,
+                    updatedBy: currentUserId,
+                    ...(body.name !== undefined ? { name: body.name } : {}),
+                    ...(body.email !== undefined ? { email: body.email } : {}),
+                    oldPassword: body.oldPassword,
+                    newPassword: body.newPassword,
+                    confirmPassword: body.confirmPassword
+                },
+                {}
+            )
+            return { user }
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Sync Stripe customer email when user changes their email (CLOUD only).
+     * Expects exactly one org where the user is org owner; updates that org's Stripe customer email.
+     */
+    public async syncStripeCustomerEmailAfterUserEmailChange(userId: string, newEmail: string) {
+        if (this.identityManager.getPlatformType() !== Platform.CLOUD) return
+
+        let queryRunner: QueryRunner | undefined
+        try {
+            queryRunner = this.dataSource.createQueryRunner()
+            await queryRunner.connect()
+            const orgUsers = await this.organizationUserService.readOrganizationUserByUserId(userId, queryRunner)
+            const ownerOrgLinks = orgUsers.filter((ou) => ou.isOrgOwner)
+            if (ownerOrgLinks.length === 1) {
+                const org = await this.organizationservice.readOrganizationById(ownerOrgLinks[0].organizationId, queryRunner)
+                if (org?.customerId) {
+                    await this.identityManager.updateStripeCustomerEmail(org.customerId, newEmail)
+                }
+            }
+        } catch (error) {
+            logger.warn(`Failed to update Stripe customer email for user ${userId}:`, error)
+        } finally {
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
     }
 }

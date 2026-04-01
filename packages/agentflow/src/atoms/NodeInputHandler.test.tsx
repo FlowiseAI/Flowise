@@ -36,6 +36,12 @@ jest.mock('./RichTextEditor.lazy', () => ({
     )
 }))
 
+jest.mock('./VariableInput', () => ({
+    VariableInput: ({ suggestionItems }: { suggestionItems?: { id: string }[] }) => (
+        <div data-testid='variable-input' data-suggestion-ids={JSON.stringify(suggestionItems?.map((i) => i.id))} />
+    )
+}))
+
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-expand' />,
     IconInfoCircle: () => <span data-testid='icon-info-circle' />,
@@ -328,8 +334,8 @@ jest.mock('./JsonInput', () => ({
     )
 }))
 
-jest.mock('./SelectVariable', () => ({
-    SelectVariable: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
+jest.mock('./VariablePicker', () => ({
+    VariablePicker: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
         <div data-testid='select-variable'>
             {items.map((item, i) => (
                 <button key={i} data-testid={`var-${item.value}`} onClick={() => onSelect(item.value)}>
@@ -502,6 +508,28 @@ describe('NodeInputHandler – variable popover', () => {
         )
 
         expect(screen.queryByTestId('icon-variable')).toBeNull()
+    })
+
+    it('deduplicates suggestionItem ids when variableItems share the same value', () => {
+        // Two flow-state entries with the same key produce the same base id.
+        // The first should keep its id; subsequent duplicates get a __N suffix.
+        const variableItems = [
+            { label: '$flow.state.myVar', value: '$flow.state.myVar', category: 'Flow State' },
+            { label: '$flow.state.myVar', value: '$flow.state.myVar', category: 'Flow State' },
+            { label: '$flow.state.other', value: '$flow.state.other', category: 'Flow State' }
+        ]
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string', acceptVariable: true })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        const ids = JSON.parse(screen.getByTestId('variable-input').getAttribute('data-suggestion-ids')!)
+        expect(ids).toEqual(['$flow.state.myVar', '$flow.state.myVar__1', '$flow.state.other'])
     })
 })
 

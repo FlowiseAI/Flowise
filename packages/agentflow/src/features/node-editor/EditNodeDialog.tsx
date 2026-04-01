@@ -138,12 +138,28 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
 
     useEffect(() => {
         if (dialogProps.inputParams) {
-            const initialValues = dialogProps.data?.inputs || {}
+            // Merge param defaults into inputValues so that fields with show/hide
+            // conditions referencing other fields with defaults evaluate correctly
+            // on first load (e.g., llmEnableMemory defaults to true).
+            const storedValues = dialogProps.data?.inputs || {}
+            const initialValues: Record<string, unknown> = { ...storedValues }
+            for (const param of dialogProps.inputParams) {
+                if (param.default !== undefined && !(param.name in initialValues)) {
+                    initialValues[param.name] = param.default
+                }
+            }
             const evaluatedParams = evaluateFieldVisibility(dialogProps.inputParams, initialValues)
             setInputParams(evaluatedParams)
             setArrayItemParameters(computeArrayItemParameters(dialogProps.inputParams, initialValues))
-        }
-        if (dialogProps.data) {
+
+            // Store data with defaults merged into inputValues so that subsequent
+            // onCustomDataChange calls (e.g., triggered by VariableInput's onUpdate
+            // on mount) preserve the defaults for visibility evaluation.
+            if (dialogProps.data) {
+                setData({ ...dialogProps.data, inputs: initialValues })
+                if (dialogProps.data.label) setNodeName(dialogProps.data.label)
+            }
+        } else if (dialogProps.data) {
             setData(dialogProps.data)
             if (dialogProps.data.label) setNodeName(dialogProps.data.label)
         }

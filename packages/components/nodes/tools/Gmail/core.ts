@@ -38,6 +38,13 @@ const CreateDraftSchema = z.object({
     bcc: z.string().optional().describe('BCC email address(es), comma-separated')
 })
 
+const UpdateDraftSchema = CreateDraftSchema.extend({
+    id: z
+        .string()
+        .regex(/^[A-Za-z0-9_-]+$/, 'Draft ID must contain only URL-safe characters')
+        .describe('ID of the draft to update')
+})
+
 const SendMessageSchema = z.object({
     to: z.string().describe('Recipient email address(es), comma-separated'),
     subject: z.string().optional().describe('Email subject'),
@@ -222,7 +229,7 @@ class UpdateDraftTool extends BaseGmailTool {
         const toolInput = {
             name: 'update_draft',
             description: 'Update a specific draft in Gmail',
-            schema: CreateDraftSchema,
+            schema: UpdateDraftSchema,
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'PUT',
             headers: {}

@@ -270,6 +270,11 @@ export class StripeManager {
         }
     }
 
+    public async updateCustomerEmail(customerId: string, email: string) {
+        if (!this.stripe) throw new Error('Stripe is not initialized')
+        await this.stripe.customers.update(customerId, { email })
+    }
+
     public async getAdditionalSeatsProration(subscriptionId: string, quantity: number) {
         if (!this.stripe) {
             throw new Error('Stripe is not initialized')
