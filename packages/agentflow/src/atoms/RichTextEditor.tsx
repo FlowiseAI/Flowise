@@ -1,0 +1,214 @@
+import { useEffect, useMemo, useRef } from 'react'
+
+import { Box } from '@mui/material'
+import { styled } from '@mui/material/styles'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import Placeholder from '@tiptap/extension-placeholder'
+import { EditorContent, useEditor } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+// Individual language imports instead of lowlight/common to tree-shake highlight.js
+// (~400 KB savings by shipping 4 languages instead of 37)
+import javascript from 'highlight.js/lib/languages/javascript'
+import json from 'highlight.js/lib/languages/json'
+import python from 'highlight.js/lib/languages/python'
+import typescript from 'highlight.js/lib/languages/typescript'
+import { createLowlight } from 'lowlight'
+
+import { tokens } from '@/core/theme/tokens'
+
+const lowlight = createLowlight()
+lowlight.register('javascript', javascript)
+lowlight.register('json', json)
+lowlight.register('python', python)
+lowlight.register('typescript', typescript)
+
+export interface RichTextEditorProps {
+    /** HTML content */
+    value: string
+    /** Called with the updated HTML string on every edit */
+    onChange: (html: string) => void
+    placeholder?: string
+    disabled?: boolean
+    /** Number of visible text rows (controls editor height) */
+    rows?: number
+    /** Auto-focus when the editor mounts */
+    autoFocus?: boolean
+}
+
+/* ── TipTap extensions (no mention/variable support — that belongs in features/) ── */
+
+const buildExtensions = (placeholder?: string) => [
+    StarterKit.configure({ codeBlock: false }),
+    CodeBlockLowlight.configure({ lowlight, enableTabIndentation: true, tabSize: 2 }),
+    ...(placeholder ? [Placeholder.configure({ placeholder })] : [])
+]
+
+/* ── Styled wrapper ── */
+
+const StyledEditorContent = styled(EditorContent, {
+    shouldForwardProp: (prop) => prop !== 'rows'
+})<{ rows?: number; disabled?: boolean }>(({ theme, rows, disabled }) => {
+    const mode = theme.palette.mode === 'dark' ? 'dark' : 'light'
+    const sh = tokens.colors.syntaxHighlight
+
+    return {
+        '& .ProseMirror': {
+            padding: '10px 14px',
+            height: rows ? `${rows * tokens.typography.rowHeightRem}rem` : `${tokens.typography.singleLineHeightRem}rem`,
+            overflowY: rows ? 'auto' : 'hidden',
+            overflowX: rows ? 'auto' : 'hidden',
+            lineHeight: rows ? `${tokens.typography.rowHeightRem}em` : `${tokens.typography.singleLineLineHeightEm}em`,
+            fontWeight: 500,
+            color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
+            border: `1px solid ${theme.palette.grey[900]}25`,
+            borderRadius: '10px',
+            backgroundColor:
+                (theme.palette as { textBackground?: { main: string } }).textBackground?.main ?? theme.palette.background.paper,
+            boxSizing: 'border-box',
+            whiteSpace: rows ? 'pre-wrap' : 'nowrap',
+
+            '&:hover': {
+                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.text.primary,
+                cursor: disabled ? 'default' : 'text'
+            },
+            '&:focus': {
+                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.primary.main,
+                outline: 'none'
+            },
+
+            // Block element spacing (ProseMirror resets default margins)
+            '& p, & h1, & h2, & h3, & h4, & h5, & h6, & ul, & ol, & pre, & blockquote': {
+                margin: '0.75em 0'
+            },
+            // Only collapse margins on the very first/last child of the editor
+            '& > :first-of-type': { marginTop: '0.25em' },
+            '& > :last-of-type': { marginBottom: '0.25em' },
+
+            // List indentation & item spacing
+            '& ul, & ol': {
+                paddingLeft: '1.5em'
+            },
+            '& li': {
+                marginBottom: '0.25em'
+            },
+            '& li > p': {
+                margin: '0.25em 0'
+            },
+
+            // Placeholder styling
+            '& p.is-editor-empty:first-of-type::before': {
+                content: 'attr(data-placeholder)',
+                float: 'left',
+                color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+                opacity: disabled ? 0.6 : 0.4,
+                pointerEvents: 'none',
+                height: 0
+            },
+
+            // Code block styling
+            '& pre': {
+                backgroundColor: sh.background[mode],
+                color: sh.text[mode],
+                borderRadius: '8px',
+                padding: '0.75em 1em',
+                overflow: 'auto',
+                '& code': {
+                    fontFamily: 'monospace',
+                    fontSize: '0.9em'
+                }
+            },
+
+            // Syntax highlight colors (lowlight adds .hljs-* classes)
+            '& .hljs-comment, & .hljs-quote': { color: sh.comment[mode] },
+            '& .hljs-variable, & .hljs-template-variable, & .hljs-attr': { color: sh.variable[mode] },
+            '& .hljs-number, & .hljs-literal': { color: sh.number[mode] },
+            '& .hljs-string, & .hljs-regexp': { color: sh.string[mode] },
+            '& .hljs-title, & .hljs-section, & .hljs-selector-id': { color: sh.title[mode] },
+            '& .hljs-keyword, & .hljs-selector-tag, & .hljs-built_in': { color: sh.keyword[mode] },
+            '& .hljs-operator, & .hljs-symbol': { color: sh.operator[mode] },
+            '& .hljs-punctuation': { color: sh.punctuation[mode] }
+        }
+    }
+})
+
+/**
+ * Detects whether a string is TipTap-generated HTML (starts with a known block element).
+ * Plain-text prompts stored before the rich-text editor was introduced do NOT match this
+ * pattern, even when they contain XML-like custom tags such as `<question>`.
+ */
+const isTiptapHtml = (content: string): boolean => {
+    if (!content) return false
+    return /<(?:p|h[1-6]|ul|ol|pre|blockquote|hr)\b/i.test(content.trim())
+}
+
+/**
+ * Converts plain text (which may contain XML-like tags such as `<question>`) to safe
+ * TipTap HTML by escaping angle brackets so ProseMirror treats them as literal text
+ * rather than HTML elements. Each newline becomes a separate `<p>` block.
+ *
+ * The server-side `resolveVariables` utility in buildAgentflow.ts runs Turndown on HTML
+ * content before variable substitution, which correctly decodes `&lt;`/`&gt;` back to
+ * `<`/`>`, so XML-structured prompts reach the LLM unchanged.
+ */
+const plainTextToTiptapHtml = (text: string): string => {
+    const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    return escaped
+        .split('\n')
+        .map((line) => `<p>${line}</p>`)
+        .join('')
+}
+
+/** Normalises a stored value for safe consumption by TipTap's `setContent`. */
+const toTiptapContent = (value: string): string => {
+    if (!value) return ''
+    if (isTiptapHtml(value)) return value
+    return plainTextToTiptapHtml(value)
+}
+
+/**
+ * A TipTap-based rich text editor atom with code block syntax highlighting.
+ *
+ * This is a "dumb" UI primitive — it receives all data via props and owns no
+ * business logic. Variable/mention support lives in the features layer.
+ */
+export function RichTextEditor({ value, onChange, placeholder, disabled = false, rows, autoFocus = false }: RichTextEditorProps) {
+    // Keep a ref to the latest onChange so the TipTap onUpdate callback never goes stale
+    const onChangeRef = useRef(onChange)
+    useEffect(() => {
+        onChangeRef.current = onChange
+    }, [onChange])
+
+    const extensions = useMemo(() => buildExtensions(placeholder), [placeholder])
+
+    const editor = useEditor({
+        extensions,
+        content: toTiptapContent(value),
+        editable: !disabled,
+        autofocus: autoFocus ? 'end' : false,
+        onUpdate: ({ editor: ed }: { editor: { getHTML: () => string } }) => {
+            onChangeRef.current(ed.getHTML())
+        }
+    })
+
+    // Sync external value changes into the editor (e.g. when parent state updates).
+    // Use toTiptapContent so that plain-text values with XML-like tags are safely
+    // escaped before ProseMirror parses them — otherwise unknown tags are stripped.
+    useEffect(() => {
+        if (editor && toTiptapContent(value) !== editor.getHTML()) {
+            editor.commands.setContent(toTiptapContent(value), { emitUpdate: false })
+        }
+    }, [editor, value])
+
+    // Sync editable state when disabled prop changes
+    useEffect(() => {
+        if (editor) {
+            editor.setEditable(!disabled)
+        }
+    }, [editor, disabled])
+
+    return (
+        <Box data-testid='rich-text-editor'>
+            <StyledEditorContent editor={editor} rows={rows} disabled={disabled} />
+        </Box>
+    )
+}
