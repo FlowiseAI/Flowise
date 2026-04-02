@@ -1,6 +1,6 @@
 # OSOP Workflow Example for Flowise
 
-[OSOP](https://github.com/osopcloud/osop-spec) is a portable YAML format for describing AI workflows. It provides a vendor-neutral way to define nodes, edges, and execution metadata so that workflows can be shared across different platforms.
+[OSOP](https://github.com/Archie0125/osop-spec) is a portable YAML format for describing AI workflows. It provides a vendor-neutral way to define nodes, edges, and execution metadata so that workflows can be shared across different platforms.
 
 ## Why OSOP + Flowise?
 
@@ -28,5 +28,5 @@ This is purely additive and does not affect any existing Flowise functionality.
 
 ## Learn more
 
-- [OSOP Spec](https://github.com/osopcloud/osop-spec)
+- [OSOP Spec](https://github.com/Archie0125/osop-spec)
 - [Flowise Documentation](https://docs.flowiseai.com/)
