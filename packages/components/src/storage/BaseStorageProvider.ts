@@ -1,9 +1,9 @@
+import fs from 'node:fs'
 import path from 'node:path'
-import { IStorageProvider, FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 import sanitize from 'sanitize-filename'
 import { getUserHome } from '../utils'
 import { isPathTraversal, isUnsafeFilePath, isValidUUID } from '../validator'
-import fs from 'node:fs'
+import { FileInfo, IStorageProvider, StorageResult, StorageSizeResult } from './IStorageProvider'
 
 export abstract class BaseStorageProvider implements IStorageProvider {
     protected storagePath: string
@@ -38,7 +38,7 @@ export abstract class BaseStorageProvider implements IStorageProvider {
     abstract removeFolderFromStorage(...paths: string[]): Promise<StorageSizeResult>
     abstract getStorageSize(orgId: string): Promise<number>
     abstract getMulterStorage(): any
-    abstract getLoggerTransports(logType: 'server' | 'error' | 'requests', config?: any): any[]
+    abstract getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit', config?: any): any[]
 
     /**
      * Shared utility for sanitizing filenames to prevent path traversal and other issues

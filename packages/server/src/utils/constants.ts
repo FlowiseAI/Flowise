@@ -56,7 +56,7 @@ export const WHITELIST_URLS = [
     GithubSSO.CALLBACK_URI
 ]
 
-export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim']
+export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim', '/api/v1/account/delete']
 
 export const enum GeneralErrorMessage {
     FORBIDDEN = 'Forbidden',

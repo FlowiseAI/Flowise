@@ -128,6 +128,7 @@ export class App {
 
             // Initialize SSE Streamer
             this.sseStreamer = new SSEStreamer()
+            this.sseStreamer.startHeartbeat()
             logger.info('🌊 [server]: SSE Streamer initialized successfully')
 
             // Init Queues
@@ -148,6 +149,7 @@ export class App {
 
                 this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
                 await this.redisSubscriber.connect()
+                this.redisSubscriber.startPeriodicCleanup()
                 logger.info('🔗 [server]: Redis event subscriber connected successfully')
             }
 
@@ -356,6 +358,7 @@ export class App {
 
     async stopApp() {
         try {
+            this.sseStreamer.stopHeartbeat()
             const removePromises: any[] = []
             removePromises.push(this.telemetry.flush())
             if (this.queueManager) {

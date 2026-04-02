@@ -3,6 +3,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import datasetService from '../../services/dataset'
 import { StatusCodes } from 'http-status-codes'
 import { getPageAndLimitParams } from '../../utils/pagination'
+import { stripProtectedFields } from '../../utils/stripProtectedFields'
 
 const getAllDatasets = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -46,7 +47,6 @@ const createDataset = async (req: Request, res: Response, next: NextFunction) =>
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: datasetService.createDataset - body not provided!`)
         }
-        const body = req.body
         const workspaceId = req.user?.activeWorkspaceId
         if (!workspaceId) {
             throw new InternalFlowiseError(
@@ -54,8 +54,8 @@ const createDataset = async (req: Request, res: Response, next: NextFunction) =>
                 `Error: datasetController.createDataset - workspace ${workspaceId} not found!`
             )
         }
-        body.workspaceId = workspaceId
-        const apiResponse = await datasetService.createDataset(body)
+        const body = { ...stripProtectedFields(req.body), workspaceId }
+        const apiResponse = await datasetService.createDataset(body, workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -77,7 +77,7 @@ const updateDataset = async (req: Request, res: Response, next: NextFunction) =>
                 `Error: datasetController.updateDataset - workspace ${workspaceId} not found!`
             )
         }
-        const apiResponse = await datasetService.updateDataset(req.params.id, req.body, workspaceId)
+        const apiResponse = await datasetService.updateDataset(req.params.id, stripProtectedFields(req.body), workspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -118,8 +118,8 @@ const addDatasetRow = async (req: Request, res: Response, next: NextFunction) =>
                 `Error: datasetController.addDatasetRow - workspace ${workspaceId} not found!`
             )
         }
-        req.body.workspaceId = workspaceId
-        const apiResponse = await datasetService.addDatasetRow(req.body)
+        const body = { ...stripProtectedFields(req.body), workspaceId }
+        const apiResponse = await datasetService.addDatasetRow(body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -141,8 +141,8 @@ const updateDatasetRow = async (req: Request, res: Response, next: NextFunction)
                 `Error: datasetController.updateDatasetRow - workspace ${workspaceId} not found!`
             )
         }
-        req.body.workspaceId = workspaceId
-        const apiResponse = await datasetService.updateDatasetRow(req.params.id, req.body)
+        const body = { ...stripProtectedFields(req.body), workspaceId }
+        const apiResponse = await datasetService.updateDatasetRow(req.params.id, body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
