@@ -25,7 +25,8 @@ export const enum UserErrorMessage {
     USER_NOT_FOUND = 'User Not Found',
     USER_FOUND_MULTIPLE = 'User Found Multiple',
     INCORRECT_USER_EMAIL_OR_CREDENTIALS = 'Incorrect Email or Password',
-    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match'
+    PASSWORDS_DO_NOT_MATCH = 'Passwords do not match',
+    EMAIL_CHANGE_USE_CONFIRM_LINK = 'Use the confirm email change link from your email to complete this action.'
 }
 export class UserService {
     private telemetry: Telemetry
@@ -136,7 +137,10 @@ export class UserService {
         return newUser
     }
 
-    public async updateUser(newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string }) {
+    public async updateUser(
+        newUserData: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string },
+        options?: { onEmailChanged?: (userId: string, newEmail: string) => Promise<void> }
+    ) {
         let queryRunner: QueryRunner | undefined
         let updatedUser: Partial<User>
         try {
@@ -144,6 +148,8 @@ export class UserService {
             await queryRunner.connect()
             const oldUserData = await this.readUserById(newUserData.id, queryRunner)
             if (!oldUserData) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            const currentEmail = oldUserData.email
 
             if (newUserData.updatedBy) {
                 const updateUserData = await this.readUserById(newUserData.updatedBy, queryRunner)
@@ -191,8 +197,14 @@ export class UserService {
             await this.saveUser(updatedUser, queryRunner)
             await queryRunner.commitTransaction()
 
-            // Invalidate all sessions for this user if password was changed
-            if (newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword) {
+            const passwordChanged = !!(newUserData.oldPassword && newUserData.newPassword && newUserData.confirmPassword)
+            const emailChanged = !!(updatedUser.email && updatedUser.email !== currentEmail)
+
+            if (emailChanged && updatedUser.email && options?.onEmailChanged) {
+                await options.onEmailChanged(updatedUser.id as string, updatedUser.email)
+            }
+
+            if (passwordChanged || emailChanged) {
                 await destroyAllSessionsForUser(updatedUser.id as string)
             }
         } catch (error) {

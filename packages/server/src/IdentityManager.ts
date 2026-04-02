@@ -312,6 +312,11 @@ export class IdentityManager {
         return await this.stripeManager.getCustomerWithDefaultSource(customerId)
     }
 
+    public async updateStripeCustomerEmail(customerId: string, email: string) {
+        if (!this.stripeManager) throw new Error('Stripe manager is not initialized')
+        await this.stripeManager.updateCustomerEmail(customerId, email)
+    }
+
     public async getAdditionalSeatsProration(subscriptionId: string, newQuantity: number) {
         if (!subscriptionId) return {}
         if (!this.stripeManager) {
