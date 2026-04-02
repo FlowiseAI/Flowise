@@ -314,6 +314,35 @@ const FollowUpPrompts = ({ dialogProps }) => {
     const [chatbotConfig, setChatbotConfig] = useState({})
     const [selectedProvider, setSelectedProvider] = useState('none')
 
+    const getProviderInputKey = (inputParam) => (inputParam.name === 'credential' ? 'credentialId' : inputParam.name)
+
+    const getProviderInputValue = (config, providerName, inputParam) => {
+        const providerConfig = config?.[providerName] ?? {}
+        const key = getProviderInputKey(inputParam)
+        const value = providerConfig[key]
+
+        return value !== undefined && value !== null && value !== '' ? value : inputParam.default
+    }
+
+    const withProviderDefaults = (config, providerName) => {
+        if (!providerName || providerName === 'none' || !followUpPromptsOptions[providerName]) {
+            return config
+        }
+
+        const providerConfig = { ...(config?.[providerName] ?? {}) }
+        followUpPromptsOptions[providerName].inputs.forEach((inputParam) => {
+            const key = getProviderInputKey(inputParam)
+            if ((providerConfig[key] === undefined || providerConfig[key] === null || providerConfig[key] === '') && inputParam.default !== undefined) {
+                providerConfig[key] = inputParam.default
+            }
+        })
+
+        return {
+            ...config,
+            [providerName]: providerConfig
+        }
+    }
+
     const handleChange = (key, value) => {
         setFollowUpPromptsConfig({
             ...followUpPromptsConfig,
@@ -350,35 +379,23 @@ const FollowUpPrompts = ({ dialogProps }) => {
     }
 
     const onSave = async () => {
-        // TODO: saving without changing the prompt will not save the prompt
         try {
+            const normalizedFollowUpPromptsConfig = withProviderDefaults(followUpPromptsConfig, selectedProvider)
             let value = {
-                followUpPrompts: { status: followUpPromptsConfig.status }
+                followUpPrompts: { status: normalizedFollowUpPromptsConfig.status }
             }
-            chatbotConfig.followUpPrompts = value.followUpPrompts
-
-            // if the prompt is not set, save the default prompt
-            const selectedProvider = followUpPromptsConfig.selectedProvider
-
-            if (selectedProvider && followUpPromptsConfig[selectedProvider] && followUpPromptsOptions[selectedProvider]) {
-                if (!followUpPromptsConfig[selectedProvider].prompt) {
-                    followUpPromptsConfig[selectedProvider].prompt = followUpPromptsOptions[selectedProvider].inputs.find(
-                        (input) => input.name === 'prompt'
-                    )?.default
-                }
-
-                if (!followUpPromptsConfig[selectedProvider].temperature) {
-                    followUpPromptsConfig[selectedProvider].temperature = followUpPromptsOptions[selectedProvider].inputs.find(
-                        (input) => input.name === 'temperature'
-                    )?.default
-                }
+            const nextChatbotConfig = {
+                ...chatbotConfig,
+                followUpPrompts: value.followUpPrompts
             }
 
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
-                chatbotConfig: JSON.stringify(chatbotConfig),
-                followUpPrompts: JSON.stringify(followUpPromptsConfig)
+                chatbotConfig: JSON.stringify(nextChatbotConfig),
+                followUpPrompts: JSON.stringify(normalizedFollowUpPromptsConfig)
             })
             if (saveResp.data) {
+                setChatbotConfig(nextChatbotConfig)
+                setFollowUpPromptsConfig(normalizedFollowUpPromptsConfig)
                 enqueueSnackbar({
                     message: 'Follow-up Prompts configuration saved',
                     options: {
@@ -433,12 +450,8 @@ const FollowUpPrompts = ({ dialogProps }) => {
             const provider = followUpPromptsOptions[selectedProvider]
             for (let inputParam of provider.inputs) {
                 if (!inputParam.optional) {
-                    const param = inputParam.name === 'credential' ? 'credentialId' : inputParam.name
-                    if (
-                        !followUpPromptsConfig[selectedProvider] ||
-                        !followUpPromptsConfig[selectedProvider][param] ||
-                        followUpPromptsConfig[selectedProvider][param] === ''
-                    ) {
+                    const value = getProviderInputValue(followUpPromptsConfig, selectedProvider, inputParam)
+                    if (!value || value === '') {
                         return true
                     }
                 }
@@ -550,12 +563,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                                 key={`${selectedProvider}-${inputParam.name}`}
                                                 inputParam={inputParam}
                                                 onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
-                                                value={
-                                                    followUpPromptsConfig[selectedProvider] &&
-                                                    followUpPromptsConfig[selectedProvider][inputParam.name]
-                                                        ? followUpPromptsConfig[selectedProvider][inputParam.name]
-                                                        : inputParam.default ?? ''
-                                                }
+                                                value={getProviderInputValue(followUpPromptsConfig, selectedProvider, inputParam) ?? ''}
                                             />
                                         )}
 
@@ -570,10 +578,8 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                                             inputParams: followUpPromptsOptions[selectedProvider].inputs
                                                         }}
                                                         value={
-                                                            followUpPromptsConfig[selectedProvider] &&
-                                                            followUpPromptsConfig[selectedProvider][inputParam.name]
-                                                                ? followUpPromptsConfig[selectedProvider][inputParam.name]
-                                                                : inputParam.default ?? 'choose an option'
+                                                            getProviderInputValue(followUpPromptsConfig, selectedProvider, inputParam) ??
+                                                            'choose an option'
                                                         }
                                                         onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                                     />
@@ -587,10 +593,8 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                                 options={inputParam.options}
                                                 onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                                 value={
-                                                    followUpPromptsConfig[selectedProvider] &&
-                                                    followUpPromptsConfig[selectedProvider][inputParam.name]
-                                                        ? followUpPromptsConfig[selectedProvider][inputParam]
-                                                        : inputParam.default ?? 'choose an option'
+                                                    getProviderInputValue(followUpPromptsConfig, selectedProvider, inputParam) ??
+                                                    'choose an option'
                                                 }
                                             />
                                         )}
