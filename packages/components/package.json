@@ -13,10 +13,12 @@
             "types": "./dist/nodes/index.d.ts",
             "default": "./dist/nodes/index.js"
         },
+        "./nodes/*.js": "./dist/nodes/*.js",
         "./nodes/*": {
             "types": "./dist/nodes/*.d.ts",
             "default": "./dist/nodes/*.js"
         },
+        "./*.js": "./dist/*.js",
         "./*": "./dist/*"
     },
     "scripts": {
