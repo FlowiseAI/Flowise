@@ -40,7 +40,6 @@ export type {
     FlowData,
     FlowEdge,
     FlowNode,
-    FlowStateConfig,
     // Render props
     HeaderRenderProps,
     // Node data

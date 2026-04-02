@@ -61,8 +61,3 @@ export interface StateUpdate {
     key: string
     value: string // Can contain variable references (e.g. {{nodeId.data.instance}})
 }
-
-/** Configuration for nodes that update flow state. */
-export interface FlowStateConfig {
-    updateFlowState?: StateUpdate[]
-}
