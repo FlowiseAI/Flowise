@@ -1,4 +1,5 @@
-import type { FlowNode, NodeData, OutputAnchor } from '../types'
+import { getDefaultValueForType } from '../primitives'
+import type { FlowNode, InputParam, NodeData, NodeDataSchema, OutputAnchor } from '../types'
 
 import { buildDynamicOutputAnchors } from './dynamicOutputAnchors'
 
@@ -19,9 +20,10 @@ export function resolveNodeType(nodeDataType: string): string {
 }
 
 /**
- * Generate a unique node ID based on existing nodes
+ * Generate a unique node ID based on existing nodes.
+ * Accepts both NodeDataSchema (from API) and NodeData (canvas nodes).
  */
-export function getUniqueNodeId(nodeData: NodeData, nodes: FlowNode[]): string {
+export function getUniqueNodeId(nodeData: Pick<NodeData, 'name'>, nodes: FlowNode[]): string {
     let suffix = 0
     let baseId = `${nodeData.name}_${suffix}`
 
@@ -34,9 +36,10 @@ export function getUniqueNodeId(nodeData: NodeData, nodes: FlowNode[]): string {
 }
 
 /**
- * Generate a unique node label based on existing nodes
+ * Generate a unique node label based on existing nodes.
+ * Accepts both NodeDataSchema (from API) and NodeData (canvas nodes).
  */
-export function getUniqueNodeLabel(nodeData: NodeData, nodes: FlowNode[]): string {
+export function getUniqueNodeLabel(nodeData: Pick<NodeData, 'name' | 'type' | 'label'>, nodes: FlowNode[]): string {
     if (nodeData.type === 'StickyNote') return nodeData.label
     if (nodeData.name === 'startAgentflow') return nodeData.label
 
@@ -55,11 +58,11 @@ export function getUniqueNodeLabel(nodeData: NodeData, nodes: FlowNode[]): strin
  * Initialize default values for node parameters.
  * Falls back to '' for params without a default — needed by show/hide condition evaluation.
  */
-function initializeDefaultNodeData(nodeParams: Array<{ name: string; default?: unknown }>): Record<string, unknown> {
+function initializeDefaultNodeData(nodeParams: Pick<InputParam, 'name' | 'type' | 'default' | 'options'>[]): Record<string, unknown> {
     const initialValues: Record<string, unknown> = {}
 
     for (const input of nodeParams) {
-        initialValues[input.name] = input.default ?? ''
+        initialValues[input.name] = getDefaultValueForType(input)
     }
 
     return initialValues
@@ -68,7 +71,7 @@ function initializeDefaultNodeData(nodeParams: Array<{ name: string; default?: u
 /**
  * Create output anchors for agentflow nodes
  */
-function createAgentFlowOutputs(nodeData: NodeData, newNodeId: string): Array<{ id: string; label: string; name: string }> {
+function createAgentFlowOutputs(nodeData: NodeDataSchema, newNodeId: string): Array<{ id: string; label: string; name: string }> {
     if ((nodeData as Record<string, unknown>).hideOutput) return []
 
     if (nodeData.outputs?.length) {
@@ -89,17 +92,15 @@ function createAgentFlowOutputs(nodeData: NodeData, newNodeId: string): Array<{ 
 }
 
 /**
- * Pick only the properties that belong to NodeData from a server API response.
- * Strips server-only metadata (filePath, badge, author, loadMethods, etc.)
- * and runtime-only state (status, error, warning, hint, validationErrors)
+ * Pick only the properties that belong to NodeData from an API response.
+ * Strips server-only metadata (filePath, author, loadMethods, etc.)
  * that should not be persisted in flow data.
  *
- * Mirrors the allowlist used by generateExportFlowData in agentflow v2
- * (packages/ui/src/utils/genericHelper.js).
+ * Preserves component metadata needed at runtime (badge, tags, documentation)
+ * for display in the NodeInfoDialog.
  */
-function pickNodeData(raw: NodeData): NodeData {
+function pickNodeData(raw: NodeDataSchema): Partial<NodeData> {
     return {
-        id: raw.id,
         name: raw.name,
         label: raw.label,
         type: raw.type,
@@ -107,22 +108,26 @@ function pickNodeData(raw: NodeData): NodeData {
         description: raw.description,
         version: raw.version,
         baseClasses: raw.baseClasses,
-        inputs: raw.inputs,
-        inputValues: raw.inputValues,
+        // API `inputs` (schema) → canvas `inputParams`; `NodeData.inputs` is the value map only.
+        inputParams: raw.inputs,
         outputs: raw.outputs,
         inputAnchors: raw.inputAnchors,
         outputAnchors: raw.outputAnchors,
         color: raw.color,
         icon: raw.icon,
-        hideInput: raw.hideInput
+        hideInput: raw.hideInput,
+        badge: raw.badge,
+        tags: raw.tags,
+        documentation: raw.documentation
     }
 }
 
 /**
- * Initialize a node with proper anchors and default values
- * Converts API response (with inputs as definitions) to canvas node format
+ * Initialize a node with proper anchors and default values.
+ * Converts an API response (NodeDataSchema, where inputs is a schema array) into a
+ * canvas-ready NodeData (where inputParams is the schema and inputs is key-value values).
  */
-export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = true): NodeData {
+export function initNode(nodeData: NodeDataSchema, newNodeId: string, isAgentflow = true): NodeData {
     const inputAnchors: Array<{ id: string; name: string; label: string; type: string }> = []
     const inputDefinitions: Array<{ id: string; name: string; label: string; type: string; default?: unknown; optional?: boolean }> = []
 
@@ -163,9 +168,7 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
     }
 
     // Credential — extract top-level credential property and prepend to input definitions
-    const rawCredential = (nodeData as Record<string, unknown>).credential as
-        | { name?: string; label?: string; type?: string; credentialNames?: string[]; optional?: boolean }
-        | undefined
+    const rawCredential = nodeData.credential
 
     if (rawCredential?.credentialNames?.length) {
         inputDefinitions.unshift({
@@ -202,8 +205,10 @@ export function initNode(nodeData: NodeData, newNodeId: string, isAgentflow = tr
     const initializedData: NodeData = {
         ...pickNodeData(nodeData),
         id: newNodeId,
-        inputs: inputDefinitions, // Keep parameter definitions
-        inputValues: { ...initialInputValues, ...(nodeData.inputValues || {}) }, // Merge defaults with existing values
+        name: nodeData.name,
+        label: nodeData.label,
+        inputParams: inputDefinitions as NodeData['inputParams'], // schema definitions
+        inputs: { ...initialInputValues }, // key-value values
         inputAnchors: inputAnchors as NodeData['inputAnchors'],
         outputAnchors: outputAnchors as NodeData['outputAnchors']
     }

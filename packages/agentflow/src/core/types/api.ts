@@ -43,3 +43,30 @@ export interface Credential {
     updatedDate?: string
     workspaceID?: string
 }
+
+export interface CredentialSchemaInput {
+    label: string
+    name: string
+    type: 'password' | 'string' | 'number' | 'boolean' | 'options' | 'json'
+    default?: unknown
+    optional?: boolean
+    description?: string
+    placeholder?: string
+    options?: Array<{ label: string; name: string }>
+    hidden?: boolean
+    rows?: number
+    warning?: string
+}
+
+export interface ComponentCredentialSchema {
+    label: string
+    name: string
+    description?: string
+    inputs?: CredentialSchemaInput[]
+}
+
+export interface CreateCredentialBody {
+    name: string
+    credentialName: string
+    plainDataObj: Record<string, unknown>
+}

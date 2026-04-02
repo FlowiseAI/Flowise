@@ -163,7 +163,7 @@ export const destroyAllSessionsForUser = async (userId: string): Promise<void> =
                     await repository
                         .createQueryBuilder()
                         .delete()
-                        .where(`JSON_EXTRACT(sess, '$.passport.user.id') = :userId`, { userId })
+                        .where(`JSON_EXTRACT(data, '$.passport.user.id') = :userId`, { userId }) // express-mysql-session uses column name 'data' for session payload, not 'sess'
                         .execute()
                     break
                 case 'postgres':

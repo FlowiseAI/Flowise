@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import type { NodeData } from '@/core/types'
+import type { NodeConfigEntry, NodeData, NodeDataSchema } from '@/core/types'
 
 /**
  * Create nodes API functions bound to a client instance
@@ -8,17 +8,20 @@ import type { NodeData } from '@/core/types'
 export function bindNodesApi(client: AxiosInstance) {
     return {
         /**
-         * Get all available nodes
+         * Get all available nodes.
+         * Component definitions from the server (`inputs` is a schema array).
+         * Pass results through initNode() to get canvas-ready NodeData.
          */
-        getAllNodes: async (): Promise<NodeData[]> => {
+        getAllNodes: async (): Promise<NodeDataSchema[]> => {
             const response = await client.get('/nodes')
             return response.data
         },
 
         /**
-         * Get a specific node by name
+         * Get a specific node by name.
+         * Single component definition (`inputs` is a schema array).
          */
-        getNodeByName: async (name: string): Promise<NodeData> => {
+        getNodeByName: async (name: string): Promise<NodeDataSchema> => {
             const response = await client.get(`/nodes/${name}`)
             return response.data
         },
@@ -29,6 +32,17 @@ export function bindNodesApi(client: AxiosInstance) {
          */
         loadNodeMethod: async (nodeName: string, loadMethod: string, body?: Record<string, unknown>): Promise<unknown> => {
             const response = await client.post(`/node-load-method/${nodeName}`, { loadMethod, ...body })
+            return response.data
+        },
+
+        /**
+         * Get node configuration (override configs) for a node.
+         * Posts the node data to /node-config and returns an array of config entries.
+         * NodeData field names (inputParams for schema, inputs for values) already
+         * match what the server expects.
+         */
+        getNodeConfig: async (data: NodeData): Promise<NodeConfigEntry[]> => {
+            const response = await client.post('/node-config', data)
             return response.data
         },
 

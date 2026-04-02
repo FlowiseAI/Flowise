@@ -1,25 +1,26 @@
-import { StatusCodes } from 'http-status-codes'
 import { EvaluationRunner, ICommonObject } from 'flowise-components'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
+import { StatusCodes } from 'http-status-codes'
+import { In } from 'typeorm'
+import { v4 as uuidv4 } from 'uuid'
+import { ApiKey } from '../../database/entities/ApiKey'
+import { Assistant } from '../../database/entities/Assistant'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { Credential } from '../../database/entities/Credential'
 import { Dataset } from '../../database/entities/Dataset'
 import { DatasetRow } from '../../database/entities/DatasetRow'
 import { Evaluation } from '../../database/entities/Evaluation'
-import { EvaluationStatus, IEvaluationResult } from '../../Interface'
 import { EvaluationRun } from '../../database/entities/EvaluationRun'
-import { Credential } from '../../database/entities/Credential'
-import { ApiKey } from '../../database/entities/ApiKey'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { getAppVersion } from '../../utils'
-import { In } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
-import { v4 as uuidv4 } from 'uuid'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
+import { EvaluationStatus, IEvaluationResult } from '../../Interface'
+import { getAppVersion } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { stripProtectedFields } from '../../utils/stripProtectedFields'
+import evaluatorsService from '../evaluator'
 import { calculateCost, formatCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
-import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
-import { Assistant } from '../../database/entities/Assistant'
 
 const runAgain = async (id: string, baseURL: string, orgId: string, workspaceId: string) => {
     try {
@@ -66,7 +67,8 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
     try {
         const appServer = getRunningExpressApp()
         const newEval = new Evaluation()
-        Object.assign(newEval, body)
+        Object.assign(newEval, stripProtectedFields(body))
+        newEval.workspaceId = workspaceId
         newEval.status = EvaluationStatus.PENDING
 
         const row = appServer.AppDataSource.getRepository(Evaluation).create(newEval)

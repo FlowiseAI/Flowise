@@ -20,6 +20,7 @@ const baseConfig = {
         // so we redirect to lightweight CJS stubs under src/__mocks__/.
         '^@tiptap/(.+)$': '<rootDir>/src/__mocks__/@tiptap/$1.ts',
         '^lowlight$': '<rootDir>/src/__mocks__/lowlight.ts',
+        '^tippy\\.js$': '<rootDir>/src/__mocks__/tippy.js.ts',
         // Bypass React.lazy wrappers — resolve Foo.lazy → Foo so tests render synchronously
         '(.*)\\.lazy$': '$1'
     }
@@ -54,6 +55,7 @@ module.exports = {
         './src/features/canvas/components/ConnectionLine.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         // Only getMinimumNodeHeight() is tested; the component is Tier 3 UI with no business logic
         './src/features/canvas/components/NodeOutputHandles.tsx': { branches: 0, functions: 10, lines: 30, statements: 30 },
+        './src/features/canvas/containers/NodeInfoDialog.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/features/canvas/hooks/': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/features/generator/GenerateFlowDialog.tsx': { branches: 80, functions: 80, lines: 80, statements: 80 },
         './src/features/node-editor/': { branches: 80, functions: 80, lines: 80, statements: 80 },

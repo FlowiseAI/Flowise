@@ -23,10 +23,19 @@ const isHtmlContent = (content) => {
 }
 
 // define your extension array
-const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
+const extensions = (
+    availableNodesForVariable,
+    availableState,
+    acceptNodeOutputAsVariable,
+    nodes,
+    nodeData,
+    isNodeInsideInteration,
+    useMarkdown
+) => [
     Markdown,
     StarterKit.configure({
-        codeBlock: false
+        codeBlock: false,
+        ...(!useMarkdown && { link: false })
     }),
     CustomMention.configure({
         HTMLAttributes: {
@@ -103,6 +112,7 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDa
 }))
 
 export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+    const useMarkdown = !!inputParam?.rows
     const customization = useSelector((state) => state.customization)
     const isDarkMode = customization.isDarkMode
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
@@ -135,15 +145,20 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
                     inputParam?.acceptNodeOutputAsVariable,
                     nodes,
                     nodeData,
-                    isNodeInsideInteration
+                    isNodeInsideInteration,
+                    useMarkdown
                 ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],
             content: '',
             onUpdate: ({ editor }) => {
-                try {
-                    onChange(editor.getMarkdown())
-                } catch {
+                if (useMarkdown) {
+                    try {
+                        onChange(editor.getMarkdown())
+                    } catch {
+                        onChange(editor.getHTML())
+                    }
+                } else {
                     onChange(editor.getHTML())
                 }
             },
@@ -155,7 +170,7 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
     // Load initial content after editor is ready, detecting HTML vs markdown
     useEffect(() => {
         if (editor && value) {
-            if (isHtmlContent(value)) {
+            if (!useMarkdown || isHtmlContent(value)) {
                 editor.commands.setContent(value)
             } else {
                 editor.commands.setContent(value, { contentType: 'markdown' })
