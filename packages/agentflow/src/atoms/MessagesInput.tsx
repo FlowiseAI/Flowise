@@ -8,7 +8,7 @@ import type { InputParam, NodeData } from '@/core/types'
 
 import { ExpandTextDialog } from './ExpandTextDialog'
 import { RichTextEditor } from './RichTextEditor.lazy'
-import type { SuggestionItem } from './SuggestionDropdown'
+import { toSuggestionItems } from './toSuggestionItems'
 import { useStableKeys } from './useStableKeys'
 import { VariableInput } from './VariableInput'
 import type { VariableItem } from './VariablePicker'
@@ -51,22 +51,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(messages.length, 'message')
 
-    // Map VariableItem[] to SuggestionItem[] for VariableInput's TipTap mention autocomplete
-    const suggestionItems: SuggestionItem[] | undefined = useMemo(() => {
-        if (!variableItems || variableItems.length === 0) return undefined
-        const idCount = new Map<string, number>()
-        return variableItems.map((v) => {
-            const baseId = v.value.replace(/{{|}}/g, '')
-            const count = idCount.get(baseId) ?? 0
-            idCount.set(baseId, count + 1)
-            return {
-                id: count === 0 ? baseId : `${baseId}__${count}`,
-                label: v.label,
-                description: v.description,
-                category: v.category
-            }
-        })
-    }, [variableItems])
+    const suggestionItems = useMemo(() => toSuggestionItems(variableItems), [variableItems])
 
     const handleRoleChange = useCallback(
         (index: number, role: string) => {

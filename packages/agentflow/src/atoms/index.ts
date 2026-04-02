@@ -20,5 +20,6 @@ export { StructuredOutputBuilder, type StructuredOutputBuilderProps, type Struct
 export { SuggestionDropdown, type SuggestionDropdownProps, type SuggestionDropdownRef, type SuggestionItem } from './SuggestionDropdown'
 export { SwitchInput, type SwitchInputProps } from './SwitchInput'
 export { TooltipWithParser, type TooltipWithParserProps } from './TooltipWithParser'
+export { toSuggestionItems } from './toSuggestionItems'
 export { VariableInput, type VariableInputProps } from './VariableInput'
 export { type VariableItem, VariablePicker, type VariablePickerProps } from './VariablePicker'

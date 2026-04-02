@@ -36,6 +36,8 @@ export interface VariableInputProps {
     rows?: number
     /** Available variables for autocomplete when typing `{{` */
     suggestionItems?: SuggestionItem[]
+    /** Auto-focus the editor on mount */
+    autoFocus?: boolean
 }
 
 /* ── Styled wrapper matching RichTextEditor styling ── */
@@ -136,7 +138,7 @@ const StyledEditorContent = styled(EditorContent, {
  * Serialization matches the UI's RichInput behavior:
  * This is the agentflow equivalent of the UI package's RichInput component.
  */
-export function VariableInput({ value, onChange, placeholder, disabled = false, rows, suggestionItems }: VariableInputProps) {
+export function VariableInput({ value, onChange, placeholder, disabled = false, rows, suggestionItems, autoFocus }: VariableInputProps) {
     const onChangeRef = useRef(onChange)
     useEffect(() => {
         onChangeRef.current = onChange
@@ -178,6 +180,7 @@ export function VariableInput({ value, onChange, placeholder, disabled = false, 
         extensions,
         content: value || '',
         editable: !disabled,
+        autofocus: autoFocus ?? false,
         onUpdate: ({ editor: ed }) => {
             // Always use HTML serialization. The @tiptap/markdown v3 getMarkdown()
             // returns empty strings (known issue with the MarkdownManager in v3.20.4).

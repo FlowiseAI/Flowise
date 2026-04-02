@@ -28,9 +28,9 @@ import { ExpandTextDialog } from './ExpandTextDialog'
 import { JsonInput } from './JsonInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
 import { StateKeyValueInput } from './StateKeyValueInput'
-import { SuggestionItem } from './SuggestionDropdown'
 import { SwitchInput } from './SwitchInput'
 import { TooltipWithParser } from './TooltipWithParser'
+import { toSuggestionItems } from './toSuggestionItems'
 import { VariableInput } from './VariableInput'
 import type { VariableItem } from './VariablePicker'
 import { VariablePicker } from './VariablePicker'
@@ -181,24 +181,10 @@ export function NodeInputHandler({
         ['string', 'password', 'code'].includes(inputParam?.type ?? '')
     )
 
-    // Map VariableItem[] to SuggestionItem[] for the inline autocomplete.
-    // ids must be unique for correct findIndex lookups and React keys — append
-    // a counter suffix when the same base id appears more than once.
-    const suggestionItems: SuggestionItem[] | undefined = useMemo(() => {
-        if (!inputParam?.acceptVariable || !variableItems || variableItems.length === 0) return undefined
-        const idCount = new Map<string, number>()
-        return variableItems.map((v) => {
-            const baseId = v.value.replace(/{{|}}/g, '')
-            const count = idCount.get(baseId) ?? 0
-            idCount.set(baseId, count + 1)
-            return {
-                id: count === 0 ? baseId : `${baseId}__${count}`,
-                label: v.label,
-                description: v.description,
-                category: v.category
-            }
-        })
-    }, [inputParam?.acceptVariable, variableItems])
+    const suggestionItems = useMemo(
+        () => (inputParam?.acceptVariable ? toSuggestionItems(variableItems) : undefined),
+        [inputParam?.acceptVariable, variableItems]
+    )
 
     const renderInput = () => {
         if (!inputParam) return null

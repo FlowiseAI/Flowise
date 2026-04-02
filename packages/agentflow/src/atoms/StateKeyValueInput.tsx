@@ -126,5 +126,3 @@ export function StateKeyValueInput({ value, onChange, disabled = false, suggesti
         </Box>
     )
 }
-
-export default StateKeyValueInput

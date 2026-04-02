@@ -89,6 +89,7 @@ export function ExpandTextDialog({
                                 disabled={disabled}
                                 rows={15}
                                 suggestionItems={suggestionItems}
+                                autoFocus
                             />
                         ) : (
                             <RichTextEditor
