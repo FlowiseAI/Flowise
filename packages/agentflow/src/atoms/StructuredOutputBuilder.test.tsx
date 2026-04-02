@@ -59,7 +59,7 @@ describe('StructuredOutputBuilder', () => {
         id: 'node-1',
         name: 'llmAgentflow',
         label: 'LLM',
-        inputValues: {}
+        inputs: {}
     } as NodeData
 
     beforeEach(() => {
@@ -79,7 +79,7 @@ describe('StructuredOutputBuilder', () => {
     it('should render existing entries with field labels', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [
                     { key: 'name', type: 'string', description: 'User name' },
                     { key: 'age', type: 'number', description: 'User age' }
@@ -129,7 +129,7 @@ describe('StructuredOutputBuilder', () => {
     it('should append to existing entries when adding', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
             }
         } as NodeData
@@ -152,7 +152,7 @@ describe('StructuredOutputBuilder', () => {
     it('should delete an entry and call onDataChange with updated array', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [
                     { key: 'name', type: 'string', description: '' },
                     { key: 'age', type: 'number', description: '' }
@@ -176,7 +176,7 @@ describe('StructuredOutputBuilder', () => {
     it('should update key when text field changes', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'old', type: 'string', description: '' }]
             }
         } as NodeData
@@ -197,7 +197,7 @@ describe('StructuredOutputBuilder', () => {
     it('should update type when dropdown changes', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'count', type: 'string', description: '' }]
             }
         } as NodeData
@@ -219,7 +219,7 @@ describe('StructuredOutputBuilder', () => {
     it('should show Enum Values field when type is "enum"', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'status', type: 'enum', enumValues: 'active, inactive', description: '' }]
             }
         } as NodeData
@@ -234,7 +234,7 @@ describe('StructuredOutputBuilder', () => {
     it('should show JSON Schema field when type is "jsonArray"', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'items', type: 'jsonArray', jsonSchema: '{}', description: '' }]
             }
         } as NodeData
@@ -249,7 +249,7 @@ describe('StructuredOutputBuilder', () => {
     it('should hide conditional fields for non-conditional types', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
             }
         } as NodeData
@@ -263,7 +263,7 @@ describe('StructuredOutputBuilder', () => {
     it('should clear enumValues when switching type away from enum', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'status', type: 'enum', enumValues: 'a, b', description: '' }]
             }
         } as NodeData
@@ -285,7 +285,7 @@ describe('StructuredOutputBuilder', () => {
     it('should disable all controls when disabled prop is true', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
             }
         } as NodeData
@@ -309,7 +309,7 @@ describe('StructuredOutputBuilder', () => {
 
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
             }
         } as NodeData
@@ -329,7 +329,7 @@ describe('StructuredOutputBuilder', () => {
 
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
             }
         } as NodeData
@@ -344,7 +344,7 @@ describe('StructuredOutputBuilder', () => {
     it('should render Description label with required asterisk', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
             }
         } as NodeData
@@ -361,7 +361,7 @@ describe('StructuredOutputBuilder', () => {
     it('should render info icon next to Enum Values label', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'status', type: 'enum', enumValues: '', description: '' }]
             }
         } as NodeData
@@ -375,7 +375,7 @@ describe('StructuredOutputBuilder', () => {
     it('should render info icon and expand icon next to JSON Schema label', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'items', type: 'jsonArray', jsonSchema: '{}', description: '' }]
             }
         } as NodeData
@@ -392,7 +392,7 @@ describe('StructuredOutputBuilder', () => {
     it('should open expand dialog when expand icon is clicked on JSON Schema', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'items', type: 'jsonArray', jsonSchema: '{"a":"b"}', description: '' }]
             }
         } as NodeData
@@ -408,7 +408,7 @@ describe('StructuredOutputBuilder', () => {
     it('should update JSON Schema when expand dialog saves', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: 'items', type: 'jsonArray', jsonSchema: '{}', description: '' }]
             }
         } as NodeData
@@ -429,7 +429,7 @@ describe('StructuredOutputBuilder', () => {
     it('should render all six type options in the dropdown', () => {
         const dataWithEntries: NodeData = {
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 llmStructuredOutput: [{ key: '', type: 'string', description: '' }]
             }
         } as NodeData

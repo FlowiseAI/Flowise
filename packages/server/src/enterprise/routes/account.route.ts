@@ -22,6 +22,8 @@ router.post('/logout', accountController.logout)
 
 router.post('/verify', accountController.verify)
 
+router.post('/confirm-email-change', accountController.confirmEmailChange)
+
 router.post('/resend-verification', accountController.resendVerificationEmail)
 
 router.post('/forgot-password', accountController.forgotPassword)

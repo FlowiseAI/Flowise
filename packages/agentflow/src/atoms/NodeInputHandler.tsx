@@ -27,10 +27,12 @@ import { Dropdown } from './Dropdown'
 import { ExpandTextDialog } from './ExpandTextDialog'
 import { JsonInput } from './JsonInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
-import type { VariableItem } from './SelectVariable'
-import { SelectVariable } from './SelectVariable'
+import { SuggestionItem } from './SuggestionDropdown'
 import { SwitchInput } from './SwitchInput'
 import { TooltipWithParser } from './TooltipWithParser'
+import { VariableInput } from './VariableInput'
+import type { VariableItem } from './VariablePicker'
+import { VariablePicker } from './VariablePicker'
 
 const CustomWidthTooltip = styled(({ className, ...props }: TooltipProps) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
@@ -86,7 +88,7 @@ export interface NodeInputHandlerProps {
     arrayIndex?: number | null
     /** For array-based configs: the parent array InputParam definition. */
     parentArrayParam?: InputParam | null
-    /** Variable items for the SelectVariable popover (injected from features layer). */
+    /** Variable items for the VariablePicker popover (injected from features layer). */
     variableItems?: VariableItem[]
 }
 
@@ -148,9 +150,9 @@ export function NodeInputHandler({
 
     const expandValue = useMemo(() => {
         if (!inputParam) return ''
-        const v = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
+        const v = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
         return typeof v === 'string' ? v : JSON.stringify(v)
-    }, [data.inputValues, inputParam])
+    }, [data.inputs, inputParam])
 
     const handleExpandConfirm = useCallback(
         (value: string) => {
@@ -163,12 +165,12 @@ export function NodeInputHandler({
     const handleVariableSelect = useCallback(
         (variableString: string) => {
             if (!inputParam) return
-            const current = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
+            const current = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
             const currentStr = typeof current === 'string' ? current : JSON.stringify(current)
             handleDataChange(currentStr + variableString)
             setVariableAnchorEl(null)
         },
-        [inputParam, data.inputValues, handleDataChange]
+        [inputParam, data.inputs, handleDataChange]
     )
 
     const showVariableButton = !!(
@@ -178,13 +180,46 @@ export function NodeInputHandler({
         ['string', 'password', 'code'].includes(inputParam?.type ?? '')
     )
 
+    // Map VariableItem[] to SuggestionItem[] for the inline autocomplete.
+    // ids must be unique for correct findIndex lookups and React keys — append
+    // a counter suffix when the same base id appears more than once.
+    const suggestionItems: SuggestionItem[] | undefined = useMemo(() => {
+        if (!inputParam?.acceptVariable || !variableItems || variableItems.length === 0) return undefined
+        const idCount = new Map<string, number>()
+        return variableItems.map((v) => {
+            const baseId = v.value.replace(/{{|}}/g, '')
+            const count = idCount.get(baseId) ?? 0
+            idCount.set(baseId, count + 1)
+            return {
+                id: count === 0 ? baseId : `${baseId}__${count}`,
+                label: v.label,
+                description: v.description,
+                category: v.category
+            }
+        })
+    }, [inputParam?.acceptVariable, variableItems])
+
     const renderInput = () => {
         if (!inputParam) return null
 
-        const value = data.inputValues?.[inputParam.name] ?? inputParam.default ?? ''
+        const value = data.inputs?.[inputParam.name] ?? inputParam.default ?? ''
 
         switch (inputParam.type) {
             case 'string':
+                // When acceptVariable is enabled and suggestions are available, use VariableInput
+                // which provides inline {{ autocomplete
+                if (suggestionItems && suggestionItems.length > 0) {
+                    return (
+                        <VariableInput
+                            value={typeof value === 'string' ? value : ''}
+                            onChange={(v) => handleDataChange(v)}
+                            placeholder={inputParam.placeholder}
+                            disabled={disabled}
+                            rows={inputParam.rows}
+                            suggestionItems={suggestionItems}
+                        />
+                    )
+                }
                 if (isExpandable) {
                     return (
                         <RichTextEditor
@@ -345,7 +380,7 @@ export function NodeInputHandler({
                             disabled={disabled}
                             onChange={(v) => handleDataChange(v)}
                             nodeName={data.name}
-                            inputValues={data.inputValues as Record<string, unknown> | undefined}
+                            inputValues={data.inputs as Record<string, unknown> | undefined}
                         />
                         {inputParam.loadConfig && ConfigInputComponent && value && onConfigChange && (
                             <ConfigInputComponent
@@ -370,7 +405,7 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onChange={(v) => handleDataChange(v)}
                         nodeName={data.name}
-                        inputValues={data.inputValues as Record<string, unknown> | undefined}
+                        inputValues={data.inputs as Record<string, unknown> | undefined}
                     />
                 )
 
@@ -444,12 +479,15 @@ export function NodeInputHandler({
                             </Typography>
                             <div style={{ flexGrow: 1 }} />
                             {showVariableButton && (
-                                <Tooltip title='Select variable'>
+                                <Tooltip title={suggestionItems?.length ? 'Type {{ to select variables' : 'Select variable'}>
                                     <IconButton
                                         size='small'
                                         sx={{ height: 25, width: 25 }}
                                         disabled={disabled}
-                                        onClick={(e) => setVariableAnchorEl(e.currentTarget)}
+                                        onClick={(e) =>
+                                            (inputParam?.type !== 'string' || !suggestionItems?.length) &&
+                                            setVariableAnchorEl(e.currentTarget)
+                                        }
                                     >
                                         <IconVariable size={20} style={{ color: theme.palette.info.main }} />
                                     </IconButton>
@@ -500,7 +538,7 @@ export function NodeInputHandler({
                     transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                     slotProps={{ paper: { sx: { width: 320, maxHeight: 400 } } }}
                 >
-                    <SelectVariable items={variableItems!} onSelect={handleVariableSelect} />
+                    <VariablePicker items={variableItems!} onSelect={handleVariableSelect} />
                 </Popover>
             )}
 

@@ -1,6 +1,6 @@
 import type { AxiosInstance } from 'axios'
 
-import type { NodeConfigEntry, NodeData } from '@/core/types'
+import type { NodeConfigEntry, NodeData, NodeDataSchema } from '@/core/types'
 
 /**
  * Create nodes API functions bound to a client instance
@@ -8,17 +8,20 @@ import type { NodeConfigEntry, NodeData } from '@/core/types'
 export function bindNodesApi(client: AxiosInstance) {
     return {
         /**
-         * Get all available nodes
+         * Get all available nodes.
+         * Component definitions from the server (`inputs` is a schema array).
+         * Pass results through initNode() to get canvas-ready NodeData.
          */
-        getAllNodes: async (): Promise<NodeData[]> => {
+        getAllNodes: async (): Promise<NodeDataSchema[]> => {
             const response = await client.get('/nodes')
             return response.data
         },
 
         /**
-         * Get a specific node by name
+         * Get a specific node by name.
+         * Single component definition (`inputs` is a schema array).
          */
-        getNodeByName: async (name: string): Promise<NodeData> => {
+        getNodeByName: async (name: string): Promise<NodeDataSchema> => {
             const response = await client.get(`/nodes/${name}`)
             return response.data
         },
@@ -35,18 +38,11 @@ export function bindNodesApi(client: AxiosInstance) {
         /**
          * Get node configuration (override configs) for a node.
          * Posts the node data to /node-config and returns an array of config entries.
-         *
-         * The server expects legacy field names: `inputParams` (parameter definitions)
-         * and `inputs` (user values). The SDK uses `inputs` and `inputValues` respectively,
-         * so we map them here.
+         * NodeData field names (inputParams for schema, inputs for values) already
+         * match what the server expects.
          */
         getNodeConfig: async (data: NodeData): Promise<NodeConfigEntry[]> => {
-            const payload = {
-                ...data,
-                inputParams: data.inputs,
-                inputs: data.inputValues
-            }
-            const response = await client.post('/node-config', payload)
+            const response = await client.post('/node-config', data)
             return response.data
         },
 

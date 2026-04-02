@@ -374,7 +374,8 @@ const updateChatflow = async (
         }
     }
     const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
-    await _checkAndUpdateDocumentStoreUsage(newDbChatflow, chatflow.workspaceId)
+    newDbChatflow.workspaceId = workspaceId // defense-in-depth: use trusted param, not chatflow.workspaceId (merge mutates in-place)
+    await _checkAndUpdateDocumentStoreUsage(newDbChatflow, workspaceId)
     const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
 
     return dbResponse

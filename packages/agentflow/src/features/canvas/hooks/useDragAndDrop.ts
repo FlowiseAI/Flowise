@@ -2,7 +2,7 @@ import { RefObject, useCallback } from 'react'
 import { useReactFlow } from 'reactflow'
 
 import { getUniqueNodeId, getUniqueNodeLabel, initNode, resolveNodeType } from '@/core'
-import type { FlowNode, NodeData } from '@/core/types'
+import type { FlowNode, NodeDataSchema } from '@/core/types'
 import { checkNodePlacementConstraints, findParentIterationNode } from '@/core/validation'
 import { useAgentflowContext } from '@/infrastructure/store'
 
@@ -40,7 +40,7 @@ export function useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper, onConst
             if (!nodeDataStr) return
 
             try {
-                const nodeData = JSON.parse(nodeDataStr) as NodeData
+                const nodeData = JSON.parse(nodeDataStr) as NodeDataSchema
 
                 // Get drop position relative to the canvas
                 const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect()

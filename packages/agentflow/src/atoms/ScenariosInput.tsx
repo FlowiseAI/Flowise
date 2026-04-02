@@ -27,8 +27,8 @@ export function ScenariosInput({ inputParam, data, disabled = false, onDataChang
     const theme = useTheme()
 
     const arrayItems = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as Record<string, unknown>[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(arrayItems.length, 'scenario')
@@ -87,7 +87,7 @@ export function ScenariosInput({ inputParam, data, disabled = false, onDataChang
             {arrayItems.map((itemValues, index) => {
                 const itemData: NodeData = {
                     ...data,
-                    inputValues: itemValues
+                    inputs: itemValues
                 }
 
                 return (

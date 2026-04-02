@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react'
 import { addEdge, applyEdgeChanges, applyNodeChanges, Connection, EdgeChange, Node, NodeChange } from 'reactflow'
 
 import { getNodeColor, getUniqueNodeId, getUniqueNodeLabel, initNode, isValidConnectionAgentflowV2, resolveNodeType } from '@/core'
-import type { FlowDataCallback, FlowEdge, FlowNode, NodeData } from '@/core/types'
+import type { FlowDataCallback, FlowEdge, FlowNode, NodeDataSchema } from '@/core/types'
 import { checkNodePlacementConstraints } from '@/core/validation'
 import { useAgentflowContext } from '@/infrastructure/store'
 
@@ -14,7 +14,7 @@ interface UseFlowHandlersProps {
     onNodesChange: (changes: NodeChange[]) => void
     onEdgesChange: (changes: EdgeChange[]) => void
     onFlowChange?: FlowDataCallback
-    availableNodes: NodeData[]
+    availableNodes: NodeDataSchema[]
     onConstraintViolation?: (message: string) => void
 }
 
