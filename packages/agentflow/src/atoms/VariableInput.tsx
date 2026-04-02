@@ -170,6 +170,8 @@ export function VariableInput({
     // `editor` without suppressing the exhaustive-deps rule.
     const initialValueRef = useRef(value)
 
+    const useMarkdown = !!rows
+
     const suggestionConfig = useMemo(
         () => (suggestionItems?.length ? createSuggestionConfig(suggestionItems) : undefined),
         [suggestionItems]
@@ -177,9 +179,10 @@ export function VariableInput({
 
     const extensions = useMemo(
         () => [
-            Markdown,
+            ...(useMarkdown ? [Markdown] : []),
             StarterKit.configure({
-                codeBlock: false
+                codeBlock: false,
+                ...(!useMarkdown && { link: false })
             }),
             CodeBlockLowlight.configure({ lowlight, enableTabIndentation: true, tabSize: 2 }),
             ...(placeholder ? [Placeholder.configure({ placeholder })] : []),
@@ -200,7 +203,7 @@ export function VariableInput({
                   ]
                 : [])
         ],
-        [placeholder, suggestionConfig]
+        [placeholder, suggestionConfig, useMarkdown]
     )
 
     const editor = useEditor({
@@ -209,7 +212,7 @@ export function VariableInput({
         editable: !disabled,
         autofocus: autoFocus ? 'end' : false,
         onUpdate: ({ editor: ed }) => {
-            const value = getEditorMarkdown(ed)
+            const value = useMarkdown ? getEditorMarkdown(ed) : ed.getHTML()
             lastEmittedRef.current = value
             onChangeRef.current(value)
         }
@@ -219,7 +222,7 @@ export function VariableInput({
     // Reads from a ref so only `editor` needs to be in the dep array.
     useEffect(() => {
         if (!editor || !initialValueRef.current) return
-        const contentType = isHtmlContent(initialValueRef.current) ? 'html' : 'markdown'
+        const contentType = !useMarkdown || isHtmlContent(initialValueRef.current) ? 'html' : 'markdown'
         editor.commands.setContent(initialValueRef.current, { emitUpdate: false, contentType })
         lastEmittedRef.current = initialValueRef.current
     }, [editor])
@@ -227,11 +230,11 @@ export function VariableInput({
     // Sync genuine external value changes (e.g. parent resets the field programmatically).
     useEffect(() => {
         if (editor && value !== lastEmittedRef.current) {
-            const contentType = isHtmlContent(value) ? 'html' : 'markdown'
+            const contentType = !useMarkdown || isHtmlContent(value) ? 'html' : 'markdown'
             editor.commands.setContent(value, { emitUpdate: false, contentType })
             lastEmittedRef.current = value
         }
-    }, [editor, value])
+    }, [editor, value, useMarkdown])
 
     // Notify parent when the editor instance is ready (used by ExpandTextDialog to flush
     // the current editor state to markdown when switching to Source mode).
