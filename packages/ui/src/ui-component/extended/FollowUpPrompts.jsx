@@ -321,7 +321,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
         const key = getProviderInputKey(inputParam)
         const value = providerConfig[key]
 
-        return value !== undefined && value !== null && value !== '' ? value : inputParam.default
+        return value != null && value !== '' ? value : inputParam.default
     }
 
     const withProviderDefaults = (config, providerName) => {
@@ -332,7 +332,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
         const providerConfig = { ...(config?.[providerName] ?? {}) }
         followUpPromptsOptions[providerName].inputs.forEach((inputParam) => {
             const key = getProviderInputKey(inputParam)
-            if ((providerConfig[key] === undefined || providerConfig[key] === null || providerConfig[key] === '') && inputParam.default !== undefined) {
+            if ((providerConfig[key] == null || providerConfig[key] === '') && inputParam.default !== undefined) {
                 providerConfig[key] = inputParam.default
             }
         })
