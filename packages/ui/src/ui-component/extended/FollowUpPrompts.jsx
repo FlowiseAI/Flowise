@@ -451,7 +451,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
             for (let inputParam of provider.inputs) {
                 if (!inputParam.optional) {
                     const value = getProviderInputValue(followUpPromptsConfig, selectedProvider, inputParam)
-                    if (!value || value === '') {
+                    if (value == null || value === '') {
                         return true
                     }
                 }
