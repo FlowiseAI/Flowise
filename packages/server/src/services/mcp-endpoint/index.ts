@@ -84,7 +84,7 @@ async function chatflowCallback(
         sourceRequest: req
     })
 
-    const result = await utilBuildChatflow(mockReq, false, ChatType.MCP)
+    const result = await utilBuildChatflow(mockReq, true, ChatType.MCP)
 
     // Extract the text response from the result
     let textContent: string
