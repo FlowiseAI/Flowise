@@ -28,8 +28,7 @@ nodes:
     name: Vector Store
     description: Store and query document embeddings.
     runtime:
-      config:
-        provider: pinecone
+      provider: pinecone
 
   - id: retriever
     type: agent
@@ -42,7 +41,7 @@ nodes:
     description: Generate responses using retrieved context and conversation history.
     runtime:
       provider: openai
-      model: gpt-4
+      model: gpt-4o
 
   - id: response
     type: api
