@@ -33,6 +33,7 @@ export const WHITELIST_URLS = [
     '/api/v1/account/resend-verification',
     '/api/v1/account/forgot-password',
     '/api/v1/account/reset-password',
+    '/api/v1/account/confirm-email-change',
     '/api/v1/account/basic-auth',
     '/api/v1/loginmethod/default',
     '/api/v1/pricing',
@@ -55,7 +56,7 @@ export const WHITELIST_URLS = [
     GithubSSO.CALLBACK_URI
 ]
 
-export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim']
+export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim', '/api/v1/account/delete']
 
 export const enum GeneralErrorMessage {
     FORBIDDEN = 'Forbidden',
@@ -63,7 +64,8 @@ export const enum GeneralErrorMessage {
     UNHANDLED_EDGE_CASE = 'Unhandled Edge Case',
     INVALID_PASSWORD = 'Invalid Password',
     NOT_ALLOWED_TO_DELETE_OWNER = 'Not Allowed To Delete Owner',
-    INTERNAL_SERVER_ERROR = 'Internal Server Error'
+    INTERNAL_SERVER_ERROR = 'Internal Server Error',
+    SMTP_NOT_CONFIGURED = 'Email (SMTP) is not configured on this server'
 }
 
 export const enum GeneralSuccessMessage {

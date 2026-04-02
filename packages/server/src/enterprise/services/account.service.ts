@@ -1,7 +1,28 @@
 import bcrypt from 'bcryptjs'
+import { removeFolderFromStorage } from 'flowise-components'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import { StatusCodes } from 'http-status-codes'
 import moment from 'moment'
-import { DataSource, QueryRunner } from 'typeorm'
+import { DataSource, In, QueryRunner } from 'typeorm'
+import { ApiKey } from '../../database/entities/ApiKey'
+import { Assistant } from '../../database/entities/Assistant'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { ChatMessage } from '../../database/entities/ChatMessage'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
+import { Credential } from '../../database/entities/Credential'
+import { CustomTemplate } from '../../database/entities/CustomTemplate'
+import { Dataset } from '../../database/entities/Dataset'
+import { DatasetRow } from '../../database/entities/DatasetRow'
+import { DocumentStore } from '../../database/entities/DocumentStore'
+import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
+import { Evaluation } from '../../database/entities/Evaluation'
+import { EvaluationRun } from '../../database/entities/EvaluationRun'
+import { Evaluator } from '../../database/entities/Evaluator'
+import { Execution } from '../../database/entities/Execution'
+import { Lead } from '../../database/entities/Lead'
+import { Tool } from '../../database/entities/Tool'
+import { UpsertHistory } from '../../database/entities/UpsertHistory'
+import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { IdentityManager } from '../../IdentityManager'
 import { Platform, UserPlan } from '../../Interface'
@@ -9,6 +30,8 @@ import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
 import { checkUsageLimit } from '../../utils/quotaUsage'
+import { emitEvent, TelemetryEventCategory, TelemetryEventResult } from '../../utils/telemetry'
+import { WorkspaceShared } from '../database/entities/EnterpriseEntities'
 import { OrganizationUser, OrganizationUserStatus } from '../database/entities/organization-user.entity'
 import { Organization, OrganizationName } from '../database/entities/organization.entity'
 import { GeneralRole, Role } from '../database/entities/role.entity'
@@ -17,8 +40,17 @@ import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspa
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { destroyAllSessionsForUser } from '../middleware/passport/SessionPersistance'
+import { getJWTAuthTokenSecret } from '../utils/authSecrets'
 import { compareHash, getHash, getPasswordSaltRounds, hashNeedsUpgrade } from '../utils/encryption.util'
-import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
+import { EMAIL_CHANGE_JWT_TYP, isEmailChangeJwtShape, signEmailChangeJwt, verifyEmailChangeJwt } from '../utils/emailChangeJwt.util'
+import {
+    isSmtpConfigured,
+    sendEmailChangeConfirmationEmail,
+    sendPasswordResetEmail,
+    sendVerificationEmailForCloud,
+    sendWorkspaceAdd,
+    sendWorkspaceInvite
+} from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
 import { getSecureAppUrl, getSecureTokenLink } from '../utils/url.util'
 import { validatePasswordOrThrow } from '../utils/validation.util'
@@ -26,6 +58,7 @@ import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
 import { RoleErrorMessage, RoleService } from './role.service'
+import { sanitizeUser } from '../../utils/sanitize.util'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
@@ -64,6 +97,32 @@ export class AccountService {
         this.identityManager = appServer.identityManager
     }
 
+    /** Cloud always sends; open source / enterprise require SMTP to be configured. */
+    private canSendTransactionalEmail(): boolean {
+        return this.identityManager.getPlatformType() === Platform.CLOUD || isSmtpConfigured()
+    }
+
+    private async sendInviteEmailIfAllowed(send: () => Promise<void>, context: string) {
+        if (this.canSendTransactionalEmail()) {
+            await send()
+        } else {
+            logger.warn(`Skipping transactional email (${context}): SMTP is not configured`)
+        }
+    }
+
+    /** Prevents email-change JWTs from being consumed by verify / reset-password flows. */
+    private assertNotEmailChangeJwt(token: string | undefined | null) {
+        if (!isEmailChangeJwtShape(token)) return
+        try {
+            const payload = jwt.verify(token, getJWTAuthTokenSecret()) as JwtPayload
+            if (payload.typ === EMAIL_CHANGE_JWT_TYP) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EMAIL_CHANGE_USE_CONFIRM_LINK)
+            }
+        } catch (err) {
+            if (err instanceof InternalFlowiseError) throw err
+        }
+    }
+
     private initializeAccountDTO(data: AccountDTO) {
         data.organization = data.organization || {}
         data.organizationUser = data.organizationUser || {}
@@ -75,6 +134,9 @@ export class AccountService {
     }
 
     public async resendVerificationEmail({ email }: { email: string }) {
+        if (!this.canSendTransactionalEmail()) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.SMTP_NOT_CONFIGURED)
+        }
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -317,7 +379,10 @@ export class AccountService {
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
                         ? getSecureTokenLink('/register', data.user.tempToken!)
                         : getSecureAppUrl('/register')
-                await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                await this.sendInviteEmailIfAllowed(
+                    () => sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType()),
+                    'workspace-invite'
+                )
                 data.user = await this.userService.createNewUser(data.user, queryRunner)
 
                 data.organizationUser.organizationId = data.workspace.organizationId
@@ -391,29 +456,49 @@ export class AccountService {
                 if (workspaceUser.length === 1) {
                     oldWorkspaceUser = workspaceUser[0]
                     if (oldWorkspaceUser.workspace.name === WorkspaceName.DEFAULT_PERSONAL_WORKSPACE) {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType()
+                        await this.sendInviteEmailIfAllowed(
+                            () =>
+                                sendWorkspaceInvite(
+                                    data.user.email!,
+                                    data.workspace.name!,
+                                    registerLink,
+                                    this.identityManager.getPlatformType()
+                                ),
+                            'workspace-invite'
                         )
                     } else {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType(),
-                            'update'
+                        await this.sendInviteEmailIfAllowed(
+                            () =>
+                                sendWorkspaceInvite(
+                                    data.user.email!,
+                                    data.workspace.name!,
+                                    registerLink,
+                                    this.identityManager.getPlatformType(),
+                                    'update'
+                                ),
+                            'workspace-invite-update'
                         )
                     }
                 } else {
-                    await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                    await this.sendInviteEmailIfAllowed(
+                        () =>
+                            sendWorkspaceInvite(
+                                data.user.email!,
+                                data.workspace.name!,
+                                registerLink,
+                                this.identityManager.getPlatformType()
+                            ),
+                        'workspace-invite'
+                    )
                 }
             } else {
                 data.organizationUser.updatedBy = data.user.createdBy
 
                 const dashboardLink = getSecureAppUrl()
-                await sendWorkspaceAdd(data.user.email!, data.workspace.name!, dashboardLink)
+                await this.sendInviteEmailIfAllowed(
+                    () => sendWorkspaceAdd(data.user.email!, data.workspace.name!, dashboardLink),
+                    'workspace-add'
+                )
             }
 
             workspace.updatedBy = data.user.createdBy
@@ -514,6 +599,7 @@ export class AccountService {
         try {
             await queryRunner.startTransaction()
             if (!data.user.tempToken) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+            this.assertNotEmailChangeJwt(data.user.tempToken)
             const user = await this.userService.readUserByToken(data.user.tempToken, queryRunner)
             if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
             data.user = user
@@ -534,6 +620,9 @@ export class AccountService {
 
     public async forgotPassword(data: AccountDTO) {
         data = this.initializeAccountDTO(data)
+        if (!this.canSendTransactionalEmail()) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.SMTP_NOT_CONFIGURED)
+        }
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -569,6 +658,7 @@ export class AccountService {
         await queryRunner.connect()
         try {
             if (!data.user.tempToken) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+            this.assertNotEmailChangeJwt(data.user.tempToken)
 
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
@@ -622,6 +712,357 @@ export class AccountService {
                 'Logout Success',
                 user.ssoToken ? 'SSO' : 'Email/Password'
             )
+        }
+    }
+
+    /**
+     * Permanently deletes the logged-in user's account and all associated organization and workspace data.
+     *
+     * Only allowed on CLOUD platform. Validates that the user is the sole organization owner and that
+     * the organization has a subscription, then runs a transaction that removes organization and
+     * workspace memberships, deletes all workspace resources (chatflows, documents, evaluations,
+     * datasets, etc.), anonymizes the user record for GDPR, cancels the Stripe subscription, removes
+     * organization storage, and emits an audit event. Throws on validation failure or if the user is
+     * not found.
+     *
+     * @param queryRunner - TypeORM query runner for the database transaction
+     * @param loggedInUser - The authenticated user requesting account deletion
+     * @param ipAddress - Client IP address (e.g. for audit/telemetry)
+     * @returns A promise that resolves when deletion and cleanup complete, or rejects with an error
+     */
+    public async delete(queryRunner: QueryRunner, loggedInUser: LoggedInUser, ipAddress: string): Promise<void> {
+        if (this.identityManager.getPlatformType() !== Platform.CLOUD)
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+        if (!loggedInUser.id) throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+
+        // Step 3.1: Find User ID by Email
+        const user = await this.userService.readUserById(loggedInUser.id, queryRunner)
+        if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+        // Step 3.1: Find Organization Memberships and Roles
+        const targetUserOrganizationMemberships = await this.organizationUserService.readOrganizationUserByUserId(user.id, queryRunner)
+        if (!targetUserOrganizationMemberships?.length)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
+        // Step 3.1.1: Verify that there is only one owner
+        const organizationIdsWhereOwner = targetUserOrganizationMemberships
+            .filter((organizationUser) => organizationUser.isOrgOwner)
+            .map((organizationUser) => organizationUser)
+        if (organizationIdsWhereOwner.length !== 1)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.NOT_ALLOWED_TO_DELETE_OWNER)
+        const organizaiton = await this.organizationservice.readOrganizationById(organizationIdsWhereOwner[0].organizationId, queryRunner)
+        if (!organizaiton?.subscriptionId)
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, OrganizationErrorMessage.ORGANIZATION_HAS_NO_SUBSCRIPTION)
+        // Step 3.1.2: Verify how many people invited him as member
+        const organizationsUserWasInvitedTo = targetUserOrganizationMemberships
+            .filter((organizationUser) => !organizationUser.isOrgOwner)
+            .map((organizationUser) => organizationUser.organizationId)
+
+        // Step 3.3: Find All Members and Owner in the Organization
+        const organizationUsers = await this.organizationUserService.readOrganizationUserByOrganizationId(organizaiton.id, queryRunner)
+        if (!organizationUsers)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
+        const membershipsWhereUserWasInvited = organizationUsers
+            .filter((organizationUser) => !organizationUser.isOrgOwner)
+            .map((organizationUser) => organizationUser.userId)
+
+        // Step 3.4: Find All Workspaces for the Organization
+        const workspaceIds = (await queryRunner.manager.findBy(Workspace, { organizationId: organizaiton.id })).map(
+            (workspace) => workspace.id
+        )
+        if (workspaceIds.length === 0) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
+        const chatflowIds = (await queryRunner.manager.findBy(ChatFlow, { workspaceId: In(workspaceIds) })).map((chatflow) => chatflow.id)
+        const documentStoreIds = (await queryRunner.manager.findBy(DocumentStore, { workspaceId: In(workspaceIds) })).map(
+            (documentStore) => documentStore.id
+        )
+        const evaluationIds = (await queryRunner.manager.findBy(Evaluation, { workspaceId: In(workspaceIds) })).map(
+            (evaluation) => evaluation.id
+        )
+        const datasetIds = (await queryRunner.manager.findBy(Dataset, { workspaceId: In(workspaceIds) })).map((dataset) => dataset.id)
+
+        // Step 4: Deletion Process
+        await queryRunner.startTransaction()
+
+        // Step 4.1: Delete Organization Users with Member Role
+        await queryRunner.manager.delete(OrganizationUser, { userId: loggedInUser.id, organizationId: In(organizationsUserWasInvitedTo) })
+        await queryRunner.manager.delete(OrganizationUser, {
+            organizationId: organizaiton.id,
+            userId: In(membershipsWhereUserWasInvited)
+        })
+
+        // Step 4.2: Delete Workspace Users
+        await queryRunner.manager.delete(WorkspaceUser, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(WorkspaceUser, { userId: loggedInUser.id })
+
+        // Step 4.3: Delete Roles created for the Organization
+        await queryRunner.manager.delete(Role, { organizationId: organizaiton.id })
+
+        // Step 4.4: Delete Workspace Child Data
+        // Step 4.4.1: Delete Chat Messages
+        await queryRunner.manager.delete(ChatMessageFeedback, { chatflowid: In(chatflowIds) })
+        await queryRunner.manager.delete(ChatMessage, { chatflowid: In(chatflowIds) })
+
+        // Step 4.4.2: Delete Upsert History
+        await queryRunner.manager.delete(UpsertHistory, { chatflowid: In(chatflowIds) })
+        await queryRunner.manager.delete(UpsertHistory, { chatflowid: In(documentStoreIds) }) // don't be alarm because we reuse the chatflowid for document store upsert history
+
+        // Step 4.4.3: Delete Leads
+        await queryRunner.manager.delete(Lead, { chatflowid: In(chatflowIds) })
+
+        // Step 4.4.4: Delete Document Store Data
+        await queryRunner.manager.delete(DocumentStoreFileChunk, { storeId: In(documentStoreIds) })
+        await queryRunner.manager.delete(DocumentStore, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.5: Delete Evaluation Data
+        await queryRunner.manager.delete(EvaluationRun, { evaluationId: In(evaluationIds) })
+        await queryRunner.manager.delete(Evaluation, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.6: Delete Dataset Data
+        await queryRunner.manager.delete(DatasetRow, { datasetId: In(datasetIds) })
+        await queryRunner.manager.delete(Dataset, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.7: Delete ChatFlows
+        await queryRunner.manager.delete(ChatFlow, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.8: Delete Other Workspace Resources
+        await queryRunner.manager.delete(ApiKey, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Variable, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Tool, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Credential, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Assistant, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Evaluator, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(CustomTemplate, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Execution, { workspaceId: In(workspaceIds) })
+
+        // Step 4.4.9: Delete Workspace
+        await queryRunner.manager.delete(WorkspaceShared, { workspaceId: In(workspaceIds) })
+        await queryRunner.manager.delete(Workspace, { id: In(workspaceIds) })
+
+        // Step 5: Anonymize User Record (GDPR Compliance)
+        user.name = UserStatus.DELETED
+        user.email = `deleted_${user.id}_${Date.now()}@deleted.flowise`
+        user.status = UserStatus.DELETED
+        user.credential = null
+        user.tokenExpiry = null
+        user.tempToken = null
+        await queryRunner.manager.save(User, user)
+
+        // Step 6: Cancel Stripe Subscription
+        await this.identityManager.cancelSubscription(organizaiton.subscriptionId)
+
+        await queryRunner.commitTransaction()
+
+        // Step 7: Delete Organization Folder from Storage
+        await removeFolderFromStorage(organizaiton.id)
+
+        await emitEvent({
+            category: TelemetryEventCategory.AUDIT,
+            eventType: 'account-deleted',
+            actionType: 'delete',
+            userId: user.id,
+            orgId: organizaiton.id,
+            resourceId: user.id,
+            ipAddress: ipAddress,
+            result: TelemetryEventResult.SUCCESS
+        })
+    }
+
+    public async initiateEmailChange(userId: string, newEmail: string) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            await queryRunner.startTransaction()
+            const user = await this.userService.readUserById(userId, queryRunner)
+            if (!user?.email) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            const expiryInHours = process.env.INVITE_TOKEN_EXPIRY_IN_HOURS ? parseInt(process.env.INVITE_TOKEN_EXPIRY_IN_HOURS) : 24
+            const { token, tokenExpiry } = signEmailChangeJwt(userId, newEmail, expiryInHours)
+
+            const merged = queryRunner.manager.merge(User, user, {
+                tempToken: token,
+                tokenExpiry
+            })
+            await this.userService.saveUser(merged, queryRunner)
+
+            const confirmLink = getSecureTokenLink('/confirm-email-change', token)
+            await sendEmailChangeConfirmationEmail(user.email, confirmLink, newEmail)
+
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    public async confirmEmailChange(data: { user: { tempToken?: string } }) {
+        const token = data.user?.tempToken
+        if (!token) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+
+        let userId: string
+        let newEmail: string
+        try {
+            ;({ userId, newEmail } = verifyEmailChangeJwt(token))
+        } catch (e) {
+            if (e instanceof jwt.TokenExpiredError) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.EXPIRED_TEMP_TOKEN)
+            }
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_TEMP_TOKEN)
+        }
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const user = await this.userService.readUserById(userId, queryRunner)
+            if (!user || user.tempToken !== token) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            const taken = await this.userService.readUserByEmail(newEmail, queryRunner)
+            if (taken && taken.id !== user.id) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
+            }
+
+            await this.userService.updateUser(
+                {
+                    id: user.id,
+                    updatedBy: user.id,
+                    email: newEmail,
+                    tempToken: null,
+                    tokenExpiry: null
+                },
+                {
+                    onEmailChanged: (uid, em) => this.syncStripeCustomerEmailAfterUserEmailChange(uid, em)
+                }
+            )
+
+            return { message: 'success' }
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    public async updateAuthenticatedUserProfile(
+        currentUserId: string,
+        body: Partial<User> & { oldPassword?: string; newPassword?: string; confirmPassword?: string },
+        onEmailChanged: (userId: string, newEmail: string) => Promise<void>
+    ) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const dbUser = await this.userService.readUserById(currentUserId, queryRunner)
+            if (!dbUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
+
+            const platform = this.identityManager.getPlatformType()
+            const newEmailRaw = body.email?.trim()
+            const emailChanging = newEmailRaw !== undefined && newEmailRaw.toLowerCase() !== (dbUser.email || '').toLowerCase()
+
+            const useEmailChangeConfirmation = emailChanging && (platform === Platform.CLOUD || isSmtpConfigured())
+
+            const passwordChanging = !!(body.oldPassword && body.newPassword && body.confirmPassword)
+            const nameChanging = body.name !== undefined && body.name !== dbUser.name
+
+            if (emailChanging && useEmailChangeConfirmation) {
+                this.userService.validateUserEmail(newEmailRaw)
+                const taken = await this.userService.readUserByEmail(newEmailRaw, queryRunner)
+                if (taken && taken.id !== dbUser.id) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
+                }
+
+                if (passwordChanging || nameChanging) {
+                    await this.userService.updateUser(
+                        {
+                            id: currentUserId,
+                            updatedBy: currentUserId,
+                            name: body.name !== undefined ? body.name : dbUser.name,
+                            email: dbUser.email,
+                            oldPassword: body.oldPassword,
+                            newPassword: body.newPassword,
+                            confirmPassword: body.confirmPassword
+                        },
+                        {}
+                    )
+                }
+
+                await this.initiateEmailChange(currentUserId, newEmailRaw!)
+
+                const readRunner = this.dataSource.createQueryRunner()
+                await readRunner.connect()
+                try {
+                    const refreshed = await this.userService.readUserById(currentUserId, readRunner)
+                    return {
+                        user: sanitizeUser({ ...refreshed }) as Partial<User>,
+                        emailChangePending: true,
+                        pendingEmail: newEmailRaw
+                    }
+                } finally {
+                    await readRunner.release()
+                }
+            }
+
+            if (emailChanging && !useEmailChangeConfirmation) {
+                this.userService.validateUserEmail(newEmailRaw)
+                const taken = await this.userService.readUserByEmail(newEmailRaw, queryRunner)
+                if (taken && taken.id !== dbUser.id) {
+                    throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
+                }
+
+                const user = await this.userService.updateUser(
+                    {
+                        id: currentUserId,
+                        updatedBy: currentUserId,
+                        ...(body.name !== undefined ? { name: body.name } : {}),
+                        email: body.email,
+                        oldPassword: body.oldPassword,
+                        newPassword: body.newPassword,
+                        confirmPassword: body.confirmPassword,
+                        tempToken: null,
+                        tokenExpiry: null
+                    },
+                    { onEmailChanged }
+                )
+                return { user }
+            }
+
+            const user = await this.userService.updateUser(
+                {
+                    id: currentUserId,
+                    updatedBy: currentUserId,
+                    ...(body.name !== undefined ? { name: body.name } : {}),
+                    ...(body.email !== undefined ? { email: body.email } : {}),
+                    oldPassword: body.oldPassword,
+                    newPassword: body.newPassword,
+                    confirmPassword: body.confirmPassword
+                },
+                {}
+            )
+            return { user }
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    /**
+     * Sync Stripe customer email when user changes their email (CLOUD only).
+     * Expects exactly one org where the user is org owner; updates that org's Stripe customer email.
+     */
+    public async syncStripeCustomerEmailAfterUserEmailChange(userId: string, newEmail: string) {
+        if (this.identityManager.getPlatformType() !== Platform.CLOUD) return
+
+        let queryRunner: QueryRunner | undefined
+        try {
+            queryRunner = this.dataSource.createQueryRunner()
+            await queryRunner.connect()
+            const orgUsers = await this.organizationUserService.readOrganizationUserByUserId(userId, queryRunner)
+            const ownerOrgLinks = orgUsers.filter((ou) => ou.isOrgOwner)
+            if (ownerOrgLinks.length === 1) {
+                const org = await this.organizationservice.readOrganizationById(ownerOrgLinks[0].organizationId, queryRunner)
+                if (org?.customerId) {
+                    await this.identityManager.updateStripeCustomerEmail(org.customerId, newEmail)
+                }
+            }
+        } catch (error) {
+            logger.warn(`Failed to update Stripe customer email for user ${userId}:`, error)
+        } finally {
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
     }
 }

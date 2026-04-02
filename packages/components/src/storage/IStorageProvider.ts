@@ -94,5 +94,5 @@ export interface IStorageProvider {
     /**
      * Get the Winston logger transports for this provider
      */
-    getLoggerTransports(logType: 'server' | 'error' | 'requests', config?: any): any[]
+    getLoggerTransports(logType: 'server' | 'error' | 'requests' | 'audit', config?: any): any[]
 }

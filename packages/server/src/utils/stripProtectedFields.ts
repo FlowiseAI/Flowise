@@ -2,7 +2,7 @@
  * Fields that are managed exclusively by the server and must never be
  * overwritten by user-supplied request bodies.
  */
-export const PROTECTED_FIELDS = ['id', 'createdDate', 'updatedDate', 'workspaceId', 'organizationId'] as const
+export const PROTECTED_FIELDS = ['id', 'createdDate', 'updatedDate', 'runDate', 'workspaceId', 'organizationId'] as const
 
 export type ProtectedField = (typeof PROTECTED_FIELDS)[number]
 

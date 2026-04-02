@@ -15,7 +15,7 @@ import type {
     InputParam,
     NodeData
 } from '@/core/types'
-import { getUniqueNodeId } from '@/core/utils'
+import { getDefinedStateKeys, getUniqueNodeId } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
@@ -74,6 +74,8 @@ export interface AgentflowContextValue {
 
     // Flow operations
     getFlowData: () => FlowData
+    /** Return all unique state keys defined via `updateFlowState` across all nodes. */
+    getFlowStateKeys: () => string[]
     reset: () => void
 
     //Dialog operations
@@ -293,6 +295,11 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         }
     }, [state.nodes, state.edges, state.reactFlowInstance])
 
+    // Flow state keys
+    const getFlowStateKeys = useCallback((): string[] => {
+        return getDefinedStateKeys(state.nodes)
+    }, [state.nodes])
+
     // Reset
     const reset = useCallback(() => {
         dispatch({ type: 'RESET' })
@@ -315,6 +322,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         openEditDialog,
         closeEditDialog,
         getFlowData,
+        getFlowStateKeys,
         reset,
         registerLocalStateSetters,
         registerOnFlowChange

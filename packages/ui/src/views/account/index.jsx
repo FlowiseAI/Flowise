@@ -84,6 +84,8 @@ const AccountSettings = () => {
     const [purchasedSeats, setPurchasedSeats] = useState(0)
     const [occupiedSeats, setOccupiedSeats] = useState(0)
     const [totalSeats, setTotalSeats] = useState(0)
+    const [openDeleteAccountDialog, setOpenDeleteAccountDialog] = useState(false)
+    const [deleteConfirmationText, setDeleteConfirmationText] = useState('')
 
     const predictionsUsageInPercent = useMemo(() => {
         return usage ? calculatePercentage(usage.predictions?.usage, usage.predictions?.limit) : 0
@@ -103,6 +105,7 @@ const AccountSettings = () => {
     const updateAdditionalSeatsApi = useApi(userApi.updateAdditionalSeats)
     const getCurrentUsageApi = useApi(userApi.getCurrentUsage)
     const logoutApi = useApi(accountApi.logout)
+    const deleteAccountApi = useApi(accountApi.deleteAccount)
 
     useEffect(() => {
         if (currentUser) {
@@ -153,6 +156,13 @@ const AccountSettings = () => {
             console.error(e)
         }
     }, [logoutApi.data])
+
+    useEffect(() => {
+        if (deleteAccountApi.data?.message === 'Account deleted') {
+            store.dispatch(logoutSuccess())
+            window.location.href = '/login'
+        }
+    }, [deleteAccountApi.data])
 
     useEffect(() => {
         if (openRemoveSeatsDialog || openAddSeatsDialog) {
@@ -221,8 +231,29 @@ const AccountSettings = () => {
                 email: email
             }
             const saveProfileResp = await userApi.updateUser(obj)
-            if (saveProfileResp.data) {
-                store.dispatch(userProfileUpdated(saveProfileResp.data))
+            const payload = saveProfileResp.data
+            if (payload?.user) {
+                store.dispatch(userProfileUpdated(payload.user))
+                const pendingMsg =
+                    payload.emailChangePending &&
+                    `Check your current email (${payload.user.email}) to confirm the change to ${payload.pendingEmail}.`
+                enqueueSnackbar({
+                    message: pendingMsg || 'Profile updated',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                if (payload.user.email) {
+                    setEmail(payload.user.email)
+                }
+            } else if (payload) {
+                store.dispatch(userProfileUpdated(payload))
                 enqueueSnackbar({
                     message: 'Profile updated',
                     options: {
@@ -235,6 +266,9 @@ const AccountSettings = () => {
                         )
                     }
                 })
+                if (payload.email) {
+                    setEmail(payload.email)
+                }
             }
         } catch (error) {
             enqueueSnackbar({
@@ -292,8 +326,10 @@ const AccountSettings = () => {
                 confirmPassword
             }
             const saveProfileResp = await userApi.updateUser(obj)
-            if (saveProfileResp.data) {
-                store.dispatch(userProfileUpdated(saveProfileResp.data))
+            const pwdPayload = saveProfileResp.data
+            const updatedUser = pwdPayload?.user ?? pwdPayload
+            if (updatedUser) {
+                store.dispatch(userProfileUpdated(updatedUser))
                 setOldPassword('')
                 setNewPassword('')
                 setConfirmPassword('')
@@ -827,6 +863,64 @@ const AccountSettings = () => {
                                     </Box>
                                 </Box>
                             </SettingsSection>
+                        )}
+                        {isCloud && (
+                            <>
+                                <SettingsSection title='Delete Account'>
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(3, 1fr)'
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                gridColumn: 'span 2 / span 2',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'start',
+                                                justifyContent: 'center',
+                                                gap: 1,
+                                                px: 2.5,
+                                                py: 2
+                                            }}
+                                        >
+                                            <Typography variant='body2' color='text.secondary'>
+                                                Permanently deletes all your data and cancels your subscription. This action cannot be
+                                                undone.
+                                            </Typography>
+                                        </Box>
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'end',
+                                                gap: 2,
+                                                px: 2.5,
+                                                py: 2
+                                            }}
+                                        >
+                                            <Button
+                                                variant='contained'
+                                                color='error'
+                                                onClick={() => setOpenDeleteAccountDialog(true)}
+                                                disabled={deleteAccountApi.loading}
+                                                sx={{ borderRadius: 2, height: 40 }}
+                                            >
+                                                {deleteAccountApi.loading ? (
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <CircularProgress size={16} color='inherit' />
+                                                        Deleting...
+                                                    </Box>
+                                                ) : (
+                                                    'Delete your account'
+                                                )}
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                </SettingsSection>
+                            </>
                         )}
                     </>
                 )}
@@ -1380,6 +1474,61 @@ const AccountSettings = () => {
                         </Button>
                     </DialogActions>
                 )}
+            </Dialog>
+            {/* Delete Account Confirmation Dialog */}
+            <Dialog
+                fullWidth
+                maxWidth='xs'
+                open={openDeleteAccountDialog}
+                onClose={() => {
+                    if (!deleteAccountApi.loading) {
+                        setOpenDeleteAccountDialog(false)
+                        setDeleteConfirmationText('')
+                    }
+                }}
+            >
+                <DialogTitle>Delete Account</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                        <Typography>
+                            This will permanently delete your account and all associated data. Your subscription will be cancelled
+                            immediately and you will be logged out. This action cannot be undone and there is no way to recover your data.
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Typography variant='body2'>
+                                To confirm, please type <strong>permanently delete</strong> below:
+                            </Typography>
+                            <OutlinedInput
+                                id='deleteConfirmation'
+                                type='text'
+                                fullWidth
+                                placeholder='permanently delete'
+                                value={deleteConfirmationText}
+                                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                                disabled={deleteAccountApi.loading}
+                            />
+                        </Box>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => {
+                            setOpenDeleteAccountDialog(false)
+                            setDeleteConfirmationText('')
+                        }}
+                        disabled={deleteAccountApi.loading}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant='contained'
+                        color='error'
+                        onClick={() => deleteAccountApi.request({ confirmationText: deleteConfirmationText })}
+                        disabled={deleteAccountApi.loading || deleteConfirmationText !== 'permanently delete'}
+                    >
+                        {deleteAccountApi.loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm'}
+                    </Button>
+                </DialogActions>
             </Dialog>
         </MainCard>
     )

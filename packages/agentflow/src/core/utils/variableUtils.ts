@@ -1,4 +1,4 @@
-import type { FlowEdge, FlowNode } from '@/core/types'
+import type { FlowEdge, FlowNode, StateUpdate } from '@/core/types'
 
 /** Regex that matches `{{variablePath}}` tokens in text. Use with `g` flag. */
 export const VARIABLE_REGEX = /\{\{([^{}]+)\}\}/g
@@ -71,4 +71,35 @@ export function getUpstreamNodes(nodeId: string, nodes: FlowNode[], edges: FlowE
     }
 
     return nodes.filter((n) => n.id !== nodeId && collected.has(n.id))
+}
+
+/**
+ * Pattern matching input names that hold state key-value arrays.
+ * Covers: startState, agentUpdateState, llmUpdateState, loopUpdateState, etc.
+ */
+const STATE_INPUT_PATTERN = /(?:^startState$|UpdateState$|^updateFlowState$)/
+
+/**
+ * Collect all user-defined state keys from nodes in the flow.
+ * Scans each node's state-related inputs (startState, *UpdateState) for key definitions.
+ */
+export function getDefinedStateKeys(nodes: FlowNode[]): string[] {
+    const keys = new Set<string>()
+    for (const node of nodes) {
+        const inputs = node.data?.inputs
+        if (!inputs || typeof inputs !== 'object') continue
+        for (const inputName of Object.keys(inputs)) {
+            if (!STATE_INPUT_PATTERN.test(inputName)) continue
+            const updates = inputs[inputName]
+            if (!Array.isArray(updates)) continue
+            for (const entry of updates) {
+                if (!entry || typeof entry !== 'object') continue
+                const key = (entry as StateUpdate).key?.trim()
+                if (key) {
+                    keys.add(key)
+                }
+            }
+        }
+    }
+    return Array.from(keys).sort()
 }
