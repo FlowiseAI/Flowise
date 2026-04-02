@@ -1,0 +1,70 @@
+osop_version: "1.0"
+id: flowise-rag-chatflow
+name: Flowise RAG Chatflow
+description: A retrieval-augmented generation chatflow defined in OSOP format for portability.
+tags: [flowise, rag, chatbot]
+
+nodes:
+  - id: document-loader
+    type: data
+    name: Document Loader
+    description: Load documents from PDF, web, or file sources for the knowledge base.
+
+  - id: text-splitter
+    type: data
+    name: Text Splitter
+    description: Split documents into chunks for embedding and retrieval.
+
+  - id: embedding
+    type: agent
+    name: Embedding Model
+    description: Generate vector embeddings from text chunks.
+    runtime:
+      provider: openai
+      model: text-embedding-3-small
+
+  - id: vector-store
+    type: db
+    name: Vector Store
+    description: Store and query document embeddings.
+    runtime:
+      config:
+        provider: pinecone
+
+  - id: retriever
+    type: agent
+    name: Retriever
+    description: Retrieve relevant document chunks based on the user query.
+
+  - id: llm
+    type: agent
+    name: Chat Model
+    description: Generate responses using retrieved context and conversation history.
+    runtime:
+      provider: openai
+      model: gpt-4
+
+  - id: response
+    type: api
+    name: Response Output
+    description: Format and deliver the final response to the user.
+
+edges:
+  - from: document-loader
+    to: text-splitter
+    mode: sequential
+  - from: text-splitter
+    to: embedding
+    mode: sequential
+  - from: embedding
+    to: vector-store
+    mode: sequential
+  - from: vector-store
+    to: retriever
+    mode: sequential
+  - from: retriever
+    to: llm
+    mode: sequential
+  - from: llm
+    to: response
+    mode: sequential
