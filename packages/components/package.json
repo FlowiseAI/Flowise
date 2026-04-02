@@ -19,7 +19,7 @@
             "default": "./dist/nodes/*.js"
         },
         "./*.js": "./dist/*.js",
-        "./*": "./dist/*"
+        "./*": "./*"
     },
     "scripts": {
         "build": "tsc && gulp",
