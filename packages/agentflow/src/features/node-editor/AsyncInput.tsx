@@ -5,8 +5,10 @@ import Autocomplete from '@mui/material/Autocomplete'
 import { IconEdit, IconRefresh } from '@tabler/icons-react'
 
 import type { AsyncInputProps } from '@/atoms'
-import type { NodeOption } from '@/core/types'
+import type { FlowNode, NodeOption } from '@/core/types'
+import { getDefinedStateKeys } from '@/core/utils'
 import { useAsyncOptions } from '@/infrastructure/api/hooks'
+import { useAgentflowContext } from '@/infrastructure/store'
 
 import { CreateCredentialDialog } from './CreateCredentialDialog'
 
@@ -21,11 +23,23 @@ const CREATE_NEW_SENTINEL = '-create-'
 function buildAsyncParams(
     loadMethod: string | undefined,
     nodeName: string | undefined,
-    inputValues: Record<string, unknown> | undefined
+    inputValues: Record<string, unknown> | undefined,
+    stateKeys?: string[]
 ): Record<string, unknown> | undefined {
     const needsInputs = loadMethod === 'listToolInputArgs'
-    if (!nodeName && !(needsInputs && inputValues)) return undefined
-    return { ...(nodeName ? { nodeName } : {}), ...(needsInputs && inputValues ? { inputs: inputValues } : {}) }
+    const needsStateKeys = loadMethod === 'listRuntimeStateKeys'
+    if (!nodeName && !(needsInputs && inputValues) && !needsStateKeys) return undefined
+    return {
+        ...(nodeName ? { nodeName } : {}),
+        ...(needsInputs && inputValues ? { inputs: inputValues } : {}),
+        ...(needsStateKeys && stateKeys ? { stateKeys } : {})
+    }
+}
+
+/** Extract defined state keys from flow nodes. */
+function useFlowStateKeys(): string[] {
+    const { state } = useAgentflowContext()
+    return getDefinedStateKeys(state.nodes as FlowNode[])
 }
 
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
@@ -116,7 +130,8 @@ function AsyncOptionsDropdown({
     isCredential,
     onCreateNew
 }: AsyncInputProps & { isCredential: boolean; onCreateNew: () => void }) {
-    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues)
+    const stateKeys = useFlowStateKeys()
+    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues, stateKeys)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,
@@ -215,7 +230,8 @@ function AsyncOptionsDropdown({
 }
 
 function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
-    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues)
+    const stateKeys = useFlowStateKeys()
+    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues, stateKeys)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,

@@ -40,6 +40,30 @@ jest.mock('./RichTextEditor', () => ({
     )
 }))
 
+jest.mock('./VariableInput', () => ({
+    VariableInput: ({
+        value,
+        onChange,
+        disabled,
+        placeholder
+    }: {
+        value: string
+        onChange: (html: string) => void
+        disabled?: boolean
+        placeholder?: string
+    }) => (
+        <div data-testid='variable-input'>
+            <textarea
+                data-testid='variable-input-content'
+                value={value}
+                disabled={disabled}
+                placeholder={placeholder}
+                onChange={(e) => onChange(e.target.value)}
+            />
+        </div>
+    )
+}))
+
 describe('MessagesInput', () => {
     const mockInputParam: InputParam = {
         id: 'messages',
@@ -502,5 +526,73 @@ describe('MessagesInput', () => {
         const options = screen.getAllByRole('option')
         const optionValues = options.map((opt) => opt.getAttribute('data-value'))
         expect(optionValues).toEqual(['system', 'assistant', 'developer', 'user'])
+    })
+
+    // --- Variable support ---
+
+    const mockVariableItems = [
+        { label: 'question', description: "User's question", category: 'Chat Context', value: '{{question}}' },
+        { label: '$flow.sessionId', description: 'Session ID', category: 'Flow Variables', value: '{{$flow.sessionId}}' }
+    ]
+
+    it('should render VariableInput instead of RichTextEditor when variableItems are provided', async () => {
+        const dataWithMessages: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                agentMessages: [{ role: 'user', content: 'Hello' }]
+            }
+        } as NodeData
+
+        render(
+            <MessagesInput
+                inputParam={mockInputParam}
+                data={dataWithMessages}
+                onDataChange={mockOnDataChange}
+                variableItems={mockVariableItems}
+            />
+        )
+
+        expect(await screen.findByTestId('variable-input')).toBeInTheDocument()
+        expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+    })
+
+    it('should fall back to RichTextEditor when variableItems is empty', async () => {
+        const dataWithMessages: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                agentMessages: [{ role: 'user', content: 'Hello' }]
+            }
+        } as NodeData
+
+        render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} variableItems={[]} />)
+
+        expect(await screen.findByTestId('rich-text-editor')).toBeInTheDocument()
+        expect(screen.queryByTestId('variable-input')).not.toBeInTheDocument()
+    })
+
+    it('should update content via VariableInput when variableItems are provided', async () => {
+        const dataWithMessages: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                agentMessages: [{ role: 'user', content: '' }]
+            }
+        } as NodeData
+
+        render(
+            <MessagesInput
+                inputParam={mockInputParam}
+                data={dataWithMessages}
+                onDataChange={mockOnDataChange}
+                variableItems={mockVariableItems}
+            />
+        )
+
+        const textarea = await screen.findByTestId('variable-input-content')
+        fireEvent.change(textarea, { target: { value: '{{ question }}' } })
+
+        expect(mockOnDataChange).toHaveBeenCalledWith({
+            inputParam: mockInputParam,
+            newValue: [{ role: 'user', content: '{{ question }}' }]
+        })
     })
 })

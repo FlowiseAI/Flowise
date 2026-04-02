@@ -15,6 +15,7 @@ export { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler 
 export type { RichTextEditorProps } from './RichTextEditor'
 export { RichTextEditor } from './RichTextEditor.lazy'
 export { ScenariosInput, type ScenariosInputProps } from './ScenariosInput'
+export { StateKeyValueInput, type StateKeyValueInputProps } from './StateKeyValueInput'
 export { StructuredOutputBuilder, type StructuredOutputBuilderProps, type StructuredOutputEntry } from './StructuredOutputBuilder'
 export { SuggestionDropdown, type SuggestionDropdownProps, type SuggestionDropdownRef, type SuggestionItem } from './SuggestionDropdown'
 export { SwitchInput, type SwitchInputProps } from './SwitchInput'

@@ -40,6 +40,7 @@ export type {
     FlowData,
     FlowEdge,
     FlowNode,
+    FlowStateConfig,
     // Render props
     HeaderRenderProps,
     // Node data
@@ -51,6 +52,7 @@ export type {
     OutputAnchor,
     PaletteRenderProps,
     RequestInterceptor,
+    StateUpdate,
     // Validation
     ValidationError,
     ValidationResult,

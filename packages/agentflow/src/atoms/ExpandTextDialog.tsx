@@ -4,6 +4,8 @@ import { Box, Button, Dialog, DialogActions, DialogContent, TextField, Typograph
 
 import { CodeInput } from './CodeInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
+import type { SuggestionItem } from './SuggestionDropdown'
+import { VariableInput } from './VariableInput'
 
 export interface ExpandTextDialogProps {
     open: boolean
@@ -15,6 +17,8 @@ export interface ExpandTextDialogProps {
     inputType?: string
     /** Language hint for 'code' mode (e.g. 'javascript', 'python', 'json'). */
     language?: string
+    /** Variable suggestion items for `{{ }}` autocomplete in string mode. When provided, uses VariableInput instead of RichTextEditor. */
+    suggestionItems?: SuggestionItem[]
     onConfirm: (value: string) => void
     onCancel: () => void
 }
@@ -31,6 +35,7 @@ export function ExpandTextDialog({
     disabled = false,
     inputType = 'string',
     language,
+    suggestionItems,
     onConfirm,
     onCancel
 }: ExpandTextDialogProps) {
@@ -76,14 +81,25 @@ export function ExpandTextDialog({
                             overflowX: 'hidden'
                         }}
                     >
-                        <RichTextEditor
-                            value={localValue}
-                            onChange={setLocalValue}
-                            placeholder={placeholder}
-                            disabled={disabled}
-                            rows={15}
-                            autoFocus
-                        />
+                        {suggestionItems && suggestionItems.length > 0 ? (
+                            <VariableInput
+                                value={localValue}
+                                onChange={setLocalValue}
+                                placeholder={placeholder}
+                                disabled={disabled}
+                                rows={15}
+                                suggestionItems={suggestionItems}
+                            />
+                        ) : (
+                            <RichTextEditor
+                                value={localValue}
+                                onChange={setLocalValue}
+                                placeholder={placeholder}
+                                disabled={disabled}
+                                rows={15}
+                                autoFocus
+                            />
+                        )}
                     </Box>
                 ) : (
                     <TextField

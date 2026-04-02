@@ -51,3 +51,18 @@ export interface FlowConfig {
     isPublic?: boolean
     type?: 'AGENTFLOW'
 }
+
+// ============================================================================
+// Flow State Types
+// ============================================================================
+
+/** A single key-value update to flow state, used in nodes that modify state. */
+export interface StateUpdate {
+    key: string
+    value: string // Can contain variable references (e.g. {{nodeId.data.instance}})
+}
+
+/** Configuration for nodes that update flow state. */
+export interface FlowStateConfig {
+    updateFlowState?: StateUpdate[]
+}

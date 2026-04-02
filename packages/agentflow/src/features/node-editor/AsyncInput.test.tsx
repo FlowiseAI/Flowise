@@ -62,6 +62,12 @@ jest.mock('@/infrastructure/api/hooks', () => ({
     useAsyncOptions: (arg: unknown) => mockUseAsyncOptions(arg)
 }))
 
+jest.mock('@/infrastructure/store', () => ({
+    useAgentflowContext: () => ({
+        state: { nodes: [], edges: [] }
+    })
+}))
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const mockOnDataChange = jest.fn()

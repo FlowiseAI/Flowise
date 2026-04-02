@@ -19,7 +19,7 @@ import { styled, useTheme } from '@mui/material/styles'
 import { tooltipClasses } from '@mui/material/Tooltip'
 import { IconArrowsMaximize, IconVariable } from '@tabler/icons-react'
 
-import type { InputAnchor, InputParam, NodeData } from '@/core/types'
+import type { InputAnchor, InputParam, NodeData, StateUpdate } from '@/core/types'
 
 import ArrayInput from './ArrayInput'
 import { CodeInput } from './CodeInput'
@@ -27,6 +27,7 @@ import { Dropdown } from './Dropdown'
 import { ExpandTextDialog } from './ExpandTextDialog'
 import { JsonInput } from './JsonInput'
 import { RichTextEditor } from './RichTextEditor.lazy'
+import { StateKeyValueInput } from './StateKeyValueInput'
 import { SuggestionItem } from './SuggestionDropdown'
 import { SwitchInput } from './SwitchInput'
 import { TooltipWithParser } from './TooltipWithParser'
@@ -355,6 +356,16 @@ export function NodeInputHandler({
                     </>
                 )
 
+            case 'updateFlowState':
+                return (
+                    <StateKeyValueInput
+                        value={Array.isArray(value) ? (value as StateUpdate[]) : []}
+                        onChange={(v) => handleDataChange(v)}
+                        disabled={disabled}
+                        suggestionItems={suggestionItems}
+                    />
+                )
+
             case 'array':
                 return (
                     <ArrayInput
@@ -366,6 +377,7 @@ export function NodeInputHandler({
                         AsyncInputComponent={AsyncInputComponent}
                         ConfigInputComponent={ConfigInputComponent}
                         onConfigChange={onConfigChange}
+                        variableItems={variableItems}
                     />
                 )
 
@@ -524,6 +536,7 @@ export function NodeInputHandler({
                     disabled={disabled}
                     inputType={inputParam?.type}
                     language={inputParam?.type === 'code' ? inputParam.codeLanguage : undefined}
+                    suggestionItems={suggestionItems}
                     onConfirm={handleExpandConfirm}
                     onCancel={() => setExpandOpen(false)}
                 />

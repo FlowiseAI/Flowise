@@ -11,4 +11,4 @@ export { evaluateFieldVisibility, evaluateParamVisibility, stripHiddenFieldValue
 export { buildDynamicOutputAnchors, parseOutputHandleIndex } from './dynamicOutputAnchors'
 
 // Variable utilities
-export { getUpstreamNodes } from './variableUtils'
+export { getDefinedStateKeys, getUpstreamNodes } from './variableUtils'
