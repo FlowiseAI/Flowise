@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react'
+import { Markdown } from '@tiptap/markdown'
+import StarterKit from '@tiptap/starter-kit'
 
 import { RichTextEditor } from './RichTextEditor'
 
@@ -6,11 +8,13 @@ import { RichTextEditor } from './RichTextEditor'
 // editor.getMarkdown() is added directly on the Editor interface by @tiptap/markdown
 // via module augmentation — it is NOT nested under storage.markdown.
 let capturedOnUpdate: ((args: { editor: { getMarkdown: () => string } }) => void) | undefined
+let capturedExtensions: unknown[] | undefined
 
 jest.mock('@tiptap/react', () => ({
     useEditor: (config: Record<string, unknown>) => {
         // Capture the onUpdate callback so tests can simulate edits
         capturedOnUpdate = config.onUpdate as typeof capturedOnUpdate
+        capturedExtensions = config.extensions as unknown[]
         return {
             setEditable: jest.fn(),
             commands: { focus: jest.fn(), setContent: jest.fn() },
@@ -49,14 +53,16 @@ jest.mock('lowlight', () => ({
     createLowlight: jest.fn(() => ({ register: jest.fn() }))
 }))
 
-const mockOnChange = jest.fn()
-
-beforeEach(() => {
-    jest.clearAllMocks()
-    capturedOnUpdate = undefined
-})
-
 describe('RichTextEditor', () => {
+    let mockOnChange: jest.Mock
+
+    beforeEach(() => {
+        jest.clearAllMocks()
+        capturedOnUpdate = undefined
+        capturedExtensions = undefined
+        mockOnChange = jest.fn()
+    })
+
     it('should render the editor container', () => {
         render(<RichTextEditor value='Hello' onChange={mockOnChange} />)
 
@@ -99,5 +105,31 @@ describe('RichTextEditor', () => {
         render(<RichTextEditor value='' onChange={mockOnChange} disabled={true} />)
 
         expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
+    })
+
+    describe('buildExtensions — useMarkdown flag', () => {
+        it('includes Markdown extension when useMarkdown is true (default)', () => {
+            render(<RichTextEditor value='' onChange={mockOnChange} useMarkdown={true} />)
+
+            expect(capturedExtensions).toContain(Markdown)
+        })
+
+        it('excludes Markdown extension when useMarkdown is false', () => {
+            render(<RichTextEditor value='' onChange={mockOnChange} useMarkdown={false} />)
+
+            expect(capturedExtensions).not.toContain(Markdown)
+        })
+
+        it('passes link:false to StarterKit when useMarkdown is false', () => {
+            render(<RichTextEditor value='' onChange={mockOnChange} useMarkdown={false} />)
+
+            expect(StarterKit.configure).toHaveBeenCalledWith(expect.objectContaining({ link: false }))
+        })
+
+        it('does not pass link:false to StarterKit when useMarkdown is true (default)', () => {
+            render(<RichTextEditor value='' onChange={mockOnChange} useMarkdown={true} />)
+
+            expect(StarterKit.configure).not.toHaveBeenCalledWith(expect.objectContaining({ link: false }))
+        })
     })
 })
