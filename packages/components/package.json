@@ -18,7 +18,6 @@
             "types": "./dist/nodes/*.d.ts",
             "default": "./dist/nodes/*.js"
         },
-        "./*.js": "./dist/*.js",
         "./*": "./*"
     },
     "scripts": {
