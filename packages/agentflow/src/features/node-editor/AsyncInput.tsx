@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 
 import { Box, CircularProgress, IconButton, TextField, Typography } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
@@ -36,10 +36,15 @@ function buildAsyncParams(
     }
 }
 
-/** Extract defined state keys from flow nodes. */
-function useFlowStateKeys(): string[] {
+/**
+ * Extract state keys from all nodes except the given node.
+ * Excludes the current node to avoid a circular reference where a node's own
+ * agentUpdateState feeds keys back into its own dropdown options.
+ */
+function useFlowStateKeys(excludeNodeName?: string): string[] {
     const { state } = useAgentflowContext()
-    return getDefinedStateKeys(state.nodes as FlowNode[])
+    const nodes = excludeNodeName ? state.nodes.filter((n) => n.data?.name !== excludeNodeName) : state.nodes
+    return getDefinedStateKeys(nodes as FlowNode[])
 }
 
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
@@ -130,13 +135,31 @@ function AsyncOptionsDropdown({
     isCredential,
     onCreateNew
 }: AsyncInputProps & { isCredential: boolean; onCreateNew: () => void }) {
-    const stateKeys = useFlowStateKeys()
+    const stateKeys = useFlowStateKeys(nodeName)
     const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues, stateKeys)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,
         params
     })
+
+    // Append "- Create New -" sentinel for credential dropdowns
+    const displayOptions = isCredential ? [...options, { label: '- Create New -', name: CREATE_NEW_SENTINEL }] : options
+    const matchedValue = displayOptions.find((o) => o.name === value) ?? null
+
+    // Controlled input text — synced to the matched option label so it clears
+    // when a previously selected key is removed from the Start node.
+    const [inputText, setInputText] = useState(matchedValue?.label ?? '')
+    useEffect(() => {
+        setInputText(matchedValue?.label ?? '')
+    }, [matchedValue?.label])
+
+    // Clear the stored value if it no longer matches any available option
+    useEffect(() => {
+        if (!loading && value && typeof value === 'string' && !options.some((o) => o.name === value)) {
+            onChange('')
+        }
+    }, [loading, value, options, onChange])
 
     if (error) {
         return (
@@ -151,17 +174,19 @@ function AsyncOptionsDropdown({
         )
     }
 
-    // Append "- Create New -" sentinel for credential dropdowns
-    const displayOptions = isCredential ? [...options, { label: '- Create New -', name: CREATE_NEW_SENTINEL }] : options
-
-    const matchedValue = displayOptions.find((o) => o.name === value) ?? null
-
     return (
         <Autocomplete<NodeOption>
             size='small'
             disabled={disabled}
             options={displayOptions}
             value={matchedValue}
+            inputValue={inputText}
+            onInputChange={(_e, newValue, reason) => {
+                // Allow typing to filter; reset clears text
+                if (reason === 'input' || reason === 'clear') {
+                    setInputText(newValue)
+                }
+            }}
             getOptionLabel={(o) => o.label}
             isOptionEqualToValue={(o, v) => o.name === v.name}
             onChange={(_e, selection) => {
@@ -230,7 +255,7 @@ function AsyncOptionsDropdown({
 }
 
 function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
-    const stateKeys = useFlowStateKeys()
+    const stateKeys = useFlowStateKeys(nodeName)
     const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues, stateKeys)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
