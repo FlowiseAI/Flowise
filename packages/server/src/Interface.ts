@@ -30,7 +30,8 @@ export enum MODE {
 export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL',
-    EVALUATION = 'EVALUATION'
+    EVALUATION = 'EVALUATION',
+    MCP = 'MCP'
 }
 
 export enum ChatMessageRatingType {
@@ -404,6 +405,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     parentExecutionId?: string
     iterationContext?: ICommonObject
     isTool?: boolean
+    chatType?: ChatType
 }
 
 export interface INodeOverrides {

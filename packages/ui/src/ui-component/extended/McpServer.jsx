@@ -219,7 +219,7 @@ const McpServer = ({ dialogProps }) => {
             setToolName(getMcpServerConfigApi.data.toolName || '')
             setDescription(getMcpServerConfigApi.data.description || '')
             setToken(getMcpServerConfigApi.data.token || '')
-            setHasExistingConfig(true)
+            setHasExistingConfig(!!getMcpServerConfigApi.data.token)
         }
     }, [getMcpServerConfigApi.data])
 

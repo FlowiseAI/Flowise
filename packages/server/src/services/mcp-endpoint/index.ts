@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -11,7 +11,7 @@ import { createMockRequest } from '../../utils/mockRequest'
 import mcpServerService from '../mcp-server/index'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import logger from '../../utils/logger'
-import { IMcpServerConfig } from '../../Interface'
+import { ChatType, IMcpServerConfig } from '../../Interface'
 
 // Active SSE transport sessions: sessionId → { transport, mcpServer, chatflowId }
 interface SseSession {
@@ -84,7 +84,7 @@ async function chatflowCallback(
         sourceRequest: req
     })
 
-    const result = await utilBuildChatflow(mockReq, true)
+    const result = await utilBuildChatflow(mockReq, false, ChatType.MCP)
 
     // Extract the text response from the result
     let textContent: string

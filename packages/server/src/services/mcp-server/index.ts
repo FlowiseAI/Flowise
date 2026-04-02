@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import crypto from 'crypto'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
