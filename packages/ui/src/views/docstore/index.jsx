@@ -15,20 +15,16 @@ import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
 import MainCard from '@/ui-component/cards/MainCard'
 import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
-import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import DeleteDocStoreDialog from '@/views/docstore/DeleteDocStoreDialog'
 
 // API
 import documentsApi from '@/api/documentstore'
 import { useAuth } from '@/hooks/useAuth'
-import useConfirm from '@/hooks/useConfirm'
-
-// icons
-import { IconDotsVertical, IconEdit, IconLayoutGrid, IconList, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 import useApi from '@/hooks/useApi'
 
 // icons
+import { IconDotsVertical, IconEdit, IconLayoutGrid, IconList, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 import doc_store_empty from '@/assets/images/doc_store_empty.svg'
-import { IconLayoutGrid, IconList, IconPlus } from '@tabler/icons-react'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
@@ -45,7 +41,6 @@ const Documents = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { hasPermission } = useAuth()
-    const { confirm } = useConfirm()
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
     const { error } = useError()
     useNotifier()
@@ -62,6 +57,8 @@ const Documents = () => {
     const [view, setView] = useState(localStorage.getItem('docStoreDisplayStyle') || 'card')
     const [actionMenuAnchorEl, setActionMenuAnchorEl] = useState(null)
     const [selectedDocumentStore, setSelectedDocumentStore] = useState(null)
+    const [showDeleteDocStoreDialog, setShowDeleteDocStoreDialog] = useState(false)
+    const [deleteDocStoreDialogProps, setDeleteDocStoreDialogProps] = useState({})
 
     const canRenameDocumentStore = hasPermission('documentStores:create,documentStores:update')
     const canDeleteDocumentStore = hasPermission('documentStores:delete')
@@ -82,6 +79,30 @@ const Documents = () => {
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
+    }
+
+    const getDeleteErrorMessage = (error) => {
+        const responseData = error?.response?.data
+
+        if (typeof responseData === 'string' && responseData.trim()) {
+            return responseData
+        }
+
+        if (responseData && typeof responseData === 'object') {
+            if (typeof responseData.message === 'string' && responseData.message.trim()) {
+                return responseData.message
+            }
+
+            if (typeof responseData.error === 'string' && responseData.error.trim()) {
+                return responseData.error
+            }
+        }
+
+        if (typeof error?.message === 'string' && error.message.trim()) {
+            return error.message
+        }
+
+        return 'Unknown error'
     }
 
     const goToDocumentStore = (id) => {
@@ -150,22 +171,42 @@ const Documents = () => {
         setShowDialog(true)
     }
 
-    const deleteDocumentStore = async () => {
+    const deleteDocumentStore = () => {
         if (!selectedDocumentStore) return
         const documentStoreToDelete = selectedDocumentStore
         handleActionMenuClose()
 
-        const confirmPayload = {
-            title: 'Delete',
-            description: `Delete store [${documentStoreToDelete.name}]? This will remove this document store from the list.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+        let description = `Delete store [${documentStoreToDelete.name}]? This will remove this document store from the list.`
+
+        if (
+            documentStoreToDelete.recordManagerConfig &&
+            documentStoreToDelete.vectorStoreConfig &&
+            Object.keys(documentStoreToDelete.recordManagerConfig).length > 0 &&
+            Object.keys(documentStoreToDelete.vectorStoreConfig).length > 0
+        ) {
+            description = `Delete store [${documentStoreToDelete.name}]? This will remove this document store from the list and remove the actual data from the vector store database.`
         }
-        const isConfirmed = await confirm(confirmPayload)
-        if (!isConfirmed) return
+
+        setDeleteDocStoreDialogProps({
+            title: 'Delete',
+            description,
+            vectorStoreConfig: documentStoreToDelete.vectorStoreConfig,
+            recordManagerConfig: documentStoreToDelete.recordManagerConfig,
+            type: 'STORE',
+            storeId: documentStoreToDelete.id
+        })
+        setShowDeleteDocStoreDialog(true)
+    }
+
+    const onDocStoreDelete = async (type) => {
+        setShowDeleteDocStoreDialog(false)
+        if (type !== 'STORE') return
+
+        const storeId = deleteDocStoreDialogProps?.storeId
+        if (!storeId) return
 
         try {
-            const deleteResp = await documentsApi.deleteDocumentStore(documentStoreToDelete.id)
+            const deleteResp = await documentsApi.deleteDocumentStore(storeId)
             if (deleteResp.data) {
                 enqueueSnackbar({
                     message: 'Document Store deleted.',
@@ -180,17 +221,16 @@ const Documents = () => {
                     }
                 })
                 // Update list instantly instead of full refetch/skeleton.
-                setDocStores((prev) => prev.filter((store) => store.id !== documentStoreToDelete.id))
+                setDocStores((prev) => prev.filter((store) => store.id !== storeId))
                 setImages((prev) => {
                     const nextImages = { ...prev }
-                    delete nextImages[documentStoreToDelete.id]
+                    delete nextImages[storeId]
                     return nextImages
                 })
                 setTotal((prev) => Math.max(0, prev - 1))
             }
         } catch (error) {
-            const errorMessage =
-                typeof error?.response?.data === 'object' ? error?.response?.data?.message : error?.response?.data || 'Unknown error'
+            const errorMessage = getDeleteErrorMessage(error)
 
             enqueueSnackbar({
                 message: `Failed to delete Document Store: ${errorMessage}`,
@@ -411,6 +451,14 @@ const Documents = () => {
                     onConfirm={onConfirm}
                 />
             )}
+            {showDeleteDocStoreDialog && (
+                <DeleteDocStoreDialog
+                    show={showDeleteDocStoreDialog}
+                    dialogProps={deleteDocStoreDialogProps}
+                    onCancel={() => setShowDeleteDocStoreDialog(false)}
+                    onDelete={onDocStoreDelete}
+                />
+            )}
             <Menu
                 anchorEl={actionMenuAnchorEl}
                 open={isActionMenuOpen}
@@ -435,7 +483,6 @@ const Documents = () => {
                     </MenuItem>
                 )}
             </Menu>
-            <ConfirmDialog />
         </MainCard>
     )
 }
