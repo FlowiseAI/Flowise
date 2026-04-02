@@ -221,8 +221,29 @@ const AccountSettings = () => {
                 email: email
             }
             const saveProfileResp = await userApi.updateUser(obj)
-            if (saveProfileResp.data) {
-                store.dispatch(userProfileUpdated(saveProfileResp.data))
+            const payload = saveProfileResp.data
+            if (payload?.user) {
+                store.dispatch(userProfileUpdated(payload.user))
+                const pendingMsg =
+                    payload.emailChangePending &&
+                    `Check your current email (${payload.user.email}) to confirm the change to ${payload.pendingEmail}.`
+                enqueueSnackbar({
+                    message: pendingMsg || 'Profile updated',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+                if (payload.user.email) {
+                    setEmail(payload.user.email)
+                }
+            } else if (payload) {
+                store.dispatch(userProfileUpdated(payload))
                 enqueueSnackbar({
                     message: 'Profile updated',
                     options: {
@@ -235,6 +256,9 @@ const AccountSettings = () => {
                         )
                     }
                 })
+                if (payload.email) {
+                    setEmail(payload.email)
+                }
             }
         } catch (error) {
             enqueueSnackbar({
@@ -292,8 +316,10 @@ const AccountSettings = () => {
                 confirmPassword
             }
             const saveProfileResp = await userApi.updateUser(obj)
-            if (saveProfileResp.data) {
-                store.dispatch(userProfileUpdated(saveProfileResp.data))
+            const pwdPayload = saveProfileResp.data
+            const updatedUser = pwdPayload?.user ?? pwdPayload
+            if (updatedUser) {
+                store.dispatch(userProfileUpdated(updatedUser))
                 setOldPassword('')
                 setNewPassword('')
                 setConfirmPassword('')

@@ -1,8 +1,7 @@
-import { z } from 'zod'
-import fetch from 'node-fetch'
-import * as https from 'https'
+import { z } from 'zod/v3'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
+import { secureFetch } from '../../../src/httpSecurity'
 
 export const desc = `Use this when you want to access Jira API for managing issues, comments, and users`
 
@@ -147,7 +146,6 @@ class BaseJiraTool extends DynamicStructuredTool {
     protected accessToken: string = ''
     protected jiraHost: string = ''
     protected authConfig: JiraAuthConfig | undefined
-    protected httpsAgent: https.Agent | undefined
     protected apiVersion: string = '3'
 
     constructor(args: any) {
@@ -157,13 +155,6 @@ class BaseJiraTool extends DynamicStructuredTool {
         this.jiraHost = args.jiraHost ?? ''
         this.authConfig = args.authConfig
         this.apiVersion = args.apiVersion ?? '3'
-
-        // Create HTTPS agent if SSL certificate is provided
-        if (this.authConfig?.sslCertificate) {
-            this.httpsAgent = new https.Agent({
-                ca: this.authConfig.sslCertificate
-            })
-        }
     }
 
     async makeJiraRequest({
@@ -203,12 +194,8 @@ class BaseJiraTool extends DynamicStructuredTool {
             body: body ? JSON.stringify(body) : undefined
         }
 
-        // Use HTTPS agent created in constructor if available
-        if (this.httpsAgent) {
-            fetchOptions.agent = this.httpsAgent
-        }
-
-        const response = await fetch(url, fetchOptions)
+        const agentOptions = this.authConfig?.sslCertificate ? { ca: this.authConfig.sslCertificate } : undefined
+        const response = await secureFetch(url, fetchOptions, 5, agentOptions)
 
         if (!response.ok) {
             const errorText = await response.text()

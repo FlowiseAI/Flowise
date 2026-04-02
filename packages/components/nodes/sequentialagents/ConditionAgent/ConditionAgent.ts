@@ -1,6 +1,6 @@
 import { uniq } from 'lodash'
 import { DataSource } from 'typeorm'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { BaseMessagePromptTemplateLike, ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { BaseMessage } from '@langchain/core/messages'
@@ -491,7 +491,9 @@ const runCondition = async (
             const structuredOutput = z.object(convertStructuredSchemaToZod(conditionAgentStructuredOutput))
 
             // @ts-ignore
-            model = llm.withStructuredOutput(structuredOutput)
+            model = llm.withStructuredOutput(structuredOutput, {
+                method: 'functionCalling'
+            })
         } catch (exception) {
             console.error('Invalid JSON in Condition Agent Structured Output: ' + exception)
             model = llm

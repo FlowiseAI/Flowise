@@ -57,6 +57,16 @@ export class AccountController {
         }
     }
 
+    public async confirmEmailChange(req: Request, res: Response, next: NextFunction) {
+        try {
+            const accountService = new AccountService()
+            const data = await accountService.confirmEmailChange(req.body)
+            return res.status(StatusCodes.OK).json(data)
+        } catch (error) {
+            next(error)
+        }
+    }
+
     public async forgotPassword(req: Request, res: Response, next: NextFunction) {
         try {
             const accountService = new AccountService()

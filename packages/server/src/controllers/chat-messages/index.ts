@@ -346,6 +346,9 @@ const parseAPIResponse = (apiResponse: ChatMessage | ChatMessage[]): ChatMessage
             if (parsedResponse.agentReasoning) {
                 parsedResponse.agentReasoning = safeJsonParse(parsedResponse.agentReasoning) ?? parsedResponse.agentReasoning
             }
+            if (parsedResponse.reasonContent) {
+                parsedResponse.reasonContent = JSON.parse(parsedResponse.reasonContent)
+            }
             if (parsedResponse.fileUploads) {
                 parsedResponse.fileUploads = safeJsonParse(parsedResponse.fileUploads) ?? parsedResponse.fileUploads
             }

@@ -59,5 +59,5 @@ export function getSecureAppUrl(path?: string): string {
  */
 export function getSecureTokenLink(path: string, token: string): string {
     const baseUrl = getSecureAppUrl(path)
-    return `${baseUrl}?token=${token}`
+    return `${baseUrl}?token=${encodeURIComponent(token)}`
 }

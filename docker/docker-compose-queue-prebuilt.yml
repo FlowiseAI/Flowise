@@ -153,6 +153,7 @@ services:
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
             - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
+            - PATH_TRAVERSAL_SAFETY=${PATH_TRAVERSAL_SAFETY}
             - TRUST_PROXY=${TRUST_PROXY}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
@@ -300,6 +301,7 @@ services:
             - CUSTOM_MCP_PROTOCOL=${CUSTOM_MCP_PROTOCOL}
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
             - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
+            - PATH_TRAVERSAL_SAFETY=${PATH_TRAVERSAL_SAFETY}
             - TRUST_PROXY=${TRUST_PROXY}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${WORKER_PORT:-5566}/healthz']

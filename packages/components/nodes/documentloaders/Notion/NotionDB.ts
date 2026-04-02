@@ -1,6 +1,6 @@
 import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { NotionAPILoader, NotionAPILoaderOptions } from '@langchain/community/document_loaders/web/notionapi'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
 
@@ -96,7 +96,7 @@ class NotionDB_DocumentLoaders implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const notionIntegrationToken = getCredentialParam('notionIntegrationToken', credentialData, nodeData)
 
-        const obj: NotionAPILoaderOptions = {
+        const obj: NotionAPILoaderOptions & { type: 'page' | 'database' } = {
             clientOptions: {
                 auth: notionIntegrationToken
             },

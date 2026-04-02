@@ -1,6 +1,6 @@
 {
     "name": "@flowiseai/agentflow",
-    "version": "0.0.0-dev.1",
+    "version": "0.0.0-dev.9",
     "description": "Embeddable React component for building and visualizing AI agent workflows",
     "license": "Apache-2.0",
     "repository": {
@@ -59,19 +59,37 @@
         "prepublishOnly": "npm run clean && npm run build"
     },
     "peerDependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "@mui/material": "^5.15.0",
-        "@mui/icons-material": "^5.0.0",
         "@emotion/react": "^11.10.0",
         "@emotion/styled": "^11.10.0",
+        "@mui/icons-material": "^5.0.0",
+        "@mui/material": "^5.15.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "reactflow": "^11.5.0"
     },
     "dependencies": {
-        "axios": "^1.7.2",
-        "lodash": "^4.17.21",
+        "@codemirror/lang-javascript": "^6.2.0",
+        "@codemirror/lang-json": "^6.0.0",
+        "@codemirror/lang-python": "^6.1.0",
         "@tabler/icons-react": "^3.7.0",
-        "uuid": "^9.0.1"
+        "@tiptap/core": "^3.20.4",
+        "@tiptap/extension-code-block-lowlight": "^3.20.4",
+        "@tiptap/extension-mention": "^3.20.4",
+        "@tiptap/extension-placeholder": "^3.20.4",
+        "@tiptap/pm": "^3.20.4",
+        "@tiptap/react": "^3.20.4",
+        "@tiptap/starter-kit": "^3.20.4",
+        "@uiw/codemirror-theme-sublime": "^4.21.0",
+        "@uiw/codemirror-theme-vscode": "^4.21.0",
+        "@uiw/react-codemirror": "^4.21.0",
+        "axios": "^1.7.2",
+        "dompurify": "^3.2.6",
+        "flowise-react-json-view": "^1.21.7",
+        "html-react-parser": "^3.0.16",
+        "lodash": "^4.17.21",
+        "lowlight": "^3.3.0",
+        "tippy.js": "^6.3.7",
+        "uuid": "^10.0.0"
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.6.3",
@@ -81,7 +99,6 @@
         "@types/lodash": "^4.14.195",
         "@types/react": "^18.2.0",
         "@types/react-dom": "^18.2.0",
-        "@types/uuid": "^9.0.0",
         "@typescript-eslint/eslint-plugin": "^8.18.2",
         "@typescript-eslint/parser": "^8.18.2",
         "@vitejs/plugin-react": "^4.2.0",

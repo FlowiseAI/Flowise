@@ -1,4 +1,4 @@
-import { ConversationChain } from 'langchain/chains'
+import { ConversationChain } from '@langchain/classic/chains'
 import {
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -8,7 +8,6 @@ import {
     PromptTemplate
 } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { StringOutputParser } from '@langchain/core/output_parsers'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { HumanMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
@@ -17,7 +16,6 @@ import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import {
-    IVisionChatModal,
     FlowiseMemory,
     ICommonObject,
     INode,
@@ -27,7 +25,7 @@ import {
     IServerSideEventStreamer
 } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { getBaseClasses, handleEscapeCharacters, transformBracesWithColon } from '../../../src/utils'
+import { getBaseClasses, handleEscapeCharacters, transformBracesWithColon, createTextOnlyOutputParser } from '../../../src/utils'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -233,13 +231,6 @@ const prepareChain = async (nodeData: INodeData, options: ICommonObject, session
     let messageContent: MessageContentImageUrl[] = []
     if (llmSupportsVision(model)) {
         messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
-        const visionChatModel = model as IVisionChatModal
-        if (messageContent?.length) {
-            visionChatModel.setVisionModel()
-        } else {
-            // revert to previous values if image upload is empty
-            visionChatModel.revertToOriginalModel()
-        }
     }
 
     const chatPrompt = prepareChatPrompt(nodeData, messageContent)
@@ -268,7 +259,7 @@ const prepareChain = async (nodeData: INodeData, options: ICommonObject, session
         },
         prepareChatPrompt(nodeData, messageContent),
         model,
-        new StringOutputParser()
+        createTextOnlyOutputParser()
     ])
 
     return conversationChain

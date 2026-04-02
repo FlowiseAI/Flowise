@@ -2,10 +2,10 @@ import { load } from 'js-yaml'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getFileFromStorage, getVars, IDatabaseEntity, IVariable } from '../../../src'
 import $RefParser from '@apidevtools/json-schema-ref-parser'
-import { z, ZodSchema, ZodTypeAny } from 'zod'
+import { z, ZodSchema, ZodTypeAny } from 'zod/v3'
 import { defaultCode, DynamicStructuredTool, howToUseCode } from './core'
 import { DataSource } from 'typeorm'
-import fetch from 'node-fetch'
+import { secureFetch } from '../../../src/httpSecurity'
 
 class OpenAPIToolkit_Tools implements INode {
     label: string
@@ -284,7 +284,7 @@ class OpenAPIToolkit_Tools implements INode {
         const { inputType = 'file', openApiFile = '', openApiLink = '' } = args
         try {
             if (inputType === 'link' && openApiLink) {
-                const res = await fetch(openApiLink)
+                const res = await secureFetch(openApiLink)
                 const text = await res.text()
 
                 // Auto-detect format from URL extension or content

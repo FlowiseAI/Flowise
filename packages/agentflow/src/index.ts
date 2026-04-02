@@ -14,40 +14,49 @@ export { useAgentflow } from './useAgentflow'
 // Context hooks (for advanced usage)
 export { useAgentflowContext, useApiContext, useConfigContext } from './infrastructure/store'
 
+// Load method registry (for dynamic API dispatch from node input loadMethod strings)
+export type { ApiServices } from './infrastructure/api'
+export { getLoadMethod } from './infrastructure/api'
+
 // Types
+/* eslint-disable simple-import-sort/exports */
 export type {
     // Instance
     AgentFlowInstance,
     // Main props
     AgentflowProps,
     AgentflowState,
-    // Context
-    ApiContextValue,
-    ApiResponse,
     // API
+    ApiResponse,
     Chatflow,
+    ChatModel,
+    Credential,
+    Tool,
+    // Context
     ConfigContextValue,
+    // Flow data
     EdgeData,
     FlowConfig,
-    // Flow data
     FlowData,
     FlowEdge,
     FlowNode,
     // Render props
     HeaderRenderProps,
+    // Node data
     InputAnchor,
     InputParam,
-    // Node data
     NodeData,
     NodeInput,
     NodeOutput,
     OutputAnchor,
     PaletteRenderProps,
-    ValidationError,
+    RequestInterceptor,
     // Validation
+    ValidationError,
     ValidationResult,
     Viewport
 } from './core/types'
+/* eslint-enable simple-import-sort/exports */
 
 // Utilities (for advanced usage)
 export { filterNodesByComponents, isAgentflowNode } from './core/node-catalog'

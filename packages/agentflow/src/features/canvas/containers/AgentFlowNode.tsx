@@ -2,11 +2,11 @@ import { memo, useEffect, useRef, useState } from 'react'
 
 import { Box, Typography } from '@mui/material'
 
+import { tokens } from '@/core/theme/tokens'
 import type { NodeData } from '@/core/types'
 import { useApiContext, useConfigContext } from '@/infrastructure/store'
 
 import { NodeIcon } from '../components/NodeIcon'
-import { NodeInfoDialog } from '../components/NodeInfoDialog'
 import { NodeInputHandle } from '../components/NodeInputHandle'
 import { NodeModelConfigs } from '../components/NodeModelConfigs'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
@@ -15,6 +15,8 @@ import { NodeToolbarActions } from '../components/NodeToolbarActions'
 import { useOpenNodeEditor } from '../hooks'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
+
+import { NodeInfoDialog } from './NodeInfoDialog'
 
 /** Width of the node icon container in pixels (theme.spacing(6.25) = 50px) */
 const NODE_ICON_CONTAINER_WIDTH = 50
@@ -47,16 +49,16 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
         openNodeEditor(data.id)
     }
 
+    const hasValidationErrors = (data.validationErrors?.length ?? 0) > 0
     const outputAnchors = data.outputAnchors ?? []
     const minHeight = getMinimumNodeHeight(outputAnchors.length)
 
     useEffect(() => {
-        if (data.warning) {
-            setWarningMessage(data.warning)
-        } else {
-            setWarningMessage('')
-        }
-    }, [data.name, data.version, data.warning])
+        const messages: string[] = []
+        if (data.warning) messages.push(data.warning)
+        if (data.validationErrors?.length) messages.push(...data.validationErrors)
+        setWarningMessage(messages.join('\n'))
+    }, [data.name, data.version, data.warning, data.validationErrors])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)} onDoubleClick={handleDoubleClick}>
@@ -70,8 +72,8 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
             <CardWrapper
                 content={false}
                 sx={{
-                    borderColor: stateColor,
-                    borderWidth: '1px',
+                    borderColor: hasValidationErrors ? tokens.colors.border.validation : stateColor,
+                    borderWidth: hasValidationErrors ? '2px' : '1px',
                     boxShadow: data.selected ? `0 0 0 1px ${stateColor} !important` : 'none',
                     minHeight,
                     height: 'auto',
@@ -103,7 +105,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                             >
                                 {data.label}
                             </Typography>
-                            <NodeModelConfigs inputs={data.inputValues} />
+                            <NodeModelConfigs inputs={data.inputs} />
                         </Box>
                     </Box>
 
@@ -117,14 +119,7 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                 </Box>
             </CardWrapper>
 
-            <NodeInfoDialog
-                open={showInfoDialog}
-                onClose={() => setShowInfoDialog(false)}
-                label={data.label}
-                name={data.name}
-                nodeId={data.id}
-                description={data.description}
-            />
+            <NodeInfoDialog open={showInfoDialog} onClose={() => setShowInfoDialog(false)} data={data} />
         </div>
     )
 }

@@ -3,20 +3,21 @@ import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { cloneDeep, omit, get } from 'lodash'
 import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AES, enc } from 'crypto-js'
-import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { AIMessage, AIMessageChunk, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { Runnable, type RunnableConfig } from '@langchain/core/runnables'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
-import { TextSplitter } from 'langchain/text_splitter'
-import { DocumentLoader } from 'langchain/document_loaders/base'
+import { TextSplitter } from '@langchain/textsplitters'
+import { DocumentLoader } from '@langchain/classic/document_loaders/base'
 import { NodeVM } from '@flowiseai/nodevm'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
@@ -117,7 +118,7 @@ export const availableDependencies = [
     'replicate',
     'srt-parser-2',
     'typeorm',
-    'weaviate-ts-client'
+    'weaviate-client'
 ]
 
 const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
@@ -308,6 +309,57 @@ export const transformBracesWithColon = (input: string): string => {
             return match
         }
     })
+}
+
+/**
+ * Extracts text content from an AIMessageChunk, filtering out reasoning/thinking
+ * content blocks that reasoning models may return.
+ */
+const extractTextFromChunk = (response: AIMessageChunk): string => {
+    if (typeof response.content === 'string') {
+        return response.content
+    }
+    if (Array.isArray(response.content)) {
+        return response.content
+            .filter((block: any) => block.type === 'text' || block.type === 'text_delta')
+            .map((block: any) => block.text ?? '')
+            .join('')
+    }
+    return ''
+}
+
+/**
+ * Creates a streaming-compatible output parser that extracts text content from
+ * chat model responses, filtering out reasoning/thinking content blocks.
+ * https://github.com/FlowiseAI/Flowise/pull/5893#issuecomment-4045466531
+ */
+export const createTextOnlyOutputParser = () => {
+    return new TextOnlyOutputParser()
+}
+
+class TextOnlyOutputParser extends Runnable<AIMessageChunk, string> {
+    static lc_name() {
+        return 'TextOnlyOutputParser'
+    }
+
+    lc_namespace = ['flowise', 'output_parsers']
+
+    async invoke(input: AIMessageChunk, _options?: Partial<RunnableConfig>): Promise<string> {
+        return extractTextFromChunk(input)
+    }
+
+    async *_transform(generator: AsyncGenerator<AIMessageChunk>): AsyncGenerator<string> {
+        for await (const chunk of generator) {
+            const text = extractTextFromChunk(chunk)
+            if (text) {
+                yield text
+            }
+        }
+    }
+
+    async *transform(generator: AsyncGenerator<AIMessageChunk>, options?: Partial<RunnableConfig>): AsyncGenerator<string> {
+        yield* this._transformStreamWithConfig(generator, this._transform.bind(this), options)
+    }
 }
 
 /**
@@ -2116,7 +2168,9 @@ export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, struct
         const structuredOutputSchema = z.object(zodObj)
 
         // @ts-ignore
-        return llmNodeInstance.withStructuredOutput(structuredOutputSchema)
+        return llmNodeInstance.withStructuredOutput(structuredOutputSchema, {
+            method: 'functionCalling'
+        })
     } catch (exception) {
         console.error(exception)
         return llmNodeInstance
@@ -2222,4 +2276,35 @@ export const createZodSchemaFromJSON = (jsonSchema: any): z.ZodTypeAny => {
 
     // Fallback to any for unknown types
     return z.any()
+}
+
+export const extractResponseContent = (response: any): string => {
+    if (!response) return ''
+
+    const content = response.content
+
+    if (Array.isArray(content)) {
+        return content
+            .map((item: any) => {
+                if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                    return item.text
+                }
+                return ''
+            })
+            .filter((text: string) => text)
+            .join('\n')
+    }
+
+    if (typeof content === 'string') return content
+    if (content != null) return JSON.stringify(content, null, 2)
+
+    return JSON.stringify(response, null, 2)
+}
+
+export const isReasoningModelOpenAI = (name: string): boolean => {
+    if (/^o[134]/.test(name)) return true
+    if (name === 'codex-mini') return true
+    if (name.includes('gpt-5') && name.includes('-chat')) return false
+    if (name.includes('gpt-5')) return true
+    return false
 }

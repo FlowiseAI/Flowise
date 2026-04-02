@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "3.0.13",
+    "version": "3.1.1",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -26,12 +26,13 @@
         "@mui/x-tree-view": "^7.25.0",
         "@reduxjs/toolkit": "^2.2.7",
         "@tabler/icons-react": "^3.30.0",
-        "@tiptap/extension-code-block-lowlight": "^3.4.3",
-        "@tiptap/extension-mention": "^2.11.5",
-        "@tiptap/extension-placeholder": "^2.11.5",
-        "@tiptap/pm": "^2.11.5",
-        "@tiptap/react": "^2.11.5",
-        "@tiptap/starter-kit": "^2.11.5",
+        "@tiptap/extension-code-block-lowlight": "^3.20.4",
+        "@tiptap/extension-mention": "^3.20.4",
+        "@tiptap/extension-placeholder": "^3.20.4",
+        "@tiptap/markdown": "^3.20.4",
+        "@tiptap/pm": "^3.20.4",
+        "@tiptap/react": "^3.20.4",
+        "@tiptap/starter-kit": "^3.20.4",
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
@@ -73,7 +74,7 @@
         "remark-math": "^5.1.1",
         "showdown": "^2.1.0",
         "tippy.js": "^6.3.7",
-        "uuid": "^9.0.1",
+        "uuid": "^10.0.0",
         "yup": "^0.32.9"
     },
     "scripts": {

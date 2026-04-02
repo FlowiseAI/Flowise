@@ -41,8 +41,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
 
     const handleDataChange = ({ inputParam, newValue }) => {
         data.inputs[inputParam.name] = newValue
-        const allowedShowHideInputTypes = ['boolean', 'asyncOptions', 'asyncMultiOptions', 'options', 'multiOptions']
-        if (allowedShowHideInputTypes.includes(inputParam.type) && nodeDataChangeHandler) {
+        if (nodeDataChangeHandler) {
             nodeDataChangeHandler({ nodeId: data.id, inputParam, newValue })
         }
     }
@@ -157,7 +156,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                             <File
                                 disabled={disabled}
                                 fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
                             />
                         )}
@@ -174,7 +173,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 columns={inputParam.datagrid}
                                 hideFooter={true}
                                 rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
                             />
                         )}
                         {inputParam.type === 'code' && (
@@ -200,6 +199,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 disabled={disabled}
                                 inputParam={inputParam}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                onBlur={(newValue) => handleDataChange({ inputParam, newValue })}
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
                                 nodeId={data.id}
                             />

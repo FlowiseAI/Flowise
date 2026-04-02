@@ -4,7 +4,7 @@ import { ReactFlowProvider } from 'reactflow'
 import { ThemeProvider } from '@mui/material/styles'
 
 import { createAgentflowTheme, generateCSSVariables } from './core/theme'
-import type { FlowData } from './core/types'
+import type { FlowData, RequestInterceptor } from './core/types'
 import { AgentflowStateProvider, ApiProvider, ConfigProvider } from './infrastructure/store'
 
 interface AgentflowProviderProps {
@@ -12,6 +12,11 @@ interface AgentflowProviderProps {
     apiBaseUrl: string
     /** Authentication token for API calls */
     token?: string
+    /**
+     * Optional callback to customize outgoing API requests.
+     * Has access to full request config including auth tokens — only pass trusted code.
+     */
+    requestInterceptor?: RequestInterceptor
     /** Whether to use dark mode (default: false) */
     isDarkMode?: boolean
     /** Array of allowed node component names */
@@ -31,6 +36,7 @@ interface AgentflowProviderProps {
 export function AgentflowProvider({
     apiBaseUrl,
     token,
+    requestInterceptor,
     isDarkMode = false,
     components,
     readOnly = false,
@@ -70,7 +76,7 @@ export function AgentflowProvider({
     return (
         <ReactFlowProvider>
             <ThemeProvider theme={theme}>
-                <ApiProvider apiBaseUrl={apiBaseUrl} token={token}>
+                <ApiProvider apiBaseUrl={apiBaseUrl} token={token} requestInterceptor={requestInterceptor}>
                     <ConfigProvider isDarkMode={isDarkMode} components={components} readOnly={readOnly}>
                         <AgentflowStateProvider initialFlow={initialFlow}>{children}</AgentflowStateProvider>
                     </ConfigProvider>

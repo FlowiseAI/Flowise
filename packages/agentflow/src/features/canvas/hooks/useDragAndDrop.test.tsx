@@ -2,6 +2,7 @@ import { makeFlowNode, makeNodeData } from '@test-utils/factories'
 import { act, renderHook } from '@testing-library/react'
 
 import type { FlowNode, NodeData } from '@/core/types'
+import { checkNodePlacementConstraints } from '@/core/validation'
 
 // --- Tests ---
 import { DROP_OFFSET_X, DROP_OFFSET_Y, useDragAndDrop } from './useDragAndDrop'
@@ -26,7 +27,13 @@ jest.mock('@/infrastructure/store', () => ({
 jest.mock('@/core', () => ({
     getUniqueNodeId: jest.fn((_data: NodeData, _nodes: FlowNode[]) => 'new-node-1'),
     getUniqueNodeLabel: jest.fn((_data: NodeData, _nodes: FlowNode[]) => 'New Node 1'),
-    initNode: jest.fn((data: NodeData, id: string) => ({ ...data, id }))
+    initNode: jest.fn((data: NodeData, id: string) => ({ ...data, id })),
+    resolveNodeType: jest.fn(() => 'agentflowNode')
+}))
+
+jest.mock('@/core/validation', () => ({
+    checkNodePlacementConstraints: jest.fn(() => ({ valid: true })),
+    findParentIterationNode: jest.fn(() => null)
 }))
 
 function makeDragEvent(data?: string): React.DragEvent {
@@ -57,8 +64,8 @@ describe('useDragAndDrop', () => {
         }
     })
 
-    function renderUseDragAndDrop() {
-        return renderHook(() => useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper }))
+    function renderUseDragAndDrop(overrides = {}) {
+        return renderHook(() => useDragAndDrop({ nodes, setLocalNodes, reactFlowWrapper, ...overrides }))
     }
 
     describe('handleDragOver', () => {
@@ -135,6 +142,20 @@ describe('useDragAndDrop', () => {
 
             expect(setLocalNodes).not.toHaveBeenCalled()
             expect(mockSetDirty).not.toHaveBeenCalled()
+        })
+
+        it('should not add node when placement constraint fails', () => {
+            ;(checkNodePlacementConstraints as jest.Mock).mockReturnValueOnce({ valid: false, message: 'Only one start node' })
+            const onConstraintViolation = jest.fn()
+            const { result } = renderUseDragAndDrop({ onConstraintViolation })
+            const event = makeDragEvent(JSON.stringify(nodeData))
+
+            act(() => {
+                result.current.handleDrop(event)
+            })
+
+            expect(onConstraintViolation).toHaveBeenCalledWith('Only one start node')
+            expect(setLocalNodes).not.toHaveBeenCalled()
         })
 
         it('should catch and log JSON parse errors', () => {
