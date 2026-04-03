@@ -11,6 +11,10 @@ const getAllPermissions = async (req: Request, res: Response, next: NextFunction
         const allPermissions = appServer.identityManager.getPermissions().toJSON()
         const user = req.user as LoggedInUser
 
+        if (!user) {
+            return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Unauthorized' })
+        }
+
         let permissions: { [key: string]: { key: string; value: string }[] } = allPermissions
 
         // Mapping of feature flags to permission prefixes
