@@ -325,12 +325,14 @@ export class GCSStorageProvider extends BaseStorageProvider {
     }
 
     getMulterStorage(): multer.Multer {
+        const uniformBucketLevelAccess = process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS?.trim().toLowerCase() !== 'false'
+
         return multer({
             storage: new MulterGoogleCloudStorage({
                 projectId: this.projectId,
                 bucket: this.bucketName,
                 keyFilename: this.keyFilename,
-                uniformBucketLevelAccess: Boolean(process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS) ?? true,
+                uniformBucketLevelAccess,
                 destination: `uploads/${uuidv4()}`
             })
         })
