@@ -5,6 +5,8 @@ import { styled } from '@mui/material/styles'
 import { mergeAttributes } from '@tiptap/core'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Placeholder from '@tiptap/extension-placeholder'
+import { Markdown } from '@tiptap/markdown'
+import type { Editor } from '@tiptap/react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import javascript from 'highlight.js/lib/languages/javascript'
@@ -13,6 +15,7 @@ import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
+import { getEditorMarkdown, isHtmlContent } from '@/atoms/utils/'
 import { CustomMention } from '@/core/primitives/customMention'
 import { tokens } from '@/core/theme/tokens'
 
@@ -32,12 +35,14 @@ export interface VariableInputProps {
     onChange: (value: string) => void
     placeholder?: string
     disabled?: boolean
-    /** Number of visible text rows. When set, renders as a multiline editor and uses markdown serialization. */
+    /** Number of visible text rows. When set, renders as a multiline editor. */
     rows?: number
     /** Available variables for autocomplete when typing `{{` */
     suggestionItems?: SuggestionItem[]
     /** Auto-focus the editor on mount */
     autoFocus?: boolean
+    /** Called with the live editor instance once it is ready (and null on unmount). Used by ExpandTextDialog to call getMarkdown() on mode switch. */
+    onEditorReady?: (editor: Editor | null) => void
 }
 
 /* ── Styled wrapper matching RichTextEditor styling ── */
@@ -133,16 +138,37 @@ const StyledEditorContent = styled(EditorContent, {
  *
  * When the user types `{{`, a suggestion dropdown appears anchored to the cursor
  * with available variables. Selecting a variable inserts it as a styled mention chip
- * that renders as `{{variableName}}` in the output text.
+ * that renders as `{{variableName}}` in the markdown output.
  *
- * Serialization matches the UI's RichInput behavior:
+ * Content is stored and emitted as markdown. The CustomMention extension's
+ * markdownTokenizer/parseMarkdown/renderMarkdown hooks ensure `{{variable}}` syntax
+ * survives markdown round-trips intact. Legacy HTML values are accepted for backward
+ * compatibility — TipTap renders them correctly and subsequent edits emit markdown.
+ *
  * This is the agentflow equivalent of the UI package's RichInput component.
  */
-export function VariableInput({ value, onChange, placeholder, disabled = false, rows, suggestionItems, autoFocus }: VariableInputProps) {
+export function VariableInput({
+    value,
+    onChange,
+    placeholder,
+    disabled = false,
+    rows,
+    suggestionItems,
+    autoFocus = false,
+    onEditorReady
+}: VariableInputProps) {
     const onChangeRef = useRef(onChange)
     useEffect(() => {
         onChangeRef.current = onChange
     }, [onChange])
+
+    // Track the last value we emitted (or loaded) to avoid re-setting content
+    // when the parent echoes our own onChange value back as the new prop.
+    const lastEmittedRef = useRef<string>(value || '')
+
+    // Capture initial value for the mount effect below so we can depend only on
+    // `editor` without suppressing the exhaustive-deps rule.
+    const initialValueRef = useRef(value)
 
     const suggestionConfig = useMemo(
         () => (suggestionItems?.length ? createSuggestionConfig(suggestionItems) : undefined),
@@ -151,6 +177,7 @@ export function VariableInput({ value, onChange, placeholder, disabled = false, 
 
     const extensions = useMemo(
         () => [
+            Markdown,
             StarterKit.configure({
                 codeBlock: false
             }),
@@ -178,24 +205,40 @@ export function VariableInput({ value, onChange, placeholder, disabled = false, 
 
     const editor = useEditor({
         extensions,
-        content: value || '',
+        content: '',
         editable: !disabled,
-        autofocus: autoFocus ?? false,
+        autofocus: autoFocus ? 'end' : false,
         onUpdate: ({ editor: ed }) => {
-            // Always use HTML serialization. The @tiptap/markdown v3 getMarkdown()
-            // returns empty strings (known issue with the MarkdownManager in v3.20.4).
-            // HTML round-trips correctly because the Mention extension's parseHTML
-            // matches on span[data-type="mention"] with data-id/data-label attributes.
-            onChangeRef.current(ed.getHTML())
+            const value = getEditorMarkdown(ed)
+            lastEmittedRef.current = value
+            onChangeRef.current(value)
         }
     })
 
-    // Sync external value changes into the editor (e.g. when parent state updates)
+    // Load initial content once the editor is ready, detecting legacy HTML vs markdown.
+    // Reads from a ref so only `editor` needs to be in the dep array.
     useEffect(() => {
-        if (editor && value !== editor.getHTML()) {
-            editor.commands.setContent(value, { emitUpdate: false })
+        if (!editor || !initialValueRef.current) return
+        const contentType = isHtmlContent(initialValueRef.current) ? 'html' : 'markdown'
+        editor.commands.setContent(initialValueRef.current, { emitUpdate: false, contentType })
+        lastEmittedRef.current = initialValueRef.current
+    }, [editor])
+
+    // Sync genuine external value changes (e.g. parent resets the field programmatically).
+    useEffect(() => {
+        if (editor && value !== lastEmittedRef.current) {
+            const contentType = isHtmlContent(value) ? 'html' : 'markdown'
+            editor.commands.setContent(value, { emitUpdate: false, contentType })
+            lastEmittedRef.current = value
         }
     }, [editor, value])
+
+    // Notify parent when the editor instance is ready (used by ExpandTextDialog to flush
+    // the current editor state to markdown when switching to Source mode).
+    useEffect(() => {
+        onEditorReady?.(editor)
+        return () => onEditorReady?.(null)
+    }, [editor, onEditorReady])
 
     // Sync editable state
     useEffect(() => {

@@ -9,13 +9,15 @@ const mockOnDataChange = jest.fn()
 
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-expand' />,
+    IconCode: () => <span />,
+    IconPencil: () => <span />,
     IconPlus: () => <span data-testid='icon-plus' />,
     IconTrash: () => <span data-testid='icon-trash' />,
     IconVariable: () => <span data-testid='icon-variable' />
 }))
 
-// Replace the TipTap-based RichTextEditor with a plain textarea so tests can
-// simulate content changes via fireEvent.change without TipTap internals.
+// Replace the TipTap-based RichTextEditor with a plain textarea so tests that open the
+// expand dialog (without variableItems) can verify dialog content via fireEvent.change.
 jest.mock('./RichTextEditor', () => ({
     RichTextEditor: ({
         value,
@@ -40,6 +42,8 @@ jest.mock('./RichTextEditor', () => ({
     )
 }))
 
+// Replace the TipTap-based VariableInput with a plain textarea so tests can
+// simulate content changes via fireEvent.change without TipTap internals.
 jest.mock('./VariableInput', () => ({
     VariableInput: ({
         value,
@@ -48,9 +52,10 @@ jest.mock('./VariableInput', () => ({
         placeholder
     }: {
         value: string
-        onChange: (html: string) => void
+        onChange: (v: string) => void
         disabled?: boolean
         placeholder?: string
+        [k: string]: unknown
     }) => (
         <div data-testid='variable-input'>
             <textarea
@@ -123,9 +128,9 @@ describe('MessagesInput', () => {
         const roleSelects = screen.getAllByRole('combobox')
         expect(roleSelects).toHaveLength(2)
 
-        // Content fields rendered as rich text editors (TipTap) — lazy-loaded
+        // Content fields rendered as VariableInput (TipTap-based)
         await waitFor(() => {
-            expect(screen.getAllByTestId('rich-text-editor')).toHaveLength(2)
+            expect(screen.getAllByTestId('variable-input')).toHaveLength(2)
         })
     })
 
@@ -214,7 +219,7 @@ describe('MessagesInput', () => {
 
     // --- Content field ---
 
-    it('should render rich text editor for content field', async () => {
+    it('should render VariableInput for content field', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputs: {
@@ -224,13 +229,13 @@ describe('MessagesInput', () => {
 
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
-        expect(await screen.findByTestId('rich-text-editor')).toBeInTheDocument()
-        expect(screen.getByTestId('tiptap-editor-content')).toBeInTheDocument()
+        expect(await screen.findByTestId('variable-input')).toBeInTheDocument()
+        expect(screen.getByTestId('variable-input-content')).toBeInTheDocument()
     })
 
     // --- Content change ---
 
-    it('should update content when RichTextEditor fires onChange', async () => {
+    it('should update content when VariableInput fires onChange', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputs: {
@@ -240,7 +245,7 @@ describe('MessagesInput', () => {
 
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
-        const textarea = await screen.findByTestId('tiptap-editor-content')
+        const textarea = await screen.findByTestId('variable-input-content')
         fireEvent.change(textarea, { target: { value: 'Updated content' } })
 
         expect(mockOnDataChange).toHaveBeenCalledWith({
@@ -249,7 +254,7 @@ describe('MessagesInput', () => {
         })
     })
 
-    it('should support variable syntax in content via RichTextEditor', async () => {
+    it('should support variable syntax in content via VariableInput', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputs: {
@@ -259,7 +264,7 @@ describe('MessagesInput', () => {
 
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
-        const textarea = await screen.findByTestId('tiptap-editor-content')
+        const textarea = await screen.findByTestId('variable-input-content')
         fireEvent.change(textarea, { target: { value: '{{ question }}' } })
 
         expect(mockOnDataChange).toHaveBeenCalledWith({
@@ -281,21 +286,20 @@ describe('MessagesInput', () => {
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
         // Edit inline content (parent has NOT re-rendered with new data yet)
-        const textarea = await screen.findByTestId('tiptap-editor-content')
+        const textarea = await screen.findByTestId('variable-input-content')
         fireEvent.change(textarea, { target: { value: 'Edited inline' } })
 
         // Open expand dialog
         fireEvent.click(screen.getByTitle('Expand'))
 
-        // Wait for the lazy-loaded RichTextEditor inside the expand dialog to mount
+        // Wait for the RichTextEditor inside the expand dialog to mount (no suggestionItems)
         await waitFor(() => {
-            expect(screen.getAllByTestId('tiptap-editor-content')).toHaveLength(2)
+            expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
         })
 
         // The expand dialog should show the edited value from latestContentRef,
         // not the stale 'Original' from messages prop
-        const editors = screen.getAllByTestId('tiptap-editor-content')
-        const expandTextarea = editors[editors.length - 1] as HTMLTextAreaElement
+        const expandTextarea = screen.getByTestId('tiptap-editor-content') as HTMLTextAreaElement
         expect(expandTextarea.value).toBe('Edited inline')
     })
 
@@ -314,7 +318,7 @@ describe('MessagesInput', () => {
         const { rerender } = render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} />)
 
         // Edit the third message (index 2) inline
-        const textareas = await screen.findAllByTestId('tiptap-editor-content')
+        const textareas = await screen.findAllByTestId('variable-input-content')
         fireEvent.change(textareas[2], { target: { value: 'Edited assistant reply' } })
 
         // Delete the first message (index 0) — this should shift index 2 → 1 in latestContentRef
@@ -338,8 +342,7 @@ describe('MessagesInput', () => {
         fireEvent.click(expandButtons[1])
 
         // The expand dialog should show the edited content from the shifted ref
-        const editors = screen.getAllByTestId('tiptap-editor-content')
-        const expandTextarea = editors[editors.length - 1] as HTMLTextAreaElement
+        const expandTextarea = screen.getByTestId('tiptap-editor-content') as HTMLTextAreaElement
         expect(expandTextarea.value).toBe('Edited assistant reply')
     })
 
@@ -361,8 +364,8 @@ describe('MessagesInput', () => {
         // Delete button disabled
         expect(screen.getByTitle('Delete')).toBeDisabled()
 
-        // Rich text editor is rendered (disabled state is handled by TipTap internally)
-        expect(await screen.findByTestId('rich-text-editor')).toBeInTheDocument()
+        // VariableInput is rendered (disabled state is handled by TipTap internally)
+        expect(await screen.findByTestId('variable-input')).toBeInTheDocument()
     })
 
     // --- minItems constraint ---
@@ -451,7 +454,7 @@ describe('MessagesInput', () => {
 
     // --- Expand dialog (now uses rich text mode with TipTap) ---
 
-    it('should open expand dialog with rich text editor when expand icon is clicked', async () => {
+    it('should open expand dialog with rich text editor when expand icon is clicked (no variableItems)', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputs: {
@@ -463,12 +466,40 @@ describe('MessagesInput', () => {
 
         fireEvent.click(screen.getByTitle('Expand'))
 
-        // Inline editor + expand dialog editor = 2 rich text editors
+        // Inline uses VariableInput; dialog (no suggestionItems) falls back to RichTextEditor
         await waitFor(() => {
-            expect(screen.getAllByTestId('rich-text-editor')).toHaveLength(2)
+            expect(screen.getByTestId('variable-input')).toBeInTheDocument()
+            expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
         })
         expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
         expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    })
+
+    it('should open expand dialog with VariableInput when variableItems are provided', async () => {
+        const dataWithMessages: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                agentMessages: [{ role: 'user', content: 'Hello {{question}}' }]
+            }
+        } as NodeData
+        const variableItems = [{ value: '{{question}}', label: 'question', description: "User's question", category: 'Chat Context' }]
+
+        render(
+            <MessagesInput
+                inputParam={mockInputParam}
+                data={dataWithMessages}
+                variableItems={variableItems}
+                onDataChange={mockOnDataChange}
+            />
+        )
+
+        fireEvent.click(screen.getByTitle('Expand'))
+
+        // Both inline and expand dialog use VariableInput when suggestionItems are available
+        await waitFor(() => {
+            expect(screen.getAllByTestId('variable-input')).toHaveLength(2)
+        })
+        expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
     })
 
     it('should call onConfirm with current value when Save is clicked in expand dialog', () => {
@@ -556,7 +587,7 @@ describe('MessagesInput', () => {
         expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
     })
 
-    it('should fall back to RichTextEditor when variableItems is empty', async () => {
+    it('should render VariableInput even when variableItems is empty', async () => {
         const dataWithMessages: NodeData = {
             ...mockNodeData,
             inputs: {
@@ -566,8 +597,8 @@ describe('MessagesInput', () => {
 
         render(<MessagesInput inputParam={mockInputParam} data={dataWithMessages} onDataChange={mockOnDataChange} variableItems={[]} />)
 
-        expect(await screen.findByTestId('rich-text-editor')).toBeInTheDocument()
-        expect(screen.queryByTestId('variable-input')).not.toBeInTheDocument()
+        expect(await screen.findByTestId('variable-input')).toBeInTheDocument()
+        expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
     })
 
     it('should update content via VariableInput when variableItems are provided', async () => {
