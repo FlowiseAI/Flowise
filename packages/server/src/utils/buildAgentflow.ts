@@ -1109,8 +1109,8 @@ const executeNode = async ({
             Object.keys(iterationContext.agentflowRuntime.state).length > 0
         ) {
             updatedState = {
-                ...updatedState,
-                ...iterationContext.agentflowRuntime.state
+                ...iterationContext.agentflowRuntime.state,
+                ...updatedState
             }
             flowConfig.state = updatedState
         }
