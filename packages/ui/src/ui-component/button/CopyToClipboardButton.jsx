@@ -3,7 +3,11 @@ import { useSelector } from 'react-redux'
 import { IconButton } from '@mui/material'
 import { IconClipboard } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CopyToClipboardButton = (props) => {
+    const { t } = useTranslation()
     const customization = useSelector((state) => state.customization)
 
     return (
@@ -12,7 +16,7 @@ const CopyToClipboardButton = (props) => {
             onClick={props.onClick}
             size='small'
             sx={{ background: 'transparent', border: 'none' }}
-            title='Copy to clipboard'
+            title={t('common.actions.copyToClipboard')}
         >
             <IconClipboard
                 style={{ width: '20px', height: '20px' }}

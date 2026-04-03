@@ -10,9 +10,13 @@ import NavCollapse from '../NavCollapse'
 import { useAuth } from '@/hooks/useAuth'
 import { Available } from '@/ui-component/rbac/available'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| SIDEBAR MENU LIST GROUP ||============================== //
 
 const NavGroup = ({ item }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const { hasPermission, hasDisplay } = useAuth()
 
@@ -29,7 +33,7 @@ const NavGroup = ({ item }) => {
             default:
                 return (
                     <Typography key={menu.id} variant='h6' color='error' align='center'>
-                        Menu Items Error
+                        {t('common.menu.itemsError')}
                     </Typography>
                 )
         }
@@ -74,10 +78,10 @@ const NavGroup = ({ item }) => {
                 subheader={
                     item.title && (
                         <Typography variant='caption' sx={{ ...theme.typography.menuCaption }} display='block' gutterBottom>
-                            {item.title}
+                            {t(item.title)}
                             {item.caption && (
                                 <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
-                                    {item.caption}
+                                    {t(item.caption)}
                                 </Typography>
                             )}
                         </Typography>
@@ -97,7 +101,7 @@ const NavGroup = ({ item }) => {
                             <List
                                 subheader={
                                     <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
-                                        {group.title}
+                                        {t(group.title)}
                                     </Typography>
                                 }
                                 sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}

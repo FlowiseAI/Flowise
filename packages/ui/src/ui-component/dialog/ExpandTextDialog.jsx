@@ -22,7 +22,11 @@ import useApi from '@/hooks/useApi'
 
 import './ExpandTextDialog.css'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicked, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
 
     const theme = useTheme()
@@ -169,7 +173,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                             executeCustomFunctionNodeApi.request({ javascriptFunction: inputValue })
                         }}
                     >
-                        Execute
+                        {t('dialogs.expand.actions.execute')}
                     </PermissionLoadingButton>
                 )}
                 {codeExecutedResult && (

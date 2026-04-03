@@ -14,9 +14,13 @@ import config from '@/config'
 // assets
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| SIDEBAR MENU LIST ITEMS ||============================== //
 
 const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
@@ -118,13 +122,13 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                         color='inherit'
                         sx={{ my: 0.5 }}
                     >
-                        {item.title}
+                        {t(item.title)}
                     </Typography>
                 }
                 secondary={
                     item.caption && (
                         <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption, mt: -0.6 }} display='block' gutterBottom>
-                            {item.caption}
+                            {t(item.caption)}
                         </Typography>
                     )
                 }
@@ -149,7 +153,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                         background: theme.palette.teal.main,
                         color: 'white'
                     }}
-                    label={'BETA'}
+                    label={t('common.menu.beta')}
                 />
             )}
         </ListItemButton>

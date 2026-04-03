@@ -6,7 +6,11 @@ import moment from 'moment'
 import axios from 'axios'
 import { baseURL } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const AboutDialog = ({ show, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
 
     const [data, setData] = useState({})
@@ -45,7 +49,7 @@ const AboutDialog = ({ show, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Flowise Version
+                {t('about.title')}
             </DialogTitle>
             <DialogContent>
                 {data && (
@@ -53,9 +57,9 @@ const AboutDialog = ({ show, onCancel }) => {
                         <Table aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Current Version</TableCell>
-                                    <TableCell>Latest Version</TableCell>
-                                    <TableCell>Published At</TableCell>
+                                    <TableCell>{t('dialogs.about.version.current')}</TableCell>
+                                    <TableCell>{t('dialogs.about.version.latest')}</TableCell>
+                                    <TableCell>{t('dialogs.about.published')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>

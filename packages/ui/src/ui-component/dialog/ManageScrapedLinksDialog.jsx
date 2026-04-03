@@ -33,7 +33,11 @@ import {
     enqueueSnackbar as enqueueSnackbarAction
 } from '@/store/actions'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -69,7 +73,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
             if (fetchLinksResp.data) {
                 setSelectedLinks(fetchLinksResp.data.links)
                 enqueueSnackbar({
-                    message: 'Successfully fetched links',
+                    message: t('dialogs.manageScrapedLinks.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -134,7 +138,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
             aria-describedby='manage-scraped-links-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='manage-scraped-links-dialog-title'>
-                {dialogProps.title || `Manage Scraped Links - ${url}`}
+                {dialogProps.title || t('dialogs.manageScrapedLinks.title', { url: url })}
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ mb: 4 }}>
@@ -158,12 +162,12 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                             variant='contained'
                             onClick={handleFetchLinks}
                         >
-                            Fetch Links
+                            {t('dialogs.manageScrapedLinks.actions.fetch')}
                         </Button>
                     </Stack>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Typography sx={{ fontWeight: 500 }}>Scraped Links</Typography>
+                    <Typography sx={{ fontWeight: 500 }}>{t('dialogs.manageScrapedLinks.links')}</Typography>
                     <Box sx={{ width: 'auto', flexGrow: 1 }}>
                         <IconButton
                             sx={{ height: 30, width: 30, marginLeft: '8px' }}
@@ -179,11 +183,11 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                             sx={{ height: 'max-content', width: 'max-content' }}
                             variant='outlined'
                             color='error'
-                            title='Clear All Links'
+                            title={t('dialogs.manageScrapedLinks.actions.clearAll.tooltip')}
                             onClick={handleRemoveAllLinks}
                             startIcon={<IconEraser />}
                         >
-                            Clear All
+                            {t('dialogs.manageScrapedLinks.actions.clearAll.title')}
                         </Button>
                     ) : null}
                 </Box>
@@ -229,15 +233,15 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                         </PerfectScrollbar>
                     ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Typography sx={{ my: 2 }}>Links scraped from the URL will appear here</Typography>
+                            <Typography sx={{ my: 2 }}>{t('dialogs.manageScrapedLinks.placeholder')}</Typography>
                         </div>
                     )}
                 </>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>Cancel</Button>
+                <Button onClick={onCancel}>{t('common.actions.cancel')}</Button>
                 <StyledButton variant='contained' onClick={handleSaveLinks}>
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

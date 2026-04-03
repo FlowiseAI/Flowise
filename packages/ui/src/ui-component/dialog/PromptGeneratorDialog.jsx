@@ -10,6 +10,8 @@ import { IconX, IconWand, IconArrowLeft, IconNotebook, IconLanguage, IconMail, I
 import useNotifier from '@/utils/useNotifier'
 import { LoadingButton } from '@mui/lab'
 
+// i18n
+
 const defaultInstructions = [
     {
         text: 'Summarize a document',
@@ -143,7 +145,7 @@ const AssistantPromptGenerator = ({ show, dialogProps, onCancel, onConfirm }) =>
                             rows={12}
                             disabled={loading}
                             value={customAssistantInstruction}
-                            placeholder={'Describe your task here'}
+                            placeholder={t('dialogs.promptGenerator.describeTaskPlaceholder')}
                             onChange={(event) => setCustomAssistantInstruction(event.target.value)}
                         />
                     )}
@@ -168,7 +170,7 @@ const AssistantPromptGenerator = ({ show, dialogProps, onCancel, onConfirm }) =>
                             }}
                             startIcon={<IconWand size={20} />}
                         >
-                            Generate
+                            {t('common.actions.generate')}
                         </LoadingButton>
                     )}
                     {generatedInstruction && (
@@ -179,12 +181,12 @@ const AssistantPromptGenerator = ({ show, dialogProps, onCancel, onConfirm }) =>
                                 setGeneratedInstruction('')
                             }}
                         >
-                            Back
+                            {t('common.actions.back')}
                         </Button>
                     )}
                     {generatedInstruction && (
                         <StyledButton variant='contained' onClick={() => onConfirm(generatedInstruction)}>
-                            Apply
+                            {t('common.actions.apply')}
                         </StyledButton>
                     )}
                 </DialogActions>

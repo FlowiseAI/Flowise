@@ -12,7 +12,11 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 // store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -43,7 +47,7 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Provide additional feedback
+                {t('dialogs.chatFeedback.title')}
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -54,7 +58,7 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
                         multiline={true}
                         name='feedbackContentInput'
                         onChange={onChange}
-                        placeholder='What do you think of the response?'
+                        placeholder={t('dialogs.chatFeedback.placeholder')}
                         rows={4}
                         value={feedbackContent}
                         sx={{ width: '100%' }}
@@ -64,7 +68,7 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
             <DialogActions>
                 <Button onClick={onCancel}>Cancel</Button>
                 <StyledButton variant='contained' onClick={onSave}>
-                    Submit Feedback
+                    {t('chatFeedback.actions.submit')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

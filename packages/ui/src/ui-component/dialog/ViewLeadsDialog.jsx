@@ -36,6 +36,9 @@ import leadsApi from '@/api/lead'
 import '@/views/chatmessage/ChatMessage.css'
 import 'react-datepicker/dist/react-datepicker.css'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const DatePickerCustomInput = forwardRef(function DatePickerCustomInput({ value, onClick }, ref) {
     return (
         <ListItemButton style={{ borderRadius: 15, border: '1px solid #e0e0e0' }} onClick={onClick} ref={ref}>
@@ -50,6 +53,7 @@ DatePickerCustomInput.propTypes = {
 }
 
 const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const theme = useTheme()
@@ -136,7 +140,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                             }
                         }}
                         variant='outlined'
-                        placeholder='Search Name or Email or Phone'
+                        placeholder={t('dialogs.viewLeads.placeholder')}
                         onChange={onSearchChange}
                         startAdornment={
                             <Box
@@ -156,7 +160,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                     <div style={{ flex: 1 }} />
                     {leads && leads.length > 0 && (
                         <Button variant='outlined' onClick={() => exportMessages()} startIcon={<IconFileExport />}>
-                            Export
+                            {t('common.actions.export')}
                         </Button>
                     )}
                 </div>
@@ -167,7 +171,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                         <Box sx={{ p: 5, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={leadsEmptySVG} alt='msgEmptySVG' />
                         </Box>
-                        <div>No Leads</div>
+                        <div> {t('dialogs.viewLeads.noLeads')}</div>
                     </Stack>
                 )}
                 {leads && leads.length > 0 && (
@@ -175,10 +179,10 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Email Address</TableCell>
-                                    <TableCell>Phone</TableCell>
-                                    <TableCell>Created Date</TableCell>
+                                    <TableCell>{t('common.labels.name')}</TableCell>
+                                    <TableCell>{t('dialogs.viewLeads.leadsTable.email')}</TableCell>
+                                    <TableCell>{t('dialogs.viewLeads.leadsTable.phone')}</TableCell>
+                                    <TableCell>{t('dialogs.viewLeads.leadsTable.created')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -187,7 +191,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                                         <TableCell>{lead.name}</TableCell>
                                         <TableCell>{lead.email}</TableCell>
                                         <TableCell>{lead.phone}</TableCell>
-                                        <TableCell>{moment(lead.createdDate).format('MMMM Do, YYYY')}</TableCell>
+                                        <TableCell>{moment(lead.createdDate).format(t('common.formats.date'))}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

@@ -13,7 +13,11 @@ import useNotifier from '@/utils/useNotifier'
 // Project imports
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ChatFeedbackDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -35,7 +39,7 @@ const ChatFeedbackDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || 'Allowed Domains'}
+                {dialogProps.title || t('common.labels.allowedDomains')}
             </DialogTitle>
             <DialogContent>
                 <ChatFeedback dialogProps={dialogProps} onConfirm={onConfirm} />

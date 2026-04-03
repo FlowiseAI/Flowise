@@ -7,7 +7,11 @@ import Chip from '@mui/material/Chip'
 import PropTypes from 'prop-types'
 import { DialogActions, DialogContent, DialogTitle, Typography } from '@mui/material'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
+    const { t } = useTranslation()
     const [inputValue, setInputValue] = useState('')
     const [categoryValues, setCategoryValues] = useState([])
 
@@ -58,7 +62,7 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
             aria-describedby='category-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                Set Chatflow Category Tags
+                {t('dialogs.tag.title')}
             </DialogTitle>
             <DialogContent>
                 <Box>
@@ -81,19 +85,19 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
                             value={inputValue}
                             onChange={handleInputChange}
                             onKeyDown={handleInputKeyDown}
-                            label='Add a tag'
+                            label={t('dialogs.tag.addLabel')}
                             variant='outlined'
                         />
                         <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
-                            Enter a tag and press enter to add it to the list. You can add as many tags as you want.
+                            {t('dialogs.tag.tooltip')}
                         </Typography>
                     </form>
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
+                <Button onClick={onClose}>{t('common.actions.cancel')}</Button>
                 <Button variant='contained' onClick={handleSubmit}>
-                    Submit
+                    {t('dialogs.tag.actions.submit')}
                 </Button>
             </DialogActions>
         </Dialog>

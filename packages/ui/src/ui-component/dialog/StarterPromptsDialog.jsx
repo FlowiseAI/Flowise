@@ -13,7 +13,11 @@ import useNotifier from '@/utils/useNotifier'
 // Project imports
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
 
@@ -35,7 +39,7 @@ const StarterPromptsDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || 'Conversation Starter Prompts'}
+                {dialogProps.title || t('dialogs.starterPrompts.title')}
             </DialogTitle>
             <DialogContent>
                 <StarterPrompts dialogProps={dialogProps} onConfirm={onConfirm} />

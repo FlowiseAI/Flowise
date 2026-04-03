@@ -5,9 +5,14 @@ import { Box, Typography } from '@mui/material'
 import NavGroup from './NavGroup'
 import { menuItems } from '@/menu-items'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| SIDEBAR MENU LIST ||============================== //
 
 const MenuList = () => {
+    const { t } = useTranslation()
+
     const navItems = menuItems.items.map((item) => {
         switch (item.type) {
             case 'group':
@@ -15,7 +20,7 @@ const MenuList = () => {
             default:
                 return (
                     <Typography key={item.id} variant='h6' color='error' align='center'>
-                        Menu Items Error
+                        {t('common.menu.itemsError')}
                     </Typography>
                 )
         }

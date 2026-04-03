@@ -21,7 +21,12 @@ import useApi from '@/hooks/useApi'
 import { IconFileText, IconLogout, IconX } from '@tabler/icons-react'
 import accountApi from '@/api/account.api'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CloudMenuList = () => {
+    const { t } = useTranslation()
+
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
     useNotifier()
@@ -36,7 +41,7 @@ const CloudMenuList = () => {
     const signOutClicked = () => {
         logoutApi.request()
         enqueueSnackbar({
-            message: 'Logging out...',
+            message: t('profile.logoutWait'),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -80,7 +85,7 @@ const CloudMenuList = () => {
                                     <IconFileText size='1.3rem' strokeWidth='1.5' />
                                 </ListItemIcon>
                                 <Typography variant='body1' color='inherit' sx={{ my: 0.5 }}>
-                                    Documentation
+                                    {t('help.documentation')}
                                 </Typography>
                             </ListItemButton>
                         </a>
@@ -98,7 +103,7 @@ const CloudMenuList = () => {
                                 <IconLogout size='1.3rem' strokeWidth='1.5' />
                             </ListItemIcon>
                             <Typography variant='body1' color='inherit' sx={{ my: 0.5 }}>
-                                Logout
+                                {t('profile.logout')}
                             </Typography>
                         </ListItemButton>
                     </List>

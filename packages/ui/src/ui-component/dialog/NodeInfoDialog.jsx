@@ -17,7 +17,11 @@ import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import configApi from '@/api/config'
 import useApi from '@/hooks/useApi'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const theme = useTheme()
@@ -136,7 +140,9 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                             marginBottom: 5
                                         }}
                                     >
-                                        <span style={{ color: '#606c38', fontSize: '0.825rem' }}>version {dialogProps.data.version}</span>
+                                        <span style={{ color: '#606c38', fontSize: '0.825rem' }}>
+                                            {t('dialogs.nodeInfo.version', { version: dialogProps.data.version })}
+                                        </span>
                                     </div>
                                 )}
                                 {dialogProps.data.badge && (
@@ -201,13 +207,13 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                             <Button
                                 variant='outlined'
                                 color='primary'
-                                title='Open Documentation'
+                                title={t('dialogs.nodeInfo.actions.documentation.tooltip')}
                                 onClick={() => {
                                     window.open(dialogProps.data.documentation, '_blank', 'noopener,noreferrer')
                                 }}
                                 startIcon={<IconBook2 />}
                             >
-                                Documentation
+                                {t('dialogs.nodeInfo.actions.documentation.title')}
                             </Button>
                         )}
                     </div>

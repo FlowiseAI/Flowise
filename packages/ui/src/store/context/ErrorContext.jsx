@@ -6,9 +6,13 @@ import { store } from '@/store'
 import { logoutSuccess } from '@/store/reducers/authSlice'
 import { ErrorMessage } from '../constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ErrorContext = createContext()
 
 export const ErrorProvider = ({ children }) => {
+    const { t } = useTranslation()
     const [error, setError] = useState(null)
     const [authRateLimitError, setAuthRateLimitError] = useState(null)
     const navigate = useNavigate()
@@ -16,7 +20,7 @@ export const ErrorProvider = ({ children }) => {
     const handleError = async (err) => {
         console.error(err)
         if (err?.response?.status === 429 && err?.response?.data?.type === 'authentication_rate_limit') {
-            setAuthRateLimitError("You're making a lot of requests. Please wait and try again later.")
+            setAuthRateLimitError(t('errors.manyRequests'))
         } else if (err?.response?.status === 429 && err?.response?.data?.type !== 'authentication_rate_limit') {
             const retryAfterHeader = err?.response?.headers?.['retry-after']
             let retryAfter = 60 // Default in seconds

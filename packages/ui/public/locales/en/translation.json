@@ -1,0 +1,398 @@
+{
+    "common": {
+        "formats": {
+            "date": "MMMM Do, YYYY"
+        },
+        "labels": {
+            "model": "Model",
+            "prompt": "Prompt",
+            "description": "Description",
+            "share": "Share",
+            "Name": "name",
+            "allowedDomains": "Allowed Domains"
+        },
+        "menu": {
+            "agentflows": "Agentflows",
+            "agentflowsV2": "Agentflows V2",
+            "assistants": {
+                "title": "Assistants",
+                "custom": "Assistants Custom",
+                "openAi": "Assistants OpenAI",
+                "azure": "Assistants Azure"
+            },
+            "Assistants OpenAI": "Assistants OpenAI",
+            "Assistants Azure": "Assistants Azure",
+            "chatflows": "Chatflows",
+            "chatMessages": "Chat Messages",
+            "chatFeedbacks": "Chat Feedbacks",
+            "customTemplates": "Custom Templates",
+            "documentStores": "Document Stores",
+            "executions": "Executions",
+            "tools": "Tools",
+            "variables": "variables",
+            "agents": "Agents",
+            "viewMessages": "View Messages",
+            "viewLeads": "View Leads",
+            "configuration": "Configuration",
+            "duplicateChatflow": "Duplicate Agents",
+            "loadChatflow": "Load Agents",
+            "exportChatflow": "Export Agents",
+            "deleteChatflow": "Delete Agents",
+            "marketplaces": "Marketplaces",
+            "credentials": "Credentials",
+            "apiKeys": "API Keys",
+            "evaluations": "Evaluations",
+            "Datasets": "Datasets",
+            "evaluators": "Evaluators",
+            "management": "User & Workspace Management",
+            "sso": "SSO Config",
+            "roles": "Roles",
+            "loginActivity": "Login Activity",
+            "others": "Others",
+            "logs": "Logs",
+            "files": "Files",
+            "account": "Account Settings",
+            "viewUpsertHistory": "Upsert History",
+            "starterPromptsTitle": "Starter Prompts - {{name}}",
+            "chatFeedbackTitle": "Chat Feedback - {{name}}",
+            "allowedDomainsTitle": "Allowed Domains - {{name}}",
+            "speechToTextTitle": "Speech To Text - {{name}}",
+            "itemsError": "Menu Items Error",
+            "beta": "BETA"
+        },
+        "actions": {
+            "starterPrompts": "Starter Prompts",
+            "saveAsTemplate": "Save As Template",
+            "chatFeedback": "Chat Feedback",
+            "copyToClipboard": "Copy to clipboard",
+            "options": "Options",
+            "rename": {
+                "title": "Rename",
+                "renameThis": "Rename {{name}}"
+            },
+            "duplicate": "Duplicate",
+            "import": "Import",
+            "export": "Export",
+            "speechToText": "Speech To Text",
+            "updateCategory": "Update Category",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete {{title}} {{name}}?"
+            },
+            "cancel": "Cancel",
+            "back": "Back",
+            "save": "Save",
+            "yes": "Yes",
+            "no": "No",
+            "next": "Next",
+            "download": "Download",
+            "generate": "Generate",
+            "apply": "Apply",
+            "load": "Load"
+        }
+    },
+    "dialogs": {
+        "about": {
+            "title": "Flowise Version",
+            "version": {
+                "current": "Current Version",
+                "latest": "Latest Version"
+            },
+            "published": "Published At"
+        },
+        "chatFeedback": {
+            "title": "Provide additional feedback",
+            "placeholder": "What do you think of the response?",
+            "actions": {
+                "submit": "Submit Feedback"
+            }
+        },
+        "agentflows": {
+            "generating": "Generating your Agentflow...",
+            "placeholder": "Describe your agent here",
+            "selectModel": "Select model to generate agentflow<highlight>&nbsp;*</highlight>",
+            "chooseAnOption": "choose an option"
+        },
+        "chatflow": {
+            "tabs": {
+                "security": "Security",
+                "conversationStarters": "Starter Prompts",
+                "followUpPrompts": "Follow-up Prompts",
+                "speechToText": "Speech to Text",
+                "textToSpeech": "Text to Speech",
+                "chatFeedback": "Chat Feedback",
+                "analyseChatflow": "Analyse Chatflow",
+                "leads": "Leads",
+                "fileUpload": "File Upload",
+                "postProcessing": "Post Processing"
+            }
+        },
+        "expand": {
+            "actions": {
+                "edit": "Edit",
+                "source": "Source",
+                "execute": "Execute"
+            }
+        },
+        "exportAsTemplate": {
+            "title": "Export As Template",
+            "requiredName": "Template Name is mandatory!",
+            "saved": "Saved as template successfully!",
+            "failed": "Failed to save as template!",
+            "exportName": "Name<highlight>&nbsp;*</highlight>",
+            "badge": "Badge",
+            "usecases": "Usecases",
+            "usecaseTooltip": "Type a usecase and press enter to add it to the list. You can add as many items as you want.",
+            "actions": {
+                "saveTemplate": "Save Template"
+            }
+        },
+        "formatPrompt": {
+            "title": "Format Prompt Values"
+        },
+        "inviteUsers": {
+            "title": "Invite Users",
+            "select": "Select Users<highlight>&nbsp;*</highlight>",
+            "alreadyIn": "The following users are already in the workspace or organization: {{users}}",
+            "invited": "Users invited to workspace",
+            "fail": "Failed to invite users to workspace: {{msg}}",
+            "removedMsg": "One or more invalid emails were removed.",
+            "invite": "Invite {{email}}",
+            "notFound": "No results found",
+            "placeholder": "Invite users by name or email",
+            "tooltip": {
+                "sending": "An invitation will be sent to this email address",
+                "alreadyIn": "{{name}} is already a member of this workspace and won't be invited again."
+            },
+            "workspace": "Workspace<highlight>&nbsp;*</highlight>",
+            "roles": " Role to Assign<highlight>&nbsp;*</highlight>"
+        },
+        "manageScrapedLinks": {
+            "title": "Manage Scraped Links - {{url}}",
+            "success": "Successfully fetched links",
+            "actions": {
+                "fetch": "Fetch Links",
+                "clearAll": {
+                    "title": "Clear All",
+                    "tooltip": "Clear All Links"
+                }
+            },
+            "links": "Scraped Links",
+            "placeholder": "Links scraped from the URL will appear here"
+        },
+        "nodeInfo": {
+            "version": "version {{version}}",
+            "actions": {
+                "documentation": {
+                    "title": "Documentation",
+                    "tooltip": "Open Documentation"
+                }
+            }
+        },
+        "nvidiaNim": {
+            "title": "NIM Setup",
+            "steps": {
+                "download": {
+                    "title": "Download Installer",
+                    "msg": "Would you like to download the NIM installer? Click Next if it has been installed"
+                },
+                "pull": {
+                    "title": "Pull Image",
+                    "pulling": "Pulling image..."
+                },
+                "start": {
+                    "title": "Start Container",
+                    "label": "Relax Memory Constraints",
+                    "starting": "Starting container...",
+                    "port": "Host Port",
+                    "tooltip": "Click Next to start the container."
+                }
+            },
+            "errors": {
+                "download": "Failed to download installer: {{msg}}",
+                "preload": "Failed to preload: {{msg}}",
+                "checkImage": "Failed to check image status: {{msg}}",
+                "pullImage": "Failed to pull image: {{msg}}",
+                "portAlreadyInUse": "Port {{port}} is already in use by another container. Please choose a different port.",
+                "containerStatus": "Failed to check container status: {{msg}}",
+                "containerStart": "Failed to start container: {{msg}}",
+                "invalidPort": "Please enter a valid port number between 1 and 65535",
+                "enterImageTag": "Please enter an image tag"
+            },
+            "actions": {
+                "viewLicense": "View License",
+                "useExisting": "Use Existing"
+            },
+            "exists": {
+                "title": "Container Already Exists",
+                "containerAlreadyExists": "A container for this image already exists:",
+                "name": "<strong>Name:</strong> {{name}}",
+                "status": "<strong>Status:</strong> {{status}}",
+                "notAvailable": "N/A",
+                "youCan": "You can:",
+                "useExisting": "Use the existing container (recommended)",
+                "changePort": "Change the port and try again"
+            }
+        },
+        "promptGenerator": {
+            "describeTaskPlaceholder": "Describe your task here",
+            "usecase": "Usecase",
+            "language": "Language",
+            "actions": {
+                "search": "Search"
+            },
+            "loading": {
+                "wait": "Please wait....loading Prompts",
+                "notFound": "No Available Prompts",
+                "found": "Available Prompts"
+            },
+            "mailboxFolder": "secondary mailbox folder",
+            "readme": "Readme"
+        },
+        "saveChatFlow": {
+            "placeholder": "My New Chatflow"
+        },
+        "shareWithWorkspace": {
+            "success": "Items Shared Successfully",
+            "errors": {
+                "share": "Failed to share Item: {{msg}}"
+            }
+        },
+        "sourceDoc": {
+            "title": "Source Documents",
+            "errorLabel": "Error:"
+        },
+        "starterPrompts": {
+            "title": "Conversation Starter Prompts"
+        },
+        "tag": {
+            "title": "Set Chatflow Category Tags",
+            "addLabel": "Add a tag",
+            "tooltip": "Enter a tag and press enter to add it to the list. You can add as many tags as you want.",
+            "actions": {
+                "submit": "Submit"
+            }
+        },
+        "viewLeads": {
+            "placeholder": "Search Name or Email or Phone",
+            "noLeads": "No Leads",
+            "leadsTable": {
+                "email": "Email Address",
+                "phone": "Phone",
+                "created": "Created Date"
+            }
+        },
+        "viewMessages": {
+            "removeMegLabel": "Remove messages from 3rd party Memory Node",
+            "delete": {
+                "title": "Delete Messages",
+                "description": "Are you sure you want to delete messages? This action cannot be undone.",
+                "actions": {
+                    "delete": "Delete"
+                },
+                "success": "Succesfully deleted messages"
+            },
+            "export": {
+                "success": "Messages exported successfully",
+                "error": "Error exporting messages"
+            },
+            "clearChat": {
+                "title": "Clear Session",
+                "description": "Are you sure you want to clear messages?",
+                "descriptionSession": "Are you sure you want to clear session id: {{sessionId}} from {{memoryType}}?",
+                "actions": {
+                    "clear": "Clear"
+                },
+                "success": "Succesfully cleared messages",
+                "successSession": "Succesfully cleared session id: {{sessionId}} from {{memoryType}}"
+            },
+            "logs": {
+                "user": "User: {{msg}}",
+                "bot": "Bot: {{msg}}"
+            }
+        }
+    },
+    "errors": {
+        "internalServerErrorTitle": "Internal Server Error",
+        "manyRequests": "You're making a lot of requests. Please wait and try again later.",
+        "fields": {
+            "fill": "Please fill in all mandatory fields.",
+            "fillFields": "Please fill in the following required fields: {{fields}}",
+            "fillFIeldsForModel": "Please fill in all mandatory fields for the selected model."
+        },
+        "failGenerateAgentflow": "Failed to generate agentflow"
+    },
+    "errorBoundary": {
+        "title": "Oh snap!",
+        "loadErrorMessage": "The following error occurred when loading this page.",
+        "statusLabel": "Status: {{status}}",
+        "retryMessage": "Please retry after some time. If the issue persists, reach out to us on our Discord server.",
+        "githubIssueMessage": "Alternatively, you can raise an issue on Github."
+    },
+    "license": {
+        "updatePaymentHeader": "Update Payment Method",
+        "updatePaymentMessage": "Update your payment method to avoid service interruption.",
+        "trialDaysLeftMessage_one": "There is <highlight>{{count}} day left</highlight> in your trial.",
+        "trialDaysLeftMessage_other": "There are <highlight>{{count}} days left</highlight> in your trial."
+    },
+    "help": {
+        "documentation": "Documentation",
+        "contactTo": "Please contact your administrator for assistance."
+    },
+    "profile": {
+        "user": "User",
+        "users": "Users",
+        "logout": "Logout",
+        "logoutWait": "Logging out..."
+    },
+    "organizations": {
+        "organization": "Organization",
+        "organizationName": "{{name}}'s Organization",
+        "switching": "Switching organization...",
+        "select": "Select Organization"
+    },
+    "workspaces": {
+        "workspace": "Workspace",
+        "workspaces": "Workspaces",
+        "switching": "Switching workspace...",
+        "unavailable": "Workspace Unavailable",
+        "unavailableContinue": "Your current workspace is no longer available. Please select another workspace to continue.",
+        "unavailableChange": "Workspace is no longer available. Please select a different organization/workspace to continue.",
+        "select": "Select Workspace",
+        "switchError": "Workspace Switch Error",
+        "failedToSwitch": "Failed to switch workspace"
+    },
+    "roles": {
+        "select": "Select Role"
+    },
+    "export": {
+        "selectData": "Select Data to Export",
+        "exporting": "Exporting...",
+        "exportingWhile": "Exporting data might takes a while",
+        "failToExport": "Failed to export all: {{msg}}"
+    },
+    "import": {
+        "importing": "Importing...",
+        "importingWhile": "Importing data might takes a while",
+        "importSuccess": "Import All successful",
+        "invalidImport": "Invalid Imported File",
+        "failToImport": "Failed to import: {{msg}}"
+    },
+    "layout": {
+        "MainLayout": {
+            "Header": {
+                "OrgWorkspaceBreadcrumbs": {},
+                "ProfileSection": {
+                    "version": "Version",
+                    "accountSetting": "Account Settings"
+                }
+            },
+            "menu": {},
+            "Sidebar": {
+                "MenuList": {
+                    "NavCollapse": {}
+                }
+            }
+        }
+    }
+}

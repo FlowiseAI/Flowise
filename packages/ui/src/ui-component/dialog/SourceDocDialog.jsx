@@ -5,7 +5,11 @@ import PropTypes from 'prop-types'
 import { Box, Dialog, DialogContent, DialogTitle, Typography } from '@mui/material'
 import ReactJson from 'flowise-react-json-view'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const customization = useSelector((state) => state.customization)
 
@@ -29,7 +33,7 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title ?? 'Source Documents'}
+                {dialogProps.title ?? t('dialogs.sourceDoc.title')}
             </DialogTitle>
             <DialogContent>
                 {data.error && (
@@ -44,7 +48,7 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
                         }}
                     >
                         <Typography variant='body2' fontWeight='medium'>
-                            Error:
+                            {t('dialogs.sourceDoc.errorLabel')}
                         </Typography>
                         <Typography variant='body2' sx={{ whiteSpace: 'pre-wrap' }}>
                             {data.error}

@@ -200,6 +200,7 @@ const ALL_SECTIONS = CONFIGURATION_GROUPS.flatMap((g) => g.sections)
 const SIDEBAR_WIDTH = 220
 
 const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
     const chatflow = useSelector((state) => state.canvas.chatflow)

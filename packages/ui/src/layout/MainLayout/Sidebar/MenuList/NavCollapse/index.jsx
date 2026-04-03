@@ -13,9 +13,13 @@ import NavItem from '../NavItem'
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord'
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| SIDEBAR MENU LIST COLLAPSE ITEMS ||============================== //
 
 const NavCollapse = ({ menu, level }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -37,7 +41,7 @@ const NavCollapse = ({ menu, level }) => {
             default:
                 return (
                     <Typography key={item.id} variant='h6' color='error' align='center'>
-                        Menu Items Error
+                        {t('common.menu.itemsError')}
                     </Typography>
                 )
         }

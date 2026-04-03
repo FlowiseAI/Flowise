@@ -72,6 +72,9 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import '@/views/chatmessage/ChatMessage.css'
 import 'react-datepicker/dist/react-datepicker.css'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledMenu = styled((props) => (
     <Menu
         elevation={0}
@@ -128,6 +131,7 @@ const messageImageStyle = {
 }
 
 const ConfirmDeleteMessageDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const [hardDelete, setHardDelete] = useState(false)
 
@@ -152,7 +156,7 @@ const ConfirmDeleteMessageDialog = ({ show, dialogProps, onCancel, onConfirm }) 
                 {dialogProps.isChatflow && (
                     <FormControlLabel
                         control={<Checkbox checked={hardDelete} onChange={(event) => setHardDelete(event.target.checked)} />}
-                        label='Remove messages from 3rd party Memory Node'
+                        label={t('dialogs.viewMessages.removeMegLabel')}
                     />
                 )}
             </DialogContent>
@@ -176,6 +180,7 @@ ConfirmDeleteMessageDialog.propTypes = {
 }
 
 const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const theme = useTheme()
@@ -275,10 +280,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const onDeleteMessages = () => {
         setHardDeleteDialogProps({
-            title: 'Delete Messages',
-            description: 'Are you sure you want to delete messages? This action cannot be undone.',
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel',
+            title: t('dialogs.viewMessages.delete.title'),
+            description: t('dialogs.viewMessages.delete.description'),
+            confirmButtonName: t('dialogs.viewMessages.actions.delete'),
+            cancelButtonName: t('common.actions.cancel'),
             isChatflow: dialogProps.isChatflow
         })
         setHardDeleteDialogOpen(true)
@@ -312,7 +317,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
             await chatmessageApi.deleteChatmessage(chatflowid, obj)
             enqueueSnackbar({
-                message: 'Succesfully deleted messages',
+                message: t('dialogs.viewMessages.delete.success'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -376,7 +381,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             linkElement.click()
 
             enqueueSnackbar({
-                message: 'Messages exported successfully',
+                message: t('dialogs.viewMessages.export.success'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -390,7 +395,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         } catch (error) {
             console.error('Error exporting messages:', error)
             enqueueSnackbar({
-                message: 'Failed to export messages',
+                message: t('dialogs.viewMessages.export.error'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -408,13 +413,13 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const clearChat = async (chatmsg) => {
         const description =
             chatmsg.sessionId && chatmsg.memoryType
-                ? `Are you sure you want to clear session id: ${chatmsg.sessionId} from ${chatmsg.memoryType}?`
-                : `Are you sure you want to clear messages?`
+                ? t('dialogs.viewMessages.clearChat.descriptionSession', { sessionId: chatmsg.sessionId, memoryType: chatmsg.memoryType })
+                : t('dialogs.viewMessages.clearChat.description')
         const confirmPayload = {
-            title: `Clear Session`,
+            title: t('dialogs.viewMessages.clearChat.title'),
             description,
-            confirmButtonName: 'Clear',
-            cancelButtonName: 'Cancel'
+            confirmButtonName: t('dialogs.viewMessages.clearChat.actions.clear'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -430,8 +435,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 await chatmessageApi.deleteChatmessage(chatflowid, obj)
                 const description =
                     chatmsg.sessionId && chatmsg.memoryType
-                        ? `Succesfully cleared session id: ${chatmsg.sessionId} from ${chatmsg.memoryType}`
-                        : `Succesfully cleared messages`
+                        ? t('dialogs.viewMessages.clearChat.successSession', {
+                              sessionId: chatmsg.sessionId,
+                              memoryType: chatmsg.memoryType
+                          })
+                        : t('dialogs.viewMessages.clearChat.success')
                 enqueueSnackbar({
                     message: description,
                     options: {
@@ -573,15 +581,15 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
                 // Check both messages and assign based on role, not order
                 if (firstMessage.role === 'userMessage') {
-                    userContent = `User: ${firstMessage.content}`
+                    userContent = t('dialogs.viewMessages.logs.user', { msg: firstMessage.content })
                 } else if (firstMessage.role === 'apiMessage') {
-                    apiContent = `Bot: ${firstMessage.content}`
+                    apiContent = t('dialogs.viewMessages.logs.bor', { msg: firstMessage.content })
                 }
 
                 if (secondMessage.role === 'userMessage') {
-                    userContent = `User: ${secondMessage.content}`
+                    userContent = t('dialogs.viewMessages.logs.user', { msg: secondMessage.content })
                 } else if (secondMessage.role === 'apiMessage') {
-                    apiContent = `Bot: ${secondMessage.content}`
+                    apiContent = t('dialogs.viewMessages.logs.bor', { msg: secondMessage.content })
                 }
 
                 seen[PK] = {
