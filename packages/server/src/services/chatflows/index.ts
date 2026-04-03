@@ -173,7 +173,7 @@ const getAllChatflows = async (
                 new Brackets((qb) => {
                     qb.where('LOWER(chat_flow.name) LIKE :search', { search: searchTerm })
                         .orWhere("LOWER(COALESCE(chat_flow.category, '')) LIKE :search", { search: searchTerm })
-                        .orWhere('LOWER(chat_flow.id) LIKE :search', { search: searchTerm })
+                        .orWhere('CAST(chat_flow.id AS TEXT) LIKE :search', { search: searchTerm })
                 })
             )
         }

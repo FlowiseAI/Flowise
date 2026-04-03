@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
@@ -49,6 +49,7 @@ const Agentflows = () => {
     const [view, setView] = useState(localStorage.getItem('agentFlowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
     const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
+    const latestAgentflowVersionRef = useRef(agentflowVersion)
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -116,13 +117,17 @@ const Agentflows = () => {
     }, [])
 
     useEffect(() => {
+        latestAgentflowVersionRef.current = agentflowVersion
+    }, [agentflowVersion])
+
+    useEffect(() => {
         const normalizedSearch = search.trim()
         if (normalizedSearch === searchQuery) return
 
         const timeoutId = setTimeout(() => {
             setSearchQuery(normalizedSearch)
             setCurrentPage(1)
-            refresh(1, pageLimit, agentflowVersion, normalizedSearch)
+            refresh(1, pageLimit, latestAgentflowVersionRef.current, normalizedSearch)
         }, 300)
 
         return () => clearTimeout(timeoutId)
