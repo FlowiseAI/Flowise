@@ -1,5 +1,5 @@
 const parseBooleanEnv = (value: string | undefined, defaultValue: boolean) => {
-    if (value === undefined) {
+    if (value == null) {
         return defaultValue
     }
 
