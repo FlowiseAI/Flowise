@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
 import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
@@ -15,7 +15,8 @@ import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
-import { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlTags } from '@/atoms/utils/'
+import type { JsonNode } from '@/atoms/utils/'
+import { escapeXmlTags, getEditorMarkdown, isHtmlContent, restoreTextMentions, unescapeXmlTags } from '@/atoms/utils/'
 import { CustomMention } from '@/core/primitives/customMention'
 import { tokens } from '@/core/theme/tokens'
 
@@ -23,50 +24,6 @@ import { createSuggestionConfig } from './suggestionConfig'
 import type { SuggestionItem } from './SuggestionDropdown'
 
 export type { SuggestionItem }
-
-type JsonNode = { type?: string; text?: string; content?: JsonNode[]; attrs?: Record<string, unknown>; [k: string]: unknown }
-
-/**
- * Post-process the ProseMirror JSON after markdown setContent:
- * 1. Unescape XML tag entities in text nodes.
- * 2. When `hasMentions` is true, split any remaining `{{label}}` text patterns
- *    into proper mention nodes. This is needed because MarkedJS's URL tokenizer
- *    can swallow `{{variable}}` when it appears inside a URL
- *    (e.g. `https://example.com/{{question}}`), preventing the mention tokenizer
- *    from running. Walking the resulting JSON and splitting inline fixes the chip.
- *
- * Returns an array because one text node may expand into [text, mention, text, …].
- */
-function restoreTextMentions(node: JsonNode, hasMentions: boolean): JsonNode[] {
-    if (node.type === 'text' && typeof node.text === 'string') {
-        const unescaped = unescapeXmlTags(node.text)
-        if (!hasMentions) return [{ ...node, text: unescaped }]
-
-        const regex = /\{\{([^{}]+)\}\}/g
-        const parts: JsonNode[] = []
-        let lastIndex = 0
-        let match: RegExpExecArray | null
-
-        while ((match = regex.exec(unescaped)) !== null) {
-            if (match.index > lastIndex) parts.push({ ...node, text: unescaped.slice(lastIndex, match.index) })
-            const label = match[1].trim()
-            parts.push({ type: 'mention', attrs: { id: label, label } })
-            lastIndex = regex.lastIndex
-        }
-
-        if (parts.length === 0) return [{ ...node, text: unescaped }]
-        if (lastIndex < unescaped.length) parts.push({ ...node, text: unescaped.slice(lastIndex) })
-        return parts
-    }
-
-    if (Array.isArray(node.content)) {
-        const newContent: JsonNode[] = []
-        for (const child of node.content) newContent.push(...restoreTextMentions(child, hasMentions))
-        return [{ ...node, content: newContent }]
-    }
-
-    return [node]
-}
 
 const lowlight = createLowlight()
 lowlight.register('javascript', javascript)
@@ -266,36 +223,35 @@ export function VariableInput({
         }
     })
 
+    const loadContent = useCallback(
+        (ed: Editor, content: string) => {
+            if (isHtmlContent(content)) {
+                ed.commands.setContent(content, { emitUpdate: false, contentType: 'html' })
+            } else {
+                ed.commands.setContent(escapeXmlTags(content), { emitUpdate: false, contentType: 'markdown' })
+                ed.commands.setContent(restoreTextMentions(ed.getJSON() as JsonNode, !!suggestionConfigRef.current)[0], {
+                    emitUpdate: false
+                })
+            }
+        },
+        [] // suggestionConfigRef is a stable ref — no deps needed
+    )
+
     // Load initial content once the editor is ready, detecting legacy HTML vs markdown.
     // Reads from a ref so only `editor` needs to be in the dep array.
     useEffect(() => {
         if (!editor || !initialValueRef.current) return
-        const v = initialValueRef.current
-        if (isHtmlContent(v)) {
-            editor.commands.setContent(v, { emitUpdate: false, contentType: 'html' })
-        } else {
-            editor.commands.setContent(escapeXmlTags(v), { emitUpdate: false, contentType: 'markdown' })
-            editor.commands.setContent(restoreTextMentions(editor.getJSON() as JsonNode, !!suggestionConfigRef.current)[0], {
-                emitUpdate: false
-            })
-        }
-        lastEmittedRef.current = v
-    }, [editor])
+        loadContent(editor, initialValueRef.current)
+        lastEmittedRef.current = initialValueRef.current
+    }, [editor, loadContent])
 
     // Sync genuine external value changes (e.g. parent resets the field programmatically).
     useEffect(() => {
         if (editor && value !== lastEmittedRef.current) {
-            if (isHtmlContent(value)) {
-                editor.commands.setContent(value, { emitUpdate: false, contentType: 'html' })
-            } else {
-                editor.commands.setContent(escapeXmlTags(value), { emitUpdate: false, contentType: 'markdown' })
-                editor.commands.setContent(restoreTextMentions(editor.getJSON() as JsonNode, !!suggestionConfigRef.current)[0], {
-                    emitUpdate: false
-                })
-            }
+            loadContent(editor, value)
             lastEmittedRef.current = value
         }
-    }, [editor, value])
+    }, [editor, value, loadContent])
 
     // Notify parent when the editor instance is ready (used by ExpandTextDialog to flush
     // the current editor state to markdown when switching to Source mode).

@@ -82,6 +82,12 @@ interface PmNode {
 }
 
 /**
+ * ProseMirror JSON node type used when mention nodes (with `attrs`) may be present.
+ * Superset of PmNode — the index signature covers any additional fields.
+ */
+export type JsonNode = { type?: string; text?: string; content?: JsonNode[]; attrs?: Record<string, unknown>; [k: string]: unknown }
+
+/**
  * Unescape XML tag entities in ProseMirror JSON text nodes.
  * Call this after setContent() to fix the visual display in the editor.
  * Mutates the JSON in-place and returns it.
@@ -120,4 +126,48 @@ export function unescapeXmlTags(text: string): string {
     return text.replace(/&lt;(\/?)([a-zA-Z][a-zA-Z0-9_.-]*)(\s.*?)?(\/?)&gt;/g, (_, slash, tagName, attrs, selfClose) => {
         return `<${slash}${tagName}${attrs ?? ''}${selfClose}>`
     })
+}
+
+// ── Mention restoration ────────────────────────────────────────────────────────
+
+/**
+ * Post-process the ProseMirror JSON after markdown setContent:
+ * 1. Unescape XML tag entities in text nodes.
+ * 2. When `hasMentions` is true, split any remaining `{{label}}` text patterns
+ *    into proper mention nodes. This is needed because MarkedJS's URL tokenizer
+ *    can swallow `{{variable}}` when it appears inside a URL
+ *    (e.g. `https://example.com/{{question}}`), preventing the mention tokenizer
+ *    from running. Walking the resulting JSON and splitting inline fixes the chip.
+ *
+ * Returns an array because one text node may expand into [text, mention, text, …].
+ */
+export function restoreTextMentions(node: JsonNode, hasMentions: boolean): JsonNode[] {
+    if (node.type === 'text' && typeof node.text === 'string') {
+        const unescaped = unescapeXmlTags(node.text)
+        if (!hasMentions) return [{ ...node, text: unescaped }]
+
+        const regex = /\{\{([^{}]+)\}\}/g
+        const parts: JsonNode[] = []
+        let lastIndex = 0
+        let match: RegExpExecArray | null
+
+        while ((match = regex.exec(unescaped)) !== null) {
+            if (match.index > lastIndex) parts.push({ ...node, text: unescaped.slice(lastIndex, match.index) })
+            const label = match[1].trim()
+            parts.push({ type: 'mention', attrs: { id: label, label } })
+            lastIndex = regex.lastIndex
+        }
+
+        if (parts.length === 0) return [{ ...node, text: unescaped }]
+        if (lastIndex < unescaped.length) parts.push({ ...node, text: unescaped.slice(lastIndex) })
+        return parts
+    }
+
+    if (Array.isArray(node.content)) {
+        const newContent: JsonNode[] = []
+        for (const child of node.content) newContent.push(...restoreTextMentions(child, hasMentions))
+        return [{ ...node, content: newContent }]
+    }
+
+    return [node]
 }

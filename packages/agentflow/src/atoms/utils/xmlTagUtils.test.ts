@@ -1,4 +1,5 @@
-import { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlEntities, unescapeXmlTags } from './xmlTagUtils'
+import type { JsonNode } from './xmlTagUtils'
+import { escapeXmlTags, getEditorMarkdown, isHtmlContent, restoreTextMentions, unescapeXmlEntities, unescapeXmlTags } from './xmlTagUtils'
 
 // ── isHtmlContent ──────────────────────────────────────────────────────────────
 
@@ -368,5 +369,114 @@ describe('full editor save/reload cycle simulation', () => {
 
     it('should leave plain markdown unchanged', () => {
         expect(simulateEditorCycle('No tags here, just **markdown**')).toBe('No tags here, just **markdown**')
+    })
+})
+
+// ── restoreTextMentions ────────────────────────────────────────────────────────
+
+describe('restoreTextMentions', () => {
+    describe('hasMentions: false — XML unescape only', () => {
+        it('unescapes XML entities in a text node', () => {
+            const node: JsonNode = { type: 'text', text: '&lt;instructions&gt;hello&lt;/instructions&gt;' }
+            const result = restoreTextMentions(node, false)
+            expect(result).toEqual([{ type: 'text', text: '<instructions>hello</instructions>' }])
+        })
+
+        it('returns plain text unchanged', () => {
+            const node: JsonNode = { type: 'text', text: 'hello world' }
+            expect(restoreTextMentions(node, false)).toEqual([{ type: 'text', text: 'hello world' }])
+        })
+
+        it('does not split {{variable}} patterns when hasMentions is false', () => {
+            const node: JsonNode = { type: 'text', text: 'Hello {{question}}' }
+            expect(restoreTextMentions(node, false)).toEqual([{ type: 'text', text: 'Hello {{question}}' }])
+        })
+    })
+
+    describe('hasMentions: true — splits {{variable}} into mention nodes', () => {
+        it('converts a lone {{variable}} into a mention node', () => {
+            const node: JsonNode = { type: 'text', text: '{{question}}' }
+            const result = restoreTextMentions(node, true)
+            expect(result).toEqual([{ type: 'mention', attrs: { id: 'question', label: 'question' } }])
+        })
+
+        it('splits text before a {{variable}} into a text node + mention', () => {
+            const node: JsonNode = { type: 'text', text: 'Hello {{name}}' }
+            const result = restoreTextMentions(node, true)
+            expect(result).toEqual([
+                { type: 'text', text: 'Hello ' },
+                { type: 'mention', attrs: { id: 'name', label: 'name' } }
+            ])
+        })
+
+        it('splits text after a {{variable}} into mention + text node', () => {
+            const node: JsonNode = { type: 'text', text: '{{name}} is here' }
+            const result = restoreTextMentions(node, true)
+            expect(result).toEqual([
+                { type: 'mention', attrs: { id: 'name', label: 'name' } },
+                { type: 'text', text: ' is here' }
+            ])
+        })
+
+        it('handles multiple {{variables}} in one text node', () => {
+            const node: JsonNode = { type: 'text', text: '{{a}} and {{b}}' }
+            const result = restoreTextMentions(node, true)
+            expect(result).toEqual([
+                { type: 'mention', attrs: { id: 'a', label: 'a' } },
+                { type: 'text', text: ' and ' },
+                { type: 'mention', attrs: { id: 'b', label: 'b' } }
+            ])
+        })
+
+        it('trims whitespace inside {{  variable  }}', () => {
+            const node: JsonNode = { type: 'text', text: '{{  question  }}' }
+            const result = restoreTextMentions(node, true)
+            expect(result).toEqual([{ type: 'mention', attrs: { id: 'question', label: 'question' } }])
+        })
+
+        it('restores mention inside a URL text node', () => {
+            // This is the core bug fix — MarkedJS URL tokenizer swallows {{var}} inside URLs
+            const node: JsonNode = { type: 'text', text: 'https://example.com/{{question}}' }
+            const result = restoreTextMentions(node, true)
+            expect(result).toEqual([
+                { type: 'text', text: 'https://example.com/' },
+                { type: 'mention', attrs: { id: 'question', label: 'question' } }
+            ])
+        })
+
+        it('unescapes XML entities AND restores mentions together', () => {
+            const node: JsonNode = { type: 'text', text: '&lt;context&gt;{{question}}&lt;/context&gt;' }
+            const result = restoreTextMentions(node, true)
+            expect(result).toEqual([
+                { type: 'text', text: '<context>' },
+                { type: 'mention', attrs: { id: 'question', label: 'question' } },
+                { type: 'text', text: '</context>' }
+            ])
+        })
+    })
+
+    describe('recursive tree walking', () => {
+        it('walks content arrays and processes nested text nodes', () => {
+            const doc: JsonNode = {
+                type: 'doc',
+                content: [
+                    {
+                        type: 'paragraph',
+                        content: [{ type: 'text', text: 'Visit https://example.com/{{question}}' }]
+                    }
+                ]
+            }
+            const [result] = restoreTextMentions(doc, true)
+            const para = (result.content as JsonNode[])[0]
+            expect(para.content).toEqual([
+                { type: 'text', text: 'Visit https://example.com/' },
+                { type: 'mention', attrs: { id: 'question', label: 'question' } }
+            ])
+        })
+
+        it('passes through non-text, non-content nodes unchanged', () => {
+            const node: JsonNode = { type: 'hardBreak' }
+            expect(restoreTextMentions(node, true)).toEqual([{ type: 'hardBreak' }])
+        })
     })
 })
