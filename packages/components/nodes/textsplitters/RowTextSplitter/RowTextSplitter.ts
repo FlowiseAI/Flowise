@@ -31,14 +31,10 @@ class RowTextSplitter extends TextSplitter implements RowTextSplitterParams {
     async splitText(text: string): Promise<string[]> {
         if (!text) return []
 
-        const rawLines = text.split(this.lineSeparator)
+        const rawLines = this.lineSeparator === '\n' ? text.split(/\r?\n/) : text.split(this.lineSeparator)
         const lines: string[] = []
 
-        for (let raw of rawLines) {
-            if (this.lineSeparator === '\n') {
-                raw = raw.replace(/\r$/, '')
-            }
-
+        for (const raw of rawLines) {
             const line = this.trimWhitespace ? raw.trim() : raw
 
             if (!this.includeEmptyLines && line.length === 0) {
