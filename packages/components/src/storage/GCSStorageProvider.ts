@@ -7,6 +7,12 @@ import { FileInfo, StorageResult, StorageSizeResult } from './IStorageProvider'
 
 import MulterGoogleCloudStorage from 'multer-cloud-storage'
 
+const isUniformBucketLevelAccessEnabled = () => {
+    const value = process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS
+    if (typeof value === 'undefined') return true
+    return value.trim().toLowerCase() !== 'false'
+}
+
 export class GCSStorageProvider extends BaseStorageProvider {
     private bucket: Bucket
     private bucketName: string
@@ -325,14 +331,12 @@ export class GCSStorageProvider extends BaseStorageProvider {
     }
 
     getMulterStorage(): multer.Multer {
-        const uniformBucketLevelAccess = process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS?.trim().toLowerCase() !== 'false'
-
         return multer({
             storage: new MulterGoogleCloudStorage({
                 projectId: this.projectId,
                 bucket: this.bucketName,
                 keyFilename: this.keyFilename,
-                uniformBucketLevelAccess,
+                uniformBucketLevelAccess: isUniformBucketLevelAccessEnabled(),
                 destination: `uploads/${uuidv4()}`
             })
         })

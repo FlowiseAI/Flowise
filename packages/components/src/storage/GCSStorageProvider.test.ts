@@ -1,3 +1,5 @@
+import { GCSStorageProvider } from './GCSStorageProvider'
+
 const bucketMock = {}
 const multerMock = jest.fn((config) => config)
 const storageCtorMock = jest.fn(() => ({
@@ -37,7 +39,6 @@ describe('GCSStorageProvider', () => {
     it('treats whitespace-padded false as disabled uniform bucket access', () => {
         process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS = ' false '
 
-        const { GCSStorageProvider } = require('./GCSStorageProvider')
         const provider = new GCSStorageProvider()
 
         provider.getMulterStorage()
@@ -45,6 +46,20 @@ describe('GCSStorageProvider', () => {
         expect(multerGoogleCloudStorageMock).toHaveBeenCalledWith(
             expect.objectContaining({
                 uniformBucketLevelAccess: false
+            })
+        )
+    })
+
+    it('keeps uniform bucket access enabled when env is unset', () => {
+        delete process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS
+
+        const provider = new GCSStorageProvider()
+
+        provider.getMulterStorage()
+
+        expect(multerGoogleCloudStorageMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                uniformBucketLevelAccess: true
             })
         )
     })
