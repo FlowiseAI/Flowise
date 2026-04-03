@@ -101,6 +101,7 @@ export interface InputParam {
     credentialNames?: string[] // If set, bypasses loadMethod and fetches matching credentials
     codeLanguage?: string // Language hint for code editor (e.g. 'javascript', 'python', 'json')
     codeExample?: string // Example code snippet shown via an "Example" button
+    refresh?: boolean // When true, shows a refresh button next to async dropdowns to re-fetch options
 }
 
 export interface NodeConfigEntry {

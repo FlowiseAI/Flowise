@@ -728,3 +728,87 @@ describe('AsyncInput – Edit credential', () => {
         expect(mockUseAsyncOptions.mock.calls.length).toBeGreaterThan(initialCallCount)
     })
 })
+
+describe('AsyncInput – Refresh button', () => {
+    it('does NOT show refresh button when inputParam.refresh is falsy', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Action A', name: 'action-a' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='' disabled={false} onChange={jest.fn()} />)
+
+        expect(screen.queryByRole('button', { name: /refresh/i })).toBeNull()
+    })
+
+    it('shows refresh button when inputParam.refresh is true', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Action A', name: 'action-a' }]
+        })
+
+        render(
+            <AsyncInput inputParam={makeParam({ type: 'asyncOptions', refresh: true })} value='' disabled={false} onChange={jest.fn()} />
+        )
+
+        expect(screen.getByRole('button', { name: /refresh/i })).toBeTruthy()
+    })
+
+    it('clicking refresh button remounts dropdown and triggers refetch', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Action A', name: 'action-a' }]
+        })
+
+        render(
+            <AsyncInput inputParam={makeParam({ type: 'asyncOptions', refresh: true })} value='' disabled={false} onChange={jest.fn()} />
+        )
+
+        const initialCallCount = mockUseAsyncOptions.mock.calls.length
+
+        fireEvent.click(screen.getByRole('button', { name: /refresh/i }))
+
+        // The inner dropdown remounts via key change, calling useAsyncOptions again
+        expect(mockUseAsyncOptions.mock.calls.length).toBeGreaterThan(initialCallCount)
+    })
+
+    it('shows refresh button for asyncMultiOptions when refresh is true', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Action A', name: 'action-a' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncMultiOptions', refresh: true })}
+                value=''
+                disabled={false}
+                onChange={jest.fn()}
+            />
+        )
+
+        expect(screen.getByRole('button', { name: /refresh/i })).toBeTruthy()
+    })
+
+    it('clicking refresh on asyncMultiOptions remounts dropdown and triggers refetch', () => {
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'Action A', name: 'action-a' }]
+        })
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncMultiOptions', refresh: true })}
+                value=''
+                disabled={false}
+                onChange={jest.fn()}
+            />
+        )
+
+        const initialCallCount = mockUseAsyncOptions.mock.calls.length
+
+        fireEvent.click(screen.getByRole('button', { name: /refresh/i }))
+
+        expect(mockUseAsyncOptions.mock.calls.length).toBeGreaterThan(initialCallCount)
+    })
+})
