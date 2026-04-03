@@ -18,7 +18,8 @@ jest.mock('@tiptap/react', () => ({
         return {
             setEditable: jest.fn(),
             commands: { focus: jest.fn(), setContent: jest.fn() },
-            getMarkdown: () => 'mock markdown'
+            getMarkdown: () => 'mock markdown',
+            getJSON: () => ({ type: 'doc', content: [] })
         }
     },
     EditorContent: ({ editor, ...rest }: { editor: unknown; [key: string]: unknown }) => (
@@ -130,6 +131,46 @@ describe('RichTextEditor', () => {
             render(<RichTextEditor value='' onChange={mockOnChange} useMarkdown={true} />)
 
             expect(StarterKit.configure).not.toHaveBeenCalledWith(expect.objectContaining({ link: false }))
+        })
+    })
+
+    describe('XML tag preservation in onUpdate', () => {
+        it('should unescape entity-escaped XML tags before calling onChange', () => {
+            render(<RichTextEditor value='' onChange={mockOnChange} />)
+
+            // Simulate getMarkdown() returning entity-escaped tags (safety-net path)
+            capturedOnUpdate!({
+                editor: { getMarkdown: () => '&lt;instructions&gt;Be helpful&lt;/instructions&gt;' }
+            })
+
+            expect(mockOnChange).toHaveBeenCalledWith('<instructions>Be helpful</instructions>')
+        })
+
+        it('should pass through raw XML tags in markdown unchanged', () => {
+            render(<RichTextEditor value='' onChange={mockOnChange} />)
+
+            capturedOnUpdate!({
+                editor: { getMarkdown: () => '<instructions>Be helpful</instructions>' }
+            })
+
+            expect(mockOnChange).toHaveBeenCalledWith('<instructions>Be helpful</instructions>')
+        })
+
+        it('should preserve XML tags mixed with markdown', () => {
+            render(<RichTextEditor value='' onChange={mockOnChange} />)
+
+            capturedOnUpdate!({
+                editor: { getMarkdown: () => '# Title\n&lt;question&gt;{{input}}&lt;/question&gt;\n**bold**' }
+            })
+
+            expect(mockOnChange).toHaveBeenCalledWith('# Title\n<question>{{input}}</question>\n**bold**')
+        })
+
+        it('should render without error when useMarkdown is false', () => {
+            // HTML mode is exercised by other tests; this guards the component mounts cleanly.
+            render(<RichTextEditor value='' onChange={mockOnChange} useMarkdown={false} />)
+
+            expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
         })
     })
 })

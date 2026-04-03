@@ -147,4 +147,44 @@ describe('VariableInput', () => {
             useEditorSpy.mockRestore()
         })
     })
+
+    describe('XML tag preservation in onUpdate', () => {
+        it('should unescape entity-escaped XML tags before calling onChange', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            config.onUpdate({ editor: { getMarkdown: () => '&lt;instructions&gt;Be helpful&lt;/instructions&gt;', getHTML: jest.fn() } })
+
+            expect(onChange).toHaveBeenCalledWith('<instructions>Be helpful</instructions>')
+            useEditorSpy.mockRestore()
+        })
+
+        it('should pass through raw XML tags unchanged', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            config.onUpdate({ editor: { getMarkdown: () => '<question>What?</question>', getHTML: jest.fn() } })
+
+            expect(onChange).toHaveBeenCalledWith('<question>What?</question>')
+            useEditorSpy.mockRestore()
+        })
+
+        it('should preserve XML tags mixed with variables', () => {
+            const onChange = jest.fn()
+            const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+            renderVariableInput({ onChange })
+
+            const config = useEditorSpy.mock.calls[0][0] as { onUpdate: (args: { editor: unknown }) => void }
+            config.onUpdate({
+                editor: { getMarkdown: () => '&lt;context&gt;{{question}}&lt;/context&gt;', getHTML: jest.fn() }
+            })
+
+            expect(onChange).toHaveBeenCalledWith('<context>{{question}}</context>')
+            useEditorSpy.mockRestore()
+        })
+    })
 })

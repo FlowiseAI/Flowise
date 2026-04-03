@@ -16,7 +16,7 @@ import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
-import { getEditorMarkdown, isHtmlContent } from '@/atoms/utils/'
+import { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlEntities, unescapeXmlTags } from '@/atoms/utils/'
 import { tokens } from '@/core/theme/tokens'
 
 const lowlight = createLowlight()
@@ -182,9 +182,10 @@ export function RichTextEditor({
         editable: !disabled,
         autofocus: autoFocus ? 'end' : false,
         onUpdate: ({ editor: ed }) => {
-            const value = useMarkdown ? getEditorMarkdown(ed) : ed.getHTML()
-            lastEmittedRef.current = value
-            onChangeRef.current(value)
+            const raw = useMarkdown ? getEditorMarkdown(ed) : ed.getHTML()
+            const emitted = useMarkdown ? unescapeXmlTags(raw) : raw
+            lastEmittedRef.current = emitted
+            onChangeRef.current(emitted)
         }
     })
 
@@ -199,16 +200,25 @@ export function RichTextEditor({
     // Reads from refs so only `editor` needs to be in the dep array.
     useEffect(() => {
         if (!editor || !initialValueRef.current) return
-        const contentType = !useMarkdownRef.current || isHtmlContent(initialValueRef.current) ? 'html' : 'markdown'
-        editor.commands.setContent(initialValueRef.current, { emitUpdate: false, contentType })
-        lastEmittedRef.current = initialValueRef.current
+        const v = initialValueRef.current
+        if (!useMarkdownRef.current || isHtmlContent(v)) {
+            editor.commands.setContent(v, { emitUpdate: false, contentType: 'html' })
+        } else {
+            editor.commands.setContent(escapeXmlTags(v), { emitUpdate: false, contentType: 'markdown' })
+            editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
+        }
+        lastEmittedRef.current = v
     }, [editor])
 
     // Sync genuine external value changes (e.g. parent resets the field programmatically).
     useEffect(() => {
         if (editor && value !== lastEmittedRef.current) {
-            const contentType = !useMarkdown || isHtmlContent(value) ? 'html' : 'markdown'
-            editor.commands.setContent(value, { emitUpdate: false, contentType })
+            if (!useMarkdown || isHtmlContent(value)) {
+                editor.commands.setContent(value, { emitUpdate: false, contentType: 'html' })
+            } else {
+                editor.commands.setContent(escapeXmlTags(value), { emitUpdate: false, contentType: 'markdown' })
+                editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
+            }
             lastEmittedRef.current = value
         }
     }, [editor, value, useMarkdown])

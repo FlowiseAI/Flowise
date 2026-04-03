@@ -1,1 +1,1 @@
-export { getEditorMarkdown, isHtmlContent } from './editorUtils'
+export { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlEntities, unescapeXmlTags } from './xmlTagUtils'
