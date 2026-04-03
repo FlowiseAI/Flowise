@@ -2,8 +2,8 @@
  * Unit tests for MCP endpoint service (packages/server/src/services/mcp-endpoint/index.ts)
  *
  * Tests the service layer in isolation: auth error forwarding, config validation,
- * stateless request handling, SSE session lifecycle, message routing, and the
- * internal chatflow tool callback (result extraction + error handling).
+ * stateless request handling, and the internal chatflow tool callback
+ * (result extraction + error handling).
  *
  * Controller tests (controllers/mcp-endpoint/index.test.ts) already cover the
  * Express middleware layer; these tests focus exclusively on the service functions
@@ -22,6 +22,19 @@ jest.mock(
     }),
     { virtual: true }
 )
+
+// --- Mock: uuid (ESM module — must be mocked before import) ---
+jest.mock('uuid', () => ({
+    v4: () => 'mock-uuid-v4'
+}))
+
+// --- Mock: chat-messages service (prevents @langchain/core transitive import) ---
+jest.mock('../../services/chat-messages', () => ({
+    __esModule: true,
+    default: {
+        abortChatMessage: jest.fn().mockResolvedValue(undefined)
+    }
+}))
 
 // --- Mock: mcp-server service ---
 const mockGetChatflowByIdAndVerifyToken = jest.fn()
@@ -71,16 +84,10 @@ jest.mock('@modelcontextprotocol/sdk/server/streamableHttp.js', () => ({
     }))
 }))
 
-const mockHandlePostMessage = jest.fn().mockResolvedValue(undefined)
-jest.mock('@modelcontextprotocol/sdk/server/sse.js', () => ({
-    SSEServerTransport: jest.fn()
-}))
-
 // --- Import after mocking ---
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
-import mcpEndpointService, { MAX_SSE_SESSIONS_PER_CHATFLOW } from '.'
+import mcpEndpointService from '.'
 
 // --- Helpers ---
 
@@ -139,12 +146,6 @@ beforeEach(() => {
     const chatflow = makeChatflow({ mcpServerConfig: JSON.stringify(makeConfig()) })
     mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
     mockParseMcpConfig.mockReturnValue(makeConfig())
-
-    // Default SSE transport (overridden per test where needed)
-    ;(SSEServerTransport as unknown as jest.Mock).mockImplementation(() => ({
-        sessionId: 'default-session',
-        handlePostMessage: mockHandlePostMessage
-    }))
 
     // Default chatflow build result
     mockUtilBuildChatflow.mockResolvedValue('chatflow answer')
@@ -257,24 +258,13 @@ describe('handleMcpRequest', () => {
     })
 
     describe('input schema selection', () => {
-        it('uses optional question + form schema for AGENTFLOW type', async () => {
+        it('uses optional question schema for AGENTFLOW type', async () => {
             mockGetChatflowByIdAndVerifyToken.mockResolvedValue(makeChatflow({ type: 'AGENTFLOW' }))
 
             await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
 
             const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
-            // AGENTFLOW schema includes 'form' key; CHATFLOW schema does not
-            expect(Object.keys(schema)).toContain('form')
             expect(Object.keys(schema)).toContain('question')
-        })
-
-        it('uses optional question + form schema for MULTIAGENT type', async () => {
-            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(makeChatflow({ type: 'MULTIAGENT' }))
-
-            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
-
-            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
-            expect(Object.keys(schema)).toContain('form')
         })
 
         it('uses mandatory question-only schema for CHATFLOW type', async () => {
@@ -359,10 +349,22 @@ describe('chatflow tool callback', () => {
     })
 
     it('includes form in the request body when args.form is provided', async () => {
+        // Re-establish the tool callback with an AGENTFLOW chatflow that uses formInput
+        const agentflowChatflow = makeChatflow({
+            type: 'AGENTFLOW',
+            flowData: JSON.stringify({
+                nodes: [{ data: { name: 'startAgentflow', inputs: { startInputType: 'formInput' } } }],
+                edges: []
+            })
+        })
+        mockGetChatflowByIdAndVerifyToken.mockResolvedValue(agentflowChatflow)
+        await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+        const formToolCallback = mockMcpTool.mock.calls[mockMcpTool.mock.calls.length - 1][3]
+
         mockUtilBuildChatflow.mockResolvedValue('ok')
         const form = { name: 'Alice', age: '30' }
 
-        await toolCallback({ question: 'submit', form })
+        await formToolCallback({ form })
 
         expect(mockCreateMockRequest).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -378,205 +380,6 @@ describe('chatflow tool callback', () => {
 
         const callArgs = mockCreateMockRequest.mock.calls[0][0]
         expect(callArgs.body).not.toHaveProperty('form')
-    })
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// handleMcpSseRequest (SSE GET — deprecated transport)
-// ─────────────────────────────────────────────────────────────────────────────
-describe('handleMcpSseRequest', () => {
-    it('returns 401 when getChatflowByIdAndVerifyToken throws UNAUTHORIZED', async () => {
-        mockGetChatflowByIdAndVerifyToken.mockRejectedValue(new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Unauthorized'))
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseRequest('flow-123', 'bad-token', makeReq() as any, res)
-
-        expect(res.status).toHaveBeenCalledWith(401)
-        expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ jsonrpc: '2.0', error: expect.objectContaining({ code: -32001 }) }))
-    })
-
-    it('returns 404 when getChatflowByIdAndVerifyToken throws NOT_FOUND', async () => {
-        mockGetChatflowByIdAndVerifyToken.mockRejectedValue(new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Not found'))
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, res)
-
-        expect(res.status).toHaveBeenCalledWith(404)
-    })
-
-    it('rethrows non-InternalFlowiseError auth errors', async () => {
-        mockGetChatflowByIdAndVerifyToken.mockRejectedValue(new Error('DB error'))
-
-        await expect(mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, makeRes())).rejects.toThrow('DB error')
-    })
-
-    it('returns 404 when config is null', async () => {
-        mockParseMcpConfig.mockReturnValue(null)
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, res)
-
-        expect(res.status).toHaveBeenCalledWith(404)
-    })
-
-    it('returns 404 when config.enabled is false', async () => {
-        mockParseMcpConfig.mockReturnValue(makeConfig({ enabled: false }))
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, res)
-
-        expect(res.status).toHaveBeenCalledWith(404)
-    })
-
-    it('returns 429 when 20 SSE sessions already exist for the same chatflow', async () => {
-        let counter = 0
-        ;(SSEServerTransport as unknown as jest.Mock).mockImplementation(() => ({
-            sessionId: `session-limit-${++counter}`,
-            handlePostMessage: mockHandlePostMessage
-        }))
-
-        const resObjects: ReturnType<typeof makeRes>[] = []
-        try {
-            // Fill up exactly MAX_SSE_SESSIONS_PER_CHATFLOW (20) sessions
-            for (let i = 0; i < MAX_SSE_SESSIONS_PER_CHATFLOW; i++) {
-                const res = makeRes()
-                resObjects.push(res)
-                await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, res)
-            }
-
-            // The 21st request for the same chatflow should be rate-limited
-            const blockedRes = makeRes()
-            await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, blockedRes)
-
-            expect(blockedRes.status).toHaveBeenCalledWith(429)
-            expect(blockedRes.json).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    jsonrpc: '2.0',
-                    error: expect.objectContaining({ code: -32000 })
-                })
-            )
-        } finally {
-            // Clean up: trigger close on all sessions to drain sseSessions map
-            resObjects.forEach((res) => res.triggerClose())
-        }
-    })
-
-    it('calls mcpServer.connect on success', async () => {
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, res)
-
-        expect(mockMcpConnect).toHaveBeenCalledTimes(1)
-
-        // Cleanup
-        res.triggerClose()
-    })
-
-    it('removes the session and closes mcpServer when the SSE connection closes', async () => {
-        ;(SSEServerTransport as unknown as jest.Mock).mockImplementation(() => ({
-            sessionId: 'session-cleanup-test',
-            handlePostMessage: mockHandlePostMessage
-        }))
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, res)
-
-        // Session should exist — a valid message request would succeed
-        // Trigger the close event
-        res.triggerClose()
-
-        // After close, the session is gone — routing a message should return 404
-        const msgRes = makeRes()
-        await mcpEndpointService.handleMcpSseMessageRequest('flow-123', 'token', 'session-cleanup-test', makeReq() as any, msgRes)
-        expect(msgRes.status).toHaveBeenCalledWith(404)
-        expect(mockMcpClose).toHaveBeenCalled()
-    })
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// handleMcpSseMessageRequest (SSE message routing)
-// ─────────────────────────────────────────────────────────────────────────────
-describe('handleMcpSseMessageRequest', () => {
-    it('returns 401 when getChatflowByIdAndVerifyToken throws UNAUTHORIZED', async () => {
-        mockGetChatflowByIdAndVerifyToken.mockRejectedValue(new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Unauthorized'))
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseMessageRequest('flow-123', 'bad-token', 'sess-1', makeReq() as any, res)
-
-        expect(res.status).toHaveBeenCalledWith(401)
-    })
-
-    it('returns 404 when getChatflowByIdAndVerifyToken throws NOT_FOUND', async () => {
-        mockGetChatflowByIdAndVerifyToken.mockRejectedValue(new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Not found'))
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseMessageRequest('flow-123', 'token', 'sess-1', makeReq() as any, res)
-
-        expect(res.status).toHaveBeenCalledWith(404)
-    })
-
-    it('rethrows non-InternalFlowiseError errors from auth', async () => {
-        mockGetChatflowByIdAndVerifyToken.mockRejectedValue(new Error('Unexpected DB error'))
-
-        await expect(
-            mcpEndpointService.handleMcpSseMessageRequest('flow-123', 'token', 'sess-1', makeReq() as any, makeRes())
-        ).rejects.toThrow('Unexpected DB error')
-    })
-
-    it('returns 404 when sessionId is not found in active sessions', async () => {
-        // No session established — sseSessions is empty for this sessionId
-        const res = makeRes()
-
-        await mcpEndpointService.handleMcpSseMessageRequest('flow-123', 'token', 'nonexistent-session', makeReq() as any, res)
-
-        expect(res.status).toHaveBeenCalledWith(404)
-        expect(res.json).toHaveBeenCalledWith(
-            expect.objectContaining({
-                jsonrpc: '2.0',
-                error: expect.objectContaining({ code: -32000 })
-            })
-        )
-    })
-
-    describe('with an active SSE session', () => {
-        let sseRes: ReturnType<typeof makeRes>
-        const SESSION_ID = 'active-msg-session'
-
-        beforeEach(async () => {
-            // Establish an SSE session for 'flow-123'
-            ;(SSEServerTransport as unknown as jest.Mock).mockImplementation(() => ({
-                sessionId: SESSION_ID,
-                handlePostMessage: mockHandlePostMessage
-            }))
-            sseRes = makeRes()
-            await mcpEndpointService.handleMcpSseRequest('flow-123', 'token', makeReq() as any, sseRes)
-            jest.clearAllMocks()
-            // Re-arm auth mock after clearAllMocks (implementations survive; call counts reset)
-            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(makeChatflow({ mcpServerConfig: JSON.stringify(makeConfig()) }))
-        })
-
-        afterEach(() => {
-            sseRes.triggerClose()
-        })
-
-        it('calls transport.handlePostMessage with req, res, and body for a valid session', async () => {
-            const req = makeReq({ body: { jsonrpc: '2.0', method: 'tools/list', id: 1 } }) as any
-            const res = makeRes()
-
-            await mcpEndpointService.handleMcpSseMessageRequest('flow-123', 'token', SESSION_ID, req, res)
-
-            expect(mockHandlePostMessage).toHaveBeenCalledWith(req, res, req.body)
-        })
-
-        it('returns 404 when sessionId exists but belongs to a different chatflow', async () => {
-            const res = makeRes()
-
-            // 'flow-DIFFERENT' does not own SESSION_ID (which was created for 'flow-123')
-            await mcpEndpointService.handleMcpSseMessageRequest('flow-DIFFERENT', 'token', SESSION_ID, makeReq() as any, res)
-
-            expect(res.status).toHaveBeenCalledWith(404)
-            expect(mockHandlePostMessage).not.toHaveBeenCalled()
-        })
     })
 })
 

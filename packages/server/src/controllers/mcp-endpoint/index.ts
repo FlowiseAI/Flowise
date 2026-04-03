@@ -59,48 +59,6 @@ const handlePost = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 /**
- * Handle GET /api/v1/mcp/chatflow/:chatflowId/sse — SSE stream (deprecated transport)
- * Auth: token must be in Authorization: Bearer <token> header
- */
-const handleGet = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { chatflowId } = req.params
-        const token = res.locals.token as string
-
-        logger.debug(`[MCP] GET SSE request for chatflow: ${chatflowId}`)
-        await mcpEndpointService.handleMcpSseRequest(chatflowId, token, req, res)
-    } catch (error) {
-        next(error)
-    }
-}
-
-/**
- * Handle POST /api/v1/mcp/chatflow/:chatflowId/messages?sessionId=... — SSE message relay
- * Auth: token must be in Authorization: Bearer <token> header
- */
-const handleSseMessage = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { chatflowId } = req.params
-        const token = res.locals.token as string
-
-        const sessionId = req.query.sessionId as string
-        if (!sessionId) {
-            res.status(400).json({
-                jsonrpc: '2.0',
-                error: { code: -32600, message: 'Missing required query parameter: sessionId' },
-                id: null
-            })
-            return
-        }
-
-        logger.debug(`[MCP] POST SSE message for chatflow: ${chatflowId}, session: ${sessionId}`)
-        await mcpEndpointService.handleMcpSseMessageRequest(chatflowId, token, sessionId, req, res)
-    } catch (error) {
-        next(error)
-    }
-}
-
-/**
  * Handle DELETE /api/v1/mcp/chatflow/:chatflowId — Session termination
  */
 const handleDelete = async (req: Request, res: Response, next: NextFunction) => {
@@ -115,8 +73,6 @@ const handleDelete = async (req: Request, res: Response, next: NextFunction) => 
 export default {
     authenticateToken,
     handlePost,
-    handleGet,
-    handleSseMessage,
     handleDelete,
     getRateLimiterMiddleware
 }

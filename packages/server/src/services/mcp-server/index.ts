@@ -138,7 +138,7 @@ const updateMcpServerConfig = async (
 
         const existing = parseMcpConfig(chatflow)
         if (!existing) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `MCP server config not found for chatflow ${chatflowId}`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `MCP server config not found for ID: ${chatflowId}`)
         }
 
         validateWithZod(updateConfigSchema, body)
@@ -203,7 +203,7 @@ const refreshMcpToken = async (chatflowId: string, workspaceId: string): Promise
 
         const existing = parseMcpConfig(chatflow)
         if (!existing) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `MCP server config not found for chatflow ${chatflowId}`)
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `MCP server config not found for ID: ${chatflowId}`)
         }
 
         existing.token = generateToken()

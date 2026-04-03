@@ -45,7 +45,6 @@ const McpServer = ({ dialogProps }) => {
 
     const chatflowId = dialogProps?.chatflow?.id
     const endpointUrl = chatflowId ? `${window.location.origin}/api/v1/mcp/chatflow/${chatflowId}` : ''
-    const sseEndpointUrl = chatflowId ? `${window.location.origin}/api/v1/mcp/chatflow/${chatflowId}/sse` : ''
 
     const validateToolName = (name) => {
         if (!name) return 'Tool name is required'
@@ -309,32 +308,6 @@ const McpServer = ({ dialogProps }) => {
                                 For clients that support the Streamable HTTP transport
                             </Typography>
 
-                            <Typography sx={{ mb: 1, mt: 2 }}>SSE Endpoint</Typography>
-                            <OutlinedInput
-                                fullWidth
-                                size='small'
-                                value={sseEndpointUrl}
-                                readOnly
-                                sx={{
-                                    fontFamily: 'monospace',
-                                    fontSize: '0.875rem',
-                                    bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[50]
-                                }}
-                                endAdornment={
-                                    <InputAdornment position='end'>
-                                        <IconButton
-                                            size='small'
-                                            onClick={() => handleCopyUrl(sseEndpointUrl)}
-                                            title='Copy URL to clipboard'
-                                        >
-                                            <IconCopy size={18} />
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                            />
-                            <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5, display: 'block' }}>
-                                For clients that use the SSE transport (deprecated, not recommended for new integrations)
-                            </Typography>
                             <Typography sx={{ mb: 1, mt: 2 }}>Token (Bearer Token)</Typography>
                             <OutlinedInput
                                 fullWidth

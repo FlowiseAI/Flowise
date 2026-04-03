@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
 import { z } from 'zod/v3'
+import { v4 as uuidv4 } from 'uuid'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -11,18 +11,8 @@ import { createMockRequest } from '../../utils/mockRequest'
 import mcpServerService from '../mcp-server/index'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import logger from '../../utils/logger'
-import { ChatType, IMcpServerConfig } from '../../Interface'
-
-// Active SSE transport sessions: sessionId → { transport, mcpServer, chatflowId }
-interface SseSession {
-    transport: SSEServerTransport
-    mcpServer: McpServer
-    chatflowId: string
-}
-const sseSessions = new Map<string, SseSession>()
-
-// Maximum concurrent SSE sessions per chatflow (prevents resource exhaustion)
-export const MAX_SSE_SESSIONS_PER_CHATFLOW = 20
+import { ChatType, IMcpServerConfig, IReactFlowObject } from '../../Interface'
+import chatMessagesService from '../../services/chat-messages'
 
 /**
  * Build the MCP tool name from config + chatflow
@@ -49,18 +39,39 @@ function getToolDescription(config: IMcpServerConfig, chatflow: ChatFlow): strin
 }
 
 /**
- * Build the zod input schema parameters for the tool.
- * For chatflows: always has a mandatory `question` string.
- * For agentflows: has an optional `question` and optional `form` object.
+ * Determine the tool input type based on the chatflow type and flowData.
+ * For AGENTFLOW, we look for a `startAgentflow` node and check its `startInputType` property.
+ * If it's `formInput`, we return 'form', otherwise 'question'.
+ * For other flow types, we default to 'question'.
  */
-function buildInputSchema(chatflow: ChatFlow) {
-    if (chatflow.type === 'MULTIAGENT' || chatflow.type === 'AGENTFLOW') {
-        return {
-            question: z.string().optional().describe('The question or prompt to send to the agent flow'),
-            form: z.record(z.any()).optional().describe('Form inputs for the agent flow')
+function getToolInputType(chatflow: ChatFlow): 'question' | 'form' {
+    if (chatflow.type === 'AGENTFLOW') {
+        try {
+            const flowData: IReactFlowObject = JSON.parse(chatflow.flowData)
+            const nodes = flowData.nodes || []
+            const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+            const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput'
+            return startInputType === 'formInput' ? 'form' : 'question'
+        } catch (error) {
+            logger.error(`Failed to parse flowData for chatflow ${chatflow.id}: ${getErrorMessage(error)}`)
+            return 'question'
         }
     }
-    // Default: chatflow with a mandatory question
+    return 'question'
+}
+
+/**
+ * Build the zod input schema parameters for the tool.
+ * For chatflows: always has a mandatory `question` string.
+ * For agentflows: only allow one of `question` or `form` (object)
+ */
+function buildInputSchema(chatflow: ChatFlow) {
+    const inputType = getToolInputType(chatflow)
+    if (inputType === 'form') {
+        return {
+            form: z.record(z.any()).describe('Form inputs for the agent flow')
+        }
+    }
     return {
         question: z.string().describe('The question or prompt to send to the chatflow')
     }
@@ -72,14 +83,17 @@ function buildInputSchema(chatflow: ChatFlow) {
  */
 async function chatflowCallback(
     chatflow: ChatFlow,
+    chatId: string,
     req: Request,
     args: any
 ): Promise<{ content: { type: 'text'; text: string }[]; isError?: boolean }> {
+    const inputType = getToolInputType(chatflow)
+    const body = inputType === 'form' ? { form: args.form || {} } : { question: args.question || '' }
     const mockReq = createMockRequest({
         chatflowId: chatflow.id,
         body: {
-            question: args.question || '',
-            ...(args.form ? { form: args.form } : {})
+            ...body,
+            chatId
         },
         sourceRequest: req
     })
@@ -172,11 +186,13 @@ const handleMcpRequest = async (chatflowId: string, token: string, req: Request,
             }
         }
     )
-
+    let chatId: string | null = null
     // Register the chatflow as a single MCP tool
     mcpServer.tool(toolName, toolDescription, inputSchema as any, async (args: any) => {
         try {
-            return await chatflowCallback(chatflow, req, args)
+            // Only generate a chatId when the tool is actually executed, so we can correlate messages and handle aborts.
+            chatId = uuidv4()
+            return await chatflowCallback(chatflow, chatId, req, args)
         } catch (error) {
             const errorMessage = getErrorMessage(error)
             logger.error(`[MCP] Error executing tool ${toolName} for chatflow ${chatflow.id}: ${errorMessage}`)
@@ -202,141 +218,15 @@ const handleMcpRequest = async (chatflowId: string, token: string, req: Request,
     // McpServer has finished processing the request and writing its JSON-RPC response.
     res.on('close', () => {
         mcpServer.close().catch(() => {})
+        // chatId is captured from the tool callback scope
+        if (chatId) {
+            chatMessagesService.abortChatMessage(chatId, chatflowId).catch(() => {})
+        }
     })
 
     // Handle the incoming request.
     // The transport handles POST (JSON-RPC), GET (SSE), and DELETE (session).
     await transport.handleRequest(req, res, req.body)
-}
-
-/**
- * Handle GET requests — establish an SSE stream (deprecated MCP transport, protocol version 2024-11-05).
- * Some third-party clients (e.g. n8n) still use this transport.
- *
- * Flow:
- * 1. Client sends GET with Bearer token → server opens SSE stream
- * 2. Server sends `endpoint` event with the POST URL for messages
- * 3. Client POSTs JSON-RPC messages to that URL with ?sessionId=...
- * 4. Server relays responses back over the SSE stream
- */
-const handleMcpSseRequest = async (chatflowId: string, token: string, req: Request, res: Response): Promise<void> => {
-    let chatflow: ChatFlow
-    let config: IMcpServerConfig | null
-
-    try {
-        chatflow = await mcpServerService.getChatflowByIdAndVerifyToken(chatflowId, token)
-        config = mcpServerService.parseMcpConfig(chatflow)
-    } catch (error) {
-        if (handleServiceError(error, res)) return
-        throw error
-    }
-
-    if (!config || !config.enabled) {
-        res.status(404).json({
-            jsonrpc: '2.0',
-            error: { code: -32001, message: 'MCP server not found' },
-            id: null
-        })
-        return
-    }
-
-    // Guard: limit concurrent SSE sessions per chatflow
-    let sessionCount = 0
-    for (const session of sseSessions.values()) {
-        if (session.chatflowId === chatflowId) sessionCount++
-    }
-    if (sessionCount >= MAX_SSE_SESSIONS_PER_CHATFLOW) {
-        res.status(429).json({
-            jsonrpc: '2.0',
-            error: { code: -32000, message: 'Too many active SSE sessions for this chatflow.' },
-            id: null
-        })
-        return
-    }
-
-    const toolName = getToolName(config, chatflow)
-    const toolDescription = getToolDescription(config, chatflow)
-    const inputSchema = buildInputSchema(chatflow)
-
-    // Build the messages endpoint URL that the client should POST to
-    const messagesEndpoint = `/api/v1/mcp/chatflow/${chatflowId}/messages`
-
-    // Create SSE transport — it will send an `endpoint` event to the client
-    const transport = new SSEServerTransport(messagesEndpoint, res)
-
-    // Create a new MCP server for this SSE session
-    const mcpServer = new McpServer(
-        {
-            name: `flowise-${toolName}`,
-            version: '1.0.0'
-        },
-        {
-            capabilities: {
-                tools: {}
-            }
-        }
-    )
-
-    // Register the chatflow tool (same logic as Streamable HTTP handler)
-    mcpServer.tool(toolName, toolDescription, inputSchema as any, async (args: any) => {
-        try {
-            return await chatflowCallback(chatflow, req, args)
-        } catch (error) {
-            const errorMessage = getErrorMessage(error)
-            logger.error(`[MCP-SSE] Error executing tool ${toolName} for chatflow ${chatflow.id}: ${errorMessage}`)
-            return {
-                content: [{ type: 'text' as const, text: 'An error occurred while executing the tool. Please try again later.' }],
-                isError: true
-            }
-        }
-    })
-
-    // Store session for message routing
-    sseSessions.set(transport.sessionId, { transport, mcpServer, chatflowId })
-    logger.debug(`[MCP-SSE] Session ${transport.sessionId} opened for chatflow ${chatflowId}`)
-
-    // Clean up when the SSE connection closes
-    res.on('close', () => {
-        logger.debug(`[MCP-SSE] Session ${transport.sessionId} closed for chatflow ${chatflowId}`)
-        sseSessions.delete(transport.sessionId)
-        mcpServer.close().catch(() => {})
-    })
-
-    // Connect the MCP server to the SSE transport — this calls transport.start()
-    // which sends the `endpoint` event to the client
-    await mcpServer.connect(transport)
-}
-
-/**
- * Handle POST requests to the SSE messages endpoint.
- * Routes incoming JSON-RPC messages to the correct SSE transport by sessionId.
- */
-const handleMcpSseMessageRequest = async (
-    chatflowId: string,
-    token: string,
-    sessionId: string,
-    req: Request,
-    res: Response
-): Promise<void> => {
-    // Verify auth for the message endpoint too
-    try {
-        await mcpServerService.getChatflowByIdAndVerifyToken(chatflowId, token)
-    } catch (error) {
-        if (handleServiceError(error, res)) return
-        throw error
-    }
-
-    const session = sseSessions.get(sessionId)
-    if (!session || session.chatflowId !== chatflowId) {
-        res.status(404).json({
-            jsonrpc: '2.0',
-            error: { code: -32000, message: 'SSE session not found. Establish a connection via GET first.' },
-            id: null
-        })
-        return
-    }
-
-    await session.transport.handlePostMessage(req, res, req.body)
 }
 
 /**
@@ -353,7 +243,5 @@ const handleMcpDeleteRequest = async (chatflowId: string, req: Request, res: Res
 
 export default {
     handleMcpRequest,
-    handleMcpSseRequest,
-    handleMcpSseMessageRequest,
     handleMcpDeleteRequest
 }

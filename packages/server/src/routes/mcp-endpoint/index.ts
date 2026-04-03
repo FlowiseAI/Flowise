@@ -28,8 +28,6 @@ const mcpCorsOptions: cors.CorsOptions = {
 router.use(cors(mcpCorsOptions))
 // Handle preflight for all MCP routes
 router.options('/chatflow/:chatflowId', cors(mcpCorsOptions))
-router.options('/chatflow/:chatflowId/sse', cors(mcpCorsOptions))
-router.options('/chatflow/:chatflowId/messages', cors(mcpCorsOptions))
 
 // MCP Streamable HTTP protocol routes (protocol version 2025-03-26)
 // Auth: token must be provided via Authorization: Bearer <token> header
@@ -39,24 +37,6 @@ router.post(
     mcpEndpointController.getRateLimiterMiddleware,
     mcpEndpointController.authenticateToken,
     mcpEndpointController.handlePost
-)
-
-// Deprecated SSE transport (protocol version 2024-11-05)
-// Some third-party clients (e.g. n8n) still use this transport.
-// GET /sse — Establishes SSE stream, sends `endpoint` event with messages URL
-router.get(
-    '/chatflow/:chatflowId/sse',
-    mcpEndpointController.getRateLimiterMiddleware,
-    mcpEndpointController.authenticateToken,
-    mcpEndpointController.handleGet
-)
-
-// POST /messages?sessionId=... — Receives JSON-RPC messages for an active SSE session
-router.post(
-    '/chatflow/:chatflowId/messages',
-    mcpEndpointController.getRateLimiterMiddleware,
-    mcpEndpointController.authenticateToken,
-    mcpEndpointController.handleSseMessage
 )
 
 // DELETE — Session termination (stateless mode returns 405)

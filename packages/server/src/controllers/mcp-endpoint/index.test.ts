@@ -8,16 +8,12 @@ import { Request, Response, NextFunction } from 'express'
 
 // --- Mock setup ---
 const mockHandleMcpRequest = jest.fn()
-const mockHandleMcpSseRequest = jest.fn()
-const mockHandleMcpSseMessageRequest = jest.fn()
 const mockHandleMcpDeleteRequest = jest.fn()
 
 jest.mock('../../services/mcp-endpoint', () => ({
     __esModule: true,
     default: {
         handleMcpRequest: (...args: any[]) => mockHandleMcpRequest(...args),
-        handleMcpSseRequest: (...args: any[]) => mockHandleMcpSseRequest(...args),
-        handleMcpSseMessageRequest: (...args: any[]) => mockHandleMcpSseMessageRequest(...args),
         handleMcpDeleteRequest: (...args: any[]) => mockHandleMcpDeleteRequest(...args)
     }
 }))
@@ -149,70 +145,6 @@ describe('MCP Endpoint Controller', () => {
             mockHandleMcpRequest.mockRejectedValue(error)
 
             await mcpEndpointController.handlePost(req, res, next)
-
-            expect(next).toHaveBeenCalledWith(error)
-        })
-    })
-
-    describe('handleGet (SSE)', () => {
-        it('delegates to handleMcpSseRequest with chatflowId and token from res.locals.token', async () => {
-            const req = mockReq({ params: { chatflowId: 'flow-456' } })
-            const res = mockRes()
-            res.locals.token = 'sse-token'
-            const next = mockNext()
-            mockHandleMcpSseRequest.mockResolvedValue(undefined)
-
-            await mcpEndpointController.handleGet(req, res, next)
-
-            expect(mockHandleMcpSseRequest).toHaveBeenCalledWith('flow-456', 'sse-token', req, res)
-        })
-    })
-
-    describe('handleSseMessage', () => {
-        it('returns 400 when sessionId query param is missing', async () => {
-            const req = mockReq({ query: {} })
-            const res = mockRes()
-            res.locals.token = 'token'
-            const next = mockNext()
-
-            await mcpEndpointController.handleSseMessage(req, res, next)
-
-            expect(res.status).toHaveBeenCalledWith(400)
-            expect(res.json).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    jsonrpc: '2.0',
-                    error: expect.objectContaining({ code: -32600 })
-                })
-            )
-        })
-
-        it('delegates to handleMcpSseMessageRequest with all params', async () => {
-            const req = mockReq({
-                params: { chatflowId: 'flow-789' },
-                query: { sessionId: 'sess-abc' }
-            })
-            const res = mockRes()
-            res.locals.token = 'msg-token'
-            const next = mockNext()
-            mockHandleMcpSseMessageRequest.mockResolvedValue(undefined)
-
-            await mcpEndpointController.handleSseMessage(req, res, next)
-
-            expect(mockHandleMcpSseMessageRequest).toHaveBeenCalledWith('flow-789', 'msg-token', 'sess-abc', req, res)
-        })
-
-        it('calls next(error) on unexpected errors', async () => {
-            const req = mockReq({
-                params: { chatflowId: 'flow-789' },
-                query: { sessionId: 'sess-abc' }
-            })
-            const res = mockRes()
-            res.locals.token = 'token'
-            const next = mockNext()
-            const error = new Error('Unexpected')
-            mockHandleMcpSseMessageRequest.mockRejectedValue(error)
-
-            await mcpEndpointController.handleSseMessage(req, res, next)
 
             expect(next).toHaveBeenCalledWith(error)
         })
