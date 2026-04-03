@@ -26,7 +26,7 @@ function buildAsyncParams(
     inputValues: Record<string, unknown> | undefined,
     stateKeys?: string[]
 ): Record<string, unknown> | undefined {
-    const needsInputs = loadMethod === 'listToolInputArgs' || loadMethod === 'listActions'
+    const needsInputs = loadMethod === 'listToolInputArgs' || loadMethod === 'listActions' || loadMethod === 'listTables'
     const needsStateKeys = loadMethod === 'listRuntimeStateKeys'
     if (!nodeName && !(needsInputs && inputValues) && !needsStateKeys) return undefined
     return {
