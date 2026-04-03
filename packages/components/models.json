@@ -816,6 +816,27 @@
             ]
         },
         {
+            "name": "chatBaiduWenxin",
+            "models": [
+                {
+                    "label": "ernie-4.5-8k-preview",
+                    "name": "ernie-4.5-8k-preview"
+                },
+                {
+                    "label": "ernie-4.0-8k",
+                    "name": "ernie-4.0-8k"
+                },
+                {
+                    "label": "ernie-3.5-8k-preview",
+                    "name": "ernie-3.5-8k-preview"
+                },
+                {
+                    "label": "ernie-speed-128k",
+                    "name": "ernie-speed-128k"
+                }
+            ]
+        },
+        {
             "name": "chatAlibabaTongyi",
             "models": [
                 {
