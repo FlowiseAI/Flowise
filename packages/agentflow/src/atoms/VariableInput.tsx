@@ -15,7 +15,7 @@ import python from 'highlight.js/lib/languages/python'
 import typescript from 'highlight.js/lib/languages/typescript'
 import { createLowlight } from 'lowlight'
 
-import { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlEntities, unescapeXmlTags } from '@/atoms/utils/'
+import { escapeXmlTags, getEditorMarkdown, isHtmlContent, unescapeXmlTags } from '@/atoms/utils/'
 import { CustomMention } from '@/core/primitives/customMention'
 import { tokens } from '@/core/theme/tokens'
 
@@ -23,6 +23,50 @@ import { createSuggestionConfig } from './suggestionConfig'
 import type { SuggestionItem } from './SuggestionDropdown'
 
 export type { SuggestionItem }
+
+type JsonNode = { type?: string; text?: string; content?: JsonNode[]; attrs?: Record<string, unknown>; [k: string]: unknown }
+
+/**
+ * Post-process the ProseMirror JSON after markdown setContent:
+ * 1. Unescape XML tag entities in text nodes.
+ * 2. When `hasMentions` is true, split any remaining `{{label}}` text patterns
+ *    into proper mention nodes. This is needed because MarkedJS's URL tokenizer
+ *    can swallow `{{variable}}` when it appears inside a URL
+ *    (e.g. `https://example.com/{{question}}`), preventing the mention tokenizer
+ *    from running. Walking the resulting JSON and splitting inline fixes the chip.
+ *
+ * Returns an array because one text node may expand into [text, mention, text, …].
+ */
+function restoreTextMentions(node: JsonNode, hasMentions: boolean): JsonNode[] {
+    if (node.type === 'text' && typeof node.text === 'string') {
+        const unescaped = unescapeXmlTags(node.text)
+        if (!hasMentions) return [{ ...node, text: unescaped }]
+
+        const regex = /\{\{([^{}]+)\}\}/g
+        const parts: JsonNode[] = []
+        let lastIndex = 0
+        let match: RegExpExecArray | null
+
+        while ((match = regex.exec(unescaped)) !== null) {
+            if (match.index > lastIndex) parts.push({ ...node, text: unescaped.slice(lastIndex, match.index) })
+            const label = match[1].trim()
+            parts.push({ type: 'mention', attrs: { id: label, label } })
+            lastIndex = regex.lastIndex
+        }
+
+        if (parts.length === 0) return [{ ...node, text: unescaped }]
+        if (lastIndex < unescaped.length) parts.push({ ...node, text: unescaped.slice(lastIndex) })
+        return parts
+    }
+
+    if (Array.isArray(node.content)) {
+        const newContent: JsonNode[] = []
+        for (const child of node.content) newContent.push(...restoreTextMentions(child, hasMentions))
+        return [{ ...node, content: newContent }]
+    }
+
+    return [node]
+}
 
 const lowlight = createLowlight()
 lowlight.register('javascript', javascript)
@@ -176,6 +220,10 @@ export function VariableInput({
         () => (suggestionItems?.length ? createSuggestionConfig(suggestionItems) : undefined),
         [suggestionItems]
     )
+    const suggestionConfigRef = useRef(suggestionConfig)
+    useEffect(() => {
+        suggestionConfigRef.current = suggestionConfig
+    }, [suggestionConfig])
 
     const extensions = useMemo(
         () => [
@@ -227,7 +275,9 @@ export function VariableInput({
             editor.commands.setContent(v, { emitUpdate: false, contentType: 'html' })
         } else {
             editor.commands.setContent(escapeXmlTags(v), { emitUpdate: false, contentType: 'markdown' })
-            editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
+            editor.commands.setContent(restoreTextMentions(editor.getJSON() as JsonNode, !!suggestionConfigRef.current)[0], {
+                emitUpdate: false
+            })
         }
         lastEmittedRef.current = v
     }, [editor])
@@ -239,7 +289,9 @@ export function VariableInput({
                 editor.commands.setContent(value, { emitUpdate: false, contentType: 'html' })
             } else {
                 editor.commands.setContent(escapeXmlTags(value), { emitUpdate: false, contentType: 'markdown' })
-                editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
+                editor.commands.setContent(restoreTextMentions(editor.getJSON() as JsonNode, !!suggestionConfigRef.current)[0], {
+                    emitUpdate: false
+                })
             }
             lastEmittedRef.current = value
         }
