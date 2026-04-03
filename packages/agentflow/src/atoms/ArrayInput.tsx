@@ -9,6 +9,7 @@ import type { InputParam, NodeData } from '@/core/types'
 
 import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
 import { useStableKeys } from './useStableKeys'
+import type { VariableItem } from './VariablePicker'
 
 export interface ArrayInputProps {
     inputParam: InputParam
@@ -23,6 +24,8 @@ export interface ArrayInputProps {
         configValues: Record<string, unknown>,
         arrayContext?: { parentParamName: string; arrayIndex: number }
     ) => void
+    /** Variable items passed through to sub-field NodeInputHandlers for {{ autocomplete. */
+    variableItems?: VariableItem[]
 }
 
 export function ArrayInput({
@@ -33,7 +36,8 @@ export function ArrayInput({
     itemParameters: itemParametersProp,
     AsyncInputComponent,
     ConfigInputComponent,
-    onConfigChange
+    onConfigChange,
+    variableItems
 }: ArrayInputProps) {
     const theme = useTheme()
 
@@ -174,6 +178,7 @@ export function ArrayInput({
                                     onConfigChange={onConfigChange}
                                     arrayIndex={index}
                                     parentArrayParam={inputParam}
+                                    variableItems={param.acceptVariable ? variableItems : undefined}
                                 />
                             ))}
                     </Box>

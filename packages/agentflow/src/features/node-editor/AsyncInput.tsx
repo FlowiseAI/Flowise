@@ -1,12 +1,14 @@
-import { Fragment, useCallback, useState } from 'react'
+import { Fragment, useCallback, useEffect, useState } from 'react'
 
 import { Box, CircularProgress, IconButton, TextField, Typography } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
 import { IconEdit, IconRefresh } from '@tabler/icons-react'
 
 import type { AsyncInputProps } from '@/atoms'
-import type { NodeOption } from '@/core/types'
+import type { FlowNode, NodeOption } from '@/core/types'
+import { getDefinedStateKeys } from '@/core/utils'
 import { useAsyncOptions } from '@/infrastructure/api/hooks'
+import { useAgentflowContext } from '@/infrastructure/store'
 
 import { CreateCredentialDialog } from './CreateCredentialDialog'
 
@@ -21,11 +23,28 @@ const CREATE_NEW_SENTINEL = '-create-'
 function buildAsyncParams(
     loadMethod: string | undefined,
     nodeName: string | undefined,
-    inputValues: Record<string, unknown> | undefined
+    inputValues: Record<string, unknown> | undefined,
+    stateKeys?: string[]
 ): Record<string, unknown> | undefined {
     const needsInputs = loadMethod === 'listToolInputArgs'
-    if (!nodeName && !(needsInputs && inputValues)) return undefined
-    return { ...(nodeName ? { nodeName } : {}), ...(needsInputs && inputValues ? { inputs: inputValues } : {}) }
+    const needsStateKeys = loadMethod === 'listRuntimeStateKeys'
+    if (!nodeName && !(needsInputs && inputValues) && !needsStateKeys) return undefined
+    return {
+        ...(nodeName ? { nodeName } : {}),
+        ...(needsInputs && inputValues ? { inputs: inputValues } : {}),
+        ...(needsStateKeys && stateKeys ? { stateKeys } : {})
+    }
+}
+
+/**
+ * Extract state keys from all nodes except the given node.
+ * Excludes the current node to avoid a circular reference where a node's own
+ * agentUpdateState feeds keys back into its own dropdown options.
+ */
+function useFlowStateKeys(excludeNodeName?: string): string[] {
+    const { state } = useAgentflowContext()
+    const nodes = excludeNodeName ? state.nodes.filter((n) => n.data?.name !== excludeNodeName) : state.nodes
+    return getDefinedStateKeys(nodes as FlowNode[])
 }
 
 function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
@@ -116,12 +135,31 @@ function AsyncOptionsDropdown({
     isCredential,
     onCreateNew
 }: AsyncInputProps & { isCredential: boolean; onCreateNew: () => void }) {
-    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues)
+    const stateKeys = useFlowStateKeys(nodeName)
+    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues, stateKeys)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,
         params
     })
+
+    // Append "- Create New -" sentinel for credential dropdowns
+    const displayOptions = isCredential ? [...options, { label: '- Create New -', name: CREATE_NEW_SENTINEL }] : options
+    const matchedValue = displayOptions.find((o) => o.name === value) ?? null
+
+    // Controlled input text — synced to the matched option label so it clears
+    // when a previously selected key is removed from the Start node.
+    const [inputText, setInputText] = useState(matchedValue?.label ?? '')
+    useEffect(() => {
+        setInputText(matchedValue?.label ?? '')
+    }, [matchedValue?.label])
+
+    // Clear the stored value if it no longer matches any available option
+    useEffect(() => {
+        if (!loading && value && typeof value === 'string' && !options.some((o) => o.name === value)) {
+            onChange('')
+        }
+    }, [loading, value, options, onChange])
 
     if (error) {
         return (
@@ -136,17 +174,19 @@ function AsyncOptionsDropdown({
         )
     }
 
-    // Append "- Create New -" sentinel for credential dropdowns
-    const displayOptions = isCredential ? [...options, { label: '- Create New -', name: CREATE_NEW_SENTINEL }] : options
-
-    const matchedValue = displayOptions.find((o) => o.name === value) ?? null
-
     return (
         <Autocomplete<NodeOption>
             size='small'
             disabled={disabled}
             options={displayOptions}
             value={matchedValue}
+            inputValue={inputText}
+            onInputChange={(_e, newValue, reason) => {
+                // Allow typing to filter; reset clears text
+                if (reason === 'input' || reason === 'clear') {
+                    setInputText(newValue)
+                }
+            }}
             getOptionLabel={(o) => o.label}
             isOptionEqualToValue={(o, v) => o.name === v.name}
             onChange={(_e, selection) => {
@@ -215,7 +255,8 @@ function AsyncOptionsDropdown({
 }
 
 function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
-    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues)
+    const stateKeys = useFlowStateKeys(nodeName)
+    const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues, stateKeys)
     const { options, loading, error, refetch } = useAsyncOptions({
         loadMethod: inputParam.loadMethod,
         credentialNames: inputParam.credentialNames,

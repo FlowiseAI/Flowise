@@ -112,7 +112,7 @@ describe('useAvailableVariables', () => {
         const stateItems = result.current.filter((i) => i.category === 'Flow State')
         expect(stateItems).toHaveLength(2)
         expect(stateItems[0].label).toBe('$flow.state.count')
-        expect(stateItems[0].value).toBe('$flow.state.count')
+        expect(stateItems[0].value).toBe('{{$flow.state.count}}')
         expect(stateItems[1].label).toBe('$flow.state.userName')
     })
 

@@ -7,8 +7,10 @@ import { IconArrowsMaximize, IconPlus, IconTrash, IconVariable } from '@tabler/i
 import type { InputParam, NodeData } from '@/core/types'
 
 import { ExpandTextDialog } from './ExpandTextDialog'
-import { RichTextEditor } from './RichTextEditor.lazy'
+import { toSuggestionItems } from './toSuggestionItems'
 import { useStableKeys } from './useStableKeys'
+import { VariableInput } from './VariableInput'
+import type { VariableItem } from './VariablePicker'
 
 const MESSAGE_ROLES = [
     { label: 'System', value: 'system' },
@@ -28,6 +30,8 @@ export interface MessagesInputProps {
     inputParam: InputParam
     data: NodeData
     disabled?: boolean
+    /** Variable items for `{{ }}` autocomplete in message content fields. */
+    variableItems?: VariableItem[]
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
 }
 
@@ -36,7 +40,7 @@ export interface MessagesInputProps {
  * Each entry has a role dropdown (system/assistant/developer/user)
  * and a multiline content textarea with variable support ({{ variable }} syntax).
  */
-export function MessagesInput({ inputParam, data, disabled = false, onDataChange }: MessagesInputProps) {
+export function MessagesInput({ inputParam, data, disabled = false, variableItems, onDataChange }: MessagesInputProps) {
     const theme = useTheme()
 
     const messages = useMemo(
@@ -45,6 +49,8 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(messages.length, 'message')
+
+    const suggestionItems = useMemo(() => toSuggestionItems(variableItems), [variableItems])
 
     const handleRoleChange = useCallback(
         (index: number, role: string) => {
@@ -200,12 +206,13 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                                 <IconArrowsMaximize />
                             </IconButton>
                         </div>
-                        <RichTextEditor
+                        <VariableInput
                             value={message.content}
-                            onChange={(html) => handleContentChange(index, html)}
+                            onChange={(v) => handleContentChange(index, v)}
                             placeholder='Message content (supports {{ variable }} syntax)'
                             disabled={disabled}
                             rows={4}
+                            suggestionItems={suggestionItems}
                         />
                     </Box>
                 </Box>
@@ -233,6 +240,7 @@ export function MessagesInput({ inputParam, data, disabled = false, onDataChange
                     placeholder='Message content (supports {{ variable }} syntax)'
                     disabled={disabled}
                     inputType='string'
+                    suggestionItems={suggestionItems}
                     onConfirm={handleExpandConfirm}
                     onCancel={handleExpandCancel}
                 />

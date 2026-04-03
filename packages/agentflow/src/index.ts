@@ -51,6 +51,7 @@ export type {
     OutputAnchor,
     PaletteRenderProps,
     RequestInterceptor,
+    StateUpdate,
     // Validation
     ValidationError,
     ValidationResult,
