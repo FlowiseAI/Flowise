@@ -34,20 +34,42 @@ class GithubSSO extends SSOBase {
                         scope: ['user:email']
                     },
                     async (accessToken: string, refreshToken: string, profile: Profile, done: any) => {
-                        // Fetch emails from GitHub API using the access token.
-                        const emailResponse = await fetch('https://api.github.com/user/emails', {
-                            headers: {
-                                Authorization: `token ${accessToken}`,
-                                'User-Agent': 'Node.js'
+                        try {
+                            // Fetch emails from GitHub API using the access token.
+                            const emailResponse = await fetch('https://api.github.com/user/emails', {
+                                headers: {
+                                    Authorization: `token ${accessToken}`,
+                                    'User-Agent': 'Node.js'
+                                }
+                            })
+                            if (!emailResponse.ok) {
+                                return done(
+                                    {
+                                        name: 'SSO_LOGIN_FAILED',
+                                        message: `Failed to fetch emails from GitHub: ${emailResponse.status} ${emailResponse.statusText}`
+                                    },
+                                    undefined
+                                )
                             }
-                        })
-                        const emails = await emailResponse.json()
-                        // Look for a verified primary email.
-                        let primaryEmail = emails.find((email: any) => email.primary && email.verified)?.email
-                        if (!primaryEmail && Array.isArray(emails) && emails.length > 0) {
-                            primaryEmail = emails[0].email
+                            const emails = await emailResponse.json()
+                            if (!Array.isArray(emails)) {
+                                return done(
+                                    { name: 'SSO_LOGIN_FAILED', message: 'Unexpected response from GitHub emails API' },
+                                    undefined
+                                )
+                            }
+                            // Look for a verified primary email.
+                            let primaryEmail = emails.find((email: any) => email.primary && email.verified)?.email
+                            if (!primaryEmail && emails.length > 0) {
+                                primaryEmail = emails[0].email
+                            }
+                            return this.verifyAndLogin(this.app, primaryEmail, done, profile, accessToken, refreshToken)
+                        } catch (error) {
+                            return done(
+                                { name: 'SSO_LOGIN_FAILED', message: 'Failed to complete GitHub authentication' },
+                                undefined
+                            )
                         }
-                        return this.verifyAndLogin(this.app, primaryEmail, done, profile, accessToken, refreshToken)
                     }
                 )
             )
@@ -115,6 +137,9 @@ class GithubSSO extends SSOBase {
                     code: 'dummy_code_for_testing'
                 })
             })
+            if (!response.ok) {
+                return { error: `GitHub API error: ${response.status} ${response.statusText}` }
+            }
             const data = await response.json()
             if (data.error === 'bad_verification_code') {
                 return { message: 'ClientID and clientSecret are valid.' }
@@ -143,6 +168,9 @@ class GithubSSO extends SSOBase {
                     refresh_token: currentRefreshToken
                 })
             })
+            if (!response.ok) {
+                return { error: `GitHub token refresh failed: ${response.status} ${response.statusText}` }
+            }
             const data = await response.json()
             if (data.error || !data.access_token) {
                 return { error: 'Failed to get refreshToken from Github.' }
