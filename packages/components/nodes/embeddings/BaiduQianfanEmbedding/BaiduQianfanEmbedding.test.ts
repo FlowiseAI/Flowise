@@ -65,4 +65,32 @@ describe('BaiduQianfanEmbedding', () => {
             timeout: 15000
         })
     })
+
+    it('preserves explicit zero values for numeric parameters', async () => {
+        ;(getCredentialData as jest.Mock).mockResolvedValue({
+            qianfanAccessKey: 'access-key',
+            qianfanSecretKey: 'secret-key'
+        })
+        ;(getCredentialParam as jest.Mock).mockImplementation((key, credentialData) => credentialData[key])
+
+        const node = new BaiduQianfanEmbedding()
+        const model = await node.init(
+            {
+                credential: 'cred-1',
+                inputs: {
+                    modelName: 'Embedding-V1',
+                    batchSize: '0',
+                    timeout: '0'
+                }
+            },
+            '',
+            {}
+        )
+
+        expect(model.fields).toMatchObject({
+            modelName: 'Embedding-V1',
+            batchSize: 0,
+            timeout: 0
+        })
+    })
 })

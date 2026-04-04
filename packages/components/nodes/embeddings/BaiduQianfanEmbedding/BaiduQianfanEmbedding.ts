@@ -102,8 +102,8 @@ class BaiduQianfanEmbedding_Embeddings implements INode {
         }
 
         if (typeof stripNewLines === 'boolean') obj.stripNewLines = stripNewLines
-        if (batchSize) obj.batchSize = parseInt(batchSize, 10)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (batchSize !== undefined && batchSize !== null && batchSize !== '') obj.batchSize = parseInt(batchSize, 10)
+        if (timeout !== undefined && timeout !== null && timeout !== '') obj.timeout = parseInt(timeout, 10)
 
         const model = new BaiduQianfanEmbeddings(obj)
         return model
