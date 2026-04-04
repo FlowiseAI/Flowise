@@ -1187,9 +1187,17 @@ export const replaceInputsWithConfig = (
                     continue
                 }
             } else {
+                // For FILE-STORAGE:: values (uploaded files mapped to txtFile, pdfFile, etc.),
+                // also allow override if the generic 'file' parameter is enabled for the node.
+                // This handles the case where users enable the 'file' input for override in the UI,
+                // which should also permit the server-side file-type fields to be applied.
+                const isFileStorageValue =
+                    typeof overrideConfig[config] === 'string' && overrideConfig[config].includes('FILE-STORAGE::')
                 if (!isParameterEnabled(flowNodeData.label, config)) {
-                    // Only proceed if the parameter is enabled
-                    continue
+                    if (!(isFileStorageValue && isParameterEnabled(flowNodeData.label, 'file'))) {
+                        // Only proceed if the parameter is enabled
+                        continue
+                    }
                 }
             }
 
