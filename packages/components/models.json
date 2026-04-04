@@ -2184,6 +2184,27 @@
             ]
         },
         {
+            "name": "baiduQianfanEmbeddings",
+            "models": [
+                {
+                    "label": "Embedding-V1",
+                    "name": "Embedding-V1"
+                },
+                {
+                    "label": "bge-large-zh",
+                    "name": "bge-large-zh"
+                },
+                {
+                    "label": "bge-large-en",
+                    "name": "bge-large-en"
+                },
+                {
+                    "label": "tao-8k",
+                    "name": "tao-8k"
+                }
+            ]
+        },
+        {
             "name": "mistralAIEmbeddings",
             "models": [
                 {
