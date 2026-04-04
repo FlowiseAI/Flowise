@@ -556,7 +556,7 @@ const Canvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
 
-    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
+    usePrompt('You have unsaved changes. Are you sure you want to leave this page?', canvasDataStore.isDirty)
 
     return (
         <>
