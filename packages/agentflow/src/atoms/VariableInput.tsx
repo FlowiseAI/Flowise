@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import { Box } from '@mui/material'
 import { styled } from '@mui/material/styles'
@@ -134,6 +134,15 @@ const StyledEditorContent = styled(EditorContent, {
     }
 })
 
+function loadContent(ed: Editor, content: string, hasMentions: boolean): void {
+    if (isHtmlContent(content)) {
+        ed.commands.setContent(content, { emitUpdate: false, contentType: 'html' })
+    } else {
+        ed.commands.setContent(escapeXmlTags(content), { emitUpdate: false, contentType: 'markdown' })
+        ed.commands.setContent(restoreTextMentions(ed.getJSON() as JsonNode, hasMentions)[0], { emitUpdate: false })
+    }
+}
+
 /**
  * A TipTap-based text input with `{{ variable }}` mention support.
  *
@@ -223,35 +232,21 @@ export function VariableInput({
         }
     })
 
-    const loadContent = useCallback(
-        (ed: Editor, content: string) => {
-            if (isHtmlContent(content)) {
-                ed.commands.setContent(content, { emitUpdate: false, contentType: 'html' })
-            } else {
-                ed.commands.setContent(escapeXmlTags(content), { emitUpdate: false, contentType: 'markdown' })
-                ed.commands.setContent(restoreTextMentions(ed.getJSON() as JsonNode, !!suggestionConfigRef.current)[0], {
-                    emitUpdate: false
-                })
-            }
-        },
-        [] // suggestionConfigRef is a stable ref — no deps needed
-    )
-
     // Load initial content once the editor is ready, detecting legacy HTML vs markdown.
     // Reads from a ref so only `editor` needs to be in the dep array.
     useEffect(() => {
         if (!editor || !initialValueRef.current) return
-        loadContent(editor, initialValueRef.current)
+        loadContent(editor, initialValueRef.current, !!suggestionConfigRef.current)
         lastEmittedRef.current = initialValueRef.current
-    }, [editor, loadContent])
+    }, [editor])
 
     // Sync genuine external value changes (e.g. parent resets the field programmatically).
     useEffect(() => {
         if (editor && value !== lastEmittedRef.current) {
-            loadContent(editor, value)
+            loadContent(editor, value, !!suggestionConfigRef.current)
             lastEmittedRef.current = value
         }
-    }, [editor, value, loadContent])
+    }, [editor, value])
 
     // Notify parent when the editor instance is ready (used by ExpandTextDialog to flush
     // the current editor state to markdown when switching to Source mode).
