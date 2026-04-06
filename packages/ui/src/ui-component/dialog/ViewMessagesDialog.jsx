@@ -317,7 +317,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
             await chatmessageApi.deleteChatmessage(chatflowid, obj)
             enqueueSnackbar({
-                message: t('components.dialogs.viewMessages.delete.success'),
+                message: t('components.dialogs.viewMessages.delete.messages.success'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -381,7 +381,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             linkElement.click()
 
             enqueueSnackbar({
-                message: t('components.dialogs.viewMessages.export.success'),
+                message: t('components.dialogs.viewMessages.export.messages.success'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -395,7 +395,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         } catch (error) {
             console.error('Error exporting messages:', error)
             enqueueSnackbar({
-                message: t('components.dialogs.viewMessages.export.error'),
+                message: t('components.dialogs.viewMessages.export.messages.error'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -438,11 +438,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 await chatmessageApi.deleteChatmessage(chatflowid, obj)
                 const description =
                     chatmsg.sessionId && chatmsg.memoryType
-                        ? t('components.dialogs.viewMessages.clearChat.successSession', {
+                        ? t('components.dialogs.viewMessages.clearChat.messages.success.session', {
                               sessionId: chatmsg.sessionId,
                               memoryType: chatmsg.memoryType
                           })
-                        : t('components.dialogs.viewMessages.clearChat.success')
+                        : t('components.dialogs.viewMessages.clearChat.messages.simple')
                 enqueueSnackbar({
                     message: description,
                     options: {

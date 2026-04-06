@@ -135,13 +135,17 @@
             },
             "exportAsTemplate": {
                 "title": "Export As Template",
-                "requiredName": "Template Name is mandatory!",
-                "saved": "Saved as template successfully!",
-                "failed": "Failed to save as template!",
                 "exportName": "Name<highlight>&nbsp;*</highlight>",
                 "badge": "Badge",
                 "usecases": "Usecases",
                 "usecaseTooltip": "Type a usecase and press enter to add it to the list. You can add as many items as you want.",
+                "messages": {
+                    "success": "Saved as template successfully!",
+                    "errors": {
+                        "requiredName": "Template Name is mandatory!",
+                        "failedSave": "Failed to save as template!"
+                    }
+                },
                 "actions": {
                     "saveTemplate": "Save Template"
                 }
@@ -152,10 +156,6 @@
             "inviteUsers": {
                 "title": "Invite Users",
                 "select": "Select Users<highlight>&nbsp;*</highlight>",
-                "alreadyIn": "The following users are already in the workspace or organization: {{users}}",
-                "invited": "Users invited to workspace",
-                "fail": "Failed to invite users to workspace: {{msg}}",
-                "removedMsg": "One or more invalid emails were removed.",
                 "invite": "Invite {{email}}",
                 "notFound": "No results found",
                 "placeholder": "Invite users by name or email",
@@ -164,17 +164,27 @@
                     "alreadyIn": "{{name}} is already a member of this workspace and won't be invited again."
                 },
                 "workspace": "Workspace<highlight>&nbsp;*</highlight>",
-                "roles": " Role to Assign<highlight>&nbsp;*</highlight>"
+                "roles": " Role to Assign<highlight>&nbsp;*</highlight>",
+                "messages": {
+                    "success": "Users invited to workspace",
+                    "errors": {
+                        "alreadyIn": "The following users are already in the workspace or organization: {{users}}",
+                        "failedSave": "Failed to invite users to workspace: {{msg}}"
+                    },
+                    "warning": "One or more invalid emails were removed."
+                }
             },
             "manageScrapedLinks": {
                 "title": "Manage Scraped Links - {{url}}",
-                "success": "Successfully fetched links",
                 "actions": {
                     "fetch": "Fetch Links",
                     "clearAll": {
                         "title": "Clear All",
                         "tooltip": "Clear All Links"
                     }
+                },
+                "messages": {
+                    "success": "Successfully fetched links"
                 },
                 "links": "Scraped Links",
                 "placeholder": "Links scraped from the URL will appear here"
@@ -252,9 +262,9 @@
                 "placeholder": "My New Chatflow"
             },
             "shareWithWorkspace": {
-                "success": "Items Shared Successfully",
-                "errors": {
-                    "share": "Failed to share Item: {{msg}}"
+                "messages": {
+                    "success": "Items Shared Successfully",
+                    "error": "Failed to share Item: {{msg}}"
                 }
             },
             "sourceDoc": {
@@ -292,11 +302,15 @@
                     "actions": {
                         "delete": "Delete"
                     },
-                    "success": "Succesfully deleted messages"
+                    "messages": {
+                        "success": "Succesfully deleted messages"
+                    }
                 },
                 "export": {
-                    "success": "Messages exported successfully",
-                    "error": "Error exporting messages"
+                    "messages": {
+                        "success": "Messages exported successfully",
+                        "error": "Error exporting messages"
+                    }
                 },
                 "clearChat": {
                     "title": "Clear Session",
@@ -305,8 +319,12 @@
                     "actions": {
                         "clear": "Clear"
                     },
-                    "success": "Succesfully cleared messages",
-                    "successSession": "Succesfully cleared session id: {{sessionId}} from {{memoryType}}"
+                    "messages": {
+                        "success": {
+                            "simple": "Succesfully cleared messages",
+                            "session": "Succesfully cleared session id: {{sessionId}} from {{memoryType}}"
+                        }
+                    }
                 },
                 "logs": {
                     "user": "User: {{msg}}",

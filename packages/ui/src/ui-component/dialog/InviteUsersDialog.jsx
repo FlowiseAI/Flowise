@@ -295,7 +295,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             if (existingEmails.length > 0) {
                 enqueueSnackbar({
-                    message: t('components.dialogs.inviteUsers.alreadyIn', { users: existingEmails.join(', ') }),
+                    message: t('components.dialogs.inviteUsers.messages.errors.alreadyIn', { users: existingEmails.join(', ') }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -345,7 +345,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             )
             if (responses.length > 0) {
                 enqueueSnackbar({
-                    message: t('components.dialogs.inviteUsers.invited'),
+                    message: t('components.dialogs.inviteUsers.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -363,7 +363,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             console.error('Error in saveInvite:', error)
             enqueueSnackbar({
-                message: t('components.dialogs.inviteUsers.fail', {
+                message: t('components.dialogs.inviteUsers.messages.failedSave', {
                     msg: error.response?.data?.message || error.message || 'Unknown error'
                 }),
                 options: {
@@ -427,7 +427,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         // If any invalid emails were filtered out, show a notification
         if (updatedUsers.length < newValue.length) {
             enqueueSnackbar({
-                message: t('components.dialogs.inviteUsers.removedMsg'),
+                message: t('components.dialogs.inviteUsers.messages.warning'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',

@@ -73,7 +73,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
             if (fetchLinksResp.data) {
                 setSelectedLinks(fetchLinksResp.data.links)
                 enqueueSnackbar({
-                    message: t('components.dialogs.manageScrapedLinks.success'),
+                    message: t('components.dialogs.manageScrapedLinks.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',

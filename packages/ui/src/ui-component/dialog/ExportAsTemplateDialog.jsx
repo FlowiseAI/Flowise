@@ -102,7 +102,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     const onConfirm = () => {
         if (name.trim() === '') {
             enqueueSnackbar({
-                message: t('components.dialogs.exportAsTemplate.requiredName'),
+                message: t('components.dialogs.exportAsTemplate.messages.errors.requiredName'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -140,7 +140,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     useEffect(() => {
         if (saveCustomTemplateApi.data) {
             enqueueSnackbar({
-                message: t('components.dialogs.exportAsTemplate.saved'),
+                message: t('components.dialogs.exportAsTemplate.messages.success'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -160,7 +160,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     useEffect(() => {
         if (saveCustomTemplateApi.error) {
             enqueueSnackbar({
-                message: t('components.dialogs.exportAsTemplate.failed'),
+                message: t('components.dialogs.exportAsTemplate.messages.errors.failedSave'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

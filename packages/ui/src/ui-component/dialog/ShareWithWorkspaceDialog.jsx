@@ -135,7 +135,7 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
             const sharedResp = await workspaceApi.setSharedWorkspacesForItem(dialogProps.data.id, obj)
             if (sharedResp.data) {
                 enqueueSnackbar({
-                    message: t('components.dialogs.shareWithWorkspace.success'),
+                    message: t('components.dialogs.shareWithWorkspace.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -151,7 +151,7 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: t('components.dialogs.shareWithWorkspace.errors.share', {
+                message: t('components.dialogs.shareWithWorkspace.messages.error', {
                     msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                 }),
                 options: {
