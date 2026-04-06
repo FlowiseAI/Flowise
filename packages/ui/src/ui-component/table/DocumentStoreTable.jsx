@@ -21,6 +21,9 @@ import { tableCellClasses } from '@mui/material/TableCell'
 import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
 import { IconDotsVertical } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
 
@@ -41,6 +44,7 @@ const StyledTableRow = styled(TableRow)(() => ({
 }))
 
 export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showActions, onActionMenuClick, actionButtonSx }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -82,14 +86,14 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
                             <StyledTableCell>&nbsp;</StyledTableCell>
                             <StyledTableCell>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
-                                    Name
+                                    {t('common.labels.name')}
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell>Description</StyledTableCell>
-                            <StyledTableCell>Connected flows</StyledTableCell>
-                            <StyledTableCell>Total characters</StyledTableCell>
-                            <StyledTableCell>Total chunks</StyledTableCell>
-                            <StyledTableCell>Loader Types</StyledTableCell>
+                            <StyledTableCell>{t('common.labels.description')}</StyledTableCell>
+                            <StyledTableCell>{t('components.documentStoreTable.connectedFlows')}</StyledTableCell>
+                            <StyledTableCell>{t('components.documentStoreTable.totalCharacters')}</StyledTableCell>
+                            <StyledTableCell>{t('components.documentStoreTable.totalChunks')}</StyledTableCell>
+                            <StyledTableCell>{t('components.documentStoreTable.loaderTypes')}</StyledTableCell>
                             {showActions && (
                                 <StyledTableCell align='right' sx={{ width: 44, pr: 1 }}>
                                     &nbsp;
@@ -244,7 +248,7 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
                                                                     fontWeight: 200
                                                                 }}
                                                             >
-                                                                + {images.length - 3} More
+                                                                {t('components.documentStoreTable.more', { count: images.length - 3 })}
                                                             </Typography>
                                                         )}
                                                     </Box>
@@ -254,7 +258,7 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
                                                 <StyledTableCell align='right' sx={{ width: 44, mr: 1 }}>
                                                     <IconButton
                                                         size='small'
-                                                        aria-label='Document store options'
+                                                        aria-label={t('components.documentStoreTable.options')}
                                                         sx={actionButtonSx}
                                                         onClick={(event) => {
                                                             event.stopPropagation()

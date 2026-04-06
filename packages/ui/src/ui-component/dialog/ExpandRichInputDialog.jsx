@@ -114,7 +114,7 @@ const StyledTextarea = styled('textarea')(({ theme, disabled }) => ({
 }))
 
 // define your extension array
-const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
+const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration, t) => [
     StarterKit.configure({
         codeBlock: false
     }),
@@ -136,7 +136,8 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
             acceptNodeOutputAsVariable,
             nodes,
             nodeData,
-            isNodeInsideInteration
+            isNodeInsideInteration,
+            t
         ),
         deleteTriggerWithBackspace: true
     }),
@@ -212,7 +213,8 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
                     inputParam?.acceptNodeOutputAsVariable,
                     dialogProps.nodes,
                     nodeData,
-                    isNodeInsideInteration
+                    isNodeInsideInteration,
+                    t
                 ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],

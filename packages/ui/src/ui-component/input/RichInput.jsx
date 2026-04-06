@@ -15,6 +15,9 @@ import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 import { CustomMention } from '@/utils/customMention'
 import { isHtmlContent, escapeXmlTags, unescapeXmlEntities, unescapeXmlTags } from '@/utils/xmlTagUtils'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const lowlight = createLowlight(common)
 
 // define your extension array
@@ -25,7 +28,8 @@ const extensions = (
     nodes,
     nodeData,
     isNodeInsideInteration,
-    useMarkdown
+    useMarkdown,
+    t
 ) => [
     Markdown,
     StarterKit.configure({
@@ -49,7 +53,8 @@ const extensions = (
             acceptNodeOutputAsVariable,
             nodes,
             nodeData,
-            isNodeInsideInteration
+            isNodeInsideInteration,
+            t
         ),
         deleteTriggerWithBackspace: true
     }),
@@ -107,6 +112,7 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDa
 }))
 
 export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+    const { t } = useTranslation()
     const useMarkdown = !!inputParam?.rows
     const customization = useSelector((state) => state.customization)
     const isDarkMode = customization.isDarkMode
@@ -141,7 +147,8 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
                     nodes,
                     nodeData,
                     isNodeInsideInteration,
-                    useMarkdown
+                    useMarkdown,
+                    t
                 ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],

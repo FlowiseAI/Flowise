@@ -8,6 +8,9 @@ import { cloneDeep } from 'lodash'
 import { formatDataGridRows } from '@/utils/genericHelper'
 import { styled } from '@mui/material/styles'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledDataGrid = styled(MUIDataGrid)(({ theme }) => ({
     border: `1px solid ${theme.palette.mode === 'light' ? '#b4b4b4' : '#303030'}`,
 
@@ -34,6 +37,7 @@ const StyledDataGrid = styled(MUIDataGrid)(({ theme }) => ({
 }))
 
 export const DataGrid = ({ columns, rows, style, disabled = false, hideFooter = false, onChange }) => {
+    const { t } = useTranslation()
     const [rowValues, setRowValues] = useState(formatDataGridRows(rows) ?? [])
 
     const deleteItem = useCallback(
@@ -59,7 +63,12 @@ export const DataGrid = ({ columns, rows, style, disabled = false, hideFooter = 
                 type: 'actions',
                 width: 80,
                 getActions: (params) => [
-                    <GridActionsCellItem key={'Delete'} icon={<DeleteIcon />} label='Delete' onClick={deleteItem(params.id)} />
+                    <GridActionsCellItem
+                        key={'Delete'}
+                        icon={<DeleteIcon />}
+                        label={t('common.actions.delete.title')}
+                        onClick={deleteItem(params.id)}
+                    />
                 ]
             }
         ]
@@ -120,7 +129,7 @@ export const DataGrid = ({ columns, rows, style, disabled = false, hideFooter = 
             )}
             {!disabled && (
                 <Button sx={{ mt: 1 }} variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
-                    Add Item
+                    {t('components.dataGrid.addItem')}
                 </Button>
             )}
         </>

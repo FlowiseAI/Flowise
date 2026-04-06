@@ -282,7 +282,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         setHardDeleteDialogProps({
             title: t('components.dialogs.viewMessages.delete.title'),
             description: t('components.dialogs.viewMessages.delete.description'),
-            confirmButtonName: t('components.dialogs.viewMessages.actions.delete'),
+            confirmButtonName: t('common.actions.delete.title'),
             cancelButtonName: t('common.actions.cancel'),
             isChatflow: dialogProps.isChatflow
         })

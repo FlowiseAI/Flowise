@@ -5,6 +5,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import PropTypes from 'prop-types'
 import { Box, IconButton, Popover, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { useTranslation } from 'react-i18next'
 
 const programmingLanguages = {
     javascript: '.js',
@@ -33,6 +34,7 @@ const programmingLanguages = {
 }
 
 export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const [anchorEl, setAnchorEl] = useState(null)
     const openPopOver = Boolean(anchorEl)
@@ -81,7 +83,7 @@ export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => 
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     {language}
                     <div style={{ flex: 1 }}></div>
-                    <IconButton size='small' title='Copy' color='success' onClick={copyToClipboard}>
+                    <IconButton size='small' title={t('components.codeBlock.copy')} color='success' onClick={copyToClipboard}>
                         <IconClipboard />
                     </IconButton>
                     <Popover
@@ -98,10 +100,10 @@ export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => 
                         }}
                     >
                         <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
-                            Copied!
+                            {t('components.codeBlock.copied')}
                         </Typography>
                     </Popover>
-                    <IconButton size='small' title='Download' color='primary' onClick={downloadAsFile}>
+                    <IconButton size='small' title={t('common.actions.download')} color='primary' onClick={downloadAsFile}>
                         <IconDownload />
                     </IconButton>
                 </div>

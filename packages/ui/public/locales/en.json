@@ -300,9 +300,6 @@
                 "delete": {
                     "title": "Delete Messages",
                     "description": "Are you sure you want to delete messages? This action cannot be undone.",
-                    "actions": {
-                        "delete": "Delete"
-                    },
                     "messages": {
                         "success": "Succesfully deleted messages"
                     }
@@ -360,6 +357,39 @@
                 },
                 "formats": {
                     "date": "MMMM Do YYYY, h:mm:ss a"
+                }
+            },
+            "pricing": {
+                "title": "Pricing Plans",
+                "currentPlan": "Current Plan",
+                "mostPopular": "Most Popular",
+                "firstMonthFree": "First Month Free",
+                "confirmPlanChange": "Confirm Plan Change",
+                "additionalSeatsWarning": "You must remove additional seats and users before changing your plan.",
+                "workspacesWarning": "You must remove all workspaces except the default workspace before changing your plan.",
+                "apiKeysWarning": "You must remove all API keys with sharing permissions before changing your plan.",
+                "noPaymentMethod": "No payment method found",
+                "addPaymentMethod": "Add Payment Method in Billing Portal",
+                "openingBillingPortal": "Opening Billing Portal...",
+                "updatingPlan": "Updating Plan...",
+                "dueToday": "Due today",
+                "appliedAccountBalance": "Applied account balance",
+                "creditBalance": "Credit balance",
+                "creditNotice": "Your available credit will automatically apply to your next invoice.",
+                "firstMonthDiscount": "First Month Discount",
+                "eligibleFirstMonthFree": "You're eligible for your first month free!",
+                "paymentMethod": "Payment Method",
+                "messages": {
+                    "updatePlan": {
+                        "success": "Subscription updated successfully!",
+                        "errors": {
+                            "failedUpdate": "Subscription failed to update",
+                            "failedVerify": "Failed to verify subscription"
+                        }
+                    }
+                },
+                "actions": {
+                    "confirmChange": "Confirm Change"
                 }
             }
         },
@@ -659,6 +689,69 @@
                     }
                 }
             }
+        },
+        "file": {
+            "chooseFile": "Choose a file to upload",
+            "uploadFile": "Upload File"
+        },
+        "dataGrid": {
+            "delete": "Delete",
+            "addItem": "Add Item"
+        },
+        "selectVariable": {
+            "title": "Select Variable",
+            "items": {
+                "question": "User's question from chatbox",
+                "chatHistory": "Past conversation history between user and AI",
+                "fileAttachment": "Files uploaded from the chat when Full File Upload is enabled on the Configuration"
+            },
+            "sequentialState": {
+                "messages": "All messages from the start of the conversation till now",
+                "key": "Current value of the state variable with specified key",
+                "firstMessage": "First message content",
+                "lastMessage": "Last message content"
+            },
+            "output": "{{output}} from {{node}}"
+        },
+        "codeBlock": {
+            "copy": "Copy",
+            "copied": "Copied!"
+        },
+        "documentStoreTable": {
+            "connectedFlows": "Connected flows",
+            "totalCharacters": "Total characters",
+            "totalChunks": "Total chunks",
+            "loaderTypes": "Loader Types",
+            "more": "+ {{count}} More",
+            "options": "Document store options"
+        },
+        "flowListTable": {
+            "category": "Category",
+            "nodes": "Nodes",
+            "lastModifiedDate": "Last Modified Date",
+            "actions": "Actions",
+            "more": "+ {{count}} More",
+            "formats": {
+                "date": "MMMM Do, YYYY HH:mm:ss"
+            }
+        }
+    },
+    "suggestOptions": {
+        "description": {
+            "question": "User's question from chatbox",
+            "chatHistory": "Past conversation history between user and AI",
+            "currentDateTime": "Current date and time",
+            "runtimeMessagesLength": "Total messages between LLM and Agent",
+            "loopCount": "Current loop count",
+            "fileAttachment": "Files uploaded from the chat",
+            "sessionId": "Current session ID",
+            "chatId": "Current session ID",
+            "chatflowId": "Current session ID",
+            "iteration": "Iteration item. For JSON, use dot notation: $iteration.name",
+            "output": "Output from the current node",
+            "variable": "Variable: {{value}} ({{type}})",
+            "formInput": "Form Input: {{label}}",
+            "nodeOutput": "{{output}} from {{node}}"
         }
     },
     "dropdown": {

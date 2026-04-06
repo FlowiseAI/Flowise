@@ -27,6 +27,9 @@ import { useAuth } from '@/hooks/useAuth'
 
 import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
 
@@ -63,6 +66,7 @@ export const FlowListTable = ({
     currentPage,
     pageLimit
 }) => {
+    const { t } = useTranslation()
     const { hasPermission } = useAuth()
     const isActionsAvailable = isAgentCanvas
         ? hasPermission('agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export')
@@ -119,14 +123,14 @@ export const FlowListTable = ({
                         <TableRow>
                             <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
-                                    Name
+                                    {t('common.labels.name')}
                                 </TableSortLabel>
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '25%' }} key='1'>
-                                Category
+                                {t('components.flowListTable.category')}
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '30%' }} key='2'>
-                                Nodes
+                                {t('components.flowListTable.nodes')}
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '15%' }} key='3'>
                                 <TableSortLabel
@@ -134,12 +138,12 @@ export const FlowListTable = ({
                                     direction={order}
                                     onClick={() => handleRequestSort('updatedDate')}
                                 >
-                                    Last Modified Date
+                                    {t('components.flowListTable.lastModifiedDate')}
                                 </TableSortLabel>
                             </StyledTableCell>
                             {isActionsAvailable && (
                                 <StyledTableCell style={{ width: '10%' }} key='4'>
-                                    Actions
+                                    {t('components.flowListTable.actions')}
                                 </StyledTableCell>
                             )}
                         </TableRow>
@@ -309,7 +313,9 @@ export const FlowListTable = ({
                                                                     fontWeight: 200
                                                                 }}
                                                             >
-                                                                + {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) - 5} More
+                                                                {t('components.flowListTable.more', {
+                                                                    count: (images[row.id]?.length || 0) + (icons[row.id]?.length || 0) - 5
+                                                                })}
                                                             </Typography>
                                                         </MoreItemsTooltip>
                                                     )}
@@ -317,7 +323,7 @@ export const FlowListTable = ({
                                             )}
                                         </StyledTableCell>
                                         <StyledTableCell key='3'>
-                                            {moment(row.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
+                                            {moment(row.updatedDate).format(t('components.flowListTable.formats.date'))}
                                         </StyledTableCell>
                                         {isActionsAvailable && (
                                             <StyledTableCell key='4'>

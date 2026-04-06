@@ -47,45 +47,66 @@ export const suggestionOptions = (
     acceptNodeOutputAsVariable,
     nodes,
     nodeData,
-    isNodeInsideInteration
+    isNodeInsideInteration,
+    t
 ) => ({
     char: '{{',
     items: async ({ query }) => {
         const defaultItems = [
-            { id: 'question', mentionLabel: 'question', description: "User's question from chatbox", category: 'Chat Context' },
+            {
+                id: 'question',
+                mentionLabel: 'question',
+                description: t('suggestOptions.description.question'),
+                category: 'Chat Context'
+            },
             {
                 id: 'chat_history',
                 mentionLabel: 'chat_history',
-                description: 'Past conversation history between user and AI',
+                description: t('suggestOptions.description.chatHistory'),
                 category: 'Chat Context'
             },
             {
                 id: 'current_date_time',
                 mentionLabel: 'current_date_time',
-                description: 'Current date and time',
+                description: t('suggestOptions.description.currentDateTime'),
                 category: 'Chat Context'
             },
             {
                 id: 'runtime_messages_length',
                 mentionLabel: 'runtime_messages_length',
-                description: 'Total messages between LLM and Agent',
+                description: t('suggestOptions.description.runtimeMessagesLength'),
                 category: 'Chat Context'
             },
             {
                 id: 'loop_count',
                 mentionLabel: 'loop_count',
-                description: 'Current loop count',
+                description: t('suggestOptions.description.loopCount'),
                 category: 'Chat Context'
             },
             {
                 id: 'file_attachment',
                 mentionLabel: 'file_attachment',
-                description: 'Files uploaded from the chat',
+                description: t('suggestOptions.description.fileAttachment'),
                 category: 'Chat Context'
             },
-            { id: '$flow.sessionId', mentionLabel: '$flow.sessionId', description: 'Current session ID', category: 'Flow Variables' },
-            { id: '$flow.chatId', mentionLabel: '$flow.chatId', description: 'Current chat ID', category: 'Flow Variables' },
-            { id: '$flow.chatflowId', mentionLabel: '$flow.chatflowId', description: 'Current chatflow ID', category: 'Flow Variables' }
+            {
+                id: '$flow.sessionId',
+                mentionLabel: '$flow.sessionId',
+                description: t('suggestOptions.description.sessionId'),
+                category: 'Flow Variables'
+            },
+            {
+                id: '$flow.chatId',
+                mentionLabel: '$flow.chatId',
+                description: t('suggestOptions.description.chatId'),
+                category: 'Flow Variables'
+            },
+            {
+                id: '$flow.chatflowId',
+                mentionLabel: '$flow.chatflowId',
+                description: t('suggestOptions.description.chatflowId'),
+                category: 'Flow Variables'
+            }
         ]
 
         const stateItems = (availableState || []).map((state) => ({
@@ -98,7 +119,7 @@ export const suggestionOptions = (
             defaultItems.unshift({
                 id: '$iteration',
                 mentionLabel: '$iteration',
-                description: 'Iteration item. For JSON, use dot notation: $iteration.name',
+                description: t('suggestOptions.description.iteration'),
                 category: 'Iteration'
             })
         }
@@ -108,7 +129,7 @@ export const suggestionOptions = (
             defaultItems.unshift({
                 id: 'output',
                 mentionLabel: 'output',
-                description: 'Output from the current node',
+                description: t('suggestOptions.description.output'),
                 category: 'Node Outputs'
             })
 
@@ -133,7 +154,7 @@ export const suggestionOptions = (
         const variableItems = cachedVariables.map((variable) => ({
             id: `$vars.${variable.name}`,
             mentionLabel: `$vars.${variable.name}`,
-            description: `Variable: ${variable.value} (${variable.type})`,
+            description: t('suggestOptions.description.variable', { value: variable.value, type: variable.type }),
             category: 'Custom Variables'
         }))
 
@@ -145,7 +166,7 @@ export const suggestionOptions = (
             formItems = (formInputTypes || []).map((input) => ({
                 id: `$form.${input.name}`,
                 mentionLabel: `$form.${input.name}`,
-                description: `Form Input: ${input.label}`,
+                description: t('suggestOptions.description.formInput', { label: input.label }),
                 category: 'Form Inputs'
             }))
         }
@@ -159,7 +180,10 @@ export const suggestionOptions = (
                 description:
                     node.data.name === 'ifElseFunction'
                         ? node.data.description
-                        : `${selectedOutputAnchor?.label ?? 'Output'} from ${node.data.label}`,
+                        : t('suggestOptions.description.nodeOutput', {
+                              output: selectedOutputAnchor?.label ?? 'Output',
+                              node: node.data.label
+                          }),
                 category: 'Node Outputs'
             }
         })
