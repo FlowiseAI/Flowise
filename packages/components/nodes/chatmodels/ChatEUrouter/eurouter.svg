@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" rx="16" fill="#1a365d"/>
+  <text x="50" y="38" text-anchor="middle" fill="#ffd700" font-family="Arial,sans-serif" font-weight="bold" font-size="20">EU</text>
+  <text x="50" y="70" text-anchor="middle" fill="#ffffff" font-family="Arial,sans-serif" font-weight="bold" font-size="16">router</text>
+</svg>
