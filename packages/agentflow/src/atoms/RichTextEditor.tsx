@@ -42,6 +42,17 @@ export interface RichTextEditorProps {
     useMarkdown?: boolean
 }
 
+/* ── Helpers ── */
+
+function loadContent(editor: Editor, value: string, markdown: boolean) {
+    if (!markdown || isHtmlContent(value)) {
+        editor.commands.setContent(value, { emitUpdate: false, contentType: 'html' })
+    } else {
+        editor.commands.setContent(escapeXmlTags(value), { emitUpdate: false, contentType: 'markdown' })
+        editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
+    }
+}
+
 /* ── TipTap extensions (no mention/variable support — that belongs in features/) ── */
 
 const buildExtensions = (placeholder?: string, useMarkdown = true) => [
@@ -200,25 +211,14 @@ export function RichTextEditor({
     // Reads from refs so only `editor` needs to be in the dep array.
     useEffect(() => {
         if (!editor || !initialValueRef.current) return
-        const v = initialValueRef.current
-        if (!useMarkdownRef.current || isHtmlContent(v)) {
-            editor.commands.setContent(v, { emitUpdate: false, contentType: 'html' })
-        } else {
-            editor.commands.setContent(escapeXmlTags(v), { emitUpdate: false, contentType: 'markdown' })
-            editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
-        }
-        lastEmittedRef.current = v
+        loadContent(editor, initialValueRef.current, useMarkdownRef.current)
+        lastEmittedRef.current = initialValueRef.current
     }, [editor])
 
     // Sync genuine external value changes (e.g. parent resets the field programmatically).
     useEffect(() => {
         if (editor && value !== lastEmittedRef.current) {
-            if (!useMarkdown || isHtmlContent(value)) {
-                editor.commands.setContent(value, { emitUpdate: false, contentType: 'html' })
-            } else {
-                editor.commands.setContent(escapeXmlTags(value), { emitUpdate: false, contentType: 'markdown' })
-                editor.commands.setContent(unescapeXmlEntities(editor.getJSON()), { emitUpdate: false })
-            }
+            loadContent(editor, value, useMarkdown)
             lastEmittedRef.current = value
         }
     }, [editor, value, useMarkdown])
