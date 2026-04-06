@@ -12,8 +12,7 @@
         "./nodes": {
             "types": "./dist/nodes/index.d.ts",
             "default": "./dist/nodes/index.js"
-        },
-        "./*": "./*"
+        }
     },
     "scripts": {
         "build": "tsc && gulp",
