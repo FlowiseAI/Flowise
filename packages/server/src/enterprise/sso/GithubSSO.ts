@@ -38,7 +38,7 @@ class GithubSSO extends SSOBase {
                             // Fetch emails from GitHub API using the access token.
                             const emailResponse = await fetch('https://api.github.com/user/emails', {
                                 headers: {
-                                    Authorization: `token ${accessToken}`,
+                                    Authorization: `Bearer ${accessToken}`,
                                     'User-Agent': 'Node.js'
                                 }
                             })
@@ -62,6 +62,12 @@ class GithubSSO extends SSOBase {
                             let primaryEmail = emails.find((email: any) => email.primary && email.verified)?.email
                             if (!primaryEmail && emails.length > 0) {
                                 primaryEmail = emails[0].email
+                            }
+                            if (!primaryEmail) {
+                                return done(
+                                    { name: 'SSO_LOGIN_FAILED', message: 'No usable email address found in GitHub account' },
+                                    undefined
+                                )
                             }
                             return this.verifyAndLogin(this.app, primaryEmail, done, profile, accessToken, refreshToken)
                         } catch (error) {
