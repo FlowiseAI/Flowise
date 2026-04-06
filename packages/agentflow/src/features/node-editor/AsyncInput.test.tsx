@@ -62,6 +62,14 @@ jest.mock('@/infrastructure/api/hooks', () => ({
     useAsyncOptions: (arg: unknown) => mockUseAsyncOptions(arg)
 }))
 
+let mockNodes: Array<{ id: string; type: string; position: { x: number; y: number }; data: Record<string, unknown> }> = []
+
+jest.mock('@/infrastructure/store', () => ({
+    useAgentflowContext: () => ({
+        state: { nodes: mockNodes, edges: [] }
+    })
+}))
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const mockOnDataChange = jest.fn()
@@ -87,6 +95,7 @@ const idleResult = (): MockAsyncResult => ({ options: [], loading: false, error:
 
 beforeEach(() => {
     jest.clearAllMocks()
+    mockNodes = []
     mockUseAsyncOptions.mockReturnValue({ options: [], loading: true, error: null, refetch: mockRefetch })
 })
 
@@ -285,6 +294,100 @@ describe('AsyncInput (direct) – asyncOptions', () => {
 
         // The selected option's image appears in the input adornment
         await waitFor(() => expect(screen.getByAltText('GPT-4o')).toBeTruthy())
+    })
+
+    it('clears stored value when it no longer matches any available option', async () => {
+        const mockChange = jest.fn()
+        // Options do NOT include the currently selected value
+        mockUseAsyncOptions.mockReturnValue({
+            ...idleResult(),
+            options: [{ label: 'otherKey', name: 'otherKey' }]
+        })
+
+        render(<AsyncInput inputParam={makeParam({ type: 'asyncOptions' })} value='removedKey' disabled={false} onChange={mockChange} />)
+
+        await waitFor(() => {
+            expect(mockChange).toHaveBeenCalledWith('')
+        })
+    })
+
+    it('passes stateKeys from Start node for listRuntimeStateKeys loadMethod', () => {
+        mockNodes = [
+            {
+                id: 'start_0',
+                type: 'agentflowNode',
+                position: { x: 0, y: 0 },
+                data: {
+                    name: 'startAgentflow',
+                    inputs: {
+                        startState: [
+                            { key: 'userName', value: '' },
+                            { key: 'count', value: '0' }
+                        ]
+                    }
+                }
+            }
+        ]
+        mockUseAsyncOptions.mockReturnValue(idleResult())
+
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', loadMethod: 'listRuntimeStateKeys' })}
+                value=''
+                disabled={false}
+                onChange={jest.fn()}
+            />
+        )
+
+        expect(mockUseAsyncOptions).toHaveBeenCalledWith(
+            expect.objectContaining({
+                params: expect.objectContaining({ stateKeys: ['count', 'userName'] })
+            })
+        )
+    })
+
+    it('excludes keys from the current node to prevent circular self-reference', () => {
+        mockNodes = [
+            {
+                id: 'start_0',
+                type: 'agentflowNode',
+                position: { x: 0, y: 0 },
+                data: {
+                    name: 'startAgentflow',
+                    inputs: { startState: [{ key: 'fromStart', value: '' }] }
+                }
+            },
+            {
+                id: 'agent_0',
+                type: 'agentflowNode',
+                position: { x: 0, y: 0 },
+                data: {
+                    name: 'agentAgentflow',
+                    inputs: {
+                        agentUpdateState: [{ key: 'selfKey', value: 'v1' }]
+                    }
+                }
+            }
+        ]
+        mockUseAsyncOptions.mockReturnValue(idleResult())
+
+        // nodeName='agentAgentflow' — should exclude the agent's own keys
+        render(
+            <AsyncInput
+                inputParam={makeParam({ type: 'asyncOptions', loadMethod: 'listRuntimeStateKeys' })}
+                value=''
+                disabled={false}
+                onChange={jest.fn()}
+                nodeName='agentAgentflow'
+            />
+        )
+
+        expect(mockUseAsyncOptions).toHaveBeenCalledWith(
+            expect.objectContaining({
+                // Only Start node key included; agent's own 'selfKey' excluded
+                params: expect.objectContaining({ stateKeys: ['fromStart'] })
+            })
+        )
     })
 })
 

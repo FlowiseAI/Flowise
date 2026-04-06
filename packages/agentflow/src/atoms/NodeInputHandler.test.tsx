@@ -44,7 +44,9 @@ jest.mock('./VariableInput', () => ({
 
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-expand' />,
+    IconCode: () => <span />,
     IconInfoCircle: () => <span data-testid='icon-info-circle' />,
+    IconPencil: () => <span />,
     IconVariable: () => <span data-testid='icon-variable' />,
     IconRefresh: () => <span data-testid='icon-refresh' />
 }))

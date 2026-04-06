@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
 import type { VariableItem } from '@/atoms/VariablePicker'
-import { getAgentflowIcon } from '@/core/node-config/nodeIconUtils'
-import { getUpstreamNodes } from '@/core/utils/variableUtils'
+import { getAgentflowIcon } from '@/core/node-config'
+import { getDefinedStateKeys, getUpstreamNodes } from '@/core/utils'
 import { useAgentflowContext } from '@/infrastructure/store'
 
 // ── Static global variables (matches original suggestionOption.js) ───────────
@@ -91,22 +91,15 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
             })
         }
 
-        // ── Flow state variables from startAgentflow node ────────────────
-        const startNode = nodes.find((n) => n.data.name === 'startAgentflow')
-        if (startNode) {
-            const startState = startNode.data.inputs?.startState
-            if (Array.isArray(startState)) {
-                for (const entry of startState) {
-                    if (entry && typeof entry === 'object' && 'key' in entry && typeof entry.key === 'string') {
-                        items.push({
-                            label: `$flow.state.${entry.key}`,
-                            description: `Current value of the state variable with specified key`,
-                            category: 'Flow State',
-                            value: `$flow.state.${entry.key}`
-                        })
-                    }
-                }
-            }
+        // ── Flow state variables from all nodes ─────────────────────────
+        const stateKeys = getDefinedStateKeys(nodes)
+        for (const key of stateKeys) {
+            items.push({
+                label: `$flow.state.${key}`,
+                description: `Current value of the state variable with specified key`,
+                category: 'Flow State',
+                value: `{{$flow.state.${key}}}`
+            })
         }
 
         return items

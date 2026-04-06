@@ -69,19 +69,33 @@ describe('VariableInput', () => {
         expect(screen.getByTestId('variable-input')).toBeInTheDocument()
     })
 
-    it('initialises the editor with the provided value', () => {
-        // Verify the editor is created with content matching the value prop, so
-        // the editor is not empty on the first render before the sync useEffect fires.
+    it('always initialises the editor with empty content (value is loaded via setContent effect)', () => {
+        // The editor always starts empty; value is loaded once via editor.commands.setContent
+        // after the editor instance is ready — this avoids content flicker on re-renders.
         const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
         renderVariableInput({ value: 'Hello world' })
-        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ content: 'Hello world' }))
+        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ content: '' }))
         useEditorSpy.mockRestore()
     })
 
-    it('initialises the editor with empty string when value is empty', () => {
+    it('passes autofocus:"end" to useEditor when autoFocus is true', () => {
         const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
-        renderVariableInput({ value: '' })
-        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ content: '' }))
+        renderVariableInput({ autoFocus: true })
+        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ autofocus: 'end' }))
         useEditorSpy.mockRestore()
+    })
+
+    it('passes autofocus:false to useEditor when autoFocus is false (default)', () => {
+        const useEditorSpy = jest.spyOn(TiptapReact, 'useEditor')
+        renderVariableInput({ autoFocus: false })
+        expect(useEditorSpy).toHaveBeenCalledWith(expect.objectContaining({ autofocus: false }))
+        useEditorSpy.mockRestore()
+    })
+
+    it('calls onEditorReady with the editor instance after mount', () => {
+        const onEditorReady = jest.fn()
+        renderVariableInput({ onEditorReady })
+        // The mock editor has getHTML/getMarkdown/commands etc.
+        expect(onEditorReady).toHaveBeenCalledWith(expect.objectContaining({ getHTML: expect.any(Function) }))
     })
 })

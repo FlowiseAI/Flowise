@@ -33,9 +33,6 @@ const mockApis: ApiServices = {
     embeddingsApi: {
         getEmbeddings: jest.fn()
     },
-    runtimeStateApi: {
-        getRuntimeStateKeys: jest.fn()
-    },
     nodesApi: {
         getAllNodes: jest.fn(),
         getNodeByName: jest.fn(),
