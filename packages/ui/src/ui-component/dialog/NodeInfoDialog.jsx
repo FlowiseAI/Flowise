@@ -141,7 +141,7 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                         }}
                                     >
                                         <span style={{ color: '#606c38', fontSize: '0.825rem' }}>
-                                            {t('dialogs.nodeInfo.version', { version: dialogProps.data.version })}
+                                            {t('components.dialogs.nodeInfo.version', { version: dialogProps.data.version })}
                                         </span>
                                     </div>
                                 )}
@@ -207,13 +207,13 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                             <Button
                                 variant='outlined'
                                 color='primary'
-                                title={t('dialogs.nodeInfo.actions.documentation.tooltip')}
+                                title={t('components.dialogs.nodeInfo.actions.documentation.tooltip')}
                                 onClick={() => {
                                     window.open(dialogProps.data.documentation, '_blank', 'noopener,noreferrer')
                                 }}
                                 startIcon={<IconBook2 />}
                             >
-                                {t('dialogs.nodeInfo.actions.documentation.title')}
+                                {t('components.dialogs.nodeInfo.actions.documentation.title')}
                             </Button>
                         )}
                     </div>

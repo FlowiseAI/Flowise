@@ -276,7 +276,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
                             <img src={generatorGIF} alt='Generating Agentflow' style={{ maxWidth: '100%', height: 'auto' }} />
                             <Typography variant='h5' sx={{ mt: 2 }}>
-                                {t('dialogs.agentflows.generating')}
+                                {t('components.dialogs.agentflows.generating')}
                             </Typography>
                             <Box sx={{ width: '100%', mt: 2 }}>
                                 <LinearProgress
@@ -347,7 +347,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                     rows={12}
                                     disabled={loading}
                                     value={customAssistantInstruction}
-                                    placeholder={t('dialogs.agentflows.placeholder')}
+                                    placeholder={t('components.dialogs.agentflows.placeholder')}
                                     onChange={(event) => setCustomAssistantInstruction(event.target.value)}
                                 />
                             )}
@@ -365,7 +365,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
                                         <Trans
-                                            i18nKey='dialogs.agentflows.selectModel'
+                                            i18nKey='components.dialogs.agentflows.selectModel'
                                             components={{
                                                 highlight: <span style={{ color: 'red' }} />
                                             }}
@@ -389,7 +389,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                             }
                                         }
                                     }}
-                                    value={selectedChatModel ? selectedChatModel?.name : t('dialogs.agentflows.chooseAnOption')}
+                                    value={selectedChatModel ? selectedChatModel?.name : t('components.dialogs.agentflows.chooseAnOption')}
                                 />
                             </Box>
                             {selectedChatModel && Object.keys(selectedChatModel).length > 0 && (

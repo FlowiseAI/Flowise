@@ -145,7 +145,7 @@ const AssistantPromptGenerator = ({ show, dialogProps, onCancel, onConfirm }) =>
                             rows={12}
                             disabled={loading}
                             value={customAssistantInstruction}
-                            placeholder={t('dialogs.promptGenerator.describeTaskPlaceholder')}
+                            placeholder={t('components.dialogs.promptGenerator.describeTaskPlaceholder')}
                             onChange={(event) => setCustomAssistantInstruction(event.target.value)}
                         />
                     )}

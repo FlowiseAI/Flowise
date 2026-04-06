@@ -295,7 +295,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
             if (existingEmails.length > 0) {
                 enqueueSnackbar({
-                    message: t('dialogs.inviteUsers.alreadyIn', { users: existingEmails.join(', ') }),
+                    message: t('components.dialogs.inviteUsers.alreadyIn', { users: existingEmails.join(', ') }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -345,7 +345,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             )
             if (responses.length > 0) {
                 enqueueSnackbar({
-                    message: t('dialogs.inviteUsers.invited'),
+                    message: t('components.dialogs.inviteUsers.invited'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -363,7 +363,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             console.error('Error in saveInvite:', error)
             enqueueSnackbar({
-                message: t('dialogs.inviteUsers.fail', { msg: error.response?.data?.message || error.message || 'Unknown error' }),
+                message: t('components.dialogs.inviteUsers.fail', {
+                    msg: error.response?.data?.message || error.message || 'Unknown error'
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -425,7 +427,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         // If any invalid emails were filtered out, show a notification
         if (updatedUsers.length < newValue.length) {
             enqueueSnackbar({
-                message: t('dialogs.inviteUsers.removedMsg'),
+                message: t('components.dialogs.inviteUsers.removedMsg'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',
@@ -484,19 +486,23 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             )
 
             if (!isAlreadySelected) {
-                return [{ name: t('dialogs.inviteUsers.invite', { email: inviteEmail }), email: inviteEmail, isNewUser: true }]
+                return [{ name: t('components.dialogs.inviteUsers.invite', { email: inviteEmail }), email: inviteEmail, isNewUser: true }]
             }
         }
 
         if (filterByNameOrEmail.length === 0) {
-            return [{ name: t('dialogs.inviteUsers.notFound'), email: '', isNoResult: true, disabled: true }]
+            return [{ name: t('components.dialogs.inviteUsers.notFound'), email: '', isNoResult: true, disabled: true }]
         }
 
         return filterByNameOrEmail
     }
 
     const renderUserSearchInput = (params) => (
-        <TextField {...params} variant='outlined' placeholder={selectedUsers.length > 0 ? '' : t('dialogs.inviteUsers.placeholder')} />
+        <TextField
+            {...params}
+            variant='outlined'
+            placeholder={selectedUsers.length > 0 ? '' : t('components.dialogs.inviteUsers.placeholder')}
+        />
     )
 
     const renderUserSearchOptions = (props, option) => {
@@ -515,7 +521,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             py: 0.5
                         }}
                     >
-                        <Typography color='text.secondary'>{t('dialogs.inviteUsers.notFound')}</Typography>
+                        <Typography color='text.secondary'>{t('components.dialogs.inviteUsers.notFound')}</Typography>
                     </Box>
                 ) : option.isNewUser ? (
                     <Box
@@ -565,9 +571,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             )
 
             const tooltipTitle = option.alreadyInWorkspace
-                ? t('dialogs.inviteUsers.tooltip.alreadyIn', { name: option.user.name || option.user.email })
+                ? t('components.dialogs.inviteUsers.tooltip.alreadyIn', { name: option.user.name || option.user.email })
                 : option.isNewUser
-                ? t('dialogs.inviteUsers.tooltip.sending')
+                ? t('components.dialogs.inviteUsers.tooltip.sending')
                 : ''
 
             return tooltipTitle ? (
@@ -638,14 +644,14 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconUser style={{ marginRight: '10px' }} />
-                    {t('dialogs.inviteUsers.title')}
+                    {t('components.dialogs.inviteUsers.title')}
                 </div>
             </DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box>
                     <Typography>
                         <Trans
-                            i18nKey='dialogs.inviteUsers.select'
+                            i18nKey='components.dialogs.inviteUsers.select'
                             components={{
                                 highlight: <span style={{ color: 'red' }} />
                             }}
@@ -681,7 +687,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <Box sx={{ gridColumn: 'span 1' }}>
                         <Typography>
                             <Trans
-                                i18nKey='dialogs.inviteUsers.workspace'
+                                i18nKey='components.dialogs.inviteUsers.workspace'
                                 components={{
                                     highlight: <span style={{ color: 'red' }} />
                                 }}
@@ -701,7 +707,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <Box sx={{ gridColumn: 'span 1' }}>
                         <Typography>
                             <Trans
-                                i18nKey='dialogs.inviteUsers.roles'
+                                i18nKey='components.dialogs.inviteUsers.roles'
                                 components={{
                                     highlight: <span style={{ color: 'red' }} />
                                 }}

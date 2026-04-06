@@ -62,7 +62,7 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
             aria-describedby='category-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {t('dialogs.tag.title')}
+                {t('components.dialogs.tag.title')}
             </DialogTitle>
             <DialogContent>
                 <Box>
@@ -85,11 +85,11 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
                             value={inputValue}
                             onChange={handleInputChange}
                             onKeyDown={handleInputKeyDown}
-                            label={t('dialogs.tag.addLabel')}
+                            label={t('components.dialogs.tag.addLabel')}
                             variant='outlined'
                         />
                         <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
-                            {t('dialogs.tag.tooltip')}
+                            {t('components.dialogs.tag.tooltip')}
                         </Typography>
                     </form>
                 </Box>
@@ -97,7 +97,7 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
             <DialogActions>
                 <Button onClick={onClose}>{t('common.actions.cancel')}</Button>
                 <Button variant='contained' onClick={handleSubmit}>
-                    {t('dialogs.tag.actions.submit')}
+                    {t('components.dialogs.tag.actions.submit')}
                 </Button>
             </DialogActions>
         </Dialog>

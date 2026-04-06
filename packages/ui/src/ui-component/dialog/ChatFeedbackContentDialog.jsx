@@ -47,7 +47,7 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {t('dialogs.chatFeedback.title')}
+                {t('components.dialogs.chatFeedback.title')}
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -58,7 +58,7 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
                         multiline={true}
                         name='feedbackContentInput'
                         onChange={onChange}
-                        placeholder={t('dialogs.chatFeedback.placeholder')}
+                        placeholder={t('components.dialogs.chatFeedback.placeholder')}
                         rows={4}
                         value={feedbackContent}
                         sx={{ width: '100%' }}

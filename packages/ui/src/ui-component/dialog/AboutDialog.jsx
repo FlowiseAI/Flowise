@@ -57,9 +57,9 @@ const AboutDialog = ({ show, onCancel }) => {
                         <Table aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>{t('dialogs.about.version.current')}</TableCell>
-                                    <TableCell>{t('dialogs.about.version.latest')}</TableCell>
-                                    <TableCell>{t('dialogs.about.published')}</TableCell>
+                                    <TableCell>{t('components.dialogs.about.version.current')}</TableCell>
+                                    <TableCell>{t('components.dialogs.about.version.latest')}</TableCell>
+                                    <TableCell>{t('components.dialogs.about.published')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>

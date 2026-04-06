@@ -173,7 +173,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                             executeCustomFunctionNodeApi.request({ javascriptFunction: inputValue })
                         }}
                     >
-                        {t('dialogs.expand.actions.execute')}
+                        {t('components.dialogs.expand.actions.execute')}
                     </PermissionLoadingButton>
                 )}
                 {codeExecutedResult && (

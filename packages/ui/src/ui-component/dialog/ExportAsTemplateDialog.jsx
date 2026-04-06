@@ -102,7 +102,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     const onConfirm = () => {
         if (name.trim() === '') {
             enqueueSnackbar({
-                message: t('dialogs.exportAsTemplate.requiredName'),
+                message: t('components.dialogs.exportAsTemplate.requiredName'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -140,7 +140,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     useEffect(() => {
         if (saveCustomTemplateApi.data) {
             enqueueSnackbar({
-                message: t('dialogs.exportAsTemplate.saved'),
+                message: t('components.dialogs.exportAsTemplate.saved'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -160,7 +160,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     useEffect(() => {
         if (saveCustomTemplateApi.error) {
             enqueueSnackbar({
-                message: t('dialogs.exportAsTemplate.failed'),
+                message: t('components.dialogs.exportAsTemplate.failed'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -187,14 +187,14 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || t('dialogs.exportAsTemplate.title')}
+                {dialogProps.title || t('components.dialogs.exportAsTemplate.title')}
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ pt: 2, pb: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                         <Typography sx={{ mb: 1 }}>
                             <Trans
-                                i18nKey='dialogs.exportAsTemplate.name'
+                                i18nKey='components.dialogs.exportAsTemplate.name'
                                 components={{
                                     highlight: <span style={{ color: 'red' }} />
                                 }}
@@ -233,7 +233,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 </Box>
                 <Box sx={{ pt: 2, pb: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>{t('dialogs.exportAsTemplate.badge')}</Typography>
+                        <Typography sx={{ mb: 1 }}>{t('components.dialogs.exportAsTemplate.badge')}</Typography>
                         <OutlinedInput
                             id={'badge'}
                             type={'string'}
@@ -249,7 +249,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 </Box>
                 <Box sx={{ pt: 2, pb: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>{t('dialogs.exportAsTemplate.usecases')}</Typography>
+                        <Typography sx={{ mb: 1 }}>{t('components.dialogs.exportAsTemplate.usecases')}</Typography>
                         {usecases.length > 0 && (
                             <div style={{ marginBottom: 10 }}>
                                 {usecases.map((uc, index) => (
@@ -270,7 +270,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                             variant='outlined'
                         />
                         <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
-                            {t('dialogs.exportAsTemplate.usecaseTooltip')}
+                            {t('components.dialogs.exportAsTemplate.usecaseTooltip')}
                         </Typography>
                     </div>
                 </Box>
@@ -278,7 +278,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             <DialogActions>
                 <Button onClick={onCancel}>{dialogProps.cancelButtonName || t('common.actions.cancel')}</Button>
                 <StyledButton disabled={dialogProps.disabled} variant='contained' onClick={onConfirm}>
-                    {dialogProps.confirmButtonName || t('dialogs.exportAsTemplate.actions.saveTemplate')}
+                    {dialogProps.confirmButtonName || t('components.dialogs.exportAsTemplate.actions.saveTemplate')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

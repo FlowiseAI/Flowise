@@ -301,7 +301,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                     </FormControl>
                     <FormControl sx={{ mr: 1, width: '30%' }}>
                         <InputLabel size='small' id='usecase-checkbox-label'>
-                            {t('dialogs.promptGenerator.usecase')}
+                            {t('components.dialogs.promptGenerator.usecase')}
                         </InputLabel>
                         <Select
                             autoWidth={false}
@@ -311,7 +311,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                             size='small'
                             value={usecase}
                             onChange={handleUsecaseChange}
-                            input={<OutlinedInput label={t('dialogs.promptGenerator.usecase')} />}
+                            input={<OutlinedInput label={t('components.dialogs.promptGenerator.usecase')} />}
                             renderValue={(selected) => selected.map((x) => x.name).join(', ')}
                             endAdornment={
                                 usecase.length ? (
@@ -339,7 +339,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                     </FormControl>
                     <FormControl sx={{ mr: 1, width: '30%' }}>
                         <InputLabel size='small' id='language-checkbox-label'>
-                            {t('dialogs.promptGenerator.language')}
+                            {t('components.dialogs.promptGenerator.language')}
                         </InputLabel>
                         <Select
                             labelId='language-checkbox-label'
@@ -348,7 +348,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                             size='small'
                             value={language}
                             onChange={handleLanguageChange}
-                            input={<OutlinedInput label={t('dialogs.promptGenerator.language')} />}
+                            input={<OutlinedInput label={t('components.dialogs.promptGenerator.language')} />}
                             renderValue={(selected) => selected.map((x) => x.name).join(', ')}
                             endAdornment={
                                 language.length ? (
@@ -376,7 +376,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                     </FormControl>
                     <FormControl sx={{ width: '10%' }}>
                         <Button disableElevation variant='outlined' onClick={fetchPrompts}>
-                            {t('dialogs.promptGenerator.actions.search')}
+                            {t('components.dialogs.promptGenerator.actions.search')}
                         </Button>
                     </FormControl>
                 </Box>
@@ -386,7 +386,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                         <Box sx={{ p: 5, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={promptEmptySVG} alt='promptEmptySVG' />
                         </Box>
-                        <div>{t('dialogs.promptGenerator.loading.wait')}</div>
+                        <div>{t('components.dialogs.promptGenerator.loading.wait')}</div>
                     </Stack>
                 )}
                 {!loading && availablePrompNameList && availablePrompNameList.length === 0 && (
@@ -394,7 +394,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                         <Box sx={{ p: 5, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={promptEmptySVG} alt='promptEmptySVG' />
                         </Box>
-                        <div>{t('dialogs.promptGenerator.loading.notFound')}</div>
+                        <div>{t('components.dialogs.promptGenerator.loading.notFound')}</div>
                     </Stack>
                 )}
                 {!loading && availablePrompNameList && availablePrompNameList.length > 0 && (
@@ -406,9 +406,9 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                                         <Card variant='outlined' sx={{ height: 470, overflow: 'auto', borderRadius: 0 }}>
                                             <CardContent sx={{ p: 1 }}>
                                                 <Typography sx={{ fontSize: 10 }} color='text.secondary' gutterBottom>
-                                                    {t('dialogs.promptGenerator.loading.found')}
+                                                    {t('components.dialogs.promptGenerator.loading.found')}
                                                 </Typography>
-                                                <List component='nav' aria-label={t('dialogs.promptGenerator.mailboxFolder')}>
+                                                <List component='nav' aria-label={t('components.dialogs.promptGenerator.mailboxFolder')}>
                                                     {availablePrompNameList.map((item, index) => (
                                                         <ListItemButton
                                                             key={item.id}
@@ -512,7 +512,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                                                         aria-controls='panel3d-content'
                                                         id='panel3d-header'
                                                     >
-                                                        <Typography>{t('dialogs.promptGenerator.readme')}</Typography>
+                                                        <Typography>{t('components.dialogs.promptGenerator.readme')}</Typography>
                                                     </AccordionSummary>
                                                     <AccordionDetails>
                                                         <div

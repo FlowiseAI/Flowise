@@ -41,7 +41,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     id='chatflow-name'
                     type='text'
                     fullWidth
-                    placeholder={t('dialogs.saveChatFlow.placeholder')}
+                    placeholder={t('components.dialogs.saveChatFlow.placeholder')}
                     value={chatflowName}
                     onChange={(e) => setChatflowName(e.target.value)}
                     onKeyDown={(e) => {

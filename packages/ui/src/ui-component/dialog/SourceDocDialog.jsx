@@ -33,7 +33,7 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title ?? t('dialogs.sourceDoc.title')}
+                {dialogProps.title ?? t('components.dialogs.sourceDoc.title')}
             </DialogTitle>
             <DialogContent>
                 {data.error && (
@@ -48,7 +48,7 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
                         }}
                     >
                         <Typography variant='body2' fontWeight='medium'>
-                            {t('dialogs.sourceDoc.errorLabel')}
+                            {t('components.dialogs.sourceDoc.errorLabel')}
                         </Typography>
                         <Typography variant='body2' sx={{ whiteSpace: 'pre-wrap' }}>
                             {data.error}

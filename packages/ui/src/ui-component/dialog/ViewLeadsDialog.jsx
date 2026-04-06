@@ -140,7 +140,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                             }
                         }}
                         variant='outlined'
-                        placeholder={t('dialogs.viewLeads.placeholder')}
+                        placeholder={t('components.dialogs.viewLeads.placeholder')}
                         onChange={onSearchChange}
                         startAdornment={
                             <Box
@@ -171,7 +171,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                         <Box sx={{ p: 5, height: 'auto' }}>
                             <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={leadsEmptySVG} alt='msgEmptySVG' />
                         </Box>
-                        <div> {t('dialogs.viewLeads.noLeads')}</div>
+                        <div> {t('components.dialogs.viewLeads.noLeads')}</div>
                     </Stack>
                 )}
                 {leads && leads.length > 0 && (
@@ -180,9 +180,9 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell>{t('common.labels.name')}</TableCell>
-                                    <TableCell>{t('dialogs.viewLeads.leadsTable.email')}</TableCell>
-                                    <TableCell>{t('dialogs.viewLeads.leadsTable.phone')}</TableCell>
-                                    <TableCell>{t('dialogs.viewLeads.leadsTable.created')}</TableCell>
+                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.email')}</TableCell>
+                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.phone')}</TableCell>
+                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.created')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -191,7 +191,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                                         <TableCell>{lead.name}</TableCell>
                                         <TableCell>{lead.email}</TableCell>
                                         <TableCell>{lead.phone}</TableCell>
-                                        <TableCell>{moment(lead.createdDate).format(t('dialogs.viewLeads.date'))}</TableCell>
+                                        <TableCell>{moment(lead.createdDate).format(t('components.dialogs.viewLeads.date'))}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
