@@ -73,7 +73,7 @@ import '@/views/chatmessage/ChatMessage.css'
 import 'react-datepicker/dist/react-datepicker.css'
 
 // i18n
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 
 const StyledMenu = styled((props) => (
     <Menu
@@ -349,13 +349,13 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const getChatType = (chatType) => {
         if (chatType === 'INTERNAL') {
-            return 'UI'
+            return t('common.labels.ui')
         } else if (chatType === 'EVALUATION') {
-            return 'Evaluation'
+            return t('common.labels.evaluations')
         } else if (chatType === 'MCP') {
             return 'MCP'
         }
-        return 'API/Embed'
+        return t('common.labels.apiEmbed')
     }
 
     const exportMessages = async () => {
@@ -680,7 +680,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             return (
                 /* eslint-disable jsx-a11y/media-has-caption */
                 <audio controls='controls'>
-                    Your browser does not support the &lt;audio&gt; tag.
+                    {t('dialogs.viewMessages.errors.audioNotSupport')}
                     <source src={item.data} type={item.mime} />
                 </audio>
             )
@@ -909,11 +909,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 name='chatType'
                                 options={[
                                     {
-                                        label: 'UI',
+                                        label: t('common.labels.ui'),
                                         name: 'INTERNAL'
                                     },
                                     {
-                                        label: 'API/Embed',
+                                        label: t('common.labels.apiEmbed'),
                                         name: 'EXTERNAL'
                                     },
                                     {
@@ -945,11 +945,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 name='feedbackType'
                                 options={[
                                     {
-                                        label: 'Positive',
+                                        label: t('dialogs.viewMessages.labels.positive'),
                                         name: 'THUMBS_UP'
                                     },
                                     {
-                                        label: 'Negative',
+                                        label: t('dialogs.viewMessages.labels.negative'),
                                         name: 'THUMBS_DOWN'
                                     }
                                 ]}
@@ -997,7 +997,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 disableRipple
                             >
                                 <IconFileExport style={{ marginRight: 8 }} />
-                                Export to JSON
+                                {t('dialogs.viewMessages.actions.exportJSON')}
                             </MenuItem>
                             {(stats.totalMessages ?? 0) > 0 && (
                                 <MenuItem
@@ -1008,7 +1008,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                     disableRipple
                                 >
                                     <IconEraser style={{ marginRight: 8 }} />
-                                    Delete All
+                                    {t('dialogs.viewMessages.actions.deleteAll')}
                                 </MenuItem>
                             )}
                         </StyledMenu>
@@ -1024,11 +1024,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             marginTop: 20
                         }}
                     >
-                        <StatsCard title='Total Sessions' stat={`${stats.totalSessions ?? 0}`} />
-                        <StatsCard title='Total Messages' stat={`${stats.totalMessages ?? 0}`} />
-                        <StatsCard title='Total Feedback Received' stat={`${stats.totalFeedback ?? 0}`} />
+                        <StatsCard title={t('dialogs.viewMessages.labels.total.sessions')} stat={`${stats.totalSessions ?? 0}`} />
+                        <StatsCard title={t('dialogs.viewMessages.labels.total.messages')} stat={`${stats.totalMessages ?? 0}`} />
+                        <StatsCard title={t('dialogs.viewMessages.labels.total.received')} stat={`${stats.totalFeedback ?? 0}`} />
                         <StatsCard
-                            title='Positive Feedback'
+                            title={t('dialogs.viewMessages.labels.positiveFeedback')}
                             stat={`${(((stats.positiveFeedback ?? 0) / (stats.totalFeedback ?? 1)) * 100 || 0).toFixed(2)}%`}
                         />
                     </div>
@@ -1042,7 +1042,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         alt='msgEmptySVG'
                                     />
                                 </Box>
-                                <div>No Messages</div>
+                                <div>{t('dialogs.viewMessages.labels.noMessages')}</div>
                             </Stack>
                         )}
                         {chatlogs && chatlogs.length > 0 && (
@@ -1067,8 +1067,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         }}
                                     >
                                         <Typography variant='h5'>
-                                            Sessions {pageLimit * (currentPage - 1) + 1} - {Math.min(pageLimit * currentPage, total)} of{' '}
-                                            {total}
+                                            {t('dialogs.viewMessages.labels.totalSessions', {
+                                                current: pageLimit * (currentPage - 1) + 1,
+                                                limit: Math.min(pageLimit * currentPage, total),
+                                                total: total
+                                            })}
                                         </Typography>
                                         <Pagination
                                             style={{ justifyItems: 'right', justifyContent: 'center' }}
@@ -1111,7 +1114,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                             </div>
                                                         </div>
                                                     }
-                                                    secondary={moment(chatmsg.createdDate).format('MMMM Do YYYY, h:mm:ss a')}
+                                                    secondary={moment(chatmsg.createdDate).format(t('dialogs.viewMessages.formats.date'))}
                                                 />
                                             </ListItem>
                                         </ListItemButton>
@@ -1126,22 +1129,46 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         <div style={{ flex: 1, marginLeft: '20px', marginBottom: '15px', marginTop: '10px' }}>
                                             {chatMessages[1].sessionId && (
                                                 <div>
-                                                    Session Id:&nbsp;<b>{chatMessages[1].sessionId}</b>
+                                                    <Trans
+                                                        i18nKey='dialogs.viewMessages.labels.sessionId'
+                                                        values={{ id: chatMessages[1].sessionId }}
+                                                        components={{
+                                                            highlight: <b />
+                                                        }}
+                                                    />
                                                 </div>
                                             )}
                                             {chatMessages[1].chatType && (
                                                 <div>
-                                                    Source:&nbsp;<b>{getChatType(chatMessages[1].chatType)}</b>
+                                                    <Trans
+                                                        i18nKey='dialogs.viewMessages.labels.sourceType'
+                                                        values={{ type: getChatType(chatMessages[1].chatType) }}
+                                                        components={{
+                                                            highlight: <b />
+                                                        }}
+                                                    />
                                                 </div>
                                             )}
                                             {chatMessages[1].memoryType && (
                                                 <div>
-                                                    Memory:&nbsp;<b>{chatMessages[1].memoryType}</b>
+                                                    <Trans
+                                                        i18nKey='dialogs.viewMessages.labels.memoryType'
+                                                        values={{ type: chatMessages[1].memoryType }}
+                                                        components={{
+                                                            highlight: <b />
+                                                        }}
+                                                    />
                                                 </div>
                                             )}
                                             {leadEmail && (
                                                 <div>
-                                                    Email:&nbsp;<b>{leadEmail}</b>
+                                                    <Trans
+                                                        i18nKey='dialogs.viewMessages.labels.emailType'
+                                                        values={{ email: leadEmail }}
+                                                        components={{
+                                                            highlight: <b />
+                                                        }}
+                                                    />
                                                 </div>
                                             )}
                                         </div>
@@ -1153,18 +1180,13 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                 alignItems: 'end'
                                             }}
                                         >
-                                            <Tooltip title='Clear Message'>
+                                            <Tooltip title={t('dialogs.viewMessages.actions.clearMessage')}>
                                                 <IconButton color='error' onClick={() => clearChat(chatMessages[1])}>
                                                     <IconEraser />
                                                 </IconButton>
                                             </Tooltip>
                                             {chatMessages[1].sessionId && (
-                                                <Tooltip
-                                                    title={
-                                                        'On the left 👈, you’ll see the Memory node used in this conversation. To delete the session conversations stored on that Memory node, you must have a matching Memory node with identical parameters in the canvas.'
-                                                    }
-                                                    placement='bottom'
-                                                >
+                                                <Tooltip title={t('dialogs.viewMessages.labels.blubTooltip')} placement='bottom'>
                                                     <IconButton color='primary'>
                                                         <IconBulb />
                                                     </IconButton>
@@ -1333,7 +1355,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                             onClick={() =>
                                                                                                                 onSourceDialogClick(
                                                                                                                     tool,
-                                                                                                                    'Used Tools'
+                                                                                                                    t(
+                                                                                                                        'dialogs.viewMessages.labels.usedTools'
+                                                                                                                    )
                                                                                                                 )
                                                                                                             }
                                                                                                         />
@@ -1352,7 +1376,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                 >
                                                                                                     <Chip
                                                                                                         size='small'
-                                                                                                        label={'State'}
+                                                                                                        label={t(
+                                                                                                            'dialogs.viewMessages.labels.state'
+                                                                                                        )}
                                                                                                         component='a'
                                                                                                         sx={{ mr: 1, mt: 1 }}
                                                                                                         variant='outlined'
@@ -1363,7 +1389,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                         onClick={() =>
                                                                                                             onSourceDialogClick(
                                                                                                                 agent.state,
-                                                                                                                'State'
+                                                                                                                t(
+                                                                                                                    'dialogs.viewMessages.labels.state'
+                                                                                                                )
                                                                                                             )
                                                                                                         }
                                                                                                     />
@@ -1500,7 +1528,12 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                             }
                                                                                         />
                                                                                     }
-                                                                                    onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                                                    onClick={() =>
+                                                                                        onSourceDialogClick(
+                                                                                            tool,
+                                                                                            t('dialogs.viewMessages.labels.usedTools')
+                                                                                        )
+                                                                                    }
                                                                                 />
                                                                             )
                                                                         })}
@@ -1607,7 +1640,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                             key={index}
                                                             style={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
                                                         >
-                                                            {moment(message.message).format('MMMM Do YYYY, h:mm:ss a')}
+                                                            {moment(message.message).format(t('dialogs.viewMessages.formats.date'))}
                                                         </Box>
                                                     )
                                                 }

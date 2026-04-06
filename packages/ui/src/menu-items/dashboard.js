@@ -160,7 +160,7 @@ const dashboard = {
         },
         {
             id: 'evaluations',
-            title: 'common.menu.evaluations',
+            title: 'common.labels.evaluations',
             type: 'group',
             children: [
                 {
@@ -185,7 +185,7 @@ const dashboard = {
                 },
                 {
                     id: 'evaluations',
-                    title: 'common.menu.evaluations',
+                    title: 'common.labels.evaluations',
                     type: 'item',
                     url: '/evaluations',
                     icon: icons.IconChartHistogram,

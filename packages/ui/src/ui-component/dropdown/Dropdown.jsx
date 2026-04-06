@@ -6,6 +6,9 @@ import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { useTheme, styled } from '@mui/material/styles'
 import PropTypes from 'prop-types'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
     borderRadius: '10px',
@@ -19,6 +22,7 @@ const StyledPopper = styled(Popper)({
 })
 
 export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, freeSolo = false, disableClearable = false }) => {
+    const { t } = useTranslation()
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
     const getDefaultOptionValue = () => ''
@@ -63,7 +67,7 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                                     <Box
                                         component='img'
                                         src={matchingOption.imageSrc}
-                                        alt={matchingOption.label || 'Selected Option'}
+                                        alt={matchingOption.label || t('dropdown.selected')}
                                         sx={{
                                             width: 32,
                                             height: 32,

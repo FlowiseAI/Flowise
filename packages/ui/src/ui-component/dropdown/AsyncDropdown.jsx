@@ -16,6 +16,9 @@ import { baseURL } from '@/store/constant'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
     borderRadius: '10px',
@@ -74,6 +77,7 @@ export const AsyncDropdown = ({
     multiple = false,
     fullWidth = false
 }) => {
+    const { t } = useTranslation()
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
 
@@ -93,7 +97,8 @@ export const AsyncDropdown = ({
         return options.find((option) => option.name === value)
     }
     const getDefaultOptionValue = () => (multiple ? [] : '')
-    const addNewOption = [{ label: '- Create New -', name: '-create-' }]
+    // [WARN]: In this place can be possible error after translation
+    const addNewOption = [{ label: t('dropdown.createNewItemLabel'), name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const { reactFlowInstance } = useContext(flowContext)
 
@@ -244,7 +249,7 @@ export const AsyncDropdown = ({
                                                     key={option.name}
                                                     component='img'
                                                     src={option.imageSrc}
-                                                    alt={option.label || 'Selected Option'}
+                                                    alt={option.label || t('dropdown.selected')}
                                                     sx={{
                                                         width: 32,
                                                         height: 32,

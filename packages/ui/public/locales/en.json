@@ -1,15 +1,14 @@
 {
     "common": {
-        "formats": {
-            "date": "MMMM Do, YYYY"
-        },
         "labels": {
             "model": "Model",
             "prompt": "Prompt",
             "description": "Description",
             "share": "Share",
             "Name": "name",
-            "allowedDomains": "Allowed Domains"
+            "ui": "UI",
+            "apiEmbed": "API/Embed",
+            "evaluations": "Evaluations"
         },
         "menu": {
             "agentflows": "Agentflows",
@@ -41,7 +40,6 @@
             "marketplaces": "Marketplaces",
             "credentials": "Credentials",
             "apiKeys": "API Keys",
-            "evaluations": "Evaluations",
             "Datasets": "Datasets",
             "evaluators": "Evaluators",
             "management": "User & Workspace Management",
@@ -89,6 +87,50 @@
             "generate": "Generate",
             "apply": "Apply",
             "load": "Load"
+        }
+    },
+    "components": {
+        "allowedDomains": {
+            "title": "Allowed Domains",
+            "shortTitle": "Domains",
+            "messages": {
+                "saved": "Allowed Origins Saved",
+                "failed": "Failed to save Allowed Origins: {{msg}}"
+            },
+            "tooltip": "Your chatbot will only work when used from the following domains.",
+            "error": {
+                "title": "Error Message",
+                "tooltip": "Custom error message that will be shown when for unauthorized domain",
+                "placeholder": "Unauthorized domain!"
+            }
+        },
+        "analyzeFlow": {
+            "provides": {
+                "langSmith": "LangSmith",
+                "langFuse": "LangFuse",
+                "lunary": "Lunary",
+                "langWatch": "LangWatch",
+                "arize": "Arize",
+                "phoenix": "Phoenix",
+                "opik": "Opik"
+            },
+            "inputs": {
+                "credential": "Connect Credential",
+                "projectName": {
+                    "title": "Project Name",
+                    "descriptions": {
+                        "langSmith": "If not provided, default will be used",
+                        "arize": "If not provided, default will be used.",
+                        "phoenix": "If not provided, default will be used.",
+                        "opik": "Name of your Opik project"
+                    }
+                },
+                "release": {
+                    "title": "Release",
+                    "description": "The release number/hash of the application to provide analytics grouped by release"
+                },
+                "status": "On/Off"
+            }
         }
     },
     "dialogs": {
@@ -280,6 +322,9 @@
                 "email": "Email Address",
                 "phone": "Phone",
                 "created": "Created Date"
+            },
+            "formats": {
+                "date": "MMMM Do, YYYY"
             }
         },
         "viewMessages": {
@@ -309,8 +354,42 @@
             "logs": {
                 "user": "User: {{msg}}",
                 "bot": "Bot: {{msg}}"
+            },
+            "labels": {
+                "positive": "Positive",
+                "negative": "Negative",
+                "total": {
+                    "sessions": "Total Sessions",
+                    "messages": "Total Messages",
+                    "received": "Total Feedback Received"
+                },
+                "positiveFeedback": "Positive Feedback",
+                "noMessages": "No Messages",
+                "totalSessions": "Sessions {{current}} - {{limit}} of {{total}}",
+                "sessionId": "Session Id:&nbsp;<highlight>{{id}}</highlight>",
+                "sourceType": "Source:&nbsp;<highlight>{{type}}</highlight>",
+                "memoryType": "Memory:&nbsp;<highlight>{{type}}</highlight>",
+                "emailType": "Email:&nbsp;<highlight>{{email}}</highlight>",
+                "blubTooltip": "On the left 👈, you’ll see the Memory node used in this conversation. To delete the session conversations stored on that Memory node, you must have a matching Memory node with identical parameters in the canvas.",
+                "usedTools": "Used Tools",
+                "state": "State"
+            },
+            "actions": {
+                "exportJSON": "Export to JSON",
+                "deleteAll": "Delete All",
+                "clearMessage": "Clear Message"
+            },
+            "errors": {
+                "audioNotSupport": "Your browser does not support the &lt;audio&gt; tag."
+            },
+            "formats": {
+                "date": "MMMM Do YYYY, h:mm:ss a"
             }
         }
+    },
+    "dropdown": {
+        "createNewItemLabel": "- Create New -",
+        "selected": "Selected Option"
     },
     "errors": {
         "internalServerErrorTitle": "Internal Server Error",

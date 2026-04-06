@@ -39,7 +39,7 @@ const SpeechToTextDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || t('common.labels.allowedDomains')}
+                {dialogProps.title || t('components.allowedDomains.title')}
             </DialogTitle>
             <DialogContent>
                 <SpeechToText dialogProps={dialogProps} onConfirm={onConfirm} />

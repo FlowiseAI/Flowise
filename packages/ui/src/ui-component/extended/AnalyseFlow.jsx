@@ -39,29 +39,32 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const analyticProviders = [
     {
-        label: 'LangSmith',
+        label: 'components.analyzeFlow.provides.langSmith',
         name: 'langSmith',
         icon: langsmithPNG,
         url: 'https://smith.langchain.com',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.analyzeFlow.inputs.credential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['langsmithApi']
             },
             {
-                label: 'Project Name',
+                label: 'components.analyzeFlow.inputs.projectName.title',
                 name: 'projectName',
                 type: 'string',
                 optional: true,
-                description: 'If not provided, default will be used',
+                description: 'components.analyzeFlow.inputs.projectName.descriptions.langSmith',
                 placeholder: 'default'
             },
             {
-                label: 'On/Off',
+                label: 'components.analyzeFlow.inputs.status',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -69,26 +72,26 @@ const analyticProviders = [
         ]
     },
     {
-        label: 'LangFuse',
+        label: 'components.analyzeFlow.provides.langFuse',
         name: 'langFuse',
         icon: langfuseSVG,
         url: 'https://langfuse.com',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.analyzeFlow.inputs.credential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['langfuseApi']
             },
             {
-                label: 'Release',
+                label: 'components.analyzeFlow.inputs.release.title',
                 name: 'release',
                 type: 'string',
                 optional: true,
-                description: 'The release number/hash of the application to provide analytics grouped by release'
+                description: 'components.analyzeFlow.inputs.release.description'
             },
             {
-                label: 'On/Off',
+                label: 'components.analyzeFlow.inputs.status',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -96,19 +99,19 @@ const analyticProviders = [
         ]
     },
     {
-        label: 'Lunary',
+        label: 'components.analyzeFlow.provides.lunary',
         name: 'lunary',
         icon: lunarySVG,
         url: 'https://lunary.ai',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.analyzeFlow.inputs.credential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['lunaryApi']
             },
             {
-                label: 'On/Off',
+                label: 'components.analyzeFlow.inputs.status',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -116,19 +119,19 @@ const analyticProviders = [
         ]
     },
     {
-        label: 'LangWatch',
+        label: 'components.analyzeFlow.provides.langWatch',
         name: 'langWatch',
         icon: langwatchSVG,
         url: 'https://langwatch.ai',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.analyzeFlow.inputs.credential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['langwatchApi']
             },
             {
-                label: 'On/Off',
+                label: 'components.analyzeFlow.inputs.status',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -136,27 +139,27 @@ const analyticProviders = [
         ]
     },
     {
-        label: 'Arize',
+        label: 'components.analyzeFlow.provides.arize',
         name: 'arize',
         icon: arizePNG,
         url: 'https://arize.com',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.analyzeFlow.inputs.credential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['arizeApi']
             },
             {
-                label: 'Project Name',
+                label: 'components.analyzeFlow.inputs.projectName.title',
                 name: 'projectName',
                 type: 'string',
                 optional: true,
-                description: 'If not provided, default will be used.',
+                description: 'components.analyzeFlow.inputs.projectName.descriptions.arize',
                 placeholder: 'default'
             },
             {
-                label: 'On/Off',
+                label: 'components.analyzeFlow.inputs.status',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -164,27 +167,27 @@ const analyticProviders = [
         ]
     },
     {
-        label: 'Phoenix',
+        label: 'components.analyzeFlow.provides.phoenix',
         name: 'phoenix',
         icon: phoenixPNG,
         url: 'https://phoenix.arize.com',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.analyzeFlow.inputs.credential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['phoenixApi']
             },
             {
-                label: 'Project Name',
+                label: 'components.analyzeFlow.inputs.projectName.title',
                 name: 'projectName',
                 type: 'string',
                 optional: true,
-                description: 'If not provided, default will be used.',
+                description: 'components.analyzeFlow.inputs.projectName.descriptions.phoenix',
                 placeholder: 'default'
             },
             {
-                label: 'On/Off',
+                label: 'components.analyzeFlow.inputs.status',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -192,26 +195,26 @@ const analyticProviders = [
         ]
     },
     {
-        label: 'Opik',
+        label: 'components.analyzeFlow.provides.opik',
         name: 'opik',
         icon: opikPNG,
         url: 'https://www.comet.com/opik',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.analyzeFlow.inputs.credential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['opikApi']
             },
             {
-                label: 'Project Name',
+                label: 'components.analyzeFlow.inputs.projectName.title',
                 name: 'opikProjectName',
                 type: 'string',
-                description: 'Name of your Opik project',
+                description: 'components.analyzeFlow.inputs.projectName.descriptions.opik',
                 placeholder: 'default'
             },
             {
-                label: 'On/Off',
+                label: 'components.analyzeFlow.inputs.status',
                 name: 'status',
                 type: 'boolean',
                 optional: true
@@ -221,6 +224,7 @@ const analyticProviders = [
 ]
 
 const AnalyseFlow = ({ dialogProps }) => {
+    const { t } = useTranslation()
     const dispatch = useDispatch()
     const theme = useTheme()
 
@@ -339,7 +343,7 @@ const AnalyseFlow = ({ dialogProps }) => {
                             </ListItemAvatar>
                             <ListItemText
                                 sx={{ ml: 1 }}
-                                primary={provider.label}
+                                primary={t(provider.label)}
                                 secondary={
                                     <a
                                         target='_blank'
@@ -384,10 +388,10 @@ const AnalyseFlow = ({ dialogProps }) => {
                             <Box key={index} sx={{ p: 2 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        {inputParam.label}
+                                        {t(inputParam.label)}
                                         {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
                                         {inputParam.description && (
-                                            <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
+                                            <TooltipWithParser style={{ marginLeft: 10 }} title={t(inputParam.description)} />
                                         )}
                                     </Typography>
                                 </div>
@@ -425,7 +429,7 @@ const AnalyseFlow = ({ dialogProps }) => {
             ))}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

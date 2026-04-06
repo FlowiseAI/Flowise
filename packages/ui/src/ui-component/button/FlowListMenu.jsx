@@ -416,7 +416,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                     disableRipple
                 >
                     <VpnLockOutlinedIcon />
-                    {t('common.labels.allowedDomains')}
+                    {t('components.allowedDomains.title')}
                 </PermissionMenuItem>
                 <PermissionMenuItem
                     permissionId={isAgentCanvas ? 'agentflows:config' : 'chatflows:config'}
