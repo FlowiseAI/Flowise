@@ -167,6 +167,10 @@ class ChatEUrouter_ChatModels implements INode {
             ...obj,
             configuration: {
                 baseURL: this.baseURL,
+                defaultHeaders: {
+                    'HTTP-Referer': 'https://flowiseai.com',
+                    'X-EUrouter-Title': 'Flowise',
+                },
                 ...parsedBaseOptions
             }
         })
