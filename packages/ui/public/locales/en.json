@@ -8,7 +8,11 @@
             "Name": "name",
             "ui": "UI",
             "apiEmbed": "API/Embed",
-            "evaluations": "Evaluations"
+            "phone": "Phone",
+            "email": "Email Address",
+            "variables": "variables",
+            "evaluations": "Evaluations",
+            "none": "None"
         },
         "menu": {
             "agentflows": "Agentflows",
@@ -28,7 +32,6 @@
             "documentStores": "Document Stores",
             "executions": "Executions",
             "tools": "Tools",
-            "variables": "variables",
             "agents": "Agents",
             "viewMessages": "View Messages",
             "viewLeads": "View Leads",
@@ -286,8 +289,6 @@
                 "placeholder": "Search Name or Email or Phone",
                 "noLeads": "No Leads",
                 "leadsTable": {
-                    "email": "Email Address",
-                    "phone": "Phone",
                     "created": "Created Date"
                 },
                 "formats": {
@@ -402,6 +403,261 @@
                     "description": "The release number/hash of the application to provide analytics grouped by release"
                 },
                 "status": "On/Off"
+            }
+        },
+        "chatFeedback": {
+            "messages": {
+                "success": "Chat Feedback Settings Saved",
+                "error": "Failed to save Chat Feedback Settings: {{msg}}"
+            }
+        },
+        "fileUpload": {
+            "docsHelp": "The full contents of uploaded files will be converted to text and sent to the Agent.<br/>Refer<a>docs</a> for more details.",
+            "messages": {
+                "success": "File Upload Configuration Saved",
+                "error": "Failed to save File Upload Configuration: {{msg}}"
+            },
+            "enableLabel": "Enable Full File Upload",
+            "allowUploadsType": "Allow Uploads of Type",
+            "configuration": {
+                "title": "Advanced Settings",
+                "usage": {
+                    "title": "PDF Processing",
+                    "oneDocPerPage": "One document per page",
+                    "oneDocPerFile": "One document per file"
+                },
+                "legacy": "Use Legacy Build (for PDF compatibility issues)"
+            }
+        },
+        "followUpPrompts": {
+            "enableLabel": "Enable Follow-up Prompts",
+            "providersLabel": "Providers",
+            "messages": {
+                "success": "Follow-up Prompts configuration saved",
+                "error": "Failed to save follow-up prompts configuration: {{msg}}"
+            },
+            "providers": {
+                "anthropic": "Anthropic Claude",
+                "azureOpenAI": "Azure ChatOpenAI",
+                "googleGemini": "Google Gemini",
+                "groq": "Groq",
+                "mistralAI": "Mistral AI",
+                "openAI": "OpenAI",
+                "ollama": "Ollama"
+            },
+            "inputs": {
+                "connectCredential": "Connect Credential",
+                "modelName": {
+                    "title": "Model Name",
+                    "description": "Name of the Ollama model to use"
+                },
+                "baseUrl": {
+                    "title": "Base URL",
+                    "description": "Base URL of your Ollama instance"
+                },
+                "prompt": {
+                    "title": "Prompt",
+                    "descriptions": {
+                        "prompt": "Prompt to generate questions based on the conversation history. You can use variable {history} to refer to the conversation history.",
+                        "default": "Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise."
+                    }
+                },
+                "temperature": "Temperature"
+            }
+        },
+        "leads": {
+            "messages": {
+                "success": "Leads configuration Saved",
+                "error": "Failed to save Leads configuration: {{msg}}"
+            },
+            "enableLeadCapture": "Enable Lead Capture",
+            "form": {
+                "title": "Form Title",
+                "placeholder": "Hey 👋 thanks for your interest!\nLet us know where we can reach you"
+            },
+            "messageAfterLeadCaptured": {
+                "title": "Message after lead captured",
+                "placeholder": "Thank you!\nWhat can I do for you?"
+            },
+            "formFields": "Form fields"
+        },
+        "overrideConfig": {
+            "title": "Override Configuration",
+            "docsHelp": "Enable or disable which properties of the flow configuration can be overridden. Refer to the <a>documentation</a> for more information.",
+            "enableLabel": "Enable Override Configuration",
+            "nodes": "Nodes",
+            "messages": {
+                "success": "Override Configuration Saved",
+                "error": "Failed to save Override Configuration: {{msg}}"
+            },
+            "schemaUnavailable": "No schema available",
+            "schema": "Schema"
+        },
+        "postProcessing": {
+            "title": "Post Processing",
+            "enableLabel": "Enable Post Processing",
+            "functionLabel": "JS Function",
+            "postProcessionLabel": "Post Processing Function",
+            "seeExample": "See Example",
+            "availableVariables": "Available Variables",
+            "variables": {
+                "rawOutput": {
+                    "description": "The raw output response from the flow"
+                },
+                "input": {
+                    "description": "The user input message"
+                },
+                "chatHistory": {
+                    "description": "Array of previous messages in the conversation"
+                },
+                "chatflowId": {
+                    "description": "Unique identifier for the chatflow"
+                },
+                "sessionId": {
+                    "description": "Current session identifier"
+                },
+                "chatId": {
+                    "description": "Current chat identifier"
+                },
+                "sourceDocuments": {
+                    "description": "Source documents used in retrieval (if applicable)"
+                },
+                "usedTools": {
+                    "description": "List of tools used during execution"
+                },
+                "artifacts": {
+                    "description": "List of artifacts generated during execution"
+                },
+                "fileAnnotations": {
+                    "description": "File annotations associated with the response"
+                }
+            },
+            "variablesTable": {
+                "variable": "Variable",
+                "type": "Type",
+                "description": "Description"
+            },
+            "types": {
+                "string": "string",
+                "array": "array"
+            },
+            "messages": {
+                "success": "Post Processing Settings Saved",
+                "error": "Failed to save Post Processing Settings: {{msg}}"
+            }
+        },
+        "rateLimit": {
+            "title": "Rate Limit",
+            "docsHelp": "Visit <a>Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.",
+            "enableLabel": "Enable Rate Limit",
+            "limitMax": "Message Limit per Duration",
+            "limitDuration": "Duration in Second",
+            "limitMsg": {
+                "title": "Limit Message",
+                "placeholder": "You have reached the quota"
+            },
+            "messages": {
+                "success": "Rate Limit Configuration Saved",
+                "error": "Failed to save Rate Limit Configuration: {{msg}}"
+            }
+        },
+        "speechToText": {
+            "providersLabel": "Providers",
+            "providers": {
+                "openAIWhisper": "OpenAI Whisper",
+                "assemblyAi": "Assembly AI",
+                "localAiSTT": "LocalAi STT",
+                "azureCognitive": "Azure Cognitive Services",
+                "groqWhisper": "Groq Whisper"
+            },
+            "inputs": {
+                "connectCredential": "Connect Credential",
+                "language": {
+                    "title": "Language",
+                    "description": "The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency."
+                },
+                "prompt": {
+                    "title": "Prompt",
+                    "description": "An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language."
+                },
+                "temperature": {
+                    "title": "Temperature",
+                    "description": "The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+                },
+                "baseUrl": {
+                    "title": "Base URL",
+                    "description": "The base URL of the local AI server"
+                },
+                "model": {
+                    "title": "Model",
+                    "description": {
+                        "localAiSTT": "The STT model to load. Defaults to whisper-1 if left blank.",
+                        "groq": "The STT model to load. Defaults to whisper-large-v3 if left blank."
+                    }
+                },
+                "profanityFilterMode": {
+                    "title": "Profanity Filter Mode",
+                    "description": "How to handle profanity in the transcription",
+                    "options": {
+                        "masked": "Masked",
+                        "removed": "Removed"
+                    }
+                },
+                "audioChannels": {
+                    "title": "Audio Channels",
+                    "description": "Comma-separated list of audio channels to process (e.g., \"0,1\")"
+                }
+            },
+            "messages": {
+                "success": "Speech To Text Configuration Saved",
+                "error": "Failed to save Speech To Text Configuration: {{msg}}"
+            }
+        },
+        "starterPrompts": {
+            "info": "Starter prompts will only be shown when there is no messages on the chat",
+            "messages": {
+                "success": "Conversation Starter Prompts Saved",
+                "error": "Failed to save Conversation Starter Prompts: {{msg}}"
+            }
+        },
+        "textToSpeech": {
+            "providersLabel": "Providers",
+            "providers": {
+                "openai": "OpenAI TTS",
+                "elevenlabs": "Eleven Labs TTS"
+            },
+            "inputs": {
+                "connectCredential": "Connect Credential",
+                "voice": {
+                    "title": "Voice",
+                    "description": {
+                        "openai": "The voice to use when generating the audio",
+                        "elevenlabs": "The voice to use for text-to-speech"
+                    }
+                }
+            },
+            "autoPlay": {
+                "title": "Automatically play audio",
+                "tooltip": "When enabled, bot responses will be automatically converted to speech and played"
+            },
+            "testAudio": {
+                "title": "Test Audio",
+                "text": "Test text: \"{{text}}\""
+            },
+            "testAudioGenerating": "Generating...",
+            "testAudioPlaceholder": "Choose a voice",
+            "testAudioLoading": "Loading voices...",
+            "messages": {
+                "onSave": {
+                    "success": "Text To Speech Configuration Saved",
+                    "error": "Failed to save Text To Speech Configuration: {{msg}}"
+                },
+                "testTTS": {
+                    "error": {
+                        "provider": "Please select a provider and configure credentials first",
+                        "failed": "TTS test failed: {{msg}}"
+                    }
+                }
             }
         }
     },

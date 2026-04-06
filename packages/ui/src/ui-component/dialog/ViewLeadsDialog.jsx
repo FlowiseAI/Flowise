@@ -180,8 +180,8 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell>{t('common.labels.name')}</TableCell>
-                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.email')}</TableCell>
-                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.phone')}</TableCell>
+                                    <TableCell>{t('common.labels.email')}</TableCell>
+                                    <TableCell>{t('common.labels.phone')}</TableCell>
                                     <TableCell>{t('components.dialogs.viewLeads.leadsTable.created')}</TableCell>
                                 </TableRow>
                             </TableHead>

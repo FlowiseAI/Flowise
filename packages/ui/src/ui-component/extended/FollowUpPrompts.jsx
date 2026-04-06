@@ -26,10 +26,11 @@ import { AsyncDropdown } from '@/ui-component/dropdown/AsyncDropdown'
 import { IconX } from '@tabler/icons-react'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 
-const promptDescription =
-    'Prompt to generate questions based on the conversation history. You can use variable {history} to refer to the conversation history.'
-const defaultPrompt =
-    'Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise.'
+// i18n
+import { useTranslation } from 'react-i18next'
+
+const promptDescription = 'components.followUpPrompts.inputs.prompt.descriptions.prompt'
+const defaultPrompt = 'components.followUpPrompts.inputs.prompt.descriptions.default'
 
 // update when adding new providers
 const FollowUpPromptProviders = {
@@ -44,24 +45,24 @@ const FollowUpPromptProviders = {
 
 const followUpPromptsOptions = {
     [FollowUpPromptProviders.ANTHROPIC]: {
-        label: 'Anthropic Claude',
+        label: 'components.followUpPrompts.providers.anthropic',
         name: FollowUpPromptProviders.ANTHROPIC,
         icon: anthropicIcon,
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.followUpPrompts.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['anthropicApi']
             },
             {
-                label: 'Model Name',
+                label: 'components.followUpPrompts.inputs.modelName.title',
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels'
             },
             {
-                label: 'Prompt',
+                label: 'components.followUpPrompts.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -70,7 +71,7 @@ const followUpPromptsOptions = {
                 default: defaultPrompt
             },
             {
-                label: 'Temperature',
+                label: 'components.followUpPrompts.inputs.temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
@@ -80,24 +81,24 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.AZURE_OPENAI]: {
-        label: 'Azure ChatOpenAI',
+        label: 'components.followUpPrompts.providers.azureOpenAI',
         name: FollowUpPromptProviders.AZURE_OPENAI,
         icon: azureOpenAiIcon,
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.followUpPrompts.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['azureOpenAIApi']
             },
             {
-                label: 'Model Name',
+                label: 'components.followUpPrompts.inputs.modelName.title',
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels'
             },
             {
-                label: 'Prompt',
+                label: 'components.followUpPrompts.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -106,7 +107,7 @@ const followUpPromptsOptions = {
                 default: defaultPrompt
             },
             {
-                label: 'Temperature',
+                label: 'components.followUpPrompts.inputs.temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
@@ -116,24 +117,24 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.GOOGLE_GENAI]: {
-        label: 'Google Gemini',
+        label: 'components.followUpPrompts.providers.googleGemini',
         name: FollowUpPromptProviders.GOOGLE_GENAI,
         icon: geminiIcon,
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.followUpPrompts.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['googleGenerativeAI']
             },
             {
-                label: 'Model Name',
+                label: 'components.followUpPrompts.inputs.modelName.title',
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels'
             },
             {
-                label: 'Prompt',
+                label: 'components.followUpPrompts.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -142,7 +143,7 @@ const followUpPromptsOptions = {
                 default: defaultPrompt
             },
             {
-                label: 'Temperature',
+                label: 'components.followUpPrompts.inputs.temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
@@ -152,24 +153,24 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.GROQ]: {
-        label: 'Groq',
+        label: 'components.followUpPrompts.providers.groq',
         name: FollowUpPromptProviders.GROQ,
         icon: groqIcon,
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.followUpPrompts.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['groqApi']
             },
             {
-                label: 'Model Name',
+                label: 'components.followUpPrompts.inputs.modelName.title',
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels'
             },
             {
-                label: 'Prompt',
+                label: 'components.followUpPrompts.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -178,7 +179,7 @@ const followUpPromptsOptions = {
                 default: defaultPrompt
             },
             {
-                label: 'Temperature',
+                label: 'components.followUpPrompts.inputs.temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
@@ -188,24 +189,24 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.MISTRALAI]: {
-        label: 'Mistral AI',
+        label: 'components.followUpPrompts.providers.mistralAI',
         name: FollowUpPromptProviders.MISTRALAI,
         icon: mistralAiIcon,
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.followUpPrompts.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['mistralAIApi']
             },
             {
-                label: 'Model Name',
+                label: 'components.followUpPrompts.inputs.modelName.title',
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels'
             },
             {
-                label: 'Prompt',
+                label: 'components.followUpPrompts.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -214,7 +215,7 @@ const followUpPromptsOptions = {
                 default: defaultPrompt
             },
             {
-                label: 'Temperature',
+                label: 'components.followUpPrompts.inputs.temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
@@ -224,24 +225,24 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.OPENAI]: {
-        label: 'OpenAI',
+        label: 'components.followUpPrompts.providers.openAI',
         name: FollowUpPromptProviders.OPENAI,
         icon: openAiIcon,
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.followUpPrompts.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['openAIApi']
             },
             {
-                label: 'Model Name',
+                label: 'components.followUpPrompts.inputs.modelName.title',
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels'
             },
             {
-                label: 'Prompt',
+                label: 'components.followUpPrompts.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -250,7 +251,7 @@ const followUpPromptsOptions = {
                 default: defaultPrompt
             },
             {
-                label: 'Temperature',
+                label: 'components.followUpPrompts.inputs.temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
@@ -260,28 +261,28 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.OLLAMA]: {
-        label: 'Ollama',
+        label: 'components.followUpPrompts.providers.ollama',
         name: FollowUpPromptProviders.OLLAMA,
         icon: ollamaIcon,
         inputs: [
             {
-                label: 'Base URL',
+                label: 'components.followUpPrompts.inputs.baseUrl.title',
                 name: 'baseUrl',
                 type: 'string',
                 placeholder: 'http://127.0.0.1:11434',
-                description: 'Base URL of your Ollama instance',
+                description: 'components.followUpPrompts.inputs.baseUrl.description',
                 default: 'http://127.0.0.1:11434'
             },
             {
-                label: 'Model Name',
+                label: 'components.followUpPrompts.inputs.modelName.title',
                 name: 'modelName',
                 type: 'string',
                 placeholder: 'llama2',
-                description: 'Name of the Ollama model to use',
+                description: 'components.followUpPrompts.inputs.modelName.description',
                 default: 'llama3.2-vision:latest'
             },
             {
-                label: 'Prompt',
+                label: 'components.followUpPrompts.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -290,7 +291,7 @@ const followUpPromptsOptions = {
                 default: defaultPrompt
             },
             {
-                label: 'Temperature',
+                label: 'components.followUpPrompts.inputs.temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
@@ -302,6 +303,7 @@ const followUpPromptsOptions = {
 }
 
 const FollowUpPrompts = ({ dialogProps }) => {
+    const { t } = useTranslation()
     const dispatch = useDispatch()
 
     useNotifier()
@@ -380,7 +382,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Follow-up Prompts configuration saved',
+                    message: t('components.followUpPrompts.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -396,7 +398,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save follow-up prompts configuration: ${errorData}`,
+                message: t('components.followUpPrompts.messages.error', { msg: errorData }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -461,13 +463,13 @@ const FollowUpPrompts = ({ dialogProps }) => {
                 }}
             >
                 <SwitchInput
-                    label='Enable Follow-up Prompts'
+                    label={t('components.followUpPrompts.enableLabel')}
                     onChange={(value) => handleChange('status', value)}
                     value={followUpPromptsConfig.status}
                 />
                 {followUpPromptsConfig && followUpPromptsConfig.status && (
                     <>
-                        <Typography variant='h5'>Providers</Typography>
+                        <Typography variant='h5'>{t('components.followUpPrompts.providersLabel')}</Typography>
                         <FormControl fullWidth>
                             <Select
                                 size='small'
@@ -481,7 +483,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                             >
                                 {Object.values(followUpPromptsOptions).map((provider) => (
                                     <MenuItem key={provider.name} value={provider.name}>
-                                        {provider.label}
+                                        {t(provider.label)}
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -511,7 +513,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                         </div>
                                     </ListItemAvatar>
                                     <ListItemText
-                                        primary={followUpPromptsOptions[selectedProvider].label}
+                                        primary={t(followUpPromptsOptions[selectedProvider].label)}
                                         secondary={
                                             <a target='_blank' rel='noreferrer' href={followUpPromptsOptions[selectedProvider].url}>
                                                 {followUpPromptsOptions[selectedProvider].url}
@@ -523,10 +525,10 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                     <Box key={index} sx={{ px: 2, width: '100%' }}>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                                             <Typography>
-                                                {inputParam.label}
+                                                {t(inputParam.label)}
                                                 {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
                                                 {inputParam.description && (
-                                                    <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
+                                                    <TooltipWithParser style={{ marginLeft: 10 }} title={t(inputParam.description)} />
                                                 )}
                                             </Typography>
                                         </div>
@@ -603,7 +605,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton disabled={checkDisabled()} variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

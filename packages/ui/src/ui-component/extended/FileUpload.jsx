@@ -2,7 +2,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
-import parser from 'html-react-parser'
 
 // material-ui
 import {
@@ -30,9 +29,8 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const message = `The full contents of uploaded files will be converted to text and sent to the Agent.
-<br />
-Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank' style='color: #2196f3'>docs</a> for more details.`
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
 
 const availableFileTypes = [
     { name: 'CSS', ext: 'text/css', extension: '.css' },
@@ -52,6 +50,7 @@ const availableFileTypes = [
 ]
 
 const FileUpload = ({ dialogProps }) => {
+    const { t } = useTranslation()
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
 
@@ -97,7 +96,7 @@ const FileUpload = ({ dialogProps }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'File Upload Configuration Saved',
+                    message: t('components.fileUpload.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -112,9 +111,9 @@ const FileUpload = ({ dialogProps }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save File Upload Configuration: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('components.fileUpload.messages.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -185,12 +184,21 @@ const FileUpload = ({ dialogProps }) => {
                     }}
                 >
                     <IconBulb size={20} color='#16a34a' style={{ flexShrink: 0 }} />
-                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8125rem', lineHeight: 1.5 }}>{parser(message)}</Typography>
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8125rem', lineHeight: 1.5 }}>
+                        <Trans
+                            i18nKey='components.fileUpload.docsHelp'
+                            components={{
+                                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                                a: <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank' rel='noreferrer' />,
+                                br: <br />
+                            }}
+                        />
+                    </Typography>
                 </Box>
                 <SwitchInput label='Enable Full File Upload' onChange={handleChange} value={fullFileUpload} />
             </Box>
 
-            <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Allow Uploads of Type</Typography>
+            <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>{t('components.fileUpload.allowUploadsType')}</Typography>
             <div
                 style={{
                     display: 'grid',
@@ -245,26 +253,36 @@ const FileUpload = ({ dialogProps }) => {
                         expandIcon={<ExpandMoreIcon sx={{ fontSize: '1.1rem', color: 'text.secondary' }} />}
                         sx={{ minHeight: 40, px: 2, '& .MuiAccordionSummary-content': { my: 0.75 } }}
                     >
-                        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: 'text.secondary' }}>Advanced Settings</Typography>
+                        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: 'text.secondary' }}>
+                            {t('components.fileUpload.configuration.title')}
+                        </Typography>
                     </AccordionSummary>
                     <AccordionDetails sx={{ px: 2, pt: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {/* PDF Processing */}
                         {allowedFileTypes.includes('application/pdf') && (
                             <Box>
                                 <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: 'text.primary', mb: 0.75 }}>
-                                    PDF Processing
+                                    {t('components.fileUpload.configuration.usage.title')}
                                 </Typography>
                                 <FormControl disabled={!fullFileUpload}>
                                     <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
                                         <FormControlLabel
                                             value='perPage'
                                             control={<Radio size='small' />}
-                                            label={<Typography sx={{ fontSize: '0.8125rem' }}>One document per page</Typography>}
+                                            label={
+                                                <Typography sx={{ fontSize: '0.8125rem' }}>
+                                                    {t('components.fileUpload.configuration.usage.oneDocPerPage')}
+                                                </Typography>
+                                            }
                                         />
                                         <FormControlLabel
                                             value='perFile'
                                             control={<Radio size='small' />}
-                                            label={<Typography sx={{ fontSize: '0.8125rem' }}>One document per file</Typography>}
+                                            label={
+                                                <Typography sx={{ fontSize: '0.8125rem' }}>
+                                                    {t('components.fileUpload.configuration.usage.oneDocPerFile')}
+                                                </Typography>
+                                            }
                                         />
                                     </RadioGroup>
                                 </FormControl>
@@ -276,7 +294,7 @@ const FileUpload = ({ dialogProps }) => {
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

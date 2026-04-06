@@ -13,10 +13,14 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 // store
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // API
 import chatflowsApi from '@/api/chatflows'
 
 const StarterPrompts = ({ dialogProps, onConfirm }) => {
+    const { t } = useTranslation()
     const dispatch = useDispatch()
 
     useNotifier()
@@ -66,7 +70,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Conversation Starter Prompts Saved',
+                    message: t('components.starterPrompts.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -82,9 +86,9 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Conversation Starter Prompts: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('components.starterPrompts.messages.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -148,7 +152,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
             >
                 <IconBulb size={20} color='#16a34a' style={{ flexShrink: 0 }} />
                 <Typography sx={{ color: 'text.secondary', fontSize: '0.8125rem', lineHeight: 1.5 }}>
-                    Starter prompts will only be shown when there are no messages on the chat
+                    S{t('components.starterPrompts.info')}
                 </Typography>
             </Box>
             <Box sx={{ '& > :not(style)': { m: 1 }, pt: 2 }}>
@@ -197,7 +201,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

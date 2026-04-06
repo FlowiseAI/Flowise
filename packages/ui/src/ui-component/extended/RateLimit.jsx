@@ -19,8 +19,12 @@ import chatflowsApi from '@/api/chatflows'
 // utils
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+
 const RateLimit = ({ dialogProps, hideTitle = false }) => {
     const dispatch = useDispatch()
+    const { t } = useTranslation()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const chatflowid = chatflow.id
     const apiConfig = chatflow.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
@@ -80,7 +84,7 @@ const RateLimit = ({ dialogProps, hideTitle = false }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Rate Limit Configuration Saved',
+                    message: t('components.rateLimit.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -95,9 +99,9 @@ const RateLimit = ({ dialogProps, hideTitle = false }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Rate Limit Configuration: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('components.rateLimit.messages.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -150,26 +154,38 @@ const RateLimit = ({ dialogProps, hideTitle = false }) => {
         <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
             {!hideTitle && (
                 <Typography variant='h3'>
-                    Rate Limit{' '}
+                    {t('components.rateLimit.title')}
                     <TooltipWithParser
                         style={{ marginLeft: 10 }}
                         title={
-                            'Visit <a target="_blank" href="https://docs.flowiseai.com/configuration/rate-limit">Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.'
+                            <Trans
+                                i18nKey='components.rateLimit.docsHelp'
+                                components={{
+                                    // eslint-disable-next-line jsx-a11y/anchor-has-content
+                                    a: <a href='https://docs.flowiseai.com/configuration/rate-limit' target='_blank' rel='noreferrer' />
+                                }}
+                            />
                         }
                     />
                 </Typography>
             )}
-            <SwitchInput label='Enable Rate Limit' onChange={handleChange} value={rateLimitStatus} />
+            <SwitchInput label={t('components.rateLimit.enableLabel')} onChange={handleChange} value={rateLimitStatus} />
             {rateLimitStatus && (
                 <Stack direction='column' spacing={2} sx={{ width: '100%' }}>
-                    {textField(limitMax, 'limitMax', 'Message Limit per Duration', 'number', '5')}
-                    {textField(limitDuration, 'limitDuration', 'Duration in Second', 'number', '60')}
-                    {textField(limitMsg, 'limitMsg', 'Limit Message', 'string', 'You have reached the quota')}
+                    {textField(limitMax, 'limitMax', t('components.rateLimit.limitMax'), 'number', '5')}
+                    {textField(limitDuration, 'limitDuration', t('components.rateLimit.limitDuration'), 'number', '60')}
+                    {textField(
+                        limitMsg,
+                        'limitMsg',
+                        t('components.rateLimit.limitMsg.title'),
+                        'string',
+                        t('components.rateLimit.limitMsg.placeholder')
+                    )}
                 </Stack>
             )}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton disabled={checkDisabled()} variant='contained' onClick={() => onSave()} sx={{ minWidth: 100 }}>
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </Stack>

@@ -35,6 +35,9 @@ import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // API
 import chatflowsApi from '@/api/chatflows'
 
@@ -46,6 +49,7 @@ return $flow.rawOutput + " This is a post processed response!";`
 
 const PostProcessing = ({ dialogProps }) => {
     const dispatch = useDispatch()
+    const { t } = useTranslation()
 
     useNotifier()
     const theme = useTheme()
@@ -68,15 +72,15 @@ const PostProcessing = ({ dialogProps }) => {
         const dialogProps = {
             value,
             inputParam: {
-                label: 'Post Processing Function',
+                label: t('components.postProcessing.postProcessionLabel'),
                 name: 'postProcessingFunction',
                 type: 'code',
                 placeholder: sampleFunction,
                 hideCodeExecute: true
             },
             languageType: 'js',
-            confirmButtonName: 'Save',
-            cancelButtonName: 'Cancel'
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setExpandDialogProps(dialogProps)
         setShowExpandDialog(true)
@@ -96,7 +100,7 @@ const PostProcessing = ({ dialogProps }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Post Processing Settings Saved',
+                    message: t('components.postProcessing.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -111,9 +115,9 @@ const PostProcessing = ({ dialogProps }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Post Processing Settings: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('components.postProcessing.messages.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -146,11 +150,11 @@ const PostProcessing = ({ dialogProps }) => {
     return (
         <>
             <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <SwitchInput label='Enable Post Processing' onChange={handleChange} value={postProcessingEnabled} />
+                <SwitchInput label={t('components.postProcessing.enableLabel')} onChange={handleChange} value={postProcessingEnabled} />
             </Box>
             <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
                 <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-                    <Typography>JS Function</Typography>
+                    <Typography>{t('components.postProcessing.functionLabel')}</Typography>
                     <Button
                         sx={{ ml: 2 }}
                         variant='outlined'
@@ -158,7 +162,7 @@ const PostProcessing = ({ dialogProps }) => {
                             setPostProcessingFunction(sampleFunction)
                         }}
                     >
-                        See Example
+                        {t('components.postProcessing.seeExample')}
                     </Button>
                     <div style={{ flex: 1 }} />
                     <IconButton
@@ -215,7 +219,7 @@ const PostProcessing = ({ dialogProps }) => {
                     }}
                 >
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>Available Variables</Typography>
+                        <Typography sx={{ fontSize: '0.875rem', fontWeight: 500 }}>{t('components.postProcessing.availableVariables')}</Typography>
                     </AccordionSummary>
                     <AccordionDetails sx={{ p: 0 }}>
                         <TableContainer component={Paper} elevation={0} sx={{ boxShadow: 'none', bgcolor: 'transparent' }}>
@@ -232,7 +236,7 @@ const PostProcessing = ({ dialogProps }) => {
                                                 borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
                                             }}
                                         >
-                                            Variable
+                                            {t('components.postProcessing.variablesTable.variable')}
                                         </TableCell>
                                         <TableCell
                                             sx={{
@@ -244,7 +248,7 @@ const PostProcessing = ({ dialogProps }) => {
                                                 borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
                                             }}
                                         >
-                                            Type
+                                            {t('components.postProcessing.variablesTable.type')}
                                         </TableCell>
                                         <TableCell
                                             sx={{
@@ -256,7 +260,7 @@ const PostProcessing = ({ dialogProps }) => {
                                                 borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
                                             }}
                                         >
-                                            Description
+                                            {t('components.postProcessing.variablesTable.description')}
                                         </TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -274,71 +278,71 @@ const PostProcessing = ({ dialogProps }) => {
                                         <TableCell>
                                             <code>$flow.rawOutput</code>
                                         </TableCell>
-                                        <TableCell>string</TableCell>
-                                        <TableCell>The raw output response from the flow</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.string')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.rawOutput.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.input</code>
                                         </TableCell>
-                                        <TableCell>string</TableCell>
-                                        <TableCell>The user input message</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.string')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.input.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.chatHistory</code>
                                         </TableCell>
-                                        <TableCell>array</TableCell>
-                                        <TableCell>Array of previous messages in the conversation</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.array')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.chatHistory.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.chatflowId</code>
                                         </TableCell>
-                                        <TableCell>string</TableCell>
-                                        <TableCell>Unique identifier for the chatflow</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.string')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.chatflowId.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.sessionId</code>
                                         </TableCell>
-                                        <TableCell>string</TableCell>
-                                        <TableCell>Current session identifier</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.string')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.sessionId.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.chatId</code>
                                         </TableCell>
-                                        <TableCell>string</TableCell>
-                                        <TableCell>Current chat identifier</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.string')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.chatId.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.sourceDocuments</code>
                                         </TableCell>
-                                        <TableCell>array</TableCell>
-                                        <TableCell>Source documents used in retrieval (if applicable)</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.array')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.sourceDocuments.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.usedTools</code>
                                         </TableCell>
-                                        <TableCell>array</TableCell>
-                                        <TableCell>List of tools used during execution</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.array')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.usedTools.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.artifacts</code>
                                         </TableCell>
-                                        <TableCell>array</TableCell>
-                                        <TableCell>List of artifacts generated during execution</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.array')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.artifacts.description')}</TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>
                                             <code>$flow.fileAnnotations</code>
                                         </TableCell>
-                                        <TableCell>array</TableCell>
-                                        <TableCell>File annotations associated with the response</TableCell>
+                                        <TableCell>{t('components.postProcessing.types.array')}</TableCell>
+                                        <TableCell>{t('components.postProcessing.variables.fileAnnotations.description')}</TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>
@@ -353,7 +357,7 @@ const PostProcessing = ({ dialogProps }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
             <ExpandTextDialog

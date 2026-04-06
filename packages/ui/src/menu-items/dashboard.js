@@ -131,7 +131,7 @@ const dashboard = {
                 },
                 {
                     id: 'variables',
-                    title: 'common.menu.variables',
+                    title: 'common.labels.variables',
                     type: 'item',
                     url: '/variables',
                     icon: icons.IconVariable,

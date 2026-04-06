@@ -24,6 +24,9 @@ import groqPng from '@/assets/images/groq.png'
 // store
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // API
 import chatflowsApi from '@/api/chatflows'
 
@@ -40,52 +43,51 @@ const SpeechToTextType = {
 // Weird quirk - the key must match the name property value.
 const speechToTextProviders = {
     [SpeechToTextType.OPENAI_WHISPER]: {
-        label: 'OpenAI Whisper',
+        label: 'components.speechToText.providers.openAIWhisper',
         name: SpeechToTextType.OPENAI_WHISPER,
         icon: openAISVG,
         url: 'https://platform.openai.com/docs/guides/speech-to-text',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.speechToText.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['openAIApi']
             },
             {
-                label: 'Language',
+                label: 'components.speechToText.inputs.language.tit;e',
                 name: 'language',
                 type: 'string',
-                description:
-                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                description: 'components.speechToText.inputs.language.description',
                 placeholder: 'en',
                 optional: true
             },
             {
-                label: 'Prompt',
+                label: 'components.speechToText.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
-                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                description: 'components.speechToText.inputs.prompt.description',
                 optional: true
             },
             {
-                label: 'Temperature',
+                label: 'components.speechToText.inputs.temperature.title',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
+                description: 'components.speechToText.inputs.temperature.description',
                 optional: true
             }
         ]
     },
     [SpeechToTextType.ASSEMBLYAI_TRANSCRIBE]: {
-        label: 'Assembly AI',
+        label: 'components.speechToText.providers.assemblyAi',
         name: SpeechToTextType.ASSEMBLYAI_TRANSCRIBE,
         icon: assemblyAIPng,
         url: 'https://www.assemblyai.com/',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.speechToText.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['assemblyAIApi']
@@ -93,94 +95,93 @@ const speechToTextProviders = {
         ]
     },
     [SpeechToTextType.LOCALAI_STT]: {
-        label: 'LocalAi STT',
+        label: 'components.speechToText.providers.localAiSTT',
         name: SpeechToTextType.LOCALAI_STT,
         icon: localAiPng,
         url: 'https://localai.io/features/audio-to-text/',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.speechToText.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['localAIApi']
             },
             {
-                label: 'Base URL',
+                label: 'components.speechToText.inputs.baseUrl.title',
                 name: 'baseUrl',
                 type: 'string',
-                description: 'The base URL of the local AI server'
+                description: 'components.speechToText.inputs.baseUrl.description'
             },
             {
-                label: 'Language',
+                label: 'components.speechToText.inputs.language.title',
                 name: 'language',
                 type: 'string',
-                description:
-                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                description: 'components.speechToText.inputs.language.description',
                 placeholder: 'en',
                 optional: true
             },
             {
-                label: 'Model',
+                label: 'components.speechToText.inputs.model.title',
                 name: 'model',
                 type: 'string',
-                description: `The STT model to load. Defaults to whisper-1 if left blank.`,
+                description: 'components.speechToText.inputs.model.description.localAiSTT',
                 placeholder: 'whisper-1',
                 optional: true
             },
             {
-                label: 'Prompt',
+                label: 'components.speechToText.inputs.prompt.title',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
-                description: `An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language.`,
+                description: 'components.speechToText.inputs.prompt.description',
                 optional: true
             },
             {
-                label: 'Temperature',
+                label: 'components.speechToText.inputs.temperature.title',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description: `The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.`,
+                description: 'components.speechToText.inputs.temperature.description',
                 optional: true
             }
         ]
     },
     [SpeechToTextType.AZURE_COGNITIVE]: {
-        label: 'Azure Cognitive Services',
+        label: 'components.speechToText.providers.azureCognitive',
         name: SpeechToTextType.AZURE_COGNITIVE,
         icon: azureSvg,
         url: 'https://azure.microsoft.com/en-us/products/cognitive-services/speech-services',
         inputs: [
             {
-                label: 'Connect Credential',
+                label: 'components.speechToText.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['azureCognitiveServices']
             },
             {
-                label: 'Language',
+                label: 'components.speechToText.inputs.language.title',
                 name: 'language',
                 type: 'string',
-                description: 'The recognition language (e.g., "en-US", "es-ES")',
+                description: 'components.speechToText.inputs.language.description',
                 placeholder: 'en-US',
                 optional: true
             },
             {
-                label: 'Profanity Filter Mode',
+                label: 'components.speechToText.inputs.profanityFilterMode.title',
                 name: 'profanityFilterMode',
                 type: 'options',
-                description: 'How to handle profanity in the transcription',
+                description: 'components.speechToText.inputs.profanityFilterMode.description',
                 options: [
                     {
-                        label: 'None',
+                        label: 'common.labels.none',
                         name: 'None'
                     },
                     {
-                        label: 'Masked',
+                        label: 'components.speechToText.inputs.profanityFilterMode.options.masked',
                         name: 'Masked'
                     },
                     {
-                        label: 'Removed',
+                        label: 'components.speechToText.inputs.profanityFilterMode.options.removed',
                         name: 'Removed'
                     }
                 ],
@@ -188,51 +189,49 @@ const speechToTextProviders = {
                 optional: true
             },
             {
-                label: 'Audio Channels',
+                label: 'components.speechToText.inputs.audioChannels.title',
                 name: 'channels',
                 type: 'string',
-                description: 'Comma-separated list of audio channels to process (e.g., "0,1")',
+                description: 'components.speechToText.inputs.audioChannels.description',
                 placeholder: '0,1',
                 default: '0,1'
             }
         ]
     },
     [SpeechToTextType.GROQ_WHISPER]: {
-        label: 'Groq Whisper',
+        label: 'components.speechToText.providers.groqWhisper',
         name: SpeechToTextType.GROQ_WHISPER,
         icon: groqPng,
         url: 'https://console.groq.com/',
         inputs: [
             {
-                label: 'Model',
+                label: 'components.speechToText.inputs.model.title',
                 name: 'model',
                 type: 'string',
-                description: `The STT model to load. Defaults to whisper-large-v3 if left blank.`,
+                description: 'components.speechToText.inputs.model.description.groq',
                 placeholder: 'whisper-large-v3',
                 optional: true
             },
             {
-                label: 'Connect Credential',
+                label: 'components.speechToText.inputs.connectCredential',
                 name: 'credential',
                 type: 'credential',
                 credentialNames: ['groqApi']
             },
             {
-                label: 'Language',
+                label: 'components.speechToText.inputs.language.title',
                 name: 'language',
                 type: 'string',
-                description:
-                    'The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency.',
+                description: 'components.speechToText.inputs.language.description',
                 placeholder: 'en',
                 optional: true
             },
             {
-                label: 'Temperature',
+                label: 'components.speechToText.inputs.temperature.title',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                description:
-                    'The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.',
+                description: 'components.speechToText.inputs.temperature.description',
                 optional: true
             }
         ]
@@ -241,6 +240,7 @@ const speechToTextProviders = {
 
 const SpeechToText = ({ dialogProps, onConfirm }) => {
     const dispatch = useDispatch()
+    const { t } = useTranslation()
 
     useNotifier()
     const theme = useTheme()
@@ -259,7 +259,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Speech To Text Configuration Saved',
+                    message: t('components.speechToText.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -275,9 +275,9 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Speech To Text Configuration: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('components.speechToText.messages.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -350,7 +350,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
     return (
         <>
             <Box fullWidth sx={{ mb: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography>Providers</Typography>
+                <Typography>{t('components.speechToText.providersLabel')}</Typography>
                 <FormControl fullWidth>
                     <Select
                         size='small'
@@ -362,10 +362,10 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                             }
                         }}
                     >
-                        <MenuItem value='none'>None</MenuItem>
+                        <MenuItem value='none'>{t('common.labels.none')}</MenuItem>
                         {Object.values(speechToTextProviders).map((provider) => (
                             <MenuItem key={provider.name} value={provider.name}>
-                                {provider.label}
+                                {t(provider.label)}
                             </MenuItem>
                         ))}
                     </Select>
@@ -401,7 +401,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                         </ListItemAvatar>
                         <ListItemText
                             sx={{ ml: 1 }}
-                            primary={speechToTextProviders[selectedProvider].label}
+                            primary={t(speechToTextProviders[selectedProvider].label)}
                             secondary={
                                 <a
                                     target='_blank'
@@ -421,10 +421,10 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                         <Box key={index} sx={{ p: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
                                 <Typography>
-                                    {inputParam.label}
+                                    {t(inputParam.label)}
                                     {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
                                     {inputParam.description && (
-                                        <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />
+                                        <TooltipWithParser style={{ marginLeft: 10 }} title={t(inputParam.description)} />
                                     )}
                                 </Typography>
                             </div>
@@ -465,7 +465,10 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                             {inputParam.type === 'options' && (
                                 <Dropdown
                                     name={inputParam.name}
-                                    options={inputParam.options}
+                                    options={inputParam.options.map((opt) => ({
+                                        label: t(opt.label),
+                                        name: opt.name
+                                    }))}
                                     onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                     value={
                                         speechToText[selectedProvider]
@@ -485,7 +488,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

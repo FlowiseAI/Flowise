@@ -17,14 +17,12 @@ import useNotifier from '@/utils/useNotifier'
 // API
 import chatflowsApi from '@/api/chatflows'
 
-const formTitle = `Hey 👋 thanks for your interest!
-Let us know where we can reach you`
-
-const endTitle = `Thank you!
-What can I do for you?`
+// i18n
+import { useTranslation } from 'react-i18next'
 
 const Leads = ({ dialogProps }) => {
     const dispatch = useDispatch()
+    const { t } = useTranslation()
 
     useNotifier()
 
@@ -52,7 +50,7 @@ const Leads = ({ dialogProps }) => {
             })
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Leads configuration Saved',
+                    message: t('components.leads.messages.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -68,7 +66,7 @@ const Leads = ({ dialogProps }) => {
         } catch (error) {
             const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`
             enqueueSnackbar({
-                message: `Failed to save Leads configuration: ${errorData}`,
+                message: t('components.leads.messages.error', { msg: errorData }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -108,11 +106,15 @@ const Leads = ({ dialogProps }) => {
                     mb: 2
                 }}
             >
-                <SwitchInput label='Enable Lead Capture' onChange={(value) => handleChange('status', value)} value={leadsConfig.status} />
+                <SwitchInput
+                    label={t('components.leads.enableLeadCapture')}
+                    onChange={(value) => handleChange('status', value)}
+                    value={leadsConfig.status}
+                />
                 {leadsConfig && leadsConfig['status'] && (
                     <>
                         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
-                            <Typography>Form Title</Typography>
+                            <Typography>{t('components.leads.form.title')}</Typography>
                             <OutlinedInput
                                 id='form-title'
                                 type='text'
@@ -120,7 +122,7 @@ const Leads = ({ dialogProps }) => {
                                 multiline={true}
                                 minRows={4}
                                 value={leadsConfig.title}
-                                placeholder={formTitle}
+                                placeholder={t('components.leads.form.placeholder')}
                                 name='form-title'
                                 size='small'
                                 onChange={(e) => {
@@ -129,7 +131,7 @@ const Leads = ({ dialogProps }) => {
                             />
                         </Box>
                         <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
-                            <Typography>Message after lead captured</Typography>
+                            <Typography>{t('components.leads.messageAfterLeadCaptured.title')}</Typography>
                             <OutlinedInput
                                 id='success-message'
                                 type='text'
@@ -137,7 +139,7 @@ const Leads = ({ dialogProps }) => {
                                 multiline={true}
                                 minRows={4}
                                 value={leadsConfig.successMessage}
-                                placeholder={endTitle}
+                                placeholder={t('components.leads.messageAfterLeadCaptured.placeholder')}
                                 name='form-title'
                                 size='small'
                                 onChange={(e) => {
@@ -145,16 +147,24 @@ const Leads = ({ dialogProps }) => {
                                 }}
                             />
                         </Box>
-                        <Typography variant='h4'>Form fields</Typography>
+                        <Typography variant='h4'>{t('components.leads.formFields')}</Typography>
                         <Box sx={{ width: '100%' }}>
                             <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
-                                <SwitchInput label='Name' onChange={(value) => handleChange('name', value)} value={leadsConfig.name} />
                                 <SwitchInput
-                                    label='Email Address'
+                                    label={t('common.labels.name')}
+                                    onChange={(value) => handleChange('name', value)}
+                                    value={leadsConfig.name}
+                                />
+                                <SwitchInput
+                                    label={t('common.labels.email')}
                                     onChange={(value) => handleChange('email', value)}
                                     value={leadsConfig.email}
                                 />
-                                <SwitchInput label='Phone' onChange={(value) => handleChange('phone', value)} value={leadsConfig.phone} />
+                                <SwitchInput
+                                    label={t('common.labels.phone')}
+                                    onChange={(value) => handleChange('phone', value)}
+                                    value={leadsConfig.phone}
+                                />
                             </Box>
                         </Box>
                     </>
@@ -167,7 +177,7 @@ const Leads = ({ dialogProps }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    Save
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>
