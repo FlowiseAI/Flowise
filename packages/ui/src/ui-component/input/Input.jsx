@@ -33,7 +33,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
             case 'string':
                 return 'text'
             case 'password':
-                return isPassword && showPassword ? 'text' : 'password'
+                return showPassword ? 'text' : 'password'
             case 'number':
                 return 'number'
             case 'email':
