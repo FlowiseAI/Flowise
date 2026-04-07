@@ -42,6 +42,7 @@ const Agentflows = () => {
     const [images, setImages] = useState({})
     const [icons, setIcons] = useState({})
     const [search, setSearch] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
     const { error, setError } = useError()
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
@@ -61,11 +62,12 @@ const Agentflows = () => {
         refresh(page, pageLimit, agentflowVersion)
     }
 
-    const refresh = (page, limit, nextView) => {
+    const refresh = (page, limit, nextView, nextSearch = searchQuery) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
         }
+        if (nextSearch) params.search = nextSearch
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
 
@@ -86,13 +88,20 @@ const Agentflows = () => {
         setSearch(event.target.value)
     }
 
-    function filterFlows(data) {
-        return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
-    }
+    useEffect(() => {
+        const normalizedSearch = search.trim()
+        if (normalizedSearch === searchQuery) return
+
+        const timeoutId = setTimeout(() => {
+            setSearchQuery(normalizedSearch)
+            setCurrentPage(1)
+            refresh(1, pageLimit, agentflowVersion, normalizedSearch)
+        }, 300)
+
+        return () => clearTimeout(timeoutId)
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search])
 
     const addNew = () => {
         if (agentflowVersion === 'v2') {
@@ -178,7 +187,7 @@ const Agentflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
+                        searchPlaceholder='Search Name, Category, or ID'
                         title='Agentflows'
                         description='Multi-agent systems, workflow orchestration'
                     >
@@ -305,7 +314,7 @@ const Agentflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.data.map((data, index) => (
                                         <ItemCard
                                             key={index}
                                             onClick={() => goToCanvas(data)}
@@ -323,7 +332,7 @@ const Agentflows = () => {
                                     images={images}
                                     icons={icons}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
+                                    filterFunction={() => true}
                                     updateFlowsApi={getAllAgentflows}
                                     setError={setError}
                                     currentPage={currentPage}
