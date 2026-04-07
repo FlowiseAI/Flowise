@@ -33,7 +33,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| DOC STORE CARD ||=========================== //
 
-const DocumentStoreCard = ({ data, images, onClick }) => {
+const DocumentStoreCard = ({ data, images, onClick, hasActions }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -48,7 +48,8 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                                 display: 'flex',
                                 flexDirection: 'row',
                                 alignItems: 'center',
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                paddingRight: hasActions ? '30px' : 0
                             }}
                         >
                             <Typography
@@ -186,7 +187,8 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
 DocumentStoreCard.propTypes = {
     data: PropTypes.object,
     images: PropTypes.array,
-    onClick: PropTypes.func
+    onClick: PropTypes.func,
+    hasActions: PropTypes.bool
 }
 
 export default DocumentStoreCard
