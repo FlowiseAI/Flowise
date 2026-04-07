@@ -464,7 +464,7 @@ const PricingDialog = ({ open, onClose }) => {
                                     <CircularProgress size={20} />
                                 ) : getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method ? (
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
-                                        <Typography variant='subtitle2'>Payment Method</Typography>
+                                        <Typography variant='subtitle2'>{t('components.dialogs.pricing.paymentMethod')}</Typography>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card && (
                                                 <>
@@ -672,7 +672,7 @@ const PricingDialog = ({ open, onClose }) => {
                 {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
                     <DialogActions>
                         <Button onClick={handlePlanDialogClose} disabled={isUpdatingPlan}>
-                            {t('common.actions.cancel')}
+                            {t('components.dialogs.pricing.actions.cancel')}
                         </Button>
                         <Button
                             variant='contained'

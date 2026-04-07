@@ -239,9 +239,9 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                 </>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{t('common.actions.cancel')}</Button>
+                <Button onClick={onCancel}>{t('components.dialogs.manageScrapedLinks.actions.cancel')}</Button>
                 <StyledButton variant='contained' onClick={handleSaveLinks}>
-                    {t('common.actions.save')}
+                    {t('components.dialogs.manageScrapedLinks.actions.save')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

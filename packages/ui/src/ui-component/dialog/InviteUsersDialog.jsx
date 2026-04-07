@@ -363,8 +363,8 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         } catch (error) {
             console.error('Error in saveInvite:', error)
             enqueueSnackbar({
-                message: t('components.dialogs.inviteUsers.messages.failedSave', {
-                    msg: error.response?.data?.message || error.message || 'Unknown error'
+                message: t('components.dialogs.inviteUsers.messages.errors.failedSave', {
+                    msg: error.response?.data?.message || error.message || t('components.dialogs.inviteUsers.messages.errors.unknown')
                 }),
                 options: {
                     key: new Date().getTime() + Math.random(),
@@ -698,7 +698,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             getOptionLabel={(option) => option.label || ''}
                             onChange={handleWorkspaceChange}
                             options={workspaces}
-                            renderInput={(params) => <TextField {...params} variant='outlined' placeholder={t('workspaces.select')} />}
+                            renderInput={(params) => (
+                                <TextField {...params} variant='outlined' placeholder={t('profile.workspaces.select')} />
+                            )}
                             sx={{ mt: 0.5 }}
                             value={getWorkspaceValue()}
                             PopperComponent={StyledPopper}
@@ -717,7 +719,9 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             getOptionLabel={(option) => option.label || ''}
                             onChange={handleRoleChange}
                             options={availableRoles}
-                            renderInput={(params) => <TextField {...params} variant='outlined' placeholder={t('roles.select')} />}
+                            renderInput={(params) => (
+                                <TextField {...params} variant='outlined' placeholder={t('components.dialogs.inviteUsers.selectRole')} />
+                            )}
                             sx={{ mt: 0.5 }}
                             value={getRoleValue()}
                             PopperComponent={StyledPopper}

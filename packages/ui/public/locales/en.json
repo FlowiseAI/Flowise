@@ -1,97 +1,4 @@
 {
-    "common": {
-        "labels": {
-            "model": "Model",
-            "prompt": "Prompt",
-            "description": "Description",
-            "share": "Share",
-            "Name": "name",
-            "ui": "UI",
-            "apiEmbed": "API/Embed",
-            "phone": "Phone",
-            "email": "Email Address",
-            "variables": "variables",
-            "evaluations": "Evaluations",
-            "none": "None"
-        },
-        "menu": {
-            "agentflows": "Agentflows",
-            "agentflowsV2": "Agentflows V2",
-            "assistants": {
-                "title": "Assistants",
-                "custom": "Assistants Custom",
-                "openAi": "Assistants OpenAI",
-                "azure": "Assistants Azure"
-            },
-            "Assistants OpenAI": "Assistants OpenAI",
-            "Assistants Azure": "Assistants Azure",
-            "chatflows": "Chatflows",
-            "chatMessages": "Chat Messages",
-            "chatFeedbacks": "Chat Feedbacks",
-            "customTemplates": "Custom Templates",
-            "documentStores": "Document Stores",
-            "executions": "Executions",
-            "tools": "Tools",
-            "agents": "Agents",
-            "viewMessages": "View Messages",
-            "viewLeads": "View Leads",
-            "configuration": "Configuration",
-            "duplicateChatflow": "Duplicate Agents",
-            "loadChatflow": "Load Agents",
-            "exportChatflow": "Export Agents",
-            "deleteChatflow": "Delete Agents",
-            "marketplaces": "Marketplaces",
-            "credentials": "Credentials",
-            "apiKeys": "API Keys",
-            "Datasets": "Datasets",
-            "evaluators": "Evaluators",
-            "management": "User & Workspace Management",
-            "sso": "SSO Config",
-            "roles": "Roles",
-            "loginActivity": "Login Activity",
-            "others": "Others",
-            "logs": "Logs",
-            "files": "Files",
-            "account": "Account Settings",
-            "viewUpsertHistory": "Upsert History",
-            "starterPromptsTitle": "Starter Prompts - {{name}}",
-            "chatFeedbackTitle": "Chat Feedback - {{name}}",
-            "allowedDomainsTitle": "Allowed Domains - {{name}}",
-            "speechToTextTitle": "Speech To Text - {{name}}",
-            "itemsError": "Menu Items Error",
-            "beta": "BETA"
-        },
-        "actions": {
-            "starterPrompts": "Starter Prompts",
-            "saveAsTemplate": "Save As Template",
-            "chatFeedback": "Chat Feedback",
-            "copyToClipboard": "Copy to clipboard",
-            "options": "Options",
-            "rename": {
-                "title": "Rename",
-                "renameThis": "Rename {{name}}"
-            },
-            "duplicate": "Duplicate",
-            "import": "Import",
-            "export": "Export",
-            "speechToText": "Speech To Text",
-            "updateCategory": "Update Category",
-            "delete": {
-                "title": "Delete",
-                "description": "Delete {{title}} {{name}}?"
-            },
-            "cancel": "Cancel",
-            "back": "Back",
-            "save": "Save",
-            "yes": "Yes",
-            "no": "No",
-            "next": "Next",
-            "download": "Download",
-            "generate": "Generate",
-            "apply": "Apply",
-            "load": "Load"
-        }
-    },
     "components": {
         "dialogs": {
             "about": {
@@ -106,14 +13,29 @@
                 "title": "Provide additional feedback",
                 "placeholder": "What do you think of the response?",
                 "actions": {
-                    "submit": "Submit Feedback"
+                    "submit": "Submit Feedback",
+                    "enableChatFeedback": "Enable chat feedback"
                 }
             },
             "agentflows": {
                 "generating": "Generating your Agentflow...",
                 "placeholder": "Describe your agent here",
                 "selectModel": "Select model to generate agentflow<highlight>&nbsp;*</highlight>",
-                "chooseAnOption": "choose an option"
+                "chooseAnOption": "choose an option",
+                "actions": {
+                    "generate": "Generate",
+                    "back": "Back"
+                },
+                "messages": {
+                    "errors": {
+                        "fields": {
+                            "fill": "Please fill in all mandatory fields.",
+                            "fillFields": "Please fill in the following required fields: {{fields}}",
+                            "fillFIeldsForModel": "Please fill in all mandatory fields for the selected model."
+                        },
+                        "failGenerateAgentflow": "Failed to generate agentflow"
+                    }
+                }
             },
             "chatflow": {
                 "tabs": {
@@ -138,10 +60,11 @@
             },
             "exportAsTemplate": {
                 "title": "Export As Template",
-                "exportName": "Name<highlight>&nbsp;*</highlight>",
+                "name": "Name<highlight>&nbsp;*</highlight>",
                 "badge": "Badge",
                 "usecases": "Usecases",
                 "usecaseTooltip": "Type a usecase and press enter to add it to the list. You can add as many items as you want.",
+                "description": "Description",
                 "messages": {
                     "success": "Saved as template successfully!",
                     "errors": {
@@ -150,7 +73,8 @@
                     }
                 },
                 "actions": {
-                    "saveTemplate": "Save Template"
+                    "saveTemplate": "Save Template",
+                    "cancel": "Cancel"
                 }
             },
             "formatPrompt": {
@@ -168,11 +92,13 @@
                 },
                 "workspace": "Workspace<highlight>&nbsp;*</highlight>",
                 "roles": " Role to Assign<highlight>&nbsp;*</highlight>",
+                "selectRole": "Select Role",
                 "messages": {
                     "success": "Users invited to workspace",
                     "errors": {
                         "alreadyIn": "The following users are already in the workspace or organization: {{users}}",
-                        "failedSave": "Failed to invite users to workspace: {{msg}}"
+                        "failedSave": "Failed to invite users to workspace: {{msg}}",
+                        "unknown": "Unknown error"
                     },
                     "warning": "One or more invalid emails were removed."
                 }
@@ -181,6 +107,8 @@
                 "title": "Manage Scraped Links - {{url}}",
                 "actions": {
                     "fetch": "Fetch Links",
+                    "save": "Save",
+                    "cancel": "Cancel",
                     "clearAll": {
                         "title": "Clear All",
                         "tooltip": "Clear All Links"
@@ -203,6 +131,9 @@
             },
             "nvidiaNim": {
                 "title": "NIM Setup",
+                "labels": {
+                    "model": "Model"
+                },
                 "steps": {
                     "download": {
                         "title": "Download Installer",
@@ -233,7 +164,12 @@
                 },
                 "actions": {
                     "viewLicense": "View License",
-                    "useExisting": "Use Existing"
+                    "useExisting": "Use Existing",
+                    "cancel": "Cancel",
+                    "download": "Download",
+                    "next": "Next",
+                    "no": "No",
+                    "yes": "Yes"
                 },
                 "exists": {
                     "title": "Container Already Exists",
@@ -248,23 +184,64 @@
             },
             "promptGenerator": {
                 "describeTaskPlaceholder": "Describe your task here",
+                "actions": {
+                    "apply": "Apply",
+                    "back": "Back",
+                    "generate": "Generate"
+                }
+            },
+            "promptLangsmithHub": {
+                "model": "Model",
                 "usecase": "Usecase",
                 "language": "Language",
-                "actions": {
-                    "search": "Search"
+                "mailboxFolder": "secondary mailbox folder",
+                "prompt": "Prompt",
+                "description": "Description",
+                "readme": "Readme",
+                "cases": {
+                    "agents": "Agents",
+                    "agentStimulation": "Agent Stimulation",
+                    "autonomousAgents": "Autonomous agents",
+                    "classification": "Classification",
+                    "chatbots": "Chatbots",
+                    "codeUnderstanding": "Code understanding",
+                    "codeWriting": "Code writing",
+                    "evaluation": "Evaluation",
+                    "extraction": "Extraction",
+                    "interactingApi": "Interacting with APIs",
+                    "multiModal": "Multi-modal",
+                    "qaDocuments": "QA over documents",
+                    "selfChecking": "Self-checking",
+                    "sql": "SQL",
+                    "summarization": "Summarization",
+                    "tagging": "Tagging"
+                },
+                "langs": {
+                    "chinese": "Chinese",
+                    "english": "English",
+                    "french": "French",
+                    "german": "German",
+                    "russian": "Russian",
+                    "spanish": "Spanish"
                 },
                 "loading": {
                     "wait": "Please wait....loading Prompts",
                     "notFound": "No Available Prompts",
                     "found": "Available Prompts"
                 },
-                "mailboxFolder": "secondary mailbox folder",
-                "readme": "Readme"
+                "actions": {
+                    "search": "Search",
+                    "cancel": "Cancel",
+                    "load": "Load"
+                }
             },
             "saveChatFlow": {
                 "placeholder": "My New Chatflow"
             },
             "shareWithWorkspace": {
+                "name": "Name",
+                "workspace": "Workspace",
+                "share": "Share",
                 "messages": {
                     "success": "Items Shared Successfully",
                     "error": "Failed to share Item: {{msg}}"
@@ -282,14 +259,21 @@
                 "addLabel": "Add a tag",
                 "tooltip": "Enter a tag and press enter to add it to the list. You can add as many tags as you want.",
                 "actions": {
-                    "submit": "Submit"
+                    "submit": "Submit",
+                    "cancel": "Cancel"
                 }
             },
             "viewLeads": {
                 "placeholder": "Search Name or Email or Phone",
                 "noLeads": "No Leads",
                 "leadsTable": {
+                    "name": "Name",
+                    "email": "Email Address",
+                    "phone": "Phone",
                     "created": "Created Date"
+                },
+                "actions": {
+                    "export": "Export"
                 },
                 "formats": {
                     "date": "MMMM Do, YYYY"
@@ -345,12 +329,17 @@
                     "emailType": "Email:&nbsp;<highlight>{{email}}</highlight>",
                     "blubTooltip": "On the left 👈, you’ll see the Memory node used in this conversation. To delete the session conversations stored on that Memory node, you must have a matching Memory node with identical parameters in the canvas.",
                     "usedTools": "Used Tools",
-                    "state": "State"
+                    "state": "State",
+                    "apiEmbed": "API/Embed",
+                    "evaluations": "Evaluations",
+                    "ui": "UI"
                 },
                 "actions": {
                     "exportJSON": "Export to JSON",
                     "deleteAll": "Delete All",
-                    "clearMessage": "Clear Message"
+                    "clearMessage": "Clear Message",
+                    "cancel": "Cancel",
+                    "delete": "Delete"
                 },
                 "errors": {
                     "audioNotSupport": "Your browser does not support the &lt;audio&gt; tag."
@@ -389,7 +378,8 @@
                     }
                 },
                 "actions": {
-                    "confirmChange": "Confirm Change"
+                    "confirmChange": "Confirm Change",
+                    "cancel": "Cancel"
                 }
             }
         },
@@ -400,6 +390,9 @@
                 "saved": "Allowed Origins Saved",
                 "failed": "Failed to save Allowed Origins: {{msg}}"
             },
+            "actions": {
+                "save": "Save"
+            },
             "tooltip": "Your chatbot will only work when used from the following domains.",
             "error": {
                 "title": "Error Message",
@@ -408,6 +401,9 @@
             }
         },
         "analyzeFlow": {
+            "actions": {
+                "save": "Save"
+            },
             "provides": {
                 "langSmith": "LangSmith",
                 "langFuse": "LangFuse",
@@ -439,6 +435,9 @@
             "messages": {
                 "success": "Chat Feedback Settings Saved",
                 "error": "Failed to save Chat Feedback Settings: {{msg}}"
+            },
+            "actions": {
+                "save": "Save"
             }
         },
         "fileUpload": {
@@ -446,6 +445,9 @@
             "messages": {
                 "success": "File Upload Configuration Saved",
                 "error": "Failed to save File Upload Configuration: {{msg}}"
+            },
+            "actions": {
+                "save": "Save"
             },
             "enableLabel": "Enable Full File Upload",
             "allowUploadsType": "Allow Uploads of Type",
@@ -465,6 +467,9 @@
             "messages": {
                 "success": "Follow-up Prompts configuration saved",
                 "error": "Failed to save follow-up prompts configuration: {{msg}}"
+            },
+            "actions": {
+                "save": "Save"
             },
             "providers": {
                 "anthropic": "Anthropic Claude",
@@ -500,10 +505,18 @@
                 "success": "Leads configuration Saved",
                 "error": "Failed to save Leads configuration: {{msg}}"
             },
+            "actions": {
+                "save": "Save"
+            },
             "enableLeadCapture": "Enable Lead Capture",
             "form": {
                 "title": "Form Title",
-                "placeholder": "Hey 👋 thanks for your interest!\nLet us know where we can reach you"
+                "placeholder": "Hey 👋 thanks for your interest!\nLet us know where we can reach you",
+                "labels": {
+                    "name": "name",
+                    "email": "Email Address",
+                    "phone": "Phone"
+                }
             },
             "messageAfterLeadCaptured": {
                 "title": "Message after lead captured",
@@ -512,8 +525,12 @@
             "formFields": "Form fields"
         },
         "overrideConfig": {
+            "variables": "Variables",
             "title": "Override Configuration",
             "docsHelp": "Enable or disable which properties of the flow configuration can be overridden. Refer to the <a>documentation</a> for more information.",
+            "actions": {
+                "save": "Save"
+            },
             "enableLabel": "Enable Override Configuration",
             "nodes": "Nodes",
             "messages": {
@@ -524,7 +541,10 @@
             "schema": "Schema"
         },
         "postProcessing": {
-            "title": "Post Processing",
+            "actions": {
+                "save": "Save",
+                "cancel": "Cancel"
+            },
             "enableLabel": "Enable Post Processing",
             "functionLabel": "JS Function",
             "postProcessionLabel": "Post Processing Function",
@@ -579,6 +599,9 @@
         "rateLimit": {
             "title": "Rate Limit",
             "docsHelp": "Visit <a>Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.",
+            "actions": {
+                "save": "Save"
+            },
             "enableLabel": "Enable Rate Limit",
             "limitMax": "Message Limit per Duration",
             "limitDuration": "Duration in Second",
@@ -592,8 +615,12 @@
             }
         },
         "speechToText": {
+            "actions": {
+                "save": "Save"
+            },
             "providersLabel": "Providers",
             "providers": {
+                "none": "None",
                 "openAIWhisper": "OpenAI Whisper",
                 "assemblyAi": "Assembly AI",
                 "localAiSTT": "LocalAi STT",
@@ -648,11 +675,18 @@
             "messages": {
                 "success": "Conversation Starter Prompts Saved",
                 "error": "Failed to save Conversation Starter Prompts: {{msg}}"
+            },
+            "actions": {
+                "save": "Save"
             }
         },
         "textToSpeech": {
+            "actions": {
+                "save": "Save"
+            },
             "providersLabel": "Providers",
             "providers": {
+                "none": "None",
                 "openai": "OpenAI TTS",
                 "elevenlabs": "Eleven Labs TTS"
             },
@@ -674,7 +708,6 @@
                 "title": "Test Audio",
                 "text": "Test text: \"{{text}}\""
             },
-            "testAudioGenerating": "Generating...",
             "testAudioPlaceholder": "Choose a voice",
             "testAudioLoading": "Loading voices...",
             "messages": {
@@ -714,10 +747,15 @@
             "output": "{{output}} from {{node}}"
         },
         "codeBlock": {
-            "copy": "Copy",
-            "copied": "Copied!"
+            "copied": "Copied!",
+            "actions": {
+                "download": "Download",
+                "copy": "Copy"
+            }
         },
         "documentStoreTable": {
+            "name": "Name",
+            "description": "Description",
             "connectedFlows": "Connected flows",
             "totalCharacters": "Total characters",
             "totalChunks": "Total chunks",
@@ -726,6 +764,7 @@
             "options": "Document store options"
         },
         "flowListTable": {
+            "name": "name",
             "category": "Category",
             "nodes": "Nodes",
             "lastModifiedDate": "Last Modified Date",
@@ -775,6 +814,13 @@
         "toolListTable": {
             "name": "Name",
             "description": "Description"
+        },
+        "copyToClipboard": {
+            "title": "Copy to clipboard"
+        },
+        "dropdown": {
+            "createNewItemLabel": "- Create New -",
+            "selected": "Selected Option"
         }
     },
     "suggestOptions": {
@@ -795,19 +841,78 @@
             "nodeOutput": "{{output}} from {{node}}"
         }
     },
-    "dropdown": {
-        "createNewItemLabel": "- Create New -",
-        "selected": "Selected Option"
+    "menu": {
+        "agentflows": "Agentflows",
+        "agentflowsV2": "Agentflows V2",
+        "assistants": {
+            "title": "Assistants",
+            "custom": "Assistants Custom",
+            "openAi": "Assistants OpenAI",
+            "azure": "Assistants Azure"
+        },
+        "chatflows": "Chatflows",
+        "chatMessages": "Chat Messages",
+        "chatFeedbacks": "Chat Feedbacks",
+        "customTemplates": "Custom Templates",
+        "documentStores": "Document Stores",
+        "executions": "Executions",
+        "tools": "Tools",
+        "variables": "Variables",
+        "evaluations": "Evaluations",
+        "saveAsTemplate": "Save As Template",
+        "viewMessages": "View Messages",
+        "viewLeads": "View Leads",
+        "configuration": "Configuration",
+        "duplicateChatflow": "Duplicate Agents",
+        "loadChatflow": "Load Agents",
+        "exportChatflow": "Export Agents",
+        "deleteChatflow": "Delete Agents",
+        "marketplaces": "Marketplaces",
+        "credentials": "Credentials",
+        "apiKeys": "API Keys",
+        "datasets": "Datasets",
+        "evaluators": "Evaluators",
+        "management": "User & Workspace Management",
+        "sso": "SSO Config",
+        "roles": "Roles",
+        "loginActivity": "Login Activity",
+        "others": "Others",
+        "logs": "Logs",
+        "files": "Files",
+        "account": "Account Settings",
+        "viewUpsertHistory": "Upsert History",
+        "itemsError": "Menu Items Error",
+        "beta": "BETA",
+        "deleteAssistant": "Delete Assistant",
+        "starterPromptsTitle": "Starter Prompts - {{name}}",
+        "chatFeedbackTitle": "Chat Feedback - {{name}}",
+        "allowedDomainsTitle": "Allowed Domains - {{name}}",
+        "speechToTextTitle": "Speech To Text - {{name}}",
+        "users": "Users",
+        "workspaces": "Workspaces",
+        "actions": {
+            "delete": {
+                "title": "Delete",
+                "description": "Delete {{title}} {{name}}?"
+            },
+            "cancel": "Cancel",
+            "options": "Options",
+            "rename": {
+                "title": "Rename",
+                "renameThis": "Rename {{name}}"
+            },
+            "duplicate": "Duplicate",
+            "export": "Export",
+            "saveAsTemplate": "Save As Template",
+            "starterPrompts": "Starter Prompts",
+            "chatFeedback": "Chat Feedback",
+            "allowedDomains": "Allowed Domains",
+            "speechToText": "Speech To Text",
+            "updateCategory": "Update Category"
+        }
     },
     "errors": {
-        "internalServerErrorTitle": "Internal Server Error",
-        "manyRequests": "You're making a lot of requests. Please wait and try again later.",
-        "fields": {
-            "fill": "Please fill in all mandatory fields.",
-            "fillFields": "Please fill in the following required fields: {{fields}}",
-            "fillFIeldsForModel": "Please fill in all mandatory fields for the selected model."
-        },
-        "failGenerateAgentflow": "Failed to generate agentflow"
+        "manyRequests": "You're making a lot of requests. Please wait and try again later."
     },
     "errorBoundary": {
         "title": "Oh snap!",
@@ -822,64 +927,49 @@
         "trialDaysLeftMessage_one": "There is <highlight>{{count}} day left</highlight> in your trial.",
         "trialDaysLeftMessage_other": "There are <highlight>{{count}} days left</highlight> in your trial."
     },
-    "help": {
-        "documentation": "Documentation",
-        "contactTo": "Please contact your administrator for assistance."
-    },
     "profile": {
         "user": "User",
-        "users": "Users",
         "logout": "Logout",
-        "logoutWait": "Logging out..."
-    },
-    "organizations": {
-        "organization": "Organization",
-        "organizationName": "{{name}}'s Organization",
-        "switching": "Switching organization...",
-        "select": "Select Organization"
-    },
-    "workspaces": {
-        "workspace": "Workspace",
-        "workspaces": "Workspaces",
-        "switching": "Switching workspace...",
-        "unavailable": "Workspace Unavailable",
-        "unavailableContinue": "Your current workspace is no longer available. Please select another workspace to continue.",
-        "unavailableChange": "Workspace is no longer available. Please select a different organization/workspace to continue.",
-        "select": "Select Workspace",
-        "switchError": "Workspace Switch Error",
-        "failedToSwitch": "Failed to switch workspace"
-    },
-    "roles": {
-        "select": "Select Role"
-    },
-    "export": {
-        "selectData": "Select Data to Export",
-        "exporting": "Exporting...",
-        "exportingWhile": "Exporting data might takes a while",
-        "failToExport": "Failed to export all: {{msg}}"
-    },
-    "import": {
-        "importing": "Importing...",
-        "importingWhile": "Importing data might takes a while",
-        "importSuccess": "Import All successful",
-        "invalidImport": "Invalid Imported File",
-        "failToImport": "Failed to import: {{msg}}"
-    },
-    "layout": {
-        "MainLayout": {
-            "Header": {
-                "OrgWorkspaceBreadcrumbs": {},
-                "ProfileSection": {
-                    "version": "Version",
-                    "accountSetting": "Account Settings"
-                }
-            },
-            "menu": {},
-            "Sidebar": {
-                "MenuList": {
-                    "NavCollapse": {}
-                }
-            }
+        "logoutWait": "Logging out...",
+        "version": "Version",
+        "accountSetting": "Account Settings",
+        "documentation": "Documentation",
+        "contactTo": "Please contact your administrator for assistance.",
+        "actions": {
+            "export": "Export",
+            "import": "Import"
+        },
+        "organizations": {
+            "organization": "Organization",
+            "organizationName": "{{name}}'s Organization",
+            "switching": "Switching organization...",
+            "select": "Select Organization"
+        },
+        "workspaces": {
+            "workspace": "Workspace",
+            "switching": "Switching workspace...",
+            "unavailable": "Workspace Unavailable",
+            "unavailableContinue": "Your current workspace is no longer available. Please select another workspace to continue.",
+            "unavailableChange": "Workspace is no longer available. Please select a different organization/workspace to continue.",
+            "select": "Select Workspace",
+            "switchError": "Workspace Switch Error",
+            "failedToSwitch": "Failed to switch workspace"
+        },
+        "export": {
+            "selectData": "Select Data to Export",
+            "exporting": "Exporting...",
+            "exportingWhile": "Exporting data might takes a while",
+            "failToExport": "Failed to export all: {{msg}}"
+        },
+        "import": {
+            "importing": "Importing...",
+            "importingWhile": "Importing data might takes a while",
+            "importSuccess": "Import All successful",
+            "invalidImport": "Invalid Imported File",
+            "failToImport": "Failed to import: {{msg}}"
+        },
+        "errors": {
+            "internalServerErrorTitle": "Internal Server Error"
         }
     }
 }

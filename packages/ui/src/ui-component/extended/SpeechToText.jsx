@@ -173,7 +173,7 @@ const speechToTextProviders = {
                 description: 'components.speechToText.inputs.profanityFilterMode.description',
                 options: [
                     {
-                        label: 'common.labels.none',
+                        label: 'components.speechToText.providers.none',
                         name: 'None'
                     },
                     {
@@ -362,7 +362,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                             }
                         }}
                     >
-                        <MenuItem value='none'>{t('common.labels.none')}</MenuItem>
+                        <MenuItem value='none'>{t('components.speechToText.providers.none')}</MenuItem>
                         {Object.values(speechToTextProviders).map((provider) => (
                             <MenuItem key={provider.name} value={provider.name}>
                                 {t(provider.label)}
@@ -488,7 +488,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    {t('common.actions.save')}
+                    {t('components.speechToText.actions.save')}
                 </StyledButton>
             </Box>
         </>

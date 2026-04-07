@@ -68,7 +68,7 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
             <DialogActions>
                 <Button onClick={onCancel}>Cancel</Button>
                 <StyledButton variant='contained' onClick={onSave}>
-                    {t('chatFeedback.actions.submit')}
+                    {t('components.dialogs.chatFeedback.actions.submit')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

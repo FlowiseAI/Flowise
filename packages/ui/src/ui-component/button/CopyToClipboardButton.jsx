@@ -16,7 +16,7 @@ const CopyToClipboardButton = (props) => {
             onClick={props.onClick}
             size='small'
             sx={{ background: 'transparent', border: 'none' }}
-            title={t('common.actions.copyToClipboard')}
+            title={t('components.copyToClipboard.title')}
         >
             <IconClipboard
                 style={{ width: '20px', height: '20px' }}

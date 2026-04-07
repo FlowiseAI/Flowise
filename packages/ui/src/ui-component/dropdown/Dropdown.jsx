@@ -67,7 +67,7 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                                     <Box
                                         component='img'
                                         src={matchingOption.imageSrc}
-                                        alt={matchingOption.label || t('dropdown.selected')}
+                                        alt={matchingOption.label || t('components.dropdown.selected')}
                                         sx={{
                                             width: 32,
                                             height: 32,

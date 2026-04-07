@@ -282,8 +282,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         setHardDeleteDialogProps({
             title: t('components.dialogs.viewMessages.delete.title'),
             description: t('components.dialogs.viewMessages.delete.description'),
-            confirmButtonName: t('common.actions.delete.title'),
-            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('components.dialogs.viewMessages.actions.delete'),
+            cancelButtonName: t('components.dialogs.viewMessages.actions.cancel'),
             isChatflow: dialogProps.isChatflow
         })
         setHardDeleteDialogOpen(true)
@@ -349,13 +349,13 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     const getChatType = (chatType) => {
         if (chatType === 'INTERNAL') {
-            return t('common.labels.ui')
+            return t('components.dialogs.viewMessages.labels.ui')
         } else if (chatType === 'EVALUATION') {
-            return t('common.labels.evaluations')
+            return t('components.dialogs.viewMessages.labels.evaluations')
         } else if (chatType === 'MCP') {
             return 'MCP'
         }
-        return t('common.labels.apiEmbed')
+        return t('components.dialogs.viewMessages.labels.apiEmbed')
     }
 
     const exportMessages = async () => {
@@ -422,7 +422,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             title: t('components.dialogs.viewMessages.clearChat.title'),
             description,
             confirmButtonName: t('components.dialogs.viewMessages.clearChat.actions.clear'),
-            cancelButtonName: t('common.actions.cancel')
+            cancelButtonName: t('components.dialogs.viewMessages.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -442,7 +442,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                               sessionId: chatmsg.sessionId,
                               memoryType: chatmsg.memoryType
                           })
-                        : t('components.dialogs.viewMessages.clearChat.messages.simple')
+                        : t('components.dialogs.viewMessages.clearChat.messages.success.simple')
                 enqueueSnackbar({
                     message: description,
                     options: {
@@ -586,13 +586,13 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 if (firstMessage.role === 'userMessage') {
                     userContent = t('components.dialogs.viewMessages.logs.user', { msg: firstMessage.content })
                 } else if (firstMessage.role === 'apiMessage') {
-                    apiContent = t('components.dialogs.viewMessages.logs.bor', { msg: firstMessage.content })
+                    apiContent = t('components.dialogs.viewMessages.logs.bot', { msg: firstMessage.content })
                 }
 
                 if (secondMessage.role === 'userMessage') {
                     userContent = t('components.dialogs.viewMessages.logs.user', { msg: secondMessage.content })
                 } else if (secondMessage.role === 'apiMessage') {
-                    apiContent = t('components.dialogs.viewMessages.logs.bor', { msg: secondMessage.content })
+                    apiContent = t('components.dialogs.viewMessages.logs.bot', { msg: secondMessage.content })
                 }
 
                 seen[PK] = {
@@ -912,11 +912,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 name='chatType'
                                 options={[
                                     {
-                                        label: t('common.labels.ui'),
+                                        label: t('components.dialogs.viewMessages.labels.ui'),
                                         name: 'INTERNAL'
                                     },
                                     {
-                                        label: t('common.labels.apiEmbed'),
+                                        label: t('components.dialogs.viewMessages.labels.apiEmbed'),
                                         name: 'EXTERNAL'
                                     },
                                     {
@@ -924,7 +924,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         name: 'MCP'
                                     },
                                     {
-                                        label: 'Evaluations',
+                                        label: t('components.dialogs.viewMessages.labels.evaluations'),
                                         name: 'EVALUATION'
                                     }
                                 ]}

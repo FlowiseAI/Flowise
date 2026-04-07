@@ -86,10 +86,10 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
                             <StyledTableCell>&nbsp;</StyledTableCell>
                             <StyledTableCell>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
-                                    {t('common.labels.name')}
+                                    {t('components.documentStoreTable.name')}
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell>{t('common.labels.description')}</StyledTableCell>
+                            <StyledTableCell>{t('components.documentStoreTable.description')}</StyledTableCell>
                             <StyledTableCell>{t('components.documentStoreTable.connectedFlows')}</StyledTableCell>
                             <StyledTableCell>{t('components.documentStoreTable.totalCharacters')}</StyledTableCell>
                             <StyledTableCell>{t('components.documentStoreTable.totalChunks')}</StyledTableCell>

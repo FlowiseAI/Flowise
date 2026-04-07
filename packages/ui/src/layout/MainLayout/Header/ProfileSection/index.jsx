@@ -100,7 +100,7 @@ const ExportDialog = ({ show, onCancel, onExport }) => {
             aria-describedby='export-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='export-dialog-title'>
-                {!isExporting ? t('export.selectData') : t('export.exporting')}
+                {!isExporting ? t('profile.export.selectData') : t('profile.export.exporting')}
             </DialogTitle>
             <DialogContent>
                 {!isExporting && (
@@ -146,7 +146,7 @@ const ExportDialog = ({ show, onCancel, onExport }) => {
                                 src={ExportingGIF}
                                 alt='ExportingGIF'
                             />
-                            <span>{t('export.exportingWhile')}</span>
+                            <span>{t('profile.export.exportingWhile')}</span>
                         </div>
                     </Box>
                 )}
@@ -185,7 +185,7 @@ const ImportDialog = ({ show }) => {
     const component = show ? (
         <Dialog open={show} fullWidth maxWidth='sm' aria-labelledby='import-dialog-title' aria-describedby='import-dialog-description'>
             <DialogTitle sx={{ fontSize: '1rem' }} id='import-dialog-title'>
-                {t('import.importing')}
+                {t('profile.import.importing')}
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', mb: 3 }}>
@@ -199,7 +199,7 @@ const ImportDialog = ({ show }) => {
                             src={ExportingGIF}
                             alt='ImportingGIF'
                         />
-                        <span> {t('import.importingWhile')}</span>
+                        <span> {t('profile.import.importingWhile')}</span>
                     </div>
                 </Box>
             </DialogContent>
@@ -293,7 +293,7 @@ const ProfileSection = ({ handleLogout }) => {
         setImportDialogOpen(false)
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: t('import.importSuccess'),
+            message: t('profile.import.importSuccess'),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -340,12 +340,12 @@ const ProfileSection = ({ handleLogout }) => {
     useEffect(() => {
         if (importAllApi.error) {
             setImportDialogOpen(false)
-            let errMsg = t('import.invalidImport')
+            let errMsg = t('profile.import.invalidImport')
             let error = importAllApi.error
             if (error?.response?.data) {
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
             }
-            errorFailed(t('import.failToImport', { msg: errMsg }))
+            errorFailed(t('profile.import.failToImport', { msg: errMsg }))
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [importAllApi.error])
@@ -364,7 +364,7 @@ const ProfileSection = ({ handleLogout }) => {
                 linkElement.setAttribute('download', exportAllApi.data.FileDefaultName)
                 linkElement.click()
             } catch (error) {
-                errorFailed(t('export.failToExport', { msg: getErrorMessage(error) }))
+                errorFailed(t('profile.export.failToExport', { msg: getErrorMessage(error) }))
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -373,12 +373,12 @@ const ProfileSection = ({ handleLogout }) => {
     useEffect(() => {
         if (exportAllApi.error) {
             setExportDialogOpen(false)
-            let errMsg = t('errors.internalServerErrorTitle')
+            let errMsg = t('profile.errors.internalServerErrorTitle')
             let error = exportAllApi.error
             if (error?.response?.data) {
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
             }
-            errorFailed(t('export.failToExport', { msg: errMsg }))
+            errorFailed(t('profile.export.failToExport', { msg: errMsg }))
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [exportAllApi.error])
@@ -478,7 +478,7 @@ const ProfileSection = ({ handleLogout }) => {
                                                         <IconFileExport stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText
-                                                        primary={<Typography variant='body2'>{t('common.actions.export')}</Typography>}
+                                                        primary={<Typography variant='body2'>{t('profile.actions.export')}</Typography>}
                                                     />
                                                 </PermissionListItemButton>
                                                 <PermissionListItemButton
@@ -492,7 +492,7 @@ const ProfileSection = ({ handleLogout }) => {
                                                         <IconFileUpload stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText
-                                                        primary={<Typography variant='body2'>{t('common.actions.import')}</Typography>}
+                                                        primary={<Typography variant='body2'>{t('profile.actions.import')}</Typography>}
                                                     />
                                                 </PermissionListItemButton>
                                                 <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
@@ -507,11 +507,7 @@ const ProfileSection = ({ handleLogout }) => {
                                                         <IconInfoCircle stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText
-                                                        primary={
-                                                            <Typography variant='body2'>
-                                                                {t('layout.MainLayout.Header.ProfileSection.version')}
-                                                            </Typography>
-                                                        }
+                                                        primary={<Typography variant='body2'>{t('profile.version')}</Typography>}
                                                     />
                                                 </ListItemButton>
                                                 {isAuthenticated && !currentUser.isSSO && (
@@ -526,11 +522,7 @@ const ProfileSection = ({ handleLogout }) => {
                                                             <IconUserEdit stroke={1.5} size='1.3rem' />
                                                         </ListItemIcon>
                                                         <ListItemText
-                                                            primary={
-                                                                <Typography variant='body2'>
-                                                                    {t('layout.MainLayout.Header.ProfileSection.accountSetting')}
-                                                                </Typography>
-                                                            }
+                                                            primary={<Typography variant='body2'>{t('profile.accountSetting')}</Typography>}
                                                         />
                                                     </ListItemButton>
                                                 )}

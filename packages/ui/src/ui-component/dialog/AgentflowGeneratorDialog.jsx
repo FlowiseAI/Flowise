@@ -126,7 +126,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
 
     const displayWarning = (message) => {
         enqueueSnackbar({
-            message: message || t('errors.fields.fill'),
+            message: message || t('components.dialogs.agentflows.messages.errors.fields.fill'),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'warning',
@@ -193,8 +193,8 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
         if (!isValid) {
             const message =
                 missingFields.length > 0
-                    ? t('errors.fields.fillFields', { fields: missingFields.join(', ') })
-                    : t('errors.fields.fillFIeldsForModel')
+                    ? t('components.dialogs.agentflows.messages.errors.fields.fillFields', { fields: missingFields.join(', ') })
+                    : t('components.dialogs.agentflows.messages.errors.fields.fillFIeldsForModel')
             displayWarning(message)
             return
         }
@@ -213,7 +213,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 onConfirm()
             } else {
                 enqueueSnackbar({
-                    message: response.error || t('errors.failGenerateAgentflow'),
+                    message: response.error || t('components.dialogs.agentflows.messages.errors.failGenerateAgentflow'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -228,7 +228,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             }
         } catch (error) {
             enqueueSnackbar({
-                message: error.response?.data?.message || t('errors.failGenerateAgentflow'),
+                message: error.response?.data?.message || t('components.dialogs.agentflows.messages.errors.failGenerateAgentflow'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -441,7 +441,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         !checkMandatoryFields().isValid
                                     }
                                 >
-                                    {t('common.actions.generate')}
+                                    {t('components.dialogs.agentflows.actions.generate')}
                                 </LoadingButton>
                             )}
                             {generatedInstruction && (
@@ -452,7 +452,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         setGeneratedInstruction('')
                                     }}
                                 >
-                                    {t('common.actions.back')}
+                                    {t('components.dialogs.agentflows.actions.back')}
                                 </Button>
                             )}
                         </>

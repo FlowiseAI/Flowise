@@ -204,7 +204,7 @@ const WorkspaceSwitcher = () => {
             setShowWorkspaceUnavailableDialog(false)
 
             // Set error message and show error dialog
-            setErrorMessage(switchWorkspaceApi.error.message || t('workspaces.failedToSwitch'))
+            setErrorMessage(switchWorkspaceApi.error.message || t('profile.workspaces.failedToSwitch'))
             setShowErrorDialog(true)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -304,7 +304,7 @@ const WorkspaceSwitcher = () => {
                     <Stack spacing={2} alignItems='center'>
                         <CircularProgress />
                         <Typography variant='body1' style={{ color: 'white' }}>
-                            {t('workspaces.switching')}
+                            {t('profile.workspaces.switching')}
                         </Typography>
                     </Stack>
                 </DialogContent>
@@ -323,8 +323,8 @@ const WorkspaceSwitcher = () => {
             >
                 <DialogContent>
                     <Stack spacing={3}>
-                        <Typography variant='h5'>{t('workspaces.unavailable')}</Typography>
-                        <Typography variant='body1'>{t('workspaces.unavailableContinue')}</Typography>
+                        <Typography variant='h5'>{t('profile.workspaces.unavailable')}</Typography>
+                        <Typography variant='body1'>{t('profile.workspaces.unavailableContinue')}</Typography>
                         <Select
                             fullWidth
                             value=''
@@ -335,7 +335,7 @@ const WorkspaceSwitcher = () => {
                             displayEmpty
                         >
                             <MenuItem disabled value=''>
-                                <em>{t('workspaces.select')}</em>
+                                <em>{t('profile.workspaces.select')}</em>
                             </MenuItem>
                             {assignedWorkspaces.map((workspace, index) => (
                                 <MenuItem key={index} value={workspace.id}>
@@ -368,11 +368,11 @@ const WorkspaceSwitcher = () => {
             >
                 <DialogContent>
                     <Stack spacing={3}>
-                        <Typography variant='h5'>{t('workspaces.switchError')}</Typography>
+                        <Typography variant='h5'>{t('profile.workspaces.switchError')}</Typography>
                         <Typography variant='body1'>{errorMessage}</Typography>
                         {isEnterpriseLicensed && (
                             <Typography variant='body2' color='text.secondary'>
-                                {t('help.contactTo')}
+                                {t('profile.contactTo')}
                             </Typography>
                         )}
                     </Stack>

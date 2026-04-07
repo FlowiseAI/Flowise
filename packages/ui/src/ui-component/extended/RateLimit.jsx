@@ -185,7 +185,7 @@ const RateLimit = ({ dialogProps, hideTitle = false }) => {
             )}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton disabled={checkDisabled()} variant='contained' onClick={() => onSave()} sx={{ minWidth: 100 }}>
-                    {t('common.actions.save')}
+                    {t('components.rateLimit.actions.save')}
                 </StyledButton>
             </Box>
         </Stack>

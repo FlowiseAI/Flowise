@@ -68,7 +68,7 @@ const dashboard = {
             children: [
                 {
                     id: 'chatflows',
-                    title: 'common.menu.chatflows',
+                    title: 'menu.chatflows',
                     type: 'item',
                     url: '/chatflows',
                     icon: icons.IconHierarchy,
@@ -77,7 +77,7 @@ const dashboard = {
                 },
                 {
                     id: 'agentflows',
-                    title: 'common.menu.agentflows',
+                    title: 'menu.agentflows',
                     type: 'item',
                     url: '/agentflows',
                     icon: icons.IconUsersGroup,
@@ -86,7 +86,7 @@ const dashboard = {
                 },
                 {
                     id: 'executions',
-                    title: 'common.menu.executions',
+                    title: 'menu.executions',
                     type: 'item',
                     url: '/executions',
                     icon: icons.IconListCheck,
@@ -95,7 +95,7 @@ const dashboard = {
                 },
                 {
                     id: 'assistants',
-                    title: 'common.menu.assistants.title',
+                    title: 'menu.assistants.title',
                     type: 'item',
                     url: '/assistants',
                     icon: icons.IconRobot,
@@ -104,7 +104,7 @@ const dashboard = {
                 },
                 {
                     id: 'marketplaces',
-                    title: 'common.menu.marketplaces',
+                    title: 'menu.marketplaces',
                     type: 'item',
                     url: '/marketplaces',
                     icon: icons.IconBuildingStore,
@@ -113,7 +113,7 @@ const dashboard = {
                 },
                 {
                     id: 'tools',
-                    title: 'common.menu.tools',
+                    title: 'menu.tools',
                     type: 'item',
                     url: '/tools',
                     icon: icons.IconTool,
@@ -122,7 +122,7 @@ const dashboard = {
                 },
                 {
                     id: 'credentials',
-                    title: 'common.menu.credentials',
+                    title: 'menu.credentials',
                     type: 'item',
                     url: '/credentials',
                     icon: icons.IconLock,
@@ -131,7 +131,7 @@ const dashboard = {
                 },
                 {
                     id: 'variables',
-                    title: 'common.labels.variables',
+                    title: 'menu.variables',
                     type: 'item',
                     url: '/variables',
                     icon: icons.IconVariable,
@@ -140,7 +140,7 @@ const dashboard = {
                 },
                 {
                     id: 'apikey',
-                    title: 'common.menu.apiKeys',
+                    title: 'menu.apiKeys',
                     type: 'item',
                     url: '/apikey',
                     icon: icons.IconKey,
@@ -149,7 +149,7 @@ const dashboard = {
                 },
                 {
                     id: 'document-stores',
-                    title: 'common.menu.documentStores',
+                    title: 'menu.documentStores',
                     type: 'item',
                     url: '/document-stores',
                     icon: icons.IconFiles,
@@ -160,12 +160,12 @@ const dashboard = {
         },
         {
             id: 'evaluations',
-            title: 'common.labels.evaluations',
+            title: 'menu.evaluations',
             type: 'group',
             children: [
                 {
                     id: 'datasets',
-                    title: 'common.menu.datasets',
+                    title: 'menu.datasets',
                     type: 'item',
                     url: '/datasets',
                     icon: icons.IconDatabase,
@@ -175,7 +175,7 @@ const dashboard = {
                 },
                 {
                     id: 'evaluators',
-                    title: 'common.menu.evaluators',
+                    title: 'menu.evaluators',
                     type: 'item',
                     url: '/evaluators',
                     icon: icons.IconTestPipe,
@@ -185,7 +185,7 @@ const dashboard = {
                 },
                 {
                     id: 'evaluations',
-                    title: 'common.labels.evaluations',
+                    title: 'menu.evaluations',
                     type: 'item',
                     url: '/evaluations',
                     icon: icons.IconChartHistogram,
@@ -197,12 +197,12 @@ const dashboard = {
         },
         {
             id: 'management',
-            title: 'common.menu.management',
+            title: 'menu.management',
             type: 'group',
             children: [
                 {
                     id: 'sso',
-                    title: 'common.menu.sso',
+                    title: 'menu.sso',
                     type: 'item',
                     url: '/sso-config',
                     icon: icons.IconShieldLock,
@@ -212,7 +212,7 @@ const dashboard = {
                 },
                 {
                     id: 'roles',
-                    title: 'common.menu.roles',
+                    title: 'menu.roles',
                     type: 'item',
                     url: '/roles',
                     icon: icons.IconLockCheck,
@@ -222,7 +222,7 @@ const dashboard = {
                 },
                 {
                     id: 'users',
-                    title: 'profile.users',
+                    title: 'menu.users',
                     type: 'item',
                     url: '/users',
                     icon: icons.IconUsers,
@@ -232,7 +232,7 @@ const dashboard = {
                 },
                 {
                     id: 'workspaces',
-                    title: 'common.menu.workspaces',
+                    title: 'menu.workspaces',
                     type: 'item',
                     url: '/workspaces',
                     icon: icons.IconStack2,
@@ -242,7 +242,7 @@ const dashboard = {
                 },
                 {
                     id: 'login-activity',
-                    title: 'common.menu.loginActivity',
+                    title: 'menu.loginActivity',
                     type: 'item',
                     url: '/login-activity',
                     icon: icons.IconClipboardList,
@@ -254,12 +254,12 @@ const dashboard = {
         },
         {
             id: 'others',
-            title: 'common.menu.others',
+            title: 'menu.others',
             type: 'group',
             children: [
                 {
                     id: 'logs',
-                    title: 'common.menu.logs',
+                    title: 'menu.logs',
                     type: 'item',
                     url: '/logs',
                     icon: icons.IconList,
@@ -269,7 +269,7 @@ const dashboard = {
                 },
                 // {
                 //     id: 'files',
-                //     title: 'common.menu.files',
+                //     title: 'menu.files',
                 //     type: 'item',
                 //     url: '/files',
                 //     icon: icons.IconFileDatabase,
@@ -278,7 +278,7 @@ const dashboard = {
                 // },
                 {
                     id: 'account',
-                    title: 'common.menu.account',
+                    title: 'menu.account',
                     type: 'item',
                     url: '/account',
                     icon: icons.IconSettings,

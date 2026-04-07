@@ -33,21 +33,21 @@ const agent_settings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'common.menu.viewMessages',
+            title: 'menu.viewMessages',
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'viewLeads',
-            title: 'common.menu.viewMessages',
+            title: 'menu.viewMessages',
             type: 'item',
             url: '',
             icon: icons.IconUsers
         },
         {
             id: 'chatflowConfiguration',
-            title: 'common.menu.configuration',
+            title: 'menu.configuration',
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal,
@@ -55,7 +55,7 @@ const agent_settings = {
         },
         {
             id: 'saveAsTemplate',
-            title: 'common.actions.saveAsTemplate',
+            title: 'menu.saveAsTemplate',
             type: 'item',
             url: '',
             icon: icons.IconTemplate,
@@ -63,7 +63,7 @@ const agent_settings = {
         },
         {
             id: 'duplicateChatflow',
-            title: 'common.menu.duplicateChatflow',
+            title: 'menu.duplicateChatflow',
             type: 'item',
             url: '',
             icon: icons.IconCopy,
@@ -71,7 +71,7 @@ const agent_settings = {
         },
         {
             id: 'loadChatflow',
-            title: 'common.menu.loadChatflow',
+            title: 'menu.loadChatflow',
             type: 'item',
             url: '',
             icon: icons.IconFileUpload,
@@ -79,7 +79,7 @@ const agent_settings = {
         },
         {
             id: 'exportChatflow',
-            title: 'common.menu.exportChatflow',
+            title: 'menu.exportChatflow',
             type: 'item',
             url: '',
             icon: icons.IconFileExport,
@@ -87,7 +87,7 @@ const agent_settings = {
         },
         {
             id: 'deleteChatflow',
-            title: 'common.menu.deleteChatflow',
+            title: 'menu.deleteChatflow',
             type: 'item',
             url: '',
             icon: icons.IconTrash,

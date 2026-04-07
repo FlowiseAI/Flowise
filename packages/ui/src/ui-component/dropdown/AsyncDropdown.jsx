@@ -98,7 +98,7 @@ export const AsyncDropdown = ({
     }
     const getDefaultOptionValue = () => (multiple ? [] : '')
     // [WARN]: In this place can be possible error after translation
-    const addNewOption = [{ label: t('dropdown.createNewItemLabel'), name: '-create-' }]
+    const addNewOption = [{ label: t('components.dropdown.createNewItemLabel'), name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
     const { reactFlowInstance } = useContext(flowContext)
 
@@ -249,7 +249,7 @@ export const AsyncDropdown = ({
                                                     key={option.name}
                                                     component='img'
                                                     src={option.imageSrc}
-                                                    alt={option.label || t('dropdown.selected')}
+                                                    alt={option.label || t('components.dropdown.selected')}
                                                     sx={{
                                                         width: 32,
                                                         height: 32,

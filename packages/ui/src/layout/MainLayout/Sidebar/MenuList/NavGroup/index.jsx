@@ -33,7 +33,7 @@ const NavGroup = ({ item }) => {
             default:
                 return (
                     <Typography key={menu.id} variant='h6' color='error' align='center'>
-                        {t('common.menu.itemsError')}
+                        {t('menu.itemsError')}
                     </Typography>
                 )
         }

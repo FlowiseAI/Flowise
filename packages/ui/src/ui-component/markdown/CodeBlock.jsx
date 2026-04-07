@@ -83,7 +83,7 @@ export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => 
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     {language}
                     <div style={{ flex: 1 }}></div>
-                    <IconButton size='small' title={t('components.codeBlock.copy')} color='success' onClick={copyToClipboard}>
+                    <IconButton size='small' title={t('components.codeBlock.actions.copy')} color='success' onClick={copyToClipboard}>
                         <IconClipboard />
                     </IconButton>
                     <Popover
@@ -103,7 +103,7 @@ export const CodeBlock = memo(({ language, chatflowid, isFullWidth, value }) => 
                             {t('components.codeBlock.copied')}
                         </Typography>
                     </Popover>
-                    <IconButton size='small' title={t('common.actions.download')} color='primary' onClick={downloadAsFile}>
+                    <IconButton size='small' title={t('components.codeBlock.actions.download')} color='primary' onClick={downloadAsFile}>
                         <IconDownload />
                     </IconButton>
                 </div>

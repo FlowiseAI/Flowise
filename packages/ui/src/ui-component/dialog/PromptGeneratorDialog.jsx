@@ -170,7 +170,7 @@ const AssistantPromptGenerator = ({ show, dialogProps, onCancel, onConfirm }) =>
                             }}
                             startIcon={<IconWand size={20} />}
                         >
-                            {t('common.actions.generate')}
+                            {t('components.dialogs.promptGenerator.actions.generate')}
                         </LoadingButton>
                     )}
                     {generatedInstruction && (
@@ -181,12 +181,12 @@ const AssistantPromptGenerator = ({ show, dialogProps, onCancel, onConfirm }) =>
                                 setGeneratedInstruction('')
                             }}
                         >
-                            {t('common.actions.back')}
+                            {t('components.dialogs.promptGenerator.actions.back')}
                         </Button>
                     )}
                     {generatedInstruction && (
                         <StyledButton variant='contained' onClick={() => onConfirm(generatedInstruction)}>
-                            {t('common.actions.apply')}
+                            {t('components.dialogs.promptGenerator.actions.apply')}
                         </StyledButton>
                     )}
                 </DialogActions>

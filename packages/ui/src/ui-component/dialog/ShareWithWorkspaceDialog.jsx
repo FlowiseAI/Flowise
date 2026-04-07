@@ -67,8 +67,14 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
 
     const columns = useMemo(
         () => [
-            { field: 'workspaceName', headerName: t('workspaces.workspace'), editable: false, flex: 1 },
-            { field: 'shared', headerName: t('common.labels.share'), type: 'boolean', editable: true, width: 180 }
+            { field: 'workspaceName', headerName: t('components.dialogs.shareWithWorkspace.workspace'), editable: false, flex: 1 },
+            {
+                field: 'shared',
+                headerName: t('components.dialogs.shareWithWorkspace.share'),
+                type: 'boolean',
+                editable: true,
+                width: 180
+            }
         ],
         // eslint-disable-next-line react-hooks/exhaustive-deps
         []
@@ -187,7 +193,7 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
             <DialogContent>
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>{t('common.labels.name')}</Typography>
+                        <Typography variant='overline'>{t('components.dialogs.shareWithWorkspace.name')}</Typography>
                     </Stack>
                     <OutlinedInput id='name' type='string' disabled={true} fullWidth placeholder={name} value={name} name='name' />
                 </Box>

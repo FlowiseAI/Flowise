@@ -435,7 +435,7 @@ const TextToSpeech = ({ dialogProps }) => {
                             }
                         }}
                     >
-                        <MenuItem value='none'>{t('common.labels.none')}</MenuItem>
+                        <MenuItem value='none'>{t('components.textToSpeech.providers.none')}</MenuItem>
                         {Object.values(textToSpeechProviders).map((provider) => (
                             <MenuItem key={provider.name} value={provider.name}>
                                 {t(provider.label)}
@@ -655,7 +655,7 @@ const TextToSpeech = ({ dialogProps }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    {t('common.actions.save')}
+                    {t('components.textToSpeech.actions.save')}
                 </StyledButton>
             </Box>
         </>

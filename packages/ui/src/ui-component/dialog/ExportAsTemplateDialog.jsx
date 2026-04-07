@@ -215,7 +215,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 </Box>
                 <Box sx={{ pt: 2, pb: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        <Typography sx={{ mb: 1 }}>{t('common.labels.description')}</Typography>
+                        <Typography sx={{ mb: 1 }}>{t('components.dialogs.exportAsTemplate.description')}</Typography>
                         <OutlinedInput
                             id={'description'}
                             type={'string'}
@@ -276,7 +276,9 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{dialogProps.cancelButtonName || t('common.actions.cancel')}</Button>
+                <Button onClick={onCancel}>
+                    {dialogProps.cancelButtonName || t('components.dialogs.exportAsTemplate.actions.cancel')}
+                </Button>
                 <StyledButton disabled={dialogProps.disabled} variant='contained' onClick={onConfirm}>
                     {dialogProps.confirmButtonName || t('components.dialogs.exportAsTemplate.actions.saveTemplate')}
                 </StyledButton>

@@ -201,7 +201,7 @@ const StarterPrompts = ({ dialogProps, onConfirm }) => {
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    {t('common.actions.save')}
+                    {t('components.starterPrompts.actions.save')}
                 </StyledButton>
             </Box>
         </>

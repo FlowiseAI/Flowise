@@ -160,7 +160,7 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                     <div style={{ flex: 1 }} />
                     {leads && leads.length > 0 && (
                         <Button variant='outlined' onClick={() => exportMessages()} startIcon={<IconFileExport />}>
-                            {t('common.actions.export')}
+                            {t('components.dialogs.viewLeads.actions.export')}
                         </Button>
                     )}
                 </div>
@@ -179,9 +179,9 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>{t('common.labels.name')}</TableCell>
-                                    <TableCell>{t('common.labels.email')}</TableCell>
-                                    <TableCell>{t('common.labels.phone')}</TableCell>
+                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.name')}</TableCell>
+                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.email')}</TableCell>
+                                    <TableCell>{t('components.dialogs.viewLeads.leadsTable.phone')}</TableCell>
                                     <TableCell>{t('components.dialogs.viewLeads.leadsTable.created')}</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -191,7 +191,9 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
                                         <TableCell>{lead.name}</TableCell>
                                         <TableCell>{lead.email}</TableCell>
                                         <TableCell>{lead.phone}</TableCell>
-                                        <TableCell>{moment(lead.createdDate).format(t('components.dialogs.viewLeads.date'))}</TableCell>
+                                        <TableCell>
+                                            {moment(lead.createdDate).format(t('components.dialogs.viewLeads.formats.date'))}
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

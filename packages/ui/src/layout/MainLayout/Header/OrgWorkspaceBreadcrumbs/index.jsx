@@ -227,7 +227,7 @@ const OrgWorkspaceBreadcrumbs = () => {
         if (getOrganizationsByUserIdApi.data) {
             const formattedAssignedOrgs = getOrganizationsByUserIdApi.data.map((organization) => ({
                 id: organization.organizationId,
-                name: t('organizations.organizationName', {
+                name: t('profile.organizations.organizationName', {
                     name: organization.user.name || organization.user.email
                 })
             }))
@@ -316,7 +316,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                             isDarkMode={customization.isDarkMode}
                             label={
                                 assignedOrganizations.find((org) => org.id === activeOrganizationId)?.name ||
-                                t('organizations.organization')
+                                t('profile.organizations.organization')
                             }
                             deleteIcon={<IconChevronDown size={16} />}
                             onDelete={handleOrgClick}
@@ -324,7 +324,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                         />
                         <StyledBreadcrumb
                             isDarkMode={customization.isDarkMode}
-                            label={assignedWorkspaces.find((ws) => ws.id === activeWorkspaceId)?.name || t('workspaces.workspace')}
+                            label={assignedWorkspaces.find((ws) => ws.id === activeWorkspaceId)?.name || t('profile.workspaces.workspace')}
                             deleteIcon={<IconChevronDown size={16} />}
                             onDelete={handleWorkspaceClick}
                             onClick={handleWorkspaceClick}
@@ -337,7 +337,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                     <Stack spacing={2} alignItems='center'>
                         <CircularProgress />
                         <Typography variant='body1' style={{ color: 'white' }}>
-                            {t('organizations.switching')}
+                            {t('profile.organizations.switching')}
                         </Typography>
                     </Stack>
                 </DialogContent>
@@ -347,7 +347,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                     <Stack spacing={2} alignItems='center'>
                         <CircularProgress />
                         <Typography variant='body1' style={{ color: 'white' }}>
-                            {t('workspaces.switching')}
+                            {t('profile.workspaces.switching')}
                         </Typography>
                     </Stack>
                 </DialogContent>
@@ -365,10 +365,10 @@ const OrgWorkspaceBreadcrumbs = () => {
             >
                 <DialogContent>
                     <Stack spacing={3}>
-                        <Typography variant='h5'>{t('workspaces.unavailable')}</Typography>
+                        <Typography variant='h5'>{t('profile.workspaces.unavailable')}</Typography>
                         {assignedWorkspaces.length > 0 && !activeOrganizationId ? (
                             <>
-                                <Typography variant='body1'>{t('workspaces.unavailableContinue')}</Typography>
+                                <Typography variant='body1'>{t('profile.workspaces.unavailableContinue')}</Typography>
                                 <Select
                                     fullWidth
                                     value=''
@@ -379,7 +379,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                                     displayEmpty
                                 >
                                     <MenuItem disabled value=''>
-                                        <em>{t('workspaces.select')}</em>
+                                        <em>{t('profile.workspaces.select')}</em>
                                     </MenuItem>
                                     {assignedWorkspaces.map((workspace, index) => (
                                         <MenuItem key={index} value={workspace.id}>
@@ -390,7 +390,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                             </>
                         ) : (
                             <>
-                                <Typography variant='body1'>{t('workspaces.unavailableChange')}</Typography>
+                                <Typography variant='body1'>{t('profile.workspaces.unavailableChange')}</Typography>
                                 <Select
                                     fullWidth
                                     value={activeOrganizationId || ''}
@@ -400,7 +400,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                                     displayEmpty
                                 >
                                     <MenuItem disabled value=''>
-                                        <em>{t('organizations.select')}</em>
+                                        <em>{t('profile.organizations.select')}</em>
                                     </MenuItem>
                                     {assignedOrganizations.map((org, index) => (
                                         <MenuItem key={index} value={org.id}>
@@ -420,7 +420,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                                         sx={{ mt: 2 }}
                                     >
                                         <MenuItem disabled value=''>
-                                            <em>{t('workspaces.select')}</em>
+                                            <em>{t('profile.workspaces.select')}</em>
                                         </MenuItem>
                                         {assignedWorkspaces.map((workspace, index) => (
                                             <MenuItem key={index} value={workspace.id}>
