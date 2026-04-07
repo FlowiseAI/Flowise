@@ -14,9 +14,13 @@ import { Box, Card, Stack, Typography, useTheme, CircularProgress } from '@mui/m
 import { IconCircleXFilled } from '@tabler/icons-react'
 import { alpha } from '@mui/material/styles'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| PublicExecutionDetails ||============================== //
 
 const PublicExecutionDetails = () => {
+    const { t } = useTranslation()
     const { id: executionId } = useParams()
     const theme = useTheme()
 
@@ -77,10 +81,10 @@ const PublicExecutionDetails = () => {
                                     <Stack spacing={2} alignItems='center'>
                                         <IconCircleXFilled size={50} color={theme.palette.error.main} />
                                         <Typography variant='h3' color='error.main' align='center'>
-                                            Invalid Execution
+                                            {t('agentExecution.invalidExecution.title')}
                                         </Typography>
                                         <Typography variant='body1' color='text.secondary' align='center'>
-                                            {`The execution you're looking for doesn't exist or you don't have permission to view it.`}
+                                            {t('agentExecution.invalidExecution.caption')}
                                         </Typography>
                                     </Stack>
                                 </Card>

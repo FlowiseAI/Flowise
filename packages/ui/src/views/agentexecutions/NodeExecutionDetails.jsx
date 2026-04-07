@@ -39,7 +39,11 @@ import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
 
 import predictionApi from '@/api/prediction'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, onProceedSuccess }) => {
+    const { t } = useTranslation()
     const [dataView, setDataView] = useState('rendered')
     const [openFeedbackDialog, setOpenFeedbackDialog] = useState(false)
     const [feedback, setFeedback] = useState('')
@@ -107,7 +111,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
 
     const onSubmitResponse = async (type, feedback = '') => {
         setIsLoading(true)
-        setLoadingMessage(`Submitting feedback...`)
+        setLoadingMessage(t('agentExecution.details.submit.loading'))
         const params = {
             question: feedback ? feedback : type.charAt(0).toUpperCase() + type.slice(1),
             chatId: metadata?.sessionId,
@@ -125,12 +129,12 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                 response = await predictionApi.sendMessageAndGetPrediction(metadata?.agentflowId, params)
             }
             if (response && response.data) {
-                enqueueSnackbar('Successfully submitted response', { variant: 'success' })
+                enqueueSnackbar(t('agentExecution.details.submit.success'), { variant: 'success' })
                 if (onProceedSuccess) onProceedSuccess(response.data)
             }
         } catch (error) {
             console.error(error)
-            enqueueSnackbar(error?.message || 'Failed to submit response', { variant: 'error' })
+            enqueueSnackbar(error?.message || t('agentExecution.details.submit.error'), { variant: 'error' })
         } finally {
             setIsLoading(false)
             setLoadingMessage('')
@@ -198,7 +202,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
 
     const renderFullfilledConditions = (conditions) => {
         const fullfilledConditions = conditions.filter((condition) => condition.isFulfilled)
-        return fullfilledConditions.map((condition, index) => {
+        return fulfilledConditions.map((condition, index) => {
             if (condition.type === 'string' && condition.operation === 'equal' && condition.value1 === '' && condition.value2 === '') {
                 return (
                     <Box
@@ -212,9 +216,13 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         }}
                     >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant='body1'>Else condition fulfilled</Typography>
+                            <Typography variant='body1'>{t('agentExecution.details.fulfilledConditions.else')}</Typography>
                             <Chip
-                                label={condition.isFulfilled ? 'Fulfilled' : 'Not Fulfilled'}
+                                label={t(
+                                    condition.isFulfilled
+                                        ? 'agentExecution.details.fulfilledConditions.fulfilled'
+                                        : 'agentExecution.details.fulfilledConditions.notFulfilled'
+                                )}
                                 size='small'
                                 sx={{ color: 'white', backgroundColor: theme.palette.success.dark }}
                                 variant='filled'
@@ -235,9 +243,15 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     }}
                 >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant='subtitle2'>Condition {index}</Typography>
+                        <Typography variant='subtitle2'>
+                            {t('agentExecution.details.fulfilledConditions.condition', { index: index })}
+                        </Typography>
                         <Chip
-                            label={condition.isFulfilled ? 'Fulfilled' : 'Not Fulfilled'}
+                            label={t(
+                                condition.isFulfilled
+                                    ? 'agentExecution.details.fulfilledConditions.fulfilled'
+                                    : 'agentExecution.details.fulfilledConditions.notFulfilled'
+                            )}
                             size='small'
                             variant='filled'
                             sx={{ color: 'white', backgroundColor: theme.palette.success.dark }}
@@ -361,9 +375,9 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         }}
                         variant='contained'
                         value='rendered'
-                        title='Rendered'
+                        title={t('agentExecution.details.actions.rendered')}
                     >
-                        Rendered
+                        {t('agentExecution.details.actions.rendered')}
                     </ToggleButton>
                     <ToggleButton
                         sx={{
@@ -373,9 +387,9 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         }}
                         variant='contained'
                         value='raw'
-                        title='Raw'
+                        title={t('agentExecution.details.actions.raw')}
                     >
-                        Raw
+                        {t('agentExecution.details.actions.raw')}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </Box>
@@ -385,7 +399,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     {data.output && data.output.availableTools && data.output.availableTools.length > 0 && (
                         <Box>
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
-                                Tools
+                                {t('agentExecution.details.tools')}
                             </Typography>
                             {data.output.availableTools.map((tool, index) => {
                                 // Check if this tool is in the usedTools array
@@ -468,12 +482,12 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                 return matchingTool.toolNode.label || tool.name
                                                             }
                                                         }
-                                                        return tool.name || 'Tool Call'
+                                                        return tool.name || t('agentExecution.details.toolCall')
                                                     })()}
                                                 </Typography>
                                                 {isToolUsed && (
                                                     <Chip
-                                                        label='Used'
+                                                        label={t('agentExecution.details.used')}
                                                         size='small'
                                                         sx={{ ml: 2, color: 'white', backgroundColor: theme.palette.success.dark }}
                                                     />
@@ -489,7 +503,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         </Box>
                     )}
                     <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
-                        Input
+                        {t('agentExecution.details.input')}
                     </Typography>
                     {data && data.input && data.input.messages && Array.isArray(data.input.messages) && data.input.messages.length > 0 ? (
                         data.input.messages.map((message, index) => (
@@ -617,11 +631,11 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                         return matchingTool.toolNode.label || toolCall.name
                                                                     }
                                                                 }
-                                                                return toolCall.name || 'Tool Call'
+                                                                return toolCall.name || t('agentExecution.details.toolCall')
                                                             })()}
                                                         </Typography>
                                                         <Chip
-                                                            label='Called'
+                                                            label={t('agentExecution.details.called')}
                                                             size='small'
                                                             sx={{
                                                                 ml: 2,
@@ -731,7 +745,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                     }}
                                                     variant='outlined'
                                                     icon={<IconTool size={15} color={tool.error ? theme.palette.error.main : undefined} />}
-                                                    onClick={() => onUsedToolClick(tool, 'Used Tools')}
+                                                    onClick={() => onUsedToolClick(tool, t('agentExecution.details.usedTools'))}
                                                 />
                                             ) : null
                                         })}
@@ -870,7 +884,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                             return <MemoizedReactMarkdown>{message.content}</MemoizedReactMarkdown>
                                         }
                                     } else {
-                                        return <MemoizedReactMarkdown>{`*No data*`}</MemoizedReactMarkdown>
+                                        return <MemoizedReactMarkdown>{t('agentExecution.details.noData')}</MemoizedReactMarkdown>
                                     }
                                 })()}
                                 {message.additional_kwargs?.fileAnnotations && message.additional_kwargs.fileAnnotations.length > 0 && (
@@ -945,11 +959,11 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 backgroundColor: theme.palette.background.default
                             }}
                         >
-                            <MemoizedReactMarkdown>{data?.input?.question || `*No data*`}</MemoizedReactMarkdown>
+                            <MemoizedReactMarkdown>{data?.input?.question || t('agentExecution.details.noData')}</MemoizedReactMarkdown>
                         </Box>
                     )}
                     <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
-                        Output
+                        {t('agentExecution.details.output')}
                     </Typography>
                     {data?.output?.form || data?.output?.http ? (
                         <JSONViewer data={data.output.form || data.output.http} />
@@ -990,7 +1004,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                 }}
                                                 variant='outlined'
                                                 icon={<IconTool size={15} color={tool.error ? theme.palette.error.main : undefined} />}
-                                                onClick={() => onUsedToolClick(tool, 'Used Tools')}
+                                                onClick={() => onUsedToolClick(tool, t('agentExecution.details.usedTools'))}
                                             />
                                         ) : null
                                     })}
@@ -1082,10 +1096,14 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                         )
                                     } catch (e) {
                                         // Not valid JSON, render as markdown
-                                        return <MemoizedReactMarkdown>{data?.output?.content || `*No data*`}</MemoizedReactMarkdown>
+                                        return (
+                                            <MemoizedReactMarkdown>
+                                                {data?.output?.content || t('agentExecution.details.noData')}
+                                            </MemoizedReactMarkdown>
+                                        )
                                     }
                                 } else {
-                                    return <MemoizedReactMarkdown>{`*No data*`}</MemoizedReactMarkdown>
+                                    return <MemoizedReactMarkdown>{t('agentExecution.details.noData')}</MemoizedReactMarkdown>
                                 }
                             })()}
                             {data.output?.fileAnnotations && data.output.fileAnnotations.length > 0 && (
@@ -1123,7 +1141,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     {data.error && (
                         <>
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom color='error'>
-                                Error
+                                {t('agentExecution.details.error.title')}
                             </Typography>
                             <Box
                                 sx={{
@@ -1140,7 +1158,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 <MemoizedReactMarkdown>
                                     {typeof data?.error === 'object'
                                         ? JSON.stringify(data.error, null, 2)
-                                        : data?.error || `*No error details*`}
+                                        : data?.error || t('agentExecution.details.error.noDetails')}
                                 </MemoizedReactMarkdown>
                             </Box>
                         </>
@@ -1148,7 +1166,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     {data.state && Object.keys(data.state).length > 0 && (
                         <>
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
-                                State
+                                {t('agentExecution.details.state')}
                             </Typography>
                             <JSONViewer data={data.state} />
                         </>
@@ -1194,7 +1212,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         }}
                     >
                         <Button variant='outlined' color='error' sx={{ borderRadius: '25px' }} onClick={handleReject} disabled={isLoading}>
-                            Reject
+                            {t('agentExecution.details.actions.reject')}
                         </Button>
                         <Button
                             variant='contained'
@@ -1203,18 +1221,18 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                             onClick={handleProceed}
                             disabled={isLoading}
                         >
-                            Proceed
+                            {t('agentExecution.details.actions.proceed')}
                         </Button>
                     </Box>
 
                     <Dialog maxWidth='md' fullWidth open={openFeedbackDialog} onClose={() => !isLoading && setOpenFeedbackDialog(false)}>
-                        <DialogTitle variant='h5'>Provide Feedback</DialogTitle>
+                        <DialogTitle variant='h5'>{t('agentExecution.dialogs.provideFeedback.title')}</DialogTitle>
                         <DialogContent>
                             <TextField
                                 //eslint-disable-next-line jsx-a11y/no-autofocus
                                 autoFocus
                                 margin='dense'
-                                label='Feedback'
+                                label={t('agentExecution.dialogs.provideFeedback.feedback')}
                                 fullWidth
                                 multiline
                                 rows={4}
@@ -1225,10 +1243,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={() => setOpenFeedbackDialog(false)} disabled={isLoading}>
-                                Cancel
+                                {t('agentExecution.actions.cancel')}
                             </Button>
                             <Button onClick={handleSubmitFeedback} variant='contained' disabled={isLoading}>
-                                Submit
+                                {t('agentExecution.actions.submit')}
                             </Button>
                         </DialogActions>
                     </Dialog>

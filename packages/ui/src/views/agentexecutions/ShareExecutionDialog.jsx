@@ -15,7 +15,11 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import executionsApi from '@/api/executions'
 import useApi from '@/hooks/useApi'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
     const dispatch = useDispatch()
@@ -35,7 +39,7 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
         // Show success message
         dispatch(
             enqueueSnackbarAction({
-                message: 'Link copied to clipboard',
+                message: t('agentExecution.messages.copyToClipboard.link'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -63,11 +67,11 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
     const component = show ? (
         <Dialog open={show} onClose={onClose} maxWidth='sm' fullWidth aria-labelledby='share-dialog-title'>
             <DialogTitle id='share-dialog-title' sx={{ fontSize: '1.1rem', fontWeight: 600 }}>
-                Public Trace Link
+                {t('agentExecution.publicTraceLink.title')}
             </DialogTitle>
             <DialogContent>
                 <Typography variant='body2' color='text.secondary' sx={{ mb: 2 }}>
-                    Anyone with the link below can view this execution trace.
+                    {t('agentExecution.publicTraceLink.description')}
                 </Typography>
 
                 {/* Link Display Box */}
@@ -95,9 +99,9 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
                     >
                         {shareableLink}
                     </Typography>
-                    <Tooltip title={copied ? 'Copied!' : 'Copy link'}>
+                    <Tooltip title={t(copied ? 'agentExecution.actions.copy.done' : 'agentExecution.actions.copy.title.link')}>
                         <Button variant='text' color='primary' onClick={copyToClipboard} startIcon={<IconCopy size={18} />}>
-                            Copy
+                            {t('agentExecution.actions.copy.title.name')}
                         </Button>
                     </Tooltip>
                 </Box>
@@ -105,9 +109,9 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
                 {/* Actions */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <Button color='error' onClick={handleUnshare} sx={{ mr: 1 }}>
-                        Unshare
+                        {t('agentExecution.actions.unshare')}
                     </Button>
-                    <Button onClick={onClose}>Close</Button>
+                    <Button onClick={onClose}>{t('agentExecution.actions.close')}</Button>
                 </Box>
             </DialogContent>
         </Dialog>

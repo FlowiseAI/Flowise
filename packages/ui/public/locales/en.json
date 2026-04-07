@@ -1078,5 +1078,125 @@
         "errors": {
             "internalServerErrorTitle": "Internal Server Error"
         }
+    },
+    "agentExecution": {
+        "title": "Agent Executions",
+        "description": "Monitor and manage agentflows executions",
+        "filters": {
+            "state": {
+                "title": "State",
+                "items": {
+                    "all": "All",
+                    "inProgress": "In Progress",
+                    "finished": "Finished",
+                    "error": "Error",
+                    "terminated": "Terminated",
+                    "timeout": "Timeout",
+                    "stopped": "Stopped"
+                }
+            },
+            "startDate": "Start date",
+            "endDate": "End date",
+            "agentflow": "Agentflow",
+            "sessionId": "Session ID"
+        },
+        "actions": {
+            "apply": "Apply",
+            "reset": "Reset",
+            "deleteSelected": "Delete selected executions",
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "submit": "Submit",
+            "copy": {
+                "title": {
+                    "name": "Copy",
+                    "id": "Copy ID",
+                    "link": "Copy link"
+                },
+                "done": "Copied!"
+            },
+            "close": "Close",
+            "unshare": "Unshare"
+        },
+        "dialogs": {
+            "confirmDeletion": {
+                "title": "Confirm Deletion",
+                "description_one": "Are you sure you want to delete {{count}} execution? This action cannot be undone.",
+                "description_other": "Are you sure you want to delete {{count}} executions? This action cannot be undone.",
+                "executionEmpty": "No Executions Yet"
+            },
+            "provideFeedback": {
+                "title": "Provide Feedback",
+                "feedback": "Feedback"
+            }
+        },
+        "details": {
+            "nodeIteration": "Iteration #{{index}}",
+            "content": {
+                "goToAgentFlow": "Go to AgentFlow",
+                "execution": {
+                    "title": "Execution ID: {{id}}"
+                },
+                "share": "Share",
+                "updating": "Updating...",
+                "public": "Public",
+                "formats": {
+                    "date": "MMM D, YYYY h:mm A"
+                },
+                "unavailable": "N/A",
+                "actions": {},
+                "noDataAvailable": "No data available for this item"
+            },
+            "resize": "Resize drawer",
+            "submit": {
+                "loading": "Submitting feedback...",
+                "success": "Successfully submitted response",
+                "error": "Failed to submit response"
+            },
+            "fulfilledConditions": {
+                "condition": "Condition {{index}}",
+                "else": "Else condition fulfilled",
+                "fulfilled": "Fulfilled",
+                "notFulfilled": "Not Fulfilled"
+            },
+            "tools": "Tools",
+            "toolCall": "Tool Call",
+            "input": "Input",
+            "usedTools": "Used Tools",
+            "noData": "*No data*",
+            "output": "Output",
+            "used": "Used",
+            "called": "Called",
+            "error": {
+                "title": "Error",
+                "noDetails": "*No error details*"
+            },
+            "state": "State",
+            "actions": {
+                "rendered": "Rendered",
+                "raw": "Raw",
+                "reject": "Reject",
+                "proceed": "Proceed",
+                "refresh": "Refresh execution data"
+            }
+        },
+        "messages": {
+            "copyToClipboard": {
+                "id": "ID copied to clipboard",
+                "link": "Link copied to clipboard"
+            },
+            "sharePublicly": {
+                "shared": "Execution shared publicly",
+                "notShared": "Execution is no longer public"
+            }
+        },
+        "invalidExecution": {
+            "title": "Invalid Execution",
+            "caption": "The execution you're looking for doesn't exist or you don't have permission to view it."
+        },
+        "publicTraceLink": {
+            "title": "Public Trace Link",
+            "description": "Anyone with the link below can view this execution trace."
+        }
     }
 }
