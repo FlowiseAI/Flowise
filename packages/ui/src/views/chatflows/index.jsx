@@ -39,6 +39,7 @@ const Chatflows = () => {
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
     const [search, setSearch] = useState('')
+    const [searchQuery, setSearchQuery] = useState('')
     const { error, setError } = useError()
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
@@ -56,11 +57,12 @@ const Chatflows = () => {
         applyFilters(page, pageLimit)
     }
 
-    const applyFilters = (page, limit) => {
+    const applyFilters = (page, limit, nextSearch = searchQuery) => {
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
         }
+        if (nextSearch) params.search = nextSearch
         getAllChatflowsApi.request(params)
     }
 
@@ -74,13 +76,20 @@ const Chatflows = () => {
         setSearch(event.target.value)
     }
 
-    function filterFlows(data) {
-        return (
-            data?.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
-            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data?.id.toLowerCase().indexOf(search.toLowerCase()) > -1
-        )
-    }
+    useEffect(() => {
+        const normalizedSearch = search.trim()
+        if (normalizedSearch === searchQuery) return
+
+        const timeoutId = setTimeout(() => {
+            setSearchQuery(normalizedSearch)
+            setCurrentPage(1)
+            applyFilters(1, pageLimit, normalizedSearch)
+        }, 300)
+
+        return () => clearTimeout(timeoutId)
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search])
 
     const addNew = () => {
         navigate('/canvas')
@@ -138,7 +147,7 @@ const Chatflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
+                        searchPlaceholder='Search Name, Category, or ID'
                         title='Chatflows'
                         description='Build single-agent systems, chatbots and simple LLM flows'
                     >
@@ -197,7 +206,7 @@ const Chatflows = () => {
                         <>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
+                                    {getAllChatflowsApi.data?.data?.map((data, index) => (
                                         <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                     ))}
                                 </Box>
@@ -206,7 +215,7 @@ const Chatflows = () => {
                                     data={getAllChatflowsApi.data?.data}
                                     images={images}
                                     isLoading={isLoading}
-                                    filterFunction={filterFlows}
+                                    filterFunction={() => true}
                                     updateFlowsApi={getAllChatflowsApi}
                                     setError={setError}
                                     currentPage={currentPage}
