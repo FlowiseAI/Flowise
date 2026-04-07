@@ -1,6 +1,6 @@
 {
     "name": "@flowiseai/agentflow",
-    "version": "0.0.0-dev.9",
+    "version": "0.0.0-dev.10",
     "description": "Embeddable React component for building and visualizing AI agent workflows",
     "license": "Apache-2.0",
     "repository": {
@@ -73,10 +73,10 @@
         "@codemirror/lang-python": "^6.1.0",
         "@tabler/icons-react": "^3.7.0",
         "@tiptap/core": "^3.20.4",
-        "@tiptap/markdown": "^3.20.4",
         "@tiptap/extension-code-block-lowlight": "^3.20.4",
         "@tiptap/extension-mention": "^3.20.4",
         "@tiptap/extension-placeholder": "^3.20.4",
+        "@tiptap/markdown": "^3.20.4",
         "@tiptap/pm": "^3.20.4",
         "@tiptap/react": "^3.20.4",
         "@tiptap/starter-kit": "^3.20.4",
