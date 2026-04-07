@@ -9,7 +9,6 @@ import { useCallback, useRef, useState } from 'react'
 
 import type { AgentFlowInstance, FlowData, ValidationResult } from '@flowiseai/agentflow'
 import { Agentflow } from '@flowiseai/agentflow'
-import { InternalAxiosRequestConfig } from 'axios'
 
 import { apiBaseUrl, token } from '../config'
 import { FlowStatePanel } from '../FlowStatePanel'
@@ -138,7 +137,7 @@ export function BasicExample() {
                         onFlowChange={handleFlowChange}
                         onSave={handleSave}
                         showDefaultHeader={true}
-                        requestInterceptor={(config: InternalAxiosRequestConfig) => {
+                        requestInterceptor={(config) => {
                             // pass cookies if no token is provided
                             if (!token) {
                                 config.withCredentials = true
