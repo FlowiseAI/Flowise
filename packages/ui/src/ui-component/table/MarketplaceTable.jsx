@@ -20,6 +20,9 @@ import {
 import { IconShare, IconTrash } from '@tabler/icons-react'
 import { PermissionIconButton } from '@/ui-component/button/RBACButtons'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
 
@@ -52,6 +55,7 @@ export const MarketplaceTable = ({
     onDelete,
     onShare
 }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -66,7 +70,7 @@ export const MarketplaceTable = ({
     return (
         <>
             <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                <Table sx={{ minWidth: 650 }} size='small' aria-label='a dense table'>
+                <Table sx={{ minWidth: 650 }} size='small' aria-label={t('components.marketplaceTable.aDenseTable')}>
                     <TableHead
                         sx={{
                             backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
@@ -75,19 +79,19 @@ export const MarketplaceTable = ({
                     >
                         <TableRow>
                             <StyledTableCell sx={{ minWidth: '150px' }} component='th' scope='row' key='0'>
-                                Name
+                                {t('components.marketplaceTable.name')}
                             </StyledTableCell>
                             <StyledTableCell sx={{ minWidth: '100px' }} component='th' scope='row' key='1'>
-                                Type
+                                {t('components.marketplaceTable.type')}
                             </StyledTableCell>
-                            <StyledTableCell key='2'>Description</StyledTableCell>
+                            <StyledTableCell key='2'>{t('components.marketplaceTable.description')}</StyledTableCell>
                             <StyledTableCell sx={{ minWidth: '100px' }} key='3'>
-                                Framework
+                                {t('components.marketplaceTable.framework')}
                             </StyledTableCell>
                             <StyledTableCell sx={{ minWidth: '100px' }} key='4'>
-                                Use cases
+                                {t('components.marketplaceTable.useCases')}
                             </StyledTableCell>
-                            <StyledTableCell key='5'>Badges</StyledTableCell>
+                            <StyledTableCell key='5'>{t('components.marketplaceTable.badges')}</StyledTableCell>
                             <StyledTableCell component='th' scope='row' key='6'></StyledTableCell>
                         </TableRow>
                     </TableHead>
@@ -230,14 +234,14 @@ export const MarketplaceTable = ({
                                             </StyledTableCell>
                                             <StyledTableCell key='6' colSpan={row.shared ? 2 : undefined}>
                                                 {row.shared ? (
-                                                    <Typography>Shared Template</Typography>
+                                                    <Typography>{t('components.marketplaceTable.sharedTemplate')}</Typography>
                                                 ) : (
                                                     <>
                                                         {onShare && (
                                                             <PermissionIconButton
                                                                 display={'feat:workspaces'}
                                                                 permissionId={'templates:custom-share'}
-                                                                title='Share'
+                                                                title={t('components.marketplaceTable.share')}
                                                                 color='primary'
                                                                 onClick={() => onShare(row)}
                                                             >
@@ -247,7 +251,7 @@ export const MarketplaceTable = ({
                                                         {onDelete && (
                                                             <PermissionIconButton
                                                                 permissionId={'templates:custom-delete'}
-                                                                title='Delete'
+                                                                title={t('components.marketplaceTable.delete')}
                                                                 color='error'
                                                                 onClick={() => onDelete(row)}
                                                             >

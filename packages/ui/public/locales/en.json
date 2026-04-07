@@ -734,6 +734,47 @@
             "formats": {
                 "date": "MMMM Do, YYYY HH:mm:ss"
             }
+        },
+        "filesTable": {
+            "name": "Name",
+            "path": "Path",
+            "size": "Size",
+            "actions": "Actions"
+        },
+        "executionsListTable": {
+            "status": "Status",
+            "lastUpdated": "Last Updated",
+            "agentflow": "Agentflow",
+            "session": "Session",
+            "created": "Created",
+            "selectAll": "select all executions",
+            "formats": {
+                "date": "MMM D, YYYY h:mm A"
+            }
+        },
+        "marketplaceTable": {
+            "name": "Name",
+            "type": "Type",
+            "description": "Description",
+            "framework": "Framework",
+            "useCases": "Use cases",
+            "badges": "Badges",
+            "sharedTemplate": "Shared Template",
+            "share": "Share",
+            "delete": "Delete",
+            "aDenseTable": "a dense table"
+        },
+        "table": {
+            "override": "Override",
+            "tooltip": "If enabled, this variable can be overridden in API calls and embeds. If disabled, any overrides will be ignored. To change this, go to Security settings in Chatflow Configuration.",
+            "enabled": "Enabled",
+            "disabled": "Disabled",
+            "schemaUnavailable": "No schema available",
+            "schema": "Schema"
+        },
+        "toolListTable": {
+            "name": "Name",
+            "description": "Description"
         }
     },
     "suggestOptions": {

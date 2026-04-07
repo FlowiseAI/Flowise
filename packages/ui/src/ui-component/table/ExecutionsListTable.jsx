@@ -23,6 +23,9 @@ import StopCircleIcon from '@mui/icons-material/StopCircle'
 import ErrorIcon from '@mui/icons-material/Error'
 import { IconLoader, IconCircleXFilled } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
 
@@ -87,6 +90,7 @@ const getIconColor = (state) => {
 }
 
 export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSelectionChange }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -169,33 +173,33 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                                     checked={data.length > 0 && selected.length === data.length}
                                     onChange={handleSelectAllClick}
                                     inputProps={{
-                                        'aria-label': 'select all executions'
+                                        'aria-label': t('components.executionsListTable.selectAll')
                                     }}
                                 />
                             </StyledTableCell>
-                            <StyledTableCell>Status</StyledTableCell>
+                            <StyledTableCell>{t('components.executionsListTable.status')}</StyledTableCell>
                             <StyledTableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
                                     direction={order}
                                     onClick={() => handleRequestSort('updatedDate')}
                                 >
-                                    Last Updated
+                                    {t('components.executionsListTable.lastUpdated')}
                                 </TableSortLabel>
                             </StyledTableCell>
                             <StyledTableCell component='th' scope='row'>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
-                                    Agentflow
+                                    {t('components.executionsListTable.agentflow')}
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell>Session</StyledTableCell>
+                            <StyledTableCell>{t('components.executionsListTable.session')}</StyledTableCell>
                             <StyledTableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
                                     direction={order}
                                     onClick={() => handleRequestSort('createdDate')}
                                 >
-                                    Created
+                                    {t('components.executionsListTable.created')}
                                 </TableSortLabel>
                             </StyledTableCell>
                         </TableRow>
@@ -274,14 +278,14 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                                                 />
                                             </StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>
-                                                {moment(row.updatedDate).format('MMM D, YYYY h:mm A')}
+                                                {moment(row.updatedDate).format(t('components.executionsListTable.formats.date'))}
                                             </StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>
                                                 {row.agentflow?.name}
                                             </StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>{row.sessionId}</StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>
-                                                {moment(row.createdDate).format('MMM D, YYYY h:mm A')}
+                                                {moment(row.createdDate).format(t('components.executionsListTable.formats.date'))}
                                             </StyledTableCell>
                                         </StyledTableRow>
                                     )

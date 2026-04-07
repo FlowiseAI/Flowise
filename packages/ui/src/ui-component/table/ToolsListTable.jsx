@@ -16,6 +16,9 @@ import {
     useTheme
 } from '@mui/material'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
 
@@ -36,6 +39,7 @@ const StyledTableRow = styled(TableRow)(() => ({
 }))
 
 export const ToolsTable = ({ data, isLoading, onSelect }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -51,9 +55,9 @@ export const ToolsTable = ({ data, isLoading, onSelect }) => {
                     >
                         <TableRow>
                             <StyledTableCell component='th' scope='row' key='0'>
-                                Name
+                                {t('components.toolListTable.name')}
                             </StyledTableCell>
-                            <StyledTableCell key='1'>Description</StyledTableCell>
+                            <StyledTableCell key='1'>{t('components.toolListTable.description')}</StyledTableCell>
                             <StyledTableCell component='th' scope='row' key='3'>
                                 &nbsp;
                             </StyledTableCell>
