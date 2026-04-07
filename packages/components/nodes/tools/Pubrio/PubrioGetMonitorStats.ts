@@ -1,5 +1,5 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getCredentialData, getCredentialParam } from '../../../src/utils'
 import { PubrioGetMonitorStats } from '@pubrio/langchain-tools'
 
 class PubrioGetMonitorStats_Tools implements INode {
