@@ -1614,13 +1614,12 @@ export const executeJavaScriptCode = async (
                 'Set E2B_APIKEY in your environment or contact your administrator.'
         )
     }
-    const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
     let timeoutMs = timeout
     if (process.env.SANDBOX_TIMEOUT) {
         timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
     }
 
-    if (shouldUseSandbox) {
+    if (useSandbox) {
         try {
             const variableDeclarations = []
 
