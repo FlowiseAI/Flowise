@@ -20,7 +20,7 @@
                     "enableChatFeedback": "Enable chat feedback"
                 }
             },
-            "agentflows": {
+            "agentFlows": {
                 "generating": "Generating your Agentflow...",
                 "placeholder": "Describe your agent here",
                 "selectModel": "Select model to generate agentflow<highlight>&nbsp;*</highlight>",
