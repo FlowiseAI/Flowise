@@ -3,7 +3,7 @@ import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from 
 import { getCredentialData, getCredentialParam } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
 
-class Browserless_MCP implements INode {
+class BrowserlessMCP implements INode {
     label: string
     name: string
     version: number
@@ -43,11 +43,10 @@ class Browserless_MCP implements INode {
         this.baseClasses = ['Tool']
     }
 
-    //@ts-ignore
     loadMethods = {
-        listActions: async (nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> => {
+        listActions: async (nodeData: INodeData, options?: ICommonObject): Promise<INodeOptionsValue[]> => {
             try {
-                const toolset = await this.getTools(nodeData, options)
+                const toolset = await this.getTools(nodeData, options ?? {})
                 toolset.sort((a: any, b: any) => a.name.localeCompare(b.name))
 
                 return toolset.map(({ name, ...rest }) => ({
@@ -104,8 +103,8 @@ class Browserless_MCP implements INode {
 
         const tools = toolkit.tools ?? []
 
-        return tools as Tool[]
+        return tools
     }
 }
 
-module.exports = { nodeClass: Browserless_MCP }
+module.exports = { nodeClass: BrowserlessMCP }
