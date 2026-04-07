@@ -126,7 +126,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
 
     const displayWarning = (message) => {
         enqueueSnackbar({
-            message: message || t('components.dialogs.agentflows.messages.errors.fields.fill'),
+            message: message || t('components.dialogs.agentFlows.messages.errors.fields.fill'),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'warning',
@@ -193,8 +193,8 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
         if (!isValid) {
             const message =
                 missingFields.length > 0
-                    ? t('components.dialogs.agentflows.messages.errors.fields.fillFields', { fields: missingFields.join(', ') })
-                    : t('components.dialogs.agentflows.messages.errors.fields.fillFIeldsForModel')
+                    ? t('components.dialogs.agentFlows.messages.errors.fields.fillFields', { fields: missingFields.join(', ') })
+                    : t('components.dialogs.agentFlows.messages.errors.fields.fillFIeldsForModel')
             displayWarning(message)
             return
         }
@@ -213,7 +213,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 onConfirm()
             } else {
                 enqueueSnackbar({
-                    message: response.error || t('components.dialogs.agentflows.messages.errors.failGenerateAgentflow'),
+                    message: response.error || t('components.dialogs.agentFlows.messages.errors.failGenerateAgentflow'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -228,7 +228,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             }
         } catch (error) {
             enqueueSnackbar({
-                message: error.response?.data?.message || t('components.dialogs.agentflows.messages.errors.failGenerateAgentflow'),
+                message: error.response?.data?.message || t('components.dialogs.agentFlows.messages.errors.failGenerateAgentflow'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -276,7 +276,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
                             <img src={generatorGIF} alt='Generating Agentflow' style={{ maxWidth: '100%', height: 'auto' }} />
                             <Typography variant='h5' sx={{ mt: 2 }}>
-                                {t('components.dialogs.agentflows.generating')}
+                                {t('components.dialogs.agentFlows.generating')}
                             </Typography>
                             <Box sx={{ width: '100%', mt: 2 }}>
                                 <LinearProgress
@@ -347,7 +347,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                     rows={12}
                                     disabled={loading}
                                     value={customAssistantInstruction}
-                                    placeholder={t('components.dialogs.agentflows.placeholder')}
+                                    placeholder={t('components.dialogs.agentFlows.placeholder')}
                                     onChange={(event) => setCustomAssistantInstruction(event.target.value)}
                                 />
                             )}
@@ -365,7 +365,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
                                         <Trans
-                                            i18nKey='components.dialogs.agentflows.selectModel'
+                                            i18nKey='components.dialogs.agentFlows.selectModel'
                                             components={{
                                                 highlight: <span style={{ color: 'red' }} />
                                             }}
@@ -389,7 +389,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                             }
                                         }
                                     }}
-                                    value={selectedChatModel ? selectedChatModel?.name : t('components.dialogs.agentflows.chooseAnOption')}
+                                    value={selectedChatModel ? selectedChatModel?.name : t('components.dialogs.agentFlows.chooseAnOption')}
                                 />
                             </Box>
                             {selectedChatModel && Object.keys(selectedChatModel).length > 0 && (
@@ -441,7 +441,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         !checkMandatoryFields().isValid
                                     }
                                 >
-                                    {t('components.dialogs.agentflows.actions.generate')}
+                                    {t('components.dialogs.agentFlows.actions.generate')}
                                 </LoadingButton>
                             )}
                             {generatedInstruction && (
@@ -452,7 +452,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         setGeneratedInstruction('')
                                     }}
                                 >
-                                    {t('components.dialogs.agentflows.actions.back')}
+                                    {t('components.dialogs.agentFlows.actions.back')}
                                 </Button>
                             )}
                         </>

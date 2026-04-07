@@ -1198,5 +1198,25 @@
             "title": "Public Trace Link",
             "description": "Anyone with the link below can view this execution trace."
         }
+    },
+    "agentFlows": {
+        "v1": {
+            "title": "Agentflows",
+            "searchPlaceholder": "Search Name or Category",
+            "description": "Multi-agent systems, workflow orchestration",
+            "new": "NEW",
+            "toggle": {
+                "v1": "V1",
+                "v2": "V2"
+            },
+            "cardView": "Card View",
+            "listView": "List View",
+            "actions": {
+                "addNew": "Add New"
+            },
+            "deprecationNotice": "<strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for improved performance and continued support.",
+            "dismiss": "dismiss",
+            "empty": "No Agents Yet"
+        }
     }
 }

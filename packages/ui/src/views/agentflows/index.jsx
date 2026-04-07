@@ -31,9 +31,13 @@ import { useError } from '@/store/context/ErrorContext'
 // icons
 import { IconAlertTriangle, IconLayoutGrid, IconList, IconPlus, IconX } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+
 // ==============================|| AGENTS ||============================== //
 
 const Agentflows = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -178,9 +182,9 @@ const Agentflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Agentflows'
-                        description='Multi-agent systems, workflow orchestration'
+                        searchPlaceholder={t('agentFlows.v1.searchPlaceholder')}
+                        title={t('agentFlows.v1.title')}
+                        description={t('agentFlows.v1.description')}
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -197,10 +201,10 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='v2'
-                                title='V2'
+                                title={t('agentFlows.v1.toggle.v2')}
                             >
-                                <Chip sx={{ mr: 1 }} label='NEW' size='small' color='primary' />
-                                V2
+                                <Chip sx={{ mr: 1 }} label={t('agentFlows.v1.new')} size='small' color='primary' />
+                                {t('agentFlows.v1.toggle.v2')}
                             </ToggleButton>
                             <ToggleButton
                                 sx={{
@@ -210,9 +214,9 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='v1'
-                                title='V1'
+                                title={t('agentFlows.v1.toggle.v1')}
                             >
-                                V1
+                                {t('agentFlows.v1.toggle.v1')}
                             </ToggleButton>
                         </ToggleButtonGroup>
                         <ToggleButtonGroup
@@ -231,7 +235,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title='Card View'
+                                title={t('agentFlows.v1.cardView')}
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -243,7 +247,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title='List View'
+                                title={t('agentFlows.v1.listView')}
                             >
                                 <IconList />
                             </ToggleButton>
@@ -255,7 +259,7 @@ const Agentflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            Add New
+                            {t('agentFlows.v1.actions.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
 
@@ -283,11 +287,10 @@ const Agentflows = () => {
                                 }}
                             />
                             <Box sx={{ flex: 1 }}>
-                                <strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for improved performance and
-                                continued support.
+                                <Trans i18nKey='agentFlows.v1.deprecationNotice' components={{ strong: <strong /> }} />
                             </Box>
                             <IconButton
-                                aria-label='dismiss'
+                                aria-label={t('agentFlows.v1.dismiss')}
                                 size='small'
                                 onClick={handleDismissDeprecationNotice}
                                 sx={{
@@ -344,7 +347,7 @@ const Agentflows = () => {
                                     alt='AgentsEmptySVG'
                                 />
                             </Box>
-                            <div>No Agents Yet</div>
+                            <div>{t('agentFlows.v1.empty')}</div>
                         </Stack>
                     )}
                 </Stack>
