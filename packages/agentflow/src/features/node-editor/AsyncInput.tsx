@@ -26,7 +26,7 @@ function buildAsyncParams(
     inputValues: Record<string, unknown> | undefined,
     stateKeys?: string[]
 ): Record<string, unknown> | undefined {
-    const needsInputs = loadMethod === 'listToolInputArgs'
+    const needsInputs = loadMethod === 'listToolInputArgs' || loadMethod === 'listActions' || loadMethod === 'listTables'
     const needsStateKeys = loadMethod === 'listRuntimeStateKeys'
     if (!nodeName && !(needsInputs && inputValues) && !needsStateKeys) return undefined
     return {
@@ -100,6 +100,17 @@ function AsyncOptionsInput({ inputParam, value, disabled, onChange, nodeName, in
                 {selectedCredentialId && (
                     <IconButton title='Edit Credential' color='primary' size='small' onClick={() => setEditDialogOpen(true)}>
                         <IconEdit size={18} />
+                    </IconButton>
+                )}
+                {inputParam.refresh && (
+                    <IconButton
+                        title='Refresh'
+                        color='primary'
+                        size='small'
+                        onClick={() => setReloadKey((k) => k + 1)}
+                        aria-label='refresh'
+                    >
+                        <IconRefresh size={18} />
                     </IconButton>
                 )}
             </Box>
@@ -255,6 +266,30 @@ function AsyncOptionsDropdown({
 }
 
 function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
+    const [reloadKey, setReloadKey] = useState(0)
+
+    return (
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', mt: 1 }}>
+            <AsyncMultiOptionsDropdown
+                key={reloadKey}
+                inputParam={inputParam}
+                value={value}
+                disabled={disabled}
+                onChange={onChange}
+                nodeName={nodeName}
+                inputValues={inputValues}
+            />
+            {inputParam.refresh && (
+                <IconButton title='Refresh' color='primary' size='small' onClick={() => setReloadKey((k) => k + 1)} aria-label='refresh'>
+                    <IconRefresh size={18} />
+                </IconButton>
+            )}
+        </Box>
+    )
+}
+
+/** Inner multi-select component. Remounted via key to force a fresh fetch. */
+function AsyncMultiOptionsDropdown({ inputParam, value, disabled, onChange, nodeName, inputValues }: AsyncInputProps) {
     const stateKeys = useFlowStateKeys(nodeName)
     const params = buildAsyncParams(inputParam.loadMethod, nodeName, inputValues, stateKeys)
     const { options, loading, error, refetch } = useAsyncOptions({
@@ -309,7 +344,7 @@ function AsyncMultiOptionsInput({ inputParam, value, disabled, onChange, nodeNam
             }}
             loading={loading}
             noOptionsText={loading ? 'Loading…' : 'No options available'}
-            sx={{ mt: 1 }}
+            sx={{ flexGrow: 1 }}
             renderOption={(props, option) => (
                 <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {option.imageSrc && (

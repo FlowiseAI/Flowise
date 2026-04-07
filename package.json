@@ -67,6 +67,7 @@
             "sqlite3"
         ],
         "overrides": {
+            "es-iterator-helpers": "1.0.15",
             "axios": "1.12.0",
             "body-parser": "2.0.2",
             "braces": "3.0.3",

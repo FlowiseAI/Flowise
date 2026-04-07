@@ -1113,6 +1113,7 @@ const executeNode = async ({
                 ...updatedState
             }
             flowConfig.state = updatedState
+            agentflowRuntime.state = updatedState
         }
 
         // Resolve variables in node data
