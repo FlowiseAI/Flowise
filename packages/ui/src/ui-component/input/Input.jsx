@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
-import { FormControl, OutlinedInput, InputBase, Popover } from '@mui/material'
+import { FormControl, OutlinedInput, InputBase, Popover, IconButton, InputAdornment } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
+import { IconEye, IconEyeOff } from '@tabler/icons-react'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
@@ -9,6 +10,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
     const theme = useTheme()
     const [myValue, setMyValue] = useState(value ?? '')
     const [anchorEl, setAnchorEl] = useState(null)
+    const [showPassword, setShowPassword] = useState(false)
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
     const ref = useRef(null)
 
@@ -24,12 +26,14 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
         setMyValue(newVal)
     }
 
+    const isPassword = inputParam.type === 'password'
+
     const getInputType = (type) => {
         switch (type) {
             case 'string':
                 return 'text'
             case 'password':
-                return 'password'
+                return showPassword ? 'text' : 'password'
             case 'number':
                 return 'number'
             case 'email':
@@ -112,6 +116,15 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
                         onBlur={(e) => {
                             if (onBlur) onBlur(e.target.value)
                         }}
+                        endAdornment={
+                            isPassword ? (
+                                <InputAdornment position='end'>
+                                    <IconButton onClick={() => setShowPassword((s) => !s)} edge='end' size='small'>
+                                        {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                                    </IconButton>
+                                </InputAdornment>
+                            ) : null
+                        }
                         inputProps={{
                             step: inputParam.step ?? 1,
                             style: {

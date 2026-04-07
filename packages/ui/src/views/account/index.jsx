@@ -15,6 +15,8 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    IconButton,
+    InputAdornment,
     LinearProgress,
     OutlinedInput,
     Skeleton,
@@ -32,7 +34,7 @@ import SettingsSection from '@/ui-component/form/settings'
 import PricingDialog from '@/ui-component/subscription/PricingDialog'
 
 // Icons
-import { IconAlertCircle, IconCreditCard, IconExternalLink, IconSparkles, IconX } from '@tabler/icons-react'
+import { IconAlertCircle, IconCreditCard, IconExternalLink, IconEye, IconEyeOff, IconSparkles, IconX } from '@tabler/icons-react'
 
 // API
 import accountApi from '@/api/account.api'
@@ -72,6 +74,9 @@ const AccountSettings = () => {
     const [oldPassword, setOldPassword] = useState('')
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+    const [showOldPassword, setShowOldPassword] = useState(false)
+    const [showNewPassword, setShowNewPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [usage, setUsage] = useState(null)
     const [isBillingLoading, setIsBillingLoading] = useState(false)
     const [seatsQuantity, setSeatsQuantity] = useState(0)
@@ -809,12 +814,19 @@ const AccountSettings = () => {
                                         <Typography variant='body1'>Old Password</Typography>
                                         <OutlinedInput
                                             id='oldPassword'
-                                            type='password'
+                                            type={showOldPassword ? 'text' : 'password'}
                                             fullWidth
                                             placeholder='Old Password'
                                             name='oldPassword'
                                             onChange={(e) => setOldPassword(e.target.value)}
                                             value={oldPassword}
+                                            endAdornment={
+                                                <InputAdornment position='end'>
+                                                    <IconButton onClick={() => setShowOldPassword((s) => !s)} edge='end' size='small'>
+                                                        {showOldPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
                                         />
                                     </Box>
                                     <Box
@@ -828,12 +840,19 @@ const AccountSettings = () => {
                                         <Typography variant='body1'>New Password</Typography>
                                         <OutlinedInput
                                             id='newPassword'
-                                            type='password'
+                                            type={showNewPassword ? 'text' : 'password'}
                                             fullWidth
                                             placeholder='New Password'
                                             name='newPassword'
                                             onChange={(e) => setNewPassword(e.target.value)}
                                             value={newPassword}
+                                            endAdornment={
+                                                <InputAdornment position='end'>
+                                                    <IconButton onClick={() => setShowNewPassword((s) => !s)} edge='end' size='small'>
+                                                        {showNewPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
                                         />
                                         <Typography variant='caption'>
                                             <i>
@@ -853,12 +872,19 @@ const AccountSettings = () => {
                                         <Typography variant='body1'>Confirm New Password</Typography>
                                         <OutlinedInput
                                             id='confirmPassword'
-                                            type='password'
+                                            type={showConfirmPassword ? 'text' : 'password'}
                                             fullWidth
                                             placeholder='Confirm New Password'
                                             name='confirmPassword'
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             value={confirmPassword}
+                                            endAdornment={
+                                                <InputAdornment position='end'>
+                                                    <IconButton onClick={() => setShowConfirmPassword((s) => !s)} edge='end' size='small'>
+                                                        {showConfirmPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            }
                                         />
                                     </Box>
                                 </Box>
