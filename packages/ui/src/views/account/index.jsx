@@ -49,6 +49,9 @@ import { gridSpacing } from '@/store/constant'
 import { useConfig } from '@/store/context/ConfigContext'
 import { logoutSuccess, userProfileUpdated } from '@/store/reducers/authSlice'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| ACCOUNT SETTINGS ||============================== //
 
 const calculatePercentage = (count, total) => {
@@ -56,6 +59,7 @@ const calculatePercentage = (count, total) => {
 }
 
 const AccountSettings = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const dispatch = useDispatch()
     useNotifier()
@@ -207,7 +211,7 @@ const AccountSettings = () => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: 'Failed to access billing portal',
+                message: t('profile.messages.errors.failedAccessPortal'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -255,7 +259,7 @@ const AccountSettings = () => {
             } else if (payload) {
                 store.dispatch(userProfileUpdated(payload))
                 enqueueSnackbar({
-                    message: 'Profile updated',
+                    message: t('profile.messages.profile.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -272,9 +276,9 @@ const AccountSettings = () => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to update profile: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('profile.messages.profile.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -293,10 +297,10 @@ const AccountSettings = () => {
         try {
             const validationErrors = []
             if (!oldPassword) {
-                validationErrors.push('Old Password cannot be left blank')
+                validationErrors.push(t('profile.messages.password.errors.oldPassword'))
             }
             if (newPassword !== confirmPassword) {
-                validationErrors.push('New Password and Confirm Password do not match')
+                validationErrors.push(t('profile.messages.password.errors.passwordsNotMatch'))
             }
             const passwordErrors = validatePassword(newPassword)
             if (passwordErrors.length > 0) {
@@ -335,7 +339,7 @@ const AccountSettings = () => {
                 setConfirmPassword('')
                 await logoutApi.request()
                 enqueueSnackbar({
-                    message: 'Password updated',
+                    message: t('profile.messages.password.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -349,9 +353,9 @@ const AccountSettings = () => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to update password: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('profile.messages.password.errors.failedUpdate', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -380,7 +384,7 @@ const AccountSettings = () => {
                 prorationInfo.prorationDate
             )
             enqueueSnackbar({
-                message: 'Seats updated successfully',
+                message: t('profile.messages.seats.success'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -396,9 +400,9 @@ const AccountSettings = () => {
         } catch (error) {
             console.error('Error updating seats:', error)
             enqueueSnackbar({
-                message: `Failed to update seats: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('profile.messages.seats.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -450,7 +454,7 @@ const AccountSettings = () => {
     return (
         <MainCard maxWidth='md'>
             <Stack flexDirection='column' sx={{ gap: 4 }}>
-                <ViewHeader title='Account Settings' />
+                <ViewHeader title={t('profile.accountSetting')} />
                 {isLoading && !getUserByIdApi.data ? (
                     <Box display='flex' flexDirection='column' gap={gridSpacing}>
                         <Skeleton width='25%' height={32} />
@@ -471,7 +475,7 @@ const AccountSettings = () => {
                     <>
                         {isCloud && (
                             <>
-                                <SettingsSection title='Subscription & Billing'>
+                                <SettingsSection title={t('profile.subscription.title')}>
                                     <Box
                                         sx={{
                                             width: '100%',
@@ -493,7 +497,7 @@ const AccountSettings = () => {
                                         >
                                             {currentPlanTitle && (
                                                 <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                                    <Typography variant='body2'>Current Organization Plan:</Typography>
+                                                    <Typography variant='body2'>{t('profile.subscription.currentPlan')}</Typography>
                                                     <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
                                                         {currentPlanTitle.toUpperCase()}
                                                     </Typography>
@@ -504,7 +508,7 @@ const AccountSettings = () => {
                                                 variant='body2'
                                                 color='text.secondary'
                                             >
-                                                Update your billing details and subscription
+                                                {t('profile.subscription.updatePlan')}
                                             </Typography>
                                         </Box>
                                         <Box
@@ -527,10 +531,10 @@ const AccountSettings = () => {
                                                 {isBillingLoading ? (
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <CircularProgress size={16} color='inherit' />
-                                                        Loading
+                                                        {t('profile.subscription.loading')}
                                                     </Box>
                                                 ) : (
-                                                    'Billing'
+                                                    t('profile.subscription.actions.billing')
                                                 )}
                                             </Button>
                                             <Button
@@ -559,12 +563,12 @@ const AccountSettings = () => {
                                                 disabled={!currentUser.isOrganizationAdmin}
                                                 onClick={() => setOpenPricingDialog(true)}
                                             >
-                                                Change Plan
+                                                {t('profile.subscription.actions.changePlan')}
                                             </Button>
                                         </Box>
                                     </Box>
                                 </SettingsSection>
-                                <SettingsSection title='Seats'>
+                                <SettingsSection title={t('profile.seats.title')}>
                                     <Box
                                         sx={{
                                             width: '100%',
@@ -585,13 +589,13 @@ const AccountSettings = () => {
                                             }}
                                         >
                                             <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                                <Typography variant='body2'>Seats Included in Plan:</Typography>
+                                                <Typography variant='body2'>{t('profile.seats.includedInPlan')}</Typography>
                                                 <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
                                                     {getAdditionalSeatsQuantityApi.loading ? <CircularProgress size={16} /> : includedSeats}
                                                 </Typography>
                                             </Stack>
                                             <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                                <Typography variant='body2'>Additional Seats Purchased:</Typography>
+                                                <Typography variant='body2'>{t('profile.seats.additionalPurchased')}</Typography>
                                                 <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
                                                     {getAdditionalSeatsQuantityApi.loading ? (
                                                         <CircularProgress size={16} />
@@ -601,7 +605,7 @@ const AccountSettings = () => {
                                                 </Typography>
                                             </Stack>
                                             <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                                <Typography variant='body2'>Occupied Seats:</Typography>
+                                                <Typography variant='body2'>{t('profile.seats.occupiedSeats')}</Typography>
                                                 <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
                                                     {getAdditionalSeatsQuantityApi.loading ? (
                                                         <CircularProgress size={16} />
@@ -635,7 +639,7 @@ const AccountSettings = () => {
                                                         color='error'
                                                         sx={{ borderRadius: 2, height: 40 }}
                                                     >
-                                                        Remove Seats
+                                                        {t('profile.actions.removeSeats')}
                                                     </Button>
                                                 )}
                                             <StyledButton
@@ -648,15 +652,15 @@ const AccountSettings = () => {
                                                         setOpenPricingDialog(true)
                                                     }
                                                 }}
-                                                title='Add Seats is available only for PRO plan'
+                                                title={t('profile.actions.addSeats.tooltip')}
                                                 sx={{ borderRadius: 2, height: 40 }}
                                             >
-                                                Add Seats
+                                                {t('profile.actions.addSeats.title')}
                                             </StyledButton>
                                         </Box>
                                     </Box>
                                 </SettingsSection>
-                                <SettingsSection title='Usage'>
+                                <SettingsSection title={t('profile.usage.title')}>
                                     <Box
                                         sx={{
                                             width: '100%',
@@ -666,7 +670,7 @@ const AccountSettings = () => {
                                     >
                                         <Box sx={{ p: 2.5, borderRight: 1, borderColor: theme.palette.grey[900] + 25 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Typography variant='h3'>Predictions</Typography>
+                                                <Typography variant='h3'>{t('profile.usage.predictions')}</Typography>
                                                 <Typography variant='body2' color='text.secondary'>
                                                     {`${usage?.predictions?.usage || 0} / ${usage?.predictions?.limit || 0}`}
                                                 </Typography>
@@ -697,11 +701,12 @@ const AccountSettings = () => {
                                         </Box>
                                         <Box sx={{ p: 2.5 }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <Typography variant='h3'>Storage</Typography>
+                                                <Typography variant='h3'>{t('profile.usage.storage.title')}</Typography>
                                                 <Typography variant='body2' color='text.secondary'>
-                                                    {`${(usage?.storage?.usage || 0).toFixed(2)}MB / ${(usage?.storage?.limit || 0).toFixed(
-                                                        2
-                                                    )}MB`}
+                                                    {t('profile.usage.storage.current', {
+                                                        usage: (usage?.storage?.usage || 0).toFixed(2),
+                                                        limit: (usage?.storage?.limit || 0).toFixed(2)
+                                                    })}
                                                 </Typography>
                                             </Box>
                                             <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
@@ -735,10 +740,10 @@ const AccountSettings = () => {
                         <SettingsSection
                             action={
                                 <StyledButton onClick={saveProfileData} sx={{ borderRadius: 2, height: 40 }} variant='contained'>
-                                    Save
+                                    {t('profile.actions.save.title')}
                                 </StyledButton>
                             }
-                            title='Profile'
+                            title={t('profile.actions.save.tooltips.profile')}
                         >
                             <Box
                                 sx={{
@@ -750,24 +755,24 @@ const AccountSettings = () => {
                                 }}
                             >
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    <Typography variant='body1'>Name</Typography>
+                                    <Typography variant='body1'>{t('profile.inputs.name.title')}</Typography>
                                     <OutlinedInput
                                         id='name'
                                         type='string'
                                         fullWidth
-                                        placeholder='Your Name'
+                                        placeholder={t('profile.inputs.name.placeholder')}
                                         name='name'
                                         onChange={(e) => setProfileName(e.target.value)}
                                         value={profileName}
                                     />
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    <Typography variant='body1'>Email Address</Typography>
+                                    <Typography variant='body1'>{t('profile.inputs.email')}</Typography>
                                     <OutlinedInput
                                         id='email'
                                         type='string'
                                         fullWidth
-                                        placeholder='Email Address'
+                                        placeholder={t('profile.inputs.email')}
                                         name='email'
                                         onChange={(e) => setEmail(e.target.value)}
                                         value={email}
@@ -784,10 +789,10 @@ const AccountSettings = () => {
                                         sx={{ borderRadius: 2, height: 40 }}
                                         variant='contained'
                                     >
-                                        Save
+                                        {t('profile.actions.save.title')}
                                     </StyledButton>
                                 }
-                                title='Security'
+                                title={t('profile.actions.save.tooltips.security')}
                             >
                                 <Box
                                     sx={{
@@ -806,12 +811,12 @@ const AccountSettings = () => {
                                             gap: 1
                                         }}
                                     >
-                                        <Typography variant='body1'>Old Password</Typography>
+                                        <Typography variant='body1'>{t('profile.inputs.oldPassword')}</Typography>
                                         <OutlinedInput
                                             id='oldPassword'
                                             type='password'
                                             fullWidth
-                                            placeholder='Old Password'
+                                            placeholder={t('profile.inputs.oldPassword')}
                                             name='oldPassword'
                                             onChange={(e) => setOldPassword(e.target.value)}
                                             value={oldPassword}
@@ -825,21 +830,18 @@ const AccountSettings = () => {
                                             gap: 1
                                         }}
                                     >
-                                        <Typography variant='body1'>New Password</Typography>
+                                        <Typography variant='body1'>{t('profile.inputs.newPassword.title')}</Typography>
                                         <OutlinedInput
                                             id='newPassword'
                                             type='password'
                                             fullWidth
-                                            placeholder='New Password'
+                                            placeholder={t('profile.inputs.newPassword.title')}
                                             name='newPassword'
                                             onChange={(e) => setNewPassword(e.target.value)}
                                             value={newPassword}
                                         />
                                         <Typography variant='caption'>
-                                            <i>
-                                                Password must be at least 8 characters long and contain at least one lowercase letter, one
-                                                uppercase letter, one digit, and one special character.
-                                            </i>
+                                            <i>{t('profile.inputs.newPassword.caption')}</i>
                                         </Typography>
                                     </Box>
                                     <Box
@@ -850,12 +852,12 @@ const AccountSettings = () => {
                                             gap: 1
                                         }}
                                     >
-                                        <Typography variant='body1'>Confirm New Password</Typography>
+                                        <Typography variant='body1'>{t('profile.inputs.confirmNewPassword')}</Typography>
                                         <OutlinedInput
                                             id='confirmPassword'
                                             type='password'
                                             fullWidth
-                                            placeholder='Confirm New Password'
+                                            placeholder={t('profile.inputs.confirmNewPassword')}
                                             name='confirmPassword'
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             value={confirmPassword}
@@ -939,7 +941,7 @@ const AccountSettings = () => {
             )}
             {/* Remove Seats Dialog */}
             <Dialog fullWidth maxWidth='sm' open={openRemoveSeatsDialog} onClose={handleRemoveSeatsDialogClose}>
-                <DialogTitle variant='h4'>Remove Additional Seats</DialogTitle>
+                <DialogTitle variant='h4'>{t('profile.dialog.removeSeats')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         {emptySeats === 0 ? (
@@ -954,7 +956,7 @@ const AccountSettings = () => {
                                 }}
                             >
                                 <IconAlertCircle size={20} />
-                                You must remove users from your organization before removing seats.
+                                {t('profile.dialog.removeUsersBefore')}
                             </Typography>
                         ) : (
                             <Box
@@ -969,18 +971,18 @@ const AccountSettings = () => {
                             >
                                 {/* Occupied Seats */}
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant='body2'>Occupied Seats</Typography>
+                                    <Typography variant='body2'>{t('profile.dialog.occupiedSeats')}</Typography>
                                     <Typography variant='body2'>{occupiedSeats}</Typography>
                                 </Box>
 
                                 {/* Empty Seats */}
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant='body2'>Empty Seats</Typography>
+                                    <Typography variant='body2'>{t('profile.dialog.emptySeats')}</Typography>
                                     <Typography variant='body2'>{emptySeats}</Typography>
                                 </Box>
 
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <Typography variant='body2'>Number of Empty Seats to Remove</Typography>
+                                    <Typography variant='body2'>{t('profile.dialog.numberToRemove')}</Typography>
                                     <TextField
                                         size='small'
                                         type='number'
@@ -1016,7 +1018,7 @@ const AccountSettings = () => {
                                         borderTop: `1px solid ${theme.palette.divider}`
                                     }}
                                 >
-                                    <Typography variant='h5'>New Total Seats</Typography>
+                                    <Typography variant='h5'>{t('profile.dialog.newTotalSeats')}</Typography>
                                     <Typography variant='h5'>{totalSeats - seatsQuantity}</Typography>
                                 </Box>
                             </Box>
@@ -1032,7 +1034,7 @@ const AccountSettings = () => {
                             <CircularProgress size={20} />
                         ) : getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
-                                <Typography variant='subtitle2'>Payment Method</Typography>
+                                <Typography variant='subtitle2'>{t('profile.dialog.paymentMethod')}</Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card && (
                                         <>
@@ -1046,14 +1048,12 @@ const AccountSettings = () => {
                                                     {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card.last4}
                                                 </Typography>
                                                 <Typography color='text.secondary'>
-                                                    (expires{' '}
-                                                    {
-                                                        getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card
-                                                            .exp_month
-                                                    }
-                                                    /
-                                                    {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card.exp_year}
-                                                    )
+                                                    {t('profile.dialog.expires', {
+                                                        month: getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card
+                                                            .exp_month,
+                                                        year: getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card
+                                                            .exp_year
+                                                    })}
                                                 </Typography>
                                             </Box>
                                         </>
@@ -1064,7 +1064,7 @@ const AccountSettings = () => {
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
                                 <Typography color='error' sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <IconAlertCircle size={20} />
-                                    No payment method found
+                                    {t('profile.dialog.noPaymentMethod')}
                                 </Typography>
                                 <Button
                                     variant='contained'
@@ -1074,7 +1074,7 @@ const AccountSettings = () => {
                                         handleBillingPortalClick()
                                     }}
                                 >
-                                    Add Payment Method in Billing Portal
+                                    {t('profile.dialog.actions.addPaymentMethod')}
                                 </Button>
                             </Box>
                         )}
@@ -1093,12 +1093,12 @@ const AccountSettings = () => {
                             >
                                 {/* Date Range */}
                                 <Typography variant='body2' color='text.secondary'>
-                                    {new Date(prorationInfo.currentPeriodStart * 1000).toLocaleDateString('en-US', {
+                                    {new Date(prorationInfo.currentPeriodStart * 1000).toLocaleDateString(t('common.locale'), {
                                         month: 'short',
                                         day: 'numeric'
                                     })}{' '}
                                     -{' '}
-                                    {new Date(prorationInfo.currentPeriodEnd * 1000).toLocaleDateString('en-US', {
+                                    {new Date(prorationInfo.currentPeriodEnd * 1000).toLocaleDateString(t('common.locale'), {
                                         month: 'short',
                                         day: 'numeric',
                                         year: 'numeric'
@@ -1128,9 +1128,11 @@ const AccountSettings = () => {
                                     }}
                                 >
                                     <Box>
-                                        <Typography variant='body2'>Additional Seats Left (Prorated)</Typography>
+                                        <Typography variant='body2'>{t('profile.dialog.additionalSeats.title.left')}</Typography>
                                         <Typography variant='caption' color='text.secondary'>
-                                            Qty {purchasedSeats - seatsQuantity}
+                                            {t('profile.dialog.additionalSeats.qty', {
+                                                value: purchasedSeats - seatsQuantity
+                                            })}
                                         </Typography>
                                     </Box>
                                     <Box sx={{ textAlign: 'right' }}>
@@ -1138,7 +1140,10 @@ const AccountSettings = () => {
                                             {prorationInfo.currency} {Math.max(0, prorationInfo.additionalSeatsProratedAmount).toFixed(2)}
                                         </Typography>
                                         <Typography variant='caption' color='text.secondary'>
-                                            {prorationInfo.currency} {prorationInfo.seatPerUnitPrice.toFixed(2)} each
+                                            {t('profile.dialog.additionalSeats.each', {
+                                                currency: prorationInfo.currency,
+                                                seatPerUnitPrice: prorationInfo.seatPerUnitPrice.toFixed(2)
+                                            })}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -1151,7 +1156,7 @@ const AccountSettings = () => {
                                             alignItems: 'center'
                                         }}
                                     >
-                                        <Typography variant='body2'>Credit balance</Typography>
+                                        <Typography variant='body2'>{t('profile.dialog.creditBalance')}</Typography>
                                         <Typography
                                             variant='body2'
                                             color={prorationInfo.prorationAmount < 0 ? 'success.main' : 'error.main'}
@@ -1172,7 +1177,7 @@ const AccountSettings = () => {
                                         borderTop: `1px solid ${theme.palette.divider}`
                                     }}
                                 >
-                                    <Typography variant='h5'>Due today</Typography>
+                                    <Typography variant='h5'>{t('profile.dialog.nextPayment.due')}</Typography>
                                     <Typography variant='h5'>
                                         {prorationInfo.currency} {Math.max(0, prorationInfo.prorationAmount).toFixed(2)}
                                     </Typography>
@@ -1186,7 +1191,7 @@ const AccountSettings = () => {
                                             fontStyle: 'italic'
                                         }}
                                     >
-                                        Your available credit will automatically apply to your next invoice.
+                                        {t('profile.dialog.nextPayment.availableCredit')}
                                     </Typography>
                                 )}
                             </Box>
@@ -1196,7 +1201,7 @@ const AccountSettings = () => {
                 {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
                     <DialogActions>
                         <Button onClick={handleRemoveSeatsDialogClose} disabled={isUpdatingSeats}>
-                            Cancel
+                            {t('profile.actions.cancel')}
                         </Button>
                         <Button
                             variant='outlined'
@@ -1214,10 +1219,10 @@ const AccountSettings = () => {
                             {isUpdatingSeats ? (
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <CircularProgress size={16} color='inherit' />
-                                    Updating...
+                                    {t('profile.dialog.updating')}
                                 </Box>
                             ) : (
-                                'Remove Seats'
+                                t('profile.actions.removeSeats')
                             )}
                         </Button>
                     </DialogActions>
@@ -1225,7 +1230,7 @@ const AccountSettings = () => {
             </Dialog>
             {/* Add Seats Dialog */}
             <Dialog fullWidth maxWidth='sm' open={openAddSeatsDialog} onClose={handleAddSeatsDialogClose}>
-                <DialogTitle variant='h4'>Add Additional Seats</DialogTitle>
+                <DialogTitle variant='h4'>{t('profile.dialog.addSeats')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <Box
@@ -1240,24 +1245,24 @@ const AccountSettings = () => {
                         >
                             {/* Occupied Seats */}
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant='body2'>Occupied Seats</Typography>
+                                <Typography variant='body2'>{t('profile.dialog.occupiedSeats')}</Typography>
                                 <Typography variant='body2'>{occupiedSeats}</Typography>
                             </Box>
 
                             {/* Included Seats */}
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant='body2'>Seats Included with Plan</Typography>
+                                <Typography variant='body2'>{t('profile.dialog.includedInPlan')}</Typography>
                                 <Typography variant='body2'>{includedSeats}</Typography>
                             </Box>
 
                             {/* Additional Seats */}
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant='body2'>Additional Seats Purchased</Typography>
+                                <Typography variant='body2'>{t('profile.dialog.additionalPurchased')}</Typography>
                                 <Typography variant='body2'>{purchasedSeats}</Typography>
                             </Box>
 
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <Typography variant='body2'>Number of Additional Seats to Add</Typography>
+                                <Typography variant='body2'>{t('profile.dialog.numberToAdd')}</Typography>
                                 <TextField
                                     size='small'
                                     type='number'
@@ -1291,7 +1296,7 @@ const AccountSettings = () => {
                                     borderTop: `1px solid ${theme.palette.divider}`
                                 }}
                             >
-                                <Typography variant='h5'>New Total Seats</Typography>
+                                <Typography variant='h5'>{t('profile.dialog.newTotalSeats')}</Typography>
                                 <Typography variant='h5'>{totalSeats + seatsQuantity}</Typography>
                             </Box>
                         </Box>
@@ -1306,7 +1311,7 @@ const AccountSettings = () => {
                             <CircularProgress size={20} />
                         ) : getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method ? (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
-                                <Typography variant='subtitle2'>Payment Method</Typography>
+                                <Typography variant='subtitle2'>{t('profile.dialog.paymentMethod')}</Typography>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card && (
                                         <>
@@ -1320,14 +1325,12 @@ const AccountSettings = () => {
                                                     {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card.last4}
                                                 </Typography>
                                                 <Typography color='text.secondary'>
-                                                    (expires{' '}
-                                                    {
-                                                        getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card
-                                                            .exp_month
-                                                    }
-                                                    /
-                                                    {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card.exp_year}
-                                                    )
+                                                    {t('profile.dialog.expires', {
+                                                        month: getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card
+                                                            .exp_month,
+                                                        year: getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card
+                                                            .exp_year
+                                                    })}
                                                 </Typography>
                                             </Box>
                                         </>
@@ -1338,7 +1341,7 @@ const AccountSettings = () => {
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
                                 <Typography color='error' sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <IconAlertCircle size={20} />
-                                    No payment method found
+                                    {t('profile.dialog.noPaymentMethod')}
                                 </Typography>
                                 <Button
                                     variant='contained'
@@ -1348,7 +1351,7 @@ const AccountSettings = () => {
                                         handleBillingPortalClick()
                                     }}
                                 >
-                                    Add Payment Method in Billing Portal
+                                    {t('profile.dialog.actions.addPaymentMethod')}
                                 </Button>
                             </Box>
                         )}
@@ -1367,12 +1370,12 @@ const AccountSettings = () => {
                             >
                                 {/* Date Range */}
                                 <Typography variant='body2' color='text.secondary'>
-                                    {new Date(prorationInfo.currentPeriodStart * 1000).toLocaleDateString('en-US', {
+                                    {new Date(prorationInfo.currentPeriodStart * 1000).toLocaleDateString(t('common.locale'), {
                                         month: 'short',
                                         day: 'numeric'
                                     })}{' '}
                                     -{' '}
-                                    {new Date(prorationInfo.currentPeriodEnd * 1000).toLocaleDateString('en-US', {
+                                    {new Date(prorationInfo.currentPeriodEnd * 1000).toLocaleDateString(t('common.locale'), {
                                         month: 'short',
                                         day: 'numeric',
                                         year: 'numeric'
@@ -1390,9 +1393,11 @@ const AccountSettings = () => {
                                 {/* Additional Seats */}
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Box>
-                                        <Typography variant='body2'>Additional Seats (Prorated)</Typography>
+                                        <Typography variant='body2'>{t('profile.dialog.additionalSeats.title.current')}</Typography>
                                         <Typography variant='caption' color='text.secondary'>
-                                            Qty {seatsQuantity + purchasedSeats}
+                                            {t('profile.dialog.additionalSeats.qty', {
+                                                value: seatsQuantity + purchasedSeats
+                                            })}
                                         </Typography>
                                     </Box>
                                     <Box sx={{ textAlign: 'right' }}>
@@ -1400,7 +1405,10 @@ const AccountSettings = () => {
                                             {prorationInfo.currency} {prorationInfo.additionalSeatsProratedAmount.toFixed(2)}
                                         </Typography>
                                         <Typography variant='caption' color='text.secondary'>
-                                            {prorationInfo.currency} {prorationInfo.seatPerUnitPrice.toFixed(2)} each
+                                            {t('profile.dialog.additionalSeats.each', {
+                                                currency: prorationInfo.currency,
+                                                seatPerUnitPrice: prorationInfo.seatPerUnitPrice.toFixed(2)
+                                            })}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -1408,7 +1416,7 @@ const AccountSettings = () => {
                                 {/* Credit Balance */}
                                 {prorationInfo.creditBalance !== 0 && (
                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <Typography variant='body2'>Applied account balance</Typography>
+                                        <Typography variant='body2'>{t('profile.dialog.appliedAccountBalance')}</Typography>
                                         <Typography variant='body2' color={prorationInfo.creditBalance < 0 ? 'success.main' : 'error.main'}>
                                             {prorationInfo.currency} {prorationInfo.creditBalance.toFixed(2)}
                                         </Typography>
@@ -1425,7 +1433,7 @@ const AccountSettings = () => {
                                         borderTop: `1px solid ${theme.palette.divider}`
                                     }}
                                 >
-                                    <Typography variant='h5'>Due today</Typography>
+                                    <Typography variant='h5'>{t('profile.dialog.nextPayment.due')}</Typography>
                                     <Typography variant='h5'>
                                         {prorationInfo.currency}{' '}
                                         {Math.max(0, prorationInfo.prorationAmount + prorationInfo.creditBalance).toFixed(2)}
@@ -1440,7 +1448,7 @@ const AccountSettings = () => {
                                             fontStyle: 'italic'
                                         }}
                                     >
-                                        Your available credit will automatically apply to your next invoice.
+                                        {t('profile.dialog.nextPayment.availableCredit')}
                                     </Typography>
                                 )}
                             </Box>
@@ -1450,7 +1458,7 @@ const AccountSettings = () => {
                 {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
                     <DialogActions>
                         <Button onClick={handleAddSeatsDialogClose} disabled={isUpdatingSeats}>
-                            Cancel
+                            {t('profile.actions.cancel')}
                         </Button>
                         <Button
                             variant='contained'
@@ -1466,10 +1474,10 @@ const AccountSettings = () => {
                             {isUpdatingSeats ? (
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                     <CircularProgress size={16} color='inherit' />
-                                    Updating...
+                                    {t('profile.dialog.updating')}
                                 </Box>
                             ) : (
-                                'Add Seats'
+                                t('profile.actions.addSeats.title')
                             )}
                         </Button>
                     </DialogActions>

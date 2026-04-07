@@ -1,4 +1,7 @@
 {
+    "common": {
+        "locale": "en-US"
+    },
     "components": {
         "dialogs": {
             "about": {
@@ -935,9 +938,113 @@
         "accountSetting": "Account Settings",
         "documentation": "Documentation",
         "contactTo": "Please contact your administrator for assistance.",
+        "subscription": {
+            "title": "Subscription & Billing",
+            "currentPlan": "Current Organization Plan:",
+            "updatePlan": "Update your billing details and subscription",
+            "loading": "Loading",
+            "actions": {
+                "billing": "Billing",
+                "changePlan": "Change Plan"
+            }
+        },
+        "seats": {
+            "title": "Seats",
+            "includedInPlan": "Seats Included in Plan:",
+            "additionalPurchased": "Additional Seats Purchased:",
+            "occupiedSeats": "Occupied Seats:"
+        },
+        "usage": {
+            "title": "Usage",
+            "predictions": "Predictions",
+            "storage": {
+                "title": "Storage",
+                "current": "{{usage}}MB / {{limit}}MB"
+            }
+        },
+        "messages": {
+            "profile": {
+                "success": "Profile updated",
+                "error": "Failed to update profile: {{msg}}"
+            },
+            "password": {
+                "success": "Password updated",
+                "errors": {
+                    "oldPassword": "Old Password cannot be left blank",
+                    "passwordsNotMatch": "New Password and Confirm Password do not match",
+                    "failedUpdate": "Failed to update password: {{msg}}"
+                }
+            },
+            "seats": {
+                "success": "Seats updated successfully",
+                "error": "Failed to update seats: {{msg}}"
+            },
+            "errors": {
+                "failedAccessPortal": "Failed to access billing portal"
+            }
+        },
+        "inputs": {
+            "name": {
+                "title": "Name",
+                "placeholder": "Your Name"
+            },
+            "email": "Email Address",
+            "oldPassword": "Old Password",
+            "newPassword": {
+                "title": "New Password",
+                "caption": "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character."
+            },
+            "confirmNewPassword": "Confirm New Password"
+        },
+        "dialog": {
+            "removeSeats": "Remove Additional Seats",
+            "addSeats": "Add Additional Seats",
+            "removeUsersBefore": "You must remove users from your organization before removing seats.",
+            "occupiedSeats": "Occupied Seats",
+            "includedInPlan": "Seats Included with Plan",
+            "additionalPurchased": "Additional Seats Purchased",
+            "emptySeats": "Empty Seats",
+            "numberToRemove": "Number of Empty Seats to Remove",
+            "numberToAdd": "Number of Additional Seats to Add",
+            "newTotalSeats": "New Total Seats",
+            "paymentMethod": "Payment Method",
+            "noPaymentMethod": "No payment method found",
+            "appliedAccountBalance": "Applied account balance",
+            "actions": {
+                "addPaymentMethod": "Add Payment Method in Billing Portal"
+            },
+            "additionalSeats": {
+                "title": {
+                    "current": "Additional Seats (Prorated)",
+                    "left": "Additional Seats Left (Prorated)"
+                },
+                "qty": "Qty {{value}}",
+                "each": "{{currency}} {{seatPerUnitPrice}} each"
+            },
+            "creditBalance": "Credit balance",
+            "nextPayment": {
+                "due": "Due today",
+                "availableCredit": "Your available credit will automatically apply to your next invoice."
+            },
+            "updating": "Updating...",
+            "expires": "expires {{month}} / {{year}}"
+        },
         "actions": {
             "export": "Export",
-            "import": "Import"
+            "import": "Import",
+            "cancel": "Cancel",
+            "removeSeats": "Remove Seats",
+            "addSeats": {
+                "title": "Add Seats",
+                "tooltip": "Add Seats is available only for PRO plan"
+            },
+            "save": {
+                "title": "Save",
+                "tooltips": {
+                    "profile": "Profile",
+                    "security": "Security"
+                }
+            }
         },
         "organizations": {
             "organization": "Organization",
