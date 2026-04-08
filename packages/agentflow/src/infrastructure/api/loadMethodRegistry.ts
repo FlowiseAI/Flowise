@@ -34,7 +34,8 @@ export interface ApiServices {
  * - `listFlows` — fetches all chatflows/agentflows via `GET /chatflows`; returns `{ label: name, name: id, description: type }`
  * - `listCredentials` — fetches credentials filtered by `params.name` via `GET /credentials?credentialName=<name>`
  * - `listActions` — fetches available actions for a node (e.g. Composio, MCP tools) via `POST /node-load-method/{nodeName}`;
- *   requires `params.nodeName` and accepts optional `params.inputs` forwarded as `currentNode.inputs`
+ *   requires `params.nodeName` and `params.inputs`; extracts `credential` from inputs and sends it at the top level
+ *   so the server can decrypt the credential from the database (needed for authenticated tools like MCPs)
  * - `listTables` — fetches available tables for a node (e.g. AWSDynamoDBKVStorage) via `POST /node-load-method/{nodeName}`;
  *   requires `params.nodeName` and accepts optional `params.inputs` forwarded as `currentNode.inputs`
  *
@@ -88,6 +89,15 @@ export const loadMethodRegistry: Record<string, (_apis: ApiServices, _params?: R
             return Promise.reject(new Error('`listCredentials` requires a string `name` parameter.'))
         }
         return apis.credentialsApi.getCredentialsByName(name)
+    },
+    listActions: (apis, params) => {
+        const nodeName = params?.nodeName
+        if (typeof nodeName !== 'string') {
+            return Promise.reject(new Error('`listActions` requires a string "nodeName" parameter.'))
+        }
+        const inputs = (params?.inputs as Record<string, unknown>) ?? {}
+        const credential = (inputs.credential as string) || (inputs['FLOWISE_CREDENTIAL_ID'] as string) || ''
+        return apis.nodesApi.loadNodeMethod(nodeName, 'listActions', { credential, inputs, currentNode: { inputs } })
     }
 }
 
@@ -113,7 +123,7 @@ export function getLoadMethod(name: string): (_apis: ApiServices, _params?: Reco
                 return Promise.reject(new Error(`loadMethod "${name}" requires a string "nodeName" parameter.`))
             }
             const inputs = (params?.inputs as Record<string, unknown>) ?? {}
-            return apis.nodesApi.loadNodeMethod(nodeName, name, { currentNode: { inputs } })
+            return apis.nodesApi.loadNodeMethod(nodeName, name, { inputs, currentNode: { inputs } })
         })
     )
 }

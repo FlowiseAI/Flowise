@@ -40,7 +40,7 @@ const StyledTableRow = styled(TableRow)(() => ({
     }
 }))
 
-export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showActions, onActionMenuClick }) => {
+export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showActions, onActionMenuClick, actionButtonSx }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -159,12 +159,12 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
                             </>
                         ) : (
                             <>
-                                {sortedData.map((row, index) => {
+                                {sortedData.map((row) => {
                                     return (
                                         <StyledTableRow
                                             onClick={() => onRowClick(row)}
                                             hover
-                                            key={index}
+                                            key={row.id}
                                             sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
                                         >
                                             <StyledTableCell>
@@ -255,14 +255,7 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images, showAc
                                                     <IconButton
                                                         size='small'
                                                         aria-label='Document store options'
-                                                        sx={{
-                                                            p: 0.5,
-                                                            backgroundColor: theme.palette.background.paper,
-                                                            border: `1px solid ${theme.palette.grey[900]}25`,
-                                                            '&:hover': {
-                                                                backgroundColor: theme.palette.action.hover
-                                                            }
-                                                        }}
+                                                        sx={actionButtonSx}
                                                         onClick={(event) => {
                                                             event.stopPropagation()
                                                             onActionMenuClick(event, row)
@@ -290,7 +283,8 @@ DocumentStoreTable.propTypes = {
     images: PropTypes.object,
     onRowClick: PropTypes.func,
     showActions: PropTypes.bool,
-    onActionMenuClick: PropTypes.func
+    onActionMenuClick: PropTypes.func,
+    actionButtonSx: PropTypes.object
 }
 
 DocumentStoreTable.displayName = 'DocumentStoreTable'
