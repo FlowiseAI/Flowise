@@ -219,98 +219,101 @@ class ChatOpenAI_ChatModels implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-    const temperature = nodeData.inputs?.temperature as string
-    const modelName = nodeData.inputs?.modelName as string
-    const maxTokens = nodeData.inputs?.maxTokens as string
-    const topP = nodeData.inputs?.topP as string
-    const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
-    const presencePenalty = nodeData.inputs?.presencePenalty as string
-    const timeout = nodeData.inputs?.timeout as string
-    const stopSequence = nodeData.inputs?.stopSequence as string
-    const streaming = nodeData.inputs?.streaming as boolean
-    const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
-    const basePath = nodeData.inputs?.basepath as string
-    const baseOptions = nodeData.inputs?.baseOptions
-    const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
-    const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
-    const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const temperature = nodeData.inputs?.temperature as string
+        const modelName = nodeData.inputs?.modelName as string
+        const maxTokens = nodeData.inputs?.maxTokens as string
+        const topP = nodeData.inputs?.topP as string
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
+        const presencePenalty = nodeData.inputs?.presencePenalty as string
+        const timeout = nodeData.inputs?.timeout as string
+        const stopSequence = nodeData.inputs?.stopSequence as string
+        const streaming = nodeData.inputs?.streaming as boolean
+        const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
+        const basePath = nodeData.inputs?.basepath as string
+        const baseOptions = nodeData.inputs?.baseOptions
+        const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
+        const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
-    if (nodeData.inputs?.credentialId) {
-        nodeData.credential = nodeData.inputs?.credentialId
-    }
-    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-    const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
-
-    const cache = nodeData.inputs?.cache as BaseCache
-
-    const obj: ChatOpenAIFields = {
-        temperature: parseFloat(temperature),
-        modelName,
-        openAIApiKey,
-        apiKey: openAIApiKey,
-        streaming: streaming ?? true
-    }
-
-    if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
-    if (topP) obj.topP = parseFloat(topP)
-    if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-    if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-    if (timeout) obj.timeout = parseInt(timeout, 10)
-    if (cache) obj.cache = cache
-    if (stopSequence) {
-        const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
-        obj.stop = stopSequenceArray
-    }
-    if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
-
-    // ✅ Parse and apply baseOptions BEFORE reasoning block
-    //    so reasoning cleanup can still delete stop/temperature if needed
-    let parsedBaseOptions: any | undefined = undefined
-
-    if (baseOptions) {
-        try {
-            parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
-        } catch (exception) {
-            throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
+        if (nodeData.inputs?.credentialId) {
+            nodeData.credential = nodeData.inputs?.credentialId
         }
-    }
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
-    if (parsedBaseOptions) {
-        const { defaultHeaders, baseURL, ...modelParams } = parsedBaseOptions
-        // Spread extra model params (e.g. stop, top_p) into obj
-        Object.assign(obj, modelParams)
+        const cache = nodeData.inputs?.cache as BaseCache
 
-        if (basePath || defaultHeaders || baseURL) {
-            obj.configuration = {
-                baseURL: baseURL ?? basePath,
-                defaultHeaders: defaultHeaders
+        const obj: ChatOpenAIFields = {
+            temperature: parseFloat(temperature),
+            modelName,
+            openAIApiKey,
+            apiKey: openAIApiKey,
+            streaming: streaming ?? true
+        }
+
+        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
+        if (topP) obj.topP = parseFloat(topP)
+        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
+        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
+        if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (cache) obj.cache = cache
+        if (stopSequence) {
+            const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
+            obj.stop = stopSequenceArray
+        }
+        if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
+
+        // Parse baseOptions and merge model-level params into obj BEFORE reasoning block
+        // so the reasoning cleanup (delete stop/temperature) still applies correctly.
+        // Sensitive fields (apiKey, openAIApiKey, configuration) are explicitly excluded
+        // to prevent user-provided JSON from overwriting credentials.
+        let parsedBaseOptions: any | undefined = undefined
+
+        if (baseOptions) {
+            try {
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
             }
         }
-    } else if (basePath) {
-        obj.configuration = { baseURL: basePath }
-    }
 
-    // ✅ Reasoning block runs AFTER baseOptions merge, so it can clean up correctly
-    if (isReasoningModelOpenAI(modelName)) {
-        delete obj.temperature
-        delete obj.stop
-        const reasoning: OpenAIClient.Reasoning = {}
-        if (reasoningEffort) reasoning.effort = reasoningEffort
-        if (reasoningSummary) reasoning.summary = reasoningSummary
-        obj.reasoning = reasoning
-    }
+        if (parsedBaseOptions) {
+            const { defaultHeaders, baseURL, apiKey, openAIApiKey: _openAIApiKey, configuration, ...modelParams } = parsedBaseOptions
+            // Spread safe model params (e.g. stop, top_p) into obj
+            Object.assign(obj, modelParams)
 
-    const multiModalOption: IMultiModalOption = {
-        image: {
-            allowImageUploads: allowImageUploads ?? false
+            if (basePath || defaultHeaders || baseURL) {
+                obj.configuration = {
+                    baseURL: baseURL ?? basePath,
+                    defaultHeaders: defaultHeaders
+                }
+            }
+        } else if (basePath) {
+            obj.configuration = { baseURL: basePath }
         }
+
+        // Reasoning block runs AFTER baseOptions merge so it can cleanly
+        // delete stop/temperature even if baseOptions tried to set them
+        if (isReasoningModelOpenAI(modelName)) {
+            delete obj.temperature
+            delete obj.stop
+            const reasoning: OpenAIClient.Reasoning = {}
+            if (reasoningEffort) reasoning.effort = reasoningEffort
+            if (reasoningSummary) reasoning.summary = reasoningSummary
+            obj.reasoning = reasoning
+        }
+
+        const multiModalOption: IMultiModalOption = {
+            image: {
+                allowImageUploads: allowImageUploads ?? false
+            }
+        }
+
+        const model = new ChatOpenAI(nodeData.id, obj)
+        model.setMultiModalOption(multiModalOption)
+
+        return model
     }
-
-    const model = new ChatOpenAI(nodeData.id, obj)
-    model.setMultiModalOption(multiModalOption)
-
-    return model
-}
 }
 
 module.exports = { nodeClass: ChatOpenAI_ChatModels }
