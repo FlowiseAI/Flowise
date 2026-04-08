@@ -10,6 +10,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { IReactFlowEdge, IReactFlowNode } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { stripProtectedFields } from '../../utils/stripProtectedFields'
 import chatflowsService from '../chatflows'
 
 type ITemplate = {
@@ -208,7 +209,8 @@ const saveCustomTemplate = async (body: any): Promise<any> => {
         let flowDataStr = ''
         let derivedFramework = ''
         const customTemplate = new CustomTemplate()
-        Object.assign(customTemplate, body)
+        Object.assign(customTemplate, stripProtectedFields(body))
+        customTemplate.workspaceId = body.workspaceId // re-apply: set by controller from req.user
 
         if (body.chatflowId) {
             const chatflow = await chatflowsService.getChatflowById(body.chatflowId, body.workspaceId)

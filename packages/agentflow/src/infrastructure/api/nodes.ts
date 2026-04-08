@@ -13,7 +13,7 @@ export function bindNodesApi(client: AxiosInstance) {
          * Pass results through initNode() to get canvas-ready NodeData.
          */
         getAllNodes: async (): Promise<NodeDataSchema[]> => {
-            const response = await client.get('/nodes')
+            const response = await client.get('/nodes', { params: { client: 'agentflowsdk' } })
             return response.data
         },
 
@@ -22,7 +22,7 @@ export function bindNodesApi(client: AxiosInstance) {
          * Single component definition (`inputs` is a schema array).
          */
         getNodeByName: async (name: string): Promise<NodeDataSchema> => {
-            const response = await client.get(`/nodes/${name}`)
+            const response = await client.get(`/nodes/${name}`, { params: { client: 'agentflowsdk' } })
             return response.data
         },
 

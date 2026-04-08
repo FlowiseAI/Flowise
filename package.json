@@ -45,7 +45,7 @@
         "eslint": "^8.24.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-config-react-app": "^7.0.1",
-        "eslint-plugin-jsx-a11y": "^6.6.1",
+        "eslint-plugin-jsx-a11y": "^6.10.2",
         "eslint-plugin-markdown": "^3.0.0",
         "eslint-plugin-prettier": "^3.4.0",
         "eslint-plugin-react": "^7.26.1",

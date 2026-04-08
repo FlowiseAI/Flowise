@@ -14,8 +14,7 @@ jest.mock('../api', () => ({
     bindToolsApi: jest.fn(() => ({ getAllTools: jest.fn() })),
     bindCredentialsApi: jest.fn(() => ({ getAllCredentials: jest.fn() })),
     bindStoresApi: jest.fn(() => ({ getStores: jest.fn(), getVectorStores: jest.fn() })),
-    bindEmbeddingsApi: jest.fn(() => ({ getEmbeddings: jest.fn() })),
-    bindRuntimeStateApi: jest.fn(() => ({ getRuntimeStateKeys: jest.fn() }))
+    bindEmbeddingsApi: jest.fn(() => ({ getEmbeddings: jest.fn() }))
 }))
 
 const {
@@ -26,8 +25,7 @@ const {
     bindToolsApi,
     bindCredentialsApi,
     bindStoresApi,
-    bindEmbeddingsApi,
-    bindRuntimeStateApi
+    bindEmbeddingsApi
 } = jest.requireMock('../api')
 
 describe('ApiContext', () => {
@@ -55,7 +53,6 @@ describe('ApiContext', () => {
             expect(result.current.credentialsApi).toBeDefined()
             expect(result.current.storesApi).toBeDefined()
             expect(result.current.embeddingsApi).toBeDefined()
-            expect(result.current.runtimeStateApi).toBeDefined()
             expect(bindApiClient).toHaveBeenCalledWith('http://localhost:3000', undefined, expect.any(Function))
         })
 
@@ -83,7 +80,6 @@ describe('ApiContext', () => {
             expect(bindCredentialsApi).toHaveBeenCalledWith('mock-client')
             expect(bindStoresApi).toHaveBeenCalledWith('mock-client')
             expect(bindEmbeddingsApi).toHaveBeenCalledWith('mock-client')
-            expect(bindRuntimeStateApi).toHaveBeenCalledWith('mock-client')
         })
 
         it('should use updated requestInterceptor without recreating client', () => {

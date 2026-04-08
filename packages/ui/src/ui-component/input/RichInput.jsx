@@ -13,14 +13,9 @@ import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from './suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 import { CustomMention } from '@/utils/customMention'
+import { isHtmlContent, escapeXmlTags, unescapeXmlEntities, unescapeXmlTags } from '@/utils/xmlTagUtils'
 
 const lowlight = createLowlight(common)
-
-// Detect if content is legacy HTML (from old getHTML() storage) vs markdown
-const isHtmlContent = (content) => {
-    if (!content || typeof content !== 'string') return false
-    return /<(?:p|div|span|h[1-6]|ul|ol|li|br|code|pre|blockquote|table|strong|em)\b/i.test(content)
-}
 
 // define your extension array
 const extensions = (
@@ -154,7 +149,7 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
             onUpdate: ({ editor }) => {
                 if (useMarkdown) {
                     try {
-                        onChange(editor.getMarkdown())
+                        onChange(unescapeXmlTags(editor.getMarkdown()))
                     } catch {
                         onChange(editor.getHTML())
                     }
@@ -173,7 +168,10 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
             if (!useMarkdown || isHtmlContent(value)) {
                 editor.commands.setContent(value)
             } else {
-                editor.commands.setContent(value, { contentType: 'markdown' })
+                // Step 1: Escape XML tags to entities so marked treats them as text
+                editor.commands.setContent(escapeXmlTags(value), { contentType: 'markdown' })
+                // Step 2: Decode entities in the ProseMirror doc for proper display
+                editor.commands.setContent(unescapeXmlEntities(editor.getJSON()))
             }
         }
     }, [editor]) // eslint-disable-line react-hooks/exhaustive-deps

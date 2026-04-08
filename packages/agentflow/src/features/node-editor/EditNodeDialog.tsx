@@ -367,6 +367,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                         inputParam={inputParam}
                                         data={data}
                                         disabled={dialogProps.disabled}
+                                        variableItems={variableItems}
                                         onDataChange={onCustomDataChange}
                                     />
                                 )
