@@ -93,9 +93,9 @@ export const executeUpsert = async ({
 
             let fileInputField = 'txtFile'
 
-            if (fileInputFieldFromExt !== 'txtFile') {
+            if (fileInputFieldFromExt && fileInputFieldFromExt !== 'txtFile') {
                 fileInputField = fileInputFieldFromExt
-            } else if (fileInputFieldFromMimeType !== 'txtFile') {
+            } else if (fileInputFieldFromMimeType && fileInputFieldFromMimeType !== 'txtFile') {
                 fileInputField = fileInputFieldFromMimeType
             }
 
