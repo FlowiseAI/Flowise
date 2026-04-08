@@ -205,7 +205,7 @@ class ChatOpenAI_ChatModels implements INode {
                 name: 'baseOptions',
                 type: 'json',
                 optional: true,
-                description: 'Default headers to include with every request to the API.',
+                description: 'Additional model parameters (e.g. { "stop": ["<|im_end|>"] }) or default headers ({ "defaultHeaders": { "X-Custom": "value" } }).',
                 additionalParams: true
             }
         ]
@@ -219,91 +219,98 @@ class ChatOpenAI_ChatModels implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const temperature = nodeData.inputs?.temperature as string
-        const modelName = nodeData.inputs?.modelName as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const topP = nodeData.inputs?.topP as string
-        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
-        const presencePenalty = nodeData.inputs?.presencePenalty as string
-        const timeout = nodeData.inputs?.timeout as string
-        const stopSequence = nodeData.inputs?.stopSequence as string
-        const streaming = nodeData.inputs?.streaming as boolean
-        const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
-        const basePath = nodeData.inputs?.basepath as string
-        const baseOptions = nodeData.inputs?.baseOptions
-        const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
-        const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
-        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+    const temperature = nodeData.inputs?.temperature as string
+    const modelName = nodeData.inputs?.modelName as string
+    const maxTokens = nodeData.inputs?.maxTokens as string
+    const topP = nodeData.inputs?.topP as string
+    const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
+    const presencePenalty = nodeData.inputs?.presencePenalty as string
+    const timeout = nodeData.inputs?.timeout as string
+    const stopSequence = nodeData.inputs?.stopSequence as string
+    const streaming = nodeData.inputs?.streaming as boolean
+    const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
+    const basePath = nodeData.inputs?.basepath as string
+    const baseOptions = nodeData.inputs?.baseOptions
+    const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
+    const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
+    const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
-        if (nodeData.inputs?.credentialId) {
-            nodeData.credential = nodeData.inputs?.credentialId
-        }
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
-
-        const cache = nodeData.inputs?.cache as BaseCache
-
-        const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
-            modelName,
-            openAIApiKey,
-            apiKey: openAIApiKey,
-            streaming: streaming ?? true
-        }
-
-        if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
-        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (cache) obj.cache = cache
-        if (stopSequence) {
-            const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
-            obj.stop = stopSequenceArray
-        }
-        if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
-
-        if (isReasoningModelOpenAI(modelName)) {
-            delete obj.temperature
-            delete obj.stop
-            const reasoning: OpenAIClient.Reasoning = {}
-            if (reasoningEffort) {
-                reasoning.effort = reasoningEffort
-            }
-            if (reasoningSummary) {
-                reasoning.summary = reasoningSummary
-            }
-            obj.reasoning = reasoning
-        }
-
-        let parsedBaseOptions: any | undefined = undefined
-
-        if (baseOptions) {
-            try {
-                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
-            }
-        }
-
-        if (basePath || parsedBaseOptions) {
-            obj.configuration = {
-                baseURL: basePath,
-                defaultHeaders: parsedBaseOptions
-            }
-        }
-
-        const multiModalOption: IMultiModalOption = {
-            image: {
-                allowImageUploads: allowImageUploads ?? false
-            }
-        }
-
-        const model = new ChatOpenAI(nodeData.id, obj)
-        model.setMultiModalOption(multiModalOption)
-
-        return model
+    if (nodeData.inputs?.credentialId) {
+        nodeData.credential = nodeData.inputs?.credentialId
     }
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+
+    const cache = nodeData.inputs?.cache as BaseCache
+
+    const obj: ChatOpenAIFields = {
+        temperature: parseFloat(temperature),
+        modelName,
+        openAIApiKey,
+        apiKey: openAIApiKey,
+        streaming: streaming ?? true
+    }
+
+    if (maxTokens) obj.maxCompletionTokens = parseInt(maxTokens, 10)
+    if (topP) obj.topP = parseFloat(topP)
+    if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
+    if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
+    if (timeout) obj.timeout = parseInt(timeout, 10)
+    if (cache) obj.cache = cache
+    if (stopSequence) {
+        const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
+        obj.stop = stopSequenceArray
+    }
+    if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
+
+    // ✅ Parse and apply baseOptions BEFORE reasoning block
+    //    so reasoning cleanup can still delete stop/temperature if needed
+    let parsedBaseOptions: any | undefined = undefined
+
+    if (baseOptions) {
+        try {
+            parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+        } catch (exception) {
+            throw new Error("Invalid JSON in the ChatOpenAI's BaseOptions: " + exception)
+        }
+    }
+
+    if (parsedBaseOptions) {
+        const { defaultHeaders, baseURL, ...modelParams } = parsedBaseOptions
+        // Spread extra model params (e.g. stop, top_p) into obj
+        Object.assign(obj, modelParams)
+
+        if (basePath || defaultHeaders || baseURL) {
+            obj.configuration = {
+                baseURL: baseURL ?? basePath,
+                defaultHeaders: defaultHeaders
+            }
+        }
+    } else if (basePath) {
+        obj.configuration = { baseURL: basePath }
+    }
+
+    // ✅ Reasoning block runs AFTER baseOptions merge, so it can clean up correctly
+    if (isReasoningModelOpenAI(modelName)) {
+        delete obj.temperature
+        delete obj.stop
+        const reasoning: OpenAIClient.Reasoning = {}
+        if (reasoningEffort) reasoning.effort = reasoningEffort
+        if (reasoningSummary) reasoning.summary = reasoningSummary
+        obj.reasoning = reasoning
+    }
+
+    const multiModalOption: IMultiModalOption = {
+        image: {
+            allowImageUploads: allowImageUploads ?? false
+        }
+    }
+
+    const model = new ChatOpenAI(nodeData.id, obj)
+    model.setMultiModalOption(multiModalOption)
+
+    return model
+}
 }
 
 module.exports = { nodeClass: ChatOpenAI_ChatModels }
