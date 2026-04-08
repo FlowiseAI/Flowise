@@ -29,7 +29,7 @@ class ConversationSummaryBufferMemory_Memory implements INode {
     constructor() {
         this.label = 'Conversation Summary Buffer Memory'
         this.name = 'conversationSummaryBufferMemory'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ConversationSummaryBufferMemory'
         this.icon = 'memory.svg'
         this.category = 'Memory'
@@ -47,6 +47,15 @@ class ConversationSummaryBufferMemory_Memory implements INode {
                 type: 'number',
                 default: 2000,
                 description: 'Summarize conversations once token limit is reached. Default to 2000'
+            },
+            {
+                label: 'Max Messages',
+                name: 'maxMessages',
+                type: 'number',
+                optional: true,
+                description:
+                    'Maximum number of messages to load from the database. Limits how many past messages are fetched before token-based pruning, preventing unbounded growth in long conversations. If not set, all messages are loaded.',
+                additionalParams: true
             },
             {
                 label: 'Session Id',
@@ -72,6 +81,8 @@ class ConversationSummaryBufferMemory_Memory implements INode {
         const model = nodeData.inputs?.model as BaseLanguageModel
         const _maxTokenLimit = nodeData.inputs?.maxTokenLimit as string
         const maxTokenLimit = _maxTokenLimit ? parseInt(_maxTokenLimit, 10) : 2000
+        const _maxMessages = nodeData.inputs?.maxMessages as string
+        const maxMessages = _maxMessages ? parseInt(_maxMessages, 10) : undefined
         const sessionId = nodeData.inputs?.sessionId as string
         const memoryKey = (nodeData.inputs?.memoryKey as string) ?? 'chat_history'
 
@@ -89,7 +100,8 @@ class ConversationSummaryBufferMemory_Memory implements INode {
             appDataSource,
             databaseEntities,
             chatflowid,
-            orgId
+            orgId,
+            maxMessages
         }
 
         return new ConversationSummaryBufferMemoryExtended(obj)
@@ -102,6 +114,7 @@ interface BufferMemoryExtendedInput {
     databaseEntities: IDatabaseEntity
     chatflowid: string
     orgId: string
+    maxMessages?: number
 }
 
 class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory implements MemoryMethods {
@@ -110,6 +123,7 @@ class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory
     chatflowid: string
     orgId: string
     sessionId = ''
+    maxMessages?: number
 
     constructor(fields: ConversationSummaryBufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
@@ -118,6 +132,7 @@ class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory
         this.databaseEntities = fields.databaseEntities
         this.chatflowid = fields.chatflowid
         this.orgId = fields.orgId
+        this.maxMessages = fields.maxMessages
     }
 
     async getChatMessages(
@@ -137,6 +152,11 @@ class ConversationSummaryBufferMemoryExtended extends FlowiseSummaryBufferMemory
                 createdDate: 'ASC'
             }
         })
+
+        // Limit the number of messages fetched to prevent unbounded growth in long conversations
+        if (this.maxMessages && this.maxMessages > 0) {
+            chatMessage = chatMessage.slice(-this.maxMessages)
+        }
 
         if (prependMessages?.length) {
             chatMessage.unshift(...prependMessages)
