@@ -69,7 +69,12 @@ function buildInputSchema(chatflow: ChatFlow) {
     const inputType = getToolInputType(chatflow)
     if (inputType === 'form') {
         return {
-            form: z.record(z.any()).describe('Form inputs for the agent flow')
+            form: z
+                .object({
+                    title: z.string(),
+                    desc: z.string()
+                })
+                .describe('Form inputs for the agent flow')
         }
     }
     return {
