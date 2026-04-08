@@ -48,7 +48,7 @@
         "framer-motion": "^4.1.13",
         "history": "^5.0.0",
         "html-react-parser": "^3.0.4",
-        "i18next": "^26.0.3",
+        "i18next": "^26.0.4",
         "i18next-browser-languagedetector": "^8.2.1",
         "i18next-http-backend": "^3.0.4",
         "lodash": "^4.17.21",
