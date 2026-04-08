@@ -12,6 +12,9 @@ import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
 
 import { kFormatter } from '@/utils/genericHelper'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
@@ -34,6 +37,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 // ===========================|| DOC STORE CARD ||=========================== //
 
 const DocumentStoreCard = ({ data, images, onClick, hasActions }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -124,7 +128,7 @@ const DocumentStoreCard = ({ data, images, onClick, hasActions }) => {
                             }}
                         >
                             <IconLanguage style={{ marginRight: 5 }} size={15} />
-                            {kFormatter(data.totalChars ?? 0)} chars
+                            {t('components.documentStoreCard.chars', { totalChars: kFormatter(data.totalChars ?? 0) })}
                         </div>
                         <div
                             style={{
@@ -144,7 +148,7 @@ const DocumentStoreCard = ({ data, images, onClick, hasActions }) => {
                             }}
                         >
                             <IconScissors style={{ marginRight: 5 }} size={15} />
-                            {kFormatter(data.totalChunks ?? 0)} chunks
+                            {t('components.documentStoreCard.chunks', { totalChunks: kFormatter(data.totalChunks ?? 0) })}
                         </div>
                     </Grid>
                     {images && images.length > 0 && (

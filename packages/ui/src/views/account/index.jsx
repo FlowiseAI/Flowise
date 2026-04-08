@@ -50,7 +50,7 @@ import { useConfig } from '@/store/context/ConfigContext'
 import { logoutSuccess, userProfileUpdated } from '@/store/reducers/authSlice'
 
 // i18n
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 
 // ==============================|| ACCOUNT SETTINGS ||============================== //
 
@@ -240,9 +240,12 @@ const AccountSettings = () => {
                 store.dispatch(userProfileUpdated(payload.user))
                 const pendingMsg =
                     payload.emailChangePending &&
-                    `Check your current email (${payload.user.email}) to confirm the change to ${payload.pendingEmail}.`
+                    t('profile.messages.success.check', {
+                        email: payload.user.email,
+                        pendingEmail: payload.pendingEmail
+                    })
                 enqueueSnackbar({
-                    message: pendingMsg || 'Profile updated',
+                    message: pendingMsg || t('profile.messages.success.simple'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -259,7 +262,7 @@ const AccountSettings = () => {
             } else if (payload) {
                 store.dispatch(userProfileUpdated(payload))
                 enqueueSnackbar({
-                    message: t('profile.messages.profile.success'),
+                    message: t('profile.messages.profile.success.simple'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -450,6 +453,8 @@ const AccountSettings = () => {
 
     // Calculate empty seats
     const emptySeats = Math.min(purchasedSeats, totalSeats - occupiedSeats)
+
+    const permanentlyDeleteText = t('profile.deleteAccount.permanentlyDelete')
 
     return (
         <MainCard maxWidth='md'>
@@ -868,7 +873,7 @@ const AccountSettings = () => {
                         )}
                         {isCloud && (
                             <>
-                                <SettingsSection title='Delete Account'>
+                                <SettingsSection title={t('profile.deleteAccount.title')}>
                                     <Box
                                         sx={{
                                             width: '100%',
@@ -889,8 +894,7 @@ const AccountSettings = () => {
                                             }}
                                         >
                                             <Typography variant='body2' color='text.secondary'>
-                                                Permanently deletes all your data and cancels your subscription. This action cannot be
-                                                undone.
+                                                {t('profile.deleteAccount.description')}
                                             </Typography>
                                         </Box>
                                         <Box
@@ -913,10 +917,10 @@ const AccountSettings = () => {
                                                 {deleteAccountApi.loading ? (
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <CircularProgress size={16} color='inherit' />
-                                                        Deleting...
+                                                        {t('profile.deleteAccount.loading')}
                                                     </Box>
                                                 ) : (
-                                                    'Delete your account'
+                                                    t('profile.actions.delete')
                                                 )}
                                             </Button>
                                         </Box>
@@ -1495,22 +1499,24 @@ const AccountSettings = () => {
                     }
                 }}
             >
-                <DialogTitle>Delete Account</DialogTitle>
+                <DialogTitle>{t('profile.deleteAccount.title')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                        <Typography>
-                            This will permanently delete your account and all associated data. Your subscription will be cancelled
-                            immediately and you will be logged out. This action cannot be undone and there is no way to recover your data.
-                        </Typography>
+                        <Typography>{t('profile.deleteAccount.warn')}</Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                             <Typography variant='body2'>
-                                To confirm, please type <strong>permanently delete</strong> below:
+                                <Trans
+                                    i18nKey='profile.deleteAccount.confirm'
+                                    components={{
+                                        strong: <strong />
+                                    }}
+                                />
                             </Typography>
                             <OutlinedInput
                                 id='deleteConfirmation'
                                 type='text'
                                 fullWidth
-                                placeholder='permanently delete'
+                                placeholder={permanentlyDeleteText}
                                 value={deleteConfirmationText}
                                 onChange={(e) => setDeleteConfirmationText(e.target.value)}
                                 disabled={deleteAccountApi.loading}
@@ -1526,15 +1532,16 @@ const AccountSettings = () => {
                         }}
                         disabled={deleteAccountApi.loading}
                     >
-                        Cancel
+                        {t('profile.actions.cancel')}
                     </Button>
+                    {/* Since the text of this value may vary, we also use its translated version */}
                     <Button
                         variant='contained'
                         color='error'
                         onClick={() => deleteAccountApi.request({ confirmationText: deleteConfirmationText })}
-                        disabled={deleteAccountApi.loading || deleteConfirmationText !== 'permanently delete'}
+                        disabled={deleteAccountApi.loading || deleteConfirmationText !== permanentlyDeleteText}
                     >
-                        {deleteAccountApi.loading ? <CircularProgress size={24} color='inherit' /> : 'Confirm'}
+                        {deleteAccountApi.loading ? <CircularProgress size={24} color='inherit' /> : t('profile.actions.confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -7,7 +7,11 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff'
 import SelectVariable from '@/ui-component/json/SelectVariable'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlur, disabled = false }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const [myValue, setMyValue] = useState(value ?? '')
     const [anchorEl, setAnchorEl] = useState(null)
@@ -156,7 +160,9 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, onBlu
                                         edge='end'
                                         onClick={handleTogglePasswordVisibility}
                                         onMouseDown={(e) => e.preventDefault()}
-                                        aria-label={isPasswordVisible ? 'Hide password' : 'Show password'}
+                                        aria-label={t(
+                                            isPasswordVisible ? 'components.input.hidePassword' : 'components.input.showPassword'
+                                        )}
                                     >
                                         {isPasswordVisible ? <VisibilityOff fontSize='small' /> : <Visibility fontSize='small' />}
                                     </IconButton>

@@ -824,6 +824,14 @@
         "dropdown": {
             "createNewItemLabel": "- Create New -",
             "selected": "Selected Option"
+        },
+        "input": {
+            "hidePassword": "Hide password",
+            "showPassword": "Show password"
+        },
+        "documentStoreCard": {
+            "chars": "{{totalChars}} chars",
+            "chunks": "{{totalChunks}} chunks"
         }
     },
     "suggestOptions": {
@@ -964,7 +972,10 @@
         },
         "messages": {
             "profile": {
-                "success": "Profile updated",
+                "success": {
+                    "simple": "Profile updated",
+                    "check": "Check your current email ({{email}}) to confirm the change to {{pendingEmail}}."
+                },
                 "error": "Failed to update profile: {{msg}}"
             },
             "password": {
@@ -1044,7 +1055,9 @@
                     "profile": "Profile",
                     "security": "Security"
                 }
-            }
+            },
+            "delete": "Delete your account",
+            "confirm": "Confirm"
         },
         "organizations": {
             "organization": "Organization",
@@ -1074,6 +1087,14 @@
             "importSuccess": "Import All successful",
             "invalidImport": "Invalid Imported File",
             "failToImport": "Failed to import: {{msg}}"
+        },
+        "deleteAccount": {
+            "title": "Delete Account",
+            "description": "Permanently deletes all your data and cancels your subscription. This action cannot be undone.",
+            "warn": "This will permanently delete your account and all associated data. Your subscription will be cancelled immediately and you will be logged out. This action cannot be undone and there is no way to recover your data.",
+            "loading": "Deleting...",
+            "confirm": "To confirm, please type <strong>permanently delete</strong> below:",
+            "permanentlyDelete": "permanently delete"
         },
         "errors": {
             "internalServerErrorTitle": "Internal Server Error"
