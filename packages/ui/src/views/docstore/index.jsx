@@ -35,6 +35,16 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 import useNotifier from '@/utils/useNotifier'
 
 // ==============================|| DOCUMENTS ||============================== //
+const getDocStoreActionButtonSx = (theme) => ({
+    p: 0.5,
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.background.default : theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
+    '&:hover': {
+        backgroundColor: theme.palette.action.hover,
+        borderColor: theme.palette.text.secondary
+    }
+})
 
 const Documents = () => {
     const theme = useTheme()
@@ -88,14 +98,9 @@ const Documents = () => {
             return responseData
         }
 
-        if (responseData && typeof responseData === 'object') {
-            if (typeof responseData.message === 'string' && responseData.message.trim()) {
-                return responseData.message
-            }
-
-            if (typeof responseData.error === 'string' && responseData.error.trim()) {
-                return responseData.error
-            }
+        const responseMessage = responseData && typeof responseData === 'object' ? responseData.message || responseData.error : undefined
+        if (typeof responseMessage === 'string' && responseMessage.trim()) {
+            return responseMessage
         }
 
         if (typeof error?.message === 'string' && error.message.trim()) {
@@ -387,8 +392,8 @@ const Documents = () => {
                         <React.Fragment>
                             {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {docStores?.filter(filterDocStores).map((data, index) => (
-                                        <Box key={index} sx={{ position: 'relative' }}>
+                                    {docStores?.filter(filterDocStores).map((data) => (
+                                        <Box key={data.id} sx={{ position: 'relative' }}>
                                             <DocumentStoreCard
                                                 images={images[data.id]}
                                                 data={data}
@@ -406,12 +411,7 @@ const Documents = () => {
                                                         zIndex: 2,
                                                         width: 30,
                                                         height: 30,
-                                                        p: 0.5,
-                                                        backgroundColor: theme.palette.background.paper,
-                                                        border: `1px solid ${theme.palette.grey[900]}25`,
-                                                        '&:hover': {
-                                                            backgroundColor: theme.palette.action.hover
-                                                        },
+                                                        ...getDocStoreActionButtonSx(theme),
                                                         [theme.breakpoints.down('sm')]: {
                                                             top: 8,
                                                             right: 8,
@@ -435,6 +435,7 @@ const Documents = () => {
                                     onRowClick={(row) => goToDocumentStore(row.id)}
                                     showActions={canManageDocumentStore}
                                     onActionMenuClick={handleActionMenuOpen}
+                                    actionButtonSx={getDocStoreActionButtonSx(theme)}
                                 />
                             )}
                             {/* Pagination and Page Size Controls */}
