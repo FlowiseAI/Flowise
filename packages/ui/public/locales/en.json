@@ -23,7 +23,7 @@
             "agentFlows": {
                 "generating": "Generating your Agentflow...",
                 "placeholder": "Describe your agent here",
-                "selectModel": "Select model to generate agentflow<highlight>&nbsp;*</highlight>",
+                "selectModel": "Select model to generate agentflow",
                 "chooseAnOption": "choose an option",
                 "actions": {
                     "generate": "Generate",
@@ -63,7 +63,7 @@
             },
             "exportAsTemplate": {
                 "title": "Export As Template",
-                "name": "Name<highlight>&nbsp;*</highlight>",
+                "name": "Name",
                 "badge": "Badge",
                 "usecases": "Usecases",
                 "usecaseTooltip": "Type a usecase and press enter to add it to the list. You can add as many items as you want.",
@@ -85,7 +85,7 @@
             },
             "inviteUsers": {
                 "title": "Invite Users",
-                "select": "Select Users<highlight>&nbsp;*</highlight>",
+                "select": "Select Users",
                 "invite": "Invite {{email}}",
                 "notFound": "No results found",
                 "placeholder": "Invite users by name or email",
@@ -93,8 +93,8 @@
                     "sending": "An invitation will be sent to this email address",
                     "alreadyIn": "{{name}} is already a member of this workspace and won't be invited again."
                 },
-                "workspace": "Workspace<highlight>&nbsp;*</highlight>",
-                "roles": " Role to Assign<highlight>&nbsp;*</highlight>",
+                "workspace": "Workspace",
+                "roles": "Role to Assign",
                 "selectRole": "Select Role",
                 "messages": {
                     "success": "Users invited to workspace",
@@ -1238,6 +1238,117 @@
             "deprecationNotice": "<strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for improved performance and continued support.",
             "dismiss": "dismiss",
             "empty": "No Agents Yet"
+        },
+        "v2": {
+            "untitled": "Untitled",
+            "unsavedWarn": "You have unsaved changes! Do you want to navigate away?",
+            "syncNodes": "Sync Nodes",
+            "sync": "sync",
+            "parameters": "{{label}} Parameters",
+            "buttonGroup": "Basic button group",
+            "agent": "Agent",
+            "chatflow": "Chatflow",
+            "messages": {
+                "nodeVersion": {
+                    "outdated": "Node version {{oldVersion}} outdated\nUpdate to latest version {{newVersion}}",
+                    "versionEmpty": "Node outdated\nUpdate to latest version {{newVersion}}",
+                    "deprecated": "This node will be deprecated in the next release. Change to a new node tagged with NEW"
+                },
+                "dragAndDrop": {
+                    "errors": {
+                        "onlyStart": "Only one start node is allowed",
+                        "nestedNotSupport": "Nested iteration node is not supported yet",
+                        "humanNotSupport": "Human input node is not supported inside Iteration node"
+                    }
+                },
+                "save": {
+                    "success": "{{canvasTitle}} saved",
+                    "error": "Failed to save {{canvasTitle}}: {{msg}}"
+                },
+                "errors": {
+                    "failedRetrieve": "Failed to retrieve {{canvasTitle}}: {{msg}}"
+                }
+            },
+            "actions": {
+                "delete": {
+                    "title": "Delete",
+                    "description": "Delete {{canvasTitle}} {{name}}?"
+                },
+                "duplicate": "Duplicate",
+                "cancel": "Cancel",
+                "toggleBackground": "toggle background",
+                "toggleSnapping": "toggle snapping",
+                "saveName": "Save Name",
+                "editName": "Edit Name",
+                "info": "Info"
+            },
+            "error": "Error"
+        }
+    },
+    "apiKey": {
+        "title": "API Key",
+        "description": "Flowise API & SDK authentication keys",
+        "copied": "Copied!",
+        "searchPlaceholder": "Search API Keys",
+        "notFound": "No API Keys Yet",
+        "keyTable": {
+            "title": "simple table",
+            "keyName": "Key Name",
+            "apiKey": "API Key",
+            "permissions": "Permissions",
+            "usage": "Usage",
+            "updated": "Updated"
+        },
+        "chatflowTable": {
+            "title": "chatflow table",
+            "name": "Chatflow Name",
+            "modifiedOn": "Modified On",
+            "category": "Category"
+        },
+        "messages": {
+            "add": {
+                "success": "New API key added",
+                "error": "Failed to add new API key: {{msg}}"
+            },
+            "save": {
+                "success": "API Key saved",
+                "error": "Failed to save API key: {{msg}}"
+            },
+            "delete": {
+                "success": "API key deleted",
+                "error": "Failed to delete API key: {{msg}}"
+            }
+        },
+        "actions": {
+            "copyKey": "Copy API Key",
+            "selectAll": "Select All",
+            "cancel": "Cancel",
+            "copy": "Copy",
+            "show": "Show",
+            "expandRow": "expand row",
+            "edit": "Edit",
+            "delete": {
+                "title": "Delete",
+                "description": {
+                    "simple": "Delete key [{{name}}] ?",
+                    "inUse": "Delete key [{{name}}] ?\nThere are {{count}} chatflows using this key."
+                }
+            },
+            "addKey": "Add New API Key",
+            "add": "Add",
+            "editKey": "Edit API Key",
+            "save": "Save",
+            "createKey": "Create Key"
+        },
+        "inputs": {
+            "key": {
+                "title": "Key Name",
+                "placeholder": "My New Key"
+            },
+            "permissions": "Permissions"
+        },
+        "formats": {
+            "date": "MMMM Do, YYYY"
         }
     }
 }

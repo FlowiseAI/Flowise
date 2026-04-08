@@ -59,12 +59,16 @@ import { usePrompt } from '@/utils/usePrompt'
 // const
 import { FLOWISE_CREDENTIAL_ID, AGENTFLOW_ICONS } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const nodeTypes = { agentFlow: CanvasNode, stickyNote: StickyNote, iteration: IterationNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
 // ==============================|| CANVAS ||============================== //
 
 const AgentflowCanvas = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const navigate = useNavigate()
     const customization = useSelector((state) => state.customization)
@@ -75,7 +79,7 @@ const AgentflowCanvas = () => {
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
-    const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
+    const canvasTitle = t(URLpath.includes('agentcanvas') ? 'agentFlows.v2.agent' : 'agentFlows.v2.chatflow')
 
     const { confirm } = useConfirm()
 
@@ -172,10 +176,10 @@ const AgentflowCanvas = () => {
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete ${canvasTitle} ${chatflow.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: t('agentFlows.v2.actions.delete.title'),
+            description: t('agentFlows.v2.actions.delete.description', { canvasTitle: canvasTitle, name: chatflow.name }),
+            confirmButtonName: t('agentFlows.v2.actions.delete.title'),
+            cancelButtonName: t('agentFlows.v2.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -305,7 +309,7 @@ const AgentflowCanvas = () => {
 
             if (nodeData.name === 'startAgentflow' && nodes.find((node) => node.data.name === 'startAgentflow')) {
                 enqueueSnackbar({
-                    message: 'Only one start node is allowed',
+                    message: t('agentFlows.v2.messages.dragAndDrop.errors.onlyStart'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -359,7 +363,7 @@ const AgentflowCanvas = () => {
                     // We can't have nested iteration nodes
                     if (nodeData.name === 'iterationAgentflow') {
                         enqueueSnackbar({
-                            message: 'Nested iteration node is not supported yet',
+                            message: t('agentFlows.v2.messages.dragAndDrop.errors.nestedNotSupport'),
                             options: {
                                 key: new Date().getTime() + Math.random(),
                                 variant: 'error',
@@ -377,7 +381,7 @@ const AgentflowCanvas = () => {
                     // We can't have human input node inside iteration node
                     if (nodeData.name === 'humanInputAgentflow') {
                         enqueueSnackbar({
-                            message: 'Human input node is not supported inside Iteration node',
+                            message: t('agentFlows.v2.messages.dragAndDrop.errors.humanNotSupport'),
                             options: {
                                 key: new Date().getTime() + Math.random(),
                                 variant: 'error',
@@ -473,7 +477,7 @@ const AgentflowCanvas = () => {
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `${canvasTitle} saved`,
+            message: t('agentFlows.v2.messages.save.success', { canvasTitle: canvasTitle }),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -532,11 +536,16 @@ const AgentflowCanvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
+            errorFailed(
+                t('agentFlows.v2.messages.errors.failedRetrieve', {
+                    canvasTitle: canvasTitle,
+                    msg: getSpecificChatflowApi.error.response.data.message
+                })
+            )
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error])
+    }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error, t])
 
     // Create new chatflow successful
     useEffect(() => {
@@ -546,11 +555,16 @@ const AgentflowCanvas = () => {
             saveChatflowSuccess()
             window.history.replaceState(state, null, `/v2/agentcanvas/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
+            errorFailed(
+                t('agentFlows.v2.messages.save.error', {
+                    canvasTitle: canvasTitle,
+                    msg: getSpecificChatflowApi.error.response.data.message
+                })
+            )
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [createNewChatflowApi.data, createNewChatflowApi.error])
+    }, [createNewChatflowApi.data, createNewChatflowApi.error, t])
 
     // Update chatflow successful
     useEffect(() => {
@@ -558,11 +572,16 @@ const AgentflowCanvas = () => {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
+            errorFailed(
+                t('agentFlows.v2.messages.save.error', {
+                    canvasTitle: canvasTitle,
+                    msg: getSpecificChatflowApi.error.response.data.message
+                })
+            )
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateChatflowApi.data, updateChatflowApi.error])
+    }, [updateChatflowApi.data, updateChatflowApi.error, t])
 
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
@@ -590,7 +609,7 @@ const AgentflowCanvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: `Untitled ${canvasTitle}`
+                    name: t('agentFlows.v2.untitled')
                 }
             })
         }
@@ -635,7 +654,7 @@ const AgentflowCanvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
 
-    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
+    usePrompt(t('agentFlows.v2.unsavedWarn'), canvasDataStore.isDirty)
 
     const [chatPopupOpen, setChatPopupOpen] = useState(false)
 
@@ -738,8 +757,8 @@ const AgentflowCanvas = () => {
                                         onClick={() => {
                                             setIsSnappingEnabled(!isSnappingEnabled)
                                         }}
-                                        title='toggle snapping'
-                                        aria-label='toggle snapping'
+                                        title={t('agentFlows.v2.actions.toggleSnapping')}
+                                        aria-label={t('agentFlows.v2.actions.toggleSnapping')}
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
@@ -748,8 +767,8 @@ const AgentflowCanvas = () => {
                                         onClick={() => {
                                             setIsBackgroundEnabled(!isBackgroundEnabled)
                                         }}
-                                        title='toggle background'
-                                        aria-label='toggle background'
+                                        title={t('agentFlows.v2.actions.toggleBackground')}
+                                        aria-label={t('agentFlows.v2.actions.toggleBackground')}
                                     >
                                         {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
                                     </button>
@@ -789,8 +808,8 @@ const AgentflowCanvas = () => {
                                             }
                                         }}
                                         size='small'
-                                        aria-label='sync'
-                                        title='Sync Nodes'
+                                        aria-label={t('agentFlows.v2.sync')}
+                                        title={t('agentFlows.v2.syncNodes')}
                                         onClick={() => syncNodes()}
                                     >
                                         <IconRefreshAlert />

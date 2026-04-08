@@ -22,12 +22,16 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 // icons
 import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
 // ==============================|| CANVAS ||============================== //
 
 const MarketplaceCanvasV2 = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const navigate = useNavigate()
     const customization = useSelector((state) => state.customization)
@@ -132,8 +136,8 @@ const MarketplaceCanvasV2 = () => {
                                         onClick={() => {
                                             setIsSnappingEnabled(!isSnappingEnabled)
                                         }}
-                                        title='toggle snapping'
-                                        aria-label='toggle snapping'
+                                        title={t('agentFlows.v2.actions.toggleSnapping')}
+                                        aria-label={t('agentFlows.v2.actions.toggleSnapping')}
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
@@ -142,8 +146,8 @@ const MarketplaceCanvasV2 = () => {
                                         onClick={() => {
                                             setIsBackgroundEnabled(!isBackgroundEnabled)
                                         }}
-                                        title='toggle background'
-                                        aria-label='toggle background'
+                                        title={t('agentFlows.v2.actions.toggleBackground')}
+                                        aria-label={t('agentFlows.v2.actions.toggleBackground')}
                                     >
                                         {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
                                     </button>

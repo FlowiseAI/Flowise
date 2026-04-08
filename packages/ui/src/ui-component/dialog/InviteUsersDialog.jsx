@@ -51,7 +51,7 @@ import {
 } from '@/store/actions'
 
 // i18n
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 
 const StyledChip = styled(Chip)(({ theme, chiptype }) => {
     let backgroundColor, color
@@ -650,12 +650,8 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box>
                     <Typography>
-                        <Trans
-                            i18nKey='components.dialogs.inviteUsers.select'
-                            components={{
-                                highlight: <span style={{ color: 'red' }} />
-                            }}
-                        />
+                        {t('components.dialogs.inviteUsers.select')}
+                        <span style={{ color: 'red' }}>&nbsp;*</span>
                     </Typography>
                     <Autocomplete
                         multiple
@@ -686,12 +682,8 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
                     <Box sx={{ gridColumn: 'span 1' }}>
                         <Typography>
-                            <Trans
-                                i18nKey='components.dialogs.inviteUsers.workspace'
-                                components={{
-                                    highlight: <span style={{ color: 'red' }} />
-                                }}
-                            />
+                            {t('components.dialogs.inviteUsers.workspace')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <Autocomplete
                             disabled={checkWorkspaceDisabled()}
@@ -708,12 +700,8 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     </Box>
                     <Box sx={{ gridColumn: 'span 1' }}>
                         <Typography>
-                            <Trans
-                                i18nKey='components.dialogs.inviteUsers.roles'
-                                components={{
-                                    highlight: <span style={{ color: 'red' }} />
-                                }}
-                            />
+                            {t('components.dialogs.inviteUsers.roles')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <Autocomplete
                             getOptionLabel={(option) => option.label || ''}

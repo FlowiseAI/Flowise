@@ -50,6 +50,9 @@ import useNotifier from '@/utils/useNotifier'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
 import { IconChevronsDown, IconChevronsUp, IconCopy, IconEdit, IconEye, IconEyeOff, IconPlus, IconTrash, IconX } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| APIKey ||============================== //
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -73,6 +76,7 @@ const StyledTableRow = styled(TableRow)(() => ({
 }))
 
 function APIKeyRow(props) {
+    const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const theme = useTheme()
 
@@ -90,10 +94,10 @@ function APIKeyRow(props) {
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
                               props.apiKey.apiKey.length - 5
                           )}`}
-                    <IconButton title='Copy' color='success' onClick={props.onCopyClick}>
+                    <IconButton title={t('apiKey.actions.copy')} color='success' onClick={props.onCopyClick}>
                         <IconCopy />
                     </IconButton>
-                    <IconButton title='Show' color='inherit' onClick={props.onShowAPIClick}>
+                    <IconButton title={t('apiKey.actions.show')} color='inherit' onClick={props.onShowAPIClick}>
                         {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
                     </IconButton>
                     <Popover
@@ -110,7 +114,7 @@ function APIKeyRow(props) {
                         }}
                     >
                         <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: props.theme.palette.success.dark }}>
-                            Copied!
+                            {t('apiKey.copied')}
                         </Typography>
                     </Popover>
                 </StyledTableCell>
@@ -140,22 +144,22 @@ function APIKeyRow(props) {
                 <StyledTableCell>
                     {props.apiKey.chatFlows.length}{' '}
                     {props.apiKey.chatFlows.length > 0 && (
-                        <IconButton aria-label='expand row' size='small' color='inherit' onClick={() => setOpen(!open)}>
+                        <IconButton aria-label={t('apiKey.actions.expandRow')} size='small' color='inherit' onClick={() => setOpen(!open)}>
                             {props.apiKey.chatFlows.length > 0 && open ? <IconChevronsUp /> : <IconChevronsDown />}
                         </IconButton>
                     )}
                 </StyledTableCell>
-                <StyledTableCell>{moment(props.apiKey.createdAt).format('MMMM Do, YYYY')}</StyledTableCell>
+                <StyledTableCell>{moment(props.apiKey.createdAt).format(t('apiKey.formats.date'))}</StyledTableCell>
                 <Available permission={'apikeys:update,apikeys:create'}>
                     <StyledTableCell>
-                        <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
+                        <IconButton title={t('apiKey.actions.edit')} color='primary' onClick={props.onEditClick}>
                             <IconEdit />
                         </IconButton>
                     </StyledTableCell>
                 </Available>
                 <Available permission={'apikeys:delete'}>
                     <StyledTableCell>
-                        <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
+                        <IconButton title={t('apiKey.actions.delete.title')} color='error' onClick={props.onDeleteClick}>
                             <IconTrash />
                         </IconButton>
                     </StyledTableCell>
@@ -166,19 +170,21 @@ function APIKeyRow(props) {
                     <StyledTableCell sx={{ p: 2 }} colSpan={7}>
                         <Collapse in={open} timeout='auto' unmountOnExit>
                             <Box sx={{ borderRadius: 2, border: 1, borderColor: theme.palette.grey[900] + 25, overflow: 'hidden' }}>
-                                <Table aria-label='chatflow table'>
+                                <Table aria-label={t('apiKey.chatflowTable.title')}>
                                     <TableHead sx={{ height: 48 }}>
                                         <TableRow>
-                                            <StyledTableCell sx={{ width: '30%' }}>Chatflow Name</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '20%' }}>Modified On</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '50%' }}>Category</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '30%' }}>{t('apiKey.chatflowTable.name')}</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '20%' }}>{t('apiKey.chatflowTable.modifiedOn')}</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '50%' }}>{t('apiKey.chatflowTable.category')}</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {props.apiKey.chatFlows.map((flow, index) => (
                                             <TableRow key={index}>
                                                 <StyledTableCell>{flow.flowName}</StyledTableCell>
-                                                <StyledTableCell>{moment(flow.updatedDate).format('MMMM Do, YYYY')}</StyledTableCell>
+                                                <StyledTableCell>
+                                                    {moment(flow.updatedDate).format(t('apiKey.formats.date'))}
+                                                </StyledTableCell>
                                                 <StyledTableCell>
                                                     &nbsp;
                                                     {flow.category &&
@@ -214,6 +220,7 @@ APIKeyRow.propTypes = {
     onDeleteClick: PropTypes.func
 }
 const APIKey = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -283,10 +290,10 @@ const APIKey = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New API Key',
+            title: t('apiKey.actions.addKey'),
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: t('apiKey.actions.cancel'),
+            confirmButtonName: t('apiKey.actions.add'),
             customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
@@ -295,10 +302,10 @@ const APIKey = () => {
 
     const edit = (key) => {
         const dialogProp = {
-            title: 'Edit API Key',
+            title: t('apiKey.actions.editKey'),
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('apiKey.actions.cancel'),
+            confirmButtonName: t('apiKey.actions.save'),
             customBtnId: 'btn_confirmEditingApiKey',
             key
         }
@@ -308,13 +315,13 @@ const APIKey = () => {
 
     const deleteKey = async (key) => {
         const confirmPayload = {
-            title: `Delete`,
+            title: t('apiKey.actions.delete.title'),
             description:
                 key.chatFlows.length === 0
-                    ? `Delete key [${key.keyName}] ? `
-                    : `Delete key [${key.keyName}] ?\n There are ${key.chatFlows.length} chatflows using this key.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel',
+                    ? t('apiKey.actions.delete.description.simple', { name: key.keyName })
+                    : t('apiKey.actions.delete.description.simple', { name: key.keyName, count: key.chatFlows.length }),
+            confirmButtonName: t('apiKey.actions.delete.title'),
+            cancelButtonName: t('apiKey.actions.cancel'),
             customBtnId: 'btn_initiateDeleteApiKey'
         }
         const isConfirmed = await confirm(confirmPayload)
@@ -324,7 +331,7 @@ const APIKey = () => {
                 const deleteResp = await apiKeyApi.deleteAPI(key.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'API key deleted',
+                        message: t('apiKey.messages.delete.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -339,9 +346,9 @@ const APIKey = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to delete API key: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: t('apiKey.messages.delete.error', {
+                        msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -389,9 +396,9 @@ const APIKey = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search API Keys'
-                            title='API Keys'
-                            description='Flowise API & SDK authentication keys'
+                            searchPlaceholder={t('apiKey.searchPlaceholder')}
+                            title={t('apiKey.title')}
+                            description={t('apiKey.description')}
                         >
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
@@ -401,7 +408,7 @@ const APIKey = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createApiKey'
                             >
-                                Create Key
+                                {t('apiKey.actions.createKey')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && apiKeys?.length <= 0 ? (
@@ -413,7 +420,7 @@ const APIKey = () => {
                                         alt='APIEmptySVG'
                                     />
                                 </Box>
-                                <div>No API Keys Yet</div>
+                                <div>{t('apiKey.notFound')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -421,7 +428,7 @@ const APIKey = () => {
                                     sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                     component={Paper}
                                 >
-                                    <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                    <Table sx={{ minWidth: 650 }} aria-label={t('apiKey.keyTable.title')}>
                                         <TableHead
                                             sx={{
                                                 backgroundColor: customization.isDarkMode
@@ -431,11 +438,11 @@ const APIKey = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <StyledTableCell>Key Name</StyledTableCell>
-                                                <StyledTableCell>API Key</StyledTableCell>
-                                                <StyledTableCell>Permissions</StyledTableCell>
-                                                <StyledTableCell>Usage</StyledTableCell>
-                                                <StyledTableCell>Updated</StyledTableCell>
+                                                <StyledTableCell>{t('apiKey.keyTable.keyName')}</StyledTableCell>
+                                                <StyledTableCell>{t('apiKey.keyTable.apiKey')}</StyledTableCell>
+                                                <StyledTableCell>{t('apiKey.keyTable.permissions')}</StyledTableCell>
+                                                <StyledTableCell>{t('apiKey.keyTable.usage')}</StyledTableCell>
+                                                <StyledTableCell>{t('apiKey.keyTable.updated')}</StyledTableCell>
                                                 <Available permission={'apikeys:update,apikeys:create'}>
                                                     <StyledTableCell> </StyledTableCell>
                                                 </Available>

@@ -208,7 +208,7 @@ const WorkspaceSwitcher = () => {
             setShowErrorDialog(true)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [switchWorkspaceApi.error])
+    }, [switchWorkspaceApi.error, t])
 
     useEffect(() => {
         try {

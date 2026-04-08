@@ -34,6 +34,9 @@ import CancelIcon from '@mui/icons-material/Cancel'
 // const
 import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
@@ -55,6 +58,7 @@ const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
 // ===========================|| CANVAS NODE ||=========================== //
 
 const AgentFlowNode = ({ data }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const canvas = useSelector((state) => state.canvas)
@@ -179,8 +183,8 @@ const AgentFlowNode = ({ data }) => {
 
     useEffect(() => {
         const nodeOutdatedMessage = (oldVersion, newVersion) =>
-            `Node version ${oldVersion} outdated\nUpdate to latest version ${newVersion}`
-        const nodeVersionEmptyMessage = (newVersion) => `Node outdated\nUpdate to latest version ${newVersion}`
+            t('agentFlows.v2.messages.nodeVersion.outdated', { oldVersion: oldVersion, newVersion: newVersion })
+        const nodeVersionEmptyMessage = (newVersion) => t('agentFlows.v2.messages.nodeVersion.versionEmpty', { newVersion: newVersion })
 
         const componentNode = canvas.componentNodes.find((nd) => nd.name === data.name)
         if (componentNode) {
@@ -189,26 +193,23 @@ const AgentFlowNode = ({ data }) => {
             } else if (data.version && componentNode.version > data.version) {
                 setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version))
             } else if (componentNode.badge === 'DEPRECATING') {
-                setWarningMessage(
-                    componentNode?.deprecateMessage ??
-                        'This node will be deprecated in the next release. Change to a new node tagged with NEW'
-                )
+                setWarningMessage(componentNode?.deprecateMessage ?? t('agentFlows.v2.messages.nodeVersion.deprecated'))
             } else if (componentNode.warning) {
                 setWarningMessage(componentNode.warning)
             } else {
                 setWarningMessage('')
             }
         }
-    }, [canvas.componentNodes, data.name, data.version])
+    }, [canvas.componentNodes, data.name, data.version, t])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <StyledNodeToolbar>
-                <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
+                <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label={t('agentFlows.v2.buttonGroup')}>
                     {data.name !== 'startAgentflow' && (
                         <IconButton
                             size={'small'}
-                            title='Duplicate'
+                            title={t('agentFlows.v2.actions.duplicate')}
                             onClick={() => {
                                 duplicateNode(data.id)
                             }}
@@ -224,7 +225,7 @@ const AgentFlowNode = ({ data }) => {
                     )}
                     <IconButton
                         size={'small'}
-                        title='Delete'
+                        title={t('agentFlows.v2.actions.delete.title')}
                         onClick={() => {
                             deleteNode(data.id)
                         }}
@@ -239,7 +240,7 @@ const AgentFlowNode = ({ data }) => {
                     </IconButton>
                     <IconButton
                         size={'small'}
-                        title='Info'
+                        title={t('agentFlows.v2.actions.info')}
                         onClick={() => {
                             setInfoDialogProps({ data })
                             setShowInfoDialog(true)
@@ -273,7 +274,7 @@ const AgentFlowNode = ({ data }) => {
                 border={false}
             >
                 {data && data.status && (
-                    <Tooltip title={data.status === 'ERROR' ? data.error || 'Error' : ''}>
+                    <Tooltip title={data.status === 'ERROR' ? data.error || t('agentFlows.v2.error') : ''}>
                         <Avatar
                             variant='rounded'
                             sx={{

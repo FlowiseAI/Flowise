@@ -19,7 +19,11 @@ import { initNode, showHideInputParams, initializeDefaultNodeData } from '@/util
 import { flowContext } from '@/store/context/ReactFlowContext'
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = null, parentParamForArray = null }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const { reactFlowInstance } = useContext(flowContext)
 
@@ -294,7 +298,9 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
                     <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ background: 'transparent' }}>
                         <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                             <IconSettings stroke={1.5} size='1.3rem' />
-                            <Typography sx={{ ml: 1 }}>{selectedComponentNodeData?.label} Parameters</Typography>
+                            <Typography sx={{ ml: 1 }}>
+                                {t('agentFlows.v2.parameters', { label: selectedComponentNodeData?.label })}
+                            </Typography>
                             <div style={{ flexGrow: 1 }}></div>
                             {selectedComponentNodeData?.warning && (
                                 <Tooltip

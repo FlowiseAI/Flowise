@@ -10,7 +10,7 @@ const ErrorBoundary = ({ error }) => {
     const { t } = useTranslation()
 
     const copyToClipboard = () => {
-        const errorMessage = `Status: ${error.response.status}\n${error.response.data.message}`
+        const errorMessage = t('errorBoundary.statusLabel', { status: `${error.response.status}\n${error.response.data.message}` })
         navigator.clipboard.writeText(errorMessage)
     }
 
@@ -31,7 +31,7 @@ const ErrorBoundary = ({ error }) => {
                             <IconCopy />
                         </IconButton>
                         <pre style={{ margin: 0, overflowWrap: 'break-word', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
-                            <code>{('errorBoundary.statusLabel', { status: error.response.status })}</code>
+                            <code>{t('errorBoundary.statusLabel', { status: error.response?.status })}</code>
                             <br />
                             <code>{error.response?.data?.message}</code>
                         </pre>

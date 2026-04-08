@@ -20,7 +20,7 @@ import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import useApi from '@/hooks/useApi'
 
 // i18n
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 
 const defaultInstructions = [
     {
@@ -364,12 +364,8 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                             <Box sx={{ mt: 2 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        <Trans
-                                            i18nKey='components.dialogs.agentFlows.selectModel'
-                                            components={{
-                                                highlight: <span style={{ color: 'red' }} />
-                                            }}
-                                        />
+                                        {t('components.dialogs.agentFlows.selectModel')}
+                                        <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                 </div>
                                 <Dropdown

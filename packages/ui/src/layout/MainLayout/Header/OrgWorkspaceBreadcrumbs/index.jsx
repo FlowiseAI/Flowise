@@ -247,7 +247,7 @@ const OrgWorkspaceBreadcrumbs = () => {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getOrganizationsByUserIdApi.data])
+    }, [getOrganizationsByUserIdApi.data, t])
 
     useEffect(() => {
         if (getOrganizationsByUserIdApi.error) {

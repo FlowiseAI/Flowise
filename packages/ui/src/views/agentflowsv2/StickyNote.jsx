@@ -15,6 +15,9 @@ import MainCard from '@/ui-component/cards/MainCard'
 // const
 import { flowContext } from '@/store/context/ReactFlowContext'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
@@ -34,6 +37,7 @@ const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
 }))
 
 const StickyNote = ({ data }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
@@ -62,10 +66,10 @@ const StickyNote = ({ data }) => {
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <StyledNodeToolbar>
-                <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
+                <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label={t('agentFlows.v2.buttonGroup')}>
                     <IconButton
                         size={'small'}
-                        title='Duplicate'
+                        title={t('agentFlows.v2.actions.duplicate')}
                         onClick={() => {
                             duplicateNode(data.id)
                         }}
@@ -80,7 +84,7 @@ const StickyNote = ({ data }) => {
                     </IconButton>
                     <IconButton
                         size={'small'}
-                        title='Delete'
+                        title={t('agentFlows.v2.actions.delete.title')}
                         onClick={() => {
                             deleteNode(data.id)
                         }}

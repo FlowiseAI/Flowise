@@ -23,7 +23,7 @@ import marketplacesApi from '@/api/marketplaces'
 import useApi from '@/hooks/useApi'
 
 // i18n
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 
 // Project imports
 
@@ -155,7 +155,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             onCancel()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [saveCustomTemplateApi.data])
+    }, [saveCustomTemplateApi.data, t])
 
     useEffect(() => {
         if (saveCustomTemplateApi.error) {
@@ -175,7 +175,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             onCancel()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [saveCustomTemplateApi.error])
+    }, [saveCustomTemplateApi.error, t])
 
     const component = show ? (
         <Dialog
@@ -193,12 +193,8 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                 <Box sx={{ pt: 2, pb: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                         <Typography sx={{ mb: 1 }}>
-                            <Trans
-                                i18nKey='components.dialogs.exportAsTemplate.name'
-                                components={{
-                                    highlight: <span style={{ color: 'red' }} />
-                                }}
-                            />
+                            {t('components.dialogs.exportAsTemplate.name')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <OutlinedInput
                             id={'name'}

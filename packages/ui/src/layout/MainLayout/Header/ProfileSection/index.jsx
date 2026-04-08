@@ -348,7 +348,7 @@ const ProfileSection = ({ handleLogout }) => {
             errorFailed(t('profile.import.failToImport', { msg: errMsg }))
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [importAllApi.error])
+    }, [importAllApi.error, t])
 
     useEffect(() => {
         if (exportAllApi.data) {
@@ -368,7 +368,7 @@ const ProfileSection = ({ handleLogout }) => {
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [exportAllApi.data])
+    }, [exportAllApi.data, t])
 
     useEffect(() => {
         if (exportAllApi.error) {
@@ -381,7 +381,7 @@ const ProfileSection = ({ handleLogout }) => {
             errorFailed(t('profile.export.failToExport', { msg: errMsg }))
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [exportAllApi.error])
+    }, [exportAllApi.error, t])
 
     useEffect(() => {
         if (prevOpen.current === true && open === false) {

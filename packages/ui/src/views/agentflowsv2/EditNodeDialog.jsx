@@ -11,7 +11,11 @@ import { useTheme } from '@mui/material/styles'
 import { flowContext } from '@/store/context/ReactFlowContext'
 import { showHideInputParams } from '@/utils/genericHelper'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const theme = useTheme()
@@ -125,7 +129,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                 </Typography>
 
                                 {data?.id && (
-                                    <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
+                                    <ButtonBase title={t('agentFlows.v2.actions.editName')} sx={{ borderRadius: '50%' }}>
                                         <Avatar
                                             variant='rounded'
                                             sx={{
@@ -171,7 +175,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                         }
                                     }}
                                 />
-                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title={t('agentFlows.v2.actions.saveName')} sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -197,7 +201,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                         <IconCheck stroke={1.5} size='1rem' />
                                     </Avatar>
                                 </ButtonBase>
-                                <ButtonBase title='Cancel' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title={t('agentFlows.v2.actions.cancel')} sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{

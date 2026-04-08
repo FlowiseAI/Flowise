@@ -28,6 +28,9 @@ import CancelIcon from '@mui/icons-material/Cancel'
 // const
 import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
@@ -49,6 +52,7 @@ const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
 // ===========================|| ITERATION NODE ||=========================== //
 
 const IterationNode = ({ data }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
@@ -214,10 +218,10 @@ const IterationNode = ({ data }) => {
                 </Box>
             </NodeToolbar>
             <StyledNodeToolbar align='end'>
-                <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
+                <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label={t('agentFlows.v2.buttonGroup')}>
                     <IconButton
                         size={'small'}
-                        title='Duplicate'
+                        title={t('agentFlows.v2.actions.duplicate')}
                         onClick={() => {
                             duplicateNode(data.id)
                         }}
@@ -232,7 +236,7 @@ const IterationNode = ({ data }) => {
                     </IconButton>
                     <IconButton
                         size={'small'}
-                        title='Delete'
+                        title={t('agentFlows.v2.actions.delete.title')}
                         onClick={() => {
                             deleteNode(data.id)
                         }}
@@ -247,7 +251,7 @@ const IterationNode = ({ data }) => {
                     </IconButton>
                     <IconButton
                         size={'small'}
-                        title='Info'
+                        title={t('agentFlows.v2.actions.info')}
                         onClick={() => {
                             setInfoDialogProps({ data })
                             setShowInfoDialog(true)
@@ -283,7 +287,7 @@ const IterationNode = ({ data }) => {
                 border={false}
             >
                 {data && data.status && (
-                    <Tooltip title={data.status === 'ERROR' ? data.error || 'Error' : ''}>
+                    <Tooltip title={data.status === 'ERROR' ? data.error || t('agentFlows.v2.error') : ''}>
                         <Avatar
                             variant='rounded'
                             sx={{
