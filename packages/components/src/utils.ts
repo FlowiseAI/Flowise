@@ -18,7 +18,7 @@ import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig
 import { customGet } from '../nodes/sequentialagents/commonUtils'
 import { TextSplitter } from '@langchain/textsplitters'
 import { DocumentLoader } from '@langchain/classic/document_loaders/base'
-import { NodeVM } from '@flowiseai/nodevm'
+import { NodeVM } from 'vm2'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
 import JSON5 from 'json5'
@@ -1608,13 +1608,18 @@ export const executeJavaScriptCode = async (
     } = {}
 ): Promise<any> => {
     const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
-    const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
+    if (useSandbox && !process.env.E2B_APIKEY) {
+        throw new Error(
+            'Sandboxed code execution requires E2B_APIKEY to be configured. ' +
+                'Set E2B_APIKEY in your environment or contact your administrator.'
+        )
+    }
     let timeoutMs = timeout
     if (process.env.SANDBOX_TIMEOUT) {
         timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
     }
 
-    if (shouldUseSandbox) {
+    if (useSandbox) {
         try {
             const variableDeclarations = []
 
