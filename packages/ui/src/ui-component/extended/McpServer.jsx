@@ -1,4 +1,4 @@
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
@@ -26,6 +26,7 @@ import chatflowsApi from '@/api/chatflows'
 const McpServer = ({ dialogProps }) => {
     const dispatch = useDispatch()
     const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
     const { confirm } = useConfirm()
 
     useNotifier()
@@ -241,7 +242,7 @@ const McpServer = ({ dialogProps }) => {
                     {/* Tool Name (required) */}
                     <Box>
                         <Typography sx={{ mb: 1 }}>
-                            Tool Name <span style={{ color: 'red' }}>*</span>
+                            Tool Name <span style={{ color: theme.palette.error.main }}>*</span>
                         </Typography>
                         <OutlinedInput
                             fullWidth
@@ -257,7 +258,10 @@ const McpServer = ({ dialogProps }) => {
                                 {toolNameError}
                             </Typography>
                         )}
-                        <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5, display: 'block' }}>
+                        <Typography
+                            variant='caption'
+                            sx={{ mt: 0.5, display: 'block', color: customization.isDarkMode ? theme.palette.grey[400] : 'text.secondary' }}
+                        >
                             Used as the MCP tool identifier by LLM clients.
                         </Typography>
                     </Box>
@@ -265,7 +269,7 @@ const McpServer = ({ dialogProps }) => {
                     {/* Description (required) */}
                     <Box>
                         <Typography sx={{ mb: 1 }}>
-                            Description <span style={{ color: 'red' }}>*</span>
+                            Description <span style={{ color: theme.palette.error.main }}>*</span>
                         </Typography>
                         <OutlinedInput
                             fullWidth
@@ -277,7 +281,10 @@ const McpServer = ({ dialogProps }) => {
                             placeholder='e.g. Answers product catalog questions'
                             disabled={loading}
                         />
-                        <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5, display: 'block' }}>
+                        <Typography
+                            variant='caption'
+                            sx={{ mt: 0.5, display: 'block', color: customization.isDarkMode ? theme.palette.grey[400] : 'text.secondary' }}
+                        >
                             Helps LLMs understand when to route queries to this tool. Good descriptions improve tool selection accuracy.
                         </Typography>
                     </Box>
@@ -293,18 +300,29 @@ const McpServer = ({ dialogProps }) => {
                                 readOnly
                                 sx={{
                                     fontFamily: 'monospace',
-                                    fontSize: '0.875rem',
-                                    bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[50]
+                                    fontSize: '0.875rem'
                                 }}
                                 endAdornment={
                                     <InputAdornment position='end'>
-                                        <IconButton size='small' onClick={() => handleCopyUrl(endpointUrl)} title='Copy URL to clipboard'>
+                                        <IconButton
+                                            size='small'
+                                            onClick={() => handleCopyUrl(endpointUrl)}
+                                            title='Copy URL to clipboard'
+                                            sx={{ color: customization.isDarkMode ? theme.palette.grey[300] : 'inherit' }}
+                                        >
                                             <IconCopy size={18} />
                                         </IconButton>
                                     </InputAdornment>
                                 }
                             />
-                            <Typography variant='caption' color='text.secondary' sx={{ mt: 0.5, display: 'block' }}>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    mt: 0.5,
+                                    display: 'block',
+                                    color: customization.isDarkMode ? theme.palette.grey[400] : 'text.secondary'
+                                }}
+                            >
                                 For clients that support the Streamable HTTP transport
                             </Typography>
 
@@ -317,8 +335,7 @@ const McpServer = ({ dialogProps }) => {
                                 type='password'
                                 sx={{
                                     fontFamily: 'monospace',
-                                    fontSize: '0.875rem',
-                                    bgcolor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : theme.palette.grey[50]
+                                    fontSize: '0.875rem'
                                 }}
                                 endAdornment={
                                     <InputAdornment position='end'>
@@ -329,18 +346,45 @@ const McpServer = ({ dialogProps }) => {
                                                 showSuccess('Token copied to clipboard')
                                             }}
                                             title='Copy token'
+                                            sx={{ color: customization.isDarkMode ? theme.palette.grey[300] : 'inherit' }}
                                         >
                                             <IconCopy size={18} />
                                         </IconButton>
-                                        <IconButton size='small' onClick={handleRefreshCode} title='Rotate token' disabled={loading}>
+                                        <IconButton
+                                            size='small'
+                                            onClick={handleRefreshCode}
+                                            title='Rotate token'
+                                            disabled={loading}
+                                            sx={{ color: customization.isDarkMode ? theme.palette.grey[300] : 'inherit' }}
+                                        >
                                             <IconRefresh size={18} />
                                         </IconButton>
                                     </InputAdornment>
                                 }
                             />
-                            <Alert severity='info' sx={{ mt: 1.5 }}>
+                            <Alert
+                                severity='info'
+                                sx={{
+                                    mt: 1.5,
+                                    ...(customization.isDarkMode && {
+                                        bgcolor: 'rgba(41, 182, 246, 0.08)',
+                                        color: theme.palette.grey[300],
+                                        '& .MuiAlert-icon': {
+                                            color: theme.palette.info.light
+                                        }
+                                    })
+                                }}
+                            >
                                 Use the URL above as the MCP endpoint and pass the token as a Bearer token in the Authorization header.
-                                Configure your MCP client with: <code style={{ display: 'block' }}>Authorization: Bearer {'<token>'}</code>
+                                Configure your MCP client with:{' '}
+                                <code
+                                    style={{
+                                        display: 'block',
+                                        color: customization.isDarkMode ? theme.palette.grey[200] : undefined
+                                    }}
+                                >
+                                    Authorization: Bearer {'<token>'}
+                                </code>
                             </Alert>
                         </Box>
                     )}
