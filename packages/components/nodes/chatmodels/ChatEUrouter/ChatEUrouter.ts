@@ -156,7 +156,7 @@ class ChatEUrouter_ChatModels implements INode {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
                 if (parsedBaseOptions.baseURL) {
                     console.warn("The 'baseURL' parameter is not allowed when using the ChatEUrouter node.")
-                    parsedBaseOptions.baseURL = undefined
+                    delete parsedBaseOptions.baseURL
                 }
             } catch (exception) {
                 throw new Error('Invalid JSON in the BaseOptions: ' + exception)
