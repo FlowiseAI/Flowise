@@ -7,10 +7,10 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 // MUI
 import { Button, Dialog, DialogActions, DialogContent, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
-import { LoadingButton } from '@mui/lab'
 
 // Project Import
 import { StyledButton } from '@/ui-component/button/StyledButton'
+import { PermissionLoadingButton } from '@/ui-component/button/RBACButtons'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 
 // Store
@@ -147,7 +147,8 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                     )}
                 </div>
                 {languageType === 'js' && !inputParam.hideCodeExecute && (
-                    <LoadingButton
+                    <PermissionLoadingButton
+                        permissionId='chatflows:create,chatflows:update,agentflows:create,agentflows:update'
                         sx={{
                             mt: 2,
                             '&:hover': {
@@ -169,7 +170,7 @@ const ExpandTextDialog = ({ show, dialogProps, onCancel, onInputHintDialogClicke
                         }}
                     >
                         Execute
-                    </LoadingButton>
+                    </PermissionLoadingButton>
                 )}
                 {codeExecutedResult && (
                     <div style={{ marginTop: '15px' }}>
