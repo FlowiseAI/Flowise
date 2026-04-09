@@ -1156,7 +1156,8 @@ const executeNode = async ({
             !isRecursive &&
             (!graph[nodeId] || graph[nodeId].length === 0 || (!humanInput && reactFlowNode.data.name === 'humanInputAgentflow'))
 
-        if (incomingInput.question && incomingInput.form) {
+        const incomingFormHasData = incomingInput.form && Object.keys(incomingInput.form).length > 0
+        if (incomingInput.question && incomingFormHasData) {
             throw new Error('Question and form cannot be provided at the same time')
         }
 
@@ -1164,7 +1165,7 @@ const executeNode = async ({
         if (incomingInput.question) {
             // Prepare final question with uploaded content if any
             finalInput = uploadedFilesContent ? `${uploadedFilesContent}\n\n${incomingInput.question}` : incomingInput.question
-        } else if (incomingInput.form) {
+        } else if (incomingFormHasData) {
             finalInput = Object.entries(incomingInput.form || {})
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n')
@@ -2241,8 +2242,8 @@ export const executeAgentFlow = async ({
     if (startInputType === 'chatInput') {
         finalUserInput = question || humanInput?.feedback || ' '
     } else if (startInputType === 'formInput') {
-        if (form) {
-            finalUserInput = Object.entries(form || {})
+        if (form && Object.keys(form).length > 0) {
+            finalUserInput = Object.entries(form)
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n')
         } else {
