@@ -24,9 +24,13 @@ import { IconPlus, IconFileUpload } from '@tabler/icons-react'
 import AssistantEmptySVG from '@/assets/images/assistant_empty.svg'
 import { gridSpacing } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| OpenAIAssistantLayout ||============================== //
 
 const OpenAIAssistantLayout = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
 
     const getAllAssistantsApi = useApi(assistantsApi.getAllAssistants)
@@ -40,7 +44,7 @@ const OpenAIAssistantLayout = () => {
 
     const loadExisting = () => {
         const dialogProp = {
-            title: 'Load Existing Assistant'
+            title: t('assistants.actions.loadExisting')
         }
         setLoadDialogProps(dialogProp)
         setShowLoadDialog(true)
@@ -58,10 +62,10 @@ const OpenAIAssistantLayout = () => {
 
     const addNew = (selectedOpenAIAssistantId, credential) => {
         const dialogProp = {
-            title: 'Add New Assistant',
+            title: t('assistants.actions.addAssistant'),
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: t('assistants.actions.cancel'),
+            confirmButtonName: t('assistants.actions.add'),
             selectedOpenAIAssistantId,
             credential
         }
@@ -71,10 +75,10 @@ const OpenAIAssistantLayout = () => {
 
     const edit = (selectedAssistant) => {
         const dialogProp = {
-            title: 'Edit Assistant',
+            title: t('assistants.actions.editAssistant'),
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('assistants.actions.cancel'),
+            confirmButtonName: t('assistants.actions.save'),
             data: selectedAssistant
         }
         setDialogProps(dialogProp)
@@ -118,9 +122,9 @@ const OpenAIAssistantLayout = () => {
                             isBackButton={true}
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Assistants'
-                            title='OpenAI Assistant'
-                            description='Create assistants using OpenAI Assistant API'
+                            searchPlaceholder={t('assistants.cards.openAi.searchPlaceholder')}
+                            title={t('assistants.cards.openAi.title')}
+                            description={t('assistants.cards.openAi.description.simple')}
                             onBack={() => navigate(-1)}
                         >
                             <PermissionButton
@@ -130,7 +134,7 @@ const OpenAIAssistantLayout = () => {
                                 startIcon={<IconFileUpload />}
                                 sx={{ borderRadius: 2, height: 40 }}
                             >
-                                Load
+                                {t('assistants.actions.load')}
                             </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'assistants:create'}
@@ -139,7 +143,7 @@ const OpenAIAssistantLayout = () => {
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
-                                Add
+                                {t('assistants.actions.add')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {isLoading ? (
@@ -173,7 +177,7 @@ const OpenAIAssistantLayout = () => {
                                         alt='AssistantEmptySVG'
                                     />
                                 </Box>
-                                <div>No OpenAI Assistants Added Yet</div>
+                                <div>{t('assistants.cards.openAi.notFound')}</div>
                             </Stack>
                         )}
                     </Stack>

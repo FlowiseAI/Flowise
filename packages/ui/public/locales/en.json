@@ -1350,5 +1350,347 @@
         "formats": {
             "date": "MMMM Do, YYYY"
         }
+    },
+    "assistants": {
+        "title": "Assistants",
+        "description": "Chat assistants with instructions, tools, and files to respond to user queries",
+        "deprecating": "Deprecating",
+        "cards": {
+            "customAssistant": {
+                "title": "Custom Assistant",
+                "description": "Create custom assistant using your choice of LLMs",
+                "searchPlaceholder": "Search Assistants",
+                "notFound": "No Custom Assistants Added Yet",
+                "label": "Custom",
+                "name": "Name",
+                "instructions": "Instructions",
+                "messages": {
+                    "create": {
+                        "success": "New Custom Assistant created.",
+                        "error": "Failed to add new Custom Assistant: {{msg}}"
+                    },
+                    "save": {
+                        "success": "Assistant saved successfully",
+                        "error": "Failed to save assistant: {{msg}}"
+                    },
+                    "docStore": {
+                        "success": "Document Store Tool Description generated successfully"
+                    },
+                    "warn": "Please fill in all mandatory fields.",
+                    "errors": {
+                        "failedRetrieve": "Failed to retrieve: {{msg}}"
+                    }
+                },
+                "settings": {
+                    "viewMessages": "View Messages",
+                    "viewLeads": "View Leads",
+                    "configuration": "Assistant Configuration"
+                },
+                "generateInstructions": {
+                    "title": "Generate Instructions",
+                    "description": "You can generate a prompt template by sharing basic details about your task."
+                },
+                "embedInWebsite": "Embed in website or use as API",
+                "selectModel": "Select Model",
+                "inputs": {
+                    "knowledge": {
+                        "title": "Knowledge (Document Stores)",
+                        "tooltip": "Give your assistant context about different document sources. Document stores must be upserted in advance."
+                    },
+                    "describeKnowledge": {
+                        "title": "Describe Knowledge",
+                        "tooltip": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information"
+                    },
+                    "returnSource": {
+                        "title": "Return Source Documents",
+                        "tooltip": "Return the actual source documents that were used to answer the question"
+                    },
+                    "tools": {
+                        "title": "Tools",
+                        "tooltip": "Tools are actions that your assistant can perform",
+                        "tool": "Tool"
+                    }
+                },
+                "agentFlow": {
+                    "bufferMemory": {
+                        "title": "Buffer Memory",
+                        "description": "Retrieve chat messages stored in database",
+                        "inputs": {
+                            "sessionId": {
+                                "title": "Session Id",
+                                "description": "If not specified, a random id will be used. Learn <a>more</a>"
+                            },
+                            "memoryKey": {
+                                "title": "Memory Key"
+                            }
+                        },
+                        "outputs": {
+                            "bufferMemory": {
+                                "title": "BufferMemory"
+                            }
+                        }
+                    },
+                    "chatOpenAI": {
+                        "title": "ChatOpenAI",
+                        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                        "inputs": {
+                            "credential": {
+                                "title": "Connect Credential"
+                            },
+                            "modelName": {
+                                "title": "Model Name"
+                            },
+                            "temperature": {
+                                "title": "Temperature"
+                            },
+                            "streaming": {
+                                "title": "Streaming"
+                            },
+                            "maxTokens": {
+                                "title": "Max Tokens"
+                            },
+                            "topP": {
+                                "title": "Top Probability"
+                            },
+                            "frequencyPenalty": {
+                                "title": "Frequency Penalty"
+                            },
+                            "presencePenalty": {
+                                "title": "Presence Penalty"
+                            },
+                            "timeout": {
+                                "title": "Timeout"
+                            },
+                            "basepath": {
+                                "title": "BasePath"
+                            },
+                            "proxyUrl": {
+                                "title": "Proxy Url"
+                            },
+                            "stopSequence": {
+                                "title": "Stop Sequence",
+                                "description": "List of stop words to use when generating. Use comma to separate multiple stop words."
+                            },
+                            "baseOptions": {
+                                "title": "Base Options"
+                            },
+                            "allowImageUploads": {
+                                "title": "Allow Image Uploads",
+                                "description": "Allow image input. Refer to the <a>docs</a> for more details."
+                            }
+                        },
+                        "inputAnchors": {
+                            "cache": {
+                                "title": "Cache"
+                            }
+                        },
+                        "outputs": {
+                            "chatOpenAI": {
+                                "title": "ChatOpenAI"
+                            }
+                        }
+                    },
+                    "toolAgent": {
+                        "title": "Tool Agent",
+                        "description": "Agent that uses Function Calling to pick the tools and args to call",
+                        "inputs": {
+                            "systemMessage": {
+                                "title": "System Message",
+                                "description": "If Chat Prompt Template is provided, this will be ignored"
+                            },
+                            "maxIterations": {
+                                "title": "Max Iterations"
+                            }
+                        },
+                        "inputAnchors": {
+                            "tools": {
+                                "title": "Tools"
+                            },
+                            "memory": {
+                                "title": "Memory"
+                            },
+                            "model": {
+                                "title": "Tool Calling Chat Model",
+                                "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat"
+                            },
+                            "chatPromptTemplate": {
+                                "title": "Chat Prompt Template",
+                                "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable"
+                            },
+                            "inputModeration": {
+                                "title": "Input Moderation",
+                                "description": "Detect text that could generate harmful output and prevent it from being sent to the language model"
+                            }
+                        },
+                        "outputs": {
+                            "toolAgent": {
+                                "title": "AgentExecutor"
+                            }
+                        }
+                    }
+                }
+            },
+            "openAi": {
+                "title": "OpenAI Assistant",
+                "description": {
+                    "simple": "Create assistants using OpenAI Assistant API",
+                    "deprecated": "Create assistant using OpenAI Assistant API. This option is being deprecated; consider using Custom Assistant instead."
+                },
+                "searchPlaceholder": "Search Assistants",
+                "notFound": "No OpenAI Assistants Added Yet",
+                "label": "OpenAI",
+                "messages": {
+                    "addAssistant": {
+                        "success": "New Assistant added",
+                        "error": "Failed to add new Assistant: {{msg}}"
+                    },
+                    "loadAssistant": {
+                        "error": "Failed to get assistant: {{msg}}"
+                    },
+                    "save": {
+                        "success": "Assistant saved",
+                        "error": "Failed to save assistant: {{msg}}"
+                    },
+                    "sync": {
+                        "success": "Assistant successfully synced!",
+                        "error": "Failed to sync Assistant: {{msg}}"
+                    },
+                    "upload": {
+                        "success": "File uploaded successfully!",
+                        "error": "Failed to upload file: {{msg}}"
+                    },
+                    "delete": {
+                        "success": "Assistant deleted",
+                        "error": "Failed to delete Assistant: {{msg}}"
+                    },
+                    "error": "Internal Server Error"
+                },
+                "agentFlow": {
+                    "openAi": {
+                        "title": "OpenAI Credential"
+                    },
+                    "connectCredential": {
+                        "title": "Connect Credential"
+                    },
+                    "assistants": {
+                        "title": "Assistants"
+                    },
+                    "assistantModel": {
+                        "title": "Assistant Model"
+                    },
+                    "name": {
+                        "title": "Assistant Name",
+                        "tooltip": "The name of the assistant. The maximum length is 256 characters.",
+                        "placeholder": "My New Assistant"
+                    },
+                    "description": {
+                        "title": "Assistant Description",
+                        "tooltip": "The description of the assistant. The maximum length is 512 characters.",
+                        "placeholder": "Description of what the Assistant does"
+                    },
+                    "icon": {
+                        "title": "Assistant Icon Src"
+                    },
+                    "instruction": {
+                        "title": "Assistant Instruction",
+                        "tooltip": "The system instructions that the assistant uses. The maximum length is 32768 characters.",
+                        "placeholder": "You are a personal math tutor. When asked a question, write and run Python code to answer the question."
+                    },
+                    "temperature": {
+                        "title": "Assistant Temperature",
+                        "tooltip": "Controls randomness: Lowering results in less random completions. As the temperature approaches zero, the model will become deterministic and repetitive."
+                    },
+                    "topP": {
+                        "title": "Assistant Top P",
+                        "tooltip": "Controls diversity via nucleus sampling: 0.5 means half of all likelihood-weighted options are considered."
+                    },
+                    "tools": {
+                        "title": "Assistant Tools",
+                        "tooltip": "A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant.",
+                        "options": {
+                            "codeInterpreter": "Code Interpreter",
+                            "fileSearch": "File Search"
+                        }
+                    },
+                    "codeInterpreterFiles": {
+                        "title": "Code Interpreter Files",
+                        "tooltip": "Code Interpreter enables the assistant to write and run code. This tool can process files with diverse data and formatting, and generate files such as graphs"
+                    },
+                    "fileSearchFiles": {
+                        "title": "File Search Files",
+                        "tooltip": "File search enables the assistant with knowledge from files that you or your users upload. Once a file is uploaded, the assistant automatically decides when to retrieve content based on user requests"
+                    }
+                }
+            },
+            "vectorStorage": {
+                "inputs": {
+                    "select": {
+                        "title": "Select Vector Store"
+                    },
+                    "name": {
+                        "title": "Vector Store Name",
+                        "placeholder": "My Vector Store"
+                    },
+                    "expiration": {
+                        "title": "Vector Store Expiration"
+                    },
+                    "date": {
+                        "title": "Expiration Days"
+                    }
+                },
+                "messages": {
+                    "delete": {
+                        "success": "Vector Store deleted",
+                        "error": "Failed to delete Vector Store: {{msg}}"
+                    },
+                    "add": {
+                        "success": "New Vector Store added",
+                        "error": "Failed to add new Vector Store: {{msg}}"
+                    },
+                    "save": {
+                        "success": "Vector Store saved",
+                        "error": "Failed to save Vector Store: {{msg}}"
+                    }
+                }
+            }
+        },
+        "actions": {
+            "cancel": "Cancel",
+            "save": "Save",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete {{name}}?"
+            },
+            "back": "Back",
+            "settings": "Settings",
+            "deleteAssistant": {
+                "title": "Delete Assistant",
+                "description": "Select delete method for {{name}}"
+            },
+            "expand": "Expand",
+            "generate": {
+                "title": "Generate",
+                "description": "Generate instructions using model"
+            },
+            "addTool": "Add Tool",
+            "saveAssistant": "Save Assistant",
+            "addCustomAssistant": "Add New Custom Assistant",
+            "addAssistant": "Add New Assistant",
+            "editAssistant": "Edit Assistant",
+            "add": "Add",
+            "editName": "Edit {{name}}",
+            "addVectorStore": "Add Vector Store",
+            "sync": "Sync",
+            "onlyFlowise": "Only Flowise",
+            "openAiFlowise": "OpenAI and Flowise",
+            "load": "Load",
+            "loadExisting": "Load Existing Assistant",
+            "apiEndpoint": "API Endpoint"
+        }
+    },
+    "categories": {
+        "memory": "Memory",
+        "chatModels": "Chat Models",
+        "agents": "Agents"
     }
 }

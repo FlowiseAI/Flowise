@@ -31,7 +31,11 @@ import { formatBytes } from '@/utils/genericHelper'
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, onDelete, setError }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -49,7 +53,9 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
     const [name, setName] = useState('')
     const [isExpirationOn, setExpirationOnOff] = useState(false)
     const [expirationDays, setExpirationDays] = useState(7)
-    const [availableVectorStoreOptions, setAvailableVectorStoreOptions] = useState([{ label: '- Create New -', name: '-create-' }])
+    const [availableVectorStoreOptions, setAvailableVectorStoreOptions] = useState([
+        { label: t('components.dropdown.createNewItemLabel'), name: '-create-' }
+    ])
     const [selectedVectorStore, setSelectedVectorStore] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -92,12 +98,12 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
                 })
             }
             vectorStores = vectorStores.filter((vs) => vs.name !== '-create-')
-            vectorStores.unshift({ label: '- Create New -', name: '-create-' })
+            vectorStores.unshift({ label: t('components.dropdown.createNewItemLabel'), name: '-create-' })
             setAvailableVectorStoreOptions(vectorStores)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [listAssistantVectorStoreApi.data])
+    }, [listAssistantVectorStoreApi.data, t])
 
     useEffect(() => {
         if (getAssistantVectorStoreApi.error && setError) {
@@ -119,7 +125,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             setExpirationOnOff(false)
             setExpirationDays(7)
             setSelectedVectorStore('')
-            setAvailableVectorStoreOptions([{ label: '- Create New -', name: '-create-' }])
+            setAvailableVectorStoreOptions([{ label: t('components.dropdown.createNewItemLabel'), name: '-create-' }])
             setLoading(false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,7 +143,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             const deleteResp = await assistantsApi.deleteAssistantVectorStore(selectedVectorStore, dialogProps.credential)
             if (deleteResp.data) {
                 enqueueSnackbar({
-                    message: 'Vector Store deleted',
+                    message: t('assistants.cards.vectorStorage.messages.delete.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -154,9 +160,9 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: `Failed to delete Vector Store: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.vectorStorage.messages.delete.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -183,7 +189,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             const createResp = await assistantsApi.createAssistantVectorStore(dialogProps.credential, obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Vector Store added',
+                    message: t('assistants.cards.vectorStorage.messages.add.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -200,9 +206,9 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: `Failed to add new Vector Store: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.vectorStorage.messages.add.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -229,7 +235,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             const saveResp = await assistantsApi.updateAssistantVectorStore(selectedVectorStoreId, dialogProps.credential, saveObj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Vector Store saved',
+                    message: t('assistants.cards.vectorStorage.messages.save.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -251,9 +257,9 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: `Failed to save Vector Store: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.vectorStorage.messages.save.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -286,7 +292,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
                         <Typography variant='overline'>
-                            Select Vector Store
+                            {t('assistants.cards.vectorStorage.inputs.select.title')}
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                     </Stack>
@@ -312,13 +318,13 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
                     <>
                         <Box sx={{ p: 2 }}>
                             <Stack sx={{ position: 'relative' }} direction='row'>
-                                <Typography variant='overline'>Vector Store Name</Typography>
+                                <Typography variant='overline'>{t('assistants.cards.vectorStorage.inputs.name.title')}</Typography>
                             </Stack>
                             <OutlinedInput
                                 id='vsName'
                                 type='string'
                                 fullWidth
-                                placeholder={'My Vector Store'}
+                                placeholder={t('assistants.cards.vectorStorage.inputs.name.placeholder')}
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                             />
@@ -326,7 +332,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
 
                         <Box sx={{ p: 2 }}>
                             <Stack sx={{ position: 'relative' }} direction='row'>
-                                <Typography variant='overline'>Vector Store Expiration</Typography>
+                                <Typography variant='overline'>{t('assistants.cards.vectorStorage.inputs.expiration.title')}</Typography>
                             </Stack>
                             <SwitchInput onChange={(newValue) => setExpirationOnOff(newValue)} value={isExpirationOn} />
                         </Box>
@@ -335,7 +341,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
                             <Box sx={{ p: 2 }}>
                                 <Stack sx={{ position: 'relative' }} direction='row'>
                                     <Typography variant='overline'>
-                                        Expiration Days
+                                        {t('assistants.cards.vectorStorage.inputs.date.title')}
                                         <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                 </Stack>
@@ -354,7 +360,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             <DialogActions>
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='error' variant='contained' onClick={() => deleteVectorStore()}>
-                        Delete
+                        {t('assistants.actions.delete.title')}
                     </StyledButton>
                 )}
                 <StyledButton

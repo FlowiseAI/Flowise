@@ -45,6 +45,9 @@ import useNotifier from '@/utils/useNotifier'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { maxScroll } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const assistantAvailableModels = [
     {
         label: 'gpt-4.1',
@@ -117,6 +120,7 @@ const assistantAvailableModels = [
 ]
 
 const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     useNotifier()
     const dispatch = useDispatch()
@@ -200,13 +204,13 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     useEffect(() => {
         if (getAssistantObjApi.error) {
-            let errMsg = 'Internal Server Error'
+            let errMsg = t('assistants.cards.openAi.messages.error')
             let error = getAssistantObjApi.error
             if (error?.response?.data) {
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
             }
             enqueueSnackbar({
-                message: `Failed to get assistant: ${errMsg}`,
+                message: t('assistants.cards.openAi.messages.loadAssistant.error', { msg: errMsg }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -230,7 +234,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
             }
             enqueueSnackbar({
-                message: `Failed to get assistant: ${errMsg}`,
+                message: t('assistants.cards.openAi.messages.loadAssistant.error', { msg: errMsg }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -334,10 +338,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     const onEditAssistantVectorStoreClick = (vectorStoreObject) => {
         const dialogProp = {
-            title: `Edit ${vectorStoreObject.name ? vectorStoreObject.name : vectorStoreObject.id}`,
+            title: t('assistants.actions.editName', { name: vectorStoreObject.name ? vectorStoreObject.name : vectorStoreObject.id }),
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('assistants.actions.cancel'),
+            confirmButtonName: t('assistants.actions.save'),
             data: vectorStoreObject,
             credential: assistantCredential
         }
@@ -347,10 +351,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     const onAddAssistantVectorStoreClick = () => {
         const dialogProp = {
-            title: `Add Vector Store`,
+            title: t('assistants.actions.addVectorStore'),
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: t('assistants.actions.cancel'),
+            confirmButtonName: t('assistants.actions.add'),
             credential: assistantCredential
         }
         setAssistantVectorStoreDialogProps(dialogProp)
@@ -381,7 +385,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             const createResp = await assistantsApi.createNewAssistant(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Assistant added',
+                    message: t('assistants.cards.openAi.messages.addAssistant.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -397,9 +401,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             setLoading(false)
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to add new Assistant: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.openAi.messages.addAssistant.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -436,7 +440,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             const saveResp = await assistantsApi.updateAssistant(assistantId, obj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Assistant saved',
+                    message: t('assistants.cards.openAi.messages.save.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -452,9 +456,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             setLoading(false)
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to save Assistant: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.openAi.messages.save.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -477,7 +481,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             if (getResp.data) {
                 syncData(getResp.data)
                 enqueueSnackbar({
-                    message: 'Assistant successfully synced!',
+                    message: t('assistants.cards.openAi.messages.sync.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -492,9 +496,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             setLoading(false)
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to sync Assistant: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.openAi.messages.sync.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -517,7 +521,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             const uploadResp = await assistantsApi.uploadFilesToAssistantVectorStore(vectorStoreId, assistantCredential, formData)
             if (uploadResp.data) {
                 enqueueSnackbar({
-                    message: 'File uploaded successfully!',
+                    message: t('assistants.cards.openAi.messages.upload.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -543,9 +547,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             setLoading(false)
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to upload file: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.openAi.messages.upload.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -567,7 +571,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             const uploadResp = await assistantsApi.uploadFilesToAssistant(assistantCredential, formData)
             if (uploadResp.data) {
                 enqueueSnackbar({
-                    message: 'File uploaded successfully!',
+                    message: t('assistants.cards.openAi.messages.upload.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -595,9 +599,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             setLoading(false)
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to upload file: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.openAi.messages.upload.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -626,9 +630,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     const onDeleteClick = () => {
         setDeleteDialogProps({
-            title: `Delete Assistant`,
-            description: `Select delete method for ${assistantName}`,
-            cancelButtonName: 'Cancel'
+            title: t('assistants.actions.deleteAssistant.title'),
+            description: t('assistants.actions.deleteAssistant.description', { name: assistantName }),
+            cancelButtonName: t('assistants.actions.cancel')
         })
         setDeleteDialogOpen(true)
     }
@@ -639,7 +643,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             const delResp = await assistantsApi.deleteAssistant(assistantId, isDeleteBoth)
             if (delResp.data) {
                 enqueueSnackbar({
-                    message: 'Assistant deleted',
+                    message: t('assistants.cards.openAi.messages.delete.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -654,9 +658,9 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to delete Assistant: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('assistants.cards.openAi.messages.delete.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -723,7 +727,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
-                                OpenAI Credential
+                                {t('assistants.cards.openAi.agentFlow.openAi.title')}
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                         </Stack>
@@ -731,7 +735,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                             key={assistantCredential}
                             data={assistantCredential ? { credential: assistantCredential } : {}}
                             inputParam={{
-                                label: 'Connect Credential',
+                                label: t('assistants.cards.openAi.agentFlow.connectCredential.title'),
                                 name: 'credential',
                                 type: 'credential',
                                 credentialNames: ['openAIApi']
@@ -742,7 +746,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
-                                Assistant Model
+                                {t('assistants.cards.openAi.agentFlow.assistantModel.title')}
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                         </Stack>
@@ -756,15 +760,15 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Assistant Name</Typography>
-                            <TooltipWithParser title={'The name of the assistant. The maximum length is 256 characters.'} />
+                            <Typography variant='overline'>{t('assistants.cards.openAi.agentFlow.name.title')}</Typography>
+                            <TooltipWithParser title={t('assistants.cards.openAi.agentFlow.name.tooltip')} />
                         </Stack>
                         <OutlinedInput
                             id='assistantName'
                             type='string'
                             size='small'
                             fullWidth
-                            placeholder='My New Assistant'
+                            placeholder={t('assistants.cards.openAi.agentFlow.name.placeholder')}
                             value={assistantName}
                             name='assistantName'
                             onChange={(e) => setAssistantName(e.target.value)}
@@ -772,15 +776,15 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Assistant Description</Typography>
-                            <TooltipWithParser title={'The description of the assistant. The maximum length is 512 characters.'} />
+                            <Typography variant='overline'>{t('assistants.cards.openAi.agentFlow.description.title')}</Typography>
+                            <TooltipWithParser title={t('assistants.cards.openAi.agentFlow.description.tooltip')} />
                         </Stack>
                         <OutlinedInput
                             id='assistantDesc'
                             type='string'
                             size='small'
                             fullWidth
-                            placeholder='Description of what the Assistant does'
+                            placeholder={t('assistants.cards.openAi.agentFlow.description.placeholder')}
                             multiline={true}
                             rows={3}
                             value={assistantDesc}
@@ -790,7 +794,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative' }} direction='row'>
-                            <Typography variant='overline'>Assistant Icon Src</Typography>
+                            <Typography variant='overline'>{t('assistants.cards.openAi.agentFlow.icon.title')}</Typography>
                         </Stack>
                         <div
                             style={{
@@ -825,17 +829,15 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Assistant Instruction</Typography>
-                            <TooltipWithParser
-                                title={'The system instructions that the assistant uses. The maximum length is 32768 characters.'}
-                            />
+                            <Typography variant='overline'>{t('assistants.cards.openAi.agentFlow.instruction.title')}</Typography>
+                            <TooltipWithParser title={t('assistants.cards.openAi.agentFlow.instruction.tooltip')} />
                         </Stack>
                         <OutlinedInput
                             id='assistantInstructions'
                             type='string'
                             size='small'
                             fullWidth
-                            placeholder='You are a personal math tutor. When asked a question, write and run Python code to answer the question.'
+                            placeholder={t('assistants.cards.openAi.agentFlow.instruction.placeholder')}
                             multiline={true}
                             rows={3}
                             value={assistantInstructions}
@@ -845,12 +847,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Assistant Temperature</Typography>
-                            <TooltipWithParser
-                                title={
-                                    'Controls randomness: Lowering results in less random completions. As the temperature approaches zero, the model will become deterministic and repetitive.'
-                                }
-                            />
+                            <Typography variant='overline'>{t('assistants.cards.openAi.agentFlow.temperature.title')}</Typography>
+                            <TooltipWithParser title={t('assistants.cards.openAi.agentFlow.temperature.tooltip')} />
                         </Stack>
                         <OutlinedInput
                             id='assistantTemp'
@@ -864,12 +862,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                     </Box>
                     <Box>
                         <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Assistant Top P</Typography>
-                            <TooltipWithParser
-                                title={
-                                    'Controls diversity via nucleus sampling: 0.5 means half of all likelihood-weighted options are considered.'
-                                }
-                            />
+                            <Typography variant='overline'>{t('assistants.cards.openAi.agentFlow.topP.title')}</Typography>
+                            <TooltipWithParser title={t('assistants.cards.openAi.agentFlow.topP.tooltip')} />
                         </Stack>
                         <OutlinedInput
                             id='assistantTopP'
@@ -887,19 +881,19 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                         <>
                             <Box>
                                 <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                    <Typography variant='overline'>Assistant Tools</Typography>
-                                    <TooltipWithParser title='A list of tool enabled on the assistant. There can be a maximum of 128 tools per assistant.' />
+                                    <Typography variant='overline'>{t('assistants.cards.openAi.agentFlow.tools.title')}</Typography>
+                                    <TooltipWithParser title={t('assistants.cards.openAi.agentFlow.tools.tooltip')} />
                                 </Stack>
                                 <MultiDropdown
                                     key={JSON.stringify(assistantTools)}
                                     name={JSON.stringify(assistantTools)}
                                     options={[
                                         {
-                                            label: 'Code Interpreter',
+                                            label: t('assistants.cards.openAi.agentFlow.tools.options.codeInterpreter'),
                                             name: 'code_interpreter'
                                         },
                                         {
-                                            label: 'File Search',
+                                            label: t('assistants.cards.openAi.agentFlow.tools.options.fileSearch'),
                                             name: 'file_search'
                                         }
                                     ]}
@@ -917,8 +911,12 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                     <Card sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
                                         <CardContent>
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                                <Typography variant='overline'>Code Interpreter Files</Typography>
-                                                <TooltipWithParser title='Code Interpreter enables the assistant to write and run code. This tool can process files with diverse data and formatting, and generate files such as graphs' />
+                                                <Typography variant='overline'>
+                                                    {t('assistants.cards.openAi.agentFlow.codeInterpreterFiles.title')}
+                                                </Typography>
+                                                <TooltipWithParser
+                                                    title={t('assistants.cards.openAi.agentFlow.codeInterpreterFiles.tooltip')}
+                                                />
                                             </Stack>
                                             {toolResources?.code_interpreter?.files?.length > 0 && (
                                                 <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -958,7 +956,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                                 key={uploadCodeInterpreterFiles}
                                                 fileType='*'
                                                 formDataUpload={true}
-                                                value={uploadCodeInterpreterFiles ?? 'Choose a file to upload'}
+                                                value={uploadCodeInterpreterFiles ?? t('components.file.chooseFile')}
                                                 onChange={(newValue) => setUploadCodeInterpreterFiles(newValue)}
                                                 onFormDataChange={(formData) => uploadFormDataToCodeInterpreter(formData)}
                                             />
@@ -969,8 +967,10 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                     <Card sx={{ mb: 2, border: '1px solid #e0e0e0', borderRadius: `${customization.borderRadius}px` }}>
                                         <CardContent>
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                                <Typography variant='overline'>File Search Files</Typography>
-                                                <TooltipWithParser title='File search enables the assistant with knowledge from files that you or your users upload. Once a file is uploaded, the assistant automatically decides when to retrieve content based on user requests' />
+                                                <Typography variant='overline'>
+                                                    {t('assistants.cards.openAi.agentFlow.fileSearchFiles.title')}
+                                                </Typography>
+                                                <TooltipWithParser title={t('assistants.cards.openAi.agentFlow.fileSearchFiles.tooltip')} />
                                             </Stack>
                                             {toolResources?.file_search?.vector_store_object && (
                                                 <Chip
@@ -1033,14 +1033,14 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                                     sx={{ marginRight: '1rem' }}
                                                     onClick={() => onAddAssistantVectorStoreClick()}
                                                 >
-                                                    Add Vector Store
+                                                    {t('assistants.actions.addVectorStore')}
                                                 </Button>
                                             ) : (
                                                 <File
                                                     key={uploadVectorStoreFiles}
                                                     fileType='*'
                                                     formDataUpload={true}
-                                                    value={uploadVectorStoreFiles ?? 'Choose a file to upload'}
+                                                    value={uploadVectorStoreFiles ?? t('components.file.chooseFile')}
                                                     onChange={(newValue) => setUploadVectorStoreFiles(newValue)}
                                                     onFormDataChange={(formData) => uploadFormDataToVectorStore(formData)}
                                                 />
@@ -1061,7 +1061,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                         variant='contained'
                         onClick={() => onSyncClick()}
                     >
-                        Sync
+                        {t('assistants.actions.sync')}
                     </StyledPermissionButton>
                 )}
                 {dialogProps.type === 'EDIT' && (
@@ -1071,7 +1071,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                         variant='contained'
                         onClick={() => onDeleteClick()}
                     >
-                        Delete
+                        {t('assistants.actions.delete.title')}
                     </StyledPermissionButton>
                 )}
                 <StyledPermissionButton
