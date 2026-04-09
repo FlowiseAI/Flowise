@@ -12,7 +12,6 @@ import mcpServerService from '../mcp-server/index'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import logger from '../../utils/logger'
 import { ChatType, IMcpServerConfig, IReactFlowObject } from '../../Interface'
-import chatMessagesService from '../../services/chat-messages'
 
 /**
  * Build the MCP tool name from config + chatflow
@@ -191,12 +190,10 @@ const handleMcpRequest = async (chatflowId: string, token: string, req: Request,
             }
         }
     )
-    let chatId: string | null = null
-    // Register the chatflow as a single MCP tool
+
     mcpServer.tool(toolName, toolDescription, inputSchema as any, async (args: any) => {
         try {
-            // Only generate a chatId when the tool is actually executed, so we can correlate messages and handle aborts.
-            chatId = uuidv4()
+            const chatId = uuidv4() // Generate a unique chat ID for this execution
             return await chatflowCallback(chatflow, chatId, req, args)
         } catch (error) {
             const errorMessage = getErrorMessage(error)
@@ -223,10 +220,6 @@ const handleMcpRequest = async (chatflowId: string, token: string, req: Request,
     // McpServer has finished processing the request and writing its JSON-RPC response.
     res.on('close', () => {
         mcpServer.close().catch(() => {})
-        // chatId is captured from the tool callback scope
-        if (chatId) {
-            chatMessagesService.abortChatMessage(chatId, chatflowId).catch(() => {})
-        }
     })
 
     // Handle the incoming request.
