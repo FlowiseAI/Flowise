@@ -63,14 +63,14 @@ describe('body size limit', () => {
 
     it('accepts a payload just under 1 MiB (500 KB)', async () => {
         const payload = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list', params: { data: 'x'.repeat(500_000) } })
-        const res = await request(app).post('/mcp/chatflow/test-flow').set('Content-Type', 'application/json').send(payload)
+        const res = await request(app).post('/mcp/test-flow').set('Content-Type', 'application/json').send(payload)
 
         expect(res.status).not.toBe(413)
     })
 
     it('rejects a payload over 1 MiB (2 MB) with 413', async () => {
         const payload = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { data: 'x'.repeat(2_000_000) } })
-        const res = await request(app).post('/mcp/chatflow/test-flow').set('Content-Type', 'application/json').send(payload)
+        const res = await request(app).post('/mcp/test-flow').set('Content-Type', 'application/json').send(payload)
 
         expect(res.status).toBe(413)
     })
@@ -79,7 +79,7 @@ describe('body size limit', () => {
         // 1mb in Express (bytes package) = 1,048,576 bytes; 1,100,000 bytes of data
         // produces a JSON body well above that threshold.
         const payload = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { data: 'x'.repeat(1_100_000) } })
-        const res = await request(app).post('/mcp/chatflow/test-flow').set('Content-Type', 'application/json').send(payload)
+        const res = await request(app).post('/mcp/test-flow').set('Content-Type', 'application/json').send(payload)
 
         expect(res.status).toBe(413)
     })
@@ -101,7 +101,7 @@ describe('CORS — MCP_CORS_ORIGINS unset', () => {
 
     it('allows requests with no Origin header (desktop / server-to-server clients)', async () => {
         const res = await request(app)
-            .post('/mcp/chatflow/test-flow')
+            .post('/mcp/test-flow')
             .set('Content-Type', 'application/json')
             .send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }))
 
@@ -110,7 +110,7 @@ describe('CORS — MCP_CORS_ORIGINS unset', () => {
 
     it('does not set ACAO header for browser requests (unlisted origin)', async () => {
         const res = await request(app)
-            .post('/mcp/chatflow/test-flow')
+            .post('/mcp/test-flow')
             .set('Content-Type', 'application/json')
             .set('Origin', 'https://evil.example.com')
             .send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }))
@@ -121,7 +121,7 @@ describe('CORS — MCP_CORS_ORIGINS unset', () => {
 
     it('does not set ACAO header for preflight from browser origin', async () => {
         const res = await request(app)
-            .options('/mcp/chatflow/test-flow')
+            .options('/mcp/test-flow')
             .set('Origin', 'https://evil.example.com')
             .set('Access-Control-Request-Method', 'POST')
 
@@ -149,7 +149,7 @@ describe('CORS — MCP_CORS_ORIGINS=*', () => {
 
     it('allows any browser origin and echoes it as ACAO', async () => {
         const res = await request(app)
-            .post('/mcp/chatflow/test-flow')
+            .post('/mcp/test-flow')
             .set('Content-Type', 'application/json')
             .set('Origin', 'https://any.example.com')
             .send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }))
@@ -161,7 +161,7 @@ describe('CORS — MCP_CORS_ORIGINS=*', () => {
 
     it('responds to preflight with 204 and echoes origin as ACAO', async () => {
         const res = await request(app)
-            .options('/mcp/chatflow/test-flow')
+            .options('/mcp/test-flow')
             .set('Origin', 'https://any.example.com')
             .set('Access-Control-Request-Method', 'POST')
 
@@ -188,7 +188,7 @@ describe('CORS — MCP_CORS_ORIGINS specific list', () => {
     // NOTE: ACAO Header - Access-Control-Allow-Origin: <url>
     it('allows a listed origin and sets ACAO to that origin', async () => {
         const res = await request(app)
-            .post('/mcp/chatflow/test-flow')
+            .post('/mcp/test-flow')
             .set('Content-Type', 'application/json')
             .set('Origin', 'https://allowed.example.com')
             .send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }))
@@ -199,7 +199,7 @@ describe('CORS — MCP_CORS_ORIGINS specific list', () => {
 
     it('allows the second listed origin and sets ACAO to that origin', async () => {
         const res = await request(app)
-            .post('/mcp/chatflow/test-flow')
+            .post('/mcp/test-flow')
             .set('Content-Type', 'application/json')
             .set('Origin', 'https://also-allowed.example.com')
             .send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }))
@@ -210,7 +210,7 @@ describe('CORS — MCP_CORS_ORIGINS specific list', () => {
 
     it('does not set ACAO header for an unlisted origin', async () => {
         const res = await request(app)
-            .post('/mcp/chatflow/test-flow')
+            .post('/mcp/test-flow')
             .set('Content-Type', 'application/json')
             .set('Origin', 'https://evil.example.com')
             .send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }))
@@ -221,7 +221,7 @@ describe('CORS — MCP_CORS_ORIGINS specific list', () => {
 
     it('responds to preflight with 204 and ACAO for a listed origin', async () => {
         const res = await request(app)
-            .options('/mcp/chatflow/test-flow')
+            .options('/mcp/test-flow')
             .set('Origin', 'https://allowed.example.com')
             .set('Access-Control-Request-Method', 'POST')
 
@@ -231,7 +231,7 @@ describe('CORS — MCP_CORS_ORIGINS specific list', () => {
 
     it('does not set ACAO header for preflight from an unlisted origin', async () => {
         const res = await request(app)
-            .options('/mcp/chatflow/test-flow')
+            .options('/mcp/test-flow')
             .set('Origin', 'https://evil.example.com')
             .set('Access-Control-Request-Method', 'POST')
 

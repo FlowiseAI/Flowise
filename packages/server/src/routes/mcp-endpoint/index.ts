@@ -27,19 +27,19 @@ const mcpCorsOptions: cors.CorsOptions = {
 }
 router.use(cors(mcpCorsOptions))
 // Handle preflight for all MCP routes
-router.options('/chatflow/:chatflowId', cors(mcpCorsOptions))
+router.options('/:chatflowId', cors(mcpCorsOptions))
 
 // MCP Streamable HTTP protocol routes (protocol version 2025-03-26)
 // Auth: token must be provided via Authorization: Bearer <token> header
 // POST — JSON-RPC messages (initialize, tools/list, tools/call, etc.)
 router.post(
-    '/chatflow/:chatflowId',
+    '/:chatflowId',
     mcpEndpointController.getRateLimiterMiddleware,
     mcpEndpointController.authenticateToken,
     mcpEndpointController.handlePost
 )
 
 // DELETE — Session termination (stateless mode returns 405)
-router.delete('/chatflow/:chatflowId', mcpEndpointController.handleDelete)
+router.delete('/:chatflowId', mcpEndpointController.handleDelete)
 
 export default router

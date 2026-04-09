@@ -43,7 +43,7 @@ const getRateLimiterMiddleware = async (req: Request, res: Response, next: NextF
 }
 
 /**
- * Handle POST /api/v1/mcp/chatflow/:chatflowId — MCP JSON-RPC messages
+ * Handle POST /api/v1/mcp/:chatflowId — MCP JSON-RPC messages
  * Auth: token must be in Authorization: Bearer <token> header
  */
 const handlePost = async (req: Request, res: Response, next: NextFunction) => {
@@ -59,7 +59,7 @@ const handlePost = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 /**
- * Handle DELETE /api/v1/mcp/chatflow/:chatflowId — Session termination
+ * Handle DELETE /api/v1/mcp/:chatflowId — Session termination
  */
 const handleDelete = async (req: Request, res: Response, next: NextFunction) => {
     try {
