@@ -33,4 +33,4 @@ Dynamically choose and utilize tools during runtime, enabling multi-step reasoni
 
 ## License
 
-Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/FlowiseAI/Flowise/blob/master/LICENSE.md).
+Source code in this repository is made available under the [Apache License Version 2.0](https://github.com/FlowiseAI/Flowise/blob/main/LICENSE.md).
