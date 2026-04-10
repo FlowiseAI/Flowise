@@ -4,6 +4,9 @@ import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMark
 import nextAgentGIF from '@/assets/images/next-agent.gif'
 import PropTypes from 'prop-types'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const AgentReasoningCard = ({
     agent,
     index,
@@ -19,6 +22,7 @@ const AgentReasoningCard = ({
     onURLClick,
     getLabel
 }) => {
+    const { t } = useTranslation()
     if (agent.nextAgent) {
         return (
             <Card
@@ -96,7 +100,7 @@ const AgentReasoningCard = ({
                                     variant='outlined'
                                     clickable
                                     icon={<IconTool size={15} />}
-                                    onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                    onClick={() => onSourceDialogClick(tool, t('chatmessage.usedTools'))}
                                 />
                             ) : null
                         })}
@@ -106,13 +110,13 @@ const AgentReasoningCard = ({
                     <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                         <Chip
                             size='small'
-                            label={'State'}
+                            label={t('chatmessage.state')}
                             component='a'
                             sx={{ mr: 1, mt: 1 }}
                             variant='outlined'
                             clickable
                             icon={<IconDeviceSdCard size={15} />}
-                            onClick={() => onSourceDialogClick(agent.state, 'State')}
+                            onClick={() => onSourceDialogClick(agent.state, t('chatmessage.state'))}
                         />
                     </div>
                 )}
@@ -137,7 +141,7 @@ const AgentReasoningCard = ({
                     </MemoizedReactMarkdown>
                 )}
                 {agent.instructions && <p>{agent.instructions}</p>}
-                {agent.messages.length === 0 && !agent.instructions && <p>Finished</p>}
+                {agent.messages.length === 0 && !agent.instructions && <p>{t('chatmessage.finished')}</p>}
                 {agent.sourceDocuments && agent.sourceDocuments.length > 0 && (
                     <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
                         {removeDuplicateURL(agent).map((source, index) => {

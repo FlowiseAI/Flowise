@@ -7,7 +7,11 @@ import ChatMessage from './ChatMessage'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { IconEraser } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ChatExpandDialog = ({ show, dialogProps, isAgentCanvas, onClear, onCancel, previews, setPreviews }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const customization = useSelector((state) => state.customization)
 
@@ -29,16 +33,22 @@ const ChatExpandDialog = ({ show, dialogProps, isAgentCanvas, onClear, onCancel,
                         <StyledButton
                             variant='outlined'
                             color='error'
-                            title='Clear Conversation'
+                            title={t('chatmessage.actions.clearConversation')}
                             onClick={onClear}
                             startIcon={<IconEraser />}
                         >
-                            Clear Chat
+                            {t('chatmessage.actions.clearChat')}
                         </StyledButton>
                     )}
                     {!customization.isDarkMode && (
-                        <Button variant='outlined' color='error' title='Clear Conversation' onClick={onClear} startIcon={<IconEraser />}>
-                            Clear Chat
+                        <Button
+                            variant='outlined'
+                            color='error'
+                            title={t('chatmessage.actions.clearConversation')}
+                            onClick={onClear}
+                            startIcon={<IconEraser />}
+                        >
+                            {t('chatmessage.actions.clearChat')}
                         </Button>
                     )}
                 </div>

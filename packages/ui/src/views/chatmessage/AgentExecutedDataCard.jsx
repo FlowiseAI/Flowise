@@ -47,6 +47,9 @@ import { useTheme } from '@mui/material/styles'
 import { FLOWISE_CREDENTIAL_ID, AGENTFLOW_ICONS } from '@/store/constant'
 import { NodeExecutionDetails } from '@/views/agentexecutions/NodeExecutionDetails'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const getIconColor = (status) => {
     switch (status) {
         case 'FINISHED':
@@ -116,6 +119,7 @@ const StyledTreeItemLabelText = styled(Typography)(({ theme }) => ({
 }))
 
 function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, metadata, ...other }) {
+    const { t } = useTranslation()
     const [openDialog, setOpenDialog] = useState(false)
 
     const handleOpenDialog = (event) => {
@@ -179,7 +183,7 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, meta
                 <IconButton
                     onClick={handleOpenDialog}
                     size='small'
-                    title='View Details'
+                    title={t('chatmessage.actions.viewDetails')}
                     sx={{
                         ml: 2,
                         zIndex: 10 // Increase z-index to ensure the button is clickable
@@ -194,11 +198,11 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, meta
                     {data ? (
                         <NodeExecutionDetails data={data} label={label} metadata={metadata} />
                     ) : (
-                        <Typography color='text.secondary'>No data available for this item</Typography>
+                        <Typography color='text.secondary'>{t('chatmessage.notFound')}</Typography>
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog}>Close</Button>
+                    <Button onClick={handleCloseDialog}>{t('chatmessage.actions.close')}</Button>
                 </DialogActions>
             </Dialog>
         </TreeItem2Label>
@@ -325,6 +329,7 @@ CustomTreeItem.propTypes = {
 CustomTreeItem.displayName = 'CustomTreeItem'
 
 const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) => {
+    const { t } = useTranslation()
     const [executionTree, setExecution] = useState([])
     const [expandedItems, setExpandedItems] = useState([])
     const [selectedItem, setSelectedItem] = useState(null)
@@ -411,7 +416,7 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
 
                 // Create a virtual node for this iteration
                 const iterationNodeId = `${parentId}_${iterationIndex}`
-                const iterationLabel = `Iteration #${iterationIndex}`
+                const iterationLabel = t('chatmessage.iteration', { index: iterationIndex })
 
                 // Determine status based on child nodes
                 const childNodes = nodeIds.map((id) => nodeMap.get(id))
@@ -718,7 +723,7 @@ const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) =>
                             fontWeight: 500
                         }}
                     >
-                        Process Flow
+                        {t('chatmessage.processFlow')}
                     </Typography>
                 </AccordionSummary>
                 <Divider />

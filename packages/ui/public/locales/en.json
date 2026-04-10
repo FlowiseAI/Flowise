@@ -2216,5 +2216,73 @@
                 "title": "TextIntput Send Button Color"
             }
         }
+    },
+    "chatmessage": {
+        "notFound": "No data available for this item",
+        "iteration": "Iteration {{index}}",
+        "processFlow": "Process Flow",
+        "usedTools": "Used Tools",
+        "calledTools": "Called Tools",
+        "state": "State",
+        "finished": "Finished",
+        "submitting": "Thank you for submitting your contact information.",
+        "fillForm": "Please Fill Out The Form",
+        "completeForm": "Complete all fields below to continue",
+        "submittingLoading": "Submitting...",
+        "savingLoading": "Saving...",
+        "sendingLoading": "Sending...",
+        "know": "Let us know where we can reach you:",
+        "tryThese": "Try these prompts",
+        "unsupproted": "To record audio, use modern browsers like Chrome or Firefox that support audio recording.",
+        "waitingResponse": "Waiting for response...",
+        "typeQuestion": "Type your question...",
+        "stopingLoading": "Stopping...",
+        "provideFeedback": "Provide Feedback",
+        "feedback": "Feedback",
+        "inputs": {
+            "name": "Name",
+            "email": "Email Address",
+            "phone": "Phone Number"
+        },
+        "dragDrop": {
+            "here": "Drop here to upload",
+            "maxSize": "Max Allowed Size: {{size}} MB"
+        },
+        "actions": {
+            "viewDetails": "View Details",
+            "close": "Close",
+            "clearConversation": "Clear Conversation",
+            "clearChat": "Clear Chat",
+            "removeAttachment": "Remove attachment",
+            "submit": "Submit",
+            "save": "Save",
+            "okay": "Okay",
+            "stop": "Stop",
+            "cancel": "Cancel",
+            "clearHistory": {
+                "title": "Clear Chat History",
+                "description": "Are you sure you want to clear all chat history?"
+            },
+            "clear": "Clear",
+            "chat": "Chat",
+            "expandChat": "Expand Chat",
+            "expand": "Expand"
+        },
+        "messages": {
+            "message": {
+                "success": "Message stopped"
+            },
+            "tts": {
+                "error": "TTS failed: {{msg}}"
+            },
+            "clear": {
+                "success": "Succesfully cleared all chat history"
+            }
+        },
+        "errors": {
+            "cannotUpload": "Cannot upload file. Kindly check the allowed file types and maximum allowed size.",
+            "tryAgain": "Oops! There seems to be an error. Please try again.",
+            "unableUpload": "Unable to upload documents"
+        }
     }
 }

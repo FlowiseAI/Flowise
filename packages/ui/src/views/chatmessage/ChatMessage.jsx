@@ -92,6 +92,8 @@ import FollowUpPromptsCard from '@/ui-component/cards/FollowUpPromptsCard'
 // History
 import { ChatInputHistory } from './ChatInputHistory'
 
+// i18n
+
 const messageImageStyle = {
     width: '128px',
     height: '128px',
@@ -160,7 +162,7 @@ const CardWithDeleteOverlay = ({ item, disabled, customization, onDelete }) => {
                     disabled={disabled}
                     onClick={() => onDelete(item)}
                     startIcon={<IconTrash color='white' size={22} />}
-                    title='Remove attachment'
+                    title={t('chatmessage.actions.removeAttachment')}
                     sx={{
                         position: 'absolute',
                         top: 0,
@@ -338,7 +340,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             }
         }
         if (!acceptFile) {
-            alert(`Cannot upload file. Kindly check the allowed file types and maximum allowed size.`)
+            alert(t('chatmessage.errors.cannotUpload'))
         }
         return acceptFile
     }
@@ -827,7 +829,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             inputRef.current?.focus()
         }, 100)
         enqueueSnackbar({
-            message: 'Message stopped',
+            message: t('chatmessage.messages.message.success'),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -840,8 +842,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         })
     }
 
-    const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
-        message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
+    const handleError = (message) => {
+        if (!message) {
+            message = t('chatmessage.errors.tryAgain')
+        } else {
+            message = message.replace(`Unable to parse JSON response from chat agent.\n\n`, '')
+        }
         setMessages((prevMessages) => [...prevMessages, { message, type: 'apiMessage' }])
         setLoading(false)
         setUserInput('')
@@ -1046,7 +1052,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         try {
             uploads = await handleFileUploads(uploads)
         } catch (error) {
-            handleError('Unable to upload documents')
+            handleError(t('chatmessage.errors.unableUpload'))
             return
         }
 
@@ -1701,8 +1707,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             setMessages((prevMessages) => {
                 let allMessages = [...cloneDeep(prevMessages)]
                 if (allMessages[allMessages.length - 1].type !== 'leadCaptureMessage') return allMessages
-                allMessages[allMessages.length - 1].message =
-                    leadsConfig.successMessage || 'Thank you for submitting your contact information.'
+                allMessages[allMessages.length - 1].message = leadsConfig.successMessage || t('chatmessage.submitting')
                 return allMessages
             })
         }
@@ -1857,7 +1862,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             } else {
                 console.error('Error with TTS:', error)
                 enqueueSnackbar({
-                    message: `TTS failed: ${error.message}`,
+                    message: t('chatmessage.messages.tts.error', { msg: error.message }),
                     options: { variant: 'error' }
                 })
             }
@@ -2386,10 +2391,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                         }}
                     >
                         <Typography variant='h4' sx={{ mb: 1, textAlign: 'center' }}>
-                            {formTitle || 'Please Fill Out The Form'}
+                            {formTitle || t('chatmessage.fillForm')}
                         </Typography>
                         <Typography variant='body1' sx={{ mb: 3, textAlign: 'center', color: theme.palette.text.secondary }}>
-                            {formDescription || 'Complete all fields below to continue'}
+                            {formDescription || t('chatmessage.completeForm')}
                         </Typography>
 
                         {/* Form inputs */}
@@ -2426,7 +2431,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                 background: 'linear-gradient(45deg, #673ab7 30%, #1e88e5 90%)'
                             }}
                         >
-                            {loading ? 'Submitting...' : 'Submit'}
+                            {t(loading ? 'chatmessage.submittingLoading' : 'chatmessage.actions.submit')}
                         </Button>
                     </Box>
                 </Box>
@@ -2448,7 +2453,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             {isDragActive &&
                 (getAllowChatFlowUploads.data?.isImageUploadAllowed || getAllowChatFlowUploads.data?.isRAGFileUploadAllowed) && (
                     <Box className='drop-overlay'>
-                        <Typography variant='h2'>Drop here to upload</Typography>
+                        <Typography variant='h2'>{t('chatmessage.dragDrop.here')}</Typography>
                         {[
                             ...getAllowChatFlowUploads.data.imgUploadSizeAndTypes,
                             ...getAllowChatFlowUploads.data.fileUploadSizeAndTypes
@@ -2457,7 +2462,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                 <>
                                     <Typography variant='subtitle1'>{allowed.fileTypes?.join(', ')}</Typography>
                                     {allowed.maxUploadSize && (
-                                        <Typography variant='subtitle1'>Max Allowed Size: {allowed.maxUploadSize} MB</Typography>
+                                        <Typography variant='subtitle1'>
+                                            {t('chatmessage.dragDrop.maxSize', { size: allowed.maxUploadSize })}
+                                        </Typography>
                                     )}
                                 </>
                             )
@@ -2587,7 +2594,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                             variant='outlined'
                                                             clickable
                                                             icon={<CircularProgress size={15} color='primary' />}
-                                                            onClick={() => onSourceDialogClick(tool, 'Called Tools')}
+                                                            onClick={() => onSourceDialogClick(tool, t('chatmessage.calledTools'))}
                                                         />
                                                     ) : null
                                                 })}
@@ -2622,7 +2629,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                     color={tool.error ? theme.palette.error.main : undefined}
                                                                 />
                                                             }
-                                                            onClick={() => onSourceDialogClick(tool, 'Used Tools')}
+                                                            onClick={() => onSourceDialogClick(tool, t('chatmessage.usedTools'))}
                                                         />
                                                     ) : null
                                                 })}
@@ -2655,7 +2662,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                     }}
                                                 >
                                                     <Typography sx={{ lineHeight: '1.5rem', whiteSpace: 'pre-line' }}>
-                                                        {leadsConfig.title || 'Let us know where we can reach you:'}
+                                                        {leadsConfig.title || t('chatmessage.know')}
                                                     </Typography>
                                                     <form
                                                         style={{
@@ -2671,7 +2678,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 id='leadName'
                                                                 type='text'
                                                                 fullWidth
-                                                                placeholder='Name'
+                                                                placeholder={t('chatmessage.inputs.name')}
                                                                 name='leadName'
                                                                 value={leadName}
                                                                 // eslint-disable-next-line
@@ -2684,7 +2691,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 id='leadEmail'
                                                                 type='email'
                                                                 fullWidth
-                                                                placeholder='Email Address'
+                                                                placeholder={t('chatmessage.inputs.email')}
                                                                 name='leadEmail'
                                                                 value={leadEmail}
                                                                 onChange={(e) => setLeadEmail(e.target.value)}
@@ -2695,7 +2702,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 id='leadPhone'
                                                                 type='number'
                                                                 fullWidth
-                                                                placeholder='Phone Number'
+                                                                placeholder={t('chatmessage.inputs.phone')}
                                                                 name='leadPhone'
                                                                 value={leadPhone}
                                                                 onChange={(e) => setLeadPhone(e.target.value)}
@@ -2713,7 +2720,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 type='submit'
                                                                 sx={{ borderRadius: '20px' }}
                                                             >
-                                                                {isLeadSaving ? 'Saving...' : 'Save'}
+                                                                {t(isLeadSaving ? 'chatmessage.savingLoading' : 'chatmessage.actions.save')}
                                                             </Button>
                                                         </Box>
                                                     </form>
@@ -2940,7 +2947,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                         <Stack sx={{ flexDirection: 'row', alignItems: 'center', px: 1.5, gap: 0.5 }}>
                             <IconSparkles size={12} />
                             <Typography sx={{ fontSize: '0.75rem' }} variant='body2'>
-                                Try these prompts
+                                {t('chatmessage.tryThese')}
                             </Typography>
                         </Stack>
                         <FollowUpPromptsCard
@@ -2968,9 +2975,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                         {recordingNotSupported ? (
                             <div className='overlay'>
                                 <div className='browser-not-supporting-audio-recording-box'>
-                                    <Typography variant='body1'>
-                                        To record audio, use modern browsers like Chrome or Firefox that support audio recording.
-                                    </Typography>
+                                    <Typography variant='body1'>{t('chatmessage.unsupproted')}</Typography>
                                     <Button
                                         variant='contained'
                                         color='error'
@@ -2978,7 +2983,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                         type='button'
                                         onClick={() => onRecordingCancelled()}
                                     >
-                                        Okay
+                                        {t('chatmessage.actions.okay')}
                                     </Button>
                                 </div>
                             </div>
@@ -3002,7 +3007,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                         <IconCircleDot />
                                     </span>
                                     <Typography id='elapsed-time'>00:00</Typography>
-                                    {isLoadingRecording && <Typography ml={1.5}>Sending...</Typography>}
+                                    {isLoadingRecording && <Typography ml={1.5}>{t('chatmessage.sendingLoading')}</Typography>}
                                 </div>
                                 <div className='recording-control-buttons-container'>
                                     <IconButton onClick={onRecordingCancelled} size='small'>
@@ -3030,7 +3035,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                             onKeyDown={handleEnter}
                             id='userInput'
                             name='userInput'
-                            placeholder={loading ? 'Waiting for response...' : 'Type your question...'}
+                            placeholder={t(loading ? 'chatmessage.waitingResponse' : 'chatmessage.typeQuestion')}
                             value={userInput}
                             onChange={onChange}
                             multiline={true}
@@ -3149,7 +3154,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                 <InputAdornment position='end' sx={{ padding: '15px', mr: 1 }}>
                                                     <IconButton
                                                         edge='end'
-                                                        title={isMessageStopping ? 'Stopping...' : 'Stop'}
+                                                        title={t(
+                                                            isMessageStopping ? 'chatmessage.stopingLoading' : 'chatmessage.actions.stop'
+                                                        )}
                                                         style={{ border: !isMessageStopping ? '2px solid red' : 'none' }}
                                                         onClick={() => handleAbort()}
                                                         disabled={isMessageStopping}
@@ -3208,13 +3215,13 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     setFeedback('')
                 }}
             >
-                <DialogTitle variant='h5'>Provide Feedback</DialogTitle>
+                <DialogTitle variant='h5'>{t('chatmessage.provideFeedback')}</DialogTitle>
                 <DialogContent>
                     <TextField
                         // eslint-disable-next-line
                         autoFocus
                         margin='dense'
-                        label='Feedback'
+                        label={t('chatmessage.feedback')}
                         fullWidth
                         multiline
                         rows={4}
@@ -3223,9 +3230,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleSubmitFeedback}>Cancel</Button>
+                    <Button onClick={handleSubmitFeedback}>{t('chatmessage.actions.cancel')}</Button>
                     <Button onClick={handleSubmitFeedback} variant='contained'>
-                        Submit
+                        {t('chatmessage.actions.submit')}
                     </Button>
                 </DialogActions>
             </Dialog>

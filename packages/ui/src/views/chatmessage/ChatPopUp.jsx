@@ -27,7 +27,11 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // Utils
 import { getLocalStorageChatflow, removeLocalStorageChatHistory } from '@/utils/genericHelper'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
@@ -86,10 +90,10 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
 
     const clearChat = async () => {
         const confirmPayload = {
-            title: `Clear Chat History`,
-            description: `Are you sure you want to clear all chat history?`,
-            confirmButtonName: 'Clear',
-            cancelButtonName: 'Cancel'
+            title: t('chatmessage.actions.clearHistory.title'),
+            description: t('chatmessage.actions.clearHistory.description'),
+            confirmButtonName: t('chatmessage.actions.clear'),
+            cancelButtonName: t('chatmessage.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -101,7 +105,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 removeLocalStorageChatHistory(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({
-                    message: 'Succesfully cleared all chat history',
+                    message: t('chatmessage.messages.clear.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -147,8 +151,8 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                 ref={anchorRef}
                 size='small'
                 color='secondary'
-                aria-label='chat'
-                title='Chat'
+                aria-label={t('chatmessage.actions.chat')}
+                title={t('chatmessage.actions.chat')}
                 onClick={handleToggle}
             >
                 {open ? <IconX /> : <IconMessage />}
@@ -160,8 +164,8 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                     onClick={clearChat}
                     size='small'
                     color='error'
-                    aria-label='clear'
-                    title='Clear Chat History'
+                    aria-label={t('chatmessage.actions.clear')}
+                    title={t('chatmessage.actions.clearHistory.title')}
                 >
                     <IconEraser />
                 </StyledFab>
@@ -172,8 +176,8 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                     onClick={expandChat}
                     size='small'
                     color='primary'
-                    aria-label='expand'
-                    title='Expand Chat'
+                    aria-label={t('chatmessage.actions.expand')}
+                    title={t('chatmessage.actions.expandChat')}
                 >
                     <IconArrowsMaximize />
                 </StyledFab>
