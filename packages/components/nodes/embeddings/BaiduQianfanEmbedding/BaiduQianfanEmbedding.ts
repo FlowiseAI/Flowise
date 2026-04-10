@@ -60,8 +60,11 @@ class BaiduQianfanEmbedding_Embeddings implements INode {
                 name: 'batchSize',
                 type: 'number',
                 optional: true,
+                default: 1,
                 additionalParams: true,
-                description: 'Number of texts sent in each embedding request'
+                description: 'Number of texts sent in each embedding request',
+                warning:
+                    'Qianfan has stricter limits on individual text length. If you encounter a length error, reduce chunk size to 500 and set Batch Size to 1.'
             },
             {
                 label: 'Timeout',
