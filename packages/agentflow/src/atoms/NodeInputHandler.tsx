@@ -48,6 +48,7 @@ export interface AsyncInputProps {
     disabled: boolean
     onChange: (newValue: string) => void
     nodeName?: string
+    nodeId?: string
     inputValues?: Record<string, unknown>
 }
 
@@ -303,7 +304,7 @@ export function NodeInputHandler({
 
             case 'json': {
                 const jsonStr = typeof value === 'string' ? value : JSON.stringify(value || {})
-                if (inputParam.acceptVariable && variableItems && variableItems.length > 0) {
+                if (inputParam.acceptVariable) {
                     // acceptVariable: show a button that opens a dialog with JsonInput + variable support
                     return (
                         <Button
@@ -323,22 +324,22 @@ export function NodeInputHandler({
             case 'code':
                 return (
                     <>
+                        {inputParam.codeExample && !disabled && (
+                            <Button
+                                size='small'
+                                variant='outlined'
+                                sx={{ mb: 1, textTransform: 'none' }}
+                                onClick={() => handleDataChange(inputParam.codeExample)}
+                            >
+                                See Example
+                            </Button>
+                        )}
                         <CodeInput
                             value={typeof value === 'string' ? value : ''}
                             onChange={(code) => handleDataChange(code)}
                             language={inputParam.codeLanguage}
                             disabled={disabled}
                         />
-                        {inputParam.codeExample && !disabled && (
-                            <Button
-                                size='small'
-                                variant='text'
-                                sx={{ mt: 0.5, textTransform: 'none' }}
-                                onClick={() => handleDataChange(inputParam.codeExample)}
-                            >
-                                See Example
-                            </Button>
-                        )}
                     </>
                 )
 
@@ -378,6 +379,7 @@ export function NodeInputHandler({
                             disabled={disabled}
                             onChange={(v) => handleDataChange(v)}
                             nodeName={data.name}
+                            nodeId={data.id}
                             inputValues={data.inputs as Record<string, unknown> | undefined}
                         />
                         {inputParam.loadConfig && ConfigInputComponent && value && onConfigChange && (
@@ -403,6 +405,7 @@ export function NodeInputHandler({
                         disabled={disabled}
                         onChange={(v) => handleDataChange(v)}
                         nodeName={data.name}
+                        nodeId={data.id}
                         inputValues={data.inputs as Record<string, unknown> | undefined}
                     />
                 )
@@ -541,7 +544,7 @@ export function NodeInputHandler({
                 </Popover>
             )}
 
-            {inputParam?.type === 'json' && inputParam.acceptVariable && variableItems && variableItems.length > 0 && (
+            {inputParam?.type === 'json' && inputParam.acceptVariable && (
                 <Dialog open={jsonDialogOpen} onClose={() => setJsonDialogOpen(false)} fullWidth maxWidth='sm'>
                     <DialogTitle>{inputParam.label}</DialogTitle>
                     <DialogContent>
