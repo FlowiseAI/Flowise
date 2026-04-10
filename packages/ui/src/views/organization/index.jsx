@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 
 // material-ui
-import { Alert, Box, Button, Chip, Divider, Icon, List, ListItemText, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Chip, Divider, Icon, List, ListItemText, Stack, Typography } from '@mui/material'
 
 // project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -100,7 +100,7 @@ const OrganizationSetupPage = () => {
     const registerAccountApi = useApi(accountApi.registerAccount)
     const navigate = useNavigate()
 
-    const getDefaultProvidersApi = useApi(loginMethodApi.getLoginMethods)
+    const getDefaultProvidersApi = useApi(loginMethodApi.getDefaultLoginMethods)
     const [configuredSsoProviders, setConfiguredSsoProviders] = useState([])
 
     const register = async (event) => {
@@ -121,7 +121,6 @@ const OrganizationSetupPage = () => {
                 user: {
                     name: username,
                     email: email,
-                    type: 'pro',
                     credential: password
                 }
             }

@@ -118,6 +118,9 @@ const OrgWorkspaceBreadcrumbs = () => {
 
     const handleWorkspaceClick = (event) => {
         setWorkspaceAnchorEl(event.currentTarget)
+
+        // Refresh workspace list when dropdown opens
+        getWorkspacesByUserIdApi.request(user.id)
     }
 
     const handleOrgClose = () => {

@@ -1,4 +1,5 @@
 import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getFileFromStorage } from '../../../src'
 import { createJiraTools } from './core'
 import type { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
@@ -17,7 +18,7 @@ class Jira_Tools implements INode {
     constructor() {
         this.label = 'Jira'
         this.name = 'jiraTool'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Jira'
         this.icon = 'jira.svg'
         this.category = 'Tools'
@@ -27,7 +28,7 @@ class Jira_Tools implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['jiraApi']
+            credentialNames: ['jiraApi', 'jiraApiBearerToken']
         }
         this.inputs = [
             {
@@ -35,6 +36,25 @@ class Jira_Tools implements INode {
                 name: 'jiraHost',
                 type: 'string',
                 placeholder: 'https://example.atlassian.net'
+            },
+            {
+                label: 'Enable SSL Certificate',
+                name: 'enableSSL',
+                type: 'boolean',
+                description: 'Enable if your JIRA Server/DC uses an SSL certificate',
+                optional: true,
+                default: false
+            },
+            {
+                label: 'SSL Certificate',
+                description: 'Upload SSL certificate (.pem or .crt) for JIRA Server/DC',
+                name: 'caFile',
+                type: 'file',
+                fileType: '.pem, .crt',
+                show: {
+                    enableSSL: true
+                },
+                optional: true
             },
             {
                 label: 'Type',
@@ -372,20 +392,42 @@ class Jira_Tools implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         let credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const username = getCredentialParam('username', credentialData, nodeData)
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
         const jiraHost = nodeData.inputs?.jiraHost as string
-
-        if (!username) {
-            throw new Error('No username found in credential')
-        }
-
-        if (!accessToken) {
-            throw new Error('No access token found in credential')
-        }
 
         if (!jiraHost) {
             throw new Error('No Jira host provided')
+        }
+
+        const bearerToken = getCredentialParam('bearerToken', credentialData, nodeData)
+        const username = getCredentialParam('username', credentialData, nodeData)
+        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+
+        let authType: 'basic' | 'bearer'
+        if (bearerToken) {
+            authType = 'bearer'
+        } else if (username && accessToken) {
+            authType = 'basic'
+        } else {
+            throw new Error('Invalid credentials: provide either Bearer Token or Username + Access Token')
+        }
+
+        // Read SSL certificate from tool inputs if provided
+        let sslCertificate: string | undefined
+        const caFileBase64 = nodeData.inputs?.caFile as string
+        if (caFileBase64) {
+            if (caFileBase64.startsWith('FILE-STORAGE::')) {
+                let file = caFileBase64.replace('FILE-STORAGE::', '')
+                file = file.replace('[', '').replace(']', '')
+                const orgId = options.orgId
+                const chatflowid = options.chatflowid
+                const fileData = await getFileFromStorage(file, orgId, chatflowid)
+                sslCertificate = fileData.toString()
+            } else {
+                const splitDataURI = caFileBase64.split(',')
+                splitDataURI.pop()
+                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+                sslCertificate = bf.toString('utf-8')
+            }
         }
 
         // Get all actions based on type
@@ -402,13 +444,24 @@ class Jira_Tools implements INode {
 
         const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
 
-        // Create and return tools based on selected actions
-        const tools = createJiraTools({
-            actions,
+        // Basic Auth (username + API token) = Jira Cloud = API v3
+        // Bearer Token (PAT) = Jira Server/DC = API v2
+        const apiVersion = authType === 'bearer' ? '2' : '3'
+
+        const authConfig = {
+            authType,
             username,
             accessToken,
+            bearerToken,
+            sslCertificate
+        }
+
+        const tools = createJiraTools({
+            actions,
             jiraHost,
-            defaultParams
+            defaultParams,
+            apiVersion,
+            authConfig
         })
 
         return tools

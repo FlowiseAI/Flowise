@@ -1,5 +1,5 @@
 import { BaseMessage } from '@langchain/core/messages'
-import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from 'langchain/memory'
+import { BufferMemory, BufferWindowMemory, ConversationSummaryMemory, ConversationSummaryBufferMemory } from '@langchain/classic/memory'
 import { Moderation } from '../nodes/moderation/Moderation'
 
 /**
@@ -28,6 +28,10 @@ export type CommonType = string | number | boolean | undefined | null
 export type MessageType = 'apiMessage' | 'userMessage'
 
 export type ImageDetail = 'auto' | 'low' | 'high'
+
+export type ClientType = 'agentflowv2' | 'agentflowsdk'
+
+export const VALID_CLIENT_TYPES = new Set<ClientType>(['agentflowv2', 'agentflowsdk'])
 
 /**
  * Others
@@ -59,6 +63,7 @@ export interface INodeOptionsValue {
     name: string
     description?: string
     imageSrc?: string
+    client?: Array<ClientType>
 }
 
 export interface INodeOutputsValue {
@@ -92,6 +97,7 @@ export interface INodeParams {
     loadMethod?: string
     loadConfig?: boolean
     hidden?: boolean
+    client?: Array<ClientType>
     hideCodeExecute?: boolean
     codeExample?: string
     hint?: Record<string, string>
@@ -105,6 +111,8 @@ export interface INodeParams {
     hide?: INodeDisplay
     generateDocStoreDescription?: boolean
     generateInstruction?: boolean
+    minItems?: number
+    maxItems?: number
 }
 
 export interface INodeExecutionData {
@@ -411,8 +419,6 @@ export interface IVisionChatModal {
     configuredModel: string
     multiModalOption: IMultiModalOption
     configuredMaxToken?: number
-    setVisionModel(): void
-    revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
 }
 
@@ -426,6 +432,7 @@ export * from './Interface.Evaluation'
 export interface IServerSideEventStreamer {
     streamStartEvent(chatId: string, data: any): void
     streamTokenEvent(chatId: string, data: string): void
+    streamThinkingEvent(chatId: string, data: string, duration?: number): void
     streamCustomEvent(chatId: string, eventType: string, data: any): void
     streamSourceDocumentsEvent(chatId: string, data: any): void
     streamUsedToolsEvent(chatId: string, data: any): void
@@ -458,7 +465,7 @@ export enum FollowUpPromptProvider {
 }
 
 export type FollowUpPromptProviderConfig = {
-    [key in FollowUpPromptProvider]: {
+    [_key in FollowUpPromptProvider]: {
         credentialId: string
         modelName: string
         baseUrl: string

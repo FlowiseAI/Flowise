@@ -3,21 +3,22 @@ import { load } from 'cheerio'
 import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { cloneDeep, omit, get } from 'lodash'
 import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AES, enc } from 'crypto-js'
-import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { AIMessage, AIMessageChunk, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { Runnable, type RunnableConfig } from '@langchain/core/runnables'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
-import { TextSplitter } from 'langchain/text_splitter'
-import { DocumentLoader } from 'langchain/document_loaders/base'
-import { NodeVM } from '@flowiseai/nodevm'
+import { TextSplitter } from '@langchain/textsplitters'
+import { DocumentLoader } from '@langchain/classic/document_loaders/base'
+import { NodeVM } from 'vm2'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
 import JSON5 from 'json5'
@@ -117,26 +118,12 @@ export const availableDependencies = [
     'replicate',
     'srt-parser-2',
     'typeorm',
-    'weaviate-ts-client'
+    'weaviate-client'
 ]
 
 const defaultAllowExternalDependencies = ['axios', 'moment', 'node-fetch']
 
-export const defaultAllowBuiltInDep = [
-    'assert',
-    'buffer',
-    'crypto',
-    'events',
-    'http',
-    'https',
-    'net',
-    'path',
-    'querystring',
-    'timers',
-    'tls',
-    'url',
-    'zlib'
-]
+export const defaultAllowBuiltInDep = ['assert', 'buffer', 'crypto', 'events', 'path', 'querystring', 'timers', 'url', 'zlib']
 
 /**
  * Get base classes of components
@@ -313,6 +300,57 @@ export const transformBracesWithColon = (input: string): string => {
             return match
         }
     })
+}
+
+/**
+ * Extracts text content from an AIMessageChunk, filtering out reasoning/thinking
+ * content blocks that reasoning models may return.
+ */
+const extractTextFromChunk = (response: AIMessageChunk): string => {
+    if (typeof response.content === 'string') {
+        return response.content
+    }
+    if (Array.isArray(response.content)) {
+        return response.content
+            .filter((block: any) => block.type === 'text' || block.type === 'text_delta')
+            .map((block: any) => block.text ?? '')
+            .join('')
+    }
+    return ''
+}
+
+/**
+ * Creates a streaming-compatible output parser that extracts text content from
+ * chat model responses, filtering out reasoning/thinking content blocks.
+ * https://github.com/FlowiseAI/Flowise/pull/5893#issuecomment-4045466531
+ */
+export const createTextOnlyOutputParser = () => {
+    return new TextOnlyOutputParser()
+}
+
+class TextOnlyOutputParser extends Runnable<AIMessageChunk, string> {
+    static lc_name() {
+        return 'TextOnlyOutputParser'
+    }
+
+    lc_namespace = ['flowise', 'output_parsers']
+
+    async invoke(input: AIMessageChunk, _options?: Partial<RunnableConfig>): Promise<string> {
+        return extractTextFromChunk(input)
+    }
+
+    async *_transform(generator: AsyncGenerator<AIMessageChunk>): AsyncGenerator<string> {
+        for await (const chunk of generator) {
+            const text = extractTextFromChunk(chunk)
+            if (text) {
+                yield text
+            }
+        }
+    }
+
+    async *transform(generator: AsyncGenerator<AIMessageChunk>, options?: Partial<RunnableConfig>): AsyncGenerator<string> {
+        yield* this._transformStreamWithConfig(generator, this._transform.bind(this), options)
+    }
 }
 
 /**
@@ -1212,9 +1250,72 @@ export const mapMimeTypeToExt = (mimeType: string) => {
     }
 }
 
+/**
+ * MIME types allowed for full file upload (chatflow config).
+ * Server validates stored allowedUploadFileTypes against this list to prevent
+ * malicious clients from allowing executables or other dangerous types.
+ * Uses a Set for O(1) lookups and to make the unique allowed set explicit.
+ */
+export const ALLOWED_UPLOAD_MIME_TYPES: ReadonlySet<string> = new Set([
+    'text/css',
+    'text/csv',
+    'text/html',
+    'application/json',
+    'text/markdown',
+    'application/x-yaml',
+    'application/pdf',
+    'application/sql',
+    'text/plain',
+    'application/xml',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+])
+
+/**
+ * Returns true if the MIME type is allowed for file upload config.
+ * Must be in ALLOWED_UPLOAD_MIME_TYPES and have a mapping in mapMimeTypeToExt.
+ * @param {string} mime
+ * @returns {boolean}
+ */
+export const isAllowedUploadMimeType = (mime: string): boolean => {
+    if (!mime || typeof mime !== 'string') return false
+    const trimmed = mime.trim()
+    if (!trimmed) return false
+    return ALLOWED_UPLOAD_MIME_TYPES.has(trimmed) && mapMimeTypeToExt(trimmed) !== ''
+}
+
 // remove invalid markdown image pattern: ![<some-string>](<some-string>)
+// Uses indexOf instead of a global regex to avoid O(n²) backtracking when the
+// input contains many '![' sequences (polynomial ReDoS with the g flag).
 export const removeInvalidImageMarkdown = (output: string): string => {
-    return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
+    if (typeof output !== 'string') return output
+    let result = ''
+    let pos = 0
+    while (pos < output.length) {
+        const start = output.indexOf('![', pos)
+        if (start === -1) {
+            result += output.slice(pos)
+            break
+        }
+        result += output.slice(pos, start)
+        const closeBracket = output.indexOf(']', start + 2)
+        if (closeBracket === -1 || output[closeBracket + 1] !== '(') {
+            result += '!['
+            pos = start + 2
+            continue
+        }
+        const closeParen = output.indexOf(')', closeBracket + 2)
+        if (closeParen === -1) {
+            result += output.slice(start)
+            break
+        }
+        const url = output.slice(closeBracket + 2, closeParen)
+        if (/^https?:\/\//.test(url)) result += output.slice(start, closeParen + 1)
+        pos = closeParen + 1
+    }
+    return result
 }
 
 /**
@@ -1420,8 +1521,12 @@ export const stripHTMLFromToolInput = (input: string) => {
     return cleanedInput
 }
 
+// Regex constants exported for testability
+export const COMMONJS_REQUIRE_REGEX = /^(const|let|var)\s+\S[^=]*=\s*require\s*\(/
+export const IMPORT_EXTRACTION_REGEX = /(?:import\s+\S[^\n]*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/
+
 // Helper function to convert require statements to ESM imports
-const convertRequireToImport = (requireLine: string): string | null => {
+export const convertRequireToImport = (requireLine: string): string | null => {
     // Remove leading/trailing whitespace and get the indentation
     const indent = requireLine.match(/^(\s*)/)?.[1] || ''
     const trimmed = requireLine.trim()
@@ -1434,7 +1539,7 @@ const convertRequireToImport = (requireLine: string): string | null => {
     }
 
     // Match patterns like: const { name1, name2 } = require('module')
-    const destructureMatch = trimmed.match(/^(const|let|var)\s+\{\s*([^}]+)\s*\}\s*=\s*require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/)
+    const destructureMatch = trimmed.match(/^(const|let|var)\s+\{([^}]+)\}\s*=\s*require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/)
     if (destructureMatch) {
         const [, , destructuredVars, moduleName] = destructureMatch
         return `${indent}import { ${destructuredVars.trim()} } from '${moduleName}';`
@@ -1503,13 +1608,18 @@ export const executeJavaScriptCode = async (
     } = {}
 ): Promise<any> => {
     const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
-    const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
+    if (useSandbox && !process.env.E2B_APIKEY) {
+        throw new Error(
+            'Sandboxed code execution requires E2B_APIKEY to be configured. ' +
+                'Set E2B_APIKEY in your environment or contact your administrator.'
+        )
+    }
     let timeoutMs = timeout
     if (process.env.SANDBOX_TIMEOUT) {
         timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
     }
 
-    if (shouldUseSandbox) {
+    if (useSandbox) {
         try {
             const variableDeclarations = []
 
@@ -1554,7 +1664,7 @@ export const executeJavaScriptCode = async (
                     importLines.push(line)
                 }
                 // Check for CommonJS require statements and convert them to ESM imports
-                else if (/^(const|let|var)\s+.*=\s*require\s*\(/.test(trimmedLine)) {
+                else if (COMMONJS_REQUIRE_REGEX.test(trimmedLine)) {
                     const convertedImport = convertRequireToImport(trimmedLine)
                     if (convertedImport) {
                         importLines.push(convertedImport)
@@ -1571,7 +1681,7 @@ export const executeJavaScriptCode = async (
 
             // Auto-detect required libraries from code
             // Extract required modules from import/require statements
-            const importRegex = /(?:import\s+.*?\s+from\s+['"]([^'"]+)['"]|require\s*\(\s*['"]([^'"]+)['"]\s*\))/g
+            const importRegex = new RegExp(IMPORT_EXTRACTION_REGEX.source, 'g')
             let match
             while ((match = importRegex.exec(code)) !== null) {
                 const moduleName = match[1] || match[2]
@@ -2057,7 +2167,9 @@ export const configureStructuredOutput = (llmNodeInstance: BaseChatModel, struct
         const structuredOutputSchema = z.object(zodObj)
 
         // @ts-ignore
-        return llmNodeInstance.withStructuredOutput(structuredOutputSchema)
+        return llmNodeInstance.withStructuredOutput(structuredOutputSchema, {
+            method: 'functionCalling'
+        })
     } catch (exception) {
         console.error(exception)
         return llmNodeInstance
@@ -2163,4 +2275,35 @@ export const createZodSchemaFromJSON = (jsonSchema: any): z.ZodTypeAny => {
 
     // Fallback to any for unknown types
     return z.any()
+}
+
+export const extractResponseContent = (response: any): string => {
+    if (!response) return ''
+
+    const content = response.content
+
+    if (Array.isArray(content)) {
+        return content
+            .map((item: any) => {
+                if ((item.text && !item.type) || (item.type === 'text' && item.text)) {
+                    return item.text
+                }
+                return ''
+            })
+            .filter((text: string) => text)
+            .join('\n')
+    }
+
+    if (typeof content === 'string') return content
+    if (content != null) return JSON.stringify(content, null, 2)
+
+    return JSON.stringify(response, null, 2)
+}
+
+export const isReasoningModelOpenAI = (name: string): boolean => {
+    if (/^o[134]/.test(name)) return true
+    if (name === 'codex-mini') return true
+    if (name.includes('gpt-5') && name.includes('-chat')) return false
+    if (name.includes('gpt-5')) return true
+    return false
 }

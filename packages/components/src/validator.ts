@@ -1,4 +1,6 @@
-import { mapMimeTypeToExt } from './utils'
+import path from 'path'
+import sanitize from 'sanitize-filename'
+import { getUserHome, isAllowedUploadMimeType, mapMimeTypeToExt } from './utils'
 
 /**
  * Validates if a string is a valid UUID v4
@@ -31,17 +33,28 @@ export const isValidURL = (url: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isPathTraversal = (path: string): boolean => {
-    // Check for common path traversal patterns
+    // PATH_TRAVERSAL_SAFETY defaults to true; must be explicitly set to 'false' to disable
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return false
+    }
+
+    // Normalize %2e → . before checking for .. to catch mixed-encoding bypasses
+    // e.g. .%2e/, %2e./, %2e%2e all become ../
+    if (/\.\./.test(path.replace(/%2e/gi, '.'))) {
+        return true
+    }
+
     const dangerousPatterns = [
-        '..', // Directory traversal
-        '/', // Root directory
-        '\\', // Windows root directory
-        '%2e', // URL encoded .
-        '%2f', // URL encoded /
-        '%5c' // URL encoded \
+        /%2f/i, // URL encoded /
+        /%5c/i, // URL encoded \ (Windows path)
+        /\0/, // Null bytes
+        /%00/i, // URL encoded null byte
+        /^\s*[a-zA-Z]:[/\\]/, // Windows absolute paths (C:\, C:/) with optional leading whitespace
+        /^\\\\[^\\]/, // UNC paths (\\server\)
+        /^\// // Absolute Unix paths (/etc, /data, /root, etc.)
     ]
 
-    return dangerousPatterns.some((pattern) => path.toLowerCase().includes(pattern))
+    return dangerousPatterns.some((pattern) => pattern.test(path))
 }
 
 /**
@@ -50,6 +63,10 @@ export const isPathTraversal = (path: string): boolean => {
  * @returns {boolean} True if path traversal detected, false otherwise
  */
 export const isUnsafeFilePath = (filePath: string): boolean => {
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        return false
+    }
+
     if (!filePath || typeof filePath !== 'string') {
         return true
     }
@@ -146,4 +163,158 @@ export const validateMimeTypeAndExtensionMatch = (filename: string, mimetype: st
             `MIME type mismatch: file extension "${normalizedExt}" does not match declared MIME type "${mimetype}". Expected: ${expectedExt}`
         )
     }
+}
+
+/**
+ * Filters an array of MIME type strings to only those allowed for file upload config.
+ * Used when sanitizing chatbotConfig.allowedUploadFileTypes to prevent malicious values.
+ * @param {string[]} mimeTypes Raw MIME types (e.g. from splitting comma-separated config)
+ * @returns {string[]} Only MIME types that pass isAllowedUploadMimeType
+ */
+export const filterAllowedUploadMimeTypes = (mimeTypes: string[]): string[] => {
+    if (!Array.isArray(mimeTypes)) return []
+    return mimeTypes.map((m) => (typeof m === 'string' ? m.trim() : '')).filter((m) => m !== '' && isAllowedUploadMimeType(m))
+}
+
+/**
+ * Get allowed base directories for vector store operations
+ * @returns {string[]} Array of allowed base directory paths
+ */
+const getAllowedVectorStoreBaseDirs = (): string[] => {
+    const allowedDirs: string[] = []
+
+    // Allow user home .flowise directory
+    const userHome = getUserHome()
+    allowedDirs.push(path.join(userHome, '.flowise'))
+
+    // Allow configured blob storage path if set
+    if (process.env.BLOB_STORAGE_PATH) {
+        allowedDirs.push(path.resolve(process.env.BLOB_STORAGE_PATH))
+    }
+
+    return allowedDirs
+}
+
+/**
+ * Validates and sanitizes a vector store base path to prevent path traversal attacks
+ *
+ * This function addresses path traversal vulnerabilities in vector stores (Faiss, SimpleStore)
+ * by ensuring user-provided paths cannot escape allowed directories.
+ *
+ * @param {string | undefined} userProvidedPath The base path provided by user (can be empty/undefined)
+ * @returns {string} A validated, absolute path within allowed directories
+ * @throws {Error} If path validation fails or path is outside allowed directories
+ */
+export const validateVectorStorePath = (userProvidedPath: string | undefined): string => {
+    if (process.env.PATH_TRAVERSAL_SAFETY === 'false') {
+        if (!userProvidedPath || userProvidedPath.trim() === '') {
+            return path.join(getUserHome(), '.flowise', 'vectorstore')
+        }
+        const bypassPath = userProvidedPath.trim()
+        return path.isAbsolute(bypassPath) ? bypassPath : path.resolve(path.join(getUserHome(), '.flowise', bypassPath))
+    }
+
+    // If no path provided, use default secure location
+    if (!userProvidedPath || userProvidedPath.trim() === '') {
+        return path.join(getUserHome(), '.flowise', 'vectorstore')
+    }
+
+    const basePath = userProvidedPath.trim()
+
+    // Check for explicit path traversal patterns (..)
+    if (basePath.includes('..')) {
+        throw new Error('Invalid path: path traversal attempt detected')
+    }
+
+    // Check for URL-encoded path traversal
+    if (basePath.toLowerCase().includes('%2e') || basePath.toLowerCase().includes('%2f') || basePath.toLowerCase().includes('%5c')) {
+        throw new Error('Invalid path: encoded path traversal attempt detected')
+    }
+
+    // Check for null bytes and control characters
+    if (/\0/.test(basePath) || /[\x00-\x1f]/.test(basePath)) {
+        throw new Error('Invalid path: null bytes or control characters detected')
+    }
+
+    // Check for Windows-specific absolute paths and UNC paths (even on Unix systems)
+    // This prevents cross-platform attack vectors
+    if (/^[a-zA-Z]:\\/.test(basePath)) {
+        throw new Error('Invalid path: Windows absolute paths are not allowed')
+    }
+    if (/^\\\\[^\\]/.test(basePath)) {
+        throw new Error('Invalid path: UNC paths are not allowed')
+    }
+    if (/^\\\\\?\\/.test(basePath)) {
+        throw new Error('Invalid path: Extended-length paths are not allowed')
+    }
+
+    // Resolve to absolute path
+    // If path is relative, resolve it relative to the .flowise directory (safe default)
+    // If path is already absolute, keep it as-is
+    let resolvedPath: string
+    if (path.isAbsolute(basePath)) {
+        resolvedPath = path.resolve(basePath)
+    } else {
+        // Relative paths are resolved within the .flowise directory for safety
+        resolvedPath = path.resolve(path.join(getUserHome(), '.flowise', basePath))
+    }
+
+    // Verify the resolved path doesn't contain '..' after resolution
+    if (resolvedPath.includes('..')) {
+        throw new Error('Invalid path: path traversal detected in resolved path')
+    }
+
+    // Check if resolved path is within allowed directories
+    const allowedDirs = getAllowedVectorStoreBaseDirs()
+    const isWithinAllowedDir = allowedDirs.some((allowedDir) => {
+        // Normalize both paths for comparison
+        const normalizedResolved = path.normalize(resolvedPath)
+        const normalizedAllowed = path.normalize(allowedDir)
+
+        // Check if resolved path starts with allowed directory
+        // Add path separator to avoid partial matches (e.g., /home/user/.flowise vs /home/user/.flowise2)
+        return normalizedResolved === normalizedAllowed || normalizedResolved.startsWith(normalizedAllowed + path.sep)
+    })
+
+    if (!isWithinAllowedDir) {
+        throw new Error(
+            `Invalid path: path must be within allowed directories (${allowedDirs.join(', ')}). ` + `Attempted path: ${resolvedPath}`
+        )
+    }
+
+    return resolvedPath
+}
+
+/**
+ * Sanitize a file name to prevent path traversal attacks.
+ * Strips common storage prefixes, extracts the basename, runs it through
+ * the `sanitize-filename` package, and rejects anything that still looks unsafe.
+ *
+ * @param {string} name The file name to sanitize
+ */
+export const sanitizeFileName = (name: string): string => {
+    if (!name || typeof name !== 'string') {
+        throw new Error('Invalid file name: name is required')
+    }
+    // Strip the FILE-STORAGE:: prefix if present
+    let stripped = name.replace(/^FILE-STORAGE::/, '')
+    // Decode percent-encoded traversal sequences before basename extraction
+    try {
+        stripped = decodeURIComponent(stripped)
+    } catch (_) {
+        // If decoding fails the raw string is fine — basename will still strip dirs
+    }
+    // Normalize backslashes to forward slashes so path.basename works on all
+    // platforms (on Linux, path.basename does not treat \ as a separator)
+    stripped = stripped.replace(/\\/g, '/')
+    // Extract only the base filename — removes all directory components
+    let baseName = path.basename(stripped)
+    // Run through sanitize-filename to strip OS-reserved chars, control chars, etc.
+    baseName = sanitize(baseName)
+    // Remove leading dots to prevent hidden files or relative path references
+    baseName = baseName.replace(/^\.+/, '')
+    if (!baseName || isUnsafeFilePath(baseName)) {
+        throw new Error(`Invalid or unsafe file name: ${name}`)
+    }
+    return baseName
 }

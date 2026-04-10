@@ -63,7 +63,7 @@ export const convertTextToSpeechStream = async (
                                 }
                             )
 
-                            const stream = response.body as unknown as Readable
+                            const stream = Readable.fromWeb(response.body as unknown as ReadableStream)
                             if (!stream) {
                                 throw new Error('Failed to get response stream')
                             }

@@ -33,6 +33,9 @@ import GithubSVG from '@/assets/images/github.svg'
 // const
 import { gridSpacing } from '@/store/constant'
 
+// API never sends clientSecret; show asterisks when a secret is already configured
+const PLACEHOLDER_SECRET = '********'
+
 const SSOConfigPage = () => {
     useNotifier()
     const { error, setError } = useError()
@@ -347,7 +350,8 @@ const SSOConfigPage = () => {
             if (azureConfig) {
                 setAzureTenantID(azureConfig.config.tenantID)
                 setAzureClientID(azureConfig.config.clientID)
-                setAzureClientSecret(azureConfig.config.clientSecret)
+                const hasConfig = azureConfig.config.tenantID || azureConfig.config.clientID
+                setAzureClientSecret(azureConfig.config.clientSecret ?? (hasConfig ? PLACEHOLDER_SECRET : ''))
                 setAzureConfigEnabled(azureConfig.status === 'enable')
             }
             const googleConfig = data.providers.find((provider) => provider.name === 'google')
@@ -357,7 +361,7 @@ const SSOConfigPage = () => {
             }
             if (googleConfig) {
                 setGoogleClientID(googleConfig.config.clientID)
-                setGoogleClientSecret(googleConfig.config.clientSecret)
+                setGoogleClientSecret(googleConfig.config.clientSecret ?? (googleConfig.config.clientID ? PLACEHOLDER_SECRET : ''))
                 setGoogleConfigEnabled(googleConfig.status === 'enable')
             }
             const auth0Config = data.providers.find((provider) => provider.name === 'auth0')
@@ -369,7 +373,8 @@ const SSOConfigPage = () => {
             if (auth0Config) {
                 setAuth0Domain(auth0Config.config.domain)
                 setAuth0ClientID(auth0Config.config.clientID)
-                setAuth0ClientSecret(auth0Config.config.clientSecret)
+                const hasConfig = auth0Config.config.domain || auth0Config.config.clientID
+                setAuth0ClientSecret(auth0Config.config.clientSecret ?? (hasConfig ? PLACEHOLDER_SECRET : ''))
                 setAuth0ConfigEnabled(auth0Config.status === 'enable')
             }
 
@@ -380,7 +385,7 @@ const SSOConfigPage = () => {
             }
             if (githubConfig) {
                 setGithubClientID(githubConfig.config.clientID)
-                setGithubClientSecret(githubConfig.config.clientSecret)
+                setGithubClientSecret(githubConfig.config.clientSecret ?? (githubConfig.config.clientID ? PLACEHOLDER_SECRET : ''))
                 setGithubConfigEnabled(githubConfig.status === 'enable')
             }
             setLoading(false)

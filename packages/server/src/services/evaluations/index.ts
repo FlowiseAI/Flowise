@@ -1,25 +1,26 @@
-import { StatusCodes } from 'http-status-codes'
 import { EvaluationRunner, ICommonObject } from 'flowise-components'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
+import { StatusCodes } from 'http-status-codes'
+import { In } from 'typeorm'
+import { v4 as uuidv4 } from 'uuid'
+import { ApiKey } from '../../database/entities/ApiKey'
+import { Assistant } from '../../database/entities/Assistant'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { Credential } from '../../database/entities/Credential'
 import { Dataset } from '../../database/entities/Dataset'
 import { DatasetRow } from '../../database/entities/DatasetRow'
 import { Evaluation } from '../../database/entities/Evaluation'
-import { EvaluationStatus, IEvaluationResult } from '../../Interface'
 import { EvaluationRun } from '../../database/entities/EvaluationRun'
-import { Credential } from '../../database/entities/Credential'
-import { ApiKey } from '../../database/entities/ApiKey'
-import { ChatFlow } from '../../database/entities/ChatFlow'
-import { getAppVersion } from '../../utils'
-import { In } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
-import { v4 as uuidv4 } from 'uuid'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
+import { EvaluationStatus, IEvaluationResult } from '../../Interface'
+import { getAppVersion } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { stripProtectedFields } from '../../utils/stripProtectedFields'
+import evaluatorsService from '../evaluator'
 import { calculateCost, formatCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
-import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
-import { Assistant } from '../../database/entities/Assistant'
 
 const runAgain = async (id: string, baseURL: string, orgId: string, workspaceId: string) => {
     try {
@@ -66,20 +67,39 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
     try {
         const appServer = getRunningExpressApp()
         const newEval = new Evaluation()
-        Object.assign(newEval, body)
+        Object.assign(newEval, stripProtectedFields(body))
+        newEval.workspaceId = workspaceId
         newEval.status = EvaluationStatus.PENDING
 
         const row = appServer.AppDataSource.getRepository(Evaluation).create(newEval)
         row.average_metrics = JSON.stringify({})
 
+        const chatflowTypes = body.chatflowType ? JSON.parse(body.chatflowType) : []
+        if (!Array.isArray(chatflowTypes)) {
+            throw new Error('chatflowType must be a valid array')
+        }
+
+        const simpleEvaluators =
+            body.selectedSimpleEvaluators && body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
+        if (!Array.isArray(simpleEvaluators)) {
+            throw new Error('selectedSimpleEvaluators must be a valid array')
+        }
+
         const additionalConfig: ICommonObject = {
-            chatflowTypes: body.chatflowType ? JSON.parse(body.chatflowType) : [],
+            chatflowTypes: chatflowTypes,
             datasetAsOneConversation: body.datasetAsOneConversation,
-            simpleEvaluators: body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
+            simpleEvaluators: simpleEvaluators
         }
 
         if (body.evaluationType === 'llm') {
-            additionalConfig.lLMEvaluators = body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+            const lLMEvaluators =
+                body.selectedLLMEvaluators && body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+
+            if (!Array.isArray(lLMEvaluators)) {
+                throw new Error('selectedLLMEvaluators must be a valid array')
+            }
+
+            additionalConfig.lLMEvaluators = lLMEvaluators
             additionalConfig.llmConfig = {
                 credentialId: body.credentialId,
                 llm: body.llm,
@@ -123,6 +143,11 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         // When chatflow has an APIKey
         const apiKeys: { chatflowId: string; apiKey: string }[] = []
         const chatflowIds = JSON.parse(body.chatflowId)
+
+        if (!Array.isArray(chatflowIds)) {
+            throw new Error('chatflowId must be a valid array')
+        }
+
         for (let i = 0; i < chatflowIds.length; i++) {
             const chatflowId = chatflowIds[i]
             const cFlow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
@@ -246,7 +271,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                             metricsArray,
                             actualOutputArray,
                             errorArray,
-                            body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : [],
+                            additionalConfig.simpleEvaluators,
                             workspaceId
                         )
 
@@ -257,7 +282,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
 
                         if (body.evaluationType === 'llm') {
                             resultRow.llmConfig = additionalConfig.llmConfig
-                            resultRow.LLMEvaluators = body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
+                            resultRow.LLMEvaluators = additionalConfig.lLMEvaluators
                             const llmEvaluatorMap: { evaluatorId: string; evaluator: any }[] = []
                             for (let i = 0; i < resultRow.LLMEvaluators.length; i++) {
                                 const evaluatorId = resultRow.LLMEvaluators[i]

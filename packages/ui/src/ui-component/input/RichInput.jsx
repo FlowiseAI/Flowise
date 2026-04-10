@@ -5,6 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react'
 import Placeholder from '@tiptap/extension-placeholder'
 import { mergeAttributes } from '@tiptap/core'
 import StarterKit from '@tiptap/starter-kit'
+import { Markdown } from '@tiptap/markdown'
 import { styled } from '@mui/material/styles'
 import { Box } from '@mui/material'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
@@ -12,13 +13,24 @@ import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from './suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 import { CustomMention } from '@/utils/customMention'
+import { isHtmlContent, escapeXmlTags, unescapeXmlEntities, unescapeXmlTags } from '@/utils/xmlTagUtils'
 
 const lowlight = createLowlight(common)
 
 // define your extension array
-const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
+const extensions = (
+    availableNodesForVariable,
+    availableState,
+    acceptNodeOutputAsVariable,
+    nodes,
+    nodeData,
+    isNodeInsideInteration,
+    useMarkdown
+) => [
+    Markdown,
     StarterKit.configure({
-        codeBlock: false
+        codeBlock: false,
+        ...(!useMarkdown && { link: false })
     }),
     CustomMention.configure({
         HTMLAttributes: {
@@ -95,6 +107,7 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDa
 }))
 
 export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+    const useMarkdown = !!inputParam?.rows
     const customization = useSelector((state) => state.customization)
     const isDarkMode = customization.isDarkMode
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
@@ -127,18 +140,41 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
                     inputParam?.acceptNodeOutputAsVariable,
                     nodes,
                     nodeData,
-                    isNodeInsideInteration
+                    isNodeInsideInteration,
+                    useMarkdown
                 ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],
-            content: value,
+            content: '',
             onUpdate: ({ editor }) => {
-                onChange(editor.getHTML())
+                if (useMarkdown) {
+                    try {
+                        onChange(unescapeXmlTags(editor.getMarkdown()))
+                    } catch {
+                        onChange(editor.getHTML())
+                    }
+                } else {
+                    onChange(editor.getHTML())
+                }
             },
             editable: !disabled
         },
         [availableNodesForVariable]
     )
+
+    // Load initial content after editor is ready, detecting HTML vs markdown
+    useEffect(() => {
+        if (editor && value) {
+            if (!useMarkdown || isHtmlContent(value)) {
+                editor.commands.setContent(value)
+            } else {
+                // Step 1: Escape XML tags to entities so marked treats them as text
+                editor.commands.setContent(escapeXmlTags(value), { contentType: 'markdown' })
+                // Step 2: Decode entities in the ProseMirror doc for proper display
+                editor.commands.setContent(unescapeXmlEntities(editor.getJSON()))
+            }
+        }
+    }, [editor]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <Box sx={{ mt: 1, border: '' }}>

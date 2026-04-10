@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "3.0.12",
+    "version": "3.1.1",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -24,6 +24,7 @@
         "user:windows": "cd packages/server/bin && run user",
         "user:default": "cd packages/server/bin && ./run user",
         "test": "turbo run test",
+        "test:coverage": "turbo run test:coverage",
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -44,7 +45,7 @@
         "eslint": "^8.24.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-config-react-app": "^7.0.1",
-        "eslint-plugin-jsx-a11y": "^6.6.1",
+        "eslint-plugin-jsx-a11y": "^6.10.2",
         "eslint-plugin-markdown": "^3.0.0",
         "eslint-plugin-prettier": "^3.4.0",
         "eslint-plugin-react": "^7.26.1",
@@ -85,20 +86,24 @@
             "unset-value": "2.0.1",
             "webpack-dev-middleware": "7.4.2",
             "ws": "8.18.3",
-            "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+            "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+            "uuid": "^10.0.0",
+            "request>uuid": "^3.4.0"
         }
     },
     "engines": {
         "node": ">=18.15.0 <19.0.0 || ^20",
-        "pnpm": ">=9"
+        "pnpm": "^10.26.0"
     },
     "resolutions": {
+        "@anthropic-ai/sdk": "^0.73.0",
         "@google/generative-ai": "^0.24.0",
         "@grpc/grpc-js": "^1.10.10",
-        "@langchain/core": "0.3.61",
+        "@langchain/core": "1.1.20",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "openai": "4.96.0",
-        "protobufjs": "7.4.0"
+        "openai": "6.19.0",
+        "protobufjs": "7.4.0",
+        "uuid": "^10.0.0"
     },
     "eslintIgnore": [
         "**/dist",

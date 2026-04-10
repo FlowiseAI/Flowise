@@ -138,7 +138,6 @@ export class Permissions {
 
         const loginActivityCategory = new PermissionCategory('loginActivity')
         loginActivityCategory.addPermission(new Permission('loginActivity:view', 'View Login Activity', false, true, false))
-        loginActivityCategory.addPermission(new Permission('loginActivity:delete', 'Delete Login Activity', false, true, false))
         this.categories.push(loginActivityCategory)
     }
 

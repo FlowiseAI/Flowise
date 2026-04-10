@@ -1,0 +1,315 @@
+/* Agentflow Component Styles */
+
+.agentflow-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Header */
+.agentflow-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--agentflow-spacing-md) var(--agentflow-spacing-lg);
+    background: var(--agentflow-header-bg);
+    border-bottom: 1px solid var(--agentflow-border);
+    min-height: 56px;
+}
+
+.agentflow-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--agentflow-text-primary);
+}
+
+.agentflow-header-actions {
+    display: flex;
+    gap: var(--agentflow-spacing-sm);
+}
+
+.agentflow-header-actions button {
+    padding: var(--agentflow-spacing-sm) var(--agentflow-spacing-lg);
+    border: 1px solid var(--agentflow-border);
+    border-radius: 4px;
+    background: var(--agentflow-card-bg);
+    color: var(--agentflow-text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agentflow-header-actions button:hover {
+    background: var(--agentflow-card-bg-hover);
+    border-color: var(--agentflow-border-hover);
+}
+
+.agentflow-header-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Main layout */
+.agentflow-main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Node Palette */
+.agentflow-palette {
+    width: 240px;
+    background: var(--agentflow-palette-bg);
+    border-right: 1px solid var(--agentflow-border);
+    overflow-y: auto;
+    padding: var(--agentflow-spacing-lg) 0;
+}
+
+.agentflow-palette-title {
+    padding: 0 var(--agentflow-spacing-lg) var(--agentflow-spacing-md);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--agentflow-text-tertiary);
+}
+
+.agentflow-palette-item {
+    padding: var(--agentflow-spacing-md) var(--agentflow-spacing-lg);
+    margin: 0 var(--agentflow-spacing-sm) 4px;
+    background: var(--agentflow-card-bg);
+    border: 1px solid var(--agentflow-border);
+    border-left-width: 4px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--agentflow-text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agentflow-palette-item:hover {
+    background: var(--agentflow-card-bg-hover);
+    border-color: var(--agentflow-border-hover);
+}
+
+/* Canvas */
+.agentflow-canvas {
+    position: relative; /* Required for absolute positioning of FAB buttons */
+    flex: 1;
+    background: var(--agentflow-canvas-bg);
+}
+
+.agentflow-canvas .react-flow {
+    width: 100%;
+    height: 100%;
+}
+
+/* ReactFlow customizations - overflow visible so NodeToolbar renders above the node */
+.agentflow-canvas .react-flow__node {
+    overflow: visible;
+}
+
+/*
+ * IMPORTANT: These !important declarations are NECESSARY.
+ * ReactFlow sets inline width/height on nodes based on measured dimensions.
+ * We need !important to force content-based sizing for card nodes.
+ * Without this, nodes would have fixed dimensions and content could overflow.
+ */
+.agentflow-canvas .react-flow__node-agentflowNode,
+.agentflow-canvas .react-flow__node-stickyNote {
+    width: max-content !important;
+    height: max-content !important;
+}
+
+.agentflow-canvas .react-flow__edge-path {
+    stroke-width: 2;
+}
+
+.agentflow-canvas .react-flow__controls {
+    box-shadow: var(--agentflow-shadow-controls);
+    border-radius: var(--agentflow-radius-md);
+    overflow: hidden;
+}
+
+.agentflow-canvas .react-flow__minimap {
+    box-shadow: var(--agentflow-shadow-minimap);
+    border-radius: var(--agentflow-radius-md);
+    overflow: hidden;
+    bottom: var(--agentflow-spacing-xl);
+}
+
+.agentflow-canvas .react-flow__background {
+    background: var(--agentflow-canvas-bg);
+}
+
+/* Dark mode controls - Enhanced for visibility */
+.dark-mode-controls .react-flow__controls-button {
+    background-color: var(--agentflow-card-bg);
+    border-color: var(--agentflow-border);
+    color: var(--agentflow-text-primary);
+    transition: all 0.2s ease;
+}
+
+.dark-mode-controls .react-flow__controls-button:hover:not(:disabled) {
+    background-color: var(--agentflow-border-hover);
+    border-color: var(--agentflow-border-hover);
+}
+
+.dark-mode-controls .react-flow__controls-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.dark-mode-controls .react-flow__controls-button svg {
+    fill: currentColor;
+}
+
+/* Ensure controls have proper box styling in dark mode */
+.dark-mode-controls {
+    background-color: var(--agentflow-card-bg);
+    border: 1px solid var(--agentflow-border);
+}
+
+/* Dark mode minimap */
+.agentflow-canvas[data-dark-mode='true'] .react-flow__minimap {
+    background-color: var(--agentflow-minimap-bg);
+    border: 1px solid var(--agentflow-border);
+}
+
+.agentflow-canvas[data-dark-mode='true'] .react-flow__minimap-mask {
+    fill: var(--agentflow-card-bg);
+}
+
+/* Dark theme support is now handled by CSS variables injected via AgentflowProvider */
+
+/* Node styles (placeholder - will be enhanced with actual components) */
+.agentflow-node {
+    padding: var(--agentflow-spacing-md);
+    background: var(--agentflow-card-bg);
+    border: 1px solid var(--agentflow-border);
+    border-radius: var(--agentflow-radius-md);
+    min-width: 180px;
+}
+
+.agentflow-node-header {
+    display: flex;
+    align-items: center;
+    gap: var(--agentflow-spacing-sm);
+    margin-bottom: var(--agentflow-spacing-sm);
+}
+
+.agentflow-node-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.agentflow-node-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--agentflow-text-primary);
+}
+
+.agentflow-node-content {
+    font-size: 12px;
+    color: var(--agentflow-text-secondary);
+}
+
+/* Handles */
+.agentflow-handle {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--agentflow-card-bg);
+    border: 2px solid var(--agentflow-text-secondary);
+}
+
+.agentflow-handle-connected {
+    border-color: var(--agentflow-success);
+    background: var(--agentflow-success);
+}
+
+/* Edge styles */
+.agentflow-edge {
+    stroke-width: 2;
+}
+
+.agentflow-edge-label {
+    font-size: 11px;
+    fill: var(--agentflow-text-secondary);
+}
+
+/* Sticky note */
+.agentflow-sticky-note {
+    padding: var(--agentflow-spacing-md);
+    background: var(--agentflow-sticky-note-bg);
+    border: none;
+    border-radius: 4px;
+    box-shadow: var(--agentflow-shadow-sticky-note);
+    min-width: 150px;
+    min-height: 100px;
+}
+
+.agentflow-sticky-note textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: transparent;
+    resize: none;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+/* Iteration node */
+.agentflow-iteration-node {
+    background: rgba(156, 137, 184, 0.1);
+    border: 2px dashed var(--agentflow-iteration-border);
+    border-radius: var(--agentflow-radius-lg);
+    padding: var(--agentflow-spacing-xl);
+    min-width: 300px;
+    min-height: 200px;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.agentflow-node-running {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.spin-animation {
+    animation: spin 1s linear infinite;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .agentflow-palette {
+        width: 200px;
+    }
+
+    .agentflow-palette-item {
+        padding: var(--agentflow-spacing-sm) var(--agentflow-spacing-md);
+        font-size: 12px;
+    }
+}

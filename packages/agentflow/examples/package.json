@@ -1,0 +1,27 @@
+{
+    "name": "agentflow-basic-example",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@emotion/react": "^11.10.0",
+        "@emotion/styled": "^11.10.0",
+        "@mui/material": "^5.15.0",
+        "@mui/icons-material": "^5.15.0",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "reactflow": "^11.5.0"
+    },
+    "devDependencies": {
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "@vitejs/plugin-react": "^4.0.0",
+        "typescript": "^5.0.0",
+        "vite": "^5.0.0"
+    }
+}

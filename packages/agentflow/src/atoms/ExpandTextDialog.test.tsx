@@ -1,0 +1,448 @@
+import { fireEvent, render, screen } from '@testing-library/react'
+
+import { ExpandTextDialog } from './ExpandTextDialog'
+
+// TipTap modules are auto-mocked via moduleNameMapper in jest.config.js
+
+jest.mock('./CodeInput', () => ({
+    CodeInput: ({ value, language }: { value: string; language?: string }) => (
+        <textarea data-testid='code-input' data-language={language} value={value} onChange={() => {}} />
+    )
+}))
+
+const mockOnConfirm = jest.fn()
+const mockOnCancel = jest.fn()
+
+beforeEach(() => {
+    jest.clearAllMocks()
+})
+
+describe('ExpandTextDialog', () => {
+    it('should not render content when closed', () => {
+        render(<ExpandTextDialog open={false} value='' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
+    })
+
+    it('should render with the provided value when open', () => {
+        render(<ExpandTextDialog open={true} value='Hello world' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(textarea).toHaveValue('Hello world')
+    })
+
+    it('should render title when provided', () => {
+        render(
+            <ExpandTextDialog open={true} value='' title='Content' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
+
+        expect(screen.getByText('Content')).toBeInTheDocument()
+    })
+
+    it('should not render title when not provided', () => {
+        render(<ExpandTextDialog open={true} value='' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        expect(screen.queryByRole('heading')).not.toBeInTheDocument()
+    })
+
+    it('should call onConfirm with edited value when Save is clicked', () => {
+        render(<ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        fireEvent.change(textarea, { target: { value: 'Updated' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+        expect(mockOnConfirm).toHaveBeenCalledWith('Updated')
+    })
+
+    it('should call onCancel when Cancel is clicked', () => {
+        render(<ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+        expect(mockOnCancel).toHaveBeenCalled()
+        expect(mockOnConfirm).not.toHaveBeenCalled()
+    })
+
+    it('should disable textarea and Save button when disabled', () => {
+        render(
+            <ExpandTextDialog
+                open={true}
+                value='test'
+                inputType='number'
+                disabled={true}
+                onConfirm={mockOnConfirm}
+                onCancel={mockOnCancel}
+            />
+        )
+
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(textarea).toBeDisabled()
+        expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+    })
+
+    it('should render placeholder when provided', () => {
+        render(
+            <ExpandTextDialog
+                open={true}
+                value=''
+                inputType='number'
+                placeholder='Type here...'
+                onConfirm={mockOnConfirm}
+                onCancel={mockOnCancel}
+            />
+        )
+
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(textarea).toHaveAttribute('placeholder', 'Type here...')
+    })
+
+    it('should show current value when opened after value changed while closed', () => {
+        const { rerender } = render(
+            <ExpandTextDialog open={false} value='' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
+
+        // Simulate value changing while dialog is closed (user typing in inline editor)
+        rerender(
+            <ExpandTextDialog open={false} value='Updated text' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
+
+        // Open the dialog — it should show the updated value, not the initial empty value
+        rerender(<ExpandTextDialog open={true} value='Updated text' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(textarea).toHaveValue('Updated text')
+    })
+
+    it('should reset to current value when re-opened after cancel', () => {
+        const { rerender } = render(
+            <ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+        )
+
+        // User types in the dialog then cancels
+        const textarea = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        fireEvent.change(textarea, { target: { value: 'Unsaved edits' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+        // Close the dialog
+        rerender(<ExpandTextDialog open={false} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        // Re-open — should show the original value, not the unsaved edits
+        rerender(<ExpandTextDialog open={true} value='Original' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+        const textarea2 = screen.getByTestId('expand-content-input').querySelector('textarea')!
+        expect(textarea2).toHaveValue('Original')
+    })
+
+    // --- Code mode ---
+
+    describe('inputType="code"', () => {
+        it('should render CodeInput instead of TextField', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='const x = 1'
+                    inputType='code'
+                    language='javascript'
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByTestId('code-input')).toBeInTheDocument()
+            expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+        })
+
+        it('should pass language prop to CodeInput', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='{}'
+                    inputType='code'
+                    language='json'
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByTestId('code-input')).toHaveAttribute('data-language', 'json')
+        })
+
+        it('should show Save and Cancel buttons in code mode', () => {
+            render(<ExpandTextDialog open={true} value='' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+        })
+
+        it('should not show Edit/Source toggle in code mode', () => {
+            render(<ExpandTextDialog open={true} value='' inputType='code' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+            expect(screen.queryByRole('button', { name: 'Source' })).not.toBeInTheDocument()
+        })
+    })
+
+    // --- Rich text mode ---
+
+    describe('inputType="string" (richtext)', () => {
+        it('should render the TipTap editor instead of a TextField in Edit mode', async () => {
+            render(<ExpandTextDialog open={true} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            // RichTextEditor renders data-testid='rich-text-editor' which wraps tiptap
+            expect(await screen.findByTestId('rich-text-editor')).toBeInTheDocument()
+            expect(screen.getByTestId('tiptap-editor-content')).toBeInTheDocument()
+
+            // Plain TextField should NOT be present
+            expect(screen.queryByTestId('expand-content-input')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('source-input')).not.toBeInTheDocument()
+        })
+
+        it('should render plain TextField for non-string, non-code input types', () => {
+            render(<ExpandTextDialog open={true} value='42' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.getByTestId('expand-content-input')).toBeInTheDocument()
+            expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+            expect(screen.queryByTestId('code-input')).not.toBeInTheDocument()
+        })
+
+        it('should still show Save and Cancel buttons in richtext mode', () => {
+            render(<ExpandTextDialog open={true} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+        })
+
+        it('should disable Save button in richtext mode when disabled', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='Hello'
+                    inputType='string'
+                    disabled={true}
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
+        })
+
+        it('should render title in richtext mode', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value=''
+                    title='Content'
+                    inputType='string'
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByText('Content')).toBeInTheDocument()
+        })
+
+        it('should call onCancel when Cancel is clicked in richtext mode', () => {
+            render(<ExpandTextDialog open={true} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+            expect(mockOnCancel).toHaveBeenCalled()
+            expect(mockOnConfirm).not.toHaveBeenCalled()
+        })
+
+        // --- Edit/Source toggle ---
+
+        it('should show Edit and Source toggle buttons in richtext mode', () => {
+            render(<ExpandTextDialog open={true} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: 'Source' })).toBeInTheDocument()
+        })
+
+        it('should not show Edit/Source toggle for non-string input types', () => {
+            render(<ExpandTextDialog open={true} value='42' inputType='number' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+            expect(screen.queryByRole('button', { name: 'Source' })).not.toBeInTheDocument()
+        })
+
+        it('should not change mode when the active toggle button is clicked again', () => {
+            render(
+                <ExpandTextDialog open={true} value='## My heading' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            )
+
+            // Already in Edit mode — clicking Edit again should keep the rich-text editor visible
+            fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+            expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
+            expect(screen.queryByTestId('source-input')).not.toBeInTheDocument()
+        })
+
+        it('should switch to Source mode showing a raw text field when Source is clicked', () => {
+            render(
+                <ExpandTextDialog open={true} value='## My heading' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            )
+
+            fireEvent.click(screen.getByRole('button', { name: 'Source' }))
+
+            // Source mode renders a monospace TextField with data-testid='source-input'
+            expect(screen.getByTestId('source-input')).toBeInTheDocument()
+
+            // TipTap editor should be unmounted
+            expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+        })
+
+        it('should show the current markdown value in Source mode', () => {
+            render(
+                <ExpandTextDialog open={true} value='## My heading' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            )
+
+            fireEvent.click(screen.getByRole('button', { name: 'Source' }))
+
+            const sourceTextarea = screen.getByTestId('source-input').querySelector('textarea')!
+            expect(sourceTextarea).toHaveValue('## My heading')
+        })
+
+        it('should switch back to Edit mode when Edit is clicked from Source', () => {
+            render(<ExpandTextDialog open={true} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            fireEvent.click(screen.getByRole('button', { name: 'Source' }))
+            expect(screen.getByTestId('source-input')).toBeInTheDocument()
+
+            fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+            expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
+            expect(screen.queryByTestId('source-input')).not.toBeInTheDocument()
+        })
+
+        it('should save edits made in Source mode when Save is clicked', () => {
+            render(
+                <ExpandTextDialog open={true} value='## My heading' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            )
+
+            fireEvent.click(screen.getByRole('button', { name: 'Source' }))
+
+            const sourceTextarea = screen.getByTestId('source-input').querySelector('textarea')!
+            fireEvent.change(sourceTextarea, { target: { value: '## Updated heading' } })
+
+            fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+            expect(mockOnConfirm).toHaveBeenCalledWith('## Updated heading')
+        })
+
+        it('should disable the toggle buttons when disabled', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='Hello'
+                    inputType='string'
+                    disabled={true}
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByRole('button', { name: 'Edit' })).toBeDisabled()
+            expect(screen.getByRole('button', { name: 'Source' })).toBeDisabled()
+        })
+
+        it('should reset to Edit mode when the dialog is reopened', () => {
+            const { rerender } = render(
+                <ExpandTextDialog open={true} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />
+            )
+
+            // Switch to Source mode
+            fireEvent.click(screen.getByRole('button', { name: 'Source' }))
+            expect(screen.getByTestId('source-input')).toBeInTheDocument()
+
+            // Close dialog
+            rerender(<ExpandTextDialog open={false} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            // Reopen — should be back in Edit mode
+            rerender(<ExpandTextDialog open={true} value='Hello' inputType='string' onConfirm={mockOnConfirm} onCancel={mockOnCancel} />)
+
+            expect(screen.getByTestId('rich-text-editor')).toBeInTheDocument()
+            expect(screen.queryByTestId('source-input')).not.toBeInTheDocument()
+        })
+    })
+
+    // --- With suggestionItems (VariableInput mode) ---
+
+    describe('inputType="string" with suggestionItems', () => {
+        const mockSuggestionItems = [{ id: 'question', label: 'question', description: "User's question", category: 'Chat Context' }]
+
+        it('should render VariableInput instead of RichTextEditor in Edit mode when suggestionItems provided', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='Hello'
+                    inputType='string'
+                    suggestionItems={mockSuggestionItems}
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByTestId('variable-input')).toBeInTheDocument()
+            expect(screen.queryByTestId('rich-text-editor')).not.toBeInTheDocument()
+        })
+
+        it('should switch to Source mode and back to VariableInput when suggestionItems provided', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='Hello {{question}}'
+                    inputType='string'
+                    suggestionItems={mockSuggestionItems}
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            fireEvent.click(screen.getByRole('button', { name: 'Source' }))
+            expect(screen.getByTestId('source-input')).toBeInTheDocument()
+            expect(screen.queryByTestId('variable-input')).not.toBeInTheDocument()
+
+            fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+            expect(screen.getByTestId('variable-input')).toBeInTheDocument()
+            expect(screen.queryByTestId('source-input')).not.toBeInTheDocument()
+        })
+
+        it('should still show Edit/Source toggle when suggestionItems provided', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value=''
+                    inputType='string'
+                    suggestionItems={mockSuggestionItems}
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
+            expect(screen.getByRole('button', { name: 'Source' })).toBeInTheDocument()
+        })
+
+        it('should save edits made in Source mode when suggestionItems provided', () => {
+            render(
+                <ExpandTextDialog
+                    open={true}
+                    value='Hello {{question}}'
+                    inputType='string'
+                    suggestionItems={mockSuggestionItems}
+                    onConfirm={mockOnConfirm}
+                    onCancel={mockOnCancel}
+                />
+            )
+
+            fireEvent.click(screen.getByRole('button', { name: 'Source' }))
+            const sourceTextarea = screen.getByTestId('source-input').querySelector('textarea')!
+            fireEvent.change(sourceTextarea, { target: { value: 'Updated {{question}}' } })
+            fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+            expect(mockOnConfirm).toHaveBeenCalledWith('Updated {{question}}')
+        })
+    })
+})

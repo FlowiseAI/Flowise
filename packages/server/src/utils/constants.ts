@@ -10,6 +10,7 @@ export const WHITELIST_URLS = [
     '/api/v1/public-chatbotConfig',
     '/api/v1/public-executions',
     '/api/v1/prediction/',
+    '/api/v1/chatmessage/abort',
     '/api/v1/node-icon/',
     '/api/v1/components-credentials-icon/',
     '/api/v1/chatflows-streaming',
@@ -32,7 +33,8 @@ export const WHITELIST_URLS = [
     '/api/v1/account/resend-verification',
     '/api/v1/account/forgot-password',
     '/api/v1/account/reset-password',
-    '/api/v1/loginmethod',
+    '/api/v1/account/confirm-email-change',
+    '/api/v1/loginmethod/default',
     '/api/v1/pricing',
     '/api/v1/user/test',
     '/api/v1/oauth2-credential/callback',
@@ -53,14 +55,16 @@ export const WHITELIST_URLS = [
     GithubSSO.CALLBACK_URI
 ]
 
-export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim']
+export const API_KEY_BLACKLIST_URLS = ['/api/v1/nvidia-nim', '/api/v1/account/delete']
 
 export const enum GeneralErrorMessage {
+    FORBIDDEN = 'Forbidden',
     UNAUTHORIZED = 'Unauthorized',
     UNHANDLED_EDGE_CASE = 'Unhandled Edge Case',
     INVALID_PASSWORD = 'Invalid Password',
     NOT_ALLOWED_TO_DELETE_OWNER = 'Not Allowed To Delete Owner',
-    INTERNAL_SERVER_ERROR = 'Internal Server Error'
+    INTERNAL_SERVER_ERROR = 'Internal Server Error',
+    SMTP_NOT_CONFIGURED = 'Email (SMTP) is not configured on this server'
 }
 
 export const enum GeneralSuccessMessage {

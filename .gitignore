@@ -5,6 +5,7 @@
 # dependencies
 **/node_modules
 **/package-lock.json
+!**/examples/package-lock.json
 **/yarn.lock
 
 ## logs
@@ -104,3 +105,17 @@
 ## S/MIME message
 *.smime
 *.vsix
+
+# =============================================================================
+# Proprietary paths (should never exist in OSS)
+# =============================================================================
+extensions/
+
+# Only allow apps/oss-app, ignore all other apps
+apps/*/
+!apps/oss-app/
+
+# Claude - session/user specific files
+.claude/plans/
+.claude/settings.local.json
+.claude/agent-memory/*

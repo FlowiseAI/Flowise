@@ -38,13 +38,11 @@ import {
     IMessage,
     FlowiseMemory,
     IFileUpload,
-    getS3Config
+    StorageProviderFactory
 } from 'flowise-components'
 import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
-import multer from 'multer'
-import multerS3 from 'multer-s3'
-import MulterGoogleCloudStorage from 'multer-cloud-storage'
+
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
@@ -1189,10 +1187,7 @@ export const replaceInputsWithConfig = (
                     continue
                 }
             } else {
-                // Skip if it is an override "files" input, such as pdfFile, txtFile, etc
-                if (typeof overrideConfig[config] === 'string' && overrideConfig[config].includes('FILE-STORAGE::')) {
-                    // pass
-                } else if (!isParameterEnabled(flowNodeData.label, config)) {
+                if (!isParameterEnabled(flowNodeData.label, config)) {
                     // Only proceed if the parameter is enabled
                     continue
                 }
@@ -1665,6 +1660,81 @@ export const generateEncryptKey = (): string => {
 }
 
 /**
+ * Returns the directory where auth secrets are stored (same as encryption key directory).
+ * Used for file-based storage of TOKEN_HASH_SECRET, EXPRESS_SESSION_SECRET, JWT_*, etc.
+ */
+export const getAuthSecretsDirectory = (): string => {
+    return process.env.SECRETKEY_PATH ? process.env.SECRETKEY_PATH : path.join(getUserHome(), '.flowise')
+}
+
+/**
+ * Generate a 32-byte auth secret (OWASP recommendation).
+ * Used for auth secrets only; encryption key remains 24 bytes.
+ */
+export const generateAuthSecret = (): string => {
+    return randomBytes(32).toString('base64')
+}
+
+export interface GetOrCreateStoredSecretOptions {
+    envKey: string
+    fileName: string
+    awsSecretIdSuffix: string
+    /** When generating a new secret, use this value instead of random (e.g. 'flowise' for JWT_ISSUER/JWT_AUDIENCE) */
+    defaultValueForNew?: string
+    /** If env is set to this value, treat as unset (backwards compat for weak defaults) */
+    weakDefault?: string
+}
+
+/**
+ * Resolve an auth secret: env (backwards compat) → AWS Secrets Manager → filesystem (read or generate+write).
+ * Used by initAuthSecrets() for each of the six auth secrets.
+ */
+export const getOrCreateStoredSecret = async (options: GetOrCreateStoredSecretOptions): Promise<string> => {
+    const { envKey, fileName, awsSecretIdSuffix, defaultValueForNew, weakDefault } = options
+    const envVal = process.env[envKey]
+    const useEnv = envVal && envVal.trim() !== '' && (weakDefault === undefined || envVal !== weakDefault)
+    if (useEnv) {
+        return envVal!.trim()
+    }
+
+    if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
+        const prefix = process.env.SECRETKEY_AWS_AUTH_PREFIX || 'Flowise'
+        const secretId = prefix + awsSecretIdSuffix
+        try {
+            const command = new GetSecretValueCommand({ SecretId: secretId })
+            const response = await secretsManagerClient.send(command)
+            if (response.SecretString) {
+                return response.SecretString
+            }
+        } catch (error: any) {
+            if (error.name === 'ResourceNotFoundException') {
+                const newValue = defaultValueForNew !== undefined ? defaultValueForNew : generateAuthSecret()
+                const createCommand = new CreateSecretCommand({
+                    Name: secretId,
+                    SecretString: newValue
+                })
+                await secretsManagerClient.send(createCommand)
+                return newValue
+            }
+            throw error
+        }
+    }
+
+    const dir = getAuthSecretsDirectory()
+    const filePath = path.join(dir, fileName)
+    try {
+        return await fs.promises.readFile(filePath, 'utf8')
+    } catch {
+        const value = defaultValueForNew !== undefined ? defaultValueForNew : generateAuthSecret()
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true })
+        }
+        await fs.promises.writeFile(filePath, value)
+        return value
+    }
+}
+
+/**
  * Transform ICredentialBody from req to Credential entity
  * @param {ICredentialReqBody} body
  * @returns {Credential}
@@ -1925,38 +1995,8 @@ export function generateId() {
 }
 
 export const getMulterStorage = () => {
-    const storageType = process.env.STORAGE_TYPE ? process.env.STORAGE_TYPE : 'local'
-
-    if (storageType === 's3') {
-        const s3Client = getS3Config().s3Client
-        const Bucket = getS3Config().Bucket
-
-        const upload = multer({
-            storage: multerS3({
-                s3: s3Client,
-                bucket: Bucket,
-                metadata: function (req, file, cb) {
-                    cb(null, { fieldName: file.fieldname, originalName: file.originalname })
-                },
-                key: function (req, file, cb) {
-                    cb(null, `${generateId()}`)
-                }
-            })
-        })
-        return upload
-    } else if (storageType === 'gcs') {
-        return multer({
-            storage: new MulterGoogleCloudStorage({
-                projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
-                bucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME,
-                keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
-                uniformBucketLevelAccess: Boolean(process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS) ?? true,
-                destination: `uploads/${generateId()}`
-            })
-        })
-    } else {
-        return multer({ dest: getUploadPath() })
-    }
+    const provider = StorageProviderFactory.getProvider()
+    return provider.getMulterStorage()
 }
 
 /**

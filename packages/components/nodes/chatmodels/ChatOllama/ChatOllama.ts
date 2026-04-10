@@ -18,7 +18,7 @@ class ChatOllama_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatOllama'
+        this.label = 'Ollama'
         this.name = 'chatOllama'
         this.version = 5.0
         this.type = 'ChatOllama'
@@ -63,6 +63,14 @@ class ChatOllama_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -72,12 +80,12 @@ class ChatOllama_ChatModels implements INode {
                 optional: true
             },
             {
-                label: 'Streaming',
-                name: 'streaming',
+                label: 'Think',
+                name: 'think',
                 type: 'boolean',
-                default: true,
-                optional: true,
-                additionalParams: true
+                description: 'Whether the model supports reasoning. Only applicable for reasoning models',
+                default: false,
+                optional: true
             },
             {
                 label: 'JSON Mode',
@@ -240,6 +248,7 @@ class ChatOllama_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const jsonMode = nodeData.inputs?.jsonMode as boolean
         const streaming = nodeData.inputs?.streaming as boolean
+        const think = nodeData.inputs?.think as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
@@ -264,6 +273,9 @@ class ChatOllama_ChatModels implements INode {
         if (keepAlive) obj.keepAlive = keepAlive
         if (cache) obj.cache = cache
         if (jsonMode) obj.format = 'json'
+
+        if (think === true) obj.think = true
+        else obj.think = false
 
         const multiModalOption: IMultiModalOption = {
             image: {

@@ -1,4 +1,85 @@
-import { validateMimeTypeAndExtensionMatch } from './validator'
+import { isPathTraversal, isUnsafeFilePath, validateMimeTypeAndExtensionMatch, validateVectorStorePath } from './validator'
+import path from 'path'
+import { getUserHome } from './utils'
+
+describe('isPathTraversal', () => {
+    describe('returns true for dangerous patterns', () => {
+        it.each([
+            ['directory traversal (..)', '../etc/passwd'],
+            ['multiple levels of traversal', '../../sensitive'],
+            ['bare double-dot', '..'],
+            ['Windows absolute path', 'C:\\windows'],
+            ['Windows absolute path with forward slash', 'C:/windows'],
+            ['Windows absolute path with leading whitespace', ' C:\\windows'],
+            ['UNC path', '\\\\server\\share'],
+            ['URL encoded dot (%2e)', '%2e%2e/etc'],
+            ['URL encoded dot uppercase (%2E)', '%2E%2E'],
+            ['mixed encoding (.%2e)', '.%2e/etc'],
+            ['mixed encoding (%2e.)', '%2e./etc'],
+            ['URL encoded forward slash (%2f)', '%2f'],
+            ['URL encoded forward slash uppercase (%2F)', '%2F'],
+            ['URL encoded backslash (%5c)', '%5c'],
+            ['URL encoded backslash uppercase (%5C)', '%5C'],
+            ['null byte', 'path\0name'],
+            ['URL encoded null byte (%00)', 'path%00name'],
+            ['absolute Unix path', '/etc/passwd'],
+            ['absolute Unix root', '/']
+        ])('should detect %s: %s', (_description, input) => {
+            expect(isPathTraversal(input)).toBe(true)
+        })
+    })
+
+    describe('returns false for safe inputs', () => {
+        it.each([
+            ['simple filename with extension', 'filename.txt'],
+            ['plain name without extension', 'myfile'],
+            ['empty string', ''],
+            ['name with underscores', 'hello_world'],
+            ['relative path with slash', 'uploads/file.txt']
+        ])('should not flag %s: %s', (_description, input) => {
+            expect(isPathTraversal(input)).toBe(false)
+        })
+    })
+
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it.each([
+            ['absolute Unix path', '/data/uploads'],
+            ['mixed encoding', '.%2e/etc'],
+            ['directory traversal', '../etc/passwd'],
+            ['Windows absolute path', 'C:\\windows']
+        ])('should return false for %s when safety disabled', (_desc, input) => {
+            expect(isPathTraversal(input)).toBe(false)
+        })
+    })
+})
+
+describe('isUnsafeFilePath', () => {
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it.each([
+            ['absolute Unix path', '/data/uploads'],
+            ['directory traversal', '../etc/passwd'],
+            ['Windows absolute path', 'C:\\windows'],
+            ['null byte', 'path\0name'],
+            ['control character', 'path\x01name']
+        ])('should return false for %s when safety disabled', (_desc, input) => {
+            expect(isUnsafeFilePath(input)).toBe(false)
+        })
+    })
+})
 
 describe('validateMimeTypeAndExtensionMatch', () => {
     describe('valid cases', () => {
@@ -167,6 +248,221 @@ describe('validateMimeTypeAndExtensionMatch', () => {
             }).toThrow(
                 `MIME type mismatch: file extension "${actualExt}" does not match declared MIME type "${mimetype}". Expected: ${expectedExt}`
             )
+        })
+    })
+})
+
+describe('validateVectorStorePath', () => {
+    const userHome = getUserHome()
+    const defaultFlowisePath = path.join(userHome, '.flowise')
+
+    describe('valid paths', () => {
+        it('should return default path when no path is provided', () => {
+            const result = validateVectorStorePath(undefined)
+            expect(result).toBe(path.join(userHome, '.flowise', 'vectorstore'))
+        })
+
+        it('should return default path when empty string is provided', () => {
+            const result = validateVectorStorePath('')
+            expect(result).toBe(path.join(userHome, '.flowise', 'vectorstore'))
+        })
+
+        it('should return default path when whitespace string is provided', () => {
+            const result = validateVectorStorePath('   ')
+            expect(result).toBe(path.join(userHome, '.flowise', 'vectorstore'))
+        })
+
+        it('should accept relative path within .flowise directory', () => {
+            const relativePath = 'vectorstore/faiss'
+            const result = validateVectorStorePath(relativePath)
+
+            // Should resolve to absolute path within .flowise
+            expect(path.isAbsolute(result)).toBe(true)
+            expect(result).toContain('.flowise')
+        })
+
+        it('should accept absolute path within .flowise directory', () => {
+            const absolutePath = path.join(defaultFlowisePath, 'vectorstore', 'test')
+            const result = validateVectorStorePath(absolutePath)
+
+            expect(result).toBe(absolutePath)
+            expect(result.startsWith(defaultFlowisePath)).toBe(true)
+        })
+    })
+
+    describe('path traversal attacks', () => {
+        it.each([
+            ['..', 'parent directory reference'],
+            ['../etc/passwd', 'path traversal to /etc'],
+            ['../../../../../../etc/passwd', 'multiple levels of traversal'],
+            ['./../../etc/passwd', 'mixed relative and traversal'],
+            ['vectorstore/../../etc/passwd', 'traversal in middle of path'],
+            ['..\\..\\..\\windows\\system32', 'Windows path traversal']
+        ])('should reject path with path traversal: %s (%s)', (maliciousPath, _description) => {
+            expect(() => {
+                validateVectorStorePath(maliciousPath)
+            }).toThrow('Invalid path: path traversal attempt detected')
+        })
+    })
+
+    describe('absolute path attacks', () => {
+        it.each([
+            ['/etc/passwd', 'Unix absolute path'],
+            ['/var/www/html', 'Web root path'],
+            ['/tmp/../../../etc/passwd', 'Absolute with traversal'],
+            ['C:\\Windows\\System32', 'Windows absolute path'],
+            ['C:\\Users\\Administrator', 'Windows user path'],
+            ['\\\\server\\share', 'UNC path'],
+            ['\\\\?\\C:\\Windows', 'Extended-length path']
+        ])('should reject absolute path outside allowed directories: %s (%s)', (maliciousPath, _description) => {
+            expect(() => {
+                validateVectorStorePath(maliciousPath)
+            }).toThrow(/Invalid path:/)
+        })
+    })
+
+    describe('encoded path traversal', () => {
+        it.each([
+            ['%2e%2e/etc/passwd', 'URL encoded ..'],
+            ['%2e%2e%2f%2e%2e%2fetc', 'Multiple URL encoded ..'],
+            ['%2f%2e%2e%2f%2e%2e', 'URL encoded /..'],
+            ['%5c%2e%2e%5c%2e%2e', 'URL encoded Windows traversal']
+        ])('should reject encoded path traversal: %s (%s)', (encodedPath, _description) => {
+            expect(() => {
+                validateVectorStorePath(encodedPath)
+            }).toThrow(/Invalid path:/)
+        })
+    })
+
+    describe('special characters and control characters', () => {
+        it('should reject path with null bytes', () => {
+            const pathWithNull = 'vectorstore\0malicious'
+            expect(() => {
+                validateVectorStorePath(pathWithNull)
+            }).toThrow(/Invalid path:/)
+        })
+
+        it('should reject path with control characters', () => {
+            const pathWithControl = 'vectorstore\x00\x01\x02'
+            expect(() => {
+                validateVectorStorePath(pathWithControl)
+            }).toThrow(/Invalid path:/)
+        })
+    })
+
+    describe('paths outside allowed directories', () => {
+        it('should reject path to /tmp when BLOB_STORAGE_PATH is not set', () => {
+            // Save original env
+            const originalEnv = process.env.BLOB_STORAGE_PATH
+            delete process.env.BLOB_STORAGE_PATH
+
+            try {
+                expect(() => {
+                    validateVectorStorePath('/tmp/vectorstore')
+                }).toThrow(/Invalid path: path must be within allowed directories/)
+            } finally {
+                // Restore original env
+                if (originalEnv !== undefined) {
+                    process.env.BLOB_STORAGE_PATH = originalEnv
+                }
+            }
+        })
+
+        it('should reject path to user home root (outside .flowise)', () => {
+            const homeRootPath = path.join(userHome, 'Documents', 'vectorstore')
+
+            expect(() => {
+                validateVectorStorePath(homeRootPath)
+            }).toThrow(/Invalid path: path must be within allowed directories/)
+        })
+
+        it('should reject path to system directories', () => {
+            expect(() => {
+                validateVectorStorePath('/var/www/html/vectorstore')
+            }).toThrow(/Invalid path:/)
+        })
+    })
+
+    describe('BLOB_STORAGE_PATH environment variable', () => {
+        const originalEnv = process.env.BLOB_STORAGE_PATH
+
+        afterEach(() => {
+            // Restore original env after each test
+            if (originalEnv !== undefined) {
+                process.env.BLOB_STORAGE_PATH = originalEnv
+            } else {
+                delete process.env.BLOB_STORAGE_PATH
+            }
+        })
+
+        it('should allow path within BLOB_STORAGE_PATH when configured', () => {
+            const customStoragePath = path.join(userHome, 'custom-storage')
+            process.env.BLOB_STORAGE_PATH = customStoragePath
+
+            const testPath = path.join(customStoragePath, 'vectorstore', 'faiss')
+            const result = validateVectorStorePath(testPath)
+
+            expect(result).toBe(testPath)
+        })
+
+        it('should allow path within .flowise even when BLOB_STORAGE_PATH is configured', () => {
+            process.env.BLOB_STORAGE_PATH = path.join(userHome, 'custom-storage')
+
+            const flowisePath = path.join(defaultFlowisePath, 'vectorstore')
+            const result = validateVectorStorePath(flowisePath)
+
+            expect(result).toBe(flowisePath)
+        })
+    })
+
+    describe('edge cases', () => {
+        it('should handle paths with multiple slashes', () => {
+            const pathWithMultipleSlashes = path.join(defaultFlowisePath, 'vectorstore', 'test')
+            const result = validateVectorStorePath(pathWithMultipleSlashes)
+
+            expect(result).toBe(path.normalize(pathWithMultipleSlashes))
+        })
+
+        it('should handle paths with trailing slashes', () => {
+            const pathWithTrailingSlash = path.join(defaultFlowisePath, 'vectorstore') + path.sep
+            const result = validateVectorStorePath(pathWithTrailingSlash)
+
+            expect(result.startsWith(defaultFlowisePath)).toBe(true)
+        })
+
+        it('should normalize path separators', () => {
+            // Create a path that might have mixed separators
+            const mixedPath = path.join(defaultFlowisePath, 'vectorstore', 'faiss')
+            const result = validateVectorStorePath(mixedPath)
+
+            expect(result).toBe(path.normalize(mixedPath))
+        })
+    })
+
+    describe('PATH_TRAVERSAL_SAFETY=false bypasses all checks', () => {
+        beforeEach(() => {
+            process.env.PATH_TRAVERSAL_SAFETY = 'false'
+        })
+        afterEach(() => {
+            delete process.env.PATH_TRAVERSAL_SAFETY
+        })
+
+        it('should allow arbitrary absolute Unix path', () => {
+            expect(validateVectorStorePath('/data/faiss-store')).toBe('/data/faiss-store')
+        })
+
+        it('should allow path outside allowed directories (/tmp)', () => {
+            expect(validateVectorStorePath('/tmp/mystore')).toBe('/tmp/mystore')
+        })
+
+        it('should allow path containing .. without throwing', () => {
+            const result = validateVectorStorePath('../mystore')
+            expect(typeof result).toBe('string')
+        })
+
+        it('should return default path when undefined', () => {
+            const userHome = getUserHome()
+            expect(validateVectorStorePath(undefined)).toBe(path.join(userHome, '.flowise', 'vectorstore'))
         })
     })
 })

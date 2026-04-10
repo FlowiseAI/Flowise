@@ -4,7 +4,7 @@ import { ChatAnthropic } from '@langchain/anthropic'
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
 import { ChatGroq } from '@langchain/groq'
@@ -16,11 +16,15 @@ const FollowUpPromptType = z
     })
     .describe('Generate Follow Up Prompts')
 
+export interface FollowUpPromptResult {
+    questions: string[]
+}
+
 export const generateFollowUpPrompts = async (
     followUpPromptsConfig: FollowUpPromptConfig,
     apiMessageContent: string,
     options: ICommonObject
-) => {
+): Promise<FollowUpPromptResult | undefined> => {
     if (followUpPromptsConfig) {
         if (!followUpPromptsConfig.status) return undefined
         const providerConfig = followUpPromptsConfig[followUpPromptsConfig.selectedProvider]
@@ -37,9 +41,11 @@ export const generateFollowUpPrompts = async (
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
                 // @ts-ignore
-                const structuredLLM = llm.withStructuredOutput(FollowUpPromptType)
+                const structuredLLM = llm.withStructuredOutput(FollowUpPromptType, {
+                    method: 'functionCalling'
+                })
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse
+                return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.AZURE_OPENAI: {
                 const azureOpenAIApiKey = credentialData['azureOpenAIApiKey']
@@ -68,7 +74,7 @@ export const generateFollowUpPrompts = async (
                     history: apiMessageContent,
                     format_instructions: formatInstructions
                 })
-                return structuredResponse
+                return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.GOOGLE_GENAI: {
                 const model = new ChatGoogleGenerativeAI({
@@ -76,9 +82,11 @@ export const generateFollowUpPrompts = async (
                     model: providerConfig.modelName,
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
-                const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
+                const structuredLLM = model.withStructuredOutput(FollowUpPromptType, {
+                    method: 'functionCalling'
+                })
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse
+                return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.MISTRALAI: {
                 const model = new ChatMistralAI({
@@ -87,9 +95,11 @@ export const generateFollowUpPrompts = async (
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
                 // @ts-ignore
-                const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
+                const structuredLLM = model.withStructuredOutput(FollowUpPromptType, {
+                    method: 'functionCalling'
+                })
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse
+                return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.OPENAI: {
                 const model = new ChatOpenAI({
@@ -99,9 +109,11 @@ export const generateFollowUpPrompts = async (
                     useResponsesApi: true
                 })
                 // @ts-ignore
-                const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
+                const structuredLLM = model.withStructuredOutput(FollowUpPromptType, {
+                    method: 'functionCalling'
+                })
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse
+                return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.GROQ: {
                 const llm = new ChatGroq({
@@ -109,9 +121,11 @@ export const generateFollowUpPrompts = async (
                     model: providerConfig.modelName,
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
-                const structuredLLM = llm.withStructuredOutput(FollowUpPromptType)
+                const structuredLLM = llm.withStructuredOutput(FollowUpPromptType, {
+                    method: 'functionCalling'
+                })
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
-                return structuredResponse
+                return structuredResponse as FollowUpPromptResult
             }
             case FollowUpPromptProvider.OLLAMA: {
                 const ollamaClient = new Ollama({

@@ -83,6 +83,7 @@ export interface IChatMessage {
     usedTools?: string
     fileAnnotations?: string
     agentReasoning?: string
+    reasonContent?: string
     fileUploads?: string
     artifacts?: string
     chatType: string

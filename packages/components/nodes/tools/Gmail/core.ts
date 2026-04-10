@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { TOOL_ARGS_PREFIX, formatToolError } from '../../../src/agents'
@@ -36,6 +36,13 @@ const CreateDraftSchema = z.object({
     body: z.string().optional().describe('Email body content'),
     cc: z.string().optional().describe('CC email address(es), comma-separated'),
     bcc: z.string().optional().describe('BCC email address(es), comma-separated')
+})
+
+const UpdateDraftSchema = CreateDraftSchema.extend({
+    id: z
+        .string()
+        .regex(/^[A-Za-z0-9_-]+$/, 'Draft ID must contain only URL-safe characters')
+        .describe('ID of the draft to update')
 })
 
 const SendMessageSchema = z.object({
@@ -222,7 +229,7 @@ class UpdateDraftTool extends BaseGmailTool {
         const toolInput = {
             name: 'update_draft',
             description: 'Update a specific draft in Gmail',
-            schema: CreateDraftSchema,
+            schema: UpdateDraftSchema,
             baseUrl: 'https://gmail.googleapis.com/gmail/v1/users/me/drafts',
             method: 'PUT',
             headers: {}

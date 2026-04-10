@@ -2,9 +2,10 @@ import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResult
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { z } from 'zod'
+import { z, type ZodTypeAny } from 'zod/v3'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { checkDenyList, secureFetch } from '../../../src/httpSecurity'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -14,14 +15,19 @@ export class MCPToolkit extends BaseToolkit {
     client: Client | null = null
     serverParams: StdioServerParameters | any
     transportType: 'stdio' | 'sse'
+    /** Per-invocation HTTP headers injected at tools/call time; overrides static toolkit headers for the same names. */
+    getToolCallHeaders?: () => Promise<Record<string, string>>
     constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
         super()
         this.serverParams = serverParams
         this.transportType = transportType
     }
 
-    // Method to create a new client with transport
-    async createClient(): Promise<Client> {
+    /**
+     * Creates a new MCP client and connects it via the configured transport.
+     * @param injectHeaders - Additional HTTP headers merged over static `serverParams.headers` for this connection. Used to pass per-invocation headers (e.g. from {@link getToolCallHeaders}) into SSE/HTTP transports.
+     */
+    async createClient(injectHeaders: Record<string, string> = {}): Promise<Client> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -52,11 +58,14 @@ export class MCPToolkit extends BaseToolkit {
             }
 
             const baseUrl = new URL(this.serverParams.url)
+            await checkDenyList(this.serverParams.url)
+            const mergedHeaders = { ...this.serverParams?.headers, ...injectHeaders }
+            const headers = Object.keys(mergedHeaders).length > 0 ? mergedHeaders : undefined
             try {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new StreamableHTTPClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         }
                     })
                 } else {
@@ -64,17 +73,28 @@ export class MCPToolkit extends BaseToolkit {
                 }
                 await client.connect(transport)
             } catch (error) {
-                if (this.serverParams.headers) {
+                if (headers) {
                     transport = new SSEClientTransport(baseUrl, {
                         requestInit: {
-                            headers: this.serverParams.headers
+                            headers
                         },
                         eventSourceInit: {
-                            fetch: (url, init) => fetch(url, { ...init, headers: this.serverParams.headers })
+                            fetch: async (url, init) => {
+                                return secureFetch(url.toString(), {
+                                    ...(init as any),
+                                    headers
+                                }) as any
+                            }
                         }
                     })
                 } else {
-                    transport = new SSEClientTransport(baseUrl)
+                    transport = new SSEClientTransport(baseUrl, {
+                        eventSourceInit: {
+                            fetch: async (url, init) => {
+                                return secureFetch(url.toString(), init as any) as any
+                            }
+                        }
+                    })
                 }
                 await client.connect(transport)
             }
@@ -107,7 +127,7 @@ export class MCPToolkit extends BaseToolkit {
             return await MCPTool({
                 toolkit: this,
                 name: tool.name,
-                description: tool.description || '',
+                description: tool.description || tool.name,
                 argsSchema: createSchemaModel(tool.inputSchema)
             })
         })
@@ -135,7 +155,8 @@ export async function MCPTool({
     return tool(
         async (input): Promise<string> => {
             // Create a new client for this request
-            const client = await toolkit.createClient()
+            const toolCallHeaders = await toolkit.getToolCallHeaders?.()
+            const client = await toolkit.createClient(toolCallHeaders)
 
             try {
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
@@ -159,17 +180,17 @@ export async function MCPTool({
 function createSchemaModel(
     inputSchema: {
         type: 'object'
-        properties?: import('zod').objectOutputType<{}, import('zod').ZodTypeAny, 'passthrough'> | undefined
+        properties?: Record<string, unknown>
     } & { [k: string]: unknown }
-): any {
+): z.ZodObject<Record<string, ZodTypeAny>> {
     if (inputSchema.type !== 'object' || !inputSchema.properties) {
         throw new Error('Invalid schema type or missing properties')
     }
 
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key, _]) => {
+    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key]) => {
         acc[key] = z.any()
         return acc
-    }, {} as Record<string, import('zod').ZodTypeAny>)
+    }, {} as Record<string, ZodTypeAny>)
 
     return z.object(schemaProperties)
 }
@@ -177,7 +198,7 @@ function createSchemaModel(
 export const validateArgsForLocalFileAccess = (args: string[]): void => {
     const dangerousPatterns = [
         // Absolute paths
-        /^\/[^/]/, // Unix absolute paths starting with /
+        /^\//, // Unix absolute paths starting with /
         /^[a-zA-Z]:\\/, // Windows absolute paths like C:\
 
         // Relative paths that could escape current directory
@@ -246,7 +267,7 @@ export const validateCommandInjection = (args: string[]): void => {
 }
 
 export const validateEnvironmentVariables = (env: Record<string, any>): void => {
-    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH']
+    const dangerousEnvVars = ['PATH', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH', 'NODE_OPTIONS']
 
     for (const [key, value] of Object.entries(env)) {
         if (dangerousEnvVars.includes(key)) {
@@ -255,6 +276,105 @@ export const validateEnvironmentVariables = (env: Record<string, any>): void => 
 
         if (typeof value === 'string' && value.includes('\0')) {
             throw new Error(`Environment variable '${key}' contains null byte`)
+        }
+    }
+}
+
+/**
+ * Validates that command arguments don't contain flags that enable arbitrary code execution
+ * This prevents attacks where whitelisted commands are used with dangerous flags
+ * (e.g., "npx -c malicious-command" or "python -c malicious-code")
+ * @param command The command to validate
+ * @param args The arguments to validate
+ */
+export const validateCommandFlags = (command: string, args: string[]): void => {
+    // Define dangerous flags for each command that enable code execution
+    const dangerousFlagsByCommand: Record<string, string[]> = {
+        npx: [
+            '-c', // Execute shell commands
+            '--call', // Execute shell commands
+            '--shell-auto-fallback', // Shell execution fallback
+            '-y', // Auto-confirms installation prompts
+            '--yes', // Auto-confirms installation prompts
+            '--node-options' // Passes arbitrary Node flags to underlying process, bypassing node flag blocklist
+        ],
+        node: [
+            '-e', // Execute JavaScript code
+            '--eval', // Execute JavaScript code
+            '-p', // Evaluate and print JavaScript code
+            '--print', // Evaluate and print JavaScript code
+            '--inspect', // Enable remote debugging (security risk)
+            '--inspect-brk', // Enable remote debugging with breakpoint (security risk)
+            '--experimental-policy', // Could load malicious policies
+            '-r', // Short alias for --require
+            '--require', // Preload a CommonJS module before script runs
+            '--loader', // Custom ES module loader hook (code execution)
+            '--experimental-loader', // Same as --loader, older Node alias
+            '--import', // Preload ESM module before entry script (Node 18+)
+            '--env-file' // Read env vars from a local file (Node 20+, local file access)
+        ],
+        python: [
+            '-c', // Execute Python code
+            '-m' // Run library modules (could run malicious modules)
+        ],
+        python3: [
+            '-c', // Execute Python code
+            '-m' // Run library modules (could run malicious modules)
+        ],
+        docker: [
+            'run', // Run containers (too powerful)
+            'build', // Pulls a container and executes the run instructions
+            'exec', // Execute in containers
+            'compose', // Subcommand that starts containers (same risk as run)
+            '-v', // Mount host filesystems
+            '--volume', // Mount host filesystems
+            '--mount', // Alternative to -v/--volume for mounting host paths
+            '--volumes-from', // Mount volumes from another container (filesystem access)
+            '--privileged', // Privileged mode
+            '--cap-add', // Add capabilities
+            '--security-opt', // Modify security options
+            '--device', // Add host device files to container (privilege escalation)
+            '--entrypoint', // Override container entrypoint (arbitrary code execution)
+            '--network', // Host network access (catches --network=host and --network host)
+            '--pid', // Host PID namespace (catches --pid=host and --pid host)
+            '--ipc', // Host IPC namespace (catches --ipc=host and --ipc host)
+            '--env-file' // Read env vars from a local host file (local file access)
+        ]
+    }
+
+    const dangerousFlags = dangerousFlagsByCommand[command] || []
+
+    // Collect single-char dangerous flags (e.g. '-c' -> 'c') for combined flag detection
+    const dangerousShortChars = new Set(dangerousFlags.filter((f) => /^-[a-zA-Z]$/.test(f)).map((f) => f[1].toLowerCase()))
+
+    for (const arg of args) {
+        if (typeof arg !== 'string') continue
+
+        const normalizedArg = arg.toLowerCase().trim()
+
+        // Check for dangerous flags in various forms (exact, =value, space-separated value)
+        for (const flag of dangerousFlags) {
+            const lowerCaseFlag = flag.toLowerCase()
+            if (normalizedArg === lowerCaseFlag) {
+                throw new Error(`Argument '${arg}' is not allowed for command '${command}'.`)
+            }
+            if (normalizedArg.startsWith(lowerCaseFlag + '=')) {
+                throw new Error(`Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`)
+            }
+            if (flag.startsWith('-') && normalizedArg.startsWith(lowerCaseFlag + ' ')) {
+                throw new Error(`Argument '${arg}' contains flag '${flag}' that is not allowed for command '${command}'.`)
+            }
+        }
+
+        // Check for combined short flags (e.g. "-yc" = "-y" + "-c")
+        // A combined flag starts with a single '-', is not a long flag '--', and has multiple characters after '-'
+        if (/^-[a-zA-Z]{2,}/.test(normalizedArg)) {
+            const flagChars = normalizedArg.slice(1) // strip leading '-'
+            for (const ch of flagChars) {
+                if (dangerousShortChars.has(ch)) {
+                    throw new Error(`Argument '${arg}' contains dangerous flag '-${ch}' for command '${command}'.`)
+                }
+            }
         }
     }
 }
@@ -276,6 +396,11 @@ export const validateMCPServerConfig = (serverParams: any): void => {
     if (serverParams.args && Array.isArray(serverParams.args)) {
         validateArgsForLocalFileAccess(serverParams.args)
         validateCommandInjection(serverParams.args)
+
+        // Validate command-specific dangerous flags
+        if (serverParams.command) {
+            validateCommandFlags(serverParams.command, serverParams.args)
+        }
     }
 
     // Validate environment variables

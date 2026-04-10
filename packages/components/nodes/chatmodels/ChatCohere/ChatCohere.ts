@@ -17,9 +17,9 @@ class ChatCohere_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatCohere'
+        this.label = 'Cohere'
         this.name = 'chatCohere'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatCohere'
         this.icon = 'Cohere.svg'
         this.category = 'Chat Models'
@@ -43,7 +43,7 @@ class ChatCohere_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'command-r'
+                default: 'command-r7b-12-2024'
             },
             {
                 label: 'Temperature',

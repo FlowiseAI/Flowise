@@ -247,10 +247,16 @@ export const resolveVariables = async (
         // If value is not a string, return as is
         if (typeof value !== 'string') return value
 
-        const turndownService = new TurndownService()
-        value = turndownService.turndown(value)
-        // After conversion, replace any escaped underscores with regular underscores
-        value = value.replace(/\\_/g, '_')
+        // Convert legacy HTML content to markdown, preserving any markdown syntax within.
+        // Legacy content from old getHTML() starts with a TipTap block tag (e.g. <p>text</p>).
+        // Anchor with ^ to avoid matching intentional HTML/XML tags in user prompts
+        // (e.g. <instruction><div>...</div></instruction>).
+        if (/^\s*<(?:p|div|h[1-6]|ul|ol|blockquote|pre|table)\b/i.test(value)) {
+            const turndownService = new TurndownService()
+            // Disable escaping so markdown characters (e.g. ###, -, *) inside HTML are preserved as-is
+            turndownService.escape = (str: string) => str
+            value = turndownService.turndown(value)
+        }
 
         const matches = value.match(/{{(.*?)}}/g)
 
@@ -361,7 +367,7 @@ export const resolveVariables = async (
                 // Extract nodeId and outputPath from the match
                 const [, nodeIdPart, outputPath] = outputMatch
                 // Clean nodeId (handle escaped underscores)
-                const cleanNodeId = nodeIdPart.replace('\\', '')
+                const cleanNodeId = nodeIdPart.replace(/\\/g, '')
 
                 // Find the last (most recent) matching node data instead of the first one
                 const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId)
@@ -389,7 +395,7 @@ export const resolveVariables = async (
 
             // Find node data in executed data
             // sometimes turndown value returns a backslash like `llmAgentflow\_1`, remove the backslash
-            const cleanNodeId = variableFullPath.replace('\\', '')
+            const cleanNodeId = variableFullPath.replace(/\\/g, '')
             // Find the last (most recent) matching node data instead of the first one
             const nodeData = agentFlowExecutedData
                 ? [...agentFlowExecutedData].reverse().find((data) => data.nodeId === cleanNodeId)
@@ -769,12 +775,20 @@ async function determineNodesToIgnore(
     if (isDecisionNode && result.output?.conditions) {
         const outputConditions: ICondition[] = result.output.conditions
 
+        // safety net: if no conditions were fulfilled, don't ignore ALL children
+        // treat the last condition as an else/default fallback
+        const anyFulfilled = outputConditions.some((c) => c.isFulfilled === true)
+        if (!anyFulfilled && outputConditions.length > 0) {
+            // mark the last condition as fulfilled so at least one branch executes
+            outputConditions[outputConditions.length - 1].isFulfilled = true
+        }
+
         // Find indexes of unfulfilled conditions
         const unfulfilledIndexes = outputConditions
-            .map((condition: any, index: number) =>
+            .map((condition, index) =>
                 condition.isFulfilled === false || !Object.prototype.hasOwnProperty.call(condition, 'isFulfilled') ? index : -1
             )
-            .filter((index: number) => index !== -1)
+            .filter((index) => index !== -1)
 
         // Find nodes to ignore based on unfulfilled conditions
         for (const index of unfulfilledIndexes) {
@@ -1095,17 +1109,24 @@ const executeNode = async ({
             Object.keys(iterationContext.agentflowRuntime.state).length > 0
         ) {
             updatedState = {
-                ...updatedState,
-                ...iterationContext.agentflowRuntime.state
+                ...iterationContext.agentflowRuntime.state,
+                ...updatedState
             }
             flowConfig.state = updatedState
+            agentflowRuntime.state = updatedState
         }
 
         // Resolve variables in node data
+        let formValue: Record<string, any> = {}
+        if (isObjectNotEmpty(incomingInput.form)) {
+            formValue = incomingInput.form as Record<string, any>
+        } else if (isObjectNotEmpty(agentflowRuntime.form)) {
+            formValue = agentflowRuntime.form as Record<string, any>
+        }
         const reactFlowNodeData: INodeData = await resolveVariables(
             flowNodeData,
             incomingInput.question ?? '',
-            incomingInput.form ?? agentflowRuntime.form ?? {},
+            formValue,
             flowConfig,
             availableVariables,
             variableOverrides,
@@ -1890,8 +1911,9 @@ export const executeAgentFlow = async ({
                 chatId
             })
             await analyticHandlers.init()
+            const flowName = chatflow.name || 'Agentflow'
             parentTraceIds = await analyticHandlers.onChainStart(
-                'Agentflow',
+                flowName,
                 form && Object.keys(form).length > 0 ? JSON.stringify(form) : question || ''
             )
         }
@@ -2263,6 +2285,7 @@ export const executeAgentFlow = async ({
     if (lastNodeOutput?.usedTools) apiMessage.usedTools = JSON.stringify(lastNodeOutput.usedTools)
     if (lastNodeOutput?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(lastNodeOutput.fileAnnotations)
     if (lastNodeOutput?.artifacts) apiMessage.artifacts = JSON.stringify(lastNodeOutput.artifacts)
+    if (lastNodeOutput?.reasonContent) apiMessage.reasonContent = JSON.stringify(lastNodeOutput.reasonContent)
     if (chatflow.followUpPrompts) {
         const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
         const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
@@ -2334,4 +2357,11 @@ export const executeAgentFlow = async ({
     }
 
     return result
+}
+
+/**
+ * Utility function to check if an object is not empty, null, or undefined
+ */
+export const isObjectNotEmpty = (obj: any): boolean => {
+    return obj && Object.keys(obj).length > 0 && obj.constructor === Object
 }

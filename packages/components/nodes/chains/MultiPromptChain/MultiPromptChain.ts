@@ -1,5 +1,5 @@
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
-import { MultiPromptChain } from 'langchain/chains'
+import { MultiPromptChain } from '@langchain/classic/chains'
 import { ICommonObject, INode, INodeData, INodeParams, IServerSideEventStreamer, PromptRetriever } from '../../../src/Interface'
 import { getBaseClasses } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'

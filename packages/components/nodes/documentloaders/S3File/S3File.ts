@@ -7,13 +7,8 @@ import {
     SkipInferTableTypes,
     HiResModelName
 } from '@langchain/community/document_loaders/fs/unstructured'
-import {
-    getCredentialData,
-    getCredentialParam,
-    handleDocumentLoaderDocuments,
-    handleDocumentLoaderMetadata,
-    handleDocumentLoaderOutput
-} from '../../../src/utils'
+import { handleDocumentLoaderDocuments, handleDocumentLoaderMetadata, handleDocumentLoaderOutput } from '../../../src/utils'
+import { getAWSCredentialConfig } from '../../../src/awsToolsUtils'
 import { S3Client, GetObjectCommand, HeadObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
@@ -25,7 +20,7 @@ import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
 import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { IDocument } from '../../../src/Interface'
 import { omit } from 'lodash'
 import { handleEscapeCharacters } from '../../../src'
@@ -581,18 +576,9 @@ class S3_DocumentLoaders implements INode {
         }
 
         let credentials: S3ClientConfig['credentials'] | undefined
-
         if (nodeData.credential) {
-            const credentialData = await getCredentialData(nodeData.credential, options)
-            const accessKeyId = getCredentialParam('awsKey', credentialData, nodeData)
-            const secretAccessKey = getCredentialParam('awsSecret', credentialData, nodeData)
-
-            if (accessKeyId && secretAccessKey) {
-                credentials = {
-                    accessKeyId,
-                    secretAccessKey
-                }
-            }
+            const credentialConfig = await getAWSCredentialConfig(nodeData, options, region)
+            credentials = credentialConfig.credentials
         }
 
         const s3Config: S3ClientConfig = {
