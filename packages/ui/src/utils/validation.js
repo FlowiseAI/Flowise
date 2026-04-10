@@ -1,13 +1,14 @@
 import { z } from 'zod/v3'
 
-export const passwordSchema = z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .max(128, 'Password must not be more than 128 characters')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/\d/, 'Password must contain at least one digit')
-    .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character')
+export const passwordSchema = (t) =>
+    z
+        .string()
+        .min(8, t('auth.register.validation.password.atLeast8'))
+        .max(128, t('auth.register.validation.password.notMoreThan128'))
+        .regex(/[a-z]/, t('auth.register.validation.password.lowercase'))
+        .regex(/[A-Z]/, t('auth.register.validation.password.uppercase'))
+        .regex(/\d/, t('auth.register.validation.password.digit'))
+        .regex(/[^a-zA-Z0-9]/, t('auth.register.validation.password.special'))
 
 export const validatePassword = (password) => {
     const result = passwordSchema.safeParse(password)

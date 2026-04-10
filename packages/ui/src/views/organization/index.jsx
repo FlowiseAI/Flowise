@@ -39,7 +39,7 @@ const OrgSetupSchema = z
     .object({
         username: z.string().min(1, 'Name is required'),
         email: z.string().min(1, 'Email is required').email('Invalid email address'),
-        password: passwordSchema,
+        password: passwordSchema(t),
         confirmPassword: z.string().min(1, 'Confirm Password is required')
     })
     .refine((data) => data.password === data.confirmPassword, {

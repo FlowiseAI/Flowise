@@ -4,7 +4,11 @@ import { store } from '@/store'
 import { loginSuccess } from '@/store/reducers/authSlice'
 import authApi from '@/api/auth'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const SSOSuccess = () => {
+    const { t } = useTranslation()
     const location = useLocation()
     const navigate = useNavigate()
 
@@ -37,8 +41,8 @@ const SSOSuccess = () => {
 
     return (
         <div>
-            <h1>Loading dashboard...</h1>
-            <p>Loading data...</p>
+            <h1>{t('auth.sso.loading.dashboard')}</h1>
+            <p>{t('auth.sso.loading.data')}</p>
         </div>
     )
 }

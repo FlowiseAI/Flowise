@@ -18,7 +18,11 @@ import { IconCheck } from '@tabler/icons-react'
 import { useState } from 'react'
 import { IconX } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const VerifyEmail = () => {
+    const { t } = useTranslation()
     const accountVerifyApi = useApi(accountApi.verifyAccountEmail)
 
     const [searchParams] = useSearchParams()
@@ -73,7 +77,7 @@ const VerifyEmail = () => {
                                         height: '48px'
                                     }}
                                 />
-                                <Typography variant='h1'>Verifying Email...</Typography>
+                                <Typography variant='h1'>{t('auth.verify.loading')}</Typography>
                             </>
                         )}
                         {verificationError && (
@@ -92,7 +96,7 @@ const VerifyEmail = () => {
                                 >
                                     <IconX />
                                 </Box>
-                                <Typography variant='h1'>Verification Failed.</Typography>
+                                <Typography variant='h1'>{t('auth.verify.failed')}</Typography>
                             </>
                         )}
                         {verificationSuccess && (
@@ -111,7 +115,7 @@ const VerifyEmail = () => {
                                 >
                                     <IconCheck />
                                 </Box>
-                                <Typography variant='h1'>Email Verified Successfully.</Typography>
+                                <Typography variant='h1'>{t('auth.verify.success')}</Typography>
                             </>
                         )}
                     </Stack>

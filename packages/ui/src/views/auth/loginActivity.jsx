@@ -49,14 +49,17 @@ import { IconChevronLeft, IconChevronRight, IconCircleX, IconLogin, IconLogout }
 // store
 import { useError } from '@/store/context/ErrorContext'
 
-const activityTypes = [
-    'Login Success',
-    'Logout Success',
-    'Unknown User',
-    'Incorrect Credential',
-    'User Disabled',
-    'No Assigned Workspace',
-    'Unknown Activity'
+// i18n
+import { useTranslation } from 'react-i18next'
+
+const unknownActivity = [
+    'auth.loginActivity.types.loginSuccess',
+    'auth.loginActivity.types.logoutSuccess',
+    'auth.loginActivity.types.unknownUser',
+    'auth.loginActivity.types.incorrectCredential',
+    'auth.loginActivity.types.userDisabled',
+    'auth.loginActivity.types.noAssignedWorkspace',
+    'auth.loginActivity.types.unknownActivity'
 ]
 const MenuProps = {
     PaperProps: {
@@ -86,6 +89,7 @@ DatePickerCustomInput.propTypes = {
     onClick: PropTypes.func
 }
 const LoginActivity = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     useNotifier()
@@ -146,35 +150,35 @@ const LoginActivity = () => {
     function getActivityDescription(activityCode) {
         switch (activityCode) {
             case 0:
-                return 'Login Success'
+                return 'auth.loginActivity.types.loginSuccess'
             case 1:
-                return 'Logout Success'
+                return 'auth.loginActivity.types.logoutSuccess'
             case -1:
-                return 'Unknown User'
+                return 'auth.loginActivity.types.unknownUser'
             case -2:
-                return 'Incorrect Credential'
+                return 'auth.loginActivity.types.incorrectCredential'
             case -3:
-                return 'User Disabled'
+                return 'auth.loginActivity.types.userDisabled'
             case -4:
-                return 'No Assigned Workspace'
+                return 'auth.loginActivity.types.noAssignedWorkspace'
             default:
-                return 'Unknown Activity'
+                return 'auth.loginActivity.types.unknownActivity'
         }
     }
 
     function getActivityCode(activityDescription) {
         switch (activityDescription) {
-            case 'Login Success':
+            case 'auth.loginActivity.types.loginSuccess':
                 return 0
-            case 'Logout Success':
+            case 'auth.loginActivity.types.logoutSuccess':
                 return 1
-            case 'Unknown User':
+            case 'auth.loginActivity.types.unknownUser':
                 return -1
-            case 'Incorrect Credential':
+            case 'auth.loginActivity.types.incorrectCredential':
                 return -2
-            case 'User Disabled':
+            case 'auth.loginActivity.types.userDisabled':
                 return -3
-            case 'No Assigned Workspace':
+            case 'auth.loginActivity.types.noAssignedWorkspace':
                 return -4
             default:
                 return -99
@@ -217,7 +221,7 @@ const LoginActivity = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader search={false} title='Login Activity'></ViewHeader>
+                        <ViewHeader search={false} title={t('auth.loginActivity.title')}></ViewHeader>
                         <Stack flexDirection='row'>
                             <Box sx={{ p: 2, height: 'auto', width: '100%' }}>
                                 <div
@@ -238,7 +242,7 @@ const LoginActivity = () => {
                                         }}
                                     >
                                         <div style={{ marginRight: 10 }}>
-                                            <b style={{ marginRight: 10 }}>From: </b>
+                                            <b style={{ marginRight: 10 }}>{t('auth.loginActivity.inputs.from')} </b>
                                             <DatePicker
                                                 selected={startDate}
                                                 onChange={(date) => onStartDateSelected(date)}
@@ -249,7 +253,7 @@ const LoginActivity = () => {
                                             />
                                         </div>
                                         <div style={{ marginRight: 10 }}>
-                                            <b style={{ marginRight: 10 }}>To: </b>
+                                            <b style={{ marginRight: 10 }}>{t('auth.loginActivity.inputs.to')} </b>
                                             <DatePicker
                                                 selected={endDate}
                                                 onChange={(date) => onEndDateSelected(date)}
@@ -273,7 +277,7 @@ const LoginActivity = () => {
                                                 }}
                                             >
                                                 <InputLabel size='small' id='type-label'>
-                                                    Filter By
+                                                    {t('auth.loginActivity.inputs.filterBy')}
                                                 </InputLabel>
                                                 <Select
                                                     size='small'
@@ -282,7 +286,7 @@ const LoginActivity = () => {
                                                     value={typeFilter}
                                                     onChange={handleTypeFilterChange}
                                                     id='type-checkbox'
-                                                    input={<OutlinedInput label='Badge' />}
+                                                    input={<OutlinedInput label={t('auth.loginActivity.badgeF')} />}
                                                     renderValue={(selected) => selected.join(', ')}
                                                     MenuProps={MenuProps}
                                                     sx={SelectStyles}
@@ -294,7 +298,7 @@ const LoginActivity = () => {
                                                             sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
                                                         >
                                                             <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                            <ListItemText primary={name} />
+                                                            <ListItemText primary={t(name)} />
                                                         </MenuItem>
                                                     ))}
                                                 </Select>
@@ -334,7 +338,7 @@ const LoginActivity = () => {
                                                     }
                                                 />
                                             </IconButton>
-                                            Showing {Math.min(start, totalRecords)}-{end} of {totalRecords} Records
+                                            {t('auth.loginActivity.showing')}
                                             <IconButton
                                                 size='small'
                                                 onClick={() => changePage(currentPage + 1)}
@@ -362,7 +366,7 @@ const LoginActivity = () => {
                                     sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                     component={Paper}
                                 >
-                                    <Table sx={{ minWidth: 650 }} aria-label='users table'>
+                                    <Table sx={{ minWidth: 650 }} aria-label={t('auth.loginActivity.table.title')}>
                                         <TableHead
                                             sx={{
                                                 backgroundColor: customization.isDarkMode
@@ -372,11 +376,11 @@ const LoginActivity = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <StyledTableCell>Activity</StyledTableCell>
-                                                <StyledTableCell>User</StyledTableCell>
-                                                <StyledTableCell>Date</StyledTableCell>
-                                                <StyledTableCell>Method</StyledTableCell>
-                                                <StyledTableCell>Message</StyledTableCell>
+                                                <StyledTableCell>{t('auth.loginActivity.table.activity')}</StyledTableCell>
+                                                <StyledTableCell>{t('auth.loginActivity.table.user')}</StyledTableCell>
+                                                <StyledTableCell>{t('auth.loginActivity.table.date')}</StyledTableCell>
+                                                <StyledTableCell>{t('auth.loginActivity.table.method')}</StyledTableCell>
+                                                <StyledTableCell>{t('auth.loginActivity.table.message')}</StyledTableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -475,15 +479,17 @@ const LoginActivity = () => {
                                                                             />
                                                                         )}
                                                                     </div>
-                                                                    <div>{getActivityDescription(item.activityCode)}</div>
+                                                                    <div>{t(getActivityDescription(item.activityCode))}</div>
                                                                 </div>
                                                             </StyledTableCell>
                                                             <StyledTableCell>{item.username}</StyledTableCell>
                                                             <StyledTableCell>
-                                                                {moment(item.attemptedDateTime).format('MMMM Do, YYYY, HH:mm')}
+                                                                {moment(item.attemptedDateTime).format(
+                                                                    t('auth.loginActivity.formats.date')
+                                                                )}
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {item.loginMode ? item.loginMode : 'Email/Password'}
+                                                                {item.loginMode ? item.loginMode : t('auth.loginActivity.emailPassword')}
                                                             </StyledTableCell>
                                                             <StyledTableCell>{item.message}</StyledTableCell>
                                                         </StyledTableRow>

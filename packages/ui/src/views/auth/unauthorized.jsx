@@ -5,9 +5,13 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| UnauthorizedPage ||============================== //
 
 const UnauthorizedPage = () => {
+    const { t } = useTranslation()
     const currentUser = useSelector((state) => state.auth.user)
 
     return (
@@ -36,18 +40,18 @@ const UnauthorizedPage = () => {
                             />
                         </Box>
                         <Typography sx={{ mb: 2 }} variant='h4' component='div' fontWeight='bold'>
-                            403 Forbidden
+                            {t('auth.unauthorized.forbidden')}
                         </Typography>
                         <Typography variant='body1' component='div' sx={{ mb: 2 }}>
-                            You do not have permission to access this page.
+                            {t('auth.unauthorized.permission')}
                         </Typography>
                         {currentUser ? (
                             <Link to='/'>
-                                <StyledButton sx={{ px: 2, py: 1 }}>Back to Home</StyledButton>
+                                <StyledButton sx={{ px: 2, py: 1 }}>{t('auth.actions.backHome')}</StyledButton>
                             </Link>
                         ) : (
                             <Link to='/login'>
-                                <StyledButton sx={{ px: 2, py: 1 }}>Back to Login</StyledButton>
+                                <StyledButton sx={{ px: 2, py: 1 }}>{t('auth.actions.backLogin')}</StyledButton>
                             </Link>
                         )}
                     </Stack>

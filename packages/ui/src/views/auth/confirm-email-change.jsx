@@ -16,7 +16,11 @@ import useApi from '@/hooks/useApi'
 // icons
 import { IconCheck, IconX } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ConfirmEmailChange = () => {
+    const { t } = useTranslation()
     const confirmApi = useApi(accountApi.confirmEmailChange)
 
     const [searchParams] = useSearchParams()
@@ -71,7 +75,7 @@ const ConfirmEmailChange = () => {
                                         height: '48px'
                                     }}
                                 />
-                                <Typography variant='h1'>Confirming email change...</Typography>
+                                <Typography variant='h1'>{t('auth.confirmEmailChange.loading')}</Typography>
                             </>
                         )}
                         {errorMessage && (
@@ -90,7 +94,7 @@ const ConfirmEmailChange = () => {
                                 >
                                     <IconX />
                                 </Box>
-                                <Typography variant='h1'>Confirmation failed.</Typography>
+                                <Typography variant='h1'>{t('auth.confirmEmailChange.failed')}</Typography>
                                 <Typography variant='body2' color='textSecondary' sx={{ textAlign: 'center' }}>
                                     {errorMessage}
                                 </Typography>
@@ -112,9 +116,9 @@ const ConfirmEmailChange = () => {
                                 >
                                     <IconCheck />
                                 </Box>
-                                <Typography variant='h1'>Email updated successfully.</Typography>
+                                <Typography variant='h1'>{t('auth.confirmEmailChange.success.title')}</Typography>
                                 <Typography variant='body2' color='textSecondary' sx={{ textAlign: 'center' }}>
-                                    Please sign in with your new email address.
+                                    {t('auth.confirmEmailChange.success.description')}
                                 </Typography>
                             </>
                         )}

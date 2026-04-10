@@ -25,9 +25,13 @@ import { useError } from '@/store/context/ErrorContext'
 // Icons
 import { IconExclamationCircle, IconX } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+
 // ==============================|| ResetPasswordPage ||============================== //
 
 const ResetPasswordPage = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     useNotifier()
     const navigate = useNavigate()
@@ -36,28 +40,28 @@ const ResetPasswordPage = () => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const emailInput = {
-        label: 'Email',
+        label: t('auth.inputs.email.title'),
         name: 'email',
         type: 'email',
         placeholder: 'user@company.com'
     }
 
     const passwordInput = {
-        label: 'Password',
+        label: t('auth.inputs.password.title'),
         name: 'password',
         type: 'password',
         placeholder: '********'
     }
 
     const confirmPasswordInput = {
-        label: 'Confirm Password',
+        label: t('auth.inputs.confirm.title'),
         name: 'confirmPassword',
         type: 'password',
         placeholder: '********'
     }
 
     const resetPasswordInput = {
-        label: 'Reset Token',
+        label: t('auth.inputs.reset.title'),
         name: 'resetToken',
         type: 'text'
     }
@@ -85,10 +89,10 @@ const ResetPasswordPage = () => {
         setAuthErrors([])
         setAuthRateLimitError(null)
         if (!tokenVal) {
-            validationErrors.push('Token cannot be left blank!')
+            validationErrors.push(t('auth.resetPassword.validation.token'))
         }
         if (newPasswordVal !== confirmPasswordVal) {
-            validationErrors.push('New Password and Confirm Password do not match.')
+            validationErrors.push(t('auth.resetPassword.validation.match'))
         }
         const passwordErrors = validatePassword(newPasswordVal)
         if (passwordErrors.length > 0) {
@@ -112,7 +116,7 @@ const ResetPasswordPage = () => {
             setLoading(false)
             if (updateResponse.data) {
                 enqueueSnackbar({
-                    message: 'Password reset successful',
+                    message: t('auth.resetPassword.messages.reset.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -133,7 +137,7 @@ const ResetPasswordPage = () => {
             setLoading(false)
             setAuthErrors([typeof error.response.data === 'object' ? error.response.data.message : error.response.data])
             enqueueSnackbar({
-                message: `Failed to reset password!`,
+                message: t('auth.resetPassword.messages.reset.error'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -172,12 +176,12 @@ const ResetPasswordPage = () => {
                         </Alert>
                     )}
                     <Stack sx={{ gap: 1 }}>
-                        <Typography variant='h1'>Reset Password</Typography>
+                        <Typography variant='h1'>{t('auth.resetPassword.title')}</Typography>
                         <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                            <Link style={{ color: theme.palette.primary.main }} to='/signin'>
-                                Back to Login
-                            </Link>
-                            .
+                            <Trans
+                                i18nKey='auth.resetPassword.back'
+                                components={{ a: <Link style={{ color: theme.palette.primary.main }} to='/signin' /> }}
+                            />
                         </Typography>
                     </Stack>
                     <form onSubmit={validateAndSubmit}>
@@ -185,7 +189,8 @@ const ResetPasswordPage = () => {
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Email<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('auth.inputs.email.title')}
+                                        <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <Typography align='left'></Typography>
                                     <div style={{ flexGrow: 1 }}></div>
@@ -200,14 +205,15 @@ const ResetPasswordPage = () => {
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Reset Token<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('auth.inputs.reset.title')}
+                                        <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
                                 <OutlinedInput
                                     fullWidth
                                     type='string'
-                                    placeholder='Paste in the reset token.'
+                                    placeholder={t('auth.inputs.reset.placeholder')}
                                     multiline={true}
                                     rows={3}
                                     inputParam={resetPasswordInput}
@@ -216,13 +222,14 @@ const ResetPasswordPage = () => {
                                     sx={{ mt: '8px' }}
                                 />
                                 <Typography variant='caption'>
-                                    <i>Please copy the token you received in your email.</i>
+                                    <i>{t('auth.inputs.reset.caption')}</i>
                                 </Typography>
                             </Box>
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        New Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('auth.inputs.newPassword.title')}
+                                        <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <Typography align='left'></Typography>
                                     <div style={{ flexGrow: 1 }}></div>
@@ -234,16 +241,14 @@ const ResetPasswordPage = () => {
                                     showDialog={false}
                                 />
                                 <Typography variant='caption'>
-                                    <i>
-                                        Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase
-                                        letter, one digit, and one special character.
-                                    </i>
+                                    <i>{t('auth.inputs.password.caption')}</i>
                                 </Typography>
                             </Box>
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Confirm Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('auth.inputs.confirm.title')}
+                                        <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
@@ -254,12 +259,12 @@ const ResetPasswordPage = () => {
                                     showDialog={false}
                                 />
                                 <Typography variant='caption'>
-                                    <i>Confirm your new password. Must match the password typed above.</i>
+                                    <i>{t('auth.inputs.confirm.caption')}</i>
                                 </Typography>
                             </Box>
 
                             <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
-                                Update Password
+                                {t('auth.actions.update')}
                             </StyledButton>
                         </Stack>
                     </form>

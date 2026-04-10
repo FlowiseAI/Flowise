@@ -1688,6 +1688,252 @@
             "apiEndpoint": "API Endpoint"
         }
     },
+    "auth": {
+        "confirmEmailChange": {
+            "loading": "Confirming email change...",
+            "failed": "Confirmation failed.",
+            "success": {
+                "title": "Email updated successfully.",
+                "description": "Please sign in with your new email address."
+            }
+        },
+        "expired": {
+            "expired": "Your enterprise license has expired",
+            "contact": " Please contact our support team to renew your license."
+        },
+        "forgotPassword": {
+            "title": "Forgot Password?",
+            "resetCode": "Have a reset password code? <a>Change your password here</a>.",
+            "username": "Username",
+            "email": "Email",
+            "caption": "If you forgot the email you used for signing up, please contact your administrator.",
+            "messages": {
+                "success": "Password reset instructions sent to the email.",
+                "error": "Failed to send instructions, please contact your administrator."
+            }
+        },
+        "rateLimit": {
+            "title": "429 Too Many Requests",
+            "description": "You have made too many requests in a short period of time. Please wait {{retryAfter}}s before trying again."
+        },
+        "actions": {
+            "contact": "Contact Support",
+            "send": "Send Reset Password Instructions",
+            "back": "Back to Home",
+            "create": "Create Account",
+            "microsoft": "Sign In With Microsoft",
+            "google": "Sign In With Google",
+            "auth0": "Sign In With Auth0 by Okta",
+            "github": "Sign In With Github",
+            "update": "Update Password",
+            "resend": "Resend Verification Email",
+            "login": "Login",
+            "copyCallback": "Copy Callback URL",
+            "save": "Save",
+            "test": "Test {{providerName}} Configuration",
+            "backHome": "Back to Home",
+            "backLogin": "Back to Login"
+        },
+        "loginActivity": {
+            "title": "Login Activity",
+            "showing": "Showing {{start}}-{{end}} of {{total}} Records",
+            "emailPassword": "Email/Password",
+            "badge": "Badge",
+            "inputs": {
+                "to": "To:",
+                "from": "From:",
+                "filterBy": "Filter By"
+            },
+            "table": {
+                "title": "users table",
+                "activity": "Activity",
+                "user": "User",
+                "date": "Date",
+                "method": "Method",
+                "message": "Message"
+            },
+            "types": {
+                "loginSuccess": "Login Success",
+                "logoutSuccess": "Logout Success",
+                "unknownUser": "Unknown User",
+                "incorrectCredential": "Incorrect Credential",
+                "userDisabled": "User Disabled",
+                "noAssignedWorkspace": "No Assigned Workspace",
+                "unknownActivity": "Unknown Activity"
+            },
+            "formats": {
+                "date": "MMMM Do, YYYY, HH:mm"
+            }
+        },
+        "register": {
+            "signup": "Sign Up",
+            "signin": "Already have an account? <a>Sign In</a>.",
+            "validation": {
+                "name": {
+                    "required": "Name is required"
+                },
+                "email": {
+                    "required": "Email is required",
+                    "invalid": "Invalid email address"
+                },
+                "password": {
+                    "atLeast8": "Password must be at least 8 characters",
+                    "notMoreThan128": "Password must not be more than 128 characters",
+                    "lowercase": "Password must contain at least one lowercase letter",
+                    "uppercase": "Password must contain at least one uppercase letter",
+                    "digit": "Password must contain at least one digit",
+                    "special": "Password must contain at least one special character",
+                    "confirm": "Confirm Password is required",
+                    "match": "Passwords don't match"
+                },
+                "invite": {
+                    "required": "Invite Code is required"
+                }
+            },
+            "messages": {
+                "success": {
+                    "cloud": "To complete your registration, please click on the verification link we sent to your email address",
+                    "enterprise": "Registration Successful. You will be redirected to the sign in page shortly."
+                },
+                "error": {
+                    "simple": "Error in registering user. Please try again.",
+                    "enterprise": "Error in registering user. Please contact your administrator. ({{msg}})"
+                }
+            }
+        },
+        "inputs": {
+            "fullName": {
+                "title": "Full Name",
+                "placeholder": "Display Name",
+                "caption": "Is used for display purposes only"
+            },
+            "username": {
+                "title": "Username",
+                "placeholder": "John Doe"
+            },
+            "password": {
+                "title": "Password",
+                "caption": "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character."
+            },
+            "confirm": {
+                "title": "Confirm Password",
+                "caption": "Confirm your password. Must match the password typed above."
+            },
+            "email": {
+                "title": "Email",
+                "caption": "Kindly use a valid email address. Will be used as login id."
+            },
+            "inviteCode": {
+                "title": "Invite Code",
+                "placeholder": "Paste in the invite code.",
+                "caption": "Please copy the token you would have received in your email."
+            },
+            "reset": {
+                "title": "Reset Token",
+                "placeholder": "Paste in the reset token.",
+                "caption": "Please copy the token you received in your email."
+            },
+            "newPassword": {
+                "title": "New Password"
+            },
+            "enableSso": {
+                "title": "Enable SSO Login"
+            },
+            "tenantId": {
+                "title": "Tenant ID"
+            },
+            "clientId": {
+                "title": "Client ID"
+            },
+            "clientSecret": {
+                "title": "Client Secret"
+            },
+            "domain": {
+                "title": "Auth0 Domain"
+            }
+        },
+        "resetPassword": {
+            "title": "Reset Password",
+            "back": "<a>Back to Login</a>.",
+            "messages": {
+                "reset": {
+                    "success": "Password reset successful",
+                    "error": "Failed to reset password!"
+                }
+            },
+            "validation": {
+                "token": "Token cannot be left blank!",
+                "match": "New Password and Confirm Password do not match."
+            }
+        },
+        "signin": {
+            "title": "Sign In",
+            "or": "OR",
+            "signup": {
+                "simple": "Don`t have an account? <a>Sign up for free</a>.",
+                "enterprise": "Have an invite code? <a>Sign up for an account</a>."
+            },
+            "unverified": "User Email Unverified",
+            "messages": {
+                "success": "Verification email has been sent successfully.",
+                "error": "Failed to send verification email."
+            }
+        },
+        "sso": {
+            "title": "Configure SSO",
+            "copied": "Copied!",
+            "tabs": "tabs",
+            "loading": {
+                "dashboard": "Loading dashboard...",
+                "data": "Loading data..."
+            },
+            "providers": {
+                "microsoft": "Microsoft",
+                "google": "Google",
+                "auth0": "Auth0",
+                "github": "Github"
+            },
+            "validation": {
+                "azure": {
+                    "tenantId": "Azure TenantID cannot be left blank!",
+                    "clientId": "Azure ClientID cannot be left blank!",
+                    "clientSecret": "Azure Client Secret cannot be left blank!"
+                },
+                "google": {
+                    "clientId": "Google ClientID cannot be left blank!",
+                    "clientSecret": "Google Client Secret cannot be left blank!"
+                },
+                "github": {
+                    "clientId": "Github ClientID cannot be left blank!",
+                    "clientSecret": "Github Client Secret cannot be left blank!"
+                },
+                "auth0": {
+                    "domain": "'Auth0 Domain cannot be left blank!'",
+                    "clientId": "Auth0 ClientID cannot be left blank!",
+                    "clientSecret": "Auth0 Client Secret cannot be left blank!"
+                }
+            },
+            "messages": {
+                "update": {
+                    "success": "SSO Configuration Updated!",
+                    "error": "Failed to update SSO Configuration."
+                },
+                "validation": {
+                    "success": "{{providerName}} SSO Configuration is Valid!",
+                    "error": "Failed to verify {{providerName}} SSO Configuration."
+                }
+            }
+        },
+        "unauthorized": {
+            "forbidden": "403 Forbidden",
+            "permission": "You do not have permission to access this page."
+        },
+        "verify": {
+            "loading": "Verifying Email...",
+            "failed": "Verification Failed.",
+            "success": "Email Verified Successfully."
+        }
+    },
     "categories": {
         "memory": "Memory",
         "chatModels": "Chat Models",

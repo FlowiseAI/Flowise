@@ -3,9 +3,13 @@ import { Link, useLocation } from 'react-router-dom'
 import unauthorizedSVG from '@/assets/images/unauthorized.svg'
 import MainCard from '@/ui-component/cards/MainCard'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| RateLimitedPage ||============================== //
 
 const RateLimitedPage = () => {
+    const { t } = useTranslation()
     const location = useLocation()
 
     const retryAfter = location.state?.retryAfter || 60
@@ -32,14 +36,14 @@ const RateLimitedPage = () => {
                         <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={unauthorizedSVG} alt='rateLimitedSVG' />
                     </Box>
                     <Typography sx={{ mb: 2 }} variant='h4' component='div' fontWeight='bold'>
-                        429 Too Many Requests
+                        {t('auth.rateLimit.title')}
                     </Typography>
                     <Typography variant='body1' component='div' sx={{ mb: 2, textAlign: 'center' }}>
-                        {`You have made too many requests in a short period of time. Please wait ${retryAfter}s before trying again.`}
+                        {t('auth.rateLimit.description', { retryAfter: retryAfter })}
                     </Typography>
                     <Link to='/'>
                         <Button variant='contained' color='primary'>
-                            Back to Home
+                            {t('auth.actions.back')}
                         </Button>
                     </Link>
                 </Stack>
