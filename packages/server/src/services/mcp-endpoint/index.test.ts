@@ -277,6 +277,117 @@ describe('handleMcpRequest', () => {
             expect(Object.keys(schema)).toContain('question')
         })
     })
+
+    describe('buildFormInputSchema', () => {
+        function makeAgentflowWithFormInputs(formInputTypes: any[]) {
+            return makeChatflow({
+                type: 'AGENTFLOW',
+                flowData: JSON.stringify({
+                    nodes: [
+                        {
+                            data: {
+                                name: 'startAgentflow',
+                                inputs: {
+                                    startInputType: 'formInput',
+                                    formInputTypes
+                                }
+                            }
+                        }
+                    ],
+                    edges: []
+                })
+            })
+        }
+
+        it('generates a form schema with string fields', async () => {
+            const chatflow = makeAgentflowWithFormInputs([{ type: 'string', label: 'Name', name: 'name', addOptions: '' }])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(Object.keys(schema)).toEqual(['form'])
+            // The form field should be a zod object with a 'name' key in its shape
+            expect(schema.form._def.typeName).toBe('ZodObject')
+            expect(schema.form.shape).toHaveProperty('name')
+            expect(schema.form.shape.name._def.typeName).toBe('ZodString')
+        })
+
+        it('generates a form schema with number fields', async () => {
+            const chatflow = makeAgentflowWithFormInputs([{ type: 'number', label: 'Age', name: 'age', addOptions: '' }])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape).toHaveProperty('age')
+            expect(schema.form.shape.age._def.typeName).toBe('ZodNumber')
+        })
+
+        it('generates a form schema with boolean fields', async () => {
+            const chatflow = makeAgentflowWithFormInputs([{ type: 'boolean', label: 'Adult', name: 'is_adult', addOptions: '' }])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape).toHaveProperty('is_adult')
+            expect(schema.form.shape.is_adult._def.typeName).toBe('ZodBoolean')
+        })
+
+        it('generates a form schema with options (enum) fields', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: [{ option: 'Tea' }, { option: 'Coffee' }] }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape).toHaveProperty('favorite_drink')
+            expect(schema.form.shape.favorite_drink._def.typeName).toBe('ZodEnum')
+            expect(schema.form.shape.favorite_drink._def.values).toEqual(['Tea', 'Coffee'])
+        })
+
+        it('generates a combined schema with multiple field types', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'string', label: 'Name', name: 'name', addOptions: '' },
+                { type: 'number', label: 'Age', name: 'age', addOptions: '' },
+                { type: 'boolean', label: 'Adult', name: 'is_adult', addOptions: '' },
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: [{ option: 'Tea' }, { option: 'Coffee' }] }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            const shapeKeys = Object.keys(schema.form.shape)
+            expect(shapeKeys).toEqual(['name', 'age', 'is_adult', 'favorite_drink'])
+            expect(schema.form.shape.name._def.typeName).toBe('ZodString')
+            expect(schema.form.shape.age._def.typeName).toBe('ZodNumber')
+            expect(schema.form.shape.is_adult._def.typeName).toBe('ZodBoolean')
+            expect(schema.form.shape.favorite_drink._def.typeName).toBe('ZodEnum')
+        })
+
+        it('attaches label as description on each field', async () => {
+            const chatflow = makeAgentflowWithFormInputs([{ type: 'string', label: 'Full Name', name: 'full_name', addOptions: '' }])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())
+
+            const schema = mockMcpTool.mock.calls[0][2] as Record<string, any>
+            expect(schema.form.shape.full_name.description).toBe('Full Name')
+        })
+
+        it('throws an error when form input configuration is invalid', async () => {
+            const chatflow = makeAgentflowWithFormInputs([{ type: 'unknown', label: 'Field', name: 'field', addOptions: '' }])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await expect(mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())).rejects.toThrow(
+                'Failed to build form input schema due to invalid configuration'
+            )
+        })
+    })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -353,7 +464,20 @@ describe('chatflow tool callback', () => {
         const agentflowChatflow = makeChatflow({
             type: 'AGENTFLOW',
             flowData: JSON.stringify({
-                nodes: [{ data: { name: 'startAgentflow', inputs: { startInputType: 'formInput' } } }],
+                nodes: [
+                    {
+                        data: {
+                            name: 'startAgentflow',
+                            inputs: {
+                                startInputType: 'formInput',
+                                formInputTypes: [
+                                    { type: 'string', label: 'Name', name: 'name', addOptions: '' },
+                                    { type: 'string', label: 'Age', name: 'age', addOptions: '' }
+                                ]
+                            }
+                        }
+                    }
+                ],
                 edges: []
             })
         })

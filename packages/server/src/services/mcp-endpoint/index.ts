@@ -67,17 +67,103 @@ function getToolInputType(chatflow: ChatFlow): 'question' | 'form' {
 function buildInputSchema(chatflow: ChatFlow) {
     const inputType = getToolInputType(chatflow)
     if (inputType === 'form') {
-        return {
-            form: z
-                .object({
-                    title: z.string(),
-                    desc: z.string()
-                })
-                .describe('Form inputs for the agent flow')
-        }
+        return buildFormInputSchema(chatflow)
     }
     return {
         question: z.string().describe('The question or prompt to send to the chatflow')
+    }
+}
+
+/**
+ * Build the zod schema for form input, based on the `startAgentflow` node configuration.
+ * 
+ * Example input:
+ * ```json
+    {
+        "inputs": {
+            "startInputType": "formInput",
+            "formInputTypes": [
+                {
+                    "type": "string",
+                    "label": "Name",
+                    "name": "name",
+                    "addOptions": ""
+                },
+                {
+                    "type": "number",
+                    "label": "Age",
+                    "name": "age",
+                    "addOptions": ""
+                },
+                {
+                    "type": "boolean",
+                    "label": "Adult",
+                    "name": "is_adult",
+                    "addOptions": ""
+                },
+                {
+                    "type": "options",
+                    "label": "Favorite Drink",
+                    "name": "favorite_drink",
+                    "addOptions": [
+                        {
+                            "option": "Tea"
+                        },
+                        {
+                            "option": "Coffee"
+                        }
+                    ]
+                }
+            ]
+        }    
+    }
+    ```
+ */
+function buildFormInputSchema(chatflow: ChatFlow) {
+    try {
+        const flowData: IReactFlowObject = JSON.parse(chatflow.flowData)
+        const nodes = flowData.nodes || []
+        const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const formInputTypes = startNode?.data?.inputs?.formInputTypes as
+            | {
+                  type: string
+                  label: string
+                  name: string
+                  addOptions: { option: string }[]
+              }[]
+            | undefined
+
+        if (!formInputTypes || !Array.isArray(formInputTypes)) {
+            throw new Error('Invalid form input configuration in chatflow')
+        }
+        const schemaShape: Record<string, z.ZodTypeAny> = {}
+        formInputTypes.forEach((input) => {
+            switch (input.type) {
+                case 'string':
+                    schemaShape[input.name] = z.string().describe(input.label)
+                    break
+                case 'number':
+                    schemaShape[input.name] = z.number().describe(input.label)
+                    break
+                case 'boolean':
+                    schemaShape[input.name] = z.boolean().describe(input.label)
+                    break
+                case 'options': {
+                    const options = input.addOptions.map((opt: { option: string }) => opt.option) || []
+                    schemaShape[input.name] = z.enum(options as [string, ...string[]]).describe(input.label)
+                    break
+                }
+                default:
+                    throw new Error(`Unsupported form input type: ${input.type}`)
+            }
+        })
+        return {
+            form: z.object(schemaShape).describe('Form inputs for the agent flow')
+        }
+    } catch (error) {
+        logger.error(`Failed to build form input schema for chatflow ${chatflow.id}: ${getErrorMessage(error)}`)
+        // Fallback to a generic schema if there's an error
+        throw new Error('Failed to build form input schema due to invalid configuration')
     }
 }
 
