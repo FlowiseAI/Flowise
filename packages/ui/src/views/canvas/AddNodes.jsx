@@ -47,6 +47,9 @@ import utilNodesPNG from '@/assets/images/utilNodes.png'
 import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { SET_COMPONENT_NODES } from '@/store/actions'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| ADD NODES||============================== //
 function a11yProps(index) {
     return {
@@ -71,6 +74,7 @@ const blacklistForChatflowCanvas = {
 }
 
 const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerated }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -391,9 +395,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
     const handleOpenDialog = () => {
         setOpenDialog(true)
         setDialogProps({
-            title: 'What would you like to build?',
-            description:
-                'Enter your prompt to generate an agentflow. Performance may vary with different models. Only nodes and edges are generated, you will need to fill in the input fields for each node.'
+            title: t('canvas.dialogs.build.title'),
+            description: t('canvas.dialogs.build.description')
         })
     }
 
@@ -413,8 +416,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                 ref={anchorRef}
                 size='small'
                 color='primary'
-                aria-label='add'
-                title='Add Node'
+                aria-label={t('canvas.actions.addNode.label')}
+                title={t('canvas.actions.addNode.title')}
                 onClick={handleToggle}
             >
                 {open ? <IconMinus /> : <IconPlus />}
@@ -432,8 +435,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                     onClick={handleOpenDialog}
                     size='small'
                     color='primary'
-                    aria-label='generate'
-                    title='Generate Agentflow'
+                    aria-label={t('canvas.actions.denerateAgentflow.label')}
+                    title={t('canvas.actions.denerateAgentflow.title')}
                 >
                     <IconSparkles />
                 </StyledFab>
@@ -472,7 +475,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                 <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
                                     <Box sx={{ p: 2 }}>
                                         <Stack>
-                                            <Typography variant='h4'>Add Nodes</Typography>
+                                            <Typography variant='h4'>{t('canvas.addNodes.title')}</Typography>
                                         </Stack>
                                         <OutlinedInput
                                             // eslint-disable-next-line
@@ -481,7 +484,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                             id='input-search-node'
                                             value={searchValue}
                                             onChange={(e) => filterSearch(e.target.value)}
-                                            placeholder='Search nodes'
+                                            placeholder={t('canvas.inputs.search.placeholder')}
                                             startAdornment={
                                                 <InputAdornment position='start'>
                                                     <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />
@@ -497,7 +500,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                             color: theme.palette.grey[900]
                                                         }
                                                     }}
-                                                    title='Clear Search'
+                                                    title={t('canvas.actions.clearSearch')}
                                                 >
                                                     <IconX
                                                         stroke={1.5}
@@ -511,7 +514,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                             }
                                             aria-describedby='search-helper-text'
                                             inputProps={{
-                                                'aria-label': 'weight'
+                                                'aria-label': t('canvas.addNodes.weight')
                                             }}
                                         />
                                         {!isAgentCanvas && (
@@ -520,7 +523,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                 variant='fullWidth'
                                                 value={tabValue}
                                                 onChange={handleTabChange}
-                                                aria-label='tabs'
+                                                aria-label={t('canvas.addNodes.tabs')}
                                             >
                                                 {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
                                                     <Tab

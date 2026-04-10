@@ -55,12 +55,16 @@ import { usePrompt } from '@/utils/usePrompt'
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: ButtonEdge }
 
 // ==============================|| CANVAS ||============================== //
 
 const Canvas = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const navigate = useNavigate()
     const { hasAssignedWorkspace } = useAuth()
@@ -72,7 +76,7 @@ const Canvas = () => {
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
     const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
-    const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
+    const canvasTitle = t(URLpath.includes('agentcanvas') ? 'canvas.title.agents' : 'canvas.title.chatflow')
 
     const { confirm } = useConfirm()
 
@@ -178,10 +182,10 @@ const Canvas = () => {
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete ${canvasTitle} ${chatflow.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: t('canvas.actions.delete.title'),
+            description: t('canvas.actions.delete.description', { title: canvasTitle, name: chatflow.name }),
+            confirmButtonName: t('canvas.actions.delete.title'),
+            cancelButtonName: t('canvas.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -349,7 +353,7 @@ const Canvas = () => {
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
-            message: `${canvasTitle} saved`,
+            message: t('canvas.messages.saveChatflow.success', { title: canvasTitle }),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -420,11 +424,13 @@ const Canvas = () => {
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
-            errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
+            errorFailed(
+                t('canvas.messages.saveChatflow.error', { title: canvasTitle, msg: getSpecificChatflowApi.error.response.data.message })
+            )
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error])
+    }, [getSpecificChatflowApi.data, getSpecificChatflowApi.error, t])
 
     // Create new chatflow successful
     useEffect(() => {
@@ -434,11 +440,13 @@ const Canvas = () => {
             saveChatflowSuccess()
             window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            errorFailed(`Failed to retrieve ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
+            errorFailed(
+                t('canvas.messages.saveChatflow.error', { title: canvasTitle, msg: getSpecificChatflowApi.error.response.data.message })
+            )
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [createNewChatflowApi.data, createNewChatflowApi.error])
+    }, [createNewChatflowApi.data, createNewChatflowApi.error, t])
 
     // Update chatflow successful
     useEffect(() => {
@@ -447,21 +455,23 @@ const Canvas = () => {
             setLasUpdatedDateTime(updateChatflowApi.data.updatedDate)
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            errorFailed(`Failed to retrieve ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
+            errorFailed(
+                t('canvas.messages.saveChatflow.error', { title: canvasTitle, msg: getSpecificChatflowApi.error.response.data.message })
+            )
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [updateChatflowApi.data, updateChatflowApi.error])
+    }, [updateChatflowApi.data, updateChatflowApi.error, t])
 
     // check if chatflow has changed before saving
     useEffect(() => {
         const checkIfHasChanged = async () => {
             if (getHasChatflowChangedApi.data?.hasChanged === true) {
                 const confirmPayload = {
-                    title: `Confirm Change`,
-                    description: `${canvasTitle} ${chatflow.name} has changed since you have opened, overwrite changes?`,
-                    confirmButtonName: 'Confirm',
-                    cancelButtonName: 'Cancel'
+                    title: t('canvas.dialogs.confirmChange.title'),
+                    description: t('canvas.dialogs.confirmChange.description', { title: canvasTitle, name: chatflow.name }),
+                    confirmButtonName: t('canvas.actions.confirm'),
+                    cancelButtonName: t('canvas.actions.cancel')
                 }
                 const isConfirmed = await confirm(confirmPayload)
 
@@ -481,7 +491,7 @@ const Canvas = () => {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getHasChatflowChangedApi.data, getHasChatflowChangedApi.error])
+    }, [getHasChatflowChangedApi.data, getHasChatflowChangedApi.error, t])
 
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
@@ -511,7 +521,7 @@ const Canvas = () => {
             dispatch({
                 type: SET_CHATFLOW,
                 chatflow: {
-                    name: `Untitled ${canvasTitle}`
+                    name: t('canvas.untitled', { title: canvasTitle })
                 }
             })
         }
@@ -556,7 +566,7 @@ const Canvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateFlowData])
 
-    usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
+    usePrompt(t('canvas.unsaved'), canvasDataStore.isDirty)
 
     return (
         <>
@@ -617,8 +627,8 @@ const Canvas = () => {
                                         onClick={() => {
                                             setIsSnappingEnabled(!isSnappingEnabled)
                                         }}
-                                        title='toggle snapping'
-                                        aria-label='toggle snapping'
+                                        title={t('canvas.actions.toggleSnapping')}
+                                        aria-label={t('canvas.actions.toggleSnapping')}
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
@@ -627,8 +637,8 @@ const Canvas = () => {
                                         onClick={() => {
                                             setIsBackgroundEnabled(!isBackgroundEnabled)
                                         }}
-                                        title='toggle background'
-                                        aria-label='toggle background'
+                                        title={t('canvas.actions.toggleBackground')}
+                                        aria-label={t('canvas.actions.toggleBackground')}
                                     >
                                         {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
                                     </button>
@@ -648,8 +658,8 @@ const Canvas = () => {
                                             }
                                         }}
                                         size='small'
-                                        aria-label='sync'
-                                        title='Sync Nodes'
+                                        aria-label={t('canvas.actions.sync.label')}
+                                        title={t('canvas.actions.sync.title')}
                                         onClick={() => syncNodes()}
                                     >
                                         <IconRefreshAlert />

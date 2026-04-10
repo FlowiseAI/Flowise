@@ -1934,9 +1934,130 @@
             "success": "Email Verified Successfully."
         }
     },
+    "canvas": {
+        "title": {
+            "agents": "Agents",
+            "chatflow": "Chatflow"
+        },
+        "untitled": "Untitled {{title}}",
+        "unsaved": "You have unsaved changes! Do you want to navigate away?",
+        "outputFrom": "Output from {{id}}",
+        "valueFrom": "Value from {{key}}",
+        "variablesTooltip": "Type {{ to select variables",
+        "tabs": "tabs",
+        "true": "True",
+        "false": "False",
+        "selectModel": "Select Model",
+        "inputsLabel": "Inputs",
+        "actions": {
+            "denerateAgentflow": {
+                "title": "Generate Agentflow",
+                "label": "generate"
+            },
+            "addNode": {
+                "title": "Add Node",
+                "label": "add"
+            },
+            "clearSearch": "Clear Search",
+            "back": "Back",
+            "editName": "Edit Name",
+            "saveName": "Save Name",
+            "cancel": "Cancel",
+            "apiEndpoint": "API Endpoint",
+            "saveByName": "Save {{name}}",
+            "save": "Save",
+            "setting": "Settings",
+            "duplicate": "Duplicate",
+            "info": "Info",
+            "additionalParameters": "Additional Parameters",
+            "add": "Add",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete {{title}} {{name}}?"
+            },
+            "confirm": "Confirm",
+            "toggleSnapping": "toggle snapping",
+            "toggleBackground": "toggle background",
+            "sync": {
+                "title": "Sync Nodes",
+                "label": "sync"
+            },
+            "editTool": "Edit Tool",
+            "editAssistant": "Edit Assistant",
+            "addNewTool": "Add New Tool",
+            "addNewAssistant": "Add New Assistant",
+            "langchainHub": "Langchain Hub",
+            "setupNimLocally": "Setup NIM Locally",
+            "generateKnowledge": "Generate knowledge base description",
+            "generateInstructions": "Generate instructions",
+            "expand": "Expand",
+            "seeExample": "See Example",
+            "refresh": "Refresh",
+            "edit": "Edit",
+            "manageLinks": "Manage Links"
+        },
+        "addNodes": {
+            "title": "Add Nodes",
+            "weight": "weight",
+            "tabs": "tabs"
+        },
+        "inputs": {
+            "search": {
+                "placeholder": "Search nodes"
+            },
+            "output": "Output"
+        },
+        "dialogs": {
+            "build": {
+                "title": "What would you like to build?",
+                "description": "Enter your prompt to generate an agentflow. Performance may vary with different models. Only nodes and edges are generated, you will need to fill in the input fields for each node."
+            },
+            "viewMessages": "View Messages",
+            "viewLeads": "View Leads",
+            "exportTemplate": "Export As Template",
+            "viewUpsertHistory": "View Upsert History",
+            "configuration": "{{title}} Configuration",
+            "embed": "Embed in website or use as API",
+            "saveNew": "Save New {{name}}",
+            "addNewCredential": "Add New Credential",
+            "confirmChange": {
+                "title": "Confirm Change",
+                "description": "{{title}} {{name}} has changed since you have opened, overwrite changes?"
+            },
+            "generateInstructions": {
+                "title": "Generate Instructions",
+                "description": "You can generate a prompt template by sharing basic details about your task.F"
+            }
+        },
+        "messages": {
+            "saveChatflow": {
+                "success": "{{title}} saved",
+                "error": "Failed to retrieve {{title}}: {{msg}}"
+            },
+            "saveAsTemplate": {
+                "error": "Please save the flow before exporting as template"
+            },
+            "nodeVersion": {
+                "outdated": "Node version {{oldVersion}} outdated\nUpdate to latest version {{newVersion}}",
+                "versionEmpty": "Node outdated\nUpdate to latest version {{newVersion}}",
+                "deprecated": "This node will be deprecated in the next release. Change to a new node tagged with NEW"
+            },
+            "warn": "Please fill in all mandatory fields.",
+            "docStoreTool": {
+                "success": "Document Store Tool Description generated successfully",
+                "error": "Please select a knowledge base"
+            },
+            "generate": {
+                "error": "Error setting generated instruction"
+            }
+        }
+    },
     "categories": {
         "memory": "Memory",
         "chatModels": "Chat Models",
-        "agents": "Agents"
+        "agents": "Agents",
+        "multiAgents": "Multi Agents",
+        "sequentialAgents": "Sequential Agents",
+        "agentFlows": "Agent Flows"
     }
 }

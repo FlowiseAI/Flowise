@@ -10,6 +10,9 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 import { isValidConnection } from '@/utils/genericHelper'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
     [`& .${tooltipClasses.tooltip}`]: {
         maxWidth: 500
@@ -19,6 +22,7 @@ const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...prop
 // ===========================|| NodeOutputHandler ||=========================== //
 
 const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const ref = useRef(null)
     const updateNodeInternals = useUpdateNodeInternals()
@@ -148,7 +152,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
                         </CustomWidthTooltip>
                         <div style={{ flex: 1 }}></div>
                         <Box sx={{ p: 2, textAlign: 'end' }}>
-                            <Typography>True</Typography>
+                            <Typography>{t('canvas.true')}</Typography>
                         </Box>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -175,7 +179,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
                         </CustomWidthTooltip>
                         <div style={{ flex: 1 }}></div>
                         <Box sx={{ p: 2, textAlign: 'end' }}>
-                            <Typography>False</Typography>
+                            <Typography>{t('canvas.false')}</Typography>
                         </Box>
                     </div>
                 </div>

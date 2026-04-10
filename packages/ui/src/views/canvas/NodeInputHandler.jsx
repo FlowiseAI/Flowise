@@ -80,6 +80,9 @@ import useNotifier from '@/utils/useNotifier'
 import { baseURL, FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
 const CustomWidthTooltip = styled(({ className, ...props }) => <Tooltip {...props} classes={{ popper: className }} />)({
@@ -121,6 +124,7 @@ const NodeInputHandler = ({
     onHideNodeInfoDialog,
     onCustomDataChange
 }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
@@ -191,8 +195,8 @@ const NodeInputHandler = ({
             nodes: reactFlowInstance?.getNodes() || [],
             edges: reactFlowInstance?.getEdges() || [],
             nodeId: data.id,
-            confirmButtonName: 'Save',
-            cancelButtonName: 'Cancel'
+            confirmButtonName: t('canvas.actions.save'),
+            cancelButtonName: t('canvas.actions.cancel')
         }
         if (inputParam.acceptVariable) {
             setExpandRichDialogProps(dialogProps)
@@ -208,8 +212,8 @@ const NodeInputHandler = ({
             data,
             inputParam,
             disabled,
-            confirmButtonName: 'Save',
-            cancelButtonName: 'Cancel'
+            confirmButtonName: t('canvas.actions.save'),
+            cancelButtonName: t('canvas.actions.cancel')
         }
         setConditionDialogProps(dialogProps)
         setShowConditionDialog(true)
@@ -235,8 +239,8 @@ const NodeInputHandler = ({
             relativeLinksMethod,
             limit,
             selectedLinks,
-            confirmButtonName: 'Save',
-            cancelButtonName: 'Cancel'
+            confirmButtonName: t('canvas.actions.save'),
+            cancelButtonName: t('canvas.actions.cancel')
         }
         setManageScrapedLinksDialogProps(dialogProps)
         setShowManageScrapedLinksDialog(true)
@@ -316,7 +320,7 @@ const NodeInputHandler = ({
                     for (const node of nodes) {
                         preLoadOptions.push({
                             value: `$${node.id}`,
-                            label: `Output from ${node.data.id}`
+                            label: t('canvas.outputFrom', { id: node.data.id })
                         })
                     }
                 }
@@ -341,7 +345,7 @@ const NodeInputHandler = ({
                                     for (const key of keys) {
                                         preLoadOptions.push({
                                             value: `$flow.state.${key}`,
-                                            label: `Value from ${key}`
+                                            label: t('canvas.valueFrom', { key: key })
                                         })
                                     }
                                 } catch (error) {
@@ -417,7 +421,7 @@ const NodeInputHandler = ({
                 preLoadOptions.push({
                     name: `{{ ${node.data.id} }}`,
                     label: `{{ ${node.data.id} }}`,
-                    description: `Output from ${node.data.id}`
+                    description: t('canvas.outputFrom', { id: node.data.id })
                 })
             }
         }
@@ -485,18 +489,18 @@ const NodeInputHandler = ({
     const editAsyncOption = (inputParamName, inputValue) => {
         if (inputParamName === 'selectedTool') {
             setAsyncOptionEditDialogProps({
-                title: 'Edit Tool',
+                title: t('canvas.actions.editTool'),
                 type: 'EDIT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
+                cancelButtonName: t('canvas.actions.cancel'),
+                confirmButtonName: t('canvas.actions.save'),
                 toolId: inputValue
             })
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
-                title: 'Edit Assistant',
+                title: t('canvas.actions.editAssistant'),
                 type: 'EDIT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
+                cancelButtonName: t('canvas.actions.cancel'),
+                confirmButtonName: t('canvas.actions.save'),
                 assistantId: inputValue
             })
         }
@@ -506,17 +510,17 @@ const NodeInputHandler = ({
     const addAsyncOption = (inputParamName) => {
         if (inputParamName === 'selectedTool') {
             setAsyncOptionEditDialogProps({
-                title: 'Add New Tool',
+                title: t('canvas.actions.addNewTool'),
                 type: 'ADD',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Add'
+                cancelButtonName: t('canvas.actions.cancel'),
+                confirmButtonName: t('canvas.actions.add')
             })
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
-                title: 'Add New Assistant',
+                title: t('canvas.actions.addNewAssistant'),
                 type: 'ADD',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Add'
+                cancelButtonName: t('canvas.actions.cancel'),
+                confirmButtonName: t('canvas.actions.add')
             })
         }
         setAsyncOptionEditDialog(inputParamName)
@@ -584,7 +588,7 @@ const NodeInputHandler = ({
 
     const displayWarning = () => {
         enqueueSnackbar({
-            message: 'Please fill in all mandatory fields.',
+            message: t('canvas.messages.warn'),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'warning',
@@ -600,7 +604,7 @@ const NodeInputHandler = ({
     const generateDocStoreToolDesc = async (storeId) => {
         if (!storeId) {
             enqueueSnackbar({
-                message: 'Please select a knowledge base',
+                message: t('canvas.messages.docStoreTool.error'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -640,7 +644,7 @@ const NodeInputHandler = ({
                     // Update the input value directly
                     data.inputs[inputParam.name] = content
                     enqueueSnackbar({
-                        message: 'Document Store Tool Description generated successfully',
+                        message: t('canvas.messages.docStoreTool.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -688,7 +692,7 @@ const NodeInputHandler = ({
                     // Update the input value directly
                     data.inputs[inputParam.name] = content
                     enqueueSnackbar({
-                        message: 'Document Store Tool Description generated successfully',
+                        message: t('canvas.messages.docStoreTool.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -736,8 +740,8 @@ const NodeInputHandler = ({
         if (existingModel) {
             // Open prompt generator dialog directly with existing model
             setPromptGeneratorDialogProps({
-                title: 'Generate Instructions',
-                description: 'You can generate a prompt template by sharing basic details about your task.',
+                title: t('canvas.dialogs.generateInstructions.title'),
+                description: t('canvas.dialogs.generateInstructions.description'),
                 data: {
                     selectedChatModel: {
                         name: existingModel,
@@ -757,8 +761,8 @@ const NodeInputHandler = ({
         setModelSelectionCallback(() => async (selectedModel) => {
             // After model selection, open prompt generator dialog
             setPromptGeneratorDialogProps({
-                title: 'Generate Instructions',
-                description: 'You can generate a prompt template by sharing basic details about your task.',
+                title: t('canvas.dialogs.generateInstructions.title'),
+                description: t('canvas.dialogs.generateInstructions.description'),
                 data: { selectedChatModel: selectedModel }
             })
             setPromptGeneratorDialogOpen(true)
@@ -841,7 +845,7 @@ const NodeInputHandler = ({
                                         onClick={() => onShowPromptHubButtonClicked()}
                                         endIcon={<IconAutoFixHigh />}
                                     >
-                                        Langchain Hub
+                                        {t('canvas.actions.langchainHub')}
                                     </Button>
                                     <PromptLangsmithHubDialog
                                         promptType={inputParam.name}
@@ -863,7 +867,7 @@ const NodeInputHandler = ({
                                     variant='outlined'
                                     onClick={() => setIsNvidiaNIMDialogOpen(true)}
                                 >
-                                    Setup NIM Locally
+                                    {t('canvas.actions.setupNimLocally')}
                                 </Button>
                             </>
                         )}
@@ -902,13 +906,13 @@ const NodeInputHandler = ({
                                 </Button>
                             )}
                             {inputParam.acceptVariable && inputParam.type === 'string' && (
-                                <Tooltip title='Type {{ to select variables'>
+                                <Tooltip title={t('canvas.variablesTooltip')}>
                                     <IconVariable size={20} style={{ color: 'teal' }} />
                                 </Tooltip>
                             )}
                             {inputParam.generateDocStoreDescription && (
                                 <IconButton
-                                    title='Generate knowledge base description'
+                                    title={t('canvas.actions.generateKnowledge')}
                                     sx={{
                                         height: 25,
                                         width: 25
@@ -922,7 +926,7 @@ const NodeInputHandler = ({
                             )}
                             {inputParam.generateInstruction && (
                                 <IconButton
-                                    title='Generate instructions'
+                                    title={t('canvas.actions.generateInstructions')}
                                     sx={{
                                         height: 25,
                                         width: 25,
@@ -943,7 +947,7 @@ const NodeInputHandler = ({
                                         width: 25,
                                         ml: 0.5
                                     }}
-                                    title='Expand'
+                                    title={t('canvas.actions.expand')}
                                     color='primary'
                                     onClick={() =>
                                         onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam)
@@ -989,7 +993,7 @@ const NodeInputHandler = ({
                                         setTabValue(val)
                                         data.inputs[`${inputParam.tabIdentifier}_${data.id}`] = inputParam.tabs[val].name
                                     }}
-                                    aria-label='tabs'
+                                    aria-label={t('canvas.tabs')}
                                     variant='fullWidth'
                                     defaultValue={getTabValue(inputParam)}
                                 >
@@ -1019,7 +1023,7 @@ const NodeInputHandler = ({
                                 disabled={disabled}
                                 fileType={inputParam.fileType || '*'}
                                 onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? t('components.file.chooseFile')}
                             />
                         )}
                         {inputParam.type === 'boolean' && (
@@ -1049,7 +1053,7 @@ const NodeInputHandler = ({
                                                 setReloadTimestamp(Date.now().toString())
                                             }}
                                         >
-                                            See Example
+                                            {t('canvas.actions.seeExample')}
                                         </Button>
                                     )}
                                 </div>
@@ -1191,7 +1195,7 @@ const NodeInputHandler = ({
                                     />
                                     {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
                                         <IconButton
-                                            title='Edit'
+                                            title={t('canvas.actions.edit')}
                                             color='primary'
                                             size='small'
                                             onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
@@ -1201,7 +1205,7 @@ const NodeInputHandler = ({
                                     )}
                                     {inputParam.refresh && (
                                         <IconButton
-                                            title='Refresh'
+                                            title={t('canvas.actions.refresh')}
                                             color='primary'
                                             size='small'
                                             onClick={() => setReloadTimestamp(Date.now().toString())}
@@ -1253,7 +1257,7 @@ const NodeInputHandler = ({
                                             )
                                         }
                                     >
-                                        Manage Links
+                                        {t('canvas.actions.manageLinks')}
                                     </Button>
                                     <ManageScrapedLinksDialog
                                         show={showManageScrapedLinksDialog}
@@ -1335,7 +1339,7 @@ const NodeInputHandler = ({
                 maxWidth='sm'
                 fullWidth
             >
-                <DialogTitle id='model-selection-dialog-title'>Select Model</DialogTitle>
+                <DialogTitle id='model-selection-dialog-title'>{t('canvas.selectCanvas')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 2 }}>
                         <Box sx={{ px: 2 }}>
@@ -1376,7 +1380,7 @@ const NodeInputHandler = ({
                             setSelectedTempChatModel({})
                         }}
                     >
-                        Cancel
+                        {t('canvas.actions.cancel')}
                     </Button>
                     <Button
                         disabled={!selectedTempChatModel || Object.keys(selectedTempChatModel).length === 0}
@@ -1389,7 +1393,7 @@ const NodeInputHandler = ({
                         }}
                         variant='contained'
                     >
-                        Confirm
+                        {t('canvas.actions.confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -1408,7 +1412,7 @@ const NodeInputHandler = ({
                         setPromptGeneratorDialogOpen(false)
                     } catch (error) {
                         enqueueSnackbar({
-                            message: 'Error setting generated instruction',
+                            message: t('canvas.messages.generate.error'),
                             options: {
                                 key: new Date().getTime() + Math.random(),
                                 variant: 'error',

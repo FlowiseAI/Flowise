@@ -15,9 +15,13 @@ import credentialsApi from '@/api/credentials'
 import { useAuth } from '@/hooks/useAuth'
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ===========================|| CredentialInputHandler ||=========================== //
 
 const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }) => {
+    const { t } = useTranslation()
     const ref = useRef(null)
     const [credentialId, setCredentialId] = useState(data?.credential || (data?.inputs && data.inputs[FLOWISE_CREDENTIAL_ID]) || '')
     const [showCredentialListDialog, setShowCredentialListDialog] = useState(false)
@@ -30,8 +34,8 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
     const editCredential = (credentialId) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('canvas.actions.cancel'),
+            confirmButtonName: t('canvas.actions.save'),
             credentialId
         }
         setSpecificCredentialDialogProps(dialogProp)
@@ -50,7 +54,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
             if (componentCredentialsResp.data) {
                 if (Array.isArray(componentCredentialsResp.data)) {
                     const dialogProp = {
-                        title: 'Add New Credential',
+                        title: t('canvas.dialogs.addNewCredential'),
                         componentsCredentials: componentCredentialsResp.data
                     }
                     setCredentialListDialogProps(dialogProp)
@@ -58,8 +62,8 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                 } else {
                     const dialogProp = {
                         type: 'ADD',
-                        cancelButtonName: 'Cancel',
-                        confirmButtonName: 'Add',
+                        cancelButtonName: t('canvas.actions.cancel'),
+                        confirmButtonName: t('canvas.actions.add'),
                         credentialComponent: componentCredentialsResp.data
                     }
                     setSpecificCredentialDialogProps(dialogProp)
@@ -83,8 +87,8 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
         setShowCredentialListDialog(false)
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: t('canvas.actions.cancel'),
+            confirmButtonName: t('canvas.actions.add'),
             credentialComponent
         }
         setSpecificCredentialDialogProps(dialogProp)
@@ -115,7 +119,12 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                                 onCreateNew={() => addAsyncOption(inputParam.name)}
                             />
                             {credentialId && hasPermission('credentials:update') && (
-                                <IconButton title='Edit' color='primary' size='small' onClick={() => editCredential(credentialId)}>
+                                <IconButton
+                                    title={t('canvas.actions.edit')}
+                                    color='primary'
+                                    size='small'
+                                    onClick={() => editCredential(credentialId)}
+                                >
                                     <IconEdit />
                                 </IconButton>
                             )}
