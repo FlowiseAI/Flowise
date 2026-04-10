@@ -30,9 +30,13 @@ import { useError } from '@/store/context/ErrorContext'
 // icons
 import { IconLayoutGrid, IconList, IconPlus } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| CHATFLOWS ||============================== //
 
 const Chatflows = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const theme = useTheme()
 
@@ -138,9 +142,9 @@ const Chatflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Chatflows'
-                        description='Build single-agent systems, chatbots and simple LLM flows'
+                        searchPlaceholder={t('chatflows.searchPlaceholder')}
+                        title={t('chatflows.title')}
+                        description={t('chatflows.description')}
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -158,7 +162,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title='Card View'
+                                title={t('chatflows.actions.cardView')}
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -170,7 +174,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title='List View'
+                                title={t('chatflows.actions.listView')}
                             >
                                 <IconList />
                             </ToggleButton>
@@ -182,7 +186,7 @@ const Chatflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            Add New
+                            {t('chatflows.actions.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
 
@@ -226,7 +230,7 @@ const Chatflows = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Chatflows Yet</div>
+                            <div>{t('chatflows.notFound')}</div>
                         </Stack>
                     )}
                 </Stack>

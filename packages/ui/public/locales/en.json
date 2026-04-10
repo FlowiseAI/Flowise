@@ -2059,5 +2059,162 @@
         "multiAgents": "Multi Agents",
         "sequentialAgents": "Sequential Agents",
         "agentFlows": "Agent Flows"
+    },
+    "chatbot": {
+        "invalid": {
+            "title": "Invalid Chatbot",
+            "description": "The chatbot you're looking for doesn't exist or requires API key authentication."
+        }
+    },
+    "chatflows": {
+        "title": "Chatflows",
+        "description": "Build single-agent systems, chatbots and simple LLM flows",
+        "searchPlaceholder": "Search Name or Category",
+        "notFound": "No Chatflows Yet",
+        "copied": "Copied!",
+        "codes": {
+            "embed": {
+                "title": "Embed",
+                "warnApi": "You cannot use API key while embedding/sharing chatbot.",
+                "select": "Please select <b>\"No Authorization\"</b> from the dropdown at the top right corner."
+            },
+            "python": "Python",
+            "js": "JavaScript",
+            "cUrl": "cURL",
+            "shareChatbot": "Share Chatbot",
+            "configuration": "Configuration",
+            "popupHtml": "Popup Html",
+            "fullpageHtml": "Fullpage Html",
+            "popupReact": "Popup React",
+            "fullpageReact": "Fullpage React"
+        },
+        "config": {
+            "showOverrideConfig": "Show Override Config",
+            "override": "You can override existing input configuration of the chatflow with overrideConfig property.",
+            "secWarn": "For security reason, override config is disabled by default. You can change this by going into Chatflow Configuration -> Security tab, and enable the property you want to override.",
+            "refer": "Refer <a>here</a> for more details"
+        },
+        "nodes": "Nodes",
+        "variables": "Variables",
+        "options": {
+            "noAuthorization": "No Authorization",
+            "addKey": "- Add New Key -"
+        },
+        "table": {
+            "name": "Name",
+            "type": "Type"
+        },
+        "specifyMultipleValues": "You can also specify multiple values for a config parameter by specifying the node id",
+        "streamInfo": "Read&nbsp;<a>here</a>&nbsp;on how to stream response back to application",
+        "choose": "Choose an API key",
+        "tabs": "tabs",
+        "bodyTag": "Paste this anywhere in the <c><body></c> tag of your html file.",
+        "bodyTagAlso": "You can also specify a&nbsp;<a>version</a>:&nbsp;<c>https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js</c>",
+        "actions": {
+            "showChat": "Show Embed Chat Config",
+            "cardView": "Card View",
+            "listView": "List View",
+            "addNew": "Add New",
+            "copyLink": "Copy Link",
+            "openNewTab": "Open New Tab",
+            "makePublic": {
+                "title": "Make Public",
+                "tooltip": "Making public will allow anyone to access the chatbot without authentication"
+            },
+            "saveChanges": "Save Changes"
+        },
+        "chat": {
+            "tooltipMessage": "Hi There 👋!",
+            "disclaimer": {
+                "title": "Disclaimer",
+                "message": "By using this chatbot, you agree to the <a target=\"_blank\" href=\"https://flowiseai.com/terms\">Terms & Condition</a>",
+                "buttonText": "Start Chatting"
+            },
+            "chatWindow": {
+                "title": "Flowise Bot",
+                "welcomeMessage": "Hello! This is custom welcome message",
+                "errorMessage": "This is a custom error message",
+                "backgroundImage": "enter image path or link",
+                "sourceDocsTitle": "Sources:"
+            },
+            "textInput": {
+                "placeholder": "Type your question",
+                "maxCharsWarningMessage": "You exceeded the characters limit. Please input less than 50 characters."
+            },
+            "footer": {
+                "text": "Powered by",
+                "company": "Flowise"
+            }
+        },
+        "messages": {
+            "save": {
+                "success": "Chatbot Configuration Saved",
+                "error": "Failed to save Chatbot Configuration: {{msg}}"
+            }
+        },
+        "cards": {
+            "titleSettings": "Title Settings",
+            "generalSettings": "General Settings",
+            "botMessage": "Bot Message",
+            "userMessage": "User Message",
+            "textInput": "Text Input"
+        },
+        "inputs": {
+            "title": {
+                "title": "Title",
+                "placeholder": "Flowise Assistant"
+            },
+            "titleAvatarSrc": {
+                "title": "Title Avatar Link"
+            },
+            "titleBackgroundColor": {
+                "title": "Title Background Color"
+            },
+            "titleTextColor": {
+                "title": "Title TextColor"
+            },
+            "welcomeMessage": {
+                "title": "Welcome Message",
+                "placeholder": "Hello! This is custom welcome message"
+            },
+            "errorMessage": {
+                "title": "Error Message",
+                "placeholder": "This is custom error message"
+            },
+            "backgroundColor": {
+                "title": "Background Color"
+            },
+            "fontSize": {
+                "title": "Font Size"
+            },
+            "poweredByTextColor": {
+                "title": "PoweredBy TextColor"
+            },
+            "showAgentMessages": {
+                "title": "Show agent reasonings when using Agentflow"
+            },
+            "renderHTML": {
+                "title": "Render HTML on the chat"
+            },
+            "generateNewSession": {
+                "title": "Start new session when chatbot link is opened or refreshed"
+            },
+            "textColor": {
+                "title": "Text Color"
+            },
+            "avatarSrc": {
+                "title": "Avatar Link"
+            },
+            "showAvatar": {
+                "title": "Show Avatar"
+            },
+            "textInputPlaceholder": {
+                "title": "TextInput Placeholder",
+                "placeholder": "Type question.."
+            },
+            "textInputSendButtonColor": {
+                "title": "TextIntput Send Button Color"
+            }
+        }
     }
 }

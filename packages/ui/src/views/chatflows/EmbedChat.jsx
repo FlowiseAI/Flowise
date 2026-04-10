@@ -10,6 +10,10 @@ import { CheckboxInput } from '@/ui-component/checkbox/Checkbox'
 // Const
 import { baseURL } from '@/store/constant'
 
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+import i18next from 'i18next'
+
 function TabPanel(props) {
     const { children, value, index, ...other } = props
     return (
@@ -85,93 +89,95 @@ const App = () => {
 };`
 }
 
-export const defaultThemeConfig = {
-    button: {
-        backgroundColor: '#3B81F6',
-        right: 20,
-        bottom: 20,
-        size: 48,
-        dragAndDrop: true,
-        iconColor: 'white',
-        customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
-        autoWindowOpen: {
-            autoOpen: true,
-            openDelay: 2,
-            autoOpenOnMobile: false
-        }
-    },
-    tooltip: {
-        showTooltip: true,
-        tooltipMessage: 'Hi There 👋!',
-        tooltipBackgroundColor: 'black',
-        tooltipTextColor: 'white',
-        tooltipFontSize: 16
-    },
-    disclaimer: {
-        title: 'Disclaimer',
-        message: 'By using this chatbot, you agree to the <a target="_blank" href="https://flowiseai.com/terms">Terms & Condition</a>',
-        textColor: 'black',
-        buttonColor: '#3b82f6',
-        buttonText: 'Start Chatting',
-        buttonTextColor: 'white',
-        blurredBackgroundColor: 'rgba(0, 0, 0, 0.4)',
-        backgroundColor: 'white'
-    },
-    customCSS: ``,
-    chatWindow: {
-        showTitle: true,
-        showAgentMessages: true,
-        title: 'Flowise Bot',
-        titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
-        welcomeMessage: 'Hello! This is custom welcome message',
-        errorMessage: 'This is a custom error message',
-        backgroundColor: '#ffffff',
-        backgroundImage: 'enter image path or link',
-        height: 700,
-        width: 400,
-        fontSize: 16,
-        starterPrompts: ['What is a bot?', 'Who are you?'],
-        starterPromptFontSize: 15,
-        clearChatOnReload: false,
-        sourceDocsTitle: 'Sources:',
-        renderHTML: true,
-        botMessage: {
-            backgroundColor: '#f7f8ff',
-            textColor: '#303235',
-            showAvatar: true,
-            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-        },
-        userMessage: {
+export const defaultThemeConfig = (t) => {
+    return {
+        button: {
             backgroundColor: '#3B81F6',
-            textColor: '#ffffff',
-            showAvatar: true,
-            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+            right: 20,
+            bottom: 20,
+            size: 48,
+            dragAndDrop: true,
+            iconColor: 'white',
+            customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+            autoWindowOpen: {
+                autoOpen: true,
+                openDelay: 2,
+                autoOpenOnMobile: false
+            }
         },
-        textInput: {
-            placeholder: 'Type your question',
+        tooltip: {
+            showTooltip: true,
+            tooltipMessage: i18next.t('chatflows.chat.tooltipMessage'),
+            tooltipBackgroundColor: 'black',
+            tooltipTextColor: 'white',
+            tooltipFontSize: 16
+        },
+        disclaimer: {
+            title: i18next.t('chatflows.chat.disclaimer.title'),
+            message: i18next.t('chatflows.chat.disclaimer.message'),
+            textColor: 'black',
+            buttonColor: '#3b82f6',
+            buttonText: i18next.t('chatflows.chat.disclaimer.buttonText'),
+            buttonTextColor: 'white',
+            blurredBackgroundColor: 'rgba(0, 0, 0, 0.4)',
+            backgroundColor: 'white'
+        },
+        customCSS: ``,
+        chatWindow: {
+            showTitle: true,
+            showAgentMessages: true,
+            title: i18next.t('chatflows.chat.chatWindow.title'),
+            titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+            welcomeMessage: i18next.t('chatflows.chat.chatWindow.welcomeMessage'),
+            errorMessage: i18next.t('chatflows.chat.chatWindow.errorMessage'),
             backgroundColor: '#ffffff',
-            textColor: '#303235',
-            sendButtonColor: '#3B81F6',
-            maxChars: 50,
-            maxCharsWarningMessage: 'You exceeded the characters limit. Please input less than 50 characters.',
-            autoFocus: true,
-            sendMessageSound: true,
-            sendSoundLocation: 'send_message.mp3',
-            receiveMessageSound: true,
-            receiveSoundLocation: 'receive_message.mp3'
-        },
-        feedback: {
-            color: '#303235'
-        },
-        dateTimeToggle: {
-            date: true,
-            time: true
-        },
-        footer: {
-            textColor: '#303235',
-            text: 'Powered by',
-            company: 'Flowise',
-            companyLink: 'https://flowiseai.com'
+            backgroundImage: i18next.t('chatflows.chat.chatWindow.backgroundImage'),
+            height: 700,
+            width: 400,
+            fontSize: 16,
+            starterPrompts: ['What is a bot?', 'Who are you?'],
+            starterPromptFontSize: 15,
+            clearChatOnReload: false,
+            sourceDocsTitle: i18next.t('chatflows.chat.chatWindow.sourceDocsTitle'),
+            renderHTML: true,
+            botMessage: {
+                backgroundColor: '#f7f8ff',
+                textColor: '#303235',
+                showAvatar: true,
+                avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+            },
+            userMessage: {
+                backgroundColor: '#3B81F6',
+                textColor: '#ffffff',
+                showAvatar: true,
+                avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
+            },
+            textInput: {
+                placeholder: i18next.t('chatflows.chat.textInput.placeholder'),
+                backgroundColor: '#ffffff',
+                textColor: '#303235',
+                sendButtonColor: '#3B81F6',
+                maxChars: 50,
+                maxCharsWarningMessage: t('chatflows.chat.textInput.maxCharsWarningMessage'),
+                autoFocus: true,
+                sendMessageSound: true,
+                sendSoundLocation: 'send_message.mp3',
+                receiveMessageSound: true,
+                receiveSoundLocation: 'receive_message.mp3'
+            },
+            feedback: {
+                color: '#303235'
+            },
+            dateTimeToggle: {
+                date: true,
+                time: true
+            },
+            footer: {
+                textColor: '#303235',
+                text: i18next.t('chatflows.chat.footer.text'),
+                company: i18next.t('chatflows.chat.footer.company'),
+                companyLink: 'https://flowiseai.com'
+            }
         }
     }
 }
@@ -286,7 +292,13 @@ const App = () => {
 }
 
 const EmbedChat = ({ chatflowid }) => {
-    const codes = ['Popup Html', 'Fullpage Html', 'Popup React', 'Fullpage React']
+    const { t } = useTranslation()
+    const codes = [
+        { id: 'Popup Html', label: 'chatflows.codes.popupHtml' },
+        { id: 'Fullpage Html', label: 'chatflows.codes.fullpageHtml' },
+        { id: 'Popup React', label: 'chatflows.codes.popupReact' },
+        { id: 'Fullpage React', label: 'chatflows.codes.fullpageReact' }
+    ]
     const [value, setValue] = useState(0)
     const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false)
 
@@ -332,9 +344,9 @@ const EmbedChat = ({ chatflowid }) => {
         <>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                 <div style={{ flex: 80 }}>
-                    <Tabs value={value} onChange={handleChange} aria-label='tabs'>
+                    <Tabs value={value} onChange={handleChange} aria-label={t('chatflows.tabs')}>
                         {codes.map((codeLang, index) => (
-                            <Tab key={index} label={codeLang} {...a11yProps(index)}></Tab>
+                            <Tab key={index} label={t(codeLang.label)} {...a11yProps(index)}></Tab>
                         ))}
                     </Tabs>
                 </div>
@@ -345,30 +357,39 @@ const EmbedChat = ({ chatflowid }) => {
                     {(value === 0 || value === 1) && (
                         <>
                             <span>
-                                Paste this anywhere in the <code>{`<body>`}</code> tag of your html file.
+                                <Trans i18nKey='chatflows.bodyTag' components={{ c: <code /> }} />
                                 <p>
-                                    You can also specify a&nbsp;
-                                    <a
-                                        rel='noreferrer'
-                                        target='_blank'
-                                        href='https://www.npmjs.com/package/flowise-embed?activeTab=versions'
-                                    >
-                                        version
-                                    </a>
-                                    :&nbsp;<code>{`https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js`}</code>
+                                    <Trans
+                                        i18nKey='chatflows.bodyTagAlso'
+                                        components={{
+                                            c: <code />,
+                                            a: (
+                                                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                                                <a
+                                                    rel='noreferrer'
+                                                    target='_blank'
+                                                    href='https://www.npmjs.com/package/flowise-embed?activeTab=versions'
+                                                />
+                                            )
+                                        }}
+                                    />
                                 </p>
                             </span>
                             <div style={{ height: 10 }}></div>
                         </>
                     )}
-                    <CopyBlock theme={atomOneDark} text={getCode(codeLang)} language='javascript' showLineNumbers={false} wrapLines />
+                    <CopyBlock theme={atomOneDark} text={getCode(codeLang.id)} language='javascript' showLineNumbers={false} wrapLines />
 
-                    <CheckboxInput label='Show Embed Chat Config' value={embedChatCheckboxVal} onChange={onCheckBoxEmbedChatChanged} />
+                    <CheckboxInput
+                        label={t('chatflows.actions.showChat')}
+                        value={embedChatCheckboxVal}
+                        onChange={onCheckBoxEmbedChatChanged}
+                    />
 
                     {embedChatCheckboxVal && (
                         <CopyBlock
                             theme={atomOneDark}
-                            text={getCodeCustomization(codeLang)}
+                            text={getCodeCustomization(codeLang.id)}
                             language='javascript'
                             showLineNumbers={false}
                             wrapLines

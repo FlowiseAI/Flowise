@@ -11,6 +11,7 @@ i18n.use(Backend)
             loadPath: '/locales/{{lng}}.json'
         },
         fallbackLng: 'en',
+        saveMissing: true,
         debug: true
     })
 

@@ -56,6 +56,9 @@ import { TableViewOnly } from '@/ui-component/table/Table'
 // Helpers
 import { unshiftFiles, getConfigExamplesForJS, getConfigExamplesForPython, getConfigExamplesForCurl } from '@/utils/genericHelper'
 
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+
 function TabPanel(props) {
     const { children, value, index, ...other } = props
     return (
@@ -85,6 +88,7 @@ function a11yProps(index) {
 }
 
 const APICodeDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -93,7 +97,13 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const apiConfig = chatflow?.apiConfig ? JSON.parse(chatflow.apiConfig) : {}
     const overrideConfigStatus = apiConfig?.overrideConfig?.status !== undefined ? apiConfig.overrideConfig.status : false
 
-    const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
+    const codes = [
+        { id: 'Embed', label: 'chatflows.codes.embed.title' },
+        { id: 'Python', label: 'chatflows.codes.python' },
+        { id: 'JavaScript', label: 'chatflows.codes.js' },
+        { id: 'cURL', label: 'chatflows.codes.cUrl' },
+        { id: 'Share Chatbot', label: 'chatflows.codes.shareChatbot' }
+    ]
     const [value, setValue] = useState(0)
     const [apiKeys, setAPIKeys] = useState([])
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
@@ -118,7 +128,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
 
         const options = [
             {
-                label: 'No Authorization',
+                label: t('chatflows.options.noAuthorization'),
                 name: ''
             }
         ]
@@ -132,13 +142,13 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
 
         if (isGlobal || hasPermission('apikeys:create')) {
             options.push({
-                label: '- Add New Key -',
+                label: t('chatflows.options.addKey'),
                 name: 'addnewkey'
             })
         }
 
         return options
-    }, [getAllAPIKeysApi.data, isGlobal, hasPermission])
+    }, [getAllAPIKeysApi.data, isGlobal, hasPermission, t])
 
     const onCheckBoxChanged = (newVal) => {
         setCheckbox(newVal)
@@ -712,15 +722,19 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
             <DialogContent>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <div style={{ flex: 80 }}>
-                        <Tabs value={value} onChange={handleChange} aria-label='tabs'>
+                        <Tabs value={value} onChange={handleChange} aria-label={t('chatflows.tabs')}>
                             {codes.map((codeLang, index) => (
                                 <Tab
                                     icon={
-                                        <img style={{ objectFit: 'cover', height: 15, width: 'auto' }} src={getSVG(codeLang)} alt='code' />
+                                        <img
+                                            style={{ objectFit: 'cover', height: 15, width: 'auto' }}
+                                            src={getSVG(codeLang.id)}
+                                            alt='code'
+                                        />
                                     }
                                     iconPosition='start'
                                     key={index}
-                                    label={codeLang}
+                                    label={t(codeLang.label)}
                                     {...a11yProps(index)}
                                 ></Tab>
                             ))}
@@ -733,7 +747,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                 disableClearable={true}
                                 options={keyOptions}
                                 onSelect={(newValue) => onApiKeySelected(newValue)}
-                                value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
+                                value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? t('chatflows.choose')}
                             />
                         </Available>
                     </div>
@@ -741,30 +755,30 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                 <div style={{ marginTop: 10 }}></div>
                 {codes.map((codeLang, index) => (
                     <TabPanel key={index} value={value} index={index}>
-                        {(codeLang === 'Embed' || codeLang === 'Share Chatbot') && chatflowApiKeyId && (
+                        {(codeLang.id === 'Embed' || codeLang.id === 'Share Chatbot') && chatflowApiKeyId && (
                             <>
-                                <p>You cannot use API key while embedding/sharing chatbot.</p>
-                                <p>
-                                    Please select <b>&quot;No Authorization&quot;</b> from the dropdown at the top right corner.
-                                </p>
+                                <p>{t('chatflows.codes.embed.title')}</p>
+                                <p>{t('chatflows.codes.embed.select')}</p>
                             </>
                         )}
-                        {codeLang === 'Embed' && !chatflowApiKeyId && <EmbedChat chatflowid={dialogProps.chatflowid} />}
-                        {codeLang !== 'Embed' && codeLang !== 'Share Chatbot' && codeLang !== 'Configuration' && (
+                        {codeLang.id === 'Embed' && !chatflowApiKeyId && <EmbedChat chatflowid={dialogProps.chatflowid} />}
+                        {codeLang.id !== 'Embed' && codeLang.id !== 'Share Chatbot' && codeLang.id !== 'Configuration' && (
                             <>
                                 <CopyBlock
                                     theme={atomOneDark}
-                                    text={chatflowApiKeyId ? getCodeWithAuthorization(codeLang) : getCode(codeLang)}
-                                    language={getLang(codeLang)}
+                                    text={chatflowApiKeyId ? getCodeWithAuthorization(codeLang.id) : getCode(codeLang.id)}
+                                    language={getLang(codeLang.id)}
                                     showLineNumbers={false}
                                     wrapLines
                                 />
-                                <CheckboxInput label='Show Override Config' value={checkboxVal} onChange={onCheckBoxChanged} />
+                                <CheckboxInput
+                                    label={t('chatflows.config.showOverrideConfig')}
+                                    value={checkboxVal}
+                                    onChange={onCheckBoxChanged}
+                                />
                                 {checkboxVal && getConfigApi.data && getConfigApi.data.length > 0 && (
                                     <>
-                                        <Typography sx={{ mt: 2 }}>
-                                            You can override existing input configuration of the chatflow with overrideConfig property.
-                                        </Typography>
+                                        <Typography sx={{ mt: 2 }}>{t('chatflows.config.override')}</Typography>
                                         <div
                                             style={{
                                                 display: 'flex',
@@ -785,18 +799,21 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                             >
                                                 <IconExclamationCircle size={30} color='rgb(116,66,16)' />
                                                 <span style={{ color: 'rgb(116,66,16)', marginLeft: 10, fontWeight: 500 }}>
-                                                    {
-                                                        'For security reason, override config is disabled by default. You can change this by going into Chatflow Configuration -> Security tab, and enable the property you want to override.'
-                                                    }
-                                                    &nbsp;Refer{' '}
-                                                    <a
-                                                        rel='noreferrer'
-                                                        target='_blank'
-                                                        href='https://docs.flowiseai.com/using-flowise/prediction#configuration-override'
-                                                    >
-                                                        here
-                                                    </a>{' '}
-                                                    for more details
+                                                    {t('chatflows.config.secWarn')}
+                                                    &nbsp;
+                                                    <Trans
+                                                        i18nKey='chatflows.config.refer'
+                                                        components={{
+                                                            a: (
+                                                                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                                                                <a
+                                                                    rel='noreferrer'
+                                                                    target='_blank'
+                                                                    href='https://docs.flowiseai.com/using-flowise/prediction#configuration-override'
+                                                                />
+                                                            )
+                                                        }}
+                                                    />
                                                 </span>
                                             </div>
                                         </div>
@@ -804,7 +821,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                             <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
                                                 <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
                                                     <IconBox />
-                                                    <Typography variant='h4'>Nodes</Typography>
+                                                    <Typography variant='h4'>{t('chatflows.nodes')}</Typography>
                                                 </Stack>
                                                 {Object.keys(nodeConfig)
                                                     .sort()
@@ -870,9 +887,12 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                             <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
                                                 <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
                                                     <IconVariable />
-                                                    <Typography variant='h4'>Variables</Typography>
+                                                    <Typography variant='h4'>{t('chatflows.variables')}</Typography>
                                                 </Stack>
-                                                <TableViewOnly rows={variableOverrides} columns={['name', 'type', 'enabled']} />
+                                                <TableViewOnly
+                                                    rows={variableOverrides}
+                                                    columns={[t('chatflows.table.name'), t('chatflows.table.type'), 'enabled']}
+                                                />
                                             </Card>
                                         </Stack>
                                         <CopyBlock
@@ -880,13 +900,13 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                             text={
                                                 chatflowApiKeyId
                                                     ? dialogProps.isFormDataRequired
-                                                        ? getConfigCodeWithFormDataWithAuth(codeLang, getConfigApi.data)
-                                                        : getConfigCodeWithAuthorization(codeLang, getConfigApi.data)
+                                                        ? getConfigCodeWithFormDataWithAuth(codeLang.id, getConfigApi.data)
+                                                        : getConfigCodeWithAuthorization(codeLang.id, getConfigApi.data)
                                                     : dialogProps.isFormDataRequired
-                                                    ? getConfigCodeWithFormData(codeLang, getConfigApi.data)
-                                                    : getConfigCode(codeLang, getConfigApi.data)
+                                                    ? getConfigCodeWithFormData(codeLang.id, getConfigApi.data)
+                                                    : getConfigCode(codeLang.id, getConfigApi.data)
                                             }
-                                            language={getLang(codeLang)}
+                                            language={getLang(codeLang.id)}
                                             showLineNumbers={false}
                                             wrapLines
                                         />
@@ -910,7 +930,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                             >
                                                 <IconBulb size={30} color='#2d6a4f' />
                                                 <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                                                    You can also specify multiple values for a config parameter by specifying the node id
+                                                    {t('chatflows.specifyMultipleValues')}
                                                 </span>
                                             </div>
                                             <div style={{ padding: 10 }}>
@@ -918,10 +938,10 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                     theme={atomOneDark}
                                                     text={
                                                         dialogProps.isFormDataRequired
-                                                            ? getMultiConfigCodeWithFormData(codeLang)
+                                                            ? getMultiConfigCodeWithFormData(codeLang.id)
                                                             : getMultiConfigCode()
                                                     }
-                                                    language={getLang(codeLang)}
+                                                    language={getLang(codeLang.id)}
                                                     showLineNumbers={false}
                                                     wrapLines
                                                 />
@@ -931,16 +951,24 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                 )}
                                 {getIsChatflowStreamingApi.data?.isStreaming && (
                                     <p>
-                                        Read&nbsp;
-                                        <a rel='noreferrer' target='_blank' href='https://docs.flowiseai.com/using-flowise/streaming'>
-                                            here
-                                        </a>
-                                        &nbsp;on how to stream response back to application
+                                        <Trans
+                                            i18nKey='chatflows.streamInfo'
+                                            components={{
+                                                a: (
+                                                    // eslint-disable-next-line jsx-a11y/anchor-has-content
+                                                    <a
+                                                        rel='noreferrer'
+                                                        target='_blank'
+                                                        href='https://docs.flowiseai.com/using-flowise/streaming'
+                                                    />
+                                                )
+                                            }}
+                                        />
                                     </p>
                                 )}
                             </>
                         )}
-                        {codeLang === 'Share Chatbot' && !chatflowApiKeyId && (
+                        {codeLang.id === 'Share Chatbot' && !chatflowApiKeyId && (
                             <ShareChatbot isSessionMemory={dialogProps.isSessionMemory} isAgentCanvas={dialogProps.isAgentCanvas} />
                         )}
                     </TabPanel>
