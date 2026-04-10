@@ -4,6 +4,35 @@ import { TextSplitter } from '@langchain/textsplitters'
 import { NotionAPILoader, NotionAPILoaderOptions } from '@langchain/community/document_loaders/web/notionapi'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
 
+/**
+ * Normalize markdown table cells by removing unnecessary whitespace padding.
+ * The notion-to-md library pads table cells with spaces to align columns,
+ * which adds unnecessary tokens and can interfere with text splitters.
+ */
+const normalizeMarkdownTableCells = (content: string): string => {
+    return content
+        .split('\n')
+        .map((line) => {
+            const trimmedLine = line.trim()
+            if (trimmedLine.startsWith('|') && trimmedLine.endsWith('|')) {
+                const cells = trimmedLine.split('|')
+                return cells
+                    .map((cell, i) => {
+                        if (i === 0 || i === cells.length - 1) return ''
+                        const trimmedCell = cell.trim()
+                        // Normalize separator rows (e.g., |------|------| or |:------|:------:|)
+                        if (/^[-: ]+$/.test(trimmedCell) && trimmedCell.includes('-')) {
+                            return ' --- '
+                        }
+                        return ` ${trimmedCell} `
+                    })
+                    .join('|')
+            }
+            return line
+        })
+        .join('\n')
+}
+
 class NotionPage_DocumentLoaders implements INode {
     label: string
     name: string
@@ -109,9 +138,11 @@ class NotionPage_DocumentLoaders implements INode {
         let docs: IDocument[] = []
         if (textSplitter) {
             docs = await loader.load()
+            docs = docs.map((doc) => ({ ...doc, pageContent: normalizeMarkdownTableCells(doc.pageContent) }))
             docs = await textSplitter.splitDocuments(docs)
         } else {
             docs = await loader.load()
+            docs = docs.map((doc) => ({ ...doc, pageContent: normalizeMarkdownTableCells(doc.pageContent) }))
         }
 
         if (metadata) {
