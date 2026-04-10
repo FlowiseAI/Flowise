@@ -135,7 +135,7 @@ export const runAdditionalEvaluators = async (
                             break
                         case 'DoesNotContainAny':
                             passed = true
-                            splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
+                            splitValues = value.split(',').map((v) => v.trim()).filter(Boolean)
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (actualOutput.includes(splitValues[i])) {
                                     passed = false
@@ -149,7 +149,7 @@ export const runAdditionalEvaluators = async (
                             break
                         case 'DoesNotContainAll':
                             passed = true
-                            splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
+                            splitValues = value.split(',').map((v) => v.trim()).filter(Boolean)
                             for (let i = 0; i < splitValues.length; i++) {
                                 if (!actualOutput.includes(splitValues[i])) {
                                     passed = false
