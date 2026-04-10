@@ -144,21 +144,21 @@ export const runAdditionalEvaluators = async (
                             }
                             subArray.push({
                                 ...returnFields,
-                                result: passed ? 'Fail' : 'Pass'
+                                result: passed ? 'Pass' : 'Fail'
                             })
                             break
                         case 'DoesNotContainAll':
                             passed = true
                             splitValues = value.split(',').map((v) => v.trim().toLowerCase()) // Split, trim, and convert to lowercase
                             for (let i = 0; i < splitValues.length; i++) {
-                                if (actualOutput.includes(splitValues[i])) {
+                                if (!actualOutput.includes(splitValues[i])) {
                                     passed = false
                                     break
                                 }
                             }
                             subArray.push({
                                 ...returnFields,
-                                result: passed ? 'Pass' : 'Fail'
+                                result: passed ? 'Fail' : 'Pass'
                             })
                             break
                     }
