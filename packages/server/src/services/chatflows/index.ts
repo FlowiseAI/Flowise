@@ -1,7 +1,7 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { Brackets, In } from 'typeorm'
-import { validate as isValidUUID } from 'uuid'
+import { v4 as uuidv4, validate as isValidUUID } from 'uuid'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { UsageCacheManager } from '../../UsageCacheManager'
@@ -154,15 +154,8 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
         }
-        if (type === 'MULTIAGENT') {
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'MULTIAGENT' })
-        } else if (type === 'AGENTFLOW') {
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'AGENTFLOW' })
-        } else if (type === 'ASSISTANT') {
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'ASSISTANT' })
-        } else if (type === 'CHATFLOW') {
-            // fetch all chatflows that are not agentflow
-            queryBuilder.andWhere('chat_flow.type = :type', { type: 'CHATFLOW' })
+        if (type) {
+            queryBuilder.andWhere('chat_flow.type = :type', { type })
         }
         if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
         const [data, total] = await queryBuilder.getManyAndCount()
@@ -463,6 +456,154 @@ const checkIfChatflowHasChanged = async (chatflowId: string, lastUpdatedDateTime
     }
 }
 
+const CHATFLOW_EXPORT_FIELDS: (keyof ChatFlow)[] = [
+    'name',
+    'flowData',
+    'deployed',
+    'isPublic',
+    'chatbotConfig',
+    'apiConfig',
+    'analytic',
+    'speechToText',
+    'textToSpeech',
+    'followUpPrompts',
+    'category',
+    'type'
+]
+
+const exportChatflow = async (chatflowId: string, workspaceId: string): Promise<any> => {
+    try {
+        const chatflow = await getChatflowById(chatflowId, workspaceId)
+
+        const exportData: Record<string, any> = {}
+        for (const field of CHATFLOW_EXPORT_FIELDS) {
+            if (chatflow[field] !== undefined && chatflow[field] !== null) {
+                exportData[field] = chatflow[field]
+            }
+        }
+
+        return exportData
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.exportChatflow - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+export const validateChatflowImportData = (body: any): void => {
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Import data must be a JSON object')
+    }
+    if (!body.name || typeof body.name !== 'string') {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Import data must include a valid "name" string')
+    }
+    if (!body.flowData || typeof body.flowData !== 'string') {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Import data must include a valid "flowData" string')
+    }
+
+    // Validate flowData is parseable JSON with expected structure
+    let parsedFlowData: any
+    try {
+        parsedFlowData = JSON.parse(body.flowData)
+    } catch {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Import data "flowData" must be valid JSON')
+    }
+    if (!parsedFlowData || typeof parsedFlowData !== 'object') {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Import data "flowData" must be a JSON object')
+    }
+    if (!Array.isArray(parsedFlowData.nodes)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Import data "flowData" must contain a "nodes" array')
+    }
+    if (!Array.isArray(parsedFlowData.edges)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Import data "flowData" must contain an "edges" array')
+    }
+
+    // Validate type if provided
+    if (body.type !== undefined) {
+        if (!Object.values(EnumChatflowType).includes(body.type as EnumChatflowType)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid chatflow type: ${body.type}`)
+        }
+    }
+
+    // Validate optional string fields
+    const optionalStringFields = ['chatbotConfig', 'apiConfig', 'analytic', 'speechToText', 'textToSpeech', 'followUpPrompts', 'category']
+    for (const field of optionalStringFields) {
+        if (body[field] !== undefined && body[field] !== null && typeof body[field] !== 'string') {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Import data "${field}" must be a string if provided`)
+        }
+    }
+
+    // Validate optional boolean fields
+    const optionalBooleanFields = ['deployed', 'isPublic']
+    for (const field of optionalBooleanFields) {
+        if (body[field] !== undefined && body[field] !== null && typeof body[field] !== 'boolean') {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Import data "${field}" must be a boolean if provided`)
+        }
+    }
+}
+
+const importChatflow = async (body: any, workspaceId: string): Promise<any> => {
+    try {
+        validateChatflowImportData(body)
+
+        const appServer = getRunningExpressApp()
+
+        const newChatFlow = new ChatFlow()
+        for (const field of CHATFLOW_EXPORT_FIELDS) {
+            if (body[field] !== undefined && body[field] !== null) {
+                ;(newChatFlow as any)[field] = body[field]
+            }
+        }
+        newChatFlow.id = uuidv4()
+        newChatFlow.workspaceId = workspaceId
+
+        // Replace node IDs in flowData to avoid collisions
+        let flowDataStr = newChatFlow.flowData
+        const parsedFlowData = JSON.parse(flowDataStr)
+        const idMapping: Record<string, string> = {}
+
+        for (const node of parsedFlowData.nodes) {
+            if (node.id) {
+                const newId = `${node.data?.name || 'node'}_${uuidv4().substring(0, 8)}`
+                idMapping[node.id] = newId
+            }
+        }
+
+        // Apply ID mapping to nodes and edges
+        for (const node of parsedFlowData.nodes) {
+            if (node.id && idMapping[node.id]) {
+                node.id = idMapping[node.id]
+            }
+        }
+        for (const edge of parsedFlowData.edges) {
+            if (edge.source && idMapping[edge.source]) {
+                edge.source = idMapping[edge.source]
+            }
+            if (edge.target && idMapping[edge.target]) {
+                edge.target = idMapping[edge.target]
+            }
+            if (edge.id) {
+                edge.id = `reactflow__edge-${edge.source}-${edge.target}-${uuidv4().substring(0, 8)}`
+            }
+        }
+
+        newChatFlow.flowData = JSON.stringify(parsedFlowData)
+
+        const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+        return dbResponse
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.importChatflow - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -475,5 +616,8 @@ export default {
     updateChatflow,
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
-    getAllChatflowsCountByOrganization
+    getAllChatflowsCountByOrganization,
+    exportChatflow,
+    importChatflow,
+    validateChatflowImportData
 }

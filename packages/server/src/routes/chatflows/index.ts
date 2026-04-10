@@ -3,6 +3,20 @@ import chatflowsController from '../../controllers/chatflows'
 import { checkAnyPermission } from '../../enterprise/rbac/PermissionCheck'
 const router = express.Router()
 
+// EXPORT (must be before /:id to avoid matching "export" as an id)
+router.get(
+    '/export/:id',
+    checkAnyPermission('chatflows:view,agentflows:view'),
+    chatflowsController.exportChatflow
+)
+
+// IMPORT (must be before generic POST / to avoid conflicts)
+router.post(
+    '/import',
+    checkAnyPermission('chatflows:create,chatflows:update,agentflows:create,agentflows:update'),
+    chatflowsController.importChatflow
+)
+
 // CREATE
 router.post(
     '/',
