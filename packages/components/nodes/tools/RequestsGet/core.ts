@@ -51,7 +51,7 @@ const createRequestsGetSchema = (queryParamsSchema?: string) => {
 
             if (Object.keys(queryParamsObject).length > 0) {
                 return z.object({
-                    queryParams: z.object(queryParamsObject).optional().describe('Query parameters for the request')
+                    queryParams: z.object(queryParamsObject).describe('Query parameters for the request')
                 })
             }
         } catch (error) {
