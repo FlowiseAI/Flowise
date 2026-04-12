@@ -20,6 +20,7 @@ import { FlowListTable } from '@/ui-component/table/FlowListTable'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import channelsApi from '@/api/channels'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -45,9 +46,12 @@ const Agentflows = () => {
     const { error, setError } = useError()
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
+    const getBindingsApi = useApi(channelsApi.getChannelBindings)
+    const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
     const [view, setView] = useState(localStorage.getItem('agentFlowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
     const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
+    const [channelBindingsByFlowId, setChannelBindingsByFlowId] = useState({})
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -67,6 +71,7 @@ const Agentflows = () => {
             limit: limit || pageLimit
         }
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
+        getBindingsApi.request()
     }
 
     const handleChange = (event, nextView) => {
@@ -131,6 +136,25 @@ const Agentflows = () => {
     useEffect(() => {
         setLoading(getAllAgentflows.loading)
     }, [getAllAgentflows.loading])
+
+    useEffect(() => {
+        if (getBindingsApi.data) {
+            const grouped = (getBindingsApi.data || []).reduce((acc, binding) => {
+                const flowId = binding.chatflowId
+                if (!flowId) return acc
+                if (!acc[flowId]) acc[flowId] = []
+                acc[flowId].push(binding)
+                return acc
+            }, {})
+            setChannelBindingsByFlowId(grouped)
+        }
+    }, [getBindingsApi.data])
+
+    useEffect(() => {
+        if (getBindingsApi.error?.response?.status && getBindingsApi.error.response.status !== 403) {
+            setError(getBindingsApi.error)
+        }
+    }, [getBindingsApi.error, setError])
 
     useEffect(() => {
         if (getAllAgentflows.data) {
@@ -312,6 +336,7 @@ const Agentflows = () => {
                                             data={data}
                                             images={images[data.id]}
                                             icons={icons[data.id]}
+                                            channelBindings={channelBindingsByFlowId[data.id] || []}
                                         />
                                     ))}
                                 </Box>
@@ -328,6 +353,7 @@ const Agentflows = () => {
                                     setError={setError}
                                     currentPage={currentPage}
                                     pageLimit={pageLimit}
+                                    channelBindingsByFlowId={channelBindingsByFlowId}
                                 />
                             )}
                             {/* Pagination and Page Size Controls */}

@@ -43,6 +43,9 @@ import { AddTextToSpeechToChatFlow1759419216034 } from './1759419216034-AddTextT
 import { AddChatFlowNameIndex1759424828558 } from './1759424828558-AddChatFlowNameIndex'
 import { FixDocumentStoreFileChunkLongText1765000000000 } from './1765000000000-FixDocumentStoreFileChunkLongText'
 import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermission'
+import { AddChannelAccountAndAgentChannel1767000000000 } from './1767000000000-AddChannelAccountAndAgentChannel'
+import { AddChannelInboundMessage1767100000000 } from './1767100000000-AddChannelInboundMessage'
+
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -113,5 +116,7 @@ export const mysqlMigrations = [
     AddChatFlowNameIndex1759424828558,
     FixDocumentStoreFileChunkLongText1765000000000,
     AddApiKeyPermission1765360298674,
+    AddChannelAccountAndAgentChannel1767000000000,
+    AddChannelInboundMessage1767100000000
     AddReasonContentToChatMessage1764759496768
 ]
