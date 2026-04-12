@@ -177,6 +177,37 @@ export async function MCPTool({
     )
 }
 
+function jsonSchemaToZod(schema: unknown): ZodTypeAny {
+    if (!schema || typeof schema !== 'object') return z.any()
+    const s = schema as Record<string, unknown>
+
+    if (Array.isArray(s['anyOf'])) {
+        const types = (s['anyOf'] as unknown[]).filter((t) => {
+            if (!t || typeof t !== 'object') return false
+            return (t as Record<string, unknown>)['type'] !== 'null'
+        })
+        if (types.length === 0) return z.any().nullable().optional()
+        if (types.length === 1) return jsonSchemaToZod(types[0]).nullable().optional()
+        return z.any().nullable().optional()
+    }
+
+    switch (s['type']) {
+        case 'string':
+            return z.string()
+        case 'integer':
+        case 'number':
+            return z.number()
+        case 'boolean':
+            return z.boolean()
+        case 'array':
+            return z.array(s['items'] ? jsonSchemaToZod(s['items']) : z.any())
+        case 'object':
+            return z.record(z.any())
+        default:
+            return z.any()
+    }
+}
+
 function createSchemaModel(
     inputSchema: {
         type: 'object'
@@ -187,8 +218,11 @@ function createSchemaModel(
         throw new Error('Invalid schema type or missing properties')
     }
 
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key]) => {
-        acc[key] = z.any()
+    const required = Array.isArray(inputSchema['required']) ? (inputSchema['required'] as string[]) : []
+
+    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key, value]) => {
+        const zodType = jsonSchemaToZod(value)
+        acc[key] = required.includes(key) ? zodType : zodType.optional()
         return acc
     }, {} as Record<string, ZodTypeAny>)
 
