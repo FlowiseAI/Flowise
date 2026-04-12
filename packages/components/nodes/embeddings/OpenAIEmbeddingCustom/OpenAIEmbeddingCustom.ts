@@ -17,7 +17,7 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
     constructor() {
         this.label = 'OpenAI Custom Embedding'
         this.name = 'openAIEmbeddingsCustom'
-        this.version = 3.0
+        this.version = 3.1
         this.type = 'OpenAIEmbeddingsCustom'
         this.icon = 'openai.svg'
         this.category = 'Embeddings'
@@ -94,6 +94,8 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
                         name: 'base64'
                     }
                 ],
+                default: 'float',
+                description: 'Format for the embedding values. Use "float" for compatibility with local servers (LMStudio, Ollama, LiteLLM, etc.).',
                 optional: true,
                 additionalParams: true
             }
@@ -122,7 +124,12 @@ class OpenAIEmbeddingCustom_Embeddings implements INode {
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (modelName) obj.modelName = modelName
         if (dimensions) obj.dimensions = parseInt(dimensions, 10)
-        if (encodingFormat) obj.encodingFormat = encodingFormat
+
+        // When using a custom base path (local server), default to 'float' encoding for compatibility.
+        // Many local servers (LMStudio, Ollama, LiteLLM, Infinity, etc.) do not support base64 encoding
+        // and may return zero vectors when base64 is requested.
+        const effectiveEncodingFormat = encodingFormat || (basePath ? 'float' : undefined)
+        if (effectiveEncodingFormat) obj.encodingFormat = effectiveEncodingFormat
 
         let parsedBaseOptions: any | undefined = undefined
         if (baseOptions) {
