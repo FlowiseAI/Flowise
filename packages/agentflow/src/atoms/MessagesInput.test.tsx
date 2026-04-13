@@ -136,14 +136,14 @@ describe('MessagesInput', () => {
 
     // --- Add ---
 
-    it('should add a new message with default role "user" and empty content', () => {
+    it('should add a new message with empty role and empty content', () => {
         render(<MessagesInput inputParam={mockInputParam} data={mockNodeData} onDataChange={mockOnDataChange} />)
 
         fireEvent.click(screen.getByRole('button', { name: /Add Messages/i }))
 
         expect(mockOnDataChange).toHaveBeenCalledWith({
             inputParam: mockInputParam,
-            newValue: [{ role: 'user', content: '' }]
+            newValue: [{ role: '', content: '' }]
         })
     })
 
@@ -163,7 +163,7 @@ describe('MessagesInput', () => {
             inputParam: mockInputParam,
             newValue: [
                 { role: 'system', content: 'Hello' },
-                { role: 'user', content: '' }
+                { role: '', content: '' }
             ]
         })
     })

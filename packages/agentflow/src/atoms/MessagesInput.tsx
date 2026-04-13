@@ -22,7 +22,7 @@ const MESSAGE_ROLES = [
 type MessageRole = (typeof MESSAGE_ROLES)[number]['value']
 
 export interface MessageEntry {
-    role: MessageRole
+    role: MessageRole | ''
     content: string
 }
 
@@ -77,7 +77,7 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
     )
 
     const handleAddMessage = useCallback(() => {
-        const newMessage: MessageEntry = { role: 'user', content: '' }
+        const newMessage: MessageEntry = { role: '', content: '' }
         onDataChange?.({ inputParam, newValue: [...messages, newMessage] })
     }, [messages, inputParam, onDataChange])
 

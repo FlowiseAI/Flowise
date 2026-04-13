@@ -12,26 +12,6 @@ import { Agentflow } from '@flowiseai/agentflow'
 
 import { apiBaseUrl, token } from '../config'
 
-const initialFlow: FlowData = {
-    nodes: [
-        {
-            id: 'startAgentflow_0',
-            type: 'agentflowNode',
-            position: { x: 300, y: 200 },
-            data: {
-                id: 'startAgentflow_0',
-                name: 'startAgentflow',
-                label: 'Start',
-                color: '#7EE787',
-                hideInput: true,
-                outputAnchors: [{ id: 'startAgentflow_0-output-0', name: 'start', label: 'Start', type: 'start' }]
-            }
-        }
-    ],
-    edges: [],
-    viewport: { x: 0, y: 0, zoom: 1 }
-}
-
 // Custom header component
 function CustomHeader({ flowName, isDirty, onSave, onExport, onValidate }: HeaderRenderProps) {
     const [validationStatus, setValidationStatus] = useState<'valid' | 'invalid' | null>(null)
@@ -259,11 +239,11 @@ export function CustomUIExample() {
                     ref={agentflowRef}
                     apiBaseUrl={apiBaseUrl}
                     token={token ?? undefined}
-                    initialFlow={initialFlow}
                     renderHeader={(props: HeaderRenderProps) => <CustomHeader {...props} />}
                     renderNodePalette={(props: PaletteRenderProps) => <CustomPalette {...props} />}
                     showDefaultHeader={false}
                     showDefaultPalette={false}
+                    enableGenerator={false}
                     onSave={(flow: FlowData) => {
                         console.log('Saving flow:', flow)
                         alert('Flow saved! Check console.')
@@ -277,10 +257,10 @@ export function CustomUIExample() {
 export const CustomUIExampleProps = {
     apiBaseUrl: '{from environment variables}',
     token: '{from environment variables}',
-    initialFlow: 'FlowData',
     renderHeader: '(props: HeaderRenderProps) => ReactNode',
     renderNodePalette: '(props: PaletteRenderProps) => ReactNode',
     showDefaultHeader: false,
     showDefaultPalette: false,
+    enableGenerator: false,
     onSave: '(flow: FlowData) => void'
 }

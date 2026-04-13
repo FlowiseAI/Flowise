@@ -99,8 +99,8 @@ interface AgentflowStateProviderProps {
 export function AgentflowStateProvider({ children, initialFlow }: AgentflowStateProviderProps) {
     const [state, dispatch] = useReducer(agentflowReducer, {
         ...initialState,
-        nodes: normalizeNodes(initialFlow?.nodes || []),
-        edges: initialFlow?.edges || []
+        nodes: normalizeNodes(Array.isArray(initialFlow?.nodes) ? initialFlow.nodes : []),
+        edges: Array.isArray(initialFlow?.edges) ? initialFlow.edges : []
     })
 
     // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
