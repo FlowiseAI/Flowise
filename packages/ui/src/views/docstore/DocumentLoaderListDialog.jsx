@@ -117,7 +117,7 @@ const DocumentLoaderListDialog = ({ show, dialogProps, onCancel, onDocLoaderSele
                         }
                         aria-describedby='search-helper-text'
                         inputProps={{
-                            'aria-label': t('docstore.weight')
+                            'aria-label': t('docstore.searchInput')
                         }}
                     />
                 </Box>

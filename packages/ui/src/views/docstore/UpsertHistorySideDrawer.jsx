@@ -105,7 +105,7 @@ const UpsertHistorySideDrawer = ({ show, dialogProps, onClickFunction, onSelectH
                                         alt='HistoryEmptySVG'
                                     />
                                 </Box>
-                                <div>{t('docstore.history.notFound')}</div>
+                                <div>{t('docstore.empty.history')}</div>
                             </Stack>
                         )}
                     </Timeline>

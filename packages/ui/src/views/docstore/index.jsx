@@ -111,7 +111,7 @@ const Documents = () => {
             return error.message
         }
 
-        return t('docstore.unknownError')
+        return t('docstore.common.unknownError')
     }
 
     const goToDocumentStore = (id) => {
@@ -334,7 +334,7 @@ const Documents = () => {
                         search={hasDocStores}
                         searchPlaceholder={t('docstore.searchPlaceholder')}
                         title={t('docstore.title')}
-                        description={t('docstore.discription')}
+                        description={t('docstore.description')}
                     >
                         {hasDocStores && (
                             <ToggleButtonGroup
@@ -390,7 +390,7 @@ const Documents = () => {
                                     alt='doc_store_empty'
                                 />
                             </Box>
-                            <div>{t('docstore.notFound')}</div>
+                            <div>{t('docstore.empty.documentStores')}</div>
                         </Stack>
                     ) : (
                         <React.Fragment>

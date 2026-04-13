@@ -204,7 +204,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                         <IconAlertTriangle size={70} color='orange' />
                         <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>
                             <Trans
-                                i18nKey='docstore.deleteNote'
+                                i18nKey='docstore.delete.note'
                                 components={{
                                     strong: <strong />,
                                     a: (
@@ -224,7 +224,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                     <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
                         <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
                             <SettingsIcon />
-                            <Typography variant='h4'>{t('docstore.configuration')}</Typography>
+                            <Typography variant='h4'>{t('docstore.labels.configuration')}</Typography>
                         </Stack>
                         <Stack direction='column'>
                             <TableContainer component={Paper} sx={{ maxHeight: '400px', overflow: 'auto' }}>

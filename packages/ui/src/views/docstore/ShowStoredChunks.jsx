@@ -323,7 +323,11 @@ const ShowStoredChunks = () => {
                                             }
                                         />
                                     </IconButton>
-                                    {t('docstore.showing', { start: Math.min(start, totalChunks), end: end, total: totalChunks })}
+                                    {t('docstore.preview.showChunksing', {
+                                        start: Math.min(start, totalChunks),
+                                        end: end,
+                                        total: totalChunks
+                                    })}
                                     <IconButton
                                         size='small'
                                         onClick={() => changePage(currentPage + 1)}
@@ -346,7 +350,7 @@ const ShowStoredChunks = () => {
                                 </div>
                                 <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                     <IconLanguage style={{ marginRight: 10 }} size={20} />
-                                    {t('docstore.characters', { count: getChunksApi.data?.characters?.toLocaleString() })}
+                                    {t('docstore.preview.characters', { count: getChunksApi.data?.characters?.toLocaleString() })}
                                 </div>
                             </div>
                         </div>
@@ -368,7 +372,7 @@ const ShowStoredChunks = () => {
                                                 alt='chunks_emptySVG'
                                             />
                                         </Box>
-                                        <div>{t('docstore.notFoundChunks')}</div>
+                                        <div>{t('docstore.empty.chunks')}</div>
                                     </div>
                                 )}
                                 {documentChunks.length > 0 &&
@@ -382,7 +386,7 @@ const ShowStoredChunks = () => {
                                                 <Card>
                                                     <CardContent sx={{ p: 2 }}>
                                                         <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                            {t('docstore.charactersIndex', {
+                                                            {t('docstore.preview.charactersIndex', {
                                                                 index: row.chunkNo,
                                                                 total: row.pageContent.length
                                                             })}

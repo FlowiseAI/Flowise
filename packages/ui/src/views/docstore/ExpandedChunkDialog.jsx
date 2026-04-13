@@ -161,7 +161,7 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                             }}
                         >
                             <IconLanguage style={{ marginRight: 5 }} size={15} />
-                            {t('docstore.characters', { count: selectedChunk?.pageContent?.length })}
+                            {t('docstore.preview.characters', { count: selectedChunk?.pageContent?.length })}
                         </div>
                         <div style={{ marginTop: '5px' }}></div>
                         {!isEdit && (

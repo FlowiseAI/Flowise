@@ -117,7 +117,7 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
                         }
                         aria-describedby='search-helper-text'
                         inputProps={{
-                            'aria-label': t('docstore.weight')
+                            'aria-label': t('docstore.searchInput')
                         }}
                     />
                 </Box>

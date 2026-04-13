@@ -162,7 +162,7 @@ const LoaderConfigPreviewChunks = () => {
         if (!canSubmit) {
             const fieldsList = missingFields.join(', ')
             enqueueSnackbar({
-                message: t(`docstore.messages.mandatory.error`, { fields: fieldsList }),
+                message: t(`docstore.validation.requiredFieldsList`, { fields: fieldsList }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',
@@ -342,7 +342,7 @@ const LoaderConfigPreviewChunks = () => {
                 label: splitter.label,
                 name: splitter.name
             }))
-            options.unshift({ label: t('docstore.none'), name: 'none' })
+            options.unshift({ label: t('docstore.common.none'), name: 'none' })
             setTextSplitterOptions(options)
 
             // If this is a document store edit config, set the existing input values
@@ -497,7 +497,7 @@ const LoaderConfigPreviewChunks = () => {
                                                     <Typography sx={{ mr: 2 }} variant='h3'>
                                                         {(splitterOptions ?? []).find(
                                                             (splitter) => splitter.name === selectedTextSplitter?.name
-                                                        )?.label ?? t('docstore.selectTextSplitter')}
+                                                        )?.label ?? t('docstore.preview.selectTextSplitter')}
                                                     </Typography>
                                                     <div
                                                         style={{
@@ -529,7 +529,7 @@ const LoaderConfigPreviewChunks = () => {
                                                     </div>
                                                 </Box>
                                                 <Box sx={{ p: 2 }}>
-                                                    <Typography>{t('docstore.splitter')}</Typography>
+                                                    <Typography>{t('docstore.labels.splitter')}</Typography>
                                                     <Dropdown
                                                         key={JSON.stringify(selectedTextSplitter)}
                                                         name='textSplitter'
@@ -625,10 +625,10 @@ const LoaderConfigPreviewChunks = () => {
                                     {documentChunks && documentChunks.length > 0 && (
                                         <>
                                             <Typography sx={{ wordWrap: 'break-word', textAlign: 'left', mb: 2 }} variant='h3'>
-                                                {t('docstore.previewCount', { current: currentPreviewCount, total: totalChunks })}
+                                                {t('docstore.preview.count', { current: currentPreviewCount, total: totalChunks })}
                                             </Typography>
                                             <Box sx={{ mb: 3 }}>
-                                                <Typography>{t('docstore.show')}</Typography>
+                                                <Typography>{t('docstore.preview.showChunks')}</Typography>
                                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                                     <OutlinedInput
                                                         size='small'
@@ -667,7 +667,7 @@ const LoaderConfigPreviewChunks = () => {
                                                                 <Card>
                                                                     <CardContent sx={{ p: 1 }}>
                                                                         <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                                            {t('docstore.charactersIndex', {
+                                                                            {t('docstore.preview.charactersIndex', {
                                                                                 index: index + 1,
                                                                                 total: row.pageContent.length
                                                                             })}

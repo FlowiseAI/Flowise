@@ -266,7 +266,7 @@ const VectorStoreQuery = () => {
                         isBackButton={true}
                         search={false}
                         title={documentStore?.name || t('docstore.title')}
-                        description={t('docstore.retrievalPlaygroundDescription')}
+                        description={t('docstore.retrieval.description')}
                         onBack={() => navigate(-1)}
                     >
                         <PermissionButton
@@ -287,7 +287,7 @@ const VectorStoreQuery = () => {
                                 <Box>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography variant='overline'>
-                                            {t('docstore.inputs.enterYourQuery')}
+                                            {t('docstore.inputs.query')}
                                             <span style={{ color: 'red' }}>&nbsp;*</span>
                                         </Typography>
 
@@ -418,10 +418,10 @@ const VectorStoreQuery = () => {
                                             />
                                         </div>
                                         <Typography sx={{ ml: 2 }} variant='h3'>
-                                            {t('docstore.retrievedDocuments.title')}
+                                            {t('docstore.retrieval.results.title')}
                                             {timeTaken > -1 && (
                                                 <Typography variant='body2' sx={{ color: 'gray' }}>
-                                                    {t('docstore.retrievedDocuments.count', {
+                                                    {t('docstore.retrieval.results.count', {
                                                         count: documentChunks.length,
                                                         time: timeTaken
                                                     })}
@@ -451,7 +451,7 @@ const VectorStoreQuery = () => {
                                                     alt='chunks_emptySVG'
                                                 />
                                             </Box>
-                                            <div>{t('docstore.retrievedDocuments.notFound')}</div>
+                                            <div>{t('docstore.retrieval.results.empty')}</div>
                                         </div>
                                     )}
                                     <Grid container spacing={2}>
@@ -466,7 +466,7 @@ const VectorStoreQuery = () => {
                                                         <Card>
                                                             <CardContent sx={{ p: 2 }}>
                                                                 <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                                    {t('docstore.charactersIndex', {
+                                                                    {t('docstore.preview.charactersIndex', {
                                                                         index: row.chunkNo,
                                                                         total: row.pageContent.length
                                                                     })}

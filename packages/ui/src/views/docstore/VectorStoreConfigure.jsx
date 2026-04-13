@@ -232,7 +232,7 @@ const VectorStoreConfigure = () => {
 
         if (!canSubmit) {
             enqueueSnackbar({
-                message: t('docstore.mandatory.warn'),
+                message: t('docstore.validation.requiredFields'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',
@@ -362,7 +362,7 @@ const VectorStoreConfigure = () => {
     const getLoaderDisplayName = (loader) => {
         if (!loader) return ''
 
-        const loaderName = loader.loaderName || t('docstore.unknown')
+        const loaderName = loader.loaderName || t('docstore.common.unknown')
         let sourceName = ''
 
         // Prefer files.name when files array exists and has items
@@ -522,7 +522,7 @@ const VectorStoreConfigure = () => {
                                     isBackButton={true}
                                     search={false}
                                     title={getViewHeaderTitle()}
-                                    description={t('docstore.embeddingsDescription')}
+                                    description={t('docstore.vectorStore.description')}
                                     onBack={() => navigate(-1)}
                                 >
                                     {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
@@ -605,7 +605,7 @@ const VectorStoreConfigure = () => {
                                                     }
                                                 }}
                                             >
-                                                {t('docstore.actions.FselectEmbeddings')}
+                                                {t('docstore.actions.selectEmbeddings')}
                                             </Button>
                                         ) : (
                                             <Box>

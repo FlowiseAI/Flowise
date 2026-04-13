@@ -288,7 +288,7 @@ const DocumentStoreDetails = () => {
 
     const onLoaderDelete = (file, vectorStoreConfig, recordManagerConfig) => {
         // Get the display name in the format "LoaderName (sourceName)"
-        const loaderName = file.loaderName || t('docstore.unknown')
+        const loaderName = file.loaderName || t('docstore.common.unknown')
         let sourceName = ''
 
         // Prefer files.name when files array exists and has items
@@ -604,7 +604,7 @@ const DocumentStoreDetails = () => {
                                     }}
                                 >
                                     <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
-                                    {t('docstore.chatflowsUsed')}
+                                    {t('docstore.labels.chatflowsUsed')}
                                 </div>
                                 {getSpecificDocumentStore.data.whereUsed.map((chatflowUsed, index) => (
                                     <Chip
@@ -632,7 +632,7 @@ const DocumentStoreDetails = () => {
                                         alt='doc_store_details_emptySVG'
                                     />
                                 </Box>
-                                <div>{t('docstore.notFoundDocument')}</div>
+                                <div>{t('docstore.empty.documents')}</div>
                                 <StyledButton
                                     variant='contained'
                                     sx={{ borderRadius: 2, height: '100%', mt: 2, color: 'white' }}
@@ -759,7 +759,7 @@ const DocumentStoreDetails = () => {
                                     color='warning'
                                     style={{ color: 'darkred', fontWeight: 500, fontStyle: 'italic', fontSize: 12 }}
                                 >
-                                    {t('docstore.refresh')}
+                                    {t('docstore.labels.pendingRefresh')}
                                 </Typography>
                             </div>
                         )}
@@ -835,7 +835,7 @@ function LoaderRow(props) {
 
         // Return format: "LoaderName (sourceName)" or just "LoaderName" if no source
         if (!sourceName) {
-            return loaderName || t('docstore.noSource')
+            return loaderName || t('docstore.common.noSource')
         }
         return loaderName ? `${loaderName} (${sourceName})` : sourceName
     }
@@ -857,7 +857,9 @@ function LoaderRow(props) {
                 <StyledTableCell onClick={props.onViewChunksClick} scope='row'>
                     {props.loader.loaderName}
                 </StyledTableCell>
-                <StyledTableCell onClick={props.onViewChunksClick}>{props.loader.splitterName ?? t('docstore.none')}</StyledTableCell>
+                <StyledTableCell onClick={props.onViewChunksClick}>
+                    {props.loader.splitterName ?? t('docstore.common.none')}
+                </StyledTableCell>
                 <StyledTableCell onClick={props.onViewChunksClick}>
                     {formatSources(props.loader.files, props.loader.source)}
                 </StyledTableCell>

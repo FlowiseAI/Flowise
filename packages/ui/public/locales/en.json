@@ -2448,38 +2448,53 @@
     },
     "docstore": {
         "title": "Document Store",
-        "discription": "Store and upsert documents for LLM retrieval (RAG)",
+        "description": "Store and upsert documents for LLM retrieval (RAG)",
         "searchPlaceholder": "Search Name",
-        "notFound": "No Document Stores Created Yet",
-        "weight": "weight",
-        "deleteNote": "<strong>Note:</strong> Without a Record Manager configured, only the document chunks will be removed from the document store. The actual vector embeddings in your vector store database will remain unchanged. To enable automatic cleanup of vector store data, please configure a Record Manager. <a>Learn more</a>",
-        "configuration": "Configuration",
+        "searchInput": "weight",
         "simpleTable": "simple table",
-        "apiNote": "With the Upsert API, you can choose an existing document and reuse the same configuration for upserting.",
-        "note": "Note:",
-        "override": "You can override existing configurations:",
-        "unknown": "Unknown",
-        "chatflowsUsed": "Chatflows Used:",
-        "notFoundDocument": "No Document Added Yet",
-        "refresh": "Some files are pending processing. Please Refresh to get the latest status.",
-        "noSource": "No source",
-        "none": "None",
-        "characters": "{{count}} characters",
-        "unknownError": "Unknown error",
-        "selectTextSplitter": "Select Text Splitter",
-        "previewCount": "{{current}} of {{total}} Chunks",
-        "show": "Show Chunks in Preview",
-        "charactersIndex": "#{{index}}. Characters: {{total}}",
-        "showing": "Showing {{start}}-{{end}} of {{total}} chunks",
-        "notFoundChunks": "No Chunks",
-        "embeddingsDescription": "Configure Embeddings, Vector Store and Record Manager",
-        "recordManagerUnavailable": "Record Manager is not applicable for selected Vector Store",
-        "retrievalPlaygroundDescription": "Retrieval Playground - Test your vector store retrieval settings",
-        "splitter": "Splitter",
-        "retrievedDocuments": {
-            "title": "Retrieved Documents",
-            "count": "Count: {{count}}. Time taken: {{time}} millis.",
-            "notFound": "No Documents Retrieved"
+        "empty": {
+            "documentStores": "No Document Stores Created Yet",
+            "documents": "No Document Added Yet",
+            "chunks": "No Chunks",
+            "history": "No Upsert History Yet"
+        },
+        "common": {
+            "unknown": "Unknown",
+            "unknownError": "Unknown error",
+            "none": "None",
+            "noSource": "No source"
+        },
+        "labels": {
+            "chatflowsUsed": "Chatflows Used:",
+            "note": "Note:",
+            "override": "You can override existing configurations:",
+            "configuration": "Configuration",
+            "pendingRefresh": "Some files are pending processing. Please Refresh to get the latest status.",
+            "splitter": "Splitter"
+        },
+        "api": {
+            "upsertNote": "With the Upsert API, you can choose an existing document and reuse the same configuration for upserting."
+        },
+        "preview": {
+            "selectTextSplitter": "Select Text Splitter",
+            "showChunks": "Show Chunks in Preview",
+            "showing": "Showing {{start}}-{{end}} of {{total}} chunks",
+            "count": "{{current}} of {{total}} Chunks",
+            "characters": "{{count}} characters",
+            "chunkCharacters": "#{{index}}. Characters: {{total}}"
+        },
+        "retrieval": {
+            "description": "Retrieval Playground - Test your vector store retrieval settings",
+            "query": "Enter your Query",
+            "results": {
+                "title": "Retrieved Documents",
+                "count": "Count: {{count}}. Time taken: {{time}} millis.",
+                "empty": "No Documents Retrieved"
+            }
+        },
+        "vectorStore": {
+            "description": "Configure Embeddings, Vector Store and Record Manager",
+            "recordManagerUnavailable": "Record Manager is not applicable for selected Vector Store"
         },
         "history": {
             "titles": {
@@ -2491,8 +2506,7 @@
             "added": "Added: {{count}}",
             "updated": "Updated: {{count}}",
             "skipped": "Skipped: {{count}}",
-            "deleted": "Deleted: {{count}}",
-            "notFound": "No Upsert History Yet"
+            "deleted": "Deleted: {{count}}"
         },
         "table": {
             "loader": "Loader",
@@ -2520,11 +2534,11 @@
             "name": "Name",
             "description": "Description",
             "search": "Search",
+            "query": "Enter your Query",
             "loaderName": {
                 "simple": "{{name}} name",
                 "loader": "{{name}} Loader Name"
-            },
-            "enterYourQuery": "Enter your Query"
+            }
         },
         "actions": {
             "cancel": "Cancel",
@@ -2586,6 +2600,29 @@
             "back": "Back",
             "editChunk": "Edit Chunk"
         },
+        "delete": {
+            "note": "<strong>Note:</strong> Without a Record Manager configured, only the document chunks will be removed from the document store. The actual vector embeddings in your vector store database will remain unchanged. To enable automatic cleanup of vector store data, please configure a Record Manager. <a>Learn more</a>",
+            "description": {
+                "title": "Delete",
+                "loader": {
+                    "simple": "Delete {{name}}? This will delete all the associated document chunks from the document store.",
+                    "withData": "Delete {{name}}? This will delete all the associated document chunks from the document store and remove the actual data from the vector store database."
+                },
+                "store": {
+                    "simple": "Delete Store {{name}}? This will delete all the associated loaders and document chunks from the document store.",
+                    "withData": "Delete Store {{name}}? This will delete all the associated loaders and document chunks from the document store, and remove the actual data from the vector store database."
+                },
+                "document": {
+                    "simple": "Delete store [{{name}}]? This will remove this document store from the list.",
+                    "withData": "Delete store [{{name}}]? This will remove this document store from the list and remove the actual data from the vector store database."
+                },
+                "chunk": "Delete chunk {{id}}? This action cannot be undone."
+            }
+        },
+        "validation": {
+            "requiredFields": "Please fill in all mandatory fields.",
+            "requiredFieldsList": "Please fill in the following mandatory fields: {{fields}}"
+        },
         "messages": {
             "deleteStore": {
                 "success": "Store, Loader and associated document chunks deleted",
@@ -2610,10 +2647,6 @@
             "update": {
                 "success": "Document Store Updated!",
                 "error": "Failed to update Document Store: {{msg}}"
-            },
-            "mandatory": {
-                "error": "Please fill in the following mandatory fields: {{fields}}",
-                "warn": "Please fill in all mandatory fields."
             },
             "previewChunks": {
                 "error": "Failed to preview chunks: {{msg}}"

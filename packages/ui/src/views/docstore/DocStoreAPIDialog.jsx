@@ -37,7 +37,7 @@ const DocStoreAPIDialog = ({ show, dialogProps, onCancel }) => {
     const getConfigApi = useApi(documentstoreApi.getDocumentStoreConfig)
 
     const formDataRequest = () => {
-        return `${t('docstore.apiNote')}
+        return `${t('docstore.api.upsertNote')}
 
 \`\`\`python
 import requests
@@ -139,7 +139,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
     }
 
     const jsonDataRequest = () => {
-        return `${t('docstore.apiNote')}
+        return `${t('docstore.api.upsertNote')}
  
 \`\`\`python
 import requests
@@ -353,7 +353,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
                         }}
                     />
                     <Box sx={{ flex: 1 }}>
-                        <strong>{t('docstore.note')}</strong> {t('docstore.apiNote')}
+                        <strong>{t('docstore.labels.note')}</strong> {t('docstore.api.upsertNote')}
                     </Box>
                 </Box>
 
@@ -361,7 +361,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
 
                 <MemoizedReactMarkdown>{values}</MemoizedReactMarkdown>
 
-                <Typography sx={{ mt: 3, mb: 1 }}>{t('docstore.override')}</Typography>
+                <Typography sx={{ mt: 3, mb: 1 }}>{t('docstore.labels.override')}</Typography>
 
                 <Stack direction='column' spacing={2} sx={{ width: '100%', my: 2 }}>
                     <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
