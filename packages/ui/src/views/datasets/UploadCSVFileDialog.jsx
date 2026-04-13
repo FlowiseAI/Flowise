@@ -25,15 +25,12 @@ import useNotifier from '@/utils/useNotifier'
 
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-const CSVFORMAT = `Only the first 2 columns will be considered:
-----------------------------
-| Input      | Output      |
-----------------------------
-| test input | test output |
-----------------------------
-`
+
+// i18n
+import { useTranslation } from 'react-i18next'
 
 const UploadCSVFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -81,7 +78,7 @@ const UploadCSVFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             const createResp = await datasetApi.createDatasetRow(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Row added for the given Dataset',
+                    message: t('datasets.messages.addRow.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -96,9 +93,9 @@ const UploadCSVFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: `Failed to add new row in the Dataset: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('datasets.messages.addRow.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -144,15 +141,15 @@ const UploadCSVFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             }}
                         />
                     </div>
-                    {'Upload Items to [' + datasetName + '] Dataset'}
+                    {t('datasets.dialogs.upload', { name: datasetName })}
                 </div>
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            Upload CSV
-                            <TooltipWithParser style={{ mb: 1, mt: 2 }} title={`<pre>${CSVFORMAT}</pre>`} />
+                            {t('datasets.inputs.uploadCsv.title')}
+                            <TooltipWithParser style={{ mb: 1, mt: 2 }} title={`<pre>${t('datasets.inputs.uploadCsv.tooltip')}</pre>`} />
                         </Typography>
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
@@ -160,13 +157,9 @@ const UploadCSVFileDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         disabled={false}
                         fileType='.csv'
                         onChange={(newValue) => setSelectedFile(newValue)}
-                        value={selectedFile ?? 'Choose a file to upload'}
+                        value={selectedFile ?? t('components.file.chooseFile')}
                     />
-                    <SwitchInput
-                        value={firstRowHeaders}
-                        onChange={setFirstRowHeaders}
-                        label={'Treat First Row as headers in the upload file?'}
-                    />
+                    <SwitchInput value={firstRowHeaders} onChange={setFirstRowHeaders} label={t('datasets.inputs.uploadCsv.label')} />
                 </Box>
             </DialogContent>
             <DialogActions>

@@ -49,9 +49,13 @@ import { truncateString } from '@/utils/genericHelper'
 
 import { useError } from '@/store/context/ErrorContext'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| Datasets ||============================== //
 
 const EvalDatasets = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const theme = useTheme()
     const { confirm } = useConfirm()
@@ -101,8 +105,8 @@ const EvalDatasets = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: t('datasets.actions.cancel'),
+            confirmButtonName: t('datasets.actions.add'),
             data: {}
         }
         setDatasetDialogProps(dialogProp)
@@ -112,8 +116,8 @@ const EvalDatasets = () => {
     const edit = (dataset) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('datasets.actions.cancel'),
+            confirmButtonName: t('datasets.actions.save'),
             data: dataset
         }
         setDatasetDialogProps(dialogProp)
@@ -122,10 +126,10 @@ const EvalDatasets = () => {
 
     const deleteDataset = async (dataset) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete dataset ${dataset.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: t('datasets.actions.delete.title'),
+            description: t('datasets.actions.delete.description.datasets', { name: dataset.name }),
+            confirmButtonName: t('datasets.actions.delete.title'),
+            cancelButtonName: t('datasets.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -134,7 +138,7 @@ const EvalDatasets = () => {
                 const deleteResp = await datasetsApi.deleteDataset(dataset.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'Dataset deleted',
+                        message: t('datasets.messages.deleteDataset.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -149,9 +153,9 @@ const EvalDatasets = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to delete dataset: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: t('datasets.messages.deleteDataset.error', {
+                        msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -205,7 +209,7 @@ const EvalDatasets = () => {
                             isEditButton={false}
                             onSearchChange={onSearchChange}
                             search={true}
-                            title='Datasets'
+                            title={t('datasets.title')}
                             description=''
                         >
                             <StyledPermissionButton
@@ -215,7 +219,7 @@ const EvalDatasets = () => {
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
-                                Add New
+                                {t('datasets.actions.addNew')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && datasets.length <= 0 ? (
@@ -227,7 +231,7 @@ const EvalDatasets = () => {
                                         alt='empty_datasetSVG'
                                     />
                                 </Box>
-                                <div>No Datasets Yet</div>
+                                <div>{t('datasets.notFoundDataset')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -245,10 +249,10 @@ const EvalDatasets = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <TableCell>Name</TableCell>
-                                                <TableCell>Description</TableCell>
-                                                <TableCell>Rows</TableCell>
-                                                <TableCell>Last Updated</TableCell>
+                                                <TableCell>{t('datasets.table.name')}</TableCell>
+                                                <TableCell>{t('datasets.table.description')}</TableCell>
+                                                <TableCell>{t('datasets.table.rows')}</TableCell>
+                                                <TableCell>{t('datasets.table.lastUpdated')}</TableCell>
                                                 <Available permission={'datasets:update,datasets:create'}>
                                                     <TableCell> </TableCell>
                                                 </Available>
@@ -320,11 +324,15 @@ const EvalDatasets = () => {
                                                             </TableCell>
                                                             <TableCell onClick={() => goToRows(ds)}>{ds?.rowCount}</TableCell>
                                                             <TableCell onClick={() => goToRows(ds)}>
-                                                                {moment(ds.updatedDate).format('MMMM Do YYYY, hh:mm A')}
+                                                                {moment(ds.updatedDate).format(t('datasets.formats.date'))}
                                                             </TableCell>
                                                             <Available permission={'datasets:update,datasets:create'}>
                                                                 <TableCell>
-                                                                    <IconButton title='Edit' color='primary' onClick={() => edit(ds)}>
+                                                                    <IconButton
+                                                                        title={t('datasets.actions.edit')}
+                                                                        color='primary'
+                                                                        onClick={() => edit(ds)}
+                                                                    >
                                                                         <IconEdit />
                                                                     </IconButton>
                                                                 </TableCell>
@@ -332,7 +340,7 @@ const EvalDatasets = () => {
                                                             <Available permission={'datasets:delete'}>
                                                                 <TableCell>
                                                                     <IconButton
-                                                                        title='Delete'
+                                                                        title={t('datasets.actions.delete.title')}
                                                                         color='error'
                                                                         onClick={() => deleteDataset(ds)}
                                                                     >

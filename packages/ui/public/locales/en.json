@@ -2362,5 +2362,88 @@
         "formats": {
             "date": "MMMM Do, YYYY HH:mm:ss"
         }
+    },
+    "datasets": {
+        "title": "Datasets",
+        "dataset": "Dataset: {{name}}",
+        "notFoundDataset": "No Datasets Yet",
+        "notFoundRows": "No Dataset Items Yet",
+        "selectAll": "select all",
+        "datasetTooltip": "Use the drag icon at (extreme right) to reorder the dataset items",
+        "dialogs": {
+            "addDataset": "Add Dataset",
+            "editDataset": "Edit Dataset",
+            "addRow": "Add Item to {{name}} Dataset",
+            "editRow": "Edit Item in {{name}} Dataset",
+            "upload": "Upload Items to {{name}} Dataset"
+        },
+        "table": {
+            "title": "simple table",
+            "input": "Input",
+            "expectedOutput": "Expected Output",
+            "name": "Name",
+            "description": "Description",
+            "rows": "Rows",
+            "lastUpdated": "Last Updated"
+        },
+        "actions": {
+            "add": "Add",
+            "edit": "Edit",
+            "cancel": "Cancel",
+            "upload": "Upload",
+            "save": "Save",
+            "delete": {
+                "title": "Delete",
+                "description": {
+                    "items": "Delete {{count}} dataset items?",
+                    "datasets": "Delete dataset {{name}}?"
+                }
+            },
+            "uploadCsv": "Upload CSV",
+            "newItem": "New Item",
+            "deleteItem_one": " Delete {{count}} item",
+            "deleteItem_other": " Delete {{count}} items",
+            "addNew": "Add New"
+        },
+        "inputs": {
+            "name": "Name",
+            "description": "Description",
+            "uploadCsv": {
+                "title": "Upload CSV",
+                "tooltip": "Only the first 2 columns will be considered:\n----------------------------\n| Input      | Output      |\n----------------------------\n| test input | test output |\n----------------------------",
+                "label": "Treat First Row as headers in the upload file?"
+            },
+            "input": "Input",
+            "anticipatedOutput": "Anticipated Output"
+        },
+        "messages": {
+            "addDataset": {
+                "success": "New Dataset added",
+                "error": "Failed to add new Dataset: {{msg}}"
+            },
+            "addRow": {
+                "success": "New Row added for the given Dataset",
+                "error": "Failed to add new row in the Dataset: {{msg}}"
+            },
+            "saveDataset": {
+                "success": "Dataset saved",
+                "error": "Failed to save Dataset: {{msg}}"
+            },
+            "saveRow": {
+                "success": "Dataset Row saved",
+                "error": "Failed to save Dataset Row: {{msg}}"
+            },
+            "deleteRow": {
+                "success": "Dataset Items deleted",
+                "error": "Failed to delete dataset items: {{msg}}"
+            },
+            "deleteDataset": {
+                "success": "Dataset deleted",
+                "error": "Failed to delete dataset: {{msg}}"
+            }
+        },
+        "formats": {
+            "date": "MMMM Do YYYY, hh:mm A"
+        }
     }
 }
