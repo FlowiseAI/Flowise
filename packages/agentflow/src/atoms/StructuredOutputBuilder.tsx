@@ -245,17 +245,19 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
             ))}
 
             {/* Add button */}
-            <Button
-                fullWidth
-                size='small'
-                variant='outlined'
-                disabled={isAddDisabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
-                startIcon={<IconPlus />}
-                onClick={handleAddEntry}
-            >
-                Add {inputParam.label}
-            </Button>
+            <Box sx={{ px: 2 }}>
+                <Button
+                    fullWidth
+                    size='small'
+                    variant='outlined'
+                    disabled={isAddDisabled}
+                    sx={{ borderRadius: '16px', mt: 2 }}
+                    startIcon={<IconPlus />}
+                    onClick={handleAddEntry}
+                >
+                    Add {inputParam.label}
+                </Button>
+            </Box>
 
             {/* Expand dialog for JSON Schema */}
             {expandOpen && (

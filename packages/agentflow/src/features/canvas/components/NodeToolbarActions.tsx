@@ -55,7 +55,7 @@ function NodeToolbarActionsComponent({ nodeId, nodeName, isVisible, onInfoClick 
                         title='Edit'
                         onClick={handleEditClick}
                         sx={{
-                            color: isDarkMode ? 'white' : theme.palette.grey[600],
+                            color: isDarkMode ? 'white' : 'inherit',
                             '&:hover': { color: theme.palette.primary.main }
                         }}
                     >
