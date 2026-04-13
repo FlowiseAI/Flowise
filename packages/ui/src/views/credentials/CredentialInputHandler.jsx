@@ -13,9 +13,13 @@ import { SwitchInput } from '@/ui-component/switch/Switch'
 import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ===========================|| NodeInputHandler ||=========================== //
 
 const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
+    const { t } = useTranslation()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
 
@@ -27,8 +31,8 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
             value,
             inputParam,
             disabled,
-            confirmButtonName: 'Save',
-            cancelButtonName: 'Cancel'
+            confirmButtonName: t('credentials.actions.save'),
+            cancelButtonName: t('credentials.actions.cancel')
         }
         setExpandDialogProps(dialogProp)
         setShowExpandDialog(true)
@@ -58,7 +62,7 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
                                         height: 25,
                                         width: 25
                                     }}
-                                    title='Expand'
+                                    title={t('credentials.actions.expand')}
                                     color='primary'
                                     onClick={() => onExpandDialogClicked(data[inputParam.name] ?? inputParam.default ?? '', inputParam)}
                                 >

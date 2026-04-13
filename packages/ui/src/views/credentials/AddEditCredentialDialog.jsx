@@ -32,7 +32,11 @@ import { baseURL, REDACTED_CREDENTIAL_VALUE } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import keySVG from '@/assets/images/key.svg'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
 
     const dispatch = useDispatch()
@@ -127,7 +131,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             const createResp = await credentialsApi.createCredential(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Credential added',
+                    message: t('credentials.messages.add.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -143,9 +147,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: `Failed to add new Credential: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('credentials.messages.add.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -179,7 +183,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             const saveResp = await credentialsApi.updateCredential(credential.id, saveObj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'Credential saved',
+                    message: t('credentials.messages.save.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -195,9 +199,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         } catch (error) {
             if (setError) setError(error)
             enqueueSnackbar({
-                message: `Failed to save Credential: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('credentials.messages.save.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -276,7 +280,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
 
                         if (event.data.type === 'OAUTH2_SUCCESS') {
                             enqueueSnackbar({
-                                message: 'OAuth2 authorization completed successfully',
+                                message: t('credentials.messages.setOAuth2.success'),
                                 options: {
                                     key: new Date().getTime() + Math.random(),
                                     variant: 'success',
@@ -290,7 +294,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                             onConfirm(credentialId)
                         } else if (event.data.type === 'OAUTH2_ERROR') {
                             enqueueSnackbar({
-                                message: event.data.message || 'OAuth2 authorization failed',
+                                message: event.data.message || t('credentials.messages.setOAuth2.error.simple'),
                                 options: {
                                     key: new Date().getTime() + Math.random(),
                                     variant: 'error',
@@ -341,7 +345,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             console.error('OAuth2 authorization error:', error)
             if (setError) setError(error)
             enqueueSnackbar({
-                message: `OAuth2 authorization failed: ${error.response?.data?.message || error.message || 'Unknown error'}`,
+                message: t('credentials.messages.setOAuth2.errors.withMsg', {
+                    msg: error.response?.data?.message || error.message || t('credentials.messages.setOAuth2.errors.unknown')
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -419,7 +425,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                             }}
                         >
                             <IconHandStop size={25} color='white' />
-                            <span style={{ color: 'white', marginLeft: 10, fontWeight: 400 }}>Cannot edit shared credential.</span>
+                            <span style={{ color: 'white', marginLeft: 10, fontWeight: 400 }}>{t('credentials.cannotShare')}</span>
                         </div>
                     </div>
                 )}
@@ -444,7 +450,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     <Box sx={{ p: 2 }}>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
-                                Credential Name
+                                {t('credentials.inputs.credentialName')}
                                 <span style={{ color: 'red' }}>&nbsp;*</span>
                             </Typography>
                         </Stack>
@@ -462,7 +468,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                 {!shared && componentCredential && componentCredential.name && componentCredential.name.includes('OAuth2') && (
                     <Box sx={{ p: 2 }}>
                         <Stack sx={{ position: 'relative' }} direction='row'>
-                            <Typography variant='overline'>OAuth Redirect URL</Typography>
+                            <Typography variant='overline'>{t('credentials.inputs.oAuthRedirectUrl')}</Typography>
                         </Stack>
                         <OutlinedInput
                             id='oauthRedirectUrl'
@@ -483,7 +489,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                 {!shared && componentCredential && componentCredential.name && componentCredential.name.includes('OAuth2') && (
                     <Box sx={{ p: 2 }}>
                         <Button variant='contained' color='secondary' onClick={() => setOAuth2()}>
-                            Authenticate
+                            {t('credentials.actions.authenticate')}
                         </Button>
                     </Box>
                 )}

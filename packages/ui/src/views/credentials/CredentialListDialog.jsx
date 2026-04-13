@@ -11,7 +11,11 @@ import { baseURL } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import keySVG from '@/assets/images/key.svg'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelected }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const theme = useTheme()
@@ -70,7 +74,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                         id='input-search-credential'
                         value={searchValue}
                         onChange={(e) => filterSearch(e.target.value)}
-                        placeholder='Search credential'
+                        placeholder={t('credentials.inputs.search')}
                         startAdornment={
                             <InputAdornment position='start'>
                                 <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />
@@ -86,7 +90,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                                         color: theme.palette.grey[900]
                                     }
                                 }}
-                                title='Clear Search'
+                                title={t('credentials.actions.clearSearch')}
                             >
                                 <IconX
                                     stroke={1.5}
@@ -100,7 +104,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                         }
                         aria-describedby='search-helper-text'
                         inputProps={{
-                            'aria-label': 'weight'
+                            'aria-label': t('credentials.weight')
                         }}
                     />
                 </Box>

@@ -2300,5 +2300,67 @@
             "tryAgain": "Oops! There seems to be an error. Please try again.",
             "unableUpload": "Unable to upload documents"
         }
+    },
+    "credentials": {
+        "title": "Credentials",
+        "description": "API keys, tokens, and secrets for 3rd party integrations",
+        "cannotShare": "Cannot edit shared credential.",
+        "notFound": "No Credentials Yet",
+        "weight": "weight",
+        "inputs": {
+            "credentialName": "Credential Name",
+            "oAuthRedirectUrl": "OAuth Redirect URL",
+            "search": "Search Сredential"
+        },
+        "table": {
+            "title": "Shared Credential",
+            "name": "Name",
+            "lastUpdated": "Last Updated",
+            "created": "Created"
+        },
+        "actions": {
+            "authenticate": "Authenticate",
+            "save": "Save",
+            "cancel": "Cancel",
+            "expand": "Expand",
+            "clearSearch": "Clear Search",
+            "add": "Add",
+            "share": "Share",
+            "edit": "Edit",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete credential {{name}}?"
+            },
+            "addCredential": "Add Credential"
+        },
+        "dialogs": {
+            "add": "Add New Credential",
+            "share": "Share Credential"
+        },
+        "messages": {
+            "add": {
+                "success": "New Credential added",
+                "error": "Failed to add new Credential: {{msg}}"
+            },
+            "save": {
+                "success": "Credential saved",
+                "error": "Failed to save Credential: {{msg}}"
+            },
+            "delete": {
+                "success": "Credential deleted",
+                "error": "Failed to delete Credential: {{msg}}"
+            },
+            "setOAuth2": {
+                "success": "OAuth2 authorization completed successfully",
+                "errors": {
+                    "simple": "OAuth2 authorization failed",
+                    "withMsg": "OAuth2 authorization failed: {{msg}}",
+                    "unknown": "Unknown error"
+                }
+            }
+        },
+        "formats": {
+            "date": "MMMM Do, YYYY HH:mm:ss"
+        }
     }
 }
