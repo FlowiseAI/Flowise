@@ -4,7 +4,11 @@ import { Box, Collapse, Typography, CircularProgress } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconChevronDown, IconChevronRight, IconBrain } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ThinkingCard = ({ thinking, thinkingDuration, isThinking, customization }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const [isExpanded, setIsExpanded] = useState(false)
 
@@ -30,12 +34,12 @@ const ThinkingCard = ({ thinking, thinkingDuration, isThinking, customization })
     // Determine header text
     const getHeaderText = () => {
         if (isThinking) {
-            return 'Thinking...'
+            return t('chatmessage.thinking.loading')
         }
         if (thinkingDuration !== undefined && thinkingDuration !== null) {
-            return `Thought for ${thinkingDuration} second${thinkingDuration !== 1 ? 's' : ''}`
+            return t('chatmessage.thinking.done', { count: thinkingDuration })
         }
-        return 'Thinking...'
+        return t('chatmessage.thinking.loading')
     }
 
     return (
