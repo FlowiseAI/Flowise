@@ -38,7 +38,11 @@ import nodesApi from '@/api/nodes'
 import useApi from '@/hooks/useApi'
 import { initNode } from '@/utils/genericHelper'
 
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+
 const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
@@ -199,17 +203,20 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                     >
                         <IconAlertTriangle size={70} color='orange' />
                         <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>
-                            <strong>Note:</strong> Without a Record Manager configured, only the document chunks will be removed from the
-                            document store. The actual vector embeddings in your vector store database will remain unchanged. To enable
-                            automatic cleanup of vector store data, please configure a Record Manager.{' '}
-                            <Link
-                                href='https://docs.flowiseai.com/integrations/langchain/record-managers'
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                sx={{ fontWeight: 500, color: 'rgb(116,66,16)', textDecoration: 'underline' }}
-                            >
-                                Learn more
-                            </Link>
+                            <Trans
+                                i18nKey='docstore.deleteNote'
+                                components={{
+                                    strong: <strong />,
+                                    a: (
+                                        <Link
+                                            href='https://docs.flowiseai.com/integrations/langchain/record-managers'
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                            sx={{ fontWeight: 500, color: 'rgb(116,66,16)', textDecoration: 'underline' }}
+                                        />
+                                    )
+                                }}
+                            />
                         </span>
                     </div>
                 )}
@@ -217,11 +224,11 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                     <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
                         <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
                             <SettingsIcon />
-                            <Typography variant='h4'>Configuration</Typography>
+                            <Typography variant='h4'>{t('docstore.configuration')}</Typography>
                         </Stack>
                         <Stack direction='column'>
                             <TableContainer component={Paper} sx={{ maxHeight: '400px', overflow: 'auto' }}>
-                                <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                <Table sx={{ minWidth: 650 }} aria-label={t('docstore.simpleTable')}>
                                     <TableBody>
                                         <TableRow sx={{ '& td': { border: 0 } }}>
                                             <TableCell sx={{ pb: 0, pt: 0 }} colSpan={6}>
@@ -294,10 +301,10 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
             </DialogContent>
             <DialogActions sx={{ pr: 3, pb: 3 }}>
                 <Button onClick={onCancel} color='primary'>
-                    Cancel
+                    {t('docstore.actions.cancel')}
                 </Button>
                 <Button variant='contained' onClick={() => onDelete(dialogProps.type, dialogProps.file)} color='error'>
-                    Delete
+                    {t('docstore.actions.delete.title')}
                 </Button>
             </DialogActions>
         </Dialog>

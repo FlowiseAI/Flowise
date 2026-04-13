@@ -32,6 +32,9 @@ import { getFileName } from '@/utils/genericHelper'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 import { useError } from '@/store/context/ErrorContext'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
@@ -52,6 +55,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 }))
 
 const ShowStoredChunks = () => {
+    const { t } = useTranslation()
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
     const dispatch = useDispatch()
@@ -105,7 +109,7 @@ const ShowStoredChunks = () => {
             )
             if (editResp.data) {
                 enqueueSnackbar({
-                    message: 'Document chunk successfully edited!',
+                    message: t('docstore.messages.edit.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -122,9 +126,9 @@ const ShowStoredChunks = () => {
         } catch (error) {
             setLoading(false)
             enqueueSnackbar({
-                message: `Failed to edit chunk: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('docstore.messages.edit.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -140,10 +144,10 @@ const ShowStoredChunks = () => {
 
     const onDeleteChunk = async (chunk) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete chunk ${chunk.id} ? This action cannot be undone.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: t('docstore.actions.delete.title'),
+            description: t('docstore.actions.delete.description.chunk', { id: chunk.id }),
+            confirmButtonName: t('docstore.actions.delete.title'),
+            cancelButtonName: t('docstore.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -154,7 +158,7 @@ const ShowStoredChunks = () => {
                 const delResp = await documentsApi.deleteChunkFromStore(chunk.storeId, chunk.docId, chunk.id)
                 if (delResp.data) {
                     enqueueSnackbar({
-                        message: 'Document chunk successfully deleted!',
+                        message: t('docstore.messages.deleteChunk.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -171,9 +175,9 @@ const ShowStoredChunks = () => {
             } catch (error) {
                 setLoading(false)
                 enqueueSnackbar({
-                    message: `Failed to delete chunk: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: t('docstore.messages.deleteChunk.error', {
+                        msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -319,7 +323,7 @@ const ShowStoredChunks = () => {
                                             }
                                         />
                                     </IconButton>
-                                    Showing {Math.min(start, totalChunks)}-{end} of {totalChunks} chunks
+                                    {t('docstore.showing', { start: Math.min(start, totalChunks), end: end, total: totalChunks })}
                                     <IconButton
                                         size='small'
                                         onClick={() => changePage(currentPage + 1)}
@@ -342,7 +346,7 @@ const ShowStoredChunks = () => {
                                 </div>
                                 <div style={{ marginRight: 20, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                                     <IconLanguage style={{ marginRight: 10 }} size={20} />
-                                    {getChunksApi.data?.characters?.toLocaleString()} characters
+                                    {t('docstore.characters', { count: getChunksApi.data?.characters?.toLocaleString() })}
                                 </div>
                             </div>
                         </div>
@@ -364,7 +368,7 @@ const ShowStoredChunks = () => {
                                                 alt='chunks_emptySVG'
                                             />
                                         </Box>
-                                        <div>No Chunks</div>
+                                        <div>{t('docstore.notFoundChunks')}</div>
                                     </div>
                                 )}
                                 {documentChunks.length > 0 &&
@@ -378,7 +382,10 @@ const ShowStoredChunks = () => {
                                                 <Card>
                                                     <CardContent sx={{ p: 2 }}>
                                                         <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                            {`#${row.chunkNo}. Characters: ${row.pageContent.length}`}
+                                                            {t('docstore.charactersIndex', {
+                                                                index: row.chunkNo,
+                                                                total: row.pageContent.length
+                                                            })}
                                                         </Typography>
                                                         <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
                                                             {row.pageContent}

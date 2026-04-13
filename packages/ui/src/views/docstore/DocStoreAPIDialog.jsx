@@ -23,7 +23,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { IconInfoCircle } from '@tabler/icons-react'
 import { baseURL } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const DocStoreAPIDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const [nodeConfig, setNodeConfig] = useState({})
     const [values, setValues] = useState('')
     const theme = useTheme()
@@ -33,7 +37,7 @@ const DocStoreAPIDialog = ({ show, dialogProps, onCancel }) => {
     const getConfigApi = useApi(documentstoreApi.getDocumentStoreConfig)
 
     const formDataRequest = () => {
-        return `With the Upsert API, you can choose an existing document and reuse the same configuration for upserting.
+        return `${t('docstore.apiNote')}
 
 \`\`\`python
 import requests
@@ -135,7 +139,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
     }
 
     const jsonDataRequest = () => {
-        return `With the Upsert API, you can choose an existing document and reuse the same configuration for upserting.
+        return `${t('docstore.apiNote')}
  
 \`\`\`python
 import requests
@@ -349,7 +353,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
                         }}
                     />
                     <Box sx={{ flex: 1 }}>
-                        <strong>Note:</strong> Upsert API can only be used when the existing document loader has been upserted before.
+                        <strong>{t('docstore.note')}</strong> {t('docstore.apiNote')}
                     </Box>
                 </Box>
 
@@ -357,7 +361,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
 
                 <MemoizedReactMarkdown>{values}</MemoizedReactMarkdown>
 
-                <Typography sx={{ mt: 3, mb: 1 }}>You can override existing configurations:</Typography>
+                <Typography sx={{ mt: 3, mb: 1 }}>{t('docstore.override')}</Typography>
 
                 <Stack direction='column' spacing={2} sx={{ width: '100%', my: 2 }}>
                     <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>

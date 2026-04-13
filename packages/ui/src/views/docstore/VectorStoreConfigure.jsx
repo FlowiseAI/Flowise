@@ -46,7 +46,11 @@ import useNotifier from '@/utils/useNotifier'
 // const
 const steps = ['Embeddings', 'Vector Store', 'Record Manager']
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const VectorStoreConfigure = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const { hasAssignedWorkspace } = useAuth()
@@ -129,7 +133,7 @@ const VectorStoreConfigure = () => {
 
     const showEmbeddingsList = () => {
         const dialogProp = {
-            title: 'Select Embeddings Provider'
+            title: t('docstore.dialogs.selectEmbeddingsProvider')
         }
         setDialogProps(dialogProp)
         setShowEmbeddingsListDialog(true)
@@ -153,7 +157,7 @@ const VectorStoreConfigure = () => {
 
     const showVectorStoreList = () => {
         const dialogProp = {
-            title: 'Select a Vector Store Provider'
+            title: t('docstore.dialogs.selectVectorStoreProvider')
         }
         setDialogProps(dialogProp)
         setShowVectorStoreListDialog(true)
@@ -171,7 +175,7 @@ const VectorStoreConfigure = () => {
 
     const showRecordManagerList = () => {
         const dialogProp = {
-            title: 'Select a Record Manager'
+            title: t('docstore.dialogs.selectRecordManager')
         }
         setDialogProps(dialogProp)
         setShowRecordManagerListDialog(true)
@@ -187,7 +191,7 @@ const VectorStoreConfigure = () => {
 
     const onSelectHistoryDetails = (history) => {
         const props = {
-            title: moment(history.date).format('DD-MMM-YYYY, hh:mm:ss A'),
+            title: moment(history.date).format(t('docstore.formats.date')),
             numAdded: history.result.numAdded,
             numUpdated: history.result.numUpdated,
             numSkipped: history.result.numSkipped,
@@ -228,7 +232,7 @@ const VectorStoreConfigure = () => {
 
         if (!canSubmit) {
             enqueueSnackbar({
-                message: 'Please fill in all mandatory fields.',
+                message: t('docstore.mandatory.warn'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',
@@ -358,7 +362,7 @@ const VectorStoreConfigure = () => {
     const getLoaderDisplayName = (loader) => {
         if (!loader) return ''
 
-        const loaderName = loader.loaderName || 'Unknown'
+        const loaderName = loader.loaderName || t('docstore.unknown')
         let sourceName = ''
 
         // Prefer files.name when files array exists and has items
@@ -392,7 +396,7 @@ const VectorStoreConfigure = () => {
         if (saveVectorStoreConfigApi.data) {
             setLoading(false)
             enqueueSnackbar({
-                message: 'Configuration saved successfully',
+                message: t('docstore.messages.saveConfiguration.success'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -518,7 +522,7 @@ const VectorStoreConfigure = () => {
                                     isBackButton={true}
                                     search={false}
                                     title={getViewHeaderTitle()}
-                                    description='Configure Embeddings, Vector Store and Record Manager'
+                                    description={t('docstore.embeddingsDescription')}
                                     onBack={() => navigate(-1)}
                                 >
                                     {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
@@ -533,7 +537,7 @@ const VectorStoreConfigure = () => {
                                             startIcon={<IconRefresh />}
                                             onClick={() => resetVectorStoreConfig()}
                                         >
-                                            Reset
+                                            {t('docstore.actions.reset')}
                                         </Button>
                                     )}
                                     {(Object.keys(selectedEmbeddingsProvider).length > 0 ||
@@ -548,7 +552,7 @@ const VectorStoreConfigure = () => {
                                             startIcon={<IconDeviceFloppy />}
                                             onClick={() => saveVectorStoreConfig()}
                                         >
-                                            Save Config
+                                            {t('docstore.actions.saveConfig')}
                                         </Button>
                                     )}
                                     {Object.keys(selectedEmbeddingsProvider).length > 0 &&
@@ -566,10 +570,15 @@ const VectorStoreConfigure = () => {
                                                 startIcon={<IconRowInsertTop />}
                                                 onClick={() => tryAndInsertIntoStore()}
                                             >
-                                                Upsert
+                                                {t('docstore.actions.upsert')}
                                             </Button>
                                         )}
-                                    <IconButton onClick={showUpsertHistoryDrawer} size='small' color='inherit' title='Upsert History'>
+                                    <IconButton
+                                        onClick={showUpsertHistoryDrawer}
+                                        size='small'
+                                        color='inherit'
+                                        title={t('docstore.actions.upsertHistory')}
+                                    >
                                         <IconClock />
                                     </IconButton>
                                 </ViewHeader>
@@ -596,7 +605,7 @@ const VectorStoreConfigure = () => {
                                                     }
                                                 }}
                                             >
-                                                Select Embeddings
+                                                {t('docstore.actions.FselectEmbeddings')}
                                             </Button>
                                         ) : (
                                             <Box>
@@ -712,7 +721,7 @@ const VectorStoreConfigure = () => {
                                                 }}
                                                 disabled={isVectorStoreDisabled()}
                                             >
-                                                Select Vector Store
+                                                {t('docstore.actions.selectVectorStore')}
                                             </Button>
                                         ) : (
                                             <Box>
@@ -836,9 +845,11 @@ const VectorStoreConfigure = () => {
                                                 }}
                                                 disabled={isRecordManagerDisabled()}
                                             >
-                                                {isRecordManagerUnavailable
-                                                    ? 'Record Manager is not applicable for selected Vector Store'
-                                                    : 'Select Record Manager'}
+                                                {t(
+                                                    isRecordManagerUnavailable
+                                                        ? 'docstore.recordManagerUnavailable'
+                                                        : 'docstore.actions.selectRecordManager'
+                                                )}
                                             </Button>
                                         ) : (
                                             <Box>

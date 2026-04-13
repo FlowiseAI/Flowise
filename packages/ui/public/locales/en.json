@@ -2445,5 +2445,201 @@
         "formats": {
             "date": "MMMM Do YYYY, hh:mm A"
         }
+    },
+    "docstore": {
+        "title": "Document Store",
+        "discription": "Store and upsert documents for LLM retrieval (RAG)",
+        "searchPlaceholder": "Search Name",
+        "notFound": "No Document Stores Created Yet",
+        "weight": "weight",
+        "deleteNote": "<strong>Note:</strong> Without a Record Manager configured, only the document chunks will be removed from the document store. The actual vector embeddings in your vector store database will remain unchanged. To enable automatic cleanup of vector store data, please configure a Record Manager. <a>Learn more</a>",
+        "configuration": "Configuration",
+        "simpleTable": "simple table",
+        "apiNote": "With the Upsert API, you can choose an existing document and reuse the same configuration for upserting.",
+        "note": "Note:",
+        "override": "You can override existing configurations:",
+        "unknown": "Unknown",
+        "chatflowsUsed": "Chatflows Used:",
+        "notFoundDocument": "No Document Added Yet",
+        "refresh": "Some files are pending processing. Please Refresh to get the latest status.",
+        "noSource": "No source",
+        "none": "None",
+        "characters": "{{count}} characters",
+        "unknownError": "Unknown error",
+        "selectTextSplitter": "Select Text Splitter",
+        "previewCount": "{{current}} of {{total}} Chunks",
+        "show": "Show Chunks in Preview",
+        "charactersIndex": "#{{index}}. Characters: {{total}}",
+        "showing": "Showing {{start}}-{{end}} of {{total}} chunks",
+        "notFoundChunks": "No Chunks",
+        "embeddingsDescription": "Configure Embeddings, Vector Store and Record Manager",
+        "recordManagerUnavailable": "Record Manager is not applicable for selected Vector Store",
+        "retrievalPlaygroundDescription": "Retrieval Playground - Test your vector store retrieval settings",
+        "splitter": "Splitter",
+        "retrievedDocuments": {
+            "title": "Retrieved Documents",
+            "count": "Count: {{count}}. Time taken: {{time}} millis.",
+            "notFound": "No Documents Retrieved"
+        },
+        "history": {
+            "titles": {
+                "added": "Added",
+                "updated": "Updated",
+                "skipped": "Skipped",
+                "deleted": "Deleted"
+            },
+            "added": "Added: {{count}}",
+            "updated": "Updated: {{count}}",
+            "skipped": "Skipped: {{count}}",
+            "deleted": "Deleted: {{count}}",
+            "notFound": "No Upsert History Yet"
+        },
+        "table": {
+            "loader": "Loader",
+            "splitter": "Splitter",
+            "source": "Source(s)",
+            "chunks": "Chunks",
+            "chars": "Chars",
+            "actions": "Actions"
+        },
+        "dialogs": {
+            "selectDocumentLoader": "Select Document Loader",
+            "confirm": {
+                "title": "Refresh all loaders and upsert all chunks?",
+                "description": "This will re-process all loaders and upsert all chunks. This action might take some time."
+            },
+            "editDocumentStore": "Edit Document Store",
+            "addNewDocumentStore": "Add New Document Store",
+            "upsertApi": "Upsert API",
+            "renameDocumentStore": "Rename Document Store",
+            "selectEmbeddingsProvider": "Select Embeddings Provider",
+            "selectVectorStoreProvider": "Select a Vector Store Provider",
+            "selectRecordManager": "Select a Record Manager"
+        },
+        "inputs": {
+            "name": "Name",
+            "description": "Description",
+            "search": "Search",
+            "loaderName": {
+                "simple": "{{name}} name",
+                "loader": "{{name}} Loader Name"
+            },
+            "enterYourQuery": "Enter your Query"
+        },
+        "actions": {
+            "cancel": "Cancel",
+            "clearSearch": "Clear Search",
+            "delete": {
+                "title": "Delete",
+                "description": {
+                    "loader": {
+                        "simple": "Delete {{name}}? This will delete all the associated document chunks from the document store.",
+                        "withData": "Delete {{name}}? This will delete all the associated document chunks from the document store and remove the actual data from the vector store database."
+                    },
+                    "store": {
+                        "simple": "Delete Store {{name}}? This will delete all the associated loaders and document chunks from the document store.",
+                        "withData": "Delete Store {{name}}? This will delete all the associated loaders and document chunks from the document store, and remove the actual data from the vector store database."
+                    },
+                    "document": {
+                        "simple": "Delete store [{{name}}]? This will remove this document store from the list.",
+                        "withData": "Delete store [{{name}}]? This will remove this document store from the list and remove the actual data from the vector store database."
+                    },
+                    "chunk": "Delete chunk {{id}}? This action cannot be undone."
+                }
+            },
+            "save": "Save",
+            "expand": "Expand",
+            "refresh": "Refresh",
+            "manageLinks": "Manage Links",
+            "update": "Update",
+            "refreshDocumentStore": "Refresh Document Store",
+            "addDocumentLoader": "Add Document Loader",
+            "moreActions": "More Actions",
+            "menu": {
+                "viewEditChunks": "View & Edit Chunks",
+                "upsertAllChunks": "Upsert All Chunks",
+                "retrievalQuery": "Retrieval Query",
+                "refresh": "Re-process all loaders and upsert all chunks",
+                "previewProcess": "Preview & Process",
+                "upsertChunks": "Upsert Chunks",
+                "viewApi": "View API"
+            },
+            "deleteChunk": "Delete Chunk",
+            "add": "Add",
+            "cardView": "Card View",
+            "listView": "List View",
+            "addNew": "Add New",
+            "documentStoreActions": "Document store actions",
+            "rename": "Rename",
+            "process": "Process",
+            "previewChunks": "Preview Chunks",
+            "preview": "Preview",
+            "close": "Close",
+            "details": "Details",
+            "reset": "Reset",
+            "saveConfig": "Save Config",
+            "upsert": "Upsert",
+            "selectEmbeddings": "Select Embeddings",
+            "selectVectorStore": "Select Vector Store",
+            "selectRecordManager": "Select Record Manager",
+            "upsertHistory": "Upsert History",
+            "back": "Back",
+            "editChunk": "Edit Chunk"
+        },
+        "messages": {
+            "deleteStore": {
+                "success": "Store, Loader and associated document chunks deleted",
+                "error": "Failed to delete Document Store: {{msg}}"
+            },
+            "deleteLoader": {
+                "success": "Loader and associated document chunks deleted",
+                "error": "Failed to delete Document Loader: {{msg}}"
+            },
+            "deleteDocument": {
+                "success": "Document Store deleted.",
+                "error": "Failed to delete Document Store: {{msg}}"
+            },
+            "storeRefresh": {
+                "success": "Document store refresh successfully!",
+                "error": "Failed to refresh document store: {{msg}}"
+            },
+            "create": {
+                "success": "New Document Store created.",
+                "error": "Failed to add new Document Store: {{msg}}"
+            },
+            "update": {
+                "success": "Document Store Updated!",
+                "error": "Failed to update Document Store: {{msg}}"
+            },
+            "mandatory": {
+                "error": "Please fill in the following mandatory fields: {{fields}}",
+                "warn": "Please fill in all mandatory fields."
+            },
+            "previewChunks": {
+                "error": "Failed to preview chunks: {{msg}}"
+            },
+            "save": {
+                "success": "File submitted for processing. Redirecting to Document Store..",
+                "error": "Failed to process chunking: {{msg}}"
+            },
+            "edit": {
+                "success": "Document chunk successfully edited!",
+                "error": "Failed to edit chunk: {{msg}}"
+            },
+            "deleteChunk": {
+                "success": "Document chunk successfully deleted!",
+                "error": "Failed to delete chunk: {{msg}}"
+            },
+            "saveConfiguration": {
+                "success": "Configuration saved successfully"
+            },
+            "vectorStoreUpdated": {
+                "success": "Vector Store Config Successfully Updated",
+                "error": "Failed to update vector store config: {{msg}}"
+            }
+        },
+        "formats": {
+            "date": "DD-MMM-YYYY, hh:mm:ss A"
+        }
     }
 }

@@ -13,7 +13,11 @@ import { IconEdit, IconTrash, IconX, IconLanguage } from '@tabler/icons-react'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import { PermissionButton, PermissionIconButton } from '@/ui-component/button/RBACButtons'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDeleteChunk, isReadOnly }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
 
     const customization = useSelector((state) => state.customization)
@@ -93,15 +97,15 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 onClick={() => setIsEdit(true)}
                                 size='small'
                                 color='primary'
-                                title='Edit Chunk'
+                                title={t('docstore.actions.editChunk')}
                                 sx={{ ml: 2 }}
                             >
                                 <IconEdit />
                             </PermissionIconButton>
                         )}
                         {isEdit && !isReadOnly && (
-                            <Button onClick={() => onEditCancel()} color='primary' title='Cancel' sx={{ ml: 2 }}>
-                                Cancel
+                            <Button onClick={() => onEditCancel()} color='primary' title={t('docstore.actions.cancel')} sx={{ ml: 2 }}>
+                                {t('docstore.actions.cancel')}
                             </Button>
                         )}
                         {isEdit && !isReadOnly && (
@@ -109,11 +113,11 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 permissionId={'documentStores:preview-process'}
                                 onClick={() => onEditSaved(true)}
                                 color='primary'
-                                title='Save'
+                                title={t('docstore.actions.save')}
                                 variant='contained'
                                 sx={{ ml: 2, mr: 1 }}
                             >
-                                Save
+                                {t('docstore.actions.save')}
                             </PermissionButton>
                         )}
                         {!isEdit && !isReadOnly && (
@@ -122,13 +126,13 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 onClick={() => onDeleteChunk(selectedChunk)}
                                 size='small'
                                 color='error'
-                                title='Delete Chunk'
+                                title={t('docstore.actions.deleteChunk')}
                                 sx={{ ml: 1 }}
                             >
                                 <IconTrash />
                             </PermissionIconButton>
                         )}
-                        <IconButton onClick={onCancel} size='small' color='inherit' title='Close' sx={{ ml: 1 }}>
+                        <IconButton onClick={onCancel} size='small' color='inherit' title={t('docstore.actions.close')} sx={{ ml: 1 }}>
                             <IconX />
                         </IconButton>
                     </div>
@@ -157,7 +161,7 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                             }}
                         >
                             <IconLanguage style={{ marginRight: 5 }} size={15} />
-                            {selectedChunk?.pageContent?.length} characters
+                            {t('docstore.characters', { count: selectedChunk?.pageContent?.length })}
                         </div>
                         <div style={{ marginTop: '5px' }}></div>
                         {!isEdit && (

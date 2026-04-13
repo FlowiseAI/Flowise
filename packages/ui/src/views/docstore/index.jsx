@@ -34,6 +34,9 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 // utils
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| DOCUMENTS ||============================== //
 const getDocStoreActionButtonSx = (theme) => ({
     p: 0.5,
@@ -47,6 +50,7 @@ const getDocStoreActionButtonSx = (theme) => ({
 })
 
 const Documents = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -107,7 +111,7 @@ const Documents = () => {
             return error.message
         }
 
-        return 'Unknown error'
+        return t('docstore.unknownError')
     }
 
     const goToDocumentStore = (id) => {
@@ -116,10 +120,10 @@ const Documents = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New Document Store',
+            title: t('docstore.dialogs.addNewDocumentStore'),
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add'
+            cancelButtonName: t('docstore.actions.cancel'),
+            confirmButtonName: t('docstore.actions.add')
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -161,10 +165,10 @@ const Documents = () => {
     const renameDocumentStore = () => {
         if (!selectedDocumentStore) return
         const dialogProp = {
-            title: 'Rename Document Store',
+            title: t('docstore.dialogs.renameDocumentStore'),
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('docstore.actions.cancel'),
+            confirmButtonName: t('docstore.actions.save'),
             data: {
                 id: selectedDocumentStore.id,
                 name: selectedDocumentStore.name,
@@ -181,7 +185,7 @@ const Documents = () => {
         const documentStoreToDelete = selectedDocumentStore
         handleActionMenuClose()
 
-        let description = `Delete store [${documentStoreToDelete.name}]? This will remove this document store from the list.`
+        let description = t('docstore.actions.delete.description.document.simple', { name: documentStoreToDelete.name })
 
         if (
             documentStoreToDelete.recordManagerConfig &&
@@ -189,11 +193,11 @@ const Documents = () => {
             Object.keys(documentStoreToDelete.recordManagerConfig).length > 0 &&
             Object.keys(documentStoreToDelete.vectorStoreConfig).length > 0
         ) {
-            description = `Delete store [${documentStoreToDelete.name}]? This will remove this document store from the list and remove the actual data from the vector store database.`
+            description = t('docstore.actions.delete.description.document.withData', { name: documentStoreToDelete.name })
         }
 
         setDeleteDocStoreDialogProps({
-            title: 'Delete',
+            title: t('docstore.actions.delete.title'),
             description,
             vectorStoreConfig: documentStoreToDelete.vectorStoreConfig,
             recordManagerConfig: documentStoreToDelete.recordManagerConfig,
@@ -214,7 +218,7 @@ const Documents = () => {
             const deleteResp = await documentsApi.deleteDocumentStore(storeId)
             if (deleteResp.data) {
                 enqueueSnackbar({
-                    message: 'Document Store deleted.',
+                    message: t('docstore.messages.deleteDocument.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -238,7 +242,7 @@ const Documents = () => {
             const errorMessage = getDeleteErrorMessage(error)
 
             enqueueSnackbar({
-                message: `Failed to delete Document Store: ${errorMessage}`,
+                message: t('docstore.messages.deleteDocument.error', { msg: errorMessage }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -328,9 +332,9 @@ const Documents = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={hasDocStores}
-                        searchPlaceholder='Search Name'
-                        title='Document Store'
-                        description='Store and upsert documents for LLM retrieval (RAG)'
+                        searchPlaceholder={t('docstore.searchPlaceholder')}
+                        title={t('docstore.title')}
+                        description={t('docstore.discription')}
                     >
                         {hasDocStores && (
                             <ToggleButtonGroup
@@ -348,7 +352,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title='Card View'
+                                    title={t('docstore.actions.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -360,7 +364,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title='List View'
+                                    title={t('docstore.actions.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -374,7 +378,7 @@ const Documents = () => {
                             startIcon={<IconPlus />}
                             id='btn_createVariable'
                         >
-                            Add New
+                            {t('docstore.actions.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
                     {!hasDocStores ? (
@@ -386,7 +390,7 @@ const Documents = () => {
                                     alt='doc_store_empty'
                                 />
                             </Box>
-                            <div>No Document Stores Created Yet</div>
+                            <div>{t('docstore.notFound')}</div>
                         </Stack>
                     ) : (
                         <React.Fragment>
@@ -403,7 +407,7 @@ const Documents = () => {
                                             {canManageDocumentStore && (
                                                 <IconButton
                                                     size='small'
-                                                    aria-label='Document store actions'
+                                                    aria-label={t('docstore.actions.documentStoreActions')}
                                                     sx={{
                                                         position: 'absolute',
                                                         top: 16,
@@ -472,7 +476,7 @@ const Documents = () => {
                         <ListItemIcon>
                             <IconEdit size={16} />
                         </ListItemIcon>
-                        <ListItemText>Rename</ListItemText>
+                        <ListItemText>{t('docstore.actions.rename')}</ListItemText>
                     </MenuItem>
                 )}
                 {canDeleteDocumentStore && (
@@ -480,7 +484,7 @@ const Documents = () => {
                         <ListItemIcon>
                             <IconTrash size={16} />
                         </ListItemIcon>
-                        <ListItemText>Delete</ListItemText>
+                        <ListItemText>{t('docstore.actions.delete.title')}</ListItemText>
                     </MenuItem>
                 )}
             </Menu>

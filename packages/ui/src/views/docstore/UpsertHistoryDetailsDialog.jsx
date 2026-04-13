@@ -24,7 +24,11 @@ import StatsCard from '@/ui-component/cards/StatsCard'
 // const
 import { baseURL } from '@/store/constant'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const UpsertHistoryDetailsDialog = ({ show, dialogProps, onCancel }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
 
@@ -54,14 +58,14 @@ const UpsertHistoryDetailsDialog = ({ show, dialogProps, onCancel }) => {
                         marginTop: '10px'
                     }}
                 >
-                    <StatsCard title='Added' stat={dialogProps.numAdded ?? 0} />
-                    <StatsCard title='Updated' stat={dialogProps.numUpdated ?? 0} />
-                    <StatsCard title='Skipped' stat={dialogProps.numSkipped ?? 0} />
-                    <StatsCard title='Deleted' stat={dialogProps.numDeleted ?? 0} />
+                    <StatsCard title={t('docstore.history.titles.added')} stat={dialogProps.numAdded ?? 0} />
+                    <StatsCard title={t('docstore.history.titles.updated')} stat={dialogProps.numUpdated ?? 0} />
+                    <StatsCard title={t('docstore.history.titles.skipped')} stat={dialogProps.numSkipped ?? 0} />
+                    <StatsCard title={t('docstore.history.titles.deleted')} stat={dialogProps.numDeleted ?? 0} />
                 </div>
                 <div>
                     <TableContainer component={Paper}>
-                        <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                        <Table sx={{ minWidth: 650 }} aria-label={t('docstore.simpleTable')}>
                             <TableBody>
                                 <TableRow sx={{ '& td': { border: 0 } }}>
                                     <TableCell sx={{ pb: 0, pt: 0 }} colSpan={6}>

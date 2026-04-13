@@ -38,6 +38,9 @@ import { useError } from '@/store/context/ErrorContext'
 import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
@@ -60,6 +63,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 // ===========================|| DOCUMENT LOADER CHUNKS ||=========================== //
 
 const LoaderConfigPreviewChunks = () => {
+    const { t } = useTranslation()
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
     const theme = useTheme()
@@ -158,7 +162,7 @@ const LoaderConfigPreviewChunks = () => {
         if (!canSubmit) {
             const fieldsList = missingFields.join(', ')
             enqueueSnackbar({
-                message: `Please fill in the following mandatory fields: ${fieldsList}`,
+                message: t(`docstore.messages.mandatory.error`, { fields: fieldsList }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',
@@ -190,9 +194,9 @@ const LoaderConfigPreviewChunks = () => {
             } catch (error) {
                 setLoading(false)
                 enqueueSnackbar({
-                    message: `Failed to preview chunks: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: t(`docstore.messages.previewChunks.error`, {
+                        mag: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -216,7 +220,7 @@ const LoaderConfigPreviewChunks = () => {
                 setLoading(false)
                 if (saveResp.data) {
                     enqueueSnackbar({
-                        message: 'File submitted for processing. Redirecting to Document Store..',
+                        message: t('docstore.messages.save.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -234,9 +238,9 @@ const LoaderConfigPreviewChunks = () => {
             } catch (error) {
                 setLoading(false)
                 enqueueSnackbar({
-                    message: `Failed to process chunking: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: t('docstore.messages.save.error', {
+                        mag: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -338,7 +342,7 @@ const LoaderConfigPreviewChunks = () => {
                 label: splitter.label,
                 name: splitter.name
             }))
-            options.unshift({ label: 'None', name: 'none' })
+            options.unshift({ label: t('docstore.none'), name: 'none' })
             setTextSplitterOptions(options)
 
             // If this is a document store edit config, set the existing input values
@@ -397,7 +401,13 @@ const LoaderConfigPreviewChunks = () => {
                                 }}
                             >
                                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
-                                    <StyledFab size='small' color='secondary' aria-label='back' title='Back' onClick={() => navigate(-1)}>
+                                    <StyledFab
+                                        size='small'
+                                        color='secondary'
+                                        aria-label={t('docstore.actions.back')}
+                                        title={t('docstore.actions.back')}
+                                        onClick={() => navigate(-1)}
+                                    >
                                         <IconArrowLeft />
                                     </StyledFab>
                                     <Typography sx={{ ml: 2, mr: 2 }} variant='h3'>
@@ -439,7 +449,7 @@ const LoaderConfigPreviewChunks = () => {
                                         sx={{ borderRadius: 2, height: '100%' }}
                                         startIcon={<IconDatabaseImport />}
                                     >
-                                        Process
+                                        {t('docstore.actions.process')}
                                     </StyledButton>
                                 </Box>
                             </Toolbar>
@@ -459,11 +469,12 @@ const LoaderConfigPreviewChunks = () => {
                                                 fullWidth
                                                 sx={{ mt: 1 }}
                                                 size='small'
-                                                label={
+                                                label={t(
                                                     selectedDocumentLoader?.label?.toLowerCase().includes('loader')
-                                                        ? selectedDocumentLoader.label + ' name'
-                                                        : selectedDocumentLoader?.label + ' Loader Name'
-                                                }
+                                                        ? 'docstore.inputs.loaderName.simple'
+                                                        : 'docstore.inputs.loaderName.loader',
+                                                    { name: selectedDocumentLoader?.label }
+                                                )}
                                                 value={loaderName}
                                                 onChange={(e) => setLoaderName(e.target.value)}
                                             />
@@ -486,7 +497,7 @@ const LoaderConfigPreviewChunks = () => {
                                                     <Typography sx={{ mr: 2 }} variant='h3'>
                                                         {(splitterOptions ?? []).find(
                                                             (splitter) => splitter.name === selectedTextSplitter?.name
-                                                        )?.label ?? 'Select Text Splitter'}
+                                                        )?.label ?? t('docstore.selectTextSplitter')}
                                                     </Typography>
                                                     <div
                                                         style={{
@@ -518,7 +529,7 @@ const LoaderConfigPreviewChunks = () => {
                                                     </div>
                                                 </Box>
                                                 <Box sx={{ p: 2 }}>
-                                                    <Typography>Splitter</Typography>
+                                                    <Typography>{t('docstore.splitter')}</Typography>
                                                     <Dropdown
                                                         key={JSON.stringify(selectedTextSplitter)}
                                                         name='textSplitter'
@@ -600,13 +611,13 @@ const LoaderConfigPreviewChunks = () => {
                                                 >
                                                     <StyledFab
                                                         color='secondary'
-                                                        aria-label='preview'
-                                                        title='Preview'
+                                                        aria-label={t('docstore.actions.preview')}
+                                                        title={t('docstore.actions.preview')}
                                                         variant='extended'
                                                         onClick={onPreviewChunks}
                                                     >
                                                         <IconEye style={{ marginRight: '5px' }} />
-                                                        Preview Chunks
+                                                        {t('docstore.actions.previewChunks')}
                                                     </StyledFab>
                                                 </div>
                                             </div>
@@ -614,10 +625,10 @@ const LoaderConfigPreviewChunks = () => {
                                     {documentChunks && documentChunks.length > 0 && (
                                         <>
                                             <Typography sx={{ wordWrap: 'break-word', textAlign: 'left', mb: 2 }} variant='h3'>
-                                                {currentPreviewCount} of {totalChunks} Chunks
+                                                {t('docstore.previewCount', { current: currentPreviewCount, total: totalChunks })}
                                             </Typography>
                                             <Box sx={{ mb: 3 }}>
-                                                <Typography>Show Chunks in Preview</Typography>
+                                                <Typography>{t('docstore.show')}</Typography>
                                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                                     <OutlinedInput
                                                         size='small'
@@ -630,13 +641,13 @@ const LoaderConfigPreviewChunks = () => {
                                                     />
                                                     <StyledFab
                                                         color='secondary'
-                                                        aria-label='preview'
-                                                        title='Preview'
+                                                        aria-label={t('docstore.actions.preview')}
+                                                        title={t('docstore.actions.preview')}
                                                         variant='extended'
                                                         onClick={onPreviewChunks}
                                                     >
                                                         <IconEye style={{ marginRight: '5px' }} />
-                                                        Preview
+                                                        {t('docstore.actions.preview')}
                                                     </StyledFab>
                                                 </div>
                                             </Box>
@@ -656,7 +667,10 @@ const LoaderConfigPreviewChunks = () => {
                                                                 <Card>
                                                                     <CardContent sx={{ p: 1 }}>
                                                                         <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                                            {`#${index + 1}. Characters: ${row.pageContent.length}`}
+                                                                            {t('docstore.charactersIndex', {
+                                                                                index: index + 1,
+                                                                                total: row.pageContent.length
+                                                                            })}
                                                                         </Typography>
                                                                         <Typography sx={{ wordWrap: 'break-word' }} variant='body2'>
                                                                             {row.pageContent}
