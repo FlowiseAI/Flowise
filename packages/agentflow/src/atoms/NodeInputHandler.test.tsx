@@ -379,17 +379,18 @@ describe('NodeInputHandler – json type', () => {
         expect(screen.queryByTestId('json-input')).toBeNull()
     })
 
-    it('renders inline JsonInput for json with acceptVariable but no variableItems', () => {
+    it('renders a button for json with acceptVariable even when no variableItems are provided', () => {
         render(
             <NodeInputHandler
-                inputParam={makeParam({ type: 'json', acceptVariable: true })}
+                inputParam={makeParam({ type: 'json', acceptVariable: true, label: 'My Field' })}
                 data={baseNodeData}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
         )
 
-        expect(screen.getByTestId('json-input')).toBeTruthy()
+        expect(screen.getByRole('button', { name: 'My Field' })).toBeTruthy()
+        expect(screen.queryByTestId('json-input')).toBeNull()
     })
 })
 

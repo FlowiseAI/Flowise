@@ -219,17 +219,19 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
             ))}
 
             {/* Add button */}
-            <Button
-                fullWidth
-                size='small'
-                variant='outlined'
-                disabled={isAddDisabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
-                startIcon={<IconPlus />}
-                onClick={handleAddMessage}
-            >
-                Add {inputParam.label}
-            </Button>
+            <Box sx={{ px: 2 }}>
+                <Button
+                    fullWidth
+                    size='small'
+                    variant='outlined'
+                    disabled={isAddDisabled}
+                    sx={{ borderRadius: '16px', mt: 2 }}
+                    startIcon={<IconPlus />}
+                    onClick={handleAddMessage}
+                >
+                    Add {inputParam.label}
+                </Button>
+            </Box>
 
             {/* Expand content dialog — conditionally mounted so it always initializes fresh */}
             {expandIndex !== null && (
