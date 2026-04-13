@@ -28,7 +28,7 @@ class Milvus_VectorStores implements INode {
     constructor() {
         this.label = 'Milvus'
         this.name = 'milvus'
-        this.version = 2.1
+        this.version = 2.2
         this.type = 'Milvus'
         this.icon = 'milvus.svg'
         this.category = 'Vector Stores'
@@ -70,6 +70,21 @@ class Milvus_VectorStores implements INode {
                 name: 'milvusPartition',
                 default: '_default',
                 type: 'string',
+                optional: true
+            },
+            {
+                label: 'Metric Type',
+                name: 'milvusMetricType',
+                type: 'options',
+                description:
+                    'Metric type used for similarity search. Must match the metric type of the collection. L2 is the default for new collections.',
+                options: [
+                    { label: 'L2 (Euclidean Distance)', name: 'L2' },
+                    { label: 'COSINE (Cosine Similarity)', name: 'COSINE' },
+                    { label: 'IP (Inner Product)', name: 'IP' }
+                ],
+                default: 'L2',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -179,6 +194,10 @@ class Milvus_VectorStores implements INode {
             const embeddings = nodeData.inputs?.embeddings as Embeddings
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
+            // metric type
+            const metricTypeInput = (nodeData.inputs?.milvusMetricType as string) ?? 'L2'
+            const metricType = (MetricType as any)[metricTypeInput] ?? MetricType.L2
+
             // credential
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             const milvusUser = getCredentialParam('milvusUser', credentialData, nodeData)
@@ -198,7 +217,8 @@ class Milvus_VectorStores implements INode {
             const milVusArgs: MilvusLibArgs = {
                 url: address,
                 collectionName: collectionName,
-                partitionName: partitionName
+                partitionName: partitionName,
+                indexCreateParams: { metric_type: metricType }
             }
 
             if (secure) {
@@ -471,7 +491,7 @@ class MilvusUpsert extends Milvus {
                 field_name: this.vectorField,
                 index_name: `myindex_${Date.now().toString()}`,
                 index_type: IndexType.AUTOINDEX,
-                metric_type: MetricType.L2
+                metric_type: this.indexCreateParams?.metric_type ?? MetricType.L2
             })
             if (resp.error_code !== ErrorCode.SUCCESS) {
                 throw new Error(`Error creating index`)
