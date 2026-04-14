@@ -352,7 +352,12 @@ class Start_Agentflow implements INode {
 
         if (startInputType === 'webhookTrigger') {
             inputData.webhook = input
-            let webhookOutput = input
+            let webhookOutput: string | Record<string, any> = input
+            try {
+                webhookOutput = typeof input === 'string' ? JSON.parse(input) : input
+            } catch (_) {
+                /* keep as-is */
+            }
             if (options.agentflowRuntime?.webhook && Object.keys(options.agentflowRuntime.webhook).length) {
                 webhookOutput = options.agentflowRuntime.webhook
             }

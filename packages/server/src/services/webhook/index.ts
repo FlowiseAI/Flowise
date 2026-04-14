@@ -34,7 +34,8 @@ const validateWebhookChatflow = async (
 
         // Content-Type validation (startsWith handles "application/json; charset=utf-8" variants)
         const webhookContentType = startNode?.data?.inputs?.webhookContentType
-        if (webhookContentType && !headers?.['content-type']?.startsWith(webhookContentType)) {
+        const incomingContentType = (headers?.['content-type'] ?? '').toLowerCase()
+        if (webhookContentType && !incomingContentType.startsWith(webhookContentType)) {
             throw new InternalFlowiseError(
                 StatusCodes.UNSUPPORTED_MEDIA_TYPE,
                 `Content-Type ${headers?.['content-type']} not allowed. Expected ${webhookContentType}`
@@ -44,7 +45,7 @@ const validateWebhookChatflow = async (
         // Required header validation
         const rawHeaderParams = startNode?.data?.inputs?.webhookHeaderParams
         const webhookHeaderParams: Array<{ name: string; required: boolean }> = Array.isArray(rawHeaderParams) ? rawHeaderParams : []
-        const missingHeaders = webhookHeaderParams.filter((p) => p.required && headers?.[p.name] == null).map((p) => p.name)
+        const missingHeaders = webhookHeaderParams.filter((p) => p.required && headers?.[p.name.toLowerCase()] == null).map((p) => p.name)
         if (missingHeaders.length > 0) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Missing required headers: ${missingHeaders.join(', ')}`)
         }
