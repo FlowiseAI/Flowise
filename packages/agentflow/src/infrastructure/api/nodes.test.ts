@@ -17,41 +17,38 @@ describe('bindNodesApi', () => {
     const api = bindNodesApi(mockClient)
 
     describe('getAllNodes', () => {
-        it('should call GET /nodes', async () => {
+        it('should call GET /nodes with client=agentflowsdk', async () => {
             const mockNodes = [{ name: 'llmAgentflow', label: 'LLM' }]
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockNodes })
 
             const result = await api.getAllNodes()
-            expect(mockClient.get).toHaveBeenCalledWith('/nodes')
+            expect(mockClient.get).toHaveBeenCalledWith('/nodes', { params: { client: 'agentflowsdk' } })
             expect(result).toEqual(mockNodes)
         })
     })
 
     describe('getNodeByName', () => {
-        it('should call GET /nodes/:name', async () => {
+        it('should call GET /nodes/:name with client=agentflowsdk', async () => {
             const mockNode = { name: 'llmAgentflow', label: 'LLM' }
             ;(mockClient.get as jest.Mock).mockResolvedValue({ data: mockNode })
 
             const result = await api.getNodeByName('llmAgentflow')
-            expect(mockClient.get).toHaveBeenCalledWith('/nodes/llmAgentflow')
+            expect(mockClient.get).toHaveBeenCalledWith('/nodes/llmAgentflow', { params: { client: 'agentflowsdk' } })
             expect(result).toEqual(mockNode)
         })
     })
 
     describe('getNodeConfig', () => {
-        it('should map SDK fields to legacy field names for the server', async () => {
+        it('should POST node data directly to /node-config', async () => {
             const mockConfig = [{ node: 'LLM', nodeId: 'node-1', label: 'Model Name', name: 'modelName', type: 'string' }]
             ;(mockClient.post as jest.Mock).mockResolvedValue({ data: mockConfig })
 
-            const inputs = [{ id: 'i1', name: 'modelName', label: 'Model Name', type: 'string' }]
-            const inputValues = { modelName: 'gpt-4' }
-            const nodeData: NodeData = { id: 'node-1', name: 'llmAgentflow', label: 'LLM', inputs, inputValues }
+            const inputParams = [{ id: 'i1', name: 'modelName', label: 'Model Name', type: 'string' }]
+            const inputs = { modelName: 'gpt-4' }
+            const nodeData: NodeData = { id: 'node-1', name: 'llmAgentflow', label: 'LLM', inputParams, inputs }
             const result = await api.getNodeConfig(nodeData)
-            // Server expects inputParams (definitions) and inputs (values)
-            expect(mockClient.post).toHaveBeenCalledWith(
-                '/node-config',
-                expect.objectContaining({ inputParams: inputs, inputs: inputValues })
-            )
+            // NodeData now uses server field names directly — no mapping needed
+            expect(mockClient.post).toHaveBeenCalledWith('/node-config', expect.objectContaining({ inputParams, inputs }))
             expect(result).toEqual(mockConfig)
         })
     })

@@ -45,7 +45,7 @@ const mockNodeData = makeNodeData({
     id: 'conditionAgentAgentflow_0',
     name: 'conditionAgentAgentflow',
     label: 'Condition Agent',
-    inputValues: {}
+    inputs: {}
 })
 
 describe('ScenariosInput', () => {
@@ -70,7 +70,7 @@ describe('ScenariosInput', () => {
     it('should render scenario items with "Scenario N" labels', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }, { scenario: 'User is angry' }]
             }
         })
@@ -108,7 +108,7 @@ describe('ScenariosInput', () => {
     it('should delete a scenario item', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }, { scenario: 'User is angry' }]
             }
         })
@@ -127,7 +127,7 @@ describe('ScenariosInput', () => {
     it('should handle nested field changes within a scenario', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }]
             }
         })
@@ -146,7 +146,7 @@ describe('ScenariosInput', () => {
     it('should disable buttons when disabled prop is true', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }]
             }
         })
@@ -161,7 +161,7 @@ describe('ScenariosInput', () => {
         const inputParamWithMin: InputParam = { ...scenarioInputParam, minItems: 1 }
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }]
             }
         })
@@ -174,7 +174,7 @@ describe('ScenariosInput', () => {
     it('should render fields for each scenario item', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'User is happy' }, { scenario: 'User is angry' }]
             }
         })
@@ -187,7 +187,7 @@ describe('ScenariosInput', () => {
     it('should append to existing scenarios when adding', () => {
         const data = makeNodeData({
             ...mockNodeData,
-            inputValues: {
+            inputs: {
                 conditionAgentScenarios: [{ scenario: 'Existing scenario' }]
             }
         })

@@ -11,7 +11,6 @@ import {
     bindCredentialsApi,
     bindEmbeddingsApi,
     bindNodesApi,
-    bindRuntimeStateApi,
     bindStoresApi,
     bindToolsApi,
     type ChatflowsApi,
@@ -19,7 +18,6 @@ import {
     type CredentialsApi,
     type EmbeddingsApi,
     type NodesApi,
-    type RuntimeStateApi,
     type StoresApi,
     type ToolsApi
 } from '../api'
@@ -34,7 +32,6 @@ interface ApiContextValue {
     credentialsApi: CredentialsApi
     storesApi: StoresApi
     embeddingsApi: EmbeddingsApi
-    runtimeStateApi: RuntimeStateApi
 }
 
 const ApiContext = createContext<ApiContextValue | null>(null)
@@ -62,7 +59,6 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
         const credentialsApi = bindCredentialsApi(client)
         const storesApi = bindStoresApi(client)
         const embeddingsApi = bindEmbeddingsApi(client)
-        const runtimeStateApi = bindRuntimeStateApi(client)
 
         return {
             client,
@@ -73,8 +69,7 @@ export function ApiProvider({ apiBaseUrl, token, requestInterceptor, children }:
             toolsApi,
             credentialsApi,
             storesApi,
-            embeddingsApi,
-            runtimeStateApi
+            embeddingsApi
         }
     }, [apiBaseUrl, token])
 

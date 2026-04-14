@@ -12,6 +12,7 @@ import { NodeModelConfigs } from '../components/NodeModelConfigs'
 import { getMinimumNodeHeight, NodeOutputHandles } from '../components/NodeOutputHandles'
 import { NodeStatusIndicator, NodeWarningIndicator } from '../components/NodeStatusIndicator'
 import { NodeToolbarActions } from '../components/NodeToolbarActions'
+import { NodeToolIcons } from '../components/NodeToolIcons'
 import { useOpenNodeEditor } from '../hooks'
 import { useNodeColors } from '../hooks/useNodeColors'
 import { CardWrapper } from '../styled'
@@ -105,7 +106,8 @@ function AgentFlowNodeComponent({ data }: AgentFlowNodeProps) {
                             >
                                 {data.label}
                             </Typography>
-                            <NodeModelConfigs inputs={data.inputValues} />
+                            <NodeModelConfigs inputs={data.inputs} />
+                            <NodeToolIcons inputs={data.inputs} nodeColor={data.color} />
                         </Box>
                     </Box>
 

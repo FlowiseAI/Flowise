@@ -9,6 +9,7 @@ import type { InputParam, NodeData } from '@/core/types'
 
 import { NodeInputHandler } from './NodeInputHandler'
 import { useStableKeys } from './useStableKeys'
+import type { VariableItem } from './VariablePicker'
 
 export interface ConditionBuilderProps {
     inputParam: InputParam
@@ -16,6 +17,7 @@ export interface ConditionBuilderProps {
     disabled?: boolean
     onDataChange?: (params: { inputParam: InputParam; newValue: unknown }) => void
     itemParameters?: InputParam[][]
+    variableItems?: VariableItem[]
 }
 
 /**
@@ -28,13 +30,14 @@ export function ConditionBuilder({
     data,
     disabled = false,
     onDataChange,
-    itemParameters: itemParametersProp
+    itemParameters: itemParametersProp,
+    variableItems
 }: ConditionBuilderProps) {
     const theme = useTheme()
 
     const arrayItems = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as Record<string, unknown>[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(arrayItems.length, 'condition')
@@ -49,6 +52,10 @@ export function ConditionBuilder({
             const updatedArrayItems = [...arrayItems]
             const updatedItem = { ...updatedArrayItems[itemIndex] }
             updatedItem[changedParam.name] = newValue
+            if (changedParam.name === 'operation') {
+                updatedItem.value1 = ''
+                updatedItem.value2 = ''
+            }
             updatedArrayItems[itemIndex] = updatedItem
             onDataChange?.({ inputParam, newValue: updatedArrayItems })
         },
@@ -88,7 +95,7 @@ export function ConditionBuilder({
             {arrayItems.map((itemValues, index) => {
                 const itemData: NodeData = {
                     ...data,
-                    inputValues: itemValues
+                    inputs: itemValues
                 }
 
                 return (
@@ -137,6 +144,7 @@ export function ConditionBuilder({
                                     isAdditionalParams={true}
                                     disablePadding={false}
                                     onDataChange={itemHandlers[index]}
+                                    variableItems={param.acceptVariable ? variableItems : undefined}
                                 />
                             ))}
                     </Box>
@@ -163,17 +171,19 @@ export function ConditionBuilder({
                 </Typography>
             </Box>
 
-            <Button
-                fullWidth
-                size='small'
-                variant='outlined'
-                disabled={disabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
-                startIcon={<IconPlus />}
-                onClick={handleAddItem}
-            >
-                Add Condition
-            </Button>
+            <Box sx={{ px: 2 }}>
+                <Button
+                    fullWidth
+                    size='small'
+                    variant='outlined'
+                    disabled={disabled}
+                    sx={{ borderRadius: '16px', mt: 2 }}
+                    startIcon={<IconPlus />}
+                    onClick={handleAddItem}
+                >
+                    Add Condition
+                </Button>
+            </Box>
         </>
     )
 }

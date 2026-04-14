@@ -17,9 +17,11 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
     return createTheme({
         palette: {
             mode,
-            primary: {
-                main: tokens.colors.nodes.agent
-            },
+            primary: tokens.colors.palette.primary,
+            secondary: tokens.colors.palette.secondary,
+            success: tokens.colors.palette.success,
+            error: tokens.colors.palette.error,
+            warning: tokens.colors.palette.warning,
             background: {
                 default: tokens.colors.background.canvas[mode],
                 paper: tokens.colors.background.card[mode]
@@ -45,6 +47,18 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
             subtitle1: { fontSize: '0.875rem', fontWeight: 500 },
             body1: { fontSize: '0.875rem', fontWeight: 400 },
             body2: { fontSize: '0.75rem', fontWeight: 400 }
+        },
+        components: {
+            MuiPaper: {
+                defaultProps: {
+                    elevation: 0
+                },
+                styleOverrides: {
+                    root: {
+                        backgroundImage: 'none'
+                    }
+                }
+            }
         },
         spacing: 8, // MUI's default base unit
         shape: {

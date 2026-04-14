@@ -1,4 +1,4 @@
-import type { FlowEdge, FlowNode, NodeData, ValidationError, ValidationResult } from '../types'
+import type { FlowEdge, FlowNode, NodeDataSchema, ValidationError, ValidationResult } from '../types'
 import { evaluateParamVisibility } from '../utils/fieldVisibility'
 
 /** Check if a value is empty (null, undefined, empty string, or empty rich text) */
@@ -9,7 +9,7 @@ function isEmptyValue(value: unknown): boolean {
 /**
  * Validate the flow structure
  */
-export function validateFlow(nodes: FlowNode[], edges: FlowEdge[], availableNodes?: NodeData[]): ValidationResult {
+export function validateFlow(nodes: FlowNode[], edges: FlowEdge[], availableNodes?: NodeDataSchema[]): ValidationResult {
     const errors: ValidationError[] = []
 
     // Check for empty flow
@@ -172,7 +172,7 @@ function detectHangingEdges(nodes: FlowNode[], edges: FlowEdge[]): ValidationErr
  * @param availableNodes Component definitions (not flow node instances) used to look up
  *   nested config schemas via `availableNodes.find(n => n.name === componentName)`.
  */
-export function validateNode(node: FlowNode, availableNodes?: NodeData[]): ValidationError[] {
+export function validateNode(node: FlowNode, availableNodes?: NodeDataSchema[]): ValidationError[] {
     const errors: ValidationError[] = []
 
     // Check required fields
@@ -185,8 +185,8 @@ export function validateNode(node: FlowNode, availableNodes?: NodeData[]): Valid
     }
 
     const schemaFromAvailable = availableNodes?.find((n) => n.name === node.data.name)
-    const inputParams = schemaFromAvailable?.inputs || node.data.inputs || []
-    const inputValues = node.data.inputValues || {}
+    const inputParams = schemaFromAvailable?.inputs || node.data.inputParams || []
+    const inputValues = node.data.inputs || {}
 
     for (const param of inputParams) {
         // Credential validation (skip general check to avoid duplicate errors)
@@ -247,6 +247,7 @@ export function validateNode(node: FlowNode, availableNodes?: NodeData[]): Valid
             const componentDef = availableNodes.find((n) => n.name === componentName)
             if (componentDef?.inputs) {
                 for (const componentParam of componentDef.inputs) {
+                    // NodeDataSchema.inputs is InputParam[]
                     if (!evaluateParamVisibility(componentParam, configValue)) continue
 
                     if (!componentParam.optional) {

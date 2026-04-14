@@ -56,10 +56,9 @@ export class RedisEventSubscriber {
         })
 
         this.redisSubscriber.on('ready', () => {
-            logger.info(`[RedisEventSubscriber] Redis client ready and connected`)
-            void this.resubscribeAllChannels().catch((err) => {
-                logger.error(`[RedisEventSubscriber] Failed to resubscribe to channels after ready:`, { error: err })
-            })
+            logger.info(
+                `[RedisEventSubscriber] Redis client ready and connected (active channel subscriptions: ${this.subscribedChannels.size})`
+            )
         })
 
         this.redisSubscriber.on('error', (err) => {
@@ -137,26 +136,8 @@ export class RedisEventSubscriber {
         }, intervalMs)
     }
 
-    private async resubscribeAllChannels(): Promise<void> {
-        if (this.subscribedChannels.size === 0) return
-
-        const channels = Array.from(this.subscribedChannels)
-        this.subscribedChannels.clear()
-
-        const messageHandler = (message: string) => this.handleEvent(message)
-        for (const channel of channels) {
-            try {
-                await this.redisSubscriber.subscribe(channel, messageHandler)
-                this.subscribedChannels.add(channel)
-            } catch (err) {
-                logger.error(`[RedisEventSubscriber] Failed to resubscribe to channel ${channel}:`, { error: err })
-            }
-        }
-        logger.info(`[RedisEventSubscriber] Resubscribed to ${this.subscribedChannels.size} channel(s) after reconnection`)
-    }
-
     private handleEvent(message: string) {
-        let event: { eventType?: string; chatId?: string; chatMessageId?: string; data?: any }
+        let event: { eventType?: string; chatId?: string; chatMessageId?: string; data?: any; duration?: number }
         try {
             event = JSON.parse(message)
         } catch (err) {
@@ -164,8 +145,8 @@ export class RedisEventSubscriber {
             return
         }
 
-        const { eventType, chatId, chatMessageId, data } = event
-        if (!eventType || chatId === undefined) {
+        const { eventType, chatId, chatMessageId, data, duration } = event
+        if (!eventType || !chatId) {
             logger.warn(`[RedisEventSubscriber] Invalid event shape (missing eventType or chatId):`, { event })
             return
         }
@@ -180,6 +161,9 @@ export class RedisEventSubscriber {
                     break
                 case 'token':
                     this.sseStreamer.streamTokenEvent(chatId, data)
+                    break
+                case 'thinking':
+                    this.sseStreamer.streamThinkingEvent(chatId, typeof data === 'string' ? data : String(data ?? ''), duration)
                     break
                 case 'sourceDocuments':
                     this.sseStreamer.streamSourceDocumentsEvent(chatId, data)

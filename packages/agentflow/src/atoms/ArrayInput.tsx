@@ -9,6 +9,7 @@ import type { InputParam, NodeData } from '@/core/types'
 
 import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
 import { useStableKeys } from './useStableKeys'
+import type { VariableItem } from './VariablePicker'
 
 export interface ArrayInputProps {
     inputParam: InputParam
@@ -23,6 +24,8 @@ export interface ArrayInputProps {
         configValues: Record<string, unknown>,
         arrayContext?: { parentParamName: string; arrayIndex: number }
     ) => void
+    /** Variable items passed through to sub-field NodeInputHandlers for {{ autocomplete. */
+    variableItems?: VariableItem[]
 }
 
 export function ArrayInput({
@@ -33,15 +36,16 @@ export function ArrayInput({
     itemParameters: itemParametersProp,
     AsyncInputComponent,
     ConfigInputComponent,
-    onConfigChange
+    onConfigChange,
+    variableItems
 }: ArrayInputProps) {
     const theme = useTheme()
 
     // Derive array items directly from props (single source of truth)
     // Memoized to prevent unnecessary re-renders of child hooks
     const arrayItems = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as Record<string, unknown>[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(arrayItems.length, 'item')
@@ -117,7 +121,7 @@ export function ArrayInput({
                 // Create item-specific data context for nested NodeInputHandler
                 const itemData: NodeData = {
                     ...data,
-                    inputValues: itemValues
+                    inputs: itemValues
                 }
 
                 return (
@@ -174,6 +178,7 @@ export function ArrayInput({
                                     onConfigChange={onConfigChange}
                                     arrayIndex={index}
                                     parentArrayParam={inputParam}
+                                    variableItems={param.acceptVariable ? variableItems : undefined}
                                 />
                             ))}
                     </Box>

@@ -22,7 +22,7 @@ import {
 } from '@mui/material'
 import { IconBook2, IconInfoCircle } from '@tabler/icons-react'
 
-import type { NodeConfigEntry, NodeData } from '@/core/types'
+import type { NodeConfigEntry, NodeData, NodeDataSchema } from '@/core/types'
 import { useApiContext } from '@/infrastructure/store'
 
 import { renderNodeIcon } from '../nodeIcons'
@@ -84,7 +84,7 @@ function SchemaTooltipContent({ schema }: { schema: NodeConfigEntry['schema'] })
 function NodeInfoDialogComponent({ open, onClose, data }: NodeInfoDialogProps) {
     const { nodesApi, apiBaseUrl } = useApiContext()
     const [nodeConfig, setNodeConfig] = useState<NodeConfigEntry[]>([])
-    const [componentDef, setComponentDef] = useState<NodeData | null>(null)
+    const [componentDef, setComponentDef] = useState<NodeDataSchema | null>(null)
 
     const fetchData = useCallback(async () => {
         if (!data) return
@@ -94,9 +94,13 @@ function NodeInfoDialogComponent({ open, onClose, data }: NodeInfoDialogProps) {
             const def = await nodesApi.getNodeByName(data.name)
             setComponentDef(def)
 
-            // Build config request with component definition inputs merged
+            // Build config request with component definition schema merged
             // with the node's user-entered values.
-            const configData: NodeData = { ...data, inputs: def.inputs ?? data.inputs, inputValues: data.inputValues }
+            const configData: NodeData = {
+                ...data,
+                inputParams: def.inputs ?? data.inputParams, // schema from API
+                inputs: data.inputs // keep canvas values
+            }
             const config = await nodesApi.getNodeConfig(configData)
             setNodeConfig(config)
         } catch {

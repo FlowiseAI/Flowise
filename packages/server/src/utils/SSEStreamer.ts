@@ -50,7 +50,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
                     event: 'end',
                     data: '[DONE]'
                 }
-                client.response.write('message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+                client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
                 client.response.end()
             } catch {
                 // Client already disconnected, ignore write errors
@@ -91,15 +91,12 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamThinkingEvent(chatId: string, data: string, duration?: number) {
-        const client = this.clients.get(chatId)
-        if (client) {
-            const clientResponse = {
-                event: 'thinking',
-                data: data,
-                duration: duration
-            }
-            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        const clientResponse = {
+            event: 'thinking',
+            data: data,
+            duration: duration
         }
+        this.safeWrite(chatId, 'message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
 
     streamSourceDocumentsEvent(chatId: string, data: any) {
@@ -192,7 +189,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
             event: 'abort',
             data: '[DONE]'
         }
-        this.safeWrite(chatId, 'message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        this.safeWrite(chatId, 'message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
 
     streamEndEvent(_: string) {
@@ -206,7 +203,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
             event: 'error',
             data: msg
         }
-        this.safeWrite(chatId, 'message\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        this.safeWrite(chatId, 'message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
     }
 
     streamMetadataEvent(chatId: string, apiResponse: any) {
@@ -233,6 +230,9 @@ export class SSEStreamer implements IServerSideEventStreamer {
         if (apiResponse.flowVariables) {
             metadataJson['flowVariables'] =
                 typeof apiResponse.flowVariables === 'string' ? JSON.parse(apiResponse.flowVariables) : apiResponse.flowVariables
+        }
+        if (apiResponse.action) {
+            metadataJson['action'] = typeof apiResponse.action === 'string' ? JSON.parse(apiResponse.action) : apiResponse.action
         }
         if (Object.keys(metadataJson).length > 0) {
             this.streamCustomEvent(chatId, 'metadata', metadataJson)
