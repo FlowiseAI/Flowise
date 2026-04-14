@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { useError } from '@/store/context/ErrorContext'
+// i18n
+import { useTranslation } from 'react-i18next'
 
 export default (apiFunc) => {
+    const { t } = useTranslation()
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(false)
     const [error, setApiError] = useState(null)
@@ -15,8 +18,8 @@ export default (apiFunc) => {
             setError(null)
             setApiError(null)
         } catch (err) {
-            handleError(err || 'Unexpected Error!')
-            setApiError(err || 'Unexpected Error!')
+            handleError(err || t('errors.unexpectedError'))
+            setApiError(err || t('errors.unexpectedError'))
         } finally {
             setLoading(false)
         }

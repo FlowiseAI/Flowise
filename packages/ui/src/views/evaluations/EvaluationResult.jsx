@@ -70,9 +70,13 @@ import {
 //const
 import { useError } from '@/store/context/ErrorContext'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| EvaluationResults ||============================== //
 
 const EvalEvaluationRows = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -182,17 +186,17 @@ const EvalEvaluationRows = () => {
 
     const runAgain = async () => {
         const confirmPayload = {
-            title: `Run Again`,
-            description: `Initiate Rerun for Evaluation ${evaluation.name}?`,
-            confirmButtonName: 'Yes',
-            cancelButtonName: 'No'
+            title: t('evaluations.dialogs.runAgain.title'),
+            description: t('evaluations.dialogs.runAgain.desceiption', { name: evaluation.name }),
+            confirmButtonName: t('evaluations.actions.yes'),
+            cancelButtonName: t('evaluations.actions.no')
         }
         const isConfirmed = await confirm(confirmPayload)
 
         if (isConfirmed) {
             runAgainApi.request(evaluation?.id)
             enqueueSnackbar({
-                message: "Evaluation '" + evaluation.name + "' is running. Redirecting to evaluations page.",
+                message: t('evaluations.messages.runAgain.success', { name: evaluation.name }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -379,14 +383,17 @@ const EvalEvaluationRows = () => {
                             isEditButton={false}
                             onBack={goBack}
                             search={false}
-                            title={'Evaluation: ' + selectedEvaluationName}
-                            description={evaluation?.runDate ? moment(evaluation?.runDate).format('DD-MMM-YYYY, hh:mm:ss A') : ''}
+                            title={t('evaluations.dialogs.evalResult.title')}
+                            description={evaluation?.runDate ? moment(evaluation?.runDate).format(t('evaluations.formats.date')) : ''}
                         >
                             {evaluation?.versionCount > 1 && (
                                 <Chip
                                     variant='outlined'
                                     size='small'
-                                    label={'Version: ' + evaluation.versionNo + '/' + evaluation.versionCount}
+                                    label={t('evaluations.dialogs.evalResult.version', {
+                                        number: evaluation.versionNo,
+                                        count: evaluation.versionCount
+                                    })}
                                 />
                             )}
                             {evaluation?.versionCount > 1 && (
@@ -397,7 +404,7 @@ const EvalEvaluationRows = () => {
                                     color='primary'
                                     onClick={openVersionsDrawer}
                                 >
-                                    Version history
+                                    {t('evaluations.actions.versionHistory')}
                                 </Button>
                             )}
                             <PermissionButton
@@ -409,7 +416,7 @@ const EvalEvaluationRows = () => {
                                 disabled={outdated?.errors?.length > 0}
                                 onClick={runAgain}
                             >
-                                Re-run Evaluation
+                                {t('evaluations.actions.rerunEvaluation')}
                             </PermissionButton>
                         </ViewHeader>
 
@@ -434,17 +441,13 @@ const EvalEvaluationRows = () => {
                                 </Box>
                                 <Stack flexDirection='column'>
                                     <span style={{ color: 'rgb(116,66,16)' }}>
-                                        {outdated?.errors?.length > 0 && (
-                                            <b>This evaluation cannot be re-run, due to the following errors</b>
-                                        )}
-                                        {outdated?.errors?.length === 0 && (
-                                            <b>The following items are outdated, re-run the evaluation for the latest results.</b>
-                                        )}
+                                        {outdated?.errors?.length > 0 && <b>{t('evaluations.dialogs.evalResult.errors.cannotRerun')}</b>}
+                                        {outdated?.errors?.length === 0 && <b>{t('evaluations.dialogs.evalResult.errors.outdated')}</b>}
                                     </span>
                                     {outdated.dataset && outdated?.errors?.length === 0 && (
                                         <>
                                             <br />
-                                            <b style={{ color: 'rgb(116,66,16)' }}>Dataset:</b>
+                                            <b style={{ color: 'rgb(116,66,16)' }}>{t('evaluations.dialogs.evalResult.dataset')}</b>
                                             <Chip
                                                 clickable
                                                 sx={{
@@ -465,7 +468,7 @@ const EvalEvaluationRows = () => {
                                     {outdated.chatflows && outdated?.errors?.length === 0 && outdated.chatflows.length > 0 && (
                                         <>
                                             <br />
-                                            <b style={{ color: 'rgb(116,66,16)' }}>Flows:</b>
+                                            <b style={{ color: 'rgb(116,66,16)' }}>{t('evaluations.dialogs.evalResult.flows')}</b>
                                             <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
                                                 {outdated.chatflows.map((chatflow, index) => (
                                                     <Chip
@@ -514,50 +517,50 @@ const EvalEvaluationRows = () => {
                             <Button
                                 variant='outlined'
                                 value={showCharts}
-                                title='Show Charts'
+                                title={t('evaluations.actions.showCharts')}
                                 onClick={handleShowChartsChange}
                                 startIcon={showCharts ? <IconEyeOff /> : <IconEye />}
                             >
-                                {'Charts'}
+                                {t('evaluations.actions.charts')}
                             </Button>
                             {customEvalsDefined && (
                                 <Button
                                     variant='outlined'
                                     value={showCustomEvals}
                                     disabled={!customEvalsDefined}
-                                    title='Show Custom Evaluator'
+                                    title={t('evaluations.actions.showCustomEvaluator')}
                                     onClick={handleCustomEvalsChange}
                                     startIcon={showCustomEvals ? <IconEyeOff /> : <IconEye />}
                                 >
-                                    {'Custom Evaluator'}
+                                    {t('evaluations.actions.customEvaluator')}
                                 </Button>
                             )}
                             <Button
                                 variant='outlined'
                                 value={showCostMetrics}
-                                title='Show Cost Metrics'
+                                title={t('evaluations.actions.showCostMetrics')}
                                 onClick={handleDisplayCostChange}
                                 startIcon={showCostMetrics ? <IconEyeOff /> : <IconEye />}
                             >
-                                {'Cost Metrics'}
+                                {t('evaluations.actions.costMetrics')}
                             </Button>
                             <Button
                                 variant='outlined'
                                 value={showTokenMetrics}
-                                title='Show Metrics'
+                                title={t('evaluations.actions.showMetrics')}
                                 onClick={handleShowTokenChange}
                                 startIcon={showTokenMetrics ? <IconEyeOff /> : <IconEye />}
                             >
-                                {'Token Metrics'}
+                                {t('evaluations.actions.tokenMetrics')}
                             </Button>
                             <Button
                                 variant='outlined'
                                 value={showCustomEvals}
-                                title='Show Latency Metrics'
+                                title={t('evaluations.actions.showLatencyMetrics')}
                                 onClick={handleLatencyMetricsChange}
                                 startIcon={showLatencyMetrics ? <IconEyeOff /> : <IconEye />}
                             >
-                                {'Latency Metrics'}
+                                {t('evaluations.actions.latencyMetrics')}
                             </Button>
                         </ButtonGroup>
                         {showCharts && (
@@ -566,7 +569,7 @@ const EvalEvaluationRows = () => {
                                     <Grid item={true} xs={12} sm={12} md={4} lg={4}>
                                         <MetricsItemCard
                                             data={{
-                                                header: 'PASS RATE',
+                                                header: t('evaluations.dialogs.evalResult.passRate'),
                                                 value: (evaluation.average_metrics?.passPcnt ?? '0') + '%',
                                                 icon: <IconPercentage />
                                             }}
@@ -578,7 +581,7 @@ const EvalEvaluationRows = () => {
                                     <Grid item={true} xs={12} sm={12} md={4} lg={4}>
                                         <MetricsItemCard
                                             data={{
-                                                header: 'TOKENS USED',
+                                                header: t('evaluations.dialogs.evalResult.tokensUsed'),
                                                 value: avgTokensUsed,
                                                 icon: <TokensIcon />
                                             }}
@@ -596,7 +599,7 @@ const EvalEvaluationRows = () => {
                                     <Grid item={true} xs={12} sm={12} md={4} lg={4}>
                                         <MetricsItemCard
                                             data={{
-                                                header: 'LATENCY (ms)',
+                                                header: t('evaluations.dialogs.evalResult.latency'),
                                                 value: (evaluation.average_metrics?.averageLatency ?? '0') + ' ms',
                                                 icon: <AlarmIcon />
                                             }}
@@ -628,7 +631,7 @@ const EvalEvaluationRows = () => {
                                     }}
                                 >
                                     <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
-                                    Flows Used:
+                                    {t('evaluations.dialogs.evalResult.flowsUsed')}
                                 </div>
                                 {(evaluation.chatflowName || []).map((chatflowUsed, index) => (
                                     <Chip
@@ -653,7 +656,7 @@ const EvalEvaluationRows = () => {
                                 startIcon={<IconMaximize />}
                                 onClick={() => openTableDialog()}
                             >
-                                Expand
+                                {t('evaluations.actions.expand')}
                             </Button>
                         </Stack>
                         <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
@@ -665,8 +668,8 @@ const EvalEvaluationRows = () => {
                                 >
                                     <TableRow>
                                         <TableCell rowSpan='2'>&nbsp;</TableCell>
-                                        <TableCell rowSpan='2'>Input</TableCell>
-                                        <TableCell rowSpan='2'>Expected Output</TableCell>
+                                        <TableCell rowSpan='2'>{t('evaluations.input')}</TableCell>
+                                        <TableCell rowSpan='2'>{t('evaluations.dialogs.evalResult.expectedOutput')}</TableCell>
                                         {evaluation.chatflowId?.map((chatflowId, index) => (
                                             <React.Fragment key={index}>
                                                 <TableCell
@@ -702,10 +705,14 @@ const EvalEvaluationRows = () => {
                                                 <TableCell
                                                     style={{ borderLeftStyle: 'dashed', borderLeftColor: 'lightgrey', borderLeftWidth: 1 }}
                                                 >
-                                                    Actual Output
+                                                    {t('evaluations.dialogs.evalResult.actualOutput')}
                                                 </TableCell>
-                                                {customEvalsDefined && showCustomEvals && <TableCell>Evaluator</TableCell>}
-                                                {evaluation?.evaluationType === 'llm' && <TableCell>LLM Evaluation</TableCell>}
+                                                {customEvalsDefined && showCustomEvals && (
+                                                    <TableCell>{t('evaluations.dialogs.evalResult.evaluator')}</TableCell>
+                                                )}
+                                                {evaluation?.evaluationType === 'llm' && (
+                                                    <TableCell>{t('evaluations.dialogs.evalResult.LLMEvaluation')}</TableCell>
+                                                )}
                                             </React.Fragment>
                                         ))}
                                     </TableRow>
@@ -772,24 +779,22 @@ const EvalEvaluationRows = () => {
                                                                                     variant='outlined'
                                                                                     icon={<PaidIcon />}
                                                                                     size='small'
-                                                                                    label={
-                                                                                        item.metrics[index]?.totalCost
-                                                                                            ? 'Total Cost: ' +
-                                                                                              item.metrics[index]?.totalCost
-                                                                                            : 'Total Cost: N/A'
-                                                                                    }
+                                                                                    label={t('evaluations.dialogs.evalResult.totalCost', {
+                                                                                        value:
+                                                                                            item.metrics[index]?.totalCost ||
+                                                                                            t('evaluations.notAvailable')
+                                                                                    })}
                                                                                     sx={{ mr: 1, mb: 1 }}
                                                                                 />
                                                                                 <Chip
                                                                                     variant='outlined'
                                                                                     size='small'
                                                                                     icon={<TokensIcon />}
-                                                                                    label={
-                                                                                        item.metrics[index]?.totalTokens
-                                                                                            ? 'Total Tokens: ' +
-                                                                                              item.metrics[index]?.totalTokens
-                                                                                            : 'Total Tokens: N/A'
-                                                                                    }
+                                                                                    label={t('evaluations.dialogs.evalResult.totalTokens', {
+                                                                                        value:
+                                                                                            item.metrics[index]?.totalTokens ||
+                                                                                            t('evaluations.notAvailable')
+                                                                                    })}
                                                                                     sx={{ mr: 1, mb: 1 }}
                                                                                 />
                                                                                 {showTokenMetrics && (
@@ -798,24 +803,29 @@ const EvalEvaluationRows = () => {
                                                                                             variant='outlined'
                                                                                             size='small'
                                                                                             icon={<TokensIcon />}
-                                                                                            label={
-                                                                                                item.metrics[index]?.promptTokens
-                                                                                                    ? 'Prompt Tokens: ' +
-                                                                                                      item.metrics[index]?.promptTokens
-                                                                                                    : 'Prompt Tokens: N/A'
-                                                                                            }
+                                                                                            label={t(
+                                                                                                'evaluations.dialogs.evalResult.promptTokens',
+                                                                                                {
+                                                                                                    value:
+                                                                                                        item.metrics[index]?.promptTokens ||
+                                                                                                        t('evaluations.notAvailable')
+                                                                                                }
+                                                                                            )}
                                                                                             sx={{ mr: 1, mb: 1 }}
                                                                                         />{' '}
                                                                                         <Chip
                                                                                             variant='outlined'
                                                                                             size='small'
                                                                                             icon={<TokensIcon />}
-                                                                                            label={
-                                                                                                item.metrics[index]?.completionTokens
-                                                                                                    ? 'Completion Tokens: ' +
-                                                                                                      item.metrics[index]?.completionTokens
-                                                                                                    : 'Completion Tokens: N/A'
-                                                                                            }
+                                                                                            label={t(
+                                                                                                'evaluations.dialogs.evalResult.completionTokens',
+                                                                                                {
+                                                                                                    value:
+                                                                                                        item.metrics[index]
+                                                                                                            ?.completionTokens ||
+                                                                                                        t('evaluations.notAvailable')
+                                                                                                }
+                                                                                            )}
                                                                                             sx={{ mr: 1, mb: 1 }}
                                                                                         />{' '}
                                                                                     </>
@@ -826,24 +836,29 @@ const EvalEvaluationRows = () => {
                                                                                             variant='outlined'
                                                                                             size='small'
                                                                                             icon={<PaidIcon />}
-                                                                                            label={
-                                                                                                item.metrics[index]?.promptCost
-                                                                                                    ? 'Prompt Cost: ' +
-                                                                                                      item.metrics[index]?.promptCost
-                                                                                                    : 'Prompt Cost: N/A'
-                                                                                            }
+                                                                                            label={t(
+                                                                                                'evaluations.dialogs.evalResult.promptCost',
+                                                                                                {
+                                                                                                    value:
+                                                                                                        item.metrics[index]?.promptCost ||
+                                                                                                        t('evaluations.notAvailable')
+                                                                                                }
+                                                                                            )}
                                                                                             sx={{ mr: 1, mb: 1 }}
                                                                                         />{' '}
                                                                                         <Chip
                                                                                             variant='outlined'
                                                                                             size='small'
                                                                                             icon={<PaidIcon />}
-                                                                                            label={
-                                                                                                item.metrics[index]?.completionCost
-                                                                                                    ? 'Completion Cost: ' +
-                                                                                                      item.metrics[index]?.completionCost
-                                                                                                    : 'Completion Cost: N/A'
-                                                                                            }
+                                                                                            label={t(
+                                                                                                'evaluations.dialogs.evalResult.completionCost',
+                                                                                                {
+                                                                                                    value:
+                                                                                                        item.metrics[index]
+                                                                                                            ?.completionCost ||
+                                                                                                        t('evaluations.notAvailable')
+                                                                                                }
+                                                                                            )}
                                                                                             sx={{ mr: 1, mb: 1 }}
                                                                                         />{' '}
                                                                                     </>
@@ -852,12 +867,11 @@ const EvalEvaluationRows = () => {
                                                                                     variant='outlined'
                                                                                     size='small'
                                                                                     icon={<AlarmIcon />}
-                                                                                    label={
-                                                                                        item.metrics[index]?.apiLatency
-                                                                                            ? 'API Latency: ' +
-                                                                                              item.metrics[index]?.apiLatency
-                                                                                            : 'API Latency: N/A'
-                                                                                    }
+                                                                                    label={t('evaluations.dialogs.evalResult.apiLatency', {
+                                                                                        value:
+                                                                                            item.metrics[index]?.apiLatency ||
+                                                                                            t('evaluations.notAvailable')
+                                                                                    })}
                                                                                     sx={{ mr: 1, mb: 1 }}
                                                                                 />{' '}
                                                                                 {showLatencyMetrics && (
@@ -867,12 +881,14 @@ const EvalEvaluationRows = () => {
                                                                                                 variant='outlined'
                                                                                                 size='small'
                                                                                                 icon={<AlarmIcon />}
-                                                                                                label={
-                                                                                                    item.metrics[index]?.chain
-                                                                                                        ? 'Chain Latency: ' +
-                                                                                                          item.metrics[index]?.chain
-                                                                                                        : 'Chain Latency: N/A'
-                                                                                                }
+                                                                                                label={t(
+                                                                                                    'evaluations.dialogs.evalResult.chainLatency',
+                                                                                                    {
+                                                                                                        value:
+                                                                                                            item.metrics[index]?.chain ||
+                                                                                                            t('evaluations.notAvailable')
+                                                                                                    }
+                                                                                                )}
                                                                                                 sx={{ mr: 1, mb: 1 }}
                                                                                             />
                                                                                         )}{' '}
@@ -882,10 +898,13 @@ const EvalEvaluationRows = () => {
                                                                                                 icon={<AlarmIcon />}
                                                                                                 size='small'
                                                                                                 sx={{ mr: 1, mb: 1 }}
-                                                                                                label={
-                                                                                                    'Retriever Latency: ' +
-                                                                                                    item.metrics[index]?.retriever
-                                                                                                }
+                                                                                                label={t(
+                                                                                                    'evaluations.dialogs.evalResult.retrieverLatency',
+                                                                                                    {
+                                                                                                        value: item.metrics[index]
+                                                                                                            ?.retriever
+                                                                                                    }
+                                                                                                )}
                                                                                             />
                                                                                         )}{' '}
                                                                                         {item.metrics[index]?.tool && (
@@ -894,22 +913,26 @@ const EvalEvaluationRows = () => {
                                                                                                 icon={<AlarmIcon />}
                                                                                                 size='small'
                                                                                                 sx={{ mr: 1, mb: 1 }}
-                                                                                                label={
-                                                                                                    'Tool Latency: ' +
-                                                                                                    item.metrics[index]?.tool
-                                                                                                }
+                                                                                                label={t(
+                                                                                                    'evaluations.dialogs.evalResult.toolLatency',
+                                                                                                    {
+                                                                                                        value: item.metrics[index]?.tool
+                                                                                                    }
+                                                                                                )}
                                                                                             />
                                                                                         )}{' '}
                                                                                         <Chip
                                                                                             variant='outlined'
                                                                                             icon={<AlarmIcon />}
                                                                                             size='small'
-                                                                                            label={
-                                                                                                item.metrics[index]?.llm
-                                                                                                    ? 'LLM Latency: ' +
-                                                                                                      item.metrics[index]?.llm
-                                                                                                    : 'LLM Latency: N/A'
-                                                                                            }
+                                                                                            label={t(
+                                                                                                'evaluations.dialogs.evalResult.LLMLatency',
+                                                                                                {
+                                                                                                    value:
+                                                                                                        item.metrics[index]?.llm ||
+                                                                                                        t('evaluations.notAvailable')
+                                                                                                }
+                                                                                            )}
                                                                                             sx={{ mr: 1, mb: 1 }}
                                                                                         />{' '}
                                                                                     </>

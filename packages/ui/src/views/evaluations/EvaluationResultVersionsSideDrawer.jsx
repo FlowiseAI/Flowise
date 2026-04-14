@@ -18,7 +18,11 @@ import {
 import evaluationApi from '@/api/evaluations'
 import useApi from '@/hooks/useApi'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const EvaluationResultVersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersion }) => {
+    const { t } = useTranslation()
     const onOpen = () => {}
     const [versions, setVersions] = useState([])
 
@@ -43,7 +47,7 @@ const EvaluationResultVersionsSideDrawer = ({ show, dialogProps, onClickFunction
     return (
         <SwipeableDrawer anchor='right' open={show} onClose={() => onClickFunction()} onOpen={onOpen}>
             <Button startIcon={<IconSquareRoundedChevronsRight />} onClick={() => onClickFunction()}>
-                Close
+                {t('evaluations.actions.close')}
             </Button>
             <Box style={{ width: 350, margin: 10 }} role='presentation' onClick={onClickFunction}>
                 <Timeline
@@ -57,14 +61,16 @@ const EvaluationResultVersionsSideDrawer = ({ show, dialogProps, onClickFunction
                         versions.map((version, index) => (
                             <TimelineItem key={index}>
                                 <TimelineOppositeContent color='textSecondary'>
-                                    {moment(version.runDate).format('DD-MMM-YYYY, hh:mm:ss A')}
+                                    {moment(version.runDate).format(t('evaluations.formats.date'))}
                                 </TimelineOppositeContent>
                                 <TimelineSeparator style={{ marginTop: 5 }}>
                                     <TimelineDot />
                                     {index !== versions.length - 1 && <TimelineConnector />}
                                 </TimelineSeparator>
                                 <TimelineContent>
-                                    <Button onClick={() => navigateToEvaluationResult(`${version.id}`)}>Version {version.version}</Button>
+                                    <Button onClick={() => navigateToEvaluationResult(`${version.id}`)}>
+                                        {t('evaluations.actions.version', { value: version.version })}
+                                    </Button>
                                 </TimelineContent>
                             </TimelineItem>
                         ))}

@@ -923,7 +923,8 @@
         }
     },
     "errors": {
-        "manyRequests": "You're making a lot of requests. Please wait and try again later."
+        "manyRequests": "You're making a lot of requests. Please wait and try again later.",
+        "unexpectedError": "Unexpected Error!"
     },
     "errorBoundary": {
         "title": "Oh snap!",
@@ -2670,6 +2671,195 @@
                 "success": "Vector Store Config Successfully Updated",
                 "error": "Failed to update vector store config: {{msg}}"
             }
+        },
+        "formats": {
+            "date": "DD-MMM-YYYY, hh:mm:ss A"
+        }
+    },
+    "evaluations": {
+        "title": "Evaluations",
+        "input": "Input",
+        "latency": "Latency (ms)",
+        "tokens": "Tokens",
+        "customAssistant": "Custom Assistant",
+        "error": "Error",
+        "unknownError": "Unknown error",
+        "notFound": "No Evaluations Yet",
+        "totalRuns": "Total Runs: {{value}}",
+        "avgLatency": "Avg Latency: {{value}} ms",
+        "passRate": "Pass Rate: {{value}} %",
+        "notAvailable": "N/A",
+        "chatflowTable": "chatflow table",
+        "dialogs": {
+            "startNewEvaluation": {
+                "title": "Start New Evaluation",
+                "datasets": {
+                    "title": "Datasets",
+                    "select": "Select dataset to be tested on flows",
+                    "useInput": "Uses the <highlight>input</highlight> column from the dataset to execute selected Chatflow(s), and compares the results with the output column.",
+                    "computed": "The following metrics will be computed:",
+                    "selectFlows": "Select your flows to Evaluate"
+                },
+                "evaluators": {
+                    "title": "Evaluators",
+                    "unit": "Unit Test your flows by adding custom evaluators",
+                    "execution": "Post execution, all the chosen evaluators will be executed on the results. Each evaluator will grade the results based on the criteria defined and return a pass/fail indicator."
+                },
+                "metrics": {
+                    "title": "LLM Graded Metrics",
+                    "gradeFlows": "Grade flows using an LLM",
+                    "execution": "Post execution, grades the answers by using an LLM. Used to generate comparative scores or reasoning or other custom defined criteria."
+                }
+            },
+            "evalResult": {
+                "title": "Evaluation {{name}}",
+                "version": "Version {{number}}/{{count}}",
+                "errors": {
+                    "cannotRerun": "This evaluation cannot be re-run, due to the following errors",
+                    "outdated": "The following items are outdated, re-run the evaluation for the latest results."
+                },
+                "dataset": "Dataset:",
+                "flows": "Flows:",
+                "passRate": "PASS RATE",
+                "tokensUsed": "TOKENS USED",
+                "latency": "LATENCY (ms)",
+                "evaluationDetails": "Evaluation Details",
+                "evaluationId": "Evaluation Id",
+                "flowsUsed": "Flows Used:",
+                "expectedOutput": "Expected Output",
+                "actualOutput": "Actual Output",
+                "evaluator": "Evaluator",
+                "LLMEvaluation": "LLM Evaluation",
+                "totalCost": "Total Cost: {{value}}",
+                "totalTokens": "Total Tokens: {{value}}",
+                "promptTokens": "Prompt Tokens: {{value}}",
+                "completionTokens": "Completion Tokens: {{value}}",
+                "promptCost": "Prompt Cost: {{value}}",
+                "completionCost": "Completion Cost: {{value}}",
+                "apiLatency": "API Latency: {{value}}",
+                "chainLatency": "Chain Latency: {{value}}",
+                "retrieverLatency": "Retriever Latency: {{value}}",
+                "toolLatency": "Tool Latency: {{value}}",
+                "LLMLatency": "LLM Latency: {{value}}",
+                "api": "API: {{value}}",
+                "chain": "Chain: {{value}}",
+                "retriever": "Retriever: {{value}}",
+                "llm": "LLM: {{value}}",
+                "node": "Node",
+                "providerModel": "Provider & Model",
+                "output": "Output",
+                "total": {
+                    "title": "Total",
+                    "value": "Total: {{value}}"
+                },
+                "prompt": "Prompt: {{value}}",
+                "completion": "Completion: {{value}}",
+                "cost": "Cost",
+                "customEvaluators": "Custom Evaluators",
+                "llmGraded": "LLM Graded"
+            },
+            "runAgain": {
+                "title": "Run Again",
+                "desceiption": "Initiate Rerun for Evaluation {{name}}?"
+            }
+        },
+        "validations": {
+            "requiredFields": "Fill all the mandatory fields"
+        },
+        "inputs": {
+            "name": {
+                "title": "Name",
+                "tooltip": "Friendly name to tag this run.",
+                "placeholder": "Evaluation"
+            },
+            "datasetUse": {
+                "title": "Dataset to use",
+                "placeholder": "Select Dataset"
+            },
+            "rowsOneConversation": "Treat all dataset rows as one conversation?",
+            "checkBox": {
+                "all": "All",
+                "chatflows": "Chatflows",
+                "agentflowV2": "Agentflow (v2)",
+                "customAssistants": "Custom Assistants"
+            },
+            "selectEvaluators": "Select the Evaluators",
+            "useLLMgradeResults": "Use an LLM to grade the results?",
+            "selectModel": "Select Model",
+            "enterModelName": {
+                "title": "Enter the Model Name",
+                "placeholder": "Model Name"
+            },
+            "selectCredential": {
+                "title": "Select Credential",
+                "input": "Connect Credential"
+            },
+            "selectEval": "Select Evaluators"
+        },
+        "messages": {
+            "runAgain": {
+                "success": "Evaluation '{{name}}' is running. Redirecting to evaluations page."
+            },
+            "delete": {
+                "success_one": "{{count}} evaluation deleted",
+                "success_other": "{{count}} evaluations deleted",
+                "error_one": "Failed to delete evaluation: {{msg}}",
+                "error_other": "Failed to delete evaluations: {{msg}}"
+            },
+            "create": {
+                "error": "Failed to create new evaluation: {{msg}}"
+            }
+        },
+        "actions": {
+            "skipEvaluators": "Skip Evaluators",
+            "skip": "Skip",
+            "next": "Next",
+            "startEvaluation": "Start Evaluation",
+            "minimize": "Minimize",
+            "yes": "Yes",
+            "no": "No",
+            "versionHistory": "Version history",
+            "rerunEvaluation": "Re-run Evaluation",
+            "showCharts": "Show Charts",
+            "charts": "Charts",
+            "showCustomEvaluator": "Show Custom Evaluator",
+            "customEvaluator": "Custom Evaluator",
+            "showCostMetrics": "Show Cost Metrics",
+            "costMetrics": "Cost Metrics",
+            "showMetrics": "Show Metrics",
+            "tokenMetrics": "Token Metrics",
+            "showLatencyMetrics": "Show Latency Metrics",
+            "latencyMetrics": "Latency Metrics",
+            "expand": "Expand",
+            "close": "Close",
+            "version": "Version {{value}}",
+            "cancel": "Cancel",
+            "startNewEvaluation": "Start New Evaluation",
+            "delete": {
+                "title": "Delete",
+                "description_one": "Delete {{count}} evaluation? This will delete all versions of the evaluation.",
+                "description_other": "Delete {{count}} evaluation? This will delete all versions of the evaluation."
+            },
+            "disableAutoRefresh": "Disable auto-refresh",
+            "enableAutoRefresh": "Enable auto-refresh (every 5s)",
+            "refresh": "Refresh",
+            "newEvaluation": "New Evaluation",
+            "deleteEvaluation_one": "Delete evaluation",
+            "deleteEvaluation_other": "Delete evaluations",
+            "selectAll": "select all",
+            "expandRow": "expand row",
+            "viewResults": "View Results"
+        },
+        "table": {
+            "name": "Name",
+            "latestVersion": "Latest Version",
+            "averageMetrics": "Average Metrics",
+            "lastEvaluated": "Last Evaluated",
+            "flow": "Flow(s)",
+            "dataset": "Dataset",
+            "version": "Version",
+            "lastRun": "Last Run",
+            "status": "Status"
         },
         "formats": {
             "date": "DD-MMM-YYYY, hh:mm:ss A"

@@ -51,9 +51,17 @@ import useNotifier from '@/utils/useNotifier'
 // const
 import { evaluators as evaluatorsOptions } from '../evaluators/evaluatorConstant'
 
-const steps = ['Datasets', 'Evaluators', 'LLM Graded Metrics']
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+
+const steps = [
+    'evaluations.dialogs.startNewEvaluation.datasets.title',
+    'evaluations.dialogs.startNewEvaluation.evaluators.title',
+    'evaluations.dialogs.startNewEvaluation.metrics.title'
+]
 
 const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
     useNotifier()
@@ -215,7 +223,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Stepper activeStep={activeStep} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
+                            <StepLabel>{t(label)}</StepLabel>
                         </Step>
                     ))}
                 </Stepper>
@@ -377,7 +385,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 label: JSON.parse(assistant.details).name || '',
                 name: assistant.id,
                 type: 'Custom Assistant',
-                description: 'Custom Assistant'
+                description: t('evaluations.customAssistant')
             })
         }
         return assistantNames
@@ -395,7 +403,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconTestPipe2 style={{ marginRight: '10px' }} />
-                    {'Start New Evaluation'}
+                    {t('evaluations.dialogs.startNewEvaluation.title')}
                 </div>
             </DialogTitle>
             <DialogContent>
@@ -430,7 +438,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     }}
                                 />
                             </div>
-                            Fill all the mandatory fields
+                            {t('evaluations.validations.requiredFields')}
                         </div>
                     )}
                     <EvalWizard />
@@ -438,13 +446,17 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         {activeStep === 0 && (
                             <>
                                 <Typography sx={{ mt: 2 }} variant='h4'>
-                                    Select dataset to be tested on flows
+                                    {t('evaluations.dialogs.startNewEvaluation.select')}
                                 </Typography>
                                 <Typography sx={{ mt: 2 }} variant='body2'>
-                                    Uses the <span style={{ fontStyle: 'italic' }}>input</span> column from the dataset to execute selected
-                                    Chatflow(s), and compares the results with the output column.
+                                    <Trans
+                                        i18nKey='evaluations.dialogs.startNewEvaluation.useInput'
+                                        components={{
+                                            highlight: <span style={{ fontStyle: 'italic' }} />
+                                        }}
+                                    />
                                 </Typography>
-                                <Typography variant='body2'>The following metrics will be computed:</Typography>
+                                <Typography variant='body2'>{t('evaluations.dialogs.startNewEvaluation.computed')}</Typography>
                                 <Stack
                                     flexDirection='row'
                                     sx={{ mt: 2, gap: 1, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}
@@ -460,11 +472,10 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         {activeStep === 1 && (
                             <>
                                 <Typography sx={{ mt: 2 }} variant='h4'>
-                                    Unit Test your flows by adding custom evaluators
+                                    {t('evaluations.dialogs.evaluators.unit')}
                                 </Typography>
                                 <Typography sx={{ mt: 2, mb: 2 }} variant='body2'>
-                                    Post execution, all the chosen evaluators will be executed on the results. Each evaluator will grade the
-                                    results based on the criteria defined and return a pass/fail indicator.
+                                    {t('evaluations.dialogs.evaluators.execution')}
                                 </Typography>
                                 <Chip
                                     variant='contained'
@@ -478,11 +489,10 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         {activeStep === 2 && (
                             <>
                                 <Typography sx={{ mt: 2 }} variant='h4'>
-                                    Grade flows using an LLM
+                                    {t('evaluations.dialogs.metrics.gradeFlows')}
                                 </Typography>
                                 <Typography sx={{ mt: 2 }} variant='body2'>
-                                    Post execution, grades the answers by using an LLM. Used to generate comparative scores or reasoning or
-                                    other custom defined criteria.
+                                    {t('evaluations.dialogs.metrics.execution')}
                                 </Typography>
                             </>
                         )}
@@ -491,15 +501,16 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <>
                             <Box>
                                 <Typography variant='overline'>
-                                    Name<span style={{ color: 'red' }}>&nbsp;*</span>
+                                    {t('evaluations.inputs.name.title')}
+                                    <span style={{ color: 'red' }}>&nbsp;*</span>
                                 </Typography>
-                                <TooltipWithParser style={{ marginLeft: 10 }} title={'Friendly name to tag this run.'} />
+                                <TooltipWithParser style={{ marginLeft: 10 }} title={t('evaluations.inputs.name.tooltip')} />
                                 <OutlinedInput
                                     id='evaluationName'
                                     type='string'
                                     size='small'
                                     fullWidth
-                                    placeholder='Evaluation'
+                                    placeholder={t('evaluations.inputs.name.placeholder')}
                                     value={evaluationName}
                                     name='evaluationName'
                                     onChange={(e) => setEvaluationName(e.target.value)}
@@ -507,11 +518,12 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Box>
                             <Box>
                                 <Typography variant='overline'>
-                                    Dataset to use<span style={{ color: 'red' }}>&nbsp;*</span>
+                                    {t('evaluations.inputs.datasetUse.title')}
+                                    <span style={{ color: 'red' }}>&nbsp;*</span>
                                 </Typography>
                                 <Dropdown
                                     name='dataset'
-                                    defaultOption='Select Dataset'
+                                    defaultOption={t('evaluations.inputs.datasetUse.placeholder')}
                                     options={datasets}
                                     onSelect={(newValue) => setDataset(newValue)}
                                     value={dataset}
@@ -519,7 +531,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Box>
                             <Box>
                                 <Typography variant='overline' sx={{ mr: 2 }}>
-                                    Treat all dataset rows as one conversation ?
+                                    {t('evaluations.inputs.rowsOneConversation')}
                                 </Typography>
                                 <FormControlLabel
                                     label=''
@@ -531,12 +543,18 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             <Box>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <Typography variant='overline'>
-                                        Select your flows to Evaluate
+                                        {t('evaluations.dialogs.startNewEvaluation.datasets.selectFlows')}
                                         <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <Typography variant='overline'>
-                                        <Checkbox defaultChecked size='small' label='All' value='Chatflow' onChange={onChangeFlowType} />{' '}
-                                        Chatflows
+                                        <Checkbox
+                                            defaultChecked
+                                            size='small'
+                                            label={t('evaluations.inputs.checkBox.all')}
+                                            value='Chatflow'
+                                            onChange={onChangeFlowType}
+                                        />{' '}
+                                        {t('evaluations.inputs.checkBox.chatflows')}
                                         <Checkbox
                                             defaultChecked
                                             size='small'
@@ -544,7 +562,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             value='Agentflow v2'
                                             onChange={onChangeFlowType}
                                         />{' '}
-                                        Agentflows (v2)
+                                        {t('evaluations.inputs.checkBox.agentflowV2')}
                                         <Checkbox
                                             defaultChecked
                                             size='small'
@@ -552,7 +570,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             value='Custom Assistant'
                                             onChange={onChangeFlowType}
                                         />{' '}
-                                        Custom Assistants
+                                        {t('evaluations.inputs.checkBox.customAssistants')}
                                     </Typography>
                                 </div>
                                 <MultiDropdown
@@ -567,7 +585,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     {activeStep === 1 && (
                         <>
                             <Box>
-                                <Typography variant='overline'>Select the Evaluators</Typography>
+                                <Typography variant='overline'>{t('evaluations.inputs.selectEvaluators')}</Typography>
                                 <MultiDropdown
                                     name={'selectEvals'}
                                     options={availableSimpleEvaluators}
@@ -581,7 +599,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <>
                             <Box>
                                 <Typography variant='overline' sx={{ mr: 2 }}>
-                                    Use an LLM to grade the results ?
+                                    {t('evaluations.inputs.useLLMgradeResults')}
                                 </Typography>
                                 <Dropdown
                                     name='chatLLM'
@@ -593,7 +611,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Box>
                             {useLLM && availableModels.length > 0 && (
                                 <Box>
-                                    <Typography variant='overline'>Select Model</Typography>
+                                    <Typography variant='overline'>{t('evaluations.inputs.selectModel')}</Typography>
                                     <Dropdown
                                         name='selectedModel'
                                         defaultOption=''
@@ -605,13 +623,13 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             )}
                             {useLLM && availableModels.length === 0 && (
                                 <Box>
-                                    <Typography variant='overline'>Enter the Model Name</Typography>
+                                    <Typography variant='overline'>{t('evaluations.inputs.enterModelName.title')}</Typography>
                                     <OutlinedInput
                                         id='selectedModel'
                                         type='string'
                                         size='small'
                                         fullWidth
-                                        placeholder='Model Name'
+                                        placeholder={t('evaluations.inputs.enterModelName.placeholder')}
                                         value={selectedModel}
                                         name='selectedModel'
                                         onChange={(e) => setSelectedModel(e.target.value)}
@@ -620,14 +638,14 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             )}
                             {useLLM && chatLLMs.find((llm) => llm.name === selectedLLM)?.credential && (
                                 <Box>
-                                    <Typography variant='overline'>Select Credential</Typography>
+                                    <Typography variant='overline'>{t('evaluations.inputs.selectCredential.title')}</Typography>
                                     <CredentialInputHandler
                                         key={selectedLLM}
                                         size='small'
                                         sx={{ flexGrow: 1, marginBottom: 3 }}
                                         data={credentialId ? { credential: credentialId } : {}}
                                         inputParam={{
-                                            label: 'Connect Credential',
+                                            label: t('evaluations.inputs.selectCredential.input'),
                                             name: 'credential',
                                             type: 'credential',
                                             credentialNames: [
@@ -642,7 +660,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             )}
                             {useLLM && (
                                 <Box>
-                                    <Typography variant='overline'>Select Evaluators</Typography>
+                                    <Typography variant='overline'>{t('evaluations.inputs.selectEval')}</Typography>
                                     <MultiDropdown
                                         name={'selectLLMEvals'}
                                         options={availableLLMEvaluators}
@@ -665,18 +683,18 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <div style={{ flex: 1 }}></div>
                 {activeStep === 1 && selectedSimpleEvaluators.length === 0 && (
                     <Button
-                        title='Skip Evaluators'
+                        title={t('evaluations.actions.skipEvaluators')}
                         color='primary'
                         sx={{ mr: 2, borderRadius: 25 }}
                         variant='outlined'
                         onClick={() => goNext(activeStep)}
                     >
-                        {'Skip'}
+                        {t('evaluations.actions.skip')}
                     </Button>
                 )}
                 {activeStep === 1 && selectedSimpleEvaluators.length > 0 && (
                     <Button color='primary' sx={{ mr: 2, borderRadius: 25 }} variant='contained' onClick={() => goNext(activeStep)}>
-                        {'Next'}
+                        {t('evaluations.actions.next')}
                     </Button>
                 )}
                 {activeStep !== 1 && (
@@ -686,7 +704,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         variant='contained'
                         onClick={() => goNext(activeStep)}
                     >
-                        {activeStep === steps.length - 1 ? 'Start Evaluation' : 'Next'}
+                        {t(activeStep === steps.length - 1 ? 'evaluations.actions.startEvaluation' : 'evaluations.actions.next')}
                     </StyledButton>
                 )}
             </DialogActions>

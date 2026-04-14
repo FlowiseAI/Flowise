@@ -5,7 +5,11 @@ const empty = []
 
 const COLORS = ['#00C49F', '#0088FE', '#82ca9d', '#113333', '#FF3322']
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 export const ChartLatency = ({ data, flowNames, onClick }) => {
+    const { t } = useTranslation()
     return (
         <ResponsiveContainer width='95%' height={200}>
             <LineChart
@@ -24,7 +28,7 @@ export const ChartLatency = ({ data, flowNames, onClick }) => {
                 <XAxis
                     dataKey='y'
                     label={{
-                        value: 'Input',
+                        value: t('evaluations.input'),
                         position: 'insideBottom',
                         offset: 0,
                         style: {
@@ -34,7 +38,7 @@ export const ChartLatency = ({ data, flowNames, onClick }) => {
                 />
                 <YAxis
                     label={{
-                        value: 'Latency (ms)',
+                        value: t('evaluations.latency'),
                         angle: -90,
                         position: 'insideLeft',
                         offset: 0,
