@@ -94,6 +94,7 @@ interface IAgentFlowRuntime {
     state?: ICommonObject
     chatHistory?: IMessage[]
     form?: Record<string, any>
+    webhook?: Record<string, any>
 }
 
 interface IExecuteNodeParams {
@@ -224,7 +225,8 @@ export const resolveVariables = async (
     componentNodes: IComponentNodes,
     agentFlowExecutedData?: IAgentflowExecutedData[],
     iterationContext?: ICommonObject,
-    loopCounts?: Map<string, number>
+    loopCounts?: Map<string, number>,
+    webhook?: Record<string, any>
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -277,6 +279,17 @@ export const resolveVariables = async (
                 const variableValue = get(form, variableFullPath.replace('$form.', ''))
                 if (variableValue != null) {
                     // For arrays and objects, stringify them to prevent toString() conversion issues
+                    const formattedValue =
+                        Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
+                            ? JSON.stringify(variableValue)
+                            : variableValue
+                    resolvedValue = resolvedValue.replace(match, formattedValue)
+                }
+            }
+
+            if (variableFullPath.startsWith('$webhook.')) {
+                const variableValue = get(webhook, variableFullPath.replace('$webhook.', ''))
+                if (variableValue != null) {
                     const formattedValue =
                         Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
                             ? JSON.stringify(variableValue)
@@ -1123,6 +1136,12 @@ const executeNode = async ({
         } else if (isObjectNotEmpty(agentflowRuntime.form)) {
             formValue = agentflowRuntime.form as Record<string, any>
         }
+        let webhookValue: Record<string, any> = {}
+        if (isObjectNotEmpty(incomingInput.webhook)) {
+            webhookValue = incomingInput.webhook as Record<string, any>
+        } else if (isObjectNotEmpty(agentflowRuntime.webhook)) {
+            webhookValue = agentflowRuntime.webhook as Record<string, any>
+        }
         const reactFlowNodeData: INodeData = await resolveVariables(
             flowNodeData,
             incomingInput.question ?? '',
@@ -1135,7 +1154,8 @@ const executeNode = async ({
             componentNodes,
             agentFlowExecutedData,
             iterationContext,
-            loopCounts
+            loopCounts,
+            webhookValue
         )
 
         // Handle human input if present
@@ -1175,6 +1195,8 @@ const executeNode = async ({
             finalInput = Object.entries(incomingInput.form || {})
                 .map(([key, value]) => `${key}: ${value}`)
                 .join('\n')
+        } else if (incomingInput.webhook) {
+            finalInput = JSON.stringify(incomingInput.webhook)
         }
 
         // Prepare run parameters
@@ -1594,7 +1616,8 @@ export const executeAgentFlow = async ({
     let agentflowRuntime: IAgentFlowRuntime = {
         state: {},
         chatHistory: [],
-        form: {}
+        form: {},
+        webhook: {}
     }
 
     let previousExecution: Execution | undefined

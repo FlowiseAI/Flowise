@@ -535,36 +535,6 @@ describe('NodeInputHandler – variable popover', () => {
     })
 })
 
-describe('NodeInputHandler – webhookURL field', () => {
-    it('renders a disabled text field with static webhook URL placeholder', () => {
-        render(
-            <NodeInputHandler
-                inputParam={makeParam({ name: 'webhookURL', type: 'string' })}
-                data={baseNodeData}
-                isAdditionalParams
-                onDataChange={mockOnDataChange}
-            />
-        )
-
-        const input = screen.getByRole('textbox') as HTMLInputElement
-        expect(input).toBeDisabled()
-        expect(input.value).toBe('POST /api/v1/webhook/{chatflowId}')
-    })
-
-    it('does not call onDataChange for webhookURL (read-only)', () => {
-        render(
-            <NodeInputHandler
-                inputParam={makeParam({ name: 'webhookURL', type: 'string' })}
-                data={baseNodeData}
-                isAdditionalParams
-                onDataChange={mockOnDataChange}
-            />
-        )
-
-        expect(mockOnDataChange).not.toHaveBeenCalled()
-    })
-})
-
 describe('NodeInputHandler – credential type rendering', () => {
     const StubAsyncInput: ComponentType<AsyncInputProps> = ({ onChange }) => (
         <button data-testid='credential-select' onClick={() => onChange('cred-id-123')}>

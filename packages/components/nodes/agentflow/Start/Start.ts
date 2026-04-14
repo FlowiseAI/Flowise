@@ -44,7 +44,8 @@ class Start_Agentflow implements INode {
                     {
                         label: 'Webhook Trigger',
                         name: 'webhookTrigger',
-                        description: 'Trigger the workflow via an external webhook'
+                        description: 'Trigger the workflow via an external webhook',
+                        client: ['agentflowv2']
                     }
                 ],
                 default: 'chatInput'
@@ -273,7 +274,11 @@ class Start_Agentflow implements INode {
 
         if (startInputType === 'webhookTrigger') {
             inputData.webhook = input
-            outputData.webhook = input
+            let webhookOutput = input
+            if (options.agentflowRuntime?.webhook && Object.keys(options.agentflowRuntime.webhook).length) {
+                webhookOutput = options.agentflowRuntime.webhook
+            }
+            outputData.webhook = webhookOutput
         }
 
         if (startEphemeralMemory) {

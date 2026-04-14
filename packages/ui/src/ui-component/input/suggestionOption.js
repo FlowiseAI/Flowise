@@ -150,6 +150,18 @@ export const suggestionOptions = (
             }))
         }
 
+        const webhookBodyParams = startAgentflowNode?.data?.inputs?.webhookBodyParams
+
+        let webhookItems = []
+        if (webhookBodyParams) {
+            webhookItems = (webhookBodyParams || []).map((input) => ({
+                id: `$webhook.body.${input.name}`,
+                mentionLabel: `$webhook.body.${input.name}`,
+                description: `Webhook Body: ${input.name}`,
+                category: 'Webhook Inputs'
+            }))
+        }
+
         const nodeItems = (availableNodesForVariable || []).map((node) => {
             const selectedOutputAnchor = node.data.outputAnchors?.[0]?.options?.find((ancr) => ancr.name === node.data.outputs['output'])
 
@@ -164,7 +176,7 @@ export const suggestionOptions = (
             }
         })
 
-        const allItems = [...defaultItems, ...formItems, ...nodeItems, ...stateItems, ...variableItems]
+        const allItems = [...defaultItems, ...formItems, ...webhookItems, ...nodeItems, ...stateItems, ...variableItems]
 
         return allItems.filter(
             (item) => item.mentionLabel.toLowerCase().includes(query.toLowerCase()) || item.id.toLowerCase().includes(query.toLowerCase())
