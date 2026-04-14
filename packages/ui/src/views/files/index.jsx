@@ -25,9 +25,13 @@ import { IconX } from '@tabler/icons-react'
 import { useDispatch } from 'react-redux'
 import { useError } from '@/store/context/ErrorContext'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| CHATFLOWS ||============================== //
 
 const Files = () => {
+    const { t } = useTranslation()
     const { confirm } = useConfirm()
 
     const [isLoading, setLoading] = useState(true)
@@ -56,10 +60,10 @@ const Files = () => {
 
     const handleDeleteFile = async (file) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete ${file.name}? This process cannot be undone.`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: t('files.actions.delete.title'),
+            description: t('files.actions.delete.description', { name: file.name }),
+            confirmButtonName: t('files.actions.delete.title'),
+            cancelButtonName: t('files.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -68,7 +72,7 @@ const Files = () => {
                 const deleteResponse = await filesApi.deleteFile(file.path)
                 if (deleteResponse?.data) {
                     enqueueSnackbar({
-                        message: 'File deleted',
+                        message: t('files.messages.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -127,7 +131,12 @@ const Files = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search File' title='Files' />
+                    <ViewHeader
+                        onSearchChange={onSearchChange}
+                        search={true}
+                        searchPlaceholder={t('files.searchPlaceholder')}
+                        title={t('files.title')}
+                    />
                     <FilesTable data={files} filterFunction={filterFiles} handleDelete={handleDeleteFile} isLoading={isLoading} />
                     {!isLoading && (!getAllFilesApi.data || getAllFilesApi.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
@@ -138,7 +147,7 @@ const Files = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Files Yet</div>
+                            <div>{t('files.notFound')}</div>
                         </Stack>
                     )}
                 </Stack>

@@ -21,9 +21,13 @@ import { IconMagnetFilled, IconMagnetOff, IconArtboard, IconArtboardOff } from '
 const nodeTypes = { customNode: MarketplaceCanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: '' }
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| CANVAS ||============================== //
 
 const MarketplaceCanvas = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const navigate = useNavigate()
     const customization = useSelector((state) => state.customization)
@@ -110,8 +114,8 @@ const MarketplaceCanvas = () => {
                                         onClick={() => {
                                             setIsSnappingEnabled(!isSnappingEnabled)
                                         }}
-                                        title='toggle snapping'
-                                        aria-label='toggle snapping'
+                                        title={t('marketplaces.actions.toggleSnapping')}
+                                        aria-label={t('marketplaces.actions.toggleSnapping')}
                                     >
                                         {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
                                     </button>
@@ -120,8 +124,8 @@ const MarketplaceCanvas = () => {
                                         onClick={() => {
                                             setIsBackgroundEnabled(!isBackgroundEnabled)
                                         }}
-                                        title='toggle background'
-                                        aria-label='toggle background'
+                                        title={t('marketplaces.actions.toggleBackground')}
+                                        aria-label={t('marketplaces.actions.toggleBackground')}
                                     >
                                         {isBackgroundEnabled ? <IconArtboard /> : <IconArtboardOff />}
                                     </button>

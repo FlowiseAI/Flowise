@@ -3047,5 +3047,71 @@
             "date": "MMMM Do YYYY, hh:mm A"
         },
         "note": "You can use <strong>{question}</strong> <strong>{actualOutput}</strong> <strong>{expectedOutput}</strong> to inject runtime values into your prompt."
-    }
+    },
+    "files": {
+        "title": "Files",
+        "searchPlaceholder": "Search File",
+        "notFound": "No Files Yet",
+        "actions": {
+            "delete": {
+                "title": "Delete",
+                "description": "Delete {{name}}? This process cannot be undone."
+            },
+            "cancel": "Cancel"
+        },
+        "messages": {
+            "success": "File deleted"
+        }
+    },
+    "marketplaces": {
+        "title": "Marketplace",
+        "description": "Explore and use pre-built templates",
+        "searchPlaceholder": "Search Name/Description/Node",
+        "notFound": "No Marketplace Yet",
+        "notFoundCustomTemplate": "No Saved Custom Templatess",
+        "actions": {
+            "cancel": "Cancel",
+            "share": "Share",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete Custom Template {{name}}?"
+            },
+            "add": "Add",
+            "cardView": "Card View",
+            "listView": "List View",
+            "clearAll": "Clear All",
+            "toggleSnapping": "toggle snapping",
+            "toggleBackground": "toggle background",
+            "back": "Back",
+            "useChatflow": "Use Chatflow",
+            "useTemplate": "Use Template",
+            "save": "Save",
+            "additionalParameters": "Additional Parameters"
+        },
+        "dialogs": {
+            "shareCustomTemplate": "Share Custom Template",
+            "addNewTool": "Add New Tool"
+        },
+        "messages": {
+            "delete": {
+                "success": "Custom Template deleted successfully!",
+                "error": "Failed to delete custom template: {{msg}}"
+            }
+        },
+        "inputs": {
+            "inputs": "Inputs",
+            "output": "Output",
+            "tag": "Tag",
+            "type": "Type",
+            "framework": "Framework",
+            "usecases": "Usecases"
+        },
+        "tabs": {
+            "title": "tabs",
+            "communityTemplates": "Community Templates",
+            "myTemplates": "My Templates"
+        }
+    },
+    "POPULAR": "POPULAR",
+    "NEW": "NEW"
 }
