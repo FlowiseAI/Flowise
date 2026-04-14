@@ -1,143 +1,145 @@
+import i18next from 'i18next'
+
 // TODO: Move this to a config file
 export const evaluators = [
     {
         type: 'text',
         name: 'ContainsAny',
-        label: 'Contains Any',
-        description: 'Returns true if any of the specified comma separated values are present in the response.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.containsAny.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.containsAny.description')
     },
     {
         type: 'text',
         name: 'ContainsAll',
-        label: 'Contains All',
-        description: 'Returns true if ALL of the specified comma separated values are present in the response.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.containsAll.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.containsAll.description')
     },
     {
         type: 'text',
         name: 'DoesNotContainAny',
-        label: 'Does Not Contains Any',
-        description: 'Returns true if any of the specified comma separated values are present in the response.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.doesNotContainAny.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.doesNotContainAny.description')
     },
     {
         type: 'text',
         name: 'DoesNotContainAll',
-        label: 'Does Not Contains All',
-        description: 'Returns true if ALL of the specified comma separated values are present in the response.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.doesNotContainAll.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.doesNotContainAll.description')
     },
     {
         type: 'text',
         name: 'StartsWith',
-        label: 'Starts With',
-        description: 'Returns true if the response starts with the specified value.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.startsWith.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.startsWith.description')
     },
     {
         type: 'text',
         name: 'NotStartsWith',
-        label: 'Does Not Start With',
-        description: 'Returns true if the response does not start with the specified value.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.notStartsWith.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.notStartsWith.description')
     },
     {
         type: 'json',
         name: 'IsValidJSON',
-        label: 'Is Valid JSON',
-        description: 'Returns true if the response is a valid JSON.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.isValidJSON.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.isValidJSON.description')
     },
     {
         type: 'json',
         name: 'IsNotValidJSON',
-        label: 'Is Not a Valid JSON',
-        description: 'Returns true if the response is a not a valid JSON.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.isNotValidJSON.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.isNotValidJSON.description')
     },
     {
         type: 'numeric',
         name: 'totalTokens',
-        label: 'Total Tokens',
-        description: 'Sum of Prompt Tokens and Completion Tokens.'
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.totalTokens.title'),
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.totalTokens.description')
     },
     {
         type: 'numeric',
-        label: 'Prompt Tokens',
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.promptTokens.title'),
         name: 'promptTokens',
-        description: 'This is the number of tokens in your prompt.'
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.promptTokens.description')
     },
     {
         type: 'numeric',
-        label: 'Completion Tokens',
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.completionTokens.title'),
         name: 'completionTokens',
-        description: 'Completion tokens are any tokens that the model generates in response to your input.'
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.completionTokens.description')
     },
     {
         type: 'numeric',
-        label: 'Total API Latency',
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.apiLatency.title'),
         name: 'apiLatency',
-        description: 'Total time taken for the Flowise Prediction API call (milliseconds).'
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.apiLatency.description')
     },
     {
         type: 'numeric',
-        label: 'LLM Latency',
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.llm.title'),
         name: 'llm',
-        description: 'Actual LLM invocation time (milliseconds).'
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.llm.description')
     },
     {
         type: 'numeric',
-        label: 'Chatflow Latency',
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.chain.title'),
         name: 'chain',
-        description: 'Actual time spent in executing the chatflow (milliseconds).'
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.chain.description')
     },
     {
         type: 'numeric',
-        label: 'Output Chars Length',
+        label: i18next.t('evaluators.inputs.availableEvaluators.options.responseLength.title'),
         name: 'responseLength',
-        description: 'Number of characters in the response.'
+        description: i18next.t('evaluators.inputs.availableEvaluators.options.responseLength.description')
     }
 ]
 
 export const evaluatorTypes = [
     {
-        label: 'Evaluate Result (Text Based)',
+        label: i18next.t('evaluators.inputs.evaluatorType.options.text.title'),
         name: 'text',
-        description: 'Set of Evaluators to evaluate the result of a Chatflow.'
+        description: i18next.t('evaluators.inputs.evaluatorType.options.text.description')
     },
     {
-        label: 'Evaluate Result (JSON)',
+        label: i18next.t('evaluators.inputs.evaluatorType.options.json.title'),
         name: 'json',
-        description: 'Set of Evaluators to evaluate the JSON response of a Chatflow.'
+        description: i18next.t('evaluators.inputs.evaluatorType.options.json.description')
     },
     {
-        label: 'Evaluate Metrics (Numeric)',
+        label: i18next.t('evaluators.inputs.evaluatorType.options.numeric.title'),
         name: 'numeric',
-        description: 'Set of Evaluators that evaluate the metrics (latency, tokens, cost, length of response) of a Chatflow.'
+        description: i18next.t('evaluators.inputs.evaluatorType.options.numeric.description')
     },
     {
-        label: 'LLM based Grading (JSON)',
+        label: i18next.t('evaluators.inputs.evaluatorType.options.llm.title'),
         name: 'llm',
-        description: 'Post execution, grades the answers by using an LLM.'
+        description: i18next.t('evaluators.inputs.evaluatorType.options.llm.description')
     }
 ]
 
 export const numericOperators = [
     {
-        label: 'Equals',
+        label: i18next.t('evaluators.inputs.selectOperator.operators.equals'),
         name: 'equals'
     },
     {
-        label: 'Not Equals',
+        label: i18next.t('evaluators.inputs.selectOperator.operators.notEquals'),
         name: 'notEquals'
     },
     {
-        label: 'Greater Than',
+        label: i18next.t('evaluators.inputs.selectOperator.operators.greaterThan'),
         name: 'greaterThan'
     },
     {
-        label: 'Less Than',
+        label: i18next.t('evaluators.inputs.selectOperator.operators.lessThan'),
         name: 'lessThan'
     },
     {
-        label: 'Greater Than or Equals',
+        label: i18next.t('evaluators.inputs.selectOperator.operators.greaterThanOrEquals'),
         name: 'greaterThanOrEquals'
     },
     {
-        label: 'Less Than or Equals',
+        label: i18next.t('evaluators.inputs.selectOperator.operators.lessThanOrEquals'),
         name: 'lessThanOrEquals'
     }
 ]

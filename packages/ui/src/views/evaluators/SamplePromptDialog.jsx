@@ -20,7 +20,11 @@ import useNotifier from '@/utils/useNotifier'
 // const
 import { evaluationPrompts } from '@/views/evaluators/evaluationPrompts'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     useNotifier()
 
@@ -65,16 +69,16 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
     const columns = useMemo(
         () => [
-            { field: 'property', headerName: 'Property', flex: 1 },
+            { field: 'property', headerName: t('evaluators.columns.property'), flex: 1 },
             {
                 field: 'type',
-                headerName: 'Type',
+                headerName: t('evaluators.columns.type'),
                 type: 'singleSelect',
                 valueOptions: ['string', 'number', 'boolean'],
                 width: 120
             },
-            { field: 'description', headerName: 'Description', flex: 1 },
-            { field: 'required', headerName: 'Required', type: 'boolean', width: 80 },
+            { field: 'description', headerName: t('evaluators.columns.description'), flex: 1 },
+            { field: 'required', headerName: t('evaluators.columns.required'), type: 'boolean', width: 80 },
             {
                 field: 'actions',
                 type: 'actions',
@@ -97,7 +101,7 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconTestPipe2 style={{ marginRight: '10px' }} />
-                    Sample Prompts
+                    {t('evaluators.dialogs.samplePrompts')}
                 </div>
             </DialogTitle>
             <DialogContent>
@@ -105,12 +109,13 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <Divider />
                     <Box>
                         <Typography variant='overline'>
-                            Available Prompts<span style={{ color: 'red' }}>&nbsp;*</span>
+                            {t('evaluators.inputs.availablePrompts.title')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <Dropdown
                             key={selectedPromptName}
                             name='dataset'
-                            defaultOption='Select Prompt'
+                            defaultOption={t('evaluators.inputs.availablePrompts.placeholder')}
                             options={evaluationPrompts}
                             onSelect={onSelected}
                             value={selectedPromptName}
@@ -120,8 +125,8 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <Box sx={{ pb: 2 }}>
                             <Stack style={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
                                 <Stack style={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                    <Typography variant='overline'>Output Schema</Typography>
-                                    <TooltipWithParser title={'Instruct the LLM to give formatted JSON output'} />
+                                    <Typography variant='overline'>{t('evaluators.outputSchema.title')}</Typography>
+                                    <TooltipWithParser title={t('evaluators.outputSchema.tooltip2')} />
                                 </Stack>
                             </Stack>
                             <Grid columns={columns} rows={selectedConfig} disabled={'true'} />
@@ -130,7 +135,7 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     {selectedPromptName && (
                         <Box sx={{ pb: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                <Typography variant='overline'>Prompt</Typography>
+                                <Typography variant='overline'>{t('evaluators.inputs.prompt')}</Typography>
                             </div>
                             <OutlinedInput
                                 size='small'
@@ -154,7 +159,7 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     variant='contained'
                     onClick={() => onConfirmPrompt()}
                 >
-                    {'Select Prompt'}
+                    {t('evaluators.actions.selectPrompt')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

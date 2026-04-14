@@ -2864,5 +2864,188 @@
         "formats": {
             "date": "DD-MMM-YYYY, hh:mm:ss A"
         }
+    },
+    "evaluators": {
+        "title": "Evaluators",
+        "notFound": "No Evaluators Yet",
+        "dialogs": {
+            "add": "Add Evaluator",
+            "edit": "Edit Evaluator",
+            "evaluationPrompt": "Evaluation Prompt",
+            "samplePrompts": "Sample Prompts"
+        },
+        "inputs": {
+            "name": "Name",
+            "evaluatorType": {
+                "title": "Evaluator Type",
+                "placeholder": "Select Type",
+                "options": {
+                    "text": {
+                        "title": "Evaluate Result (Text Based)",
+                        "description": "Set of Evaluators to evaluate the result of a Chatflow."
+                    },
+                    "json": {
+                        "title": "Evaluate Result (JSON)",
+                        "description": "Set of Evaluators to evaluate the JSON response of a Chatflow."
+                    },
+                    "numeric": {
+                        "title": "Evaluate Metrics (Numeric)",
+                        "description": "Set of Evaluators that evaluate the metrics (latency, tokens, cost, length of response) of a Chatflow."
+                    },
+                    "llm": {
+                        "title": "LLM based Grading (JSON)",
+                        "description": "Post execution, grades the answers by using an LLM."
+                    }
+                }
+            },
+            "availableEvaluators": {
+                "title": "Available Evaluators",
+                "placeholder": "Select Dataset",
+                "options": {
+                    "containsAny": {
+                        "title": "Contains Any",
+                        "description": "Returns true if any of the specified comma separated values are present in the response."
+                    },
+                    "containsAll": {
+                        "title": "Contains All",
+                        "description": "Returns true if ALL of the specified comma separated values are present in the response."
+                    },
+                    "doesNotContainAny": {
+                        "title": "Does Not Contains Any",
+                        "description": "Returns true if any of the specified comma separated values are present in the response."
+                    },
+                    "doesNotContainAll": {
+                        "title": "Does Not Contains All",
+                        "description": "Returns true if ALL of the specified comma separated values are present in the response."
+                    },
+                    "startsWith": {
+                        "title": "Starts With",
+                        "description": "Returns true if the response starts with the specified value."
+                    },
+                    "notStartsWith": {
+                        "title": "Does Not Start With",
+                        "description": "Returns true if the response does not start with the specified value."
+                    },
+                    "isValidJSON": {
+                        "title": "Is Valid JSON",
+                        "description": "Returns true if the response is a valid JSON."
+                    },
+                    "isNotValidJSON": {
+                        "title": "Is Not a Valid JSON",
+                        "description": "Returns true if the response is a not a valid JSON."
+                    },
+                    "totalTokens": {
+                        "title": "Total Tokens",
+                        "description": "Sum of Prompt Tokens and Completion Tokens."
+                    },
+                    "promptTokens": {
+                        "title": "Prompt Tokens",
+                        "description": "This is the number of tokens in your prompt."
+                    },
+                    "completionTokens": {
+                        "title": "Completion Tokens",
+                        "description": "Completion tokens are any tokens that the model generates in response to your input."
+                    },
+                    "apiLatency": {
+                        "title": "Total API Latency",
+                        "description": "Total time taken for the Flowise Prediction API call (milliseconds)."
+                    },
+                    "llm": {
+                        "title": "LLM Latency",
+                        "description": "Actual LLM invocation time (milliseconds)."
+                    },
+                    "chain": {
+                        "title": "Chatflow Latency",
+                        "description": "Actual time spent in executing the chatflow (milliseconds)."
+                    },
+                    "responseLength": {
+                        "title": "Output Chars Length",
+                        "description": "Number of characters in the response."
+                    }
+                }
+            },
+            "selectOperator": {
+                "title": "Select Operator",
+                "operators": {
+                    "equals": "Equals",
+                    "notEquals": "Not Equals",
+                    "greaterThan": "Greater Than",
+                    "lessThan": "Less Than",
+                    "greaterThanOrEquals": "Greater Than or Equals",
+                    "lessThanOrEquals": "Less Than or Equals"
+                }
+            },
+            "availablePrompts": {
+                "title": "Available Prompts",
+                "placeholder": "Select Prompt"
+            },
+            "value": "Value",
+            "prompt": "Prompt"
+        },
+        "columns": {
+            "property": "Property",
+            "type": "Type",
+            "description": "Description",
+            "required": "Required"
+        },
+        "actions": {
+            "save": "Save",
+            "cancel": "Cancel",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete Evaluator {{name}}?"
+            },
+            "loadSamples": "Load from Pre defined Samples",
+            "addItem": "Add Item",
+            "expand": "Expand",
+            "add": "Add",
+            "newEvaluator": "New Evaluator",
+            "selectPrompt": "Select Prompt"
+        },
+        "messages": {
+            "update": {
+                "success": "Evaluator {{name}} updated",
+                "error": "Failed to update Evaluator {{name}}: {{msg}}"
+            },
+            "add": {
+                "success": "New Evaluator added",
+                "error": "Failed to add new Evaluator: {{msg}}"
+            },
+            "delete": {
+                "success": "Evaluator deleted",
+                "error": "Failed to delete Evaluator: {{mag}}"
+            }
+        },
+        "outputSchema": {
+            "title": "Output Schema",
+            "tooltip1": "What is the output format in JSON?",
+            "tooltip2": "Instruct the LLM to give formatted JSON output"
+        },
+        "evaluationPrompts": {
+            "correctness": "Correctness",
+            "hallucination": "Hallucination"
+        },
+        "table": {
+            "type": "Type",
+            "name": "Name",
+            "details": "Details",
+            "lastUpdated": "Last Updated"
+        },
+        "type": {
+            "numeric": "Numeric",
+            "textBased": "Text Based",
+            "jsonBased": "JSON Based",
+            "llmBased": "LLM Based",
+            "measure": "Measure",
+            "operator": "Operator",
+            "value": "Value",
+            "prompt": "Prompt",
+            "outputSchemaElements": "Output Schema Elements",
+            "none": "None"
+        },
+        "formats": {
+            "date": "MMMM Do YYYY, hh:mm A"
+        },
+        "note": "You can use <strong>{question}</strong> <strong>{actualOutput}</strong> <strong>{expectedOutput}</strong> to inject runtime values into your prompt."
     }
 }
