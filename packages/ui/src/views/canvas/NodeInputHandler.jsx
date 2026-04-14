@@ -793,7 +793,10 @@ const NodeInputHandler = ({
         updateNodeInternals(data.id)
     }, [data.id, position, updateNodeInternals])
 
-    const webhookUrl = chatflowId ? `${baseURL}/api/v1/webhook/${chatflowId}` : 'Save the flow first to generate the webhook URL'
+    const webhookMethod = data.inputs?.webhookMethod ?? 'POST'
+    const webhookUrl = chatflowId
+        ? `${webhookMethod} ${baseURL}/api/v1/webhook/${chatflowId}`
+        : 'Save the flow first to generate the webhook URL'
 
     return (
         <div ref={ref}>
