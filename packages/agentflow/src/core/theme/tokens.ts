@@ -38,6 +38,7 @@ const baseColors = {
     darkBlueHover: '#233345',
     darkGray600: '#525252',
     darkGray700: '#555',
+    darkGray750: '#888',
     darkGray800: '#aaa',
 
     // Status colors
@@ -130,7 +131,7 @@ export const tokens = {
         border: {
             default: { light: baseColors.gray300, dark: baseColors.darkGray500 },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
-            input: { light: baseColors.gray400, dark: baseColors.darkGray700 },
+            input: { light: baseColors.gray400, dark: baseColors.darkGray750 },
             validation: baseColors.nodeCondition
         },
 
