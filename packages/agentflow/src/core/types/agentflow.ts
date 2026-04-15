@@ -60,14 +60,14 @@ export interface AgentflowProps {
     readOnly?: boolean
 
     /**
-     * Additional action buttons rendered alongside the validation FAB in the top-right canvas overlay.
-     * Consumers have full control — pass any ReactNode (FABs, buttons, popovers, dialogs, etc.).
-     * Rendered in a flex row to the left of the validation button, matching the legacy v2 pattern
-     * where chat and validation FABs sit side-by-side.
+     * Additional buttons rendered in the top-right canvas overlay, to the right of the built-in
+     * validation FAB. Consumers have full control over content — pass any ReactNode (FABs, icon
+     * buttons, popovers, dialogs, etc.). Hidden when `readOnly` is true.
      *
      * @example
+     * // Add a chat button alongside the validation FAB (mirrors legacy v2 pattern)
      * canvasActions={
-     *   <Fab size="small" onClick={() => setShowChat(true)}>
+     *   <Fab size="small" color="secondary" onClick={() => setShowChat(true)}>
      *     <IconMessage />
      *   </Fab>
      * }
