@@ -214,6 +214,42 @@ describe('filterNodeByClient', () => {
         })
     })
 
+    describe('Agent node knowledge field filtering', () => {
+        const agentNode = makeNode({
+            inputs: [
+                { label: 'Agent Name', name: 'agentName', type: 'string' },
+                {
+                    label: 'Knowledge (Document Stores)',
+                    name: 'agentKnowledgeDocumentStores',
+                    type: 'array',
+                    client: ['agentflowv2']
+                },
+                {
+                    label: 'Knowledge (Vector Embeddings)',
+                    name: 'agentKnowledgeVSEmbeddings',
+                    type: 'array',
+                    client: ['agentflowv2']
+                }
+            ]
+        })
+
+        it('removes knowledge fields for agentflowsdk', () => {
+            const result = filterNodeByClient(agentNode, 'agentflowsdk')
+            const inputNames = result.inputs!.map((i: any) => i.name)
+            expect(inputNames).toContain('agentName')
+            expect(inputNames).not.toContain('agentKnowledgeDocumentStores')
+            expect(inputNames).not.toContain('agentKnowledgeVSEmbeddings')
+        })
+
+        it('keeps knowledge fields for agentflowv2', () => {
+            const result = filterNodeByClient(agentNode, 'agentflowv2')
+            const inputNames = result.inputs!.map((i: any) => i.name)
+            expect(inputNames).toContain('agentName')
+            expect(inputNames).toContain('agentKnowledgeDocumentStores')
+            expect(inputNames).toContain('agentKnowledgeVSEmbeddings')
+        })
+    })
+
     describe('immutability', () => {
         it('does not mutate the original node', () => {
             const node = makeNode({
