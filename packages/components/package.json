@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "3.1.1",
+    "version": "3.1.2",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -18,7 +18,7 @@
         "build": "tsc && gulp",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
-        "nuke": "rimraf dist node_modules .turbo",
+        "nuke": "pnpm clean && rimraf node_modules .turbo",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage"

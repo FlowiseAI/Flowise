@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import sanitizeHtml from 'sanitize-html'
-import { extractChatflowId, validateChatflowDomain, isPublicChatflowRequest, isTTSGenerateRequest } from './domainValidation'
+import { extractChatflowId, isPublicChatflowRequest, isTTSGenerateRequest, validateChatflowDomain } from './domainValidation'
 
 export function sanitizeMiddleware(req: Request, res: Response, next: NextFunction): void {
     // decoding is necessary as the url is encoded by the browser
@@ -87,8 +87,31 @@ export function getCorsOptions(): any {
     }
 }
 
+/**
+ * Retrieves and normalizes allowed iframe embedding origins for CSP frame-ancestors directive.
+ *
+ * Reads `IFRAME_ORIGINS` environment variable (comma-separated FQDNs) and converts it to
+ * space-separated format required by Content Security Policy specification.
+ *
+ * Input format:
+ * - Comma-separated: `https://domain1.com,https://domain2.com`
+ * - Special values: `'self'`, `'none'`, or `*`
+ * - Default: `'self'` (same-origin only)
+ *
+ * Output examples:
+ * - `https://app.com,https://admin.com` → `https://app.com https://admin.com`
+ * - `'self'` → `'self'`
+ * - `*` → `*`
+ *
+ * @returns Space-separated string for CSP frame-ancestors directive
+ */
 export function getAllowedIframeOrigins(): string {
     // Expects FQDN separated by commas, otherwise nothing or * for all.
     // Also CSP allowed values: self or none
-    return process.env.IFRAME_ORIGINS ?? '*'
+    const origins = (process.env.IFRAME_ORIGINS?.trim() || undefined) ?? "'self'"
+    // Convert CSV to space-separated for CSP frame-ancestors directive
+    return origins
+        .split(',')
+        .map((s) => s.trim())
+        .join(' ')
 }
