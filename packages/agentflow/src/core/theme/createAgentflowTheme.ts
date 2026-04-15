@@ -58,6 +58,25 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
                         backgroundImage: 'none'
                     }
                 }
+            },
+            MuiOutlinedInput: {
+                styleOverrides: {
+                    root: {
+                        background: tokens.colors.background.input[mode]
+                    },
+                    input: {
+                        background: tokens.colors.background.input[mode]
+                    }
+                }
+            },
+            MuiAutocomplete: {
+                styleOverrides: {
+                    option: {
+                        '&:hover': {
+                            background: isDarkMode ? `${tokens.colors.background.optionHover.dark} !important` : undefined
+                        }
+                    }
+                }
             }
         },
         spacing: 8, // MUI's default base unit

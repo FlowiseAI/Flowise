@@ -32,7 +32,9 @@ const baseColors = {
     darkGray200: '#1a1a2e',
     darkGray300: '#252525',
     darkGray400: '#2d2d2d',
+    darkGray450: '#32353b',
     darkGray500: '#404040',
+    darkBlueHover: '#233345',
     darkGray600: '#525252',
     darkGray700: '#555',
     darkGray800: '#aaa',
@@ -119,7 +121,9 @@ export const tokens = {
             palette: { light: baseColors.gray50, dark: baseColors.darkGray300 },
             card: { light: baseColors.white, dark: baseColors.darkGray400 },
             cardHover: { light: baseColors.gray75, dark: baseColors.darkGray500 },
-            header: { light: baseColors.white, dark: baseColors.darkGray400 }
+            header: { light: baseColors.white, dark: baseColors.darkGray400 },
+            input: { light: baseColors.white, dark: baseColors.darkGray450 },
+            optionHover: { light: '', dark: baseColors.darkBlueHover }
         },
 
         border: {
