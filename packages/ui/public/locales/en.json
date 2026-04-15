@@ -3344,6 +3344,63 @@
             }
         }
     },
+    "users": {
+        "title": "User Management",
+        "searchPlaceholder": "Search Users",
+        "notFound": "No Users Yet",
+        "organizationOwner": "ORGANIZATION OWNER",
+        "assignedRoles": "Assigned Roles",
+        "statuses": {
+            "active": "Active",
+            "inactive": "Inactive"
+        },
+        "actions": {
+            "edit": "Edit",
+            "delete": "Delete",
+            "sendInvite": "Send Invite",
+            "cancel": "Cancel",
+            "updateInvite": "Update Invite",
+            "save": "Save",
+            "inviteUser": "Invite User"
+        },
+        "tables": {
+            "assignedRolesTable": "assigned roles table",
+            "role": "Role",
+            "workspace": "Workspace",
+            "emailName": "Email/Name",
+            "assignedRoles": "Assigned Roles",
+            "status": "Status",
+            "lastLogin": "Last Login"
+        },
+        "dialogs": {
+            "delete": {
+                "title": "Delete",
+                "description": "Remove {{name}} from organization?"
+            },
+            "edit": {
+                "title": "Edit User"
+            }
+        },
+        "messages": {
+            "delete": {
+                "success": "User removed from organization successfully",
+                "error": "Failed to delete User: {{msg}}"
+            },
+            "update": {
+                "success": "User Details Updated",
+                "error": "Failed to update User: {{msg}}"
+            }
+        },
+        "inputs": {
+            "email": "Email",
+            "name": "name",
+            "accountStatus": "Account Status"
+        },
+        "error": "Cannot change status of the organization owner!",
+        "formats": {
+            "date": "DD/MM/YYYY HH:mm"
+        }
+    },
     "POPULAR": "POPULAR",
     "NEW": "NEW"
 }

@@ -50,7 +50,11 @@ import users_emptySVG from '@/assets/images/users_empty.svg'
 import { useError } from '@/store/context/ErrorContext'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 function ShowUserRow(props) {
+    const { t } = useTranslation()
     const customization = useSelector((state) => state.customization)
 
     const [open, setOpen] = useState(false)
@@ -134,7 +138,7 @@ function ShowUserRow(props) {
                         <>
                             {' '}
                             <br />
-                            <Chip size='small' label={'ORGANIZATION OWNER'} />{' '}
+                            <Chip size='small' label={t('users.organizationOwner')} />{' '}
                         </>
                     )}
                 </StyledTableCell>
@@ -155,12 +159,14 @@ function ShowUserRow(props) {
                     {'INVITED' === props.row.status.toUpperCase() && <Chip color={'warning'} label={props.row.status.toUpperCase()} />}
                     {'INACTIVE' === props.row.status.toUpperCase() && <Chip color={'error'} label={props.row.status.toUpperCase()} />}
                 </StyledTableCell>
-                <StyledTableCell>{!props.row.lastLogin ? 'Never' : moment(props.row.lastLogin).format('DD/MM/YYYY HH:mm')}</StyledTableCell>
+                <StyledTableCell>
+                    {!props.row.lastLogin ? 'Never' : moment(props.row.lastLogin).format(t('users.formats.date'))}
+                </StyledTableCell>
                 <StyledTableCell>
                     {props.row.status.toUpperCase() === 'INVITED' && (
                         <PermissionIconButton
                             permissionId={'workspace:add-user,users:manage'}
-                            title='Edit'
+                            title={t('users.actions.edit')}
                             color='primary'
                             onClick={() => props.onEditClick(props.row)}
                         >
@@ -174,7 +180,7 @@ function ShowUserRow(props) {
                         ) : (
                             <PermissionIconButton
                                 permissionId={'workspace:unlink-user,users:manage'}
-                                title='Delete'
+                                title={t('users.actions.delete')}
                                 color='error'
                                 onClick={() => props.onDeleteClick(props.row.user)}
                             >
@@ -186,14 +192,14 @@ function ShowUserRow(props) {
             <Drawer anchor='right' open={open} onClose={() => setOpen(false)} sx={{ minWidth: 320 }}>
                 <Box sx={{ p: 4, height: 'auto', width: 650 }}>
                     <Typography sx={{ textAlign: 'left', mb: 2 }} variant='h2'>
-                        Assigned Roles
+                        {t('users.assignedRoles')}
                     </Typography>
                     <TableContainer
                         style={{ display: 'flex', flexDirection: 'row' }}
                         sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                         component={Paper}
                     >
-                        <Table aria-label='assigned roles table'>
+                        <Table aria-label={t('users.tables.assignedRolesTable')}>
                             <TableHead
                                 sx={{
                                     backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
@@ -201,8 +207,8 @@ function ShowUserRow(props) {
                                 }}
                             >
                                 <TableRow>
-                                    <StyledTableCell sx={{ width: '50%' }}>Role</StyledTableCell>
-                                    <StyledTableCell sx={{ width: '50%' }}>Workspace</StyledTableCell>
+                                    <StyledTableCell sx={{ width: '50%' }}>{t('users.tables.role')}</StyledTableCell>
+                                    <StyledTableCell sx={{ width: '50%' }}>{t('users.tables.workspace')}</StyledTableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -236,6 +242,7 @@ ShowUserRow.propTypes = {
 // ==============================|| Users ||============================== //
 
 const Users = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -272,8 +279,8 @@ const Users = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Send Invite',
+            cancelButtonName: t('users.actions.cancel'),
+            confirmButtonName: t('users.actions.sendInvite'),
             data: null
         }
         setInviteDialogProps(dialogProp)
@@ -291,8 +298,8 @@ const Users = () => {
     const editInvite = (user) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Update Invite',
+            cancelButtonName: t('users.actions.cancel'),
+            confirmButtonName: t('users.actions.updateInvite'),
             data: user
         }
         setInviteDialogProps(dialogProp)
@@ -302,8 +309,8 @@ const Users = () => {
     const editUser = (user) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('users.actions.cancel'),
+            confirmButtonName: t('users.actions.save'),
             data: user
         }
         setInviteDialogProps(dialogProp)
@@ -312,10 +319,10 @@ const Users = () => {
 
     const deleteUser = async (user) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Remove ${user.name ?? user.email} from organization?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: t('users.dialogs.delete.title'),
+            description: t('users.dialogs.delete.title', { name: user.name ?? user.email }),
+            confirmButtonName: t('users.actions.delete'),
+            cancelButtonName: t('users.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -325,7 +332,7 @@ const Users = () => {
                 const deleteResp = await userApi.deleteOrganizationUser(currentUser.activeOrganizationId, user.id)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: 'User removed from organization successfully',
+                        message: t('users.messages.delete.success'),
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -340,9 +347,9 @@ const Users = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to delete User: ${
-                        typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                    }`,
+                    message: t('users.messages.delete.error', {
+                        msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    }),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
@@ -400,7 +407,12 @@ const Users = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Users' title='User Management'>
+                        <ViewHeader
+                            onSearchChange={onSearchChange}
+                            search={true}
+                            searchPlaceholder={t('users.searchPlaceholder')}
+                            title={t('users.title')}
+                        >
                             <StyledPermissionButton
                                 permissionId={'workspace:add-user,users:manage'}
                                 variant='contained'
@@ -409,7 +421,7 @@ const Users = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createUser'
                             >
-                                Invite User
+                                {t('users.actions.inviteUser')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && users.length === 0 ? (
@@ -421,7 +433,7 @@ const Users = () => {
                                         alt='users_emptySVG'
                                     />
                                 </Box>
-                                <div>No Users Yet</div>
+                                <div>{t('users.notFound')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -443,10 +455,10 @@ const Users = () => {
                                                 >
                                                     <TableRow>
                                                         <StyledTableCell>&nbsp;</StyledTableCell>
-                                                        <StyledTableCell>Email/Name</StyledTableCell>
-                                                        <StyledTableCell>Assigned Roles</StyledTableCell>
-                                                        <StyledTableCell>Status</StyledTableCell>
-                                                        <StyledTableCell>Last Login</StyledTableCell>
+                                                        <StyledTableCell>{t('users.tables.emailName')}</StyledTableCell>
+                                                        <StyledTableCell>{t('users.tables.assignedRoles')}</StyledTableCell>
+                                                        <StyledTableCell>{t('users.tables.status')}</StyledTableCell>
+                                                        <StyledTableCell>{t('users.tables.lastLogin')}</StyledTableCell>
                                                         <StyledTableCell> </StyledTableCell>
                                                     </TableRow>
                                                 </TableHead>

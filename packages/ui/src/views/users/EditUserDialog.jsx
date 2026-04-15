@@ -25,18 +25,22 @@ import useNotifier from '@/utils/useNotifier'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const statuses = [
     {
-        label: 'Active',
+        label: 'users.statuses.active',
         name: 'active'
     },
     {
-        label: 'Inactive',
+        label: 'users.statuses.inactive',
         name: 'inactive'
     }
 ]
 
 const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const currentUser = useSelector((state) => state.auth.user)
 
@@ -86,7 +90,7 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
             const saveResp = await userApi.updateOrganizationUser(saveObj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: 'User Details Updated',
+                    message: t('users.messages.update.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -102,9 +106,9 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
         } catch (error) {
             setError(err)
             enqueueSnackbar({
-                message: `Failed to update User: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
-                }`,
+                message: t('users.messages.update.error', {
+                    msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -132,14 +136,15 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconUser style={{ marginRight: '10px' }} />
-                    {'Edit User'}
+                    {t('users.dialogs.edit.title')}
                 </div>
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ p: 1 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            Email<span style={{ color: 'red' }}>&nbsp;*</span>
+                            {t('users.inputs.email')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
 
                         <div style={{ flexGrow: 1 }}></div>
@@ -157,7 +162,7 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
                 </Box>
                 <Box sx={{ p: 1 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>Name</Typography>
+                        <Typography>{t('users.inputs.name')}</Typography>
 
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
@@ -175,7 +180,8 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
                 <Box sx={{ p: 1 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            Account Status<span style={{ color: 'red' }}>&nbsp;*</span>
+                            {t('users.inputs.accountStatus')}
+                            <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
@@ -183,14 +189,16 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
                         key={status}
                         name='status'
                         disabled={dialogProps?.data?.isOrgOwner}
-                        options={statuses}
+                        options={statuses.map((x) => {
+                            return { name: x.name, label: t(x.label) }
+                        })}
                         onSelect={(newValue) => setStatus(newValue)}
                         value={status ?? 'choose an option'}
                         id='dropdown_status'
                     />
                     {dialogProps?.data?.isOrgOwner && (
                         <Typography variant='caption'>
-                            <i>Cannot change status of the organization owner!</i>
+                            <i>{t('users.error')}</i>
                         </Typography>
                     )}
                 </Box>
