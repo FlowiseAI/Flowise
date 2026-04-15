@@ -38,6 +38,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      axios:
+        specifier: 1.15.0
+        version: 1.15.0
     devDependencies:
       '@babel/preset-env':
         specifier: ^7.19.4
@@ -1272,10 +1276,10 @@ importers:
         version: 16.4.5
       flowise-embed:
         specifier: latest
-        version: 3.1.2
+        version: 3.1.5
       flowise-embed-react:
         specifier: latest
-        version: 3.1.2(@types/node@22.16.3)(flowise-embed@3.1.2)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        version: 3.1.5(@types/node@22.16.3)(flowise-embed@3.1.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       flowise-react-json-view:
         specifier: '*'
         version: 1.21.7(@types/react@18.2.65)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -3647,6 +3651,7 @@ packages:
 
   '@composio/mcp@1.0.3-0':
     resolution: {integrity: sha512-IpbfST0SSs/CEv+PIf6+EL0feNuJhQyUrOHJLPge8NhyLLrCyVqvujRIPyRUUjy0NDsked/Mm5VpJmYM6OACbg==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
     hasBin: true
 
   '@connectrpc/connect-web@2.0.0-rc.3':
@@ -10038,6 +10043,9 @@ packages:
   axios@1.12.0:
     resolution: {integrity: sha512-oXTDccv8PcfjZmPGlWsPSwtOJCZ/b6W5jAMCNcfwJbCzDckwG0jrYJFaWH1yvivfCXjVzV/SPDEhMB3Q+DSurg==}
 
+  axios@1.15.0:
+    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
+
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
@@ -10206,7 +10214,7 @@ packages:
   basic-ftp@5.0.5:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
-    deprecated: Security vulnerability fixed in 5.2.0, please upgrade
+    deprecated: Security vulnerability fixed in 5.2.1, please upgrade
 
   batch@0.6.1:
     resolution: {integrity: sha512-x+VAiMRL6UPkx+kudNvxTl6hB2XNNCG2r+7wixVfIYwu/2HKRXimwQyaumLjMveWvT2Hkd/cAJw+QBMfJ/EKVw==}
@@ -12625,14 +12633,14 @@ packages:
   flatted@3.3.1:
     resolution: {integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw==}
 
-  flowise-embed-react@3.1.2:
-    resolution: {integrity: sha512-ugzG31lKAw1hX5oAQ3R8MLff+jFpAYtL55yCUEz4VVN4hgI0c4qsatCWl4WM21xvTJ7SONxxFBzxUawwaG1VoQ==}
+  flowise-embed-react@3.1.5:
+    resolution: {integrity: sha512-rOjUy5iZdlhyd2/7U3wYdFOQKSFWq+wPJdVTrP5XeFjlGFdpCzM+uzaID3Uw+hHWIqlFYUIT5DeP/6eIvPeBmg==}
     peerDependencies:
       flowise-embed: '*'
       react: 18.x
 
-  flowise-embed@3.1.2:
-    resolution: {integrity: sha512-Uo7cqTHUy5Oz93LPy10kiTWpmKL39aJVe6NNKiKSfjajaql2tpS6GBiKv0dTCsOyssbPziCRUCuagOmt4kwYWg==}
+  flowise-embed@3.1.5:
+    resolution: {integrity: sha512-A7VJMLhsLVLl4eyRJlQn2Oqm5hQz8DmY+iSPuK5u/MiQ7Jip9W60gFO6NMTTJ8Xm9JbVx0QkajGOCQDW88hpWw==}
 
   flowise-nim-container-manager@1.0.11:
     resolution: {integrity: sha512-Er/leiIzJZ691kWqXkjCWv29g0G5qWA4juBOcGZ1P5kBLnkKFxbWc5x8JsSPcHuJQIiGNX/dYEzp2ZrOV3YYMg==}
@@ -12656,6 +12664,15 @@ packages:
 
   follow-redirects@1.15.6:
     resolution: {integrity: sha512-wWN62YITEaOpSK584EZXJafH1AGpO8RVgElfkuXbTOrPX4fIfOyEpW/CsiNd8JdYrAoOvafRTOEnvsO++qCqFA==}
+    engines: {node: '>=4.0'}
+    peerDependencies:
+      debug: '*'
+    peerDependenciesMeta:
+      debug:
+        optional: true
+
+  follow-redirects@1.16.0:
+    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -17275,6 +17292,10 @@ packages:
 
   proxy-from-env@1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
+
+  proxy-from-env@2.1.0:
+    resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
+    engines: {node: '>=10'}
 
   ps-tree@1.2.0:
     resolution: {integrity: sha512-0VnamPPYHl4uaU/nSFeZZpR21QAWRz+sRv4iW9+v/GS/J5U5iZB5BNN6J0RMoOvdx2gWM2+ZFMIm58q24e4UYA==}
@@ -32676,6 +32697,14 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  axios@1.15.0:
+    dependencies:
+      follow-redirects: 1.16.0
+      form-data: 4.0.4
+      proxy-from-env: 2.1.0
+    transitivePeerDependencies:
+      - debug
+
   axobject-query@4.1.0: {}
 
   azure-storage@2.10.7:
@@ -36022,10 +36051,10 @@ snapshots:
 
   flatted@3.3.1: {}
 
-  flowise-embed-react@3.1.2(@types/node@22.16.3)(flowise-embed@3.1.2)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  flowise-embed-react@3.1.5(@types/node@22.16.3)(flowise-embed@3.1.5)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@ladle/react': 2.5.1(@types/node@22.16.3)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-      flowise-embed: 3.1.2
+      flowise-embed: 3.1.5
       react: 18.2.0
     transitivePeerDependencies:
       - '@types/node'
@@ -36039,7 +36068,7 @@ snapshots:
       - terser
       - typescript
 
-  flowise-embed@3.1.2:
+  flowise-embed@3.1.5:
     dependencies:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
@@ -36106,6 +36135,8 @@ snapshots:
   follow-redirects@1.15.6(debug@4.4.3):
     optionalDependencies:
       debug: 4.4.3(supports-color@8.1.1)
+
+  follow-redirects@1.16.0: {}
 
   for-each@0.3.5:
     dependencies:
@@ -41974,6 +42005,8 @@ snapshots:
   proxy-from-env@1.0.0: {}
 
   proxy-from-env@1.1.0: {}
+
+  proxy-from-env@2.1.0: {}
 
   ps-tree@1.2.0:
     dependencies:
