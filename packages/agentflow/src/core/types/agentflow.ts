@@ -59,6 +59,21 @@ export interface AgentflowProps {
     /** Whether the canvas is read-only */
     readOnly?: boolean
 
+    /**
+     * Additional action buttons rendered alongside the validation FAB in the top-right canvas overlay.
+     * Consumers have full control — pass any ReactNode (FABs, buttons, popovers, dialogs, etc.).
+     * Rendered in a flex row to the left of the validation button, matching the legacy v2 pattern
+     * where chat and validation FABs sit side-by-side.
+     *
+     * @example
+     * canvasActions={
+     *   <Fab size="small" onClick={() => setShowChat(true)}>
+     *     <IconMessage />
+     *   </Fab>
+     * }
+     */
+    canvasActions?: ReactNode
+
     /** Custom header renderer - receives save/export handlers */
     renderHeader?: (props: HeaderRenderProps) => ReactNode
 
