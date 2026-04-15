@@ -1,6 +1,6 @@
 {
     "name": "@flowiseai/agentflow",
-    "version": "0.0.0-dev.11",
+    "version": "0.0.0-dev.12",
     "description": "Embeddable React component for building and visualizing AI agent workflows",
     "license": "Apache-2.0",
     "repository": {
