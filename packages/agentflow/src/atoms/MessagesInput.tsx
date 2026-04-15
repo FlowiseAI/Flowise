@@ -22,7 +22,7 @@ const MESSAGE_ROLES = [
 type MessageRole = (typeof MESSAGE_ROLES)[number]['value']
 
 export interface MessageEntry {
-    role: MessageRole
+    role: MessageRole | ''
     content: string
 }
 
@@ -77,7 +77,7 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
     )
 
     const handleAddMessage = useCallback(() => {
-        const newMessage: MessageEntry = { role: 'user', content: '' }
+        const newMessage: MessageEntry = { role: '', content: '' }
         onDataChange?.({ inputParam, newValue: [...messages, newMessage] })
     }, [messages, inputParam, onDataChange])
 
@@ -219,17 +219,19 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
             ))}
 
             {/* Add button */}
-            <Button
-                fullWidth
-                size='small'
-                variant='outlined'
-                disabled={isAddDisabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
-                startIcon={<IconPlus />}
-                onClick={handleAddMessage}
-            >
-                Add {inputParam.label}
-            </Button>
+            <Box sx={{ px: 2 }}>
+                <Button
+                    fullWidth
+                    size='small'
+                    variant='outlined'
+                    disabled={isAddDisabled}
+                    sx={{ borderRadius: '16px', mt: 2 }}
+                    startIcon={<IconPlus />}
+                    onClick={handleAddMessage}
+                >
+                    Add {inputParam.label}
+                </Button>
+            </Box>
 
             {/* Expand content dialog — conditionally mounted so it always initializes fresh */}
             {expandIndex !== null && (

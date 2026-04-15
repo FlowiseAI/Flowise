@@ -816,6 +816,27 @@
             ]
         },
         {
+            "name": "chatBaiduWenxin",
+            "models": [
+                {
+                    "label": "ernie-4.5-8k-preview",
+                    "name": "ernie-4.5-8k-preview"
+                },
+                {
+                    "label": "ernie-4.0-8k",
+                    "name": "ernie-4.0-8k"
+                },
+                {
+                    "label": "ernie-3.5-8k-preview",
+                    "name": "ernie-3.5-8k-preview"
+                },
+                {
+                    "label": "ernie-speed-128k",
+                    "name": "ernie-speed-128k"
+                }
+            ]
+        },
+        {
             "name": "chatAlibabaTongyi",
             "models": [
                 {
@@ -2180,6 +2201,27 @@
                 {
                     "label": "text-embedding-ada-002",
                     "name": "text-embedding-ada-002"
+                }
+            ]
+        },
+        {
+            "name": "baiduQianfanEmbeddings",
+            "models": [
+                {
+                    "label": "Embedding-V1",
+                    "name": "Embedding-V1"
+                },
+                {
+                    "label": "bge-large-zh",
+                    "name": "bge-large-zh"
+                },
+                {
+                    "label": "bge-large-en",
+                    "name": "bge-large-en"
+                },
+                {
+                    "label": "tao-8k",
+                    "name": "tao-8k"
                 }
             ]
         },

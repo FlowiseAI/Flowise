@@ -6,6 +6,7 @@ import { IconSparkles } from '@tabler/icons-react'
 
 import { tokens } from './core/theme'
 import type { AgentFlowInstance, AgentflowProps, FlowData, FlowDataCallback, FlowEdge, FlowNode } from './core/types'
+import { initNode, resolveNodeType } from './core/utils'
 import { applyValidationErrorsToNodes, validateFlow } from './core/validation'
 import {
     AgentflowHeader,
@@ -80,8 +81,10 @@ function AgentflowCanvas({
         }
     }, [isDarkMode])
 
-    const [nodes, setLocalNodes, onNodesChange] = useNodesState(initialFlow?.nodes || [])
-    const [edges, setLocalEdges, onEdgesChange] = useEdgesState(initialFlow?.edges || [])
+    const safeInitialNodes = Array.isArray(initialFlow?.nodes) ? initialFlow.nodes : []
+    const safeInitialEdges = Array.isArray(initialFlow?.edges) ? initialFlow.edges : []
+    const [nodes, setLocalNodes, onNodesChange] = useNodesState(safeInitialNodes)
+    const [edges, setLocalEdges, onEdgesChange] = useEdgesState(safeInitialEdges)
     const [showGenerateDialog, setShowGenerateDialog] = useState(false)
 
     // Constraint violation snackbar state
@@ -97,6 +100,29 @@ function AgentflowCanvas({
 
     // Load available nodes
     const { availableNodes } = useFlowNodes()
+
+    // Auto-add Start node when creating a new (empty) canvas.
+    // Only runs once: when availableNodes first loads and the canvas has no initial flow.
+    const hasInitialFlow = safeInitialNodes.length > 0
+    const startNodeInitialized = useRef(false)
+    useEffect(() => {
+        if (hasInitialFlow || startNodeInitialized.current) return
+        if (availableNodes.length === 0) return
+
+        const startNodeDef = availableNodes.find((n) => n.name === 'startAgentflow')
+        if (!startNodeDef) return
+
+        startNodeInitialized.current = true
+        const startNodeId = 'startAgentflow_0'
+        const startNodeData = initNode(startNodeDef, startNodeId, true)
+        const startNode: FlowNode = {
+            id: startNodeId,
+            type: resolveNodeType(startNodeDef.type ?? ''),
+            position: { x: 100, y: 100 },
+            data: { ...startNodeData, label: 'Start' }
+        }
+        setLocalNodes([startNode])
+    }, [hasInitialFlow, availableNodes, setLocalNodes])
 
     // Register local state setters with context on mount
     useEffect(() => {

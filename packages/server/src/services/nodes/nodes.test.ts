@@ -178,6 +178,42 @@ describe('filterNodeByClient', () => {
         })
     })
 
+    describe('Start node form input filtering', () => {
+        const startNode = makeNode({
+            inputs: [
+                {
+                    label: 'Input Type',
+                    name: 'startInputType',
+                    type: 'options',
+                    options: [
+                        { label: 'Chat Input', name: 'chatInput' },
+                        { label: 'Form Input', name: 'formInput', client: ['agentflowv2'] }
+                    ],
+                    default: 'chatInput'
+                },
+                { label: 'Form Title', name: 'formTitle', type: 'string' },
+                { label: 'Form Description', name: 'formDescription', type: 'string' },
+                { label: 'Form Input Types', name: 'formInputTypes', type: 'array' },
+                { label: 'Ephemeral Memory', name: 'startEphemeralMemory', type: 'boolean' },
+                { label: 'Flow State', name: 'startState', type: 'array' }
+            ]
+        })
+
+        it('removes formInput option for agentflowsdk', () => {
+            const result = filterNodeByClient(startNode, 'agentflowsdk')
+            const optionNames = result.inputs![0].options!.map((o: any) => o.name)
+            expect(optionNames).toContain('chatInput')
+            expect(optionNames).not.toContain('formInput')
+        })
+
+        it('keeps formInput option for agentflowv2', () => {
+            const result = filterNodeByClient(startNode, 'agentflowv2')
+            const optionNames = result.inputs![0].options!.map((o: any) => o.name)
+            expect(optionNames).toContain('chatInput')
+            expect(optionNames).toContain('formInput')
+        })
+    })
+
     describe('immutability', () => {
         it('does not mutate the original node', () => {
             const node = makeNode({
