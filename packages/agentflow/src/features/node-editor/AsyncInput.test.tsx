@@ -63,10 +63,11 @@ jest.mock('@/infrastructure/api/hooks', () => ({
 }))
 
 let mockNodes: Array<{ id: string; type: string; position: { x: number; y: number }; data: Record<string, unknown> }> = []
+let mockEdges: Array<{ id: string; source: string; target: string; targetHandle?: string; type: string }> = []
 
 jest.mock('@/infrastructure/store', () => ({
     useAgentflowContext: () => ({
-        state: { nodes: mockNodes, edges: [] }
+        state: { nodes: mockNodes, edges: mockEdges }
     })
 }))
 
@@ -96,6 +97,7 @@ const idleResult = (): MockAsyncResult => ({ options: [], loading: false, error:
 beforeEach(() => {
     jest.clearAllMocks()
     mockNodes = []
+    mockEdges = []
     mockUseAsyncOptions.mockReturnValue({ options: [], loading: true, error: null, refetch: mockRefetch })
 })
 
@@ -728,6 +730,101 @@ describe('AsyncInput', () => {
 
             expect(mockChange).toHaveBeenCalledWith('cred-1')
             expect(mockUseAsyncOptions.mock.calls.length).toBeGreaterThan(initialCallCount)
+        })
+    })
+
+    describe('AsyncInput – listPreviousNodes', () => {
+        const makeFlowNode = (id: string, name: string, label: string) => ({
+            id,
+            type: 'agentflowNode',
+            position: { x: 0, y: 0 },
+            data: { name, label, inputs: {} }
+        })
+
+        const makeEdge = (source: string, target: string) => ({
+            id: `${source}-${target}`,
+            source,
+            target,
+            targetHandle: target,
+            type: 'agentflowEdge'
+        })
+
+        it('does not call useAsyncOptions — options come from flow state only', () => {
+            mockNodes = [makeFlowNode('loop_0', 'loopAgentflow', 'Loop 0')]
+
+            render(
+                <AsyncInput
+                    inputParam={makeParam({ type: 'asyncOptions', loadMethod: 'listPreviousNodes' })}
+                    value=''
+                    disabled={false}
+                    onChange={jest.fn()}
+                    nodeId='loop_0'
+                />
+            )
+
+            expect(mockUseAsyncOptions).not.toHaveBeenCalled()
+        })
+
+        it('renders ancestor nodes from flow state as dropdown options', async () => {
+            mockNodes = [
+                makeFlowNode('start_0', 'startAgentflow', 'Start'),
+                makeFlowNode('agent_0', 'agentAgentflow', 'Agent 0'),
+                makeFlowNode('loop_0', 'loopAgentflow', 'Loop 0')
+            ]
+            mockEdges = [makeEdge('start_0', 'agent_0'), makeEdge('agent_0', 'loop_0')]
+
+            render(
+                <AsyncInput
+                    inputParam={makeParam({ type: 'asyncOptions', loadMethod: 'listPreviousNodes' })}
+                    value=''
+                    disabled={false}
+                    onChange={jest.fn()}
+                    nodeId='loop_0'
+                />
+            )
+
+            fireEvent.mouseDown(screen.getByRole('combobox'))
+            await waitFor(() => {
+                expect(screen.getByText('Start')).toBeTruthy()
+                expect(screen.getByText('Agent 0')).toBeTruthy()
+            })
+        })
+
+        it('shows no options when the loop node has no ancestors', async () => {
+            mockNodes = [makeFlowNode('loop_0', 'loopAgentflow', 'Loop 0')]
+            mockEdges = []
+
+            render(
+                <AsyncInput
+                    inputParam={makeParam({ type: 'asyncOptions', loadMethod: 'listPreviousNodes' })}
+                    value=''
+                    disabled={false}
+                    onChange={jest.fn()}
+                    nodeId='loop_0'
+                />
+            )
+
+            fireEvent.mouseDown(screen.getByRole('combobox'))
+            await waitFor(() => expect(screen.getByText('No options')).toBeTruthy())
+        })
+
+        it('clears stored value when the selected ancestor node is removed from the flow', async () => {
+            const mockChange = jest.fn()
+            mockNodes = [makeFlowNode('loop_0', 'loopAgentflow', 'Loop 0')]
+            mockEdges = []
+
+            // Value points to a node that is no longer in the flow / no longer an ancestor
+            render(
+                <AsyncInput
+                    inputParam={makeParam({ type: 'asyncOptions', loadMethod: 'listPreviousNodes' })}
+                    value='agent_0-Agent 0'
+                    disabled={false}
+                    onChange={mockChange}
+                    nodeId='loop_0'
+                />
+            )
+
+            await waitFor(() => expect(mockChange).toHaveBeenCalledWith(''))
         })
     })
 

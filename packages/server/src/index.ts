@@ -189,13 +189,20 @@ export class App {
         // Allow embedding from specified domains.
         this.app.use((req, res, next) => {
             const allowedOrigins = getAllowedIframeOrigins()
-            if (allowedOrigins == '*') {
-                next()
+            if (allowedOrigins === '*') {
+                // Explicitly allow all origins (only when user opts in)
+                res.setHeader('Content-Security-Policy', 'frame-ancestors *')
             } else {
                 const csp = `frame-ancestors ${allowedOrigins}`
                 res.setHeader('Content-Security-Policy', csp)
-                next()
+                // X-Frame-Options for legacy browser support
+                if (allowedOrigins === "'self'") {
+                    res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+                } else {
+                    res.setHeader('X-Frame-Options', 'DENY')
+                }
             }
+            next()
         })
 
         // Switch off the default 'X-Powered-By: Express' header

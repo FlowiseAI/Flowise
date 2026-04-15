@@ -302,7 +302,7 @@ describe('ArrayInput', () => {
 
         expect(mockOnDataChange).toHaveBeenCalledWith({
             inputParam: inputParamWithTypes,
-            newValue: [{ str: '', num: 0, bool: false, arr: [] }]
+            newValue: [{ str: '', num: '', bool: false, arr: [] }]
         })
     })
 

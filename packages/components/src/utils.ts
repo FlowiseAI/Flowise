@@ -18,7 +18,7 @@ import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig
 import { customGet } from '../nodes/sequentialagents/commonUtils'
 import { TextSplitter } from '@langchain/textsplitters'
 import { DocumentLoader } from '@langchain/classic/document_loaders/base'
-import { NodeVM } from '@flowiseai/nodevm'
+import { NodeVM } from 'vm2'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
 import JSON5 from 'json5'
@@ -1608,13 +1608,14 @@ export const executeJavaScriptCode = async (
     } = {}
 ): Promise<any> => {
     const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
-    const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
+    const shouldUseE2BSandbox = useSandbox && process.env.E2B_APIKEY
+
     let timeoutMs = timeout
     if (process.env.SANDBOX_TIMEOUT) {
         timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
     }
 
-    if (shouldUseSandbox) {
+    if (shouldUseE2BSandbox) {
         try {
             const variableDeclarations = []
 

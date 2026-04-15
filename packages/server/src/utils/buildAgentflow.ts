@@ -2357,6 +2357,7 @@ export const executeAgentFlow = async ({
     result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
     result.executionId = newExecution.id
     result.agentFlowExecutedData = agentFlowExecutedData
+    if (apiMessage.action) result.action = JSON.parse(apiMessage.action)
 
     if (sessionId) result.sessionId = sessionId
 
