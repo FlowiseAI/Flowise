@@ -26,9 +26,13 @@ import { gridSpacing } from '@/store/constant'
 import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| TOOLS ||============================== //
 
 const Tools = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const getAllToolsApi = useApi(toolsApi.getAllTools)
     const { error, setError } = useError()
@@ -68,10 +72,10 @@ const Tools = () => {
     const onUploadFile = (file) => {
         try {
             const dialogProp = {
-                title: 'Add New Tool',
+                title: t('tools.dialogs.addNewTool'),
                 type: 'IMPORT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
+                cancelButtonName: t('tools.actions.cancel'),
+                confirmButtonName: t('tools.actions.save'),
                 data: JSON.parse(file)
             }
             setDialogProps(dialogProp)
@@ -99,10 +103,10 @@ const Tools = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New Tool',
+            title: t('tools.dialogs.addNewTool'),
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add'
+            cancelButtonName: t('tools.actions.cancel'),
+            confirmButtonName: t('tools.actions.add')
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -110,10 +114,10 @@ const Tools = () => {
 
     const edit = (selectedTool) => {
         const dialogProp = {
-            title: 'Edit Tool',
+            title: t('tools.dialogs.editTool'),
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('tools.actions.cancel'),
+            confirmButtonName: t('tools.actions.save'),
             data: selectedTool
         }
         setDialogProps(dialogProp)
@@ -161,9 +165,9 @@ const Tools = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Tools'
-                            title='Tools'
-                            description='External functions or APIs the agent can use to take action'
+                            searchPlaceholder={t('tools.searchPlaceholder')}
+                            title={t('tools.title')}
+                            description={t('tools.description')}
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -181,7 +185,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title='Card View'
+                                    title={t('tools.actions.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -193,7 +197,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title='List View'
+                                    title={t('tools.actions.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -206,7 +210,7 @@ const Tools = () => {
                                     startIcon={<IconFileUpload />}
                                     sx={{ borderRadius: 2, height: 40 }}
                                 >
-                                    Load
+                                    {t('tools.actions.load')}
                                 </PermissionButton>
                                 <input
                                     style={{ display: 'none' }}
@@ -217,7 +221,7 @@ const Tools = () => {
                                     onChange={(e) => handleFileUpload(e)}
                                 />
                             </Box>
-                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                            <ButtonGroup disableElevation aria-label={t('tools.actions.outlinedPrimaryButtonGroup')}>
                                 <StyledPermissionButton
                                     permissionId={'tools:create'}
                                     variant='contained'
@@ -225,7 +229,7 @@ const Tools = () => {
                                     startIcon={<IconPlus />}
                                     sx={{ borderRadius: 2, height: 40 }}
                                 >
-                                    Create
+                                    {t('tools.actions.create')}
                                 </StyledPermissionButton>
                             </ButtonGroup>
                         </ViewHeader>
@@ -264,7 +268,7 @@ const Tools = () => {
                                         alt='ToolEmptySVG'
                                     />
                                 </Box>
-                                <div>No Tools Created Yet</div>
+                                <div>{t('tools.notFound')}</div>
                             </Stack>
                         )}
                     </Stack>

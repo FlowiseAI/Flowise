@@ -25,6 +25,9 @@ import { useError } from '@/store/context/ErrorContext'
 import LogsEmptySVG from '@/assets/images/logs_empty.svg'
 import 'react-datepicker/dist/react-datepicker.css'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const DatePickerCustomInput = forwardRef(function DatePickerCustomInput({ value, onClick }, ref) {
     return (
         <ListItemButton style={{ borderRadius: 15, border: '1px solid #e0e0e0' }} onClick={onClick} ref={ref}>
@@ -39,16 +42,16 @@ DatePickerCustomInput.propTypes = {
 }
 
 const searchTimeRanges = [
-    'Last hour',
-    'Last 4 hours',
-    'Last 24 hours',
-    'Last 2 days',
-    'Last 7 days',
-    'Last 14 days',
-    'Last 1 month',
-    'Last 2 months',
-    'Last 3 months',
-    'Custom'
+    { id: 'Last hour', label: 'logs.timeRanges.lastHour' },
+    { id: 'Last 4 hours', label: 'logs.timeRanges.last4Hours' },
+    { id: 'Last 24 hours', label: 'logs.timeRanges.last24hours' },
+    { id: 'Last 2 days', label: 'logs.timeRanges.last2Days' },
+    { id: 'Last 7 days', label: 'logs.timeRanges.last7Days' },
+    { id: 'Last 14 days', label: 'logs.timeRanges.last14Days' },
+    { id: 'Last 1 month', label: 'logs.timeRanges.last1Month' },
+    { id: 'Last 2 months', label: 'logs.timeRanges.last2Months' },
+    { id: 'Last 3 months', label: 'logs.timeRanges.last3Months' },
+    { id: 'Custom', label: 'logs.timeRanges.custom' }
 ]
 
 const getDateBefore = (unit, value) => {
@@ -99,6 +102,7 @@ const subtractTime = (months, days, hours) => {
 }
 
 const Logs = () => {
+    const { t } = useTranslation()
     const colorTheme = useTheme()
 
     const customStyle = EditorView.baseTheme({
@@ -207,7 +211,7 @@ const Logs = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 2 }}>
-                    <ViewHeader title='Logs' />
+                    <ViewHeader title={t('logs.title')} />
                     {isLoading ? (
                         <Box display='flex' flexDirection='column' gap={gridSpacing}>
                             <Skeleton width='25%' height={32} />
@@ -234,8 +238,8 @@ const Logs = () => {
                                     onChange={handleTimeSelectionChange}
                                 >
                                     {searchTimeRanges.map((range) => (
-                                        <MenuItem key={range} value={range}>
-                                            {range}
+                                        <MenuItem key={range.id} value={range.id}>
+                                            {t(range.label)}
                                         </MenuItem>
                                     ))}
                                 </Select>
@@ -251,9 +255,9 @@ const Logs = () => {
                                                 endDate={endDate}
                                                 maxDate={endDate}
                                                 showTimeSelect
-                                                timeFormat='HH:mm'
+                                                timeFormat={t('roles.formats.time')}
                                                 timeIntervals={60}
-                                                dateFormat='yyyy MMMM d, h aa'
+                                                dateFormat={t('roles.formats.date')}
                                                 customInput={<DatePickerCustomInput />}
                                             />
                                         </Stack>
@@ -264,13 +268,13 @@ const Logs = () => {
                                                 onChange={(date) => onEndDateSelected(date)}
                                                 selectsEnd
                                                 showTimeSelect
-                                                timeFormat='HH:mm'
+                                                timeFormat={t('roles.formats.time')}
                                                 timeIntervals={60}
                                                 startDate={startDate}
                                                 endDate={endDate}
                                                 minDate={startDate}
                                                 maxDate={new Date()}
-                                                dateFormat='yyyy MMMM d, h aa'
+                                                dateFormat={t('roles.formats.date')}
                                                 customInput={<DatePickerCustomInput />}
                                             />
                                         </Stack>
@@ -301,7 +305,7 @@ const Logs = () => {
                                             alt='LogsEmptySVG'
                                         />
                                     </Box>
-                                    <div>No Logs Yet</div>
+                                    <div>{t('logs.title')}</div>
                                 </Stack>
                             )}
                         </>

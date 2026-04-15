@@ -43,27 +43,27 @@ import { useTranslation, Trans } from 'react-i18next'
 const RegisterEnterpriseUserSchema = (t) =>
     z
         .object({
-            username: z.string().min(1, t('auth.register.validation.name.required')),
-            email: z.string().min(1, t('auth.register.validation.email.required')).email(t('auth.register.validation.email.invalid')),
+            username: z.string().min(1, t('common.validation.name.required')),
+            email: z.string().min(1, t('common.validation.email.required')).email(t('common.validation.email.invalid')),
             password: passwordSchema(t),
-            confirmPassword: z.string().min(1, t('auth.register.validation.password.confirm')),
-            token: z.string().min(1, t('auth.register.validation.invite.required'))
+            confirmPassword: z.string().min(1, t('common.validation.confirm.required')),
+            token: z.string().min(1, t('common.validation.invite.required'))
         })
         .refine((data) => data.password === data.confirmPassword, {
-            message: t('auth.register.validation.password.match'),
+            message: t('common.validation.confirm.match'),
             path: ['confirmPassword']
         })
 
 const RegisterCloudUserSchema = (t) =>
     z
         .object({
-            username: z.string().min(1, t('auth.register.validation.name.required')),
-            email: z.string().min(1, t('auth.register.validation.email.required')).email(t('auth.register.validation.email.invalid')),
+            username: z.string().min(1, t('common.validation.name.required')),
+            email: z.string().min(1, t('common.validation.email.required')).email(t('common.validation.email.invalid')),
             password: passwordSchema(t),
-            confirmPassword: z.string().min(1, t('auth.register.validation.password.confirm'))
+            confirmPassword: z.string().min(1, t('common.validation.confirm.required'))
         })
         .refine((data) => data.password === data.confirmPassword, {
-            message: t('auth.register.validation.password.match'),
+            message: t('common.validation.confirm.match'),
             path: ['confirmPassword']
         })
 

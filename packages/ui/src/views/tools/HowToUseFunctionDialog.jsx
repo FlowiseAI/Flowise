@@ -15,13 +15,13 @@ const HowToUseFunctionDialog = ({ show, onCancel }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                How To Use Function
+                {t('tools.dialogs.howToUse.title')}
             </DialogTitle>
             <DialogContent>
                 <ul>
-                    <li style={{ marginTop: 10 }}>You can use any libraries imported in Flowise</li>
+                    <li style={{ marginTop: 10 }}>{t('tools.dialogs.howToUse.youCan')}</li>
                     <li style={{ marginTop: 10 }}>
-                        You can use properties specified in Input Schema as variables with prefix $:
+                        {t('tools.dialogs.howToUse.propUse')}
                         <ul style={{ marginTop: 10 }}>
                             <li>
                                 Property = <code>userid</code>
@@ -32,7 +32,7 @@ const HowToUseFunctionDialog = ({ show, onCancel }) => {
                         </ul>
                     </li>
                     <li style={{ marginTop: 10 }}>
-                        You can get default flow config:
+                        {t('tools.dialogs.howToUse.deafultConfig')}
                         <ul style={{ marginTop: 10 }}>
                             <li>
                                 <code>$flow.sessionId</code>
@@ -52,9 +52,9 @@ const HowToUseFunctionDialog = ({ show, onCancel }) => {
                         </ul>
                     </li>
                     <li style={{ marginTop: 10 }}>
-                        You can get custom variables:&nbsp;<code>{`$vars.<variable-name>`}</code>
+                        {t('tools.dialogs.howToUse.variables')}&nbsp;<code>{`$vars.<variable-name>`}</code>
                     </li>
-                    <li style={{ marginTop: 10 }}>Must return a string value at the end of function</li>
+                    <li style={{ marginTop: 10 }}>{t('tools.dialogs.howToUse.return')}</li>
                 </ul>
             </DialogContent>
         </Dialog>

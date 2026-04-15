@@ -1,6 +1,30 @@
 {
     "common": {
-        "locale": "en-US"
+        "locale": "en-US",
+        "validation": {
+            "name": {
+                "required": "Name is required"
+            },
+            "email": {
+                "required": "Email is required",
+                "invalid": "Invalid email address"
+            },
+            "password": {
+                "atLeast8": "Password must be at least 8 characters",
+                "notMoreThan128": "Password must not be more than 128 characters",
+                "lowercase": "Password must contain at least one lowercase letter",
+                "uppercase": "Password must contain at least one uppercase letter",
+                "digit": "Password must contain at least one digit",
+                "special": "Password must contain at least one special character"
+            },
+            "confirm": {
+                "required": "Confirm Password is required",
+                "match": "Passwords don't match"
+            },
+            "invite": {
+                "required": "Invite Code is required"
+            }
+        }
     },
     "components": {
         "dialogs": {
@@ -1769,28 +1793,6 @@
         "register": {
             "signup": "Sign Up",
             "signin": "Already have an account? <a>Sign In</a>.",
-            "validation": {
-                "name": {
-                    "required": "Name is required"
-                },
-                "email": {
-                    "required": "Email is required",
-                    "invalid": "Invalid email address"
-                },
-                "password": {
-                    "atLeast8": "Password must be at least 8 characters",
-                    "notMoreThan128": "Password must not be more than 128 characters",
-                    "lowercase": "Password must contain at least one lowercase letter",
-                    "uppercase": "Password must contain at least one uppercase letter",
-                    "digit": "Password must contain at least one digit",
-                    "special": "Password must contain at least one special character",
-                    "confirm": "Confirm Password is required",
-                    "match": "Passwords don't match"
-                },
-                "invite": {
-                    "required": "Invite Code is required"
-                }
-            },
             "messages": {
                 "success": {
                     "cloud": "To complete your registration, please click on the verification link we sent to your email address",
@@ -3110,6 +3112,236 @@
             "title": "tabs",
             "communityTemplates": "Community Templates",
             "myTemplates": "My Templates"
+        }
+    },
+    "organization": {
+        "setup": {
+            "title": "Setup Account",
+            "caption": "Account setup does not make any external connections, your data stays securely on your locally hosted server."
+        },
+        "inputs": {
+            "organization": {
+                "title": "Organization",
+                "placeholder": "Acme"
+            },
+            "username": {
+                "title": "Username",
+                "placeholder": "John Doe"
+            },
+            "password": {
+                "title": "Password",
+                "caption": "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character."
+            },
+            "confirmPassword": {
+                "title": "Confirm Password",
+                "caption": "Reconfirm your password. Must match the password typed above."
+            },
+            "email": "Email",
+            "existingUsername": {
+                "title": "Existing Username",
+                "caption": "Existing username that was set as FLOWISE_USERNAME environment variable"
+            },
+            "existingPassword": {
+                "title": "Existing Password",
+                "caption": "Existing password that was set as FLOWISE_PASSWORD environment variable"
+            },
+            "organizationName": "Organization Name",
+            "administratorName": {
+                "title": "Administrator Name",
+                "caption": "Is used for display purposes only.",
+                "placeholder": "Display Name"
+            },
+            "administratorEmail": {
+                "title": "Administrator Email",
+                "caption": "Kindly use a valid email address. Will be used as login id."
+            }
+        },
+        "errors": {
+            "authFailed": "Authentication failed. Please check your existing credentials.",
+            "registration": {
+                "base": "Error in registering account: {{msg}}",
+                "enterprise": "Error in registering organization. Please contact your administrator. ({{msg}})"
+            }
+        },
+        "actions": {
+            "newAccountDetails": "New Account Details",
+            "accountAdministrator": "Account Administrator",
+            "signup": {
+                "title": "Sign Up",
+                "microsoft": "Sign Up With Microsoft",
+                "google": "Sign Up With Google",
+                "auth0": "Sign Up With Auth0 by Okta"
+            }
+        }
+    },
+    "roles": {
+        "title": "Roles",
+        "searchPlaceholder": "Search Roles",
+        "notFound": "No Roles Yet",
+        "dialogs": {
+            "edit": "Edit Role",
+            "view": "View Role",
+            "create": "Create New Role"
+        },
+        "messages": {
+            "create": {
+                "success": "New Role Created!",
+                "error": "Role Name cannot contain spaces."
+            },
+            "update": {
+                "success": "Role Updated Successfully",
+                "error": "Failed: {{msg}}"
+            },
+            "delete": {
+                "success": "Role deleted",
+                "error": "Failed to delete Role: {{msg}}"
+            }
+        },
+        "inputs": {
+            "roleName": {
+                "title": "Role Name",
+                "placeholder": "Enter role name"
+            },
+            "roleDescription": {
+                "title": "Role Description",
+                "placeholder": "Description of the role"
+            }
+        },
+        "actions": {
+            "selectAll": "Select All",
+            "cancel": "Cancel",
+            "close": "Close",
+            "createRole": "Create Role",
+            "updateRole": "Update Role",
+            "view": "View",
+            "expandRow": "expand row",
+            "edit": "Edit",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete Role {{name}}?"
+            },
+            "invite": "Invite",
+            "addRole": "Add Role"
+        },
+        "removeUsersFirst": "Remove users with the role from Workspace first",
+        "table": {
+            "assignedUsersTable": "assigned users table",
+            "usersTable": "users table",
+            "user": "User",
+            "workspace": "Workspace",
+            "name": "Name",
+            "description": "Description",
+            "permissions": "Permissions",
+            "assignedUsers": "Assigned Users"
+        }
+    },
+    "logs": {
+        "title": "Logs",
+        "notFound": "No Logs Yet",
+        "timeRanges": {
+            "lastHour": "Last hour",
+            "last4Hours": "Last 4 hours",
+            "last24hours": "Last 24 hours",
+            "last2Days": "Last 2 days",
+            "last7Days": "Last 7 days",
+            "last14Days": "Last 14 days",
+            "last1Month": "Last 1 month",
+            "last2Months": "Last 2 months",
+            "last3Months": "Last 3 months",
+            "custom": "Custom"
+        },
+        "formats": {
+            "time": "HH:mm",
+            "date": "yyyy MMMM d, h aa"
+        }
+    },
+    "tools": {
+        "title": "Tools",
+        "description": "External functions or APIs the agent can use to take action",
+        "searchPlaceholder": "Search Tools",
+        "notFound": "No Tools Created Yet",
+        "dialogs": {
+            "addNewTool": "Add New Tool",
+            "editTool": "Edit Tool",
+            "howToUse": {
+                "title": "How To Use Function",
+                "youCan": "You can use any libraries imported in Flowise",
+                "propUse": "You can use properties specified in Input Schema as variables with prefix $:",
+                "deafultConfig": "You can get default flow config:",
+                "variables": "You can get custom variables:",
+                "return": "Must return a string value at the end of function"
+            },
+            "jsonSchema": {
+                "title": "Paste JSON Schema"
+            },
+            "exportAsTemplate": "Export As Template",
+            "deleteTool": {
+                "title": "Delete Tool",
+                "description": "Delete tool {{name}}?"
+            }
+        },
+        "actions": {
+            "cancel": "Cancel",
+            "save": "Save",
+            "add": "Add",
+            "cardView": "Card View",
+            "listView": "List View",
+            "load": "Load",
+            "create": "Create",
+            "outlinedPrimaryButtonGroup": "outlined primary button group",
+            "seeExample": "See Example",
+            "confirm": "Confirm",
+            "delete": "Delete",
+            "saveAsTemplate": "Save As Template",
+            "export": "Export",
+            "pasteJson": "Paste JSON",
+            "addItem": "Add Item",
+            "howUseFunction": "How to use Function",
+            "useTemplate": "Use Template"
+        },
+        "messages": {
+            "export": {
+                "error": "Failed to export Tool: {{msg}}"
+            },
+            "add": {
+                "success": "New Tool added",
+                "error": "Failed to add new Tool: {{msg}}"
+            },
+            "save": {
+                "success": "Tool saved",
+                "error": "Failed to save Tool: {{msg}}"
+            },
+            "delete": {
+                "success": "Tool deleted",
+                "error": "Failed to delete Tool: {{msg}}"
+            }
+        },
+        "error": "Invalid JSON format. Please check your input.",
+        "columns": {
+            "property": "Property",
+            "type": "Type",
+            "description": "Description",
+            "required": "Required"
+        },
+        "inputs": {
+            "toolName": {
+                "title": "Tool Name",
+                "tooltip": "Tool name must be small capital letter with underscore. Ex: my_tool",
+                "placeholder": "My New Tool"
+            },
+            "toolDescription": {
+                "title": "Tool description",
+                "tooltip": "Description of what the tool does. This is for ChatGPT to determine when to use this tool."
+            },
+            "toolIconSource": "Tool Icon Source",
+            "inputSchema": {
+                "title": "Input Schema",
+                "tooltip": "What is the input format in JSON?"
+            },
+            "jsFunction": {
+                "title": "Javascript Function",
+                "tooltip": "Function to execute when tool is being used. You can use properties specified in Input Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a>guide</a>"
+            }
         }
     },
     "POPULAR": "POPULAR",
