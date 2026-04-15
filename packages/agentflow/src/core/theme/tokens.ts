@@ -31,6 +31,7 @@ const baseColors = {
     darkGray100: '#1a1a1a',
     darkGray200: '#1a1a2e',
     darkGray300: '#252525',
+    darkGray350: '#23262c',
     darkGray400: '#2d2d2d',
     darkGray450: '#32353b',
     darkGray500: '#404040',
@@ -119,7 +120,7 @@ export const tokens = {
         background: {
             canvas: { light: baseColors.gray100, dark: baseColors.darkGray100 },
             palette: { light: baseColors.gray50, dark: baseColors.darkGray300 },
-            card: { light: baseColors.white, dark: baseColors.darkGray400 },
+            card: { light: baseColors.white, dark: baseColors.darkGray350 },
             cardHover: { light: baseColors.gray75, dark: baseColors.darkGray500 },
             header: { light: baseColors.white, dark: baseColors.darkGray400 },
             input: { light: baseColors.white, dark: baseColors.darkGray450 },
@@ -129,6 +130,7 @@ export const tokens = {
         border: {
             default: { light: baseColors.gray300, dark: baseColors.darkGray500 },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
+            input: { light: baseColors.gray400, dark: baseColors.darkGray700 },
             validation: baseColors.nodeCondition
         },
 
