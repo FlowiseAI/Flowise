@@ -6,7 +6,7 @@ jest.mock('./domainValidation', () => ({
     validateChatflowDomain: jest.fn()
 }))
 
-import { getAllowedIframeOrigins } from './XSS'
+import { getAllowedIframeOrigins, getIframeSecurityHeaders } from './XSS'
 
 describe('getAllowedIframeOrigins', () => {
     const originalEnv = process.env.IFRAME_ORIGINS
@@ -129,6 +129,48 @@ describe('getAllowedIframeOrigins', () => {
         it("should handle mix of 'self' and domains", () => {
             process.env.IFRAME_ORIGINS = "'self',https://trusted.com"
             expect(getAllowedIframeOrigins()).toBe("'self' https://trusted.com")
+        })
+    })
+})
+
+describe('getIframeSecurityHeaders', () => {
+    const originalEnv = process.env.IFRAME_ORIGINS
+
+    afterEach(() => {
+        if (originalEnv !== undefined) {
+            process.env.IFRAME_ORIGINS = originalEnv
+        } else {
+            delete process.env.IFRAME_ORIGINS
+        }
+    })
+
+    it('returns CSP only for wildcard allowlists', () => {
+        process.env.IFRAME_ORIGINS = '*'
+        expect(getIframeSecurityHeaders()).toEqual({
+            'Content-Security-Policy': 'frame-ancestors *'
+        })
+    })
+
+    it("returns SAMEORIGIN only for 'self'", () => {
+        process.env.IFRAME_ORIGINS = "'self'"
+        expect(getIframeSecurityHeaders()).toEqual({
+            'Content-Security-Policy': "frame-ancestors 'self'",
+            'X-Frame-Options': 'SAMEORIGIN'
+        })
+    })
+
+    it("returns DENY for 'none'", () => {
+        process.env.IFRAME_ORIGINS = "'none'"
+        expect(getIframeSecurityHeaders()).toEqual({
+            'Content-Security-Policy': "frame-ancestors 'none'",
+            'X-Frame-Options': 'DENY'
+        })
+    })
+
+    it('omits X-Frame-Options for custom allowlists', () => {
+        process.env.IFRAME_ORIGINS = 'https://embed.example.com,https://admin.example.com'
+        expect(getIframeSecurityHeaders()).toEqual({
+            'Content-Security-Policy': 'frame-ancestors https://embed.example.com https://admin.example.com'
         })
     })
 })

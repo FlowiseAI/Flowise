@@ -33,7 +33,7 @@ import { RateLimiterManager } from './utils/rateLimit'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { Telemetry } from './utils/telemetry'
 import { validateAPIKey } from './utils/validateKey'
-import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { getCorsOptions, getIframeSecurityHeaders, sanitizeMiddleware } from './utils/XSS'
 
 declare global {
     namespace Express {
@@ -188,19 +188,9 @@ export class App {
 
         // Allow embedding from specified domains.
         this.app.use((req, res, next) => {
-            const allowedOrigins = getAllowedIframeOrigins()
-            if (allowedOrigins === '*') {
-                // Explicitly allow all origins (only when user opts in)
-                res.setHeader('Content-Security-Policy', 'frame-ancestors *')
-            } else {
-                const csp = `frame-ancestors ${allowedOrigins}`
-                res.setHeader('Content-Security-Policy', csp)
-                // X-Frame-Options for legacy browser support
-                if (allowedOrigins === "'self'") {
-                    res.setHeader('X-Frame-Options', 'SAMEORIGIN')
-                } else {
-                    res.setHeader('X-Frame-Options', 'DENY')
-                }
+            const headers = getIframeSecurityHeaders()
+            for (const [headerName, headerValue] of Object.entries(headers)) {
+                res.setHeader(headerName, headerValue)
             }
             next()
         })
