@@ -129,7 +129,7 @@ export const tokens = {
         },
 
         border: {
-            default: { light: baseColors.gray300, dark: baseColors.darkGray500 },
+            default: { light: baseColors.gray300, dark: 'rgba(255, 255, 255, 0.145)' },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
             input: { light: baseColors.gray400, dark: baseColors.darkGray750 },
             validation: baseColors.nodeCondition
