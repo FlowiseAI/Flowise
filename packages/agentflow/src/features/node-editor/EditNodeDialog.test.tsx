@@ -65,7 +65,7 @@ jest.mock('@/atoms', () => ({
     }) => {
         // Handle array type inputs differently
         if (inputParam.type === 'array') {
-            const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+            const currentArray = (data.inputs?.[inputParam.name] as Record<string, unknown>[]) || []
 
             return (
                 <div data-testid={`input-handler-${inputParam.name}`} data-item-params-count={itemParameters?.length ?? 'none'}>
@@ -137,7 +137,7 @@ jest.mock('@/atoms', () => ({
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
     }) => {
-        const currentMessages = (data.inputValues?.[inputParam.name] as Array<{ role: string; content: string }>) || []
+        const currentMessages = (data.inputs?.[inputParam.name] as Array<{ role: string; content: string }>) || []
         return (
             <div data-testid={`messages-input-${inputParam.name}`}>
                 <button
@@ -163,7 +163,7 @@ jest.mock('@/atoms', () => ({
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
     }) => {
-        const currentEntries = (data.inputValues?.[inputParam.name] as Array<{ key: string; type: string; description: string }>) || []
+        const currentEntries = (data.inputs?.[inputParam.name] as Array<{ key: string; type: string; description: string }>) || []
         return (
             <div data-testid={`structured-output-${inputParam.name}`}>
                 <button
@@ -189,7 +189,7 @@ jest.mock('@/atoms', () => ({
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
     }) => {
-        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        const currentArray = (data.inputs?.[inputParam.name] as Record<string, unknown>[]) || []
         return (
             <div data-testid='condition-builder'>
                 <button
@@ -215,7 +215,7 @@ jest.mock('@/atoms', () => ({
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
     }) => {
-        const currentArray = (data.inputValues?.[inputParam.name] as Record<string, unknown>[]) || []
+        const currentArray = (data.inputs?.[inputParam.name] as Record<string, unknown>[]) || []
         return (
             <div data-testid='scenarios-input'>
                 <button
@@ -303,12 +303,12 @@ function createStartNodeInputParams(overrides?: { includeFormInputTypesArray?: b
     ]
 }
 
-function createStartNodeData(inputValues: Record<string, unknown>): NodeData {
+function createStartNodeData(inputs: Record<string, unknown>): NodeData {
     return {
         id: 'startAgentflow_0',
         name: 'startAgentflow',
         label: 'Start',
-        inputValues
+        inputs
     } as NodeData
 }
 
@@ -317,7 +317,7 @@ describe('EditNodeDialog', () => {
         id: 'node-1',
         name: 'llmAgentflow',
         label: 'My LLM Node',
-        inputValues: { model: 'gpt-4' }
+        inputs: { model: 'gpt-4' }
     } as NodeData
 
     const inputParams: InputParam[] = [
@@ -443,7 +443,7 @@ describe('EditNodeDialog', () => {
         fireEvent.click(screen.getByTestId('change-model'))
 
         expect(mockUpdateNodeData).toHaveBeenCalledWith('node-1', {
-            inputValues: { model: 'test-value' }
+            inputs: { model: 'test-value' }
         })
     })
 
@@ -453,7 +453,7 @@ describe('EditNodeDialog', () => {
         fireEvent.click(screen.getByTestId('change-temperature'))
 
         expect(mockUpdateNodeData).toHaveBeenCalledWith('node-1', {
-            inputValues: expect.objectContaining({
+            inputs: expect.objectContaining({
                 model: 'gpt-4',
                 temperature: 'test-value'
             })
@@ -493,7 +493,7 @@ describe('EditNodeDialog', () => {
             id: 'node-vis',
             name: 'testNode',
             label: 'Test',
-            inputValues: { provider: 'openAI', openAIModel: 'gpt-4', googleModel: '' }
+            inputs: { provider: 'openAI', openAIModel: 'gpt-4', googleModel: '' }
         } as NodeData
 
         render(
@@ -507,11 +507,11 @@ describe('EditNodeDialog', () => {
         // Switch provider to google — openAIModel becomes hidden
         fireEvent.click(screen.getByTestId('change-provider'))
 
-        // updateNodeData should keep openAIModel in inputValues (not stripped)
+        // updateNodeData should keep openAIModel in inputs (not stripped)
         expect(mockUpdateNodeData).toHaveBeenCalledWith(
             'node-vis',
             expect.objectContaining({
-                inputValues: expect.objectContaining({
+                inputs: expect.objectContaining({
                     openAIModel: 'gpt-4' // preserved, not stripped
                 })
             })
@@ -528,7 +528,7 @@ describe('EditNodeDialog', () => {
                 { id: 'model', name: 'model', label: 'Model', type: 'asyncOptions', loadMethod: 'listModels' } as InputParam,
                 { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'test-value' } } as InputParam
             ]
-            const asyncData: NodeData = { ...nodeData, id: 'node-async', inputValues: { model: '' } }
+            const asyncData: NodeData = { ...nodeData, id: 'node-async', inputs: { model: '' } }
 
             render(
                 <EditNodeDialog
@@ -560,7 +560,7 @@ describe('EditNodeDialog', () => {
                 } as InputParam,
                 { id: 'cfg', name: 'toolConfig', label: 'Tool Config', type: 'string', show: { tools: 'test-value' } } as InputParam
             ]
-            const asyncData: NodeData = { ...nodeData, id: 'node-multi', inputValues: { tools: '' } }
+            const asyncData: NodeData = { ...nodeData, id: 'node-multi', inputs: { tools: '' } }
 
             render(
                 <EditNodeDialog
@@ -583,7 +583,7 @@ describe('EditNodeDialog', () => {
                 { id: 'temp', name: 'temperature', label: 'Temperature', type: 'number', show: { model: 'gpt-4o' } } as InputParam
             ]
             // Start with temperature visible (model === 'gpt-4o')
-            const asyncData: NodeData = { ...nodeData, id: 'node-hide', inputValues: { model: 'gpt-4o', temperature: '0.5' } }
+            const asyncData: NodeData = { ...nodeData, id: 'node-hide', inputs: { model: 'gpt-4o', temperature: '0.5' } }
 
             render(
                 <EditNodeDialog
@@ -627,7 +627,7 @@ describe('EditNodeDialog', () => {
                     inputParams: arrayInputParams,
                     data: {
                         ...nodeData,
-                        inputValues: { items: [] }
+                        inputs: { items: [] }
                     }
                 }
             }
@@ -664,7 +664,7 @@ describe('EditNodeDialog', () => {
                     inputParams: arrayInputParams,
                     data: {
                         ...nodeData,
-                        inputValues: { connections: initialArrayData }
+                        inputs: { connections: initialArrayData }
                     }
                 }
             }
@@ -682,7 +682,7 @@ describe('EditNodeDialog', () => {
             fireEvent.click(addButton)
 
             expect(mockUpdateNodeData).toHaveBeenCalledWith('node-1', {
-                inputValues: {
+                inputs: {
                     connections: [{ host: 'server1.com', port: 3000 }, { host: 'server2.com', port: 8080 }, { _mockAdded: true }]
                 }
             })
@@ -699,7 +699,7 @@ describe('EditNodeDialog', () => {
             expect(mockUpdateNodeData).toHaveBeenCalledWith(
                 'node-1',
                 expect.objectContaining({
-                    inputValues: expect.objectContaining({
+                    inputs: expect.objectContaining({
                         connections: expect.arrayContaining([{ host: 'server2.com', port: 8080 }])
                     })
                 })
@@ -716,9 +716,9 @@ describe('EditNodeDialog', () => {
             expect(mockUpdateNodeData).toHaveBeenCalledTimes(1)
             const lastCall = mockUpdateNodeData.mock.calls[0]
             expect(lastCall[0]).toBe('node-1')
-            expect(lastCall[1]).toHaveProperty('inputValues')
-            expect(lastCall[1].inputValues).toHaveProperty('connections')
-            expect(Array.isArray(lastCall[1].inputValues.connections)).toBe(true)
+            expect(lastCall[1]).toHaveProperty('inputs')
+            expect(lastCall[1].inputs).toHaveProperty('connections')
+            expect(Array.isArray(lastCall[1].inputs.connections)).toBe(true)
         })
 
         it('should render ConditionBuilder for conditionAgentflow node', () => {
@@ -735,7 +735,7 @@ describe('EditNodeDialog', () => {
                 id: 'conditionAgentflow_0',
                 name: 'conditionAgentflow',
                 label: 'Condition',
-                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+                inputs: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
             } as NodeData
 
             render(
@@ -765,7 +765,7 @@ describe('EditNodeDialog', () => {
                 id: 'conditionAgentflow_0',
                 name: 'conditionAgentflow',
                 label: 'Condition',
-                inputValues: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
+                inputs: { conditions: [{ type: 'string', value1: '', operation: 'equal', value2: '' }] }
             } as NodeData
 
             render(
@@ -778,12 +778,12 @@ describe('EditNodeDialog', () => {
 
             fireEvent.click(screen.getByTestId('add-condition'))
 
-            // Should merge inputValues, outputAnchors, and cleaned edges into a single updateNodeData call
+            // Should merge inputs, outputAnchors, and cleaned edges into a single updateNodeData call
             expect(mockCleanupOrphanedEdges).toHaveBeenCalledWith(2)
             expect(mockUpdateNodeData).toHaveBeenCalledWith(
                 'conditionAgentflow_0',
                 {
-                    inputValues: expect.objectContaining({ conditions: expect.any(Array) }),
+                    inputs: expect.objectContaining({ conditions: expect.any(Array) }),
                     outputAnchors: expect.arrayContaining([
                         expect.objectContaining({ description: 'Condition 0' }),
                         expect.objectContaining({ description: 'Condition 1' }),
@@ -808,7 +808,7 @@ describe('EditNodeDialog', () => {
                 id: 'conditionAgentAgentflow_0',
                 name: 'conditionAgentAgentflow',
                 label: 'Condition Agent',
-                inputValues: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
+                inputs: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
             } as NodeData
 
             render(
@@ -838,7 +838,7 @@ describe('EditNodeDialog', () => {
                 id: 'conditionAgentAgentflow_0',
                 name: 'conditionAgentAgentflow',
                 label: 'Condition Agent',
-                inputValues: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
+                inputs: { conditionAgentScenarios: [{ scenario: 'User is happy' }] }
             } as NodeData
 
             render(
@@ -856,7 +856,7 @@ describe('EditNodeDialog', () => {
             expect(mockUpdateNodeData).toHaveBeenCalledWith(
                 'conditionAgentAgentflow_0',
                 {
-                    inputValues: expect.objectContaining({ conditionAgentScenarios: expect.any(Array) }),
+                    inputs: expect.objectContaining({ conditionAgentScenarios: expect.any(Array) }),
                     outputAnchors: expect.arrayContaining([
                         expect.objectContaining({ description: 'Scenario 0' }),
                         expect.objectContaining({ description: 'Scenario 1' })
@@ -883,7 +883,7 @@ describe('EditNodeDialog', () => {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'Agent',
-                inputValues: {
+                inputs: {
                     agentMessages: [{ role: 'system', content: 'You are helpful' }]
                 }
             } as NodeData
@@ -915,7 +915,7 @@ describe('EditNodeDialog', () => {
                 id: 'llmAgentflow_0',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputValues: { llmMessages: [] }
+                inputs: { llmMessages: [] }
             } as NodeData
 
             render(
@@ -940,7 +940,7 @@ describe('EditNodeDialog', () => {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'Agent',
-                inputValues: { agentMessages: [{ role: 'system', content: 'Hello' }] }
+                inputs: { agentMessages: [{ role: 'system', content: 'Hello' }] }
             } as NodeData
 
             render(
@@ -954,7 +954,7 @@ describe('EditNodeDialog', () => {
             fireEvent.click(screen.getByTestId('add-message-agentMessages'))
 
             expect(mockUpdateNodeData).toHaveBeenCalledWith('agentAgentflow_0', {
-                inputValues: {
+                inputs: {
                     agentMessages: [
                         { role: 'system', content: 'Hello' },
                         { role: 'user', content: '' }
@@ -977,7 +977,7 @@ describe('EditNodeDialog', () => {
                 id: 'agentAgentflow_0',
                 name: 'agentAgentflow',
                 label: 'Agent',
-                inputValues: {
+                inputs: {
                     agentStructuredOutput: [{ key: 'name', type: 'string', description: '' }]
                 }
             } as NodeData
@@ -1008,7 +1008,7 @@ describe('EditNodeDialog', () => {
                 id: 'llmAgentflow_0',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputValues: { llmStructuredOutput: [] }
+                inputs: { llmStructuredOutput: [] }
             } as NodeData
 
             render(
@@ -1033,7 +1033,7 @@ describe('EditNodeDialog', () => {
                 id: 'llmAgentflow_0',
                 name: 'llmAgentflow',
                 label: 'LLM',
-                inputValues: { llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }] }
+                inputs: { llmStructuredOutput: [{ key: 'name', type: 'string', description: '' }] }
             } as NodeData
 
             render(
@@ -1043,7 +1043,7 @@ describe('EditNodeDialog', () => {
             fireEvent.click(screen.getByTestId('add-output-llmStructuredOutput'))
 
             expect(mockUpdateNodeData).toHaveBeenCalledWith('llmAgentflow_0', {
-                inputValues: {
+                inputs: {
                     llmStructuredOutput: [
                         { key: 'name', type: 'string', description: '' },
                         { key: '', type: 'string', description: '' }
@@ -1131,7 +1131,7 @@ describe('EditNodeDialog', () => {
 
             // After the change, updateNodeData should have been called with the updated array
             expect(mockUpdateNodeData).toHaveBeenCalledWith('startAgentflow_0', {
-                inputValues: expect.objectContaining({
+                inputs: expect.objectContaining({
                     formInputTypes: [
                         { type: 'options', label: 'Name', name: 'userName' },
                         { type: 'string', label: 'Age', name: 'age' }
@@ -1171,7 +1171,7 @@ describe('EditNodeDialog', () => {
                     inputParams: arrayParams,
                     data: {
                         ...nodeData,
-                        inputValues: { items: [{ type: 'normal' }, { type: 'special' }] }
+                        inputs: { items: [{ type: 'normal' }, { type: 'special' }] }
                     }
                 }
             }
@@ -1199,7 +1199,7 @@ describe('EditNodeDialog', () => {
                     show={true}
                     dialogProps={{
                         inputParams: mixedParams,
-                        data: { ...nodeData, inputValues: { title: 'hello', items: [{ key: 'a' }] } },
+                        data: { ...nodeData, inputs: { title: 'hello', items: [{ key: 'a' }] } },
                         disabled: false
                     }}
                     onCancel={jest.fn()}

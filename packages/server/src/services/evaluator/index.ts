@@ -53,6 +53,7 @@ const createEvaluator = async (body: any) => {
     try {
         const appServer = getRunningExpressApp()
         const newDs = EvaluatorDTO.toEntity(body)
+        newDs.workspaceId = body.workspaceId
 
         const evaluator = appServer.AppDataSource.getRepository(Evaluator).create(newDs)
         const result = await appServer.AppDataSource.getRepository(Evaluator).save(evaluator)
@@ -78,6 +79,7 @@ const updateEvaluator = async (id: string, body: any, workspaceId: string) => {
 
         const updateEvaluator = EvaluatorDTO.toEntity(body)
         updateEvaluator.id = id
+        updateEvaluator.workspaceId = workspaceId
         appServer.AppDataSource.getRepository(Evaluator).merge(evaluator, updateEvaluator)
         const result = await appServer.AppDataSource.getRepository(Evaluator).save(evaluator)
         return EvaluatorDTO.fromEntity(result)

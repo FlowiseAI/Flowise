@@ -7,7 +7,7 @@ import { IconChecklist, IconExclamationCircle, IconX } from '@tabler/icons-react
 import validateEmptyImage from '@/assets/images/validate_empty.svg'
 import { getAgentflowIcon } from '@/core/node-config'
 import { tokens } from '@/core/theme/tokens'
-import type { FlowEdge, FlowNode, NodeData, ValidationError } from '@/core/types'
+import type { FlowEdge, FlowNode, NodeDataSchema, ValidationError } from '@/core/types'
 import { applyValidationErrorsToNodes, validateFlow } from '@/core/validation'
 import { useConfigContext } from '@/infrastructure/store'
 
@@ -24,7 +24,7 @@ interface NodeValidationResult {
 export interface ValidationFeedbackProps {
     nodes: FlowNode[]
     edges: FlowEdge[]
-    availableNodes?: NodeData[]
+    availableNodes?: NodeDataSchema[]
     setNodes: React.Dispatch<React.SetStateAction<FlowNode[]>>
 }
 
@@ -144,7 +144,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
     return (
         <>
             <ClickAwayListener onClickAway={handleClose}>
-                <div ref={containerRef} style={{ position: 'absolute', right: 20, top: 20, zIndex: 1001 }}>
+                <div ref={containerRef} style={{ position: 'relative' }}>
                     <Fab
                         size='small'
                         aria-label='validation'

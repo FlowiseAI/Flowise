@@ -3,6 +3,7 @@ import type { ReactFlowInstance } from 'reactflow'
 
 import { cloneDeep } from 'lodash'
 
+import { getDefaultValueForType } from '@/core/primitives'
 import type {
     AgentflowAction,
     AgentflowState,
@@ -14,7 +15,7 @@ import type {
     InputParam,
     NodeData
 } from '@/core/types'
-import { getUniqueNodeId } from '@/core/utils'
+import { getDefinedStateKeys, getUniqueNodeId } from '@/core/utils'
 
 import { agentflowReducer, initialState, normalizeNodes } from './agentflowReducer'
 
@@ -73,6 +74,8 @@ export interface AgentflowContextValue {
 
     // Flow operations
     getFlowData: () => FlowData
+    /** Return all unique state keys defined via `updateFlowState` across all nodes. */
+    getFlowStateKeys: () => string[]
     reset: () => void
 
     //Dialog operations
@@ -96,8 +99,8 @@ interface AgentflowStateProviderProps {
 export function AgentflowStateProvider({ children, initialFlow }: AgentflowStateProviderProps) {
     const [state, dispatch] = useReducer(agentflowReducer, {
         ...initialState,
-        nodes: normalizeNodes(initialFlow?.nodes || []),
-        edges: initialFlow?.edges || []
+        nodes: normalizeNodes(Array.isArray(initialFlow?.nodes) ? initialFlow.nodes : []),
+        edges: Array.isArray(initialFlow?.edges) ? initialFlow.edges : []
     })
 
     // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
@@ -173,8 +176,14 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const newNodes = state.nodes.filter((node) => node.id !== nodeId)
             const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
             syncStateUpdate({ nodes: newNodes, edges: newEdges })
+
+            // Notify parent of flow change so the deletion is persisted
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: newNodes, edges: newEdges, viewport })
+            }
         },
-        [state.nodes, state.edges, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     const duplicateNode = useCallback(
@@ -204,29 +213,36 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             }
 
             // Update IDs in all anchor arrays to match new node ID
-            updateAnchorIds(newNode.data.inputs, nodeId, newNodeId)
+            updateAnchorIds(newNode.data.inputParams, nodeId, newNodeId)
             updateAnchorIds(newNode.data.inputAnchors, nodeId, newNodeId)
             updateAnchorIds(newNode.data.outputAnchors, nodeId, newNodeId)
 
             // Clear connected input values by resetting to defaults
-            if (newNode.data.inputValues) {
-                for (const inputName in newNode.data.inputValues) {
-                    const value = newNode.data.inputValues[inputName]
+            if (newNode.data.inputs) {
+                for (const inputName in newNode.data.inputs) {
+                    const value = newNode.data.inputs[inputName]
 
                     if (isConnectionString(value)) {
                         // Reset string connections to parameter default
-                        const inputParam = newNode.data.inputs?.find((p) => p.name === inputName)
-                        newNode.data.inputValues[inputName] = inputParam?.default ?? ''
+                        const inputParam = newNode.data.inputParams?.find((p) => p.name === inputName)
+                        newNode.data.inputs[inputName] = inputParam ? getDefaultValueForType(inputParam) : ''
                     } else if (Array.isArray(value)) {
                         // Filter out connection strings from arrays
-                        newNode.data.inputValues[inputName] = value.filter((item) => !isConnectionString(item))
+                        newNode.data.inputs[inputName] = value.filter((item) => !isConnectionString(item))
                     }
                 }
             }
 
-            syncStateUpdate({ nodes: [...state.nodes, newNode] })
+            const newNodes = [...state.nodes, newNode]
+            syncStateUpdate({ nodes: newNodes })
+
+            // Notify parent of flow change so the duplication is persisted
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: normalizeNodes(newNodes), edges: state.edges, viewport })
+            }
         },
-        [state.nodes, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     const updateNodeData = useCallback(
@@ -258,8 +274,14 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         (edgeId: string) => {
             const newEdges = state.edges.filter((edge) => edge.id !== edgeId)
             syncStateUpdate({ edges: newEdges })
+
+            // Notify parent of flow change so the deletion is persisted
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: state.nodes, edges: newEdges, viewport })
+            }
         },
-        [state.edges, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     // Dialog operations
@@ -292,6 +314,11 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         }
     }, [state.nodes, state.edges, state.reactFlowInstance])
 
+    // Flow state keys
+    const getFlowStateKeys = useCallback((): string[] => {
+        return getDefinedStateKeys(state.nodes)
+    }, [state.nodes])
+
     // Reset
     const reset = useCallback(() => {
         dispatch({ type: 'RESET' })
@@ -314,6 +341,7 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         openEditDialog,
         closeEditDialog,
         getFlowData,
+        getFlowStateKeys,
         reset,
         registerLocalStateSetters,
         registerOnFlowChange

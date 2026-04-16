@@ -13,7 +13,8 @@ export const enum OrganizationErrorMessage {
     INVALID_ORGANIZATION_NAME = 'Invalid Organization Name',
     ORGANIZATION_NOT_FOUND = 'Organization Not Found',
     ORGANIZATION_FOUND_MULTIPLE = 'Organization Found Multiple',
-    ORGANIZATION_RESERVERD_NAME = 'Organization name cannot be Default Organization - this is a reserved name'
+    ORGANIZATION_RESERVERD_NAME = 'Organization name cannot be Default Organization - this is a reserved name',
+    ORGANIZATION_HAS_NO_SUBSCRIPTION = 'Organization has no subscription'
 }
 
 export class OrganizationService {

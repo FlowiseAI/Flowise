@@ -13,20 +13,24 @@ import { common, createLowlight } from 'lowlight'
 import { suggestionOptions } from './suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 import { CustomMention } from '@/utils/customMention'
+import { isHtmlContent, escapeXmlTags, unescapeXmlEntities, unescapeXmlTags } from '@/utils/xmlTagUtils'
 
 const lowlight = createLowlight(common)
 
-// Detect if content is legacy HTML (from old getHTML() storage) vs markdown
-const isHtmlContent = (content) => {
-    if (!content || typeof content !== 'string') return false
-    return /<(?:p|div|span|h[1-6]|ul|ol|li|br|code|pre|blockquote|table|strong|em)\b/i.test(content)
-}
-
 // define your extension array
-const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
+const extensions = (
+    availableNodesForVariable,
+    availableState,
+    acceptNodeOutputAsVariable,
+    nodes,
+    nodeData,
+    isNodeInsideInteration,
+    useMarkdown
+) => [
     Markdown,
     StarterKit.configure({
-        codeBlock: false
+        codeBlock: false,
+        ...(!useMarkdown && { link: false })
     }),
     CustomMention.configure({
         HTMLAttributes: {
@@ -103,6 +107,7 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled, isDa
 }))
 
 export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, disabled = false }) => {
+    const useMarkdown = !!inputParam?.rows
     const customization = useSelector((state) => state.customization)
     const isDarkMode = customization.isDarkMode
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
@@ -135,15 +140,20 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
                     inputParam?.acceptNodeOutputAsVariable,
                     nodes,
                     nodeData,
-                    isNodeInsideInteration
+                    isNodeInsideInteration,
+                    useMarkdown
                 ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],
             content: '',
             onUpdate: ({ editor }) => {
-                try {
-                    onChange(editor.getMarkdown())
-                } catch {
+                if (useMarkdown) {
+                    try {
+                        onChange(unescapeXmlTags(editor.getMarkdown()))
+                    } catch {
+                        onChange(editor.getHTML())
+                    }
+                } else {
                     onChange(editor.getHTML())
                 }
             },
@@ -155,10 +165,13 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
     // Load initial content after editor is ready, detecting HTML vs markdown
     useEffect(() => {
         if (editor && value) {
-            if (isHtmlContent(value)) {
+            if (!useMarkdown || isHtmlContent(value)) {
                 editor.commands.setContent(value)
             } else {
-                editor.commands.setContent(value, { contentType: 'markdown' })
+                // Step 1: Escape XML tags to entities so marked treats them as text
+                editor.commands.setContent(escapeXmlTags(value), { contentType: 'markdown' })
+                // Step 2: Decode entities in the ProseMirror doc for proper display
+                editor.commands.setContent(unescapeXmlEntities(editor.getJSON()))
             }
         }
     }, [editor]) // eslint-disable-line react-hooks/exhaustive-deps

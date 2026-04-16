@@ -7,6 +7,7 @@ const ResolveLoginPage = Loadable(lazy(() => import('@/views/auth/login')))
 const SignInPage = Loadable(lazy(() => import('@/views/auth/signIn')))
 const RegisterPage = Loadable(lazy(() => import('@/views/auth/register')))
 const VerifyEmailPage = Loadable(lazy(() => import('@/views/auth/verify-email')))
+const ConfirmEmailChangePage = Loadable(lazy(() => import('@/views/auth/confirm-email-change')))
 const ForgotPasswordPage = Loadable(lazy(() => import('@/views/auth/forgotPassword')))
 const ResetPasswordPage = Loadable(lazy(() => import('@/views/auth/resetPassword')))
 const UnauthorizedPage = Loadable(lazy(() => import('@/views/auth/unauthorized')))
@@ -33,6 +34,10 @@ const AuthRoutes = {
         {
             path: '/verify',
             element: <VerifyEmailPage />
+        },
+        {
+            path: '/confirm-email-change',
+            element: <ConfirmEmailChangePage />
         },
         {
             path: '/forgot-password',

@@ -41,7 +41,34 @@ const baseColors = {
     success: '#4caf50',
     error: '#f44336',
     warning: '#ff9800',
+    warningBg: '#fefcbf',
+    warningText: '#744210',
     info: '#2196f3',
+
+    // MUI palette colors - primary (blue)
+    primaryLight: '#e3f2fd',
+    primaryMain: '#2196f3',
+    primaryDark: '#1e88e5',
+
+    // MUI palette colors - secondary (purple)
+    secondaryLight: '#ede7f6',
+    secondaryMain: '#673ab7',
+    secondaryDark: '#5e35b1',
+
+    // MUI palette colors - success (green)
+    successLight: '#cdf5d8',
+    successMain: '#00e676',
+    successDark: '#00c853',
+
+    // MUI palette colors - error (red)
+    errorLight: '#f3d2d2',
+    errorMain: '#f44336',
+    errorDark: '#c62828',
+
+    // MUI palette colors - warning (yellow)
+    warningLight: '#fff8e1',
+    warningMain: '#ffe57f',
+    warningDark: '#ffc107',
 
     // Node type colors (brand colors)
     nodeCondition: '#FFB938',
@@ -107,11 +134,42 @@ export const tokens = {
             tertiary: { light: baseColors.gray600, dark: baseColors.gray500 }
         },
 
+        // MUI theme palette colors - referenced from base
+        palette: {
+            primary: {
+                light: baseColors.primaryLight,
+                main: baseColors.primaryMain,
+                dark: baseColors.primaryDark
+            },
+            secondary: {
+                light: baseColors.secondaryLight,
+                main: baseColors.secondaryMain,
+                dark: baseColors.secondaryDark
+            },
+            success: {
+                light: baseColors.successLight,
+                main: baseColors.successMain,
+                dark: baseColors.successDark
+            },
+            error: {
+                light: baseColors.errorLight,
+                main: baseColors.errorMain,
+                dark: baseColors.errorDark
+            },
+            warning: {
+                light: baseColors.warningLight,
+                main: baseColors.warningMain,
+                dark: baseColors.warningDark
+            }
+        },
+
         // Semantic status colors - referenced from base
         semantic: {
             success: baseColors.success,
             error: baseColors.error,
             warning: baseColors.warning,
+            warningBg: baseColors.warningBg,
+            warningText: baseColors.warningText,
             info: baseColors.info
         },
 

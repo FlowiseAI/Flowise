@@ -1,5 +1,6 @@
 // Evaluation Related Interfaces
 import { Evaluator } from './database/entities/Evaluator'
+import { stripProtectedFields } from './utils/stripProtectedFields'
 
 export interface IDataset {
     id: string
@@ -82,7 +83,7 @@ export class EvaluatorDTO {
 
     static toEntity(body: any): Evaluator {
         const newDs = new Evaluator()
-        Object.assign(newDs, body)
+        Object.assign(newDs, stripProtectedFields(body))
         let config: any = {}
         if (body.type === 'llm') {
             config = {

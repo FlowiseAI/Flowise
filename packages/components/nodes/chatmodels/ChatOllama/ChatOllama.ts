@@ -80,6 +80,14 @@ class ChatOllama_ChatModels implements INode {
                 optional: true
             },
             {
+                label: 'Think',
+                name: 'think',
+                type: 'boolean',
+                description: 'Whether the model supports reasoning. Only applicable for reasoning models',
+                default: false,
+                optional: true
+            },
+            {
                 label: 'JSON Mode',
                 name: 'jsonMode',
                 type: 'boolean',
@@ -240,6 +248,7 @@ class ChatOllama_ChatModels implements INode {
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const jsonMode = nodeData.inputs?.jsonMode as boolean
         const streaming = nodeData.inputs?.streaming as boolean
+        const think = nodeData.inputs?.think as boolean
 
         const cache = nodeData.inputs?.cache as BaseCache
 
@@ -264,6 +273,9 @@ class ChatOllama_ChatModels implements INode {
         if (keepAlive) obj.keepAlive = keepAlive
         if (cache) obj.cache = cache
         if (jsonMode) obj.format = 'json'
+
+        if (think === true) obj.think = true
+        else obj.think = false
 
         const multiModalOption: IMultiModalOption = {
             image: {

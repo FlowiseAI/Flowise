@@ -36,9 +36,17 @@ jest.mock('./RichTextEditor.lazy', () => ({
     )
 }))
 
+jest.mock('./VariableInput', () => ({
+    VariableInput: ({ suggestionItems }: { suggestionItems?: { id: string }[] }) => (
+        <div data-testid='variable-input' data-suggestion-ids={JSON.stringify(suggestionItems?.map((i) => i.id))} />
+    )
+}))
+
 jest.mock('@tabler/icons-react', () => ({
     IconArrowsMaximize: () => <span data-testid='icon-expand' />,
+    IconCode: () => <span />,
     IconInfoCircle: () => <span data-testid='icon-info-circle' />,
+    IconPencil: () => <span />,
     IconVariable: () => <span data-testid='icon-variable' />,
     IconRefresh: () => <span data-testid='icon-refresh' />
 }))
@@ -51,7 +59,7 @@ const baseNodeData: NodeData = {
     id: 'node-1',
     name: 'testNode',
     label: 'Test Node',
-    inputValues: {}
+    inputs: {}
 }
 
 const makeParam = (overrides: Partial<InputParam>): InputParam => ({
@@ -104,7 +112,7 @@ describe('NodeInputHandler – expand dialog', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'string', rows: 4 })}
-                data={{ ...baseNodeData, inputValues: { myField: 'Some long text' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'Some long text' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
@@ -126,7 +134,7 @@ describe('NodeInputHandler – expand dialog', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'string', rows: 4 })}
-                data={{ ...baseNodeData, inputValues: { myField: 'Original' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'Original' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
@@ -147,14 +155,14 @@ describe('NodeInputHandler – expand dialog', () => {
 
     it('should reflect updated data prop in expand dialog after rerender', () => {
         const param = makeParam({ type: 'string', rows: 4 })
-        const initialData = { ...baseNodeData, inputValues: { myField: '' } }
+        const initialData = { ...baseNodeData, inputs: { myField: '' } }
 
         const { rerender } = render(
             <NodeInputHandler inputParam={param} data={initialData} isAdditionalParams onDataChange={mockOnDataChange} />
         )
 
         // Simulate parent updating data after user types in inline editor
-        const updatedData = { ...baseNodeData, inputValues: { myField: '<p>Updated instructions</p>' } }
+        const updatedData = { ...baseNodeData, inputs: { myField: '<p>Updated instructions</p>' } }
         rerender(<NodeInputHandler inputParam={param} data={updatedData} isAdditionalParams onDataChange={mockOnDataChange} />)
 
         // Open expand dialog — it should show the updated value, not the initial empty value
@@ -241,7 +249,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -257,7 +265,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: false })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -273,7 +281,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: '' } }}
+                data={{ ...baseNodeData, inputs: { myField: '' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -289,7 +297,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -303,7 +311,7 @@ describe('NodeInputHandler – loadConfig rendering', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'asyncOptions', loadConfig: true })}
-                data={{ ...baseNodeData, inputValues: { myField: 'chatOpenAI' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'chatOpenAI' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
                 AsyncInputComponent={StubAsyncInput}
@@ -328,8 +336,8 @@ jest.mock('./JsonInput', () => ({
     )
 }))
 
-jest.mock('./SelectVariable', () => ({
-    SelectVariable: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
+jest.mock('./VariablePicker', () => ({
+    VariablePicker: ({ items, onSelect }: { items: Array<{ value: string }>; onSelect: (v: string) => void }) => (
         <div data-testid='select-variable'>
             {items.map((item, i) => (
                 <button key={i} data-testid={`var-${item.value}`} onClick={() => onSelect(item.value)}>
@@ -345,7 +353,7 @@ describe('NodeInputHandler – json type', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'json' })}
-                data={{ ...baseNodeData, inputValues: { myField: '{"key":"val"}' } }}
+                data={{ ...baseNodeData, inputs: { myField: '{"key":"val"}' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
@@ -371,17 +379,18 @@ describe('NodeInputHandler – json type', () => {
         expect(screen.queryByTestId('json-input')).toBeNull()
     })
 
-    it('renders inline JsonInput for json with acceptVariable but no variableItems', () => {
+    it('renders a button for json with acceptVariable even when no variableItems are provided', () => {
         render(
             <NodeInputHandler
-                inputParam={makeParam({ type: 'json', acceptVariable: true })}
+                inputParam={makeParam({ type: 'json', acceptVariable: true, label: 'My Field' })}
                 data={baseNodeData}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
         )
 
-        expect(screen.getByTestId('json-input')).toBeTruthy()
+        expect(screen.getByRole('button', { name: 'My Field' })).toBeTruthy()
+        expect(screen.queryByTestId('json-input')).toBeNull()
     })
 })
 
@@ -390,7 +399,7 @@ describe('NodeInputHandler – code type', () => {
         render(
             <NodeInputHandler
                 inputParam={makeParam({ type: 'code', codeLanguage: 'javascript' })}
-                data={{ ...baseNodeData, inputValues: { myField: 'const x = 1' } }}
+                data={{ ...baseNodeData, inputs: { myField: 'const x = 1' } }}
                 isAdditionalParams
                 onDataChange={mockOnDataChange}
             />
@@ -502,6 +511,28 @@ describe('NodeInputHandler – variable popover', () => {
         )
 
         expect(screen.queryByTestId('icon-variable')).toBeNull()
+    })
+
+    it('deduplicates suggestionItem ids when variableItems share the same value', () => {
+        // Two flow-state entries with the same key produce the same base id.
+        // The first should keep its id; subsequent duplicates get a __N suffix.
+        const variableItems = [
+            { label: '$flow.state.myVar', value: '$flow.state.myVar', category: 'Flow State' },
+            { label: '$flow.state.myVar', value: '$flow.state.myVar', category: 'Flow State' },
+            { label: '$flow.state.other', value: '$flow.state.other', category: 'Flow State' }
+        ]
+        render(
+            <NodeInputHandler
+                inputParam={makeParam({ type: 'string', acceptVariable: true })}
+                data={baseNodeData}
+                isAdditionalParams
+                onDataChange={mockOnDataChange}
+                variableItems={variableItems}
+            />
+        )
+
+        const ids = JSON.parse(screen.getByTestId('variable-input').getAttribute('data-suggestion-ids')!)
+        expect(ids).toEqual(['$flow.state.myVar', '$flow.state.myVar__1', '$flow.state.other'])
     })
 })
 

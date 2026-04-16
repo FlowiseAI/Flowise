@@ -11,14 +11,14 @@ import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVari
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AES, enc } from 'crypto-js'
 import { AIMessage, AIMessageChunk, HumanMessage, BaseMessage } from '@langchain/core/messages'
-import { RunnableLambda } from '@langchain/core/runnables'
+import { Runnable, type RunnableConfig } from '@langchain/core/runnables'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
 import { TextSplitter } from '@langchain/textsplitters'
 import { DocumentLoader } from '@langchain/classic/document_loaders/base'
-import { NodeVM } from '@flowiseai/nodevm'
+import { NodeVM } from 'vm2'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
 import JSON5 from 'json5'
@@ -303,24 +303,54 @@ export const transformBracesWithColon = (input: string): string => {
 }
 
 /**
- * Creates a RunnableLambda that extracts text content from a chat model response,
- * filtering out reasoning/thinking content blocks that reasoning models may return.
+ * Extracts text content from an AIMessageChunk, filtering out reasoning/thinking
+ * content blocks that reasoning models may return.
+ */
+const extractTextFromChunk = (response: AIMessageChunk): string => {
+    if (typeof response.content === 'string') {
+        return response.content
+    }
+    if (Array.isArray(response.content)) {
+        return response.content
+            .filter((block: any) => block.type === 'text' || block.type === 'text_delta')
+            .map((block: any) => block.text ?? '')
+            .join('')
+    }
+    return ''
+}
+
+/**
+ * Creates a streaming-compatible output parser that extracts text content from
+ * chat model responses, filtering out reasoning/thinking content blocks.
+ * https://github.com/FlowiseAI/Flowise/pull/5893#issuecomment-4045466531
  */
 export const createTextOnlyOutputParser = () => {
-    return new RunnableLambda({
-        func: (response: AIMessageChunk) => {
-            if (typeof response.content === 'string') {
-                return response.content
+    return new TextOnlyOutputParser()
+}
+
+class TextOnlyOutputParser extends Runnable<AIMessageChunk, string> {
+    static lc_name() {
+        return 'TextOnlyOutputParser'
+    }
+
+    lc_namespace = ['flowise', 'output_parsers']
+
+    async invoke(input: AIMessageChunk, _options?: Partial<RunnableConfig>): Promise<string> {
+        return extractTextFromChunk(input)
+    }
+
+    async *_transform(generator: AsyncGenerator<AIMessageChunk>): AsyncGenerator<string> {
+        for await (const chunk of generator) {
+            const text = extractTextFromChunk(chunk)
+            if (text) {
+                yield text
             }
-            if (Array.isArray(response.content)) {
-                return response.content
-                    .filter((block: any) => block.type === 'text' || block.type === 'text_delta')
-                    .map((block: any) => block.text ?? '')
-                    .join('')
-            }
-            return ''
         }
-    })
+    }
+
+    async *transform(generator: AsyncGenerator<AIMessageChunk>, options?: Partial<RunnableConfig>): AsyncGenerator<string> {
+        yield* this._transformStreamWithConfig(generator, this._transform.bind(this), options)
+    }
 }
 
 /**
@@ -1578,13 +1608,14 @@ export const executeJavaScriptCode = async (
     } = {}
 ): Promise<any> => {
     const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
-    const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
+    const shouldUseE2BSandbox = useSandbox && process.env.E2B_APIKEY
+
     let timeoutMs = timeout
     if (process.env.SANDBOX_TIMEOUT) {
         timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
     }
 
-    if (shouldUseSandbox) {
+    if (shouldUseE2BSandbox) {
         try {
             const variableDeclarations = []
 

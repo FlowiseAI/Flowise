@@ -516,7 +516,7 @@ describe('AgentflowContext', () => {
                             id: 'agentflow_0',
                             name: 'agentflow',
                             label: 'Agent 1',
-                            inputs: [{ id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string' }],
+                            inputParams: [{ id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string' }],
                             inputAnchors: [{ id: 'agentflow_0-input-llm-LLM', name: 'llm', label: 'LLM', type: 'LLM' }],
                             outputAnchors: [{ id: 'agentflow_0-output-0', name: 'output', label: 'Output', type: 'string' }]
                         }
@@ -537,12 +537,12 @@ describe('AgentflowContext', () => {
             const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
 
             // Original node IDs should be unchanged
-            expect(original?.data.inputs?.[0]?.id).toBe('agentflow_0-input-model-string')
+            expect(original?.data.inputParams?.[0]?.id).toBe('agentflow_0-input-model-string')
             expect(original?.data.inputAnchors?.[0]?.id).toBe('agentflow_0-input-llm-LLM')
             expect(original?.data.outputAnchors?.[0]?.id).toBe('agentflow_0-output-0')
 
             // Duplicate node IDs should be updated to use new node ID
-            expect(duplicate?.data.inputs?.[0]?.id).toBe('agentflow_1-input-model-string')
+            expect(duplicate?.data.inputParams?.[0]?.id).toBe('agentflow_1-input-model-string')
             expect(duplicate?.data.inputAnchors?.[0]?.id).toBe('agentflow_1-input-llm-LLM')
             expect(duplicate?.data.outputAnchors?.[0]?.id).toBe('agentflow_1-output-0')
         })
@@ -555,8 +555,8 @@ describe('AgentflowContext', () => {
                             id: 'agentflow_0',
                             name: 'agentflow',
                             label: 'Agent 1',
-                            inputs: [{ id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string' }],
-                            inputValues: {
+                            inputParams: [{ id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string' }],
+                            inputs: {
                                 model: '{{agent_upstream.data.instance}}', // Connection reference
                                 temperature: '0.7', // Regular value
                                 apiKey: 'sk-1234' // Regular value
@@ -580,14 +580,14 @@ describe('AgentflowContext', () => {
             const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
 
             // Original should still have the connection
-            expect(original?.data.inputValues?.model).toBe('{{agent_upstream.data.instance}}')
-            expect(original?.data.inputValues?.temperature).toBe('0.7')
-            expect(original?.data.inputValues?.apiKey).toBe('sk-1234')
+            expect(original?.data.inputs?.model).toBe('{{agent_upstream.data.instance}}')
+            expect(original?.data.inputs?.temperature).toBe('0.7')
+            expect(original?.data.inputs?.apiKey).toBe('sk-1234')
 
             // Duplicate should have connection cleared but regular values preserved
-            expect(duplicate?.data.inputValues?.model).toBe('') // Cleared (no default)
-            expect(duplicate?.data.inputValues?.temperature).toBe('0.7') // Preserved
-            expect(duplicate?.data.inputValues?.apiKey).toBe('sk-1234') // Preserved
+            expect(duplicate?.data.inputs?.model).toBe('') // Cleared (no default)
+            expect(duplicate?.data.inputs?.temperature).toBe('0.7') // Preserved
+            expect(duplicate?.data.inputs?.apiKey).toBe('sk-1234') // Preserved
         })
 
         it('should reset connected input values to parameter defaults', () => {
@@ -598,11 +598,11 @@ describe('AgentflowContext', () => {
                             id: 'agentflow_0',
                             name: 'agentflow',
                             label: 'Agent 1',
-                            inputs: [
+                            inputParams: [
                                 { id: 'agentflow_0-input-model-string', name: 'model', label: 'Model', type: 'string', default: 'gpt-4' },
                                 { id: 'agentflow_0-input-temp-number', name: 'temperature', label: 'Temp', type: 'number', default: 0.7 }
                             ],
-                            inputValues: {
+                            inputs: {
                                 model: '{{agent_upstream.data.instance}}', // Connection
                                 temperature: '{{agent_upstream.data.temperature}}' // Connection
                             },
@@ -624,8 +624,8 @@ describe('AgentflowContext', () => {
             const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
 
             // Should reset to parameter defaults
-            expect(duplicate?.data.inputValues?.model).toBe('gpt-4')
-            expect(duplicate?.data.inputValues?.temperature).toBe(0.7)
+            expect(duplicate?.data.inputs?.model).toBe('gpt-4')
+            expect(duplicate?.data.inputs?.temperature).toBe(0.7)
         })
 
         it('should filter connection strings from array input values', () => {
@@ -636,7 +636,7 @@ describe('AgentflowContext', () => {
                             id: 'agentflow_0',
                             name: 'agentflow',
                             label: 'Agent 1',
-                            inputValues: {
+                            inputs: {
                                 tools: ['{{agent_tool1.data.instance}}', '{{agent_tool2.data.instance}}', 'regularValue'],
                                 models: ['gpt-4', 'gpt-3.5'] // No connections
                             },
@@ -659,16 +659,12 @@ describe('AgentflowContext', () => {
             const duplicate = result.current.state.nodes.find((n) => n.id === 'agentflow_1')
 
             // Original should be unchanged
-            expect(original?.data.inputValues?.tools).toEqual([
-                '{{agent_tool1.data.instance}}',
-                '{{agent_tool2.data.instance}}',
-                'regularValue'
-            ])
-            expect(original?.data.inputValues?.models).toEqual(['gpt-4', 'gpt-3.5'])
+            expect(original?.data.inputs?.tools).toEqual(['{{agent_tool1.data.instance}}', '{{agent_tool2.data.instance}}', 'regularValue'])
+            expect(original?.data.inputs?.models).toEqual(['gpt-4', 'gpt-3.5'])
 
             // Duplicate should filter out connection strings but keep regular values
-            expect(duplicate?.data.inputValues?.tools).toEqual(['regularValue'])
-            expect(duplicate?.data.inputValues?.models).toEqual(['gpt-4', 'gpt-3.5'])
+            expect(duplicate?.data.inputs?.tools).toEqual(['regularValue'])
+            expect(duplicate?.data.inputs?.models).toEqual(['gpt-4', 'gpt-3.5'])
         })
 
         it('should NOT duplicate connected edges', () => {
@@ -1338,6 +1334,101 @@ describe('AgentflowContext', () => {
             expect(result.current.state.nodes.find((n) => n.id === 'node-1')).toBeDefined()
             expect(result.current.state.nodes.find((n) => n.id === 'node-2')?.data.label).toBe('Updated Node 2')
             expect(result.current.state.nodes.find((n) => n.id === 'Node 1_0')).toBeDefined()
+        })
+    })
+
+    describe('onFlowChange notifications', () => {
+        const mockOnFlowChange = jest.fn()
+
+        beforeEach(() => {
+            mockOnFlowChange.mockClear()
+        })
+
+        it('should call onFlowChange when deleteNode is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1'), makeNode('node-2')],
+                edges: [makeEdge('node-1', 'node-2')]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.deleteNode('node-2')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' })]),
+                    edges: []
+                })
+            )
+            // Deleted node should not be in the callback payload
+            const callArgs = mockOnFlowChange.mock.calls[0][0]
+            expect(callArgs.nodes.find((n: FlowNode) => n.id === 'node-2')).toBeUndefined()
+        })
+
+        it('should call onFlowChange when deleteEdge is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1'), makeNode('node-2')],
+                edges: [makeEdge('node-1', 'node-2'), makeEdge('node-2', 'node-1')]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.deleteEdge('node-1-node-2')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' }), expect.objectContaining({ id: 'node-2' })]),
+                    edges: [expect.objectContaining({ id: 'node-2-node-1' })]
+                })
+            )
+        })
+
+        it('should call onFlowChange when duplicateNode is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1')],
+                edges: []
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.duplicateNode('node-1')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' })]),
+                    edges: []
+                })
+            )
+            // Should have 2 nodes (original + duplicate)
+            const callArgs = mockOnFlowChange.mock.calls[0][0]
+            expect(callArgs.nodes).toHaveLength(2)
         })
     })
 })

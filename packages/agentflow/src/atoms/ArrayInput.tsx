@@ -4,10 +4,12 @@ import { Box, Button, Chip, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 
+import { getDefaultValueForType } from '@/core/primitives'
 import type { InputParam, NodeData } from '@/core/types'
 
 import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler } from './NodeInputHandler'
 import { useStableKeys } from './useStableKeys'
+import type { VariableItem } from './VariablePicker'
 
 export interface ArrayInputProps {
     inputParam: InputParam
@@ -22,6 +24,8 @@ export interface ArrayInputProps {
         configValues: Record<string, unknown>,
         arrayContext?: { parentParamName: string; arrayIndex: number }
     ) => void
+    /** Variable items passed through to sub-field NodeInputHandlers for {{ autocomplete. */
+    variableItems?: VariableItem[]
 }
 
 export function ArrayInput({
@@ -32,15 +36,16 @@ export function ArrayInput({
     itemParameters: itemParametersProp,
     AsyncInputComponent,
     ConfigInputComponent,
-    onConfigChange
+    onConfigChange,
+    variableItems
 }: ArrayInputProps) {
     const theme = useTheme()
 
     // Derive array items directly from props (single source of truth)
     // Memoized to prevent unnecessary re-renders of child hooks
     const arrayItems = useMemo(
-        () => (Array.isArray(data.inputValues?.[inputParam.name]) ? (data.inputValues[inputParam.name] as Record<string, unknown>[]) : []),
-        [data.inputValues, inputParam.name]
+        () => (Array.isArray(data.inputs?.[inputParam.name]) ? (data.inputs[inputParam.name] as Record<string, unknown>[]) : []),
+        [data.inputs, inputParam.name]
     )
 
     const { keys: effectiveKeys, removeKey } = useStableKeys(arrayItems.length, 'item')
@@ -75,23 +80,7 @@ export function ArrayInput({
 
         if (inputParam.array) {
             for (const field of inputParam.array) {
-                if (field.default !== undefined) {
-                    newItem[field.name] = field.default
-                } else {
-                    switch (field.type) {
-                        case 'number':
-                            newItem[field.name] = 0
-                            break
-                        case 'boolean':
-                            newItem[field.name] = false
-                            break
-                        case 'array':
-                            newItem[field.name] = []
-                            break
-                        default:
-                            newItem[field.name] = ''
-                    }
-                }
+                newItem[field.name] = getDefaultValueForType(field)
             }
         }
 
@@ -132,7 +121,7 @@ export function ArrayInput({
                 // Create item-specific data context for nested NodeInputHandler
                 const itemData: NodeData = {
                     ...data,
-                    inputValues: itemValues
+                    inputs: itemValues
                 }
 
                 return (
@@ -189,6 +178,7 @@ export function ArrayInput({
                                     onConfigChange={onConfigChange}
                                     arrayIndex={index}
                                     parentArrayParam={inputParam}
+                                    variableItems={param.acceptVariable ? variableItems : undefined}
                                 />
                             ))}
                     </Box>

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 
-import type { InputParam, NodeData } from '@/core/types'
+import type { InputParam, NodeData, NodeDataSchema } from '@/core/types'
 
 import { ConfigInput } from './ConfigInput'
 
@@ -39,7 +39,7 @@ const makeParentData = (overrides?: Partial<NodeData>): NodeData => ({
     id: 'agent-node-1',
     name: 'agentAgentflow',
     label: 'Agent 0',
-    inputValues: { agentModel: 'chatAlibabaTongyi' },
+    inputs: { agentModel: 'chatAlibabaTongyi' },
     ...overrides
 })
 
@@ -53,8 +53,7 @@ const makeInputParam = (overrides?: Partial<InputParam>): InputParam => ({
 })
 
 /** Fake node definition returned by getNodeByName */
-const fakeNodeDefinition: NodeData = {
-    id: '',
+const fakeNodeDefinition: NodeDataSchema = {
     name: 'chatAlibabaTongyi',
     label: 'ChatAlibabaTongyi',
     inputs: [
@@ -84,7 +83,7 @@ describe('ConfigInput', () => {
         it('renders nothing when no model is selected', () => {
             const { container } = render(
                 <ConfigInput
-                    data={makeParentData({ inputValues: { agentModel: '' } })}
+                    data={makeParentData({ inputs: { agentModel: '' } })}
                     inputParam={makeInputParam()}
                     onConfigChange={mockOnConfigChange}
                 />
@@ -138,7 +137,7 @@ describe('ConfigInput', () => {
             }
 
             const parentData = makeParentData({
-                inputValues: {
+                inputs: {
                     agentTools: [{ agentSelectedTool: 'requestsGet' }]
                 }
             })
@@ -171,7 +170,7 @@ describe('ConfigInput', () => {
     describe('existing config merge', () => {
         it('reuses existing config when model matches', async () => {
             const parentData = makeParentData({
-                inputValues: {
+                inputs: {
                     agentModel: 'chatAlibabaTongyi',
                     agentModelConfig: {
                         agentModel: 'chatAlibabaTongyi',
@@ -198,7 +197,7 @@ describe('ConfigInput', () => {
 
         it('resets to defaults when stored config model does not match current selection', async () => {
             const parentData = makeParentData({
-                inputValues: {
+                inputs: {
                     agentModel: 'chatAlibabaTongyi',
                     agentModelConfig: {
                         agentModel: 'chatOpenAI', // Different model — stale config
@@ -271,8 +270,7 @@ describe('ConfigInput', () => {
 
     describe('field visibility', () => {
         it('hides params based on show/hide conditions', async () => {
-            const nodeDefnWithVisibility: NodeData = {
-                id: '',
+            const nodeDefnWithVisibility: NodeDataSchema = {
                 name: 'chatAlibabaTongyi',
                 label: 'ChatAlibabaTongyi',
                 inputs: [

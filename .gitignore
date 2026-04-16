@@ -118,3 +118,4 @@ apps/*/
 # Claude - session/user specific files
 .claude/plans/
 .claude/settings.local.json
+.claude/agent-memory/*

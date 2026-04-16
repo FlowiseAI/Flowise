@@ -391,11 +391,12 @@ class ConditionAgent_Agentflow implements INode {
             // Calculate execution time
             const endTime = Date.now()
             const timeDelta = endTime - startTime
+            const responseContent = extractResponseContent(response)
 
             // End analytics tracking (pass structured output with usage metadata)
             if (analyticHandlers && llmIds) {
                 const analyticsOutput: any = {
-                    content: extractResponseContent(response)
+                    content: responseContent
                 }
                 // Include usage metadata if available
                 if (response.usage_metadata) {
@@ -407,19 +408,16 @@ class ConditionAgent_Agentflow implements INode {
                 }
                 await analyticHandlers.onLLMEnd(llmIds, analyticsOutput, { model: modelName, provider: model })
             }
-
             let calledOutputName: string
             try {
-                const parsedResponse = this.parseJsonMarkdown(response.content as string)
+                const parsedResponse = this.parseJsonMarkdown(responseContent)
                 if (!parsedResponse.output || typeof parsedResponse.output !== 'string') {
                     throw new Error('LLM response is missing the "output" key or it is not a string.')
                 }
                 calledOutputName = parsedResponse.output
             } catch (error) {
                 throw new Error(
-                    `Failed to parse a valid scenario from the LLM's response. Please check if the model is capable of following JSON output instructions. Raw LLM Response: "${
-                        response.content as string
-                    }"`
+                    `Failed to parse a valid scenario from the LLM's response. Please check if the model is capable of following JSON output instructions. Raw LLM Response: "${responseContent}"`
                 )
             }
 
@@ -472,7 +470,7 @@ class ConditionAgent_Agentflow implements INode {
 
             const output: any = {
                 conditions,
-                content: extractResponseContent(response),
+                content: responseContent,
                 timeMetadata: {
                     start: startTime,
                     end: endTime,

@@ -42,11 +42,11 @@ const Chatflows = () => {
     const { error, setError } = useError()
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
-    const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
+    const [view, setView] = useState(localStorage.getItem('chatFlowDisplayStyle') || 'card')
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(parseInt(localStorage.getItem('chatFlowPageSize') || DEFAULT_ITEMS_PER_PAGE))
+    const [pageLimit, setPageLimit] = useState(() => Number(localStorage.getItem('chatFlowPageSize') || DEFAULT_ITEMS_PER_PAGE))
     const [total, setTotal] = useState(0)
 
     const onChange = (page, pageLimit) => {
@@ -66,7 +66,7 @@ const Chatflows = () => {
 
     const handleChange = (event, nextView) => {
         if (nextView === null) return
-        localStorage.setItem('flowDisplayStyle', nextView)
+        localStorage.setItem('chatFlowDisplayStyle', nextView)
         setView(nextView)
     }
 

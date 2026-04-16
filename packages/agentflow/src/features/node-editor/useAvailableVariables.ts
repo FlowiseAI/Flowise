@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 
-import type { VariableItem } from '@/atoms/SelectVariable'
-import type { FlowEdge, FlowNode } from '@/core/types'
+import type { VariableItem } from '@/atoms/VariablePicker'
+import { getAgentflowIcon } from '@/core/node-config'
+import { getDefinedStateKeys, getUpstreamNodes } from '@/core/utils'
 import { useAgentflowContext } from '@/infrastructure/store'
 
-// ── Static global variables (matches original SelectVariable.jsx) ───────────
+// ── Static global variables (matches original suggestionOption.js) ───────────
 
 const GLOBAL_VARIABLES: VariableItem[] = [
     { label: 'question', description: "User's question from chatbox", category: 'Chat Context', value: '{{question}}' },
@@ -15,40 +16,52 @@ const GLOBAL_VARIABLES: VariableItem[] = [
         value: '{{chat_history}}'
     },
     {
+        label: 'current_date_time',
+        description: 'Current date and time',
+        category: 'Chat Context',
+        value: '{{current_date_time}}'
+    },
+    {
+        label: 'runtime_messages_length',
+        description: 'Total messages between LLM and Agent',
+        category: 'Chat Context',
+        value: '{{runtime_messages_length}}'
+    },
+    {
+        label: 'loop_count',
+        description: 'Current loop count',
+        category: 'Chat Context',
+        value: '{{loop_count}}'
+    },
+    {
         label: 'file_attachment',
-        description: 'Files uploaded from the chat when Full File Upload is enabled on the Configuration',
+        description: 'Files uploaded from the chat',
         category: 'Chat Context',
         value: '{{file_attachment}}'
+    },
+    { label: '$flow.sessionId', description: 'Current session ID', category: 'Flow Variables', value: '{{$flow.sessionId}}' },
+    { label: '$flow.chatId', description: 'Current chat ID', category: 'Flow Variables', value: '{{$flow.chatId}}' },
+    {
+        label: '$flow.chatflowId',
+        description: 'Current chatflow ID',
+        category: 'Flow Variables',
+        value: '{{$flow.chatflowId}}'
     }
 ]
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Walk edges backward from `nodeId` to collect all direct upstream source nodes.
- */
-function getUpstreamNodes(nodeId: string, nodes: FlowNode[], edges: FlowEdge[]): FlowNode[] {
-    const sourceIds = new Set<string>()
-    for (const edge of edges) {
-        if (edge.target === nodeId) {
-            sourceIds.add(edge.source)
-        }
-    }
-    return nodes.filter((n) => sourceIds.has(n.id))
-}
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
 /**
  * Returns the list of variable items available for a given node.
  *
- * Matches the original SelectVariable.jsx behaviour:
- * - Global variables: question, chat_history, file_attachment
+ * Matches the original suggestionOption.js behaviour:
+ * - Chat context: question, chat_history, current_date_time, runtime_messages_length, loop_count, file_attachment
+ * - Flow variables: $flow.sessionId, $flow.chatId, $flow.chatflowId
  * - Upstream node outputs (from edges)
  * - Flow state variables (from startAgentflow node's startState)
  *
  * Lives in the features layer so it can read from AgentflowContext.
- * The returned items are passed to the SelectVariable atom via props.
+ * The returned items are passed to the VariablePicker atom via props.
  */
 export function useAvailableVariables(nodeId: string): VariableItem[] {
     const { state } = useAgentflowContext()
@@ -61,36 +74,32 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
         const upstreamNodes = getUpstreamNodes(nodeId, nodes, edges)
         for (const node of upstreamNodes) {
             const displayName =
-                (node.data.inputValues?.chainName as string) ??
-                (node.data.inputValues?.functionName as string) ??
-                (node.data.inputValues?.variableName as string) ??
+                (node.data.inputs?.chainName as string) ??
+                (node.data.inputs?.functionName as string) ??
+                (node.data.inputs?.variableName as string) ??
                 node.data.label ??
                 node.data.id
 
+            const agentflowIcon = getAgentflowIcon(node.data.name)
             items.push({
                 label: displayName,
                 description: `Output from ${node.data.label ?? node.data.name}`,
                 category: 'Node Outputs',
-                value: `{{${node.id}.data.instance}}`
+                value: `{{${node.id}.data.instance}}`,
+                icon: agentflowIcon?.icon,
+                iconColor: agentflowIcon?.color
             })
         }
 
-        // ── Flow state variables from startAgentflow node ────────────────
-        const startNode = nodes.find((n) => n.data.name === 'startAgentflow')
-        if (startNode) {
-            const startState = startNode.data.inputValues?.startState
-            if (Array.isArray(startState)) {
-                for (const entry of startState) {
-                    if (entry && typeof entry === 'object' && 'key' in entry && typeof entry.key === 'string') {
-                        items.push({
-                            label: `$flow.state.${entry.key}`,
-                            description: `Current value of the state variable with specified key`,
-                            category: 'Flow State',
-                            value: `$flow.state.${entry.key}`
-                        })
-                    }
-                }
-            }
+        // ── Flow state variables from all nodes ─────────────────────────
+        const stateKeys = getDefinedStateKeys(nodes)
+        for (const key of stateKeys) {
+            items.push({
+                label: `$flow.state.${key}`,
+                description: `Current value of the state variable with specified key`,
+                category: 'Flow State',
+                value: `{{$flow.state.${key}}}`
+            })
         }
 
         return items
