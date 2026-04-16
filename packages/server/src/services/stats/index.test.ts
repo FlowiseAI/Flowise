@@ -13,11 +13,13 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 
 const mockQb: any = {
     select: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
     from: jest.fn().mockReturnThis(),
     innerJoin: jest.fn().mockReturnThis(),
     leftJoin: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
+    setParameter: jest.fn().mockReturnThis(),
     setParameters: jest.fn().mockReturnThis(),
     subQuery: jest.fn().mockReturnThis(),
     getQuery: jest.fn().mockReturnValue('(SELECT DISTINCT cm2.sessionId FROM chat_message cm2)'),
@@ -53,11 +55,13 @@ describe('statsService.getChatflowStats', () => {
         mockQb.getRawOne.mockResolvedValue({ count: '0' })
         mockQb.getRawMany.mockResolvedValue([])
         mockQb.select.mockReturnThis()
+        mockQb.addSelect.mockReturnThis()
         mockQb.from.mockReturnThis()
         mockQb.innerJoin.mockReturnThis()
         mockQb.leftJoin.mockReturnThis()
         mockQb.where.mockReturnThis()
         mockQb.andWhere.mockReturnThis()
+        mockQb.setParameter.mockReturnThis()
         mockQb.setParameters.mockReturnThis()
         mockQb.subQuery.mockReturnThis()
         mockQb.getQuery.mockReturnValue('(SELECT DISTINCT cm2.sessionId FROM chat_message cm2)')
@@ -96,11 +100,12 @@ describe('statsService.getChatflowStats', () => {
 
     describe('no filters', () => {
         it('returns the correct shape with parsed integers', async () => {
-            mockQb.getRawOne
-                .mockResolvedValueOnce({ count: '157' })
-                .mockResolvedValueOnce({ count: '42' })
-                .mockResolvedValueOnce({ count: '10' })
-                .mockResolvedValueOnce({ count: '7' })
+            mockQb.getRawOne.mockResolvedValueOnce({
+                totalMessages: '157',
+                totalSessions: '42',
+                totalFeedback: '10',
+                positiveFeedback: '7'
+            })
 
             const result = await statsService.getChatflowStats(CHATFLOW_ID, WORKSPACE_ID, undefined, undefined, undefined, undefined)
 
@@ -123,11 +128,11 @@ describe('statsService.getChatflowStats', () => {
             expect(result.positiveFeedback).toBe(0)
         })
 
-        it('runs 4 QueryBuilders and getRawOne 4 times when no feedbackTypes filter is set', async () => {
+        it('runs 1 QueryBuilder and getRawOne 1 time when no feedbackTypes filter is set', async () => {
             await statsService.getChatflowStats(CHATFLOW_ID, WORKSPACE_ID, undefined, undefined, undefined, undefined)
 
-            expect(mockMessageRepo.createQueryBuilder).toHaveBeenCalledTimes(4)
-            expect(mockQb.getRawOne).toHaveBeenCalledTimes(4)
+            expect(mockMessageRepo.createQueryBuilder).toHaveBeenCalledTimes(1)
+            expect(mockQb.getRawOne).toHaveBeenCalledTimes(1)
         })
     })
 
@@ -175,17 +180,14 @@ describe('statsService.getChatflowStats', () => {
             ])
 
             expect(result).toEqual({ totalMessages: 0, totalSessions: 0, totalFeedback: 0, positiveFeedback: 0 })
-            // 4 main queries + 1 precedingCountQb = 5
-            expect(mockQb.getRawOne).toHaveBeenCalledTimes(5)
+            // 1 combinedQb + 1 precedingCountQb = 2
+            expect(mockQb.getRawOne).toHaveBeenCalledTimes(2)
         })
 
         it('computes totalMessages as totalFeedback + precedingCount when feedbackTypes is set', async () => {
             mockQb.getRawOne
-                .mockResolvedValueOnce({ count: '630' }) // totalMessages (unused when feedbackTypes active)
-                .mockResolvedValueOnce({ count: '42' }) // totalSessions
-                .mockResolvedValueOnce({ count: '67' }) // totalFeedback
-                .mockResolvedValueOnce({ count: '60' }) // positiveFeedback
-                .mockResolvedValueOnce({ count: '57' }) // precedingCount
+                .mockResolvedValueOnce({ totalSessions: '42', totalFeedback: '67', positiveFeedback: '60' }) // combinedQb
+                .mockResolvedValueOnce({ count: '57' }) // precedingCountQb
 
             const result = await statsService.getChatflowStats(CHATFLOW_ID, WORKSPACE_ID, undefined, undefined, undefined, [
                 ChatMessageRatingType.THUMBS_UP
@@ -196,8 +198,8 @@ describe('statsService.getChatflowStats', () => {
             expect(result.totalSessions).toBe(42)
             expect(result.totalFeedback).toBe(67)
             expect(result.positiveFeedback).toBe(60)
-            // 4 main queries + 1 precedingCountQb = 5
-            expect(mockQb.getRawOne).toHaveBeenCalledTimes(5)
+            // 1 combinedQb + 1 precedingCountQb = 2
+            expect(mockQb.getRawOne).toHaveBeenCalledTimes(2)
         })
 
         it('passes the feedbackTypes to the session subquery', async () => {
@@ -210,13 +212,13 @@ describe('statsService.getChatflowStats', () => {
             expect(feedbackCall![1]).toEqual(expect.objectContaining({ feedbackTypes: [ChatMessageRatingType.THUMBS_DOWN] }))
         })
 
-        it('appends the session subquery condition to all 4 count queries', async () => {
+        it('appends the session subquery condition to the combined count query', async () => {
             await statsService.getChatflowStats(CHATFLOW_ID, WORKSPACE_ID, undefined, undefined, undefined, [
                 ChatMessageRatingType.THUMBS_UP
             ])
 
             const sessionIdCalls = mockQb.andWhere.mock.calls.filter((call: string[]) => call[0].includes('cm.sessionId IN'))
-            expect(sessionIdCalls.length).toBe(4)
+            expect(sessionIdCalls.length).toBe(1)
         })
     })
 

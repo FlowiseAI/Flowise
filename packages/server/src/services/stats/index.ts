@@ -38,35 +38,15 @@ const getChatflowStats = async (
 
         const repo = appServer.AppDataSource.getRepository(ChatMessage)
 
-        // Build up queries that will be used for all stats
+        // Build base WHERE conditions shared by all queries
         const baseWhere: FindOptionsWhere<ChatMessage> = { chatflowid }
         if (chatTypes && chatTypes.length > 0) baseWhere.chatType = In(chatTypes)
         if (startDate && endDate) baseWhere.createdDate = Between(new Date(startDate), new Date(endDate))
         else if (startDate) baseWhere.createdDate = MoreThanOrEqual(new Date(startDate))
         else if (endDate) baseWhere.createdDate = LessThanOrEqual(new Date(endDate))
 
-        // TypeORM 0.3.x QueryBuilder accepts FindOptionsWhere objects (including FindOperators
-        // like In/Between) in .where() — the same WHERE clause machinery used by repo.find().
-        const totalMessagesQb = repo.createQueryBuilder('cm').select('COUNT(*)', 'count').where(baseWhere)
-        const totalSessionsQb = repo.createQueryBuilder('cm').select('COUNT(DISTINCT(cm.sessionId))', 'count').where(baseWhere)
-        const totalFeedbackQb = repo
-            .createQueryBuilder('cm')
-            .select('COUNT(DISTINCT cm.id)', 'count')
-            .innerJoin(ChatMessageFeedback, 'f', 'f.messageId = cm.id')
-            .where(baseWhere)
-        const positiveFeedbackQb = repo
-            .createQueryBuilder('cm')
-            .select('COUNT(DISTINCT cm.id)', 'count')
-            .innerJoin(ChatMessageFeedback, 'f', 'f.messageId = cm.id')
-            .where(baseWhere)
-            .andWhere('f.rating = :rating', { rating: ChatMessageRatingType.THUMBS_UP })
-
-        // When feedback filter is active, narrow all queries to sessions that contain
-        // matching feedback, restrict feedback counts to selected types, and build a
-        // precedingCount query (totalMessages = feedback msgs + their preceding user msgs).
-        let precedingCountQb: ReturnType<typeof repo.createQueryBuilder> | null = null
-
         if (feedbackTypes && feedbackTypes.length > 0) {
+            // Scoping subquery: find sessions that contain qualifying feedback
             const sessionSubQb = repo
                 .createQueryBuilder()
                 .subQuery()
@@ -75,21 +55,24 @@ const getChatflowStats = async (
                 .innerJoin(ChatMessageFeedback, 'f2', 'f2.messageId = cm2.id')
                 .where(baseWhere)
                 .andWhere('f2.rating IN (:...feedbackTypes)', { feedbackTypes })
-
             const subSql = sessionSubQb.getQuery()
             const subParams = sessionSubQb.getParameters()
 
-            for (const qb of [totalMessagesQb, totalSessionsQb, totalFeedbackQb, positiveFeedbackQb]) {
-                qb.andWhere(`cm.sessionId IN ${subSql}`)
-                qb.setParameters(subParams)
-            }
-
-            totalFeedbackQb.andWhere('f.rating IN (:...ratingFilter)', { ratingFilter: feedbackTypes })
-            positiveFeedbackQb.andWhere('f.rating IN (:...posRatingFilter)', { posRatingFilter: feedbackTypes })
+            // Combined query: totalSessions, totalFeedback, positiveFeedback — scoped to qualifying sessions.
+            const combinedQb = repo
+                .createQueryBuilder('cm')
+                .select('COUNT(DISTINCT cm.sessionId)', 'totalSessions')
+                .addSelect('COUNT(DISTINCT f.id)', 'totalFeedback')
+                .addSelect('COUNT(DISTINCT CASE WHEN f.rating = :posRating THEN f.id END)', 'positiveFeedback')
+                .innerJoin(ChatMessageFeedback, 'f', 'f.messageId = cm.id')
+                .where(baseWhere)
+                .andWhere(`cm.sessionId IN ${subSql}`)
+                .andWhere('f.rating IN (:...ratingFilter)', { ratingFilter: feedbackTypes })
+                .setParameters({ ...subParams, posRating: ChatMessageRatingType.THUMBS_UP })
 
             // Anti-join: count immediate predecessors of feedback messages that aren't
             // themselves feedback messages (to avoid double-counting).
-            precedingCountQb = repo
+            const precedingCountQb = repo
                 .createQueryBuilder('prev')
                 .select('COUNT(DISTINCT prev.id)', 'count')
                 .innerJoin(
@@ -110,25 +93,34 @@ const getChatflowStats = async (
                 .andWhere('fb.rating IN (:...ft)', { ft: feedbackTypes })
                 .andWhere('btwn.id IS NULL')
                 .andWhere('prev_fb.id IS NULL')
+
+            const [combinedRaw, precedingRaw] = await Promise.all([combinedQb.getRawOne(), precedingCountQb.getRawOne()])
+
+            return {
+                totalMessages: parseInt(combinedRaw?.totalFeedback ?? '0', 10) + parseInt(precedingRaw?.count ?? '0', 10),
+                totalSessions: parseInt(combinedRaw?.totalSessions ?? '0', 10),
+                totalFeedback: parseInt(combinedRaw?.totalFeedback ?? '0', 10),
+                positiveFeedback: parseInt(combinedRaw?.positiveFeedback ?? '0', 10)
+            }
         }
 
-        const [totalMessagesRaw, totalSessionsRaw, totalFeedbackRaw, positiveFeedbackRaw, precedingRaw] = await Promise.all([
-            totalMessagesQb.getRawOne(),
-            totalSessionsQb.getRawOne(),
-            totalFeedbackQb.getRawOne(),
-            positiveFeedbackQb.getRawOne(),
-            precedingCountQb?.getRawOne() ?? Promise.resolve(null)
-        ])
-
-        const totalMessages = precedingRaw
-            ? parseInt(totalFeedbackRaw?.count ?? '0', 10) + parseInt(precedingRaw.count ?? '0', 10)
-            : parseInt(totalMessagesRaw?.count ?? '0', 10)
+        // Single query: total messages, sessions, and feedback counts with thumbs-up breakdown
+        const statsRaw = await repo
+            .createQueryBuilder('cm')
+            .select('COUNT(*)', 'totalMessages')
+            .addSelect('COUNT(DISTINCT cm.sessionId)', 'totalSessions')
+            .addSelect('COUNT(DISTINCT f.id)', 'totalFeedback')
+            .addSelect('COUNT(DISTINCT CASE WHEN f.rating = :thumbsUp THEN f.id END)', 'positiveFeedback')
+            .leftJoin(ChatMessageFeedback, 'f', 'f.messageId = cm.id')
+            .where(baseWhere)
+            .setParameter('thumbsUp', ChatMessageRatingType.THUMBS_UP)
+            .getRawOne()
 
         return {
-            totalMessages,
-            totalSessions: parseInt(totalSessionsRaw?.count ?? '0', 10),
-            totalFeedback: parseInt(totalFeedbackRaw?.count ?? '0', 10),
-            positiveFeedback: parseInt(positiveFeedbackRaw?.count ?? '0', 10)
+            totalMessages: parseInt(statsRaw?.totalMessages ?? '0', 10),
+            totalSessions: parseInt(statsRaw?.totalSessions ?? '0', 10),
+            totalFeedback: parseInt(statsRaw?.totalFeedback ?? '0', 10),
+            positiveFeedback: parseInt(statsRaw?.positiveFeedback ?? '0', 10)
         }
     } catch (error) {
         throw new InternalFlowiseError(
