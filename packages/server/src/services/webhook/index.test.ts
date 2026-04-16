@@ -2,10 +2,11 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 
 const mockGetChatflowById = jest.fn()
+const mockGetWebhookSecret = jest.fn()
 
 jest.mock('../chatflows', () => ({
     __esModule: true,
-    default: { getChatflowById: mockGetChatflowById }
+    default: { getChatflowById: mockGetChatflowById, getWebhookSecret: mockGetWebhookSecret }
 }))
 
 import webhookService from './index'
@@ -18,9 +19,11 @@ const makeChatflow = (
         webhookContentType?: string
         webhookHeaderParams?: unknown
         webhookQueryParams?: unknown
-    }
+    },
+    entityFields?: { webhookSecretConfigured?: boolean }
 ) => ({
     id: 'test-id',
+    ...entityFields,
     flowData: JSON.stringify({
         nodes: [
             {
@@ -218,5 +221,73 @@ describe('validateWebhookChatflow', () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookQueryParams: [{ name: 'page', required: true }] }))
 
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, { page: '2' })).resolves.toBeUndefined()
+    })
+
+    // --- HMAC signature verification ---
+
+    const SECRET = 'test-secret-abc123'
+    const RAW_BODY = Buffer.from('{"event":"push"}')
+
+    function sign(secret: string, body: Buffer): string {
+        const { createHmac } = require('crypto')
+        return createHmac('sha256', secret).update(body).digest('hex')
+    }
+
+    it('resolves without signature check when no webhookSecret is configured', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, RAW_BODY)).resolves.toBeUndefined()
+    })
+
+    it('resolves when secret is set and signature is valid', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const headers = { 'x-webhook-signature': sign(SECRET, RAW_BODY) }
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, RAW_BODY)
+        ).resolves.toBeUndefined()
+    })
+
+    it('throws 401 when secret is set but X-Webhook-Signature header is missing', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, RAW_BODY)).rejects.toMatchObject({
+            statusCode: 401
+        })
+    })
+
+    it('throws 401 when secret is set but signature is wrong', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const headers = { 'x-webhook-signature': 'deadbeef' }
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, RAW_BODY)).rejects.toMatchObject(
+            {
+                statusCode: 401
+            }
+        )
+    })
+
+    it('throws 401 when payload is tampered (signature computed against original body)', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const tamperedBody = Buffer.from('{"event":"delete"}')
+        const headers = { 'x-webhook-signature': sign(SECRET, RAW_BODY) }
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, tamperedBody)
+        ).rejects.toMatchObject({ statusCode: 401 })
+    })
+
+    it('throws 401 when secret is set but rawBody is undefined', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const headers = { 'x-webhook-signature': sign(SECRET, RAW_BODY) }
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, undefined)
+        ).rejects.toMatchObject({ statusCode: 401 })
     })
 })

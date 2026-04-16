@@ -76,6 +76,7 @@ import PromptGeneratorDialog from '@/ui-component/dialog/PromptGeneratorDialog'
 
 // API
 import assistantsApi from '@/api/assistants'
+import chatflowsApi from '@/api/chatflows'
 import documentstoreApi from '@/api/documentstore'
 
 // utils
@@ -90,7 +91,7 @@ import useNotifier from '@/utils/useNotifier'
 
 // const
 import { baseURL, FLOWISE_CREDENTIAL_ID } from '@/store/constant'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
 
 const EDITABLE_OPTIONS = ['selectedTool', 'selectedAssistant']
 
@@ -167,6 +168,46 @@ const NodeInputHandler = ({
     const [conditionDialogProps, setConditionDialogProps] = useState({})
     const [isNvidiaNIMDialogOpen, setIsNvidiaNIMDialogOpen] = useState(false)
     const [tabValue, setTabValue] = useState(0)
+
+    // Webhook secret — holds plaintext only for the current session (generate/regenerate response).
+    // Cleared on page reload; the configured state comes from canvasChatflow.webhookSecretConfigured.
+    const [webhookSecretPlaintext, setWebhookSecretPlaintext] = useState(null)
+
+    const handleSetWebhookSecret = async () => {
+        if (!chatflowId) return
+        try {
+            const resp = await chatflowsApi.setWebhookSecret(chatflowId)
+            setWebhookSecretPlaintext(resp.data.webhookSecret)
+            dispatch({ type: SET_CHATFLOW, chatflow: { ...canvasChatflow, webhookSecretConfigured: true } })
+            enqueueSnackbar({
+                message: 'Webhook secret generated.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'success' }
+            })
+        } catch (error) {
+            enqueueSnackbar({
+                message: error?.response?.data?.message || 'Failed to generate webhook secret.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'error' }
+            })
+        }
+    }
+
+    const handleClearWebhookSecret = async () => {
+        if (!chatflowId) return
+        try {
+            await chatflowsApi.clearWebhookSecret(chatflowId)
+            setWebhookSecretPlaintext(null)
+            dispatch({ type: SET_CHATFLOW, chatflow: { ...canvasChatflow, webhookSecretConfigured: false } })
+            enqueueSnackbar({
+                message: 'Webhook secret removed.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'success' }
+            })
+        } catch (error) {
+            enqueueSnackbar({
+                message: error?.response?.data?.message || 'Failed to remove webhook secret.',
+                options: { key: new Date().getTime() + Math.random(), variant: 'error' }
+            })
+        }
+    }
 
     const [modelSelectionDialogOpen, setModelSelectionDialogOpen] = useState(false)
     const [availableChatModels, setAvailableChatModels] = useState([])
@@ -1139,7 +1180,81 @@ const NodeInputHandler = ({
                             />
                         )}
 
+                        {inputParam.name === 'webhookSecret' && (
+                            <Box sx={{ mt: 1 }}>
+                                {!canvasChatflow?.webhookSecretConfigured && !webhookSecretPlaintext ? (
+                                    // Not configured
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography variant='body2' sx={{ color: 'text.secondary', flexGrow: 1 }}>
+                                            No secret configured
+                                        </Typography>
+                                        {chatflowId && (
+                                            <Button size='small' variant='outlined' onClick={handleSetWebhookSecret}>
+                                                Generate Secret
+                                            </Button>
+                                        )}
+                                    </Box>
+                                ) : (
+                                    // Configured — show masked or plaintext field with actions
+                                    <TextField
+                                        fullWidth
+                                        size='small'
+                                        type='password'
+                                        disabled
+                                        value={webhookSecretPlaintext ?? '••••••••••••••••••••••••'}
+                                        InputProps={{
+                                            readOnly: true,
+                                            endAdornment: (
+                                                <InputAdornment position='end' sx={{ gap: 0.5 }}>
+                                                    {webhookSecretPlaintext && (
+                                                        <Tooltip title='Copy secret'>
+                                                            <IconButton
+                                                                size='small'
+                                                                onClick={() => {
+                                                                    navigator.clipboard.writeText(webhookSecretPlaintext).then(
+                                                                        () =>
+                                                                            enqueueSnackbar({
+                                                                                message: 'Secret copied!',
+                                                                                options: {
+                                                                                    key: new Date().getTime() + Math.random(),
+                                                                                    variant: 'success'
+                                                                                }
+                                                                            }),
+                                                                        () =>
+                                                                            enqueueSnackbar({
+                                                                                message: 'Failed to copy secret.',
+                                                                                options: {
+                                                                                    key: new Date().getTime() + Math.random(),
+                                                                                    variant: 'error'
+                                                                                }
+                                                                            })
+                                                                    )
+                                                                }}
+                                                            >
+                                                                <IconCopy size={16} />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    )}
+                                                    <Tooltip title='Regenerate secret'>
+                                                        <IconButton size='small' onClick={handleSetWebhookSecret}>
+                                                            <IconRefresh size={16} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    <Tooltip title='Remove secret'>
+                                                        <IconButton size='small' onClick={handleClearWebhookSecret}>
+                                                            <IconX size={16} />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            )
+                                        }}
+                                    />
+                                )}
+                            </Box>
+                        )}
+
                         {inputParam.name !== 'webhookURL' &&
+                            inputParam.name !== 'webhookSecret' &&
                             (inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
                             (inputParam?.acceptVariable &&
                             (window.location.href.includes('v2/agentcanvas') || window.location.href.includes('v2/marketplace')) ? (

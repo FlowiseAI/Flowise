@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { Brackets, In } from 'typeorm'
@@ -463,6 +464,62 @@ const checkIfChatflowHasChanged = async (chatflowId: string, lastUpdatedDateTime
     }
 }
 
+const setWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<{ webhookSecret: string }> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ChatFlow)
+        const chatflow = await repo.findOne({ where: { id: chatflowId, workspaceId } })
+        if (!chatflow) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        chatflow.webhookSecret = randomBytes(32).toString('hex')
+        chatflow.webhookSecretConfigured = true
+        await repo.save(chatflow)
+        return { webhookSecret: chatflow.webhookSecret }
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.setWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const clearWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<void> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ChatFlow)
+        const chatflow = await repo.findOne({ where: { id: chatflowId, workspaceId } })
+        if (!chatflow) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        chatflow.webhookSecret = null
+        chatflow.webhookSecretConfigured = false
+        await repo.save(chatflow)
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.clearWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getWebhookSecret = async (chatflowId: string, workspaceId: string): Promise<string | null> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow)
+            .createQueryBuilder('chatflow')
+            .select('chatflow.webhookSecret')
+            .where('chatflow.id = :id', { id: chatflowId })
+            .andWhere('chatflow.workspaceId = :workspaceId', { workspaceId })
+            .getOne()
+        return dbResponse?.webhookSecret ?? null
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.getWebhookSecret - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -475,5 +532,8 @@ export default {
     updateChatflow,
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
-    getAllChatflowsCountByOrganization
+    getAllChatflowsCountByOrganization,
+    setWebhookSecret,
+    clearWebhookSecret,
+    getWebhookSecret
 }

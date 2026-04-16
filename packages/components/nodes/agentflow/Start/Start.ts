@@ -175,6 +175,45 @@ class Start_Agentflow implements INode {
                 }
             },
             {
+                label: 'Webhook Secret',
+                name: 'webhookSecret',
+                type: 'string',
+                description:
+                    'Optional secret used to verify incoming requests. When set, configure Signature Header and Signature Type below to match your sender.',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Signature Header',
+                name: 'webhookSignatureHeader',
+                type: 'string',
+                description:
+                    'The request header that carries the signature. e.g. x-hub-signature-256 for GitHub, stripe-signature for Stripe, x-gitlab-token for GitLab.',
+                placeholder: 'x-webhook-signature',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Signature Type',
+                name: 'webhookSignatureType',
+                type: 'options',
+                description:
+                    'How to verify the signature. HMAC-SHA256 for GitHub, Stripe, Slack (supports sha256=<hex> prefix automatically). Plain Token for GitLab-style plain secret comparison.',
+                options: [
+                    { label: 'HMAC-SHA256', name: 'hmac-sha256' },
+                    { label: 'Plain Token', name: 'plain-token' }
+                ],
+                default: 'hmac-sha256',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
                 label: 'Expected Query Parameters',
                 name: 'webhookQueryParams',
                 description: 'Declare expected query parameters. Leave empty to accept any.',

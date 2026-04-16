@@ -162,8 +162,13 @@ export class App {
     async config() {
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
-        this.app.use(express.json({ limit: flowise_file_size_limit }))
-        this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true }))
+
+        // Preserve raw bytes before JSON parsing for webhook HMAC signature verification
+        const captureRawBody = (req: Request, _res: Response, buf: Buffer) => {
+            ;(req as any).rawBody = buf as unknown as string
+        }
+        this.app.use(express.json({ limit: flowise_file_size_limit, verify: captureRawBody }))
+        this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true, verify: captureRawBody }))
 
         // Enhanced trust proxy settings for load balancer
         let trustProxy: string | boolean | number | undefined = process.env.TRUST_PROXY

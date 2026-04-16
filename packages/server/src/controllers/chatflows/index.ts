@@ -275,6 +275,44 @@ const checkIfChatflowHasChanged = async (req: Request, res: Response, next: Next
     }
 }
 
+const setWebhookSecret = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatflowsController.setWebhookSecret - id not provided!`
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsController.setWebhookSecret - workspace not found!`)
+        }
+        const apiResponse = await chatflowsService.setWebhookSecret(req.params.id, workspaceId)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const clearWebhookSecret = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatflowsController.clearWebhookSecret - id not provided!`
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsController.clearWebhookSecret - workspace not found!`)
+        }
+        await chatflowsService.clearWebhookSecret(req.params.id, workspaceId)
+        return res.sendStatus(StatusCodes.NO_CONTENT)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -286,5 +324,7 @@ export default {
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig,
-    checkIfChatflowHasChanged
+    checkIfChatflowHasChanged,
+    setWebhookSecret,
+    clearWebhookSecret
 }
