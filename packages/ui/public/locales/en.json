@@ -24,6 +24,9 @@
             "invite": {
                 "required": "Invite Code is required"
             }
+        },
+        "labels": {
+            "output": "Output"
         }
     },
     "components": {
@@ -948,7 +951,12 @@
     },
     "errors": {
         "manyRequests": "You're making a lot of requests. Please wait and try again later.",
-        "unexpectedError": "Unexpected Error!"
+        "unexpectedError": "Unexpected Error!",
+        "specifyVariable": "Please specify a Variable. Try connecting Condition node to a previous node and select the variable",
+        "specifyOutputName": "Please specify a Variable. Try connecting Condition node to a previous node and select the variable",
+        "selectOperation": "Please select an operation for the condition",
+        "addItem": "Please add an item for the condition",
+        "addReturn": "Please add a return statement in the condition code to define the output. You can refer to How to Use for more information."
     },
     "errorBoundary": {
         "title": "Oh snap!",
@@ -1676,7 +1684,8 @@
                         "success": "Vector Store saved",
                         "error": "Failed to save Vector Store: {{msg}}"
                     }
-                }
+                },
+                "files": "{{count}} files ({{size}})"
             }
         },
         "actions": {
@@ -3632,6 +3641,7 @@
             "date": "MMMM Do YYYY, hh:mm A"
         }
     },
+    "scaleInitials": ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
     "POPULAR": "POPULAR",
     "NEW": "NEW"
 }

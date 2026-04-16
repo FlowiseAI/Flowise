@@ -1,5 +1,6 @@
 import { uniq, get, isEqual } from 'lodash'
 import moment from 'moment'
+import i18next from 'i18next'
 
 export const getUniqueNodeId = (nodeData, nodes) => {
     let suffix = 0
@@ -1021,11 +1022,12 @@ export const getOS = () => {
 }
 
 export const formatBytes = (number) => {
+    var scaleInitials = i18next.t('scaleInitials')
+
     if (number == null || number === undefined || number <= 0) {
-        return '0 Bytes'
+        return `0 ${scaleInitials[0]}`
     }
     var scaleCounter = 0
-    var scaleInitials = [' Bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
     while (number >= 1024 && scaleCounter < scaleInitials.length - 1) {
         number /= 1024
         scaleCounter++
@@ -1035,7 +1037,7 @@ export const formatBytes = (number) => {
         .toFixed(2)
         .replace(/\.?0+$/, '')
         .replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    compactNumber += scaleInitials[scaleCounter]
+    compactNumber += ' ' + scaleInitials[scaleCounter]
     return compactNumber.trim()
 }
 
@@ -1103,15 +1105,15 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
             if (parsedValue && parsedValue.length) {
                 for (const item of parsedValue) {
                     if (!item.variable) {
-                        alert('Please specify a Variable. Try connecting Condition node to a previous node and select the variable')
+                        alert(t('errors.specifyVariable'))
                         return undefined
                     }
                     if (!item.output) {
-                        alert('Please specify an Output Name')
+                        alert(t('errors.specifyOutputName'))
                         return undefined
                     }
                     if (!item.operation) {
-                        alert('Please select an operation for the condition')
+                        alert(t('errors.selectOperation'))
                         return undefined
                     }
                     numberOfReturns.push(item.output)
@@ -1124,11 +1126,8 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
     }
 
     if (numberOfReturns.length === 0) {
-        if (isDataGrid) alert('Please add an item for the condition')
-        else
-            alert(
-                'Please add a return statement in the condition code to define the output. You can refer to How to Use for more information.'
-            )
+        if (isDataGrid) alert(t('errors.addItem'))
+        else alert(t('errors.addReturn'))
         return undefined
     }
 
@@ -1161,7 +1160,7 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
     }
     const newOutput = {
         name: 'output',
-        label: 'Output',
+        label: t('common.labels.output'),
         type: 'options',
         options
     }
