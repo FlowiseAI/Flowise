@@ -114,3 +114,7 @@ extensions/
 # Only allow apps/oss-app, ignore all other apps
 apps/*/
 !apps/oss-app/
+
+# Claude - session/user specific files
+.claude/plans/
+.claude/settings.local.json

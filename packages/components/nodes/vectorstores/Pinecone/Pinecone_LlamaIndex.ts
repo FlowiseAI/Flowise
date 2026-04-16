@@ -14,7 +14,7 @@ import {
 } from 'llamaindex'
 import { FetchResponse, Index, Pinecone, ScoredPineconeRecord } from '@pinecone-database/pinecone'
 import { flatten } from 'lodash'
-import { Document as LCDocument } from 'langchain/document'
+import { Document as LCDocument } from '@langchain/core/documents'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { flattenObject, getCredentialData, getCredentialParam, parseJsonBody } from '../../../src/utils'
 

@@ -5,7 +5,7 @@ import type { NodeData } from '@/core/types'
 /**
  * Create nodes API functions bound to a client instance
  */
-export function createNodesApi(client: AxiosInstance) {
+export function bindNodesApi(client: AxiosInstance) {
     return {
         /**
          * Get all available nodes
@@ -24,6 +24,15 @@ export function createNodesApi(client: AxiosInstance) {
         },
 
         /**
+         * Call a loadMethod on a specific node (e.g. listRegions on awsChatBedrock).
+         * Maps to POST /node-load-method/{nodeName} with { loadMethod, ...body }.
+         */
+        loadNodeMethod: async (nodeName: string, loadMethod: string, body?: Record<string, unknown>): Promise<unknown> => {
+            const response = await client.post(`/node-load-method/${nodeName}`, { loadMethod, ...body })
+            return response.data
+        },
+
+        /**
          * Get node icon URL
          */
         getNodeIconUrl: (instanceUrl: string, nodeName: string): string => {
@@ -34,4 +43,4 @@ export function createNodesApi(client: AxiosInstance) {
     }
 }
 
-export type NodesApi = ReturnType<typeof createNodesApi>
+export type NodesApi = ReturnType<typeof bindNodesApi>

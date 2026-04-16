@@ -10,6 +10,7 @@ import { apiBaseUrl, token } from './config'
 import {
     AllNodeTypesExampleProps,
     BasicExampleProps,
+    CustomNodeExampleProps,
     CustomUIExampleProps,
     DarkModeExampleProps,
     FilteredComponentsExampleProps,
@@ -52,6 +53,13 @@ const examples: Array<{
         description: 'Node execution states with animations',
         props: StatusIndicatorsExampleProps,
         component: lazy(() => import('./demos/StatusIndicatorsExample').then((m) => ({ default: m.StatusIndicatorsExample })))
+    },
+    {
+        id: 'custom-node',
+        name: 'Custom Node',
+        description: 'Node with self-contained InputParam definitions and show/hide conditions',
+        props: CustomNodeExampleProps,
+        component: lazy(() => import('./demos/CustomNodeExample').then((m) => ({ default: m.CustomNodeExample })))
     },
     {
         id: 'custom-ui',

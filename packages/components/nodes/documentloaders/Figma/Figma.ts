@@ -2,7 +2,7 @@ import { omit } from 'lodash'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { FigmaFileLoader, FigmaLoaderParams } from '@langchain/community/document_loaders/web/figma'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 
 class Figma_DocumentLoaders implements INode {
     label: string

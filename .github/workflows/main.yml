@@ -19,31 +19,31 @@ jobs:
         env:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v6
             - uses: pnpm/action-setup@v4
               with:
                   version: 10.26.0
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@v6
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: 'pnpm'
                   cache-dependency-path: 'pnpm-lock.yaml'
             - run: pnpm install
             - run: pnpm lint
-            - run: pnpm test:coverage
             - run: pnpm build
               env:
                   NODE_OPTIONS: '--max_old_space_size=4096'
+            - run: pnpm test:coverage
             - name: Cypress install
               run: pnpm cypress install
             - name: Install dependencies (Cypress Action)
-              uses: cypress-io/github-action@v6
+              uses: cypress-io/github-action@v7.1.5
               with:
                   working-directory: ./
                   runTests: false
             - name: Cypress test
-              uses: cypress-io/github-action@v6
+              uses: cypress-io/github-action@v7.1.5
               with:
                   install: false
                   working-directory: packages/server

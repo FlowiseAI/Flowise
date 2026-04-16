@@ -2,7 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam, parseWithTypeConversion } from '../../../src/utils'
 import { StructuredTool, ToolInputParsingException, ToolParams } from '@langchain/core/tools'
 import { Sandbox } from '@e2b/code-interpreter'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { addSingleFileToStorage } from '../../../src/storageUtils'
 import { CallbackManager, CallbackManagerForToolRun, Callbacks, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { RunnableConfig } from '@langchain/core/runnables'

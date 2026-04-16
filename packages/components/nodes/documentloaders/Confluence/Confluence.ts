@@ -1,5 +1,5 @@
 import { omit } from 'lodash'
-import { TextSplitter } from 'langchain/text_splitter'
+import { TextSplitter } from '@langchain/textsplitters'
 import { ConfluencePagesLoader, ConfluencePagesLoaderParams } from '@langchain/community/document_loaders/web/confluence'
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { ICommonObject, INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'

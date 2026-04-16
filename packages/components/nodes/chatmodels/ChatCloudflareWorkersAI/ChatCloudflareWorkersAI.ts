@@ -15,7 +15,7 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'ChatCloudflareWorkersAI'
+        this.label = 'Cloudflare Workers AI'
         this.name = 'chatCloudflareWorkersAI'
         this.version = 1.0
         this.type = 'ChatCloudflareWorkersAI'

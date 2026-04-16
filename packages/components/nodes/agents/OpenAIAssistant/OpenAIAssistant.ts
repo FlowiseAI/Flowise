@@ -33,6 +33,8 @@ class OpenAIAssistant_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    badge: string
+    deprecateMessage: string
 
     constructor() {
         this.label = 'OpenAI Assistant'
@@ -42,6 +44,8 @@ class OpenAIAssistant_Agents implements INode {
         this.category = 'Agents'
         this.icon = 'assistant.svg'
         this.description = `An agent that uses OpenAI Assistant API to pick the tool and args to call`
+        this.badge = 'DEPRECATING'
+        this.deprecateMessage = 'OpenAI Assistant is deprecated and will be removed in a future release. Use Custom Assistant instead.'
         this.baseClasses = [this.type]
         this.inputs = [
             {
@@ -173,7 +177,7 @@ class OpenAIAssistant_Agents implements INode {
         options.logger.info(`[${orgId}]: Clearing OpenAI Thread ${sessionId}`)
         try {
             if (sessionId && sessionId.startsWith('thread_')) {
-                await openai.beta.threads.del(sessionId)
+                await openai.beta.threads.delete(sessionId)
                 options.logger.info(`[${orgId}]: Successfully cleared OpenAI Thread ${sessionId}`)
             } else {
                 options.logger.error(`[${orgId}]: Error clearing OpenAI Thread ${sessionId}`)
@@ -587,7 +591,7 @@ class OpenAIAssistant_Agents implements INode {
                             }
 
                             try {
-                                await handleToolSubmission({
+                                const result = await handleToolSubmission({
                                     openai,
                                     threadId,
                                     runThreadId,
@@ -604,9 +608,11 @@ class OpenAIAssistant_Agents implements INode {
                                     text,
                                     isStreamingStarted
                                 })
+                                text = result.text
+                                isStreamingStarted = result.isStreamingStarted
                             } catch (error) {
                                 console.error('Error submitting tool outputs:', error)
-                                await openai.beta.threads.runs.cancel(threadId, runThreadId)
+                                await openai.beta.threads.runs.cancel(runThreadId, { thread_id: threadId })
 
                                 const errMsg = `Error submitting tool outputs. Thread ID: ${threadId}. Run ID: ${runThreadId}`
 
@@ -631,7 +637,6 @@ class OpenAIAssistant_Agents implements INode {
 
                 await analyticHandlers.onLLMEnd(llmIds, llmOutput)
                 await analyticHandlers.onChainEnd(parentIds, messageData, true)
-
                 return {
                     text,
                     usedTools,
@@ -651,7 +656,7 @@ class OpenAIAssistant_Agents implements INode {
 
                     const timeout = setInterval(async () => {
                         try {
-                            const run = await openai.beta.threads.runs.retrieve(threadId, runId)
+                            const run = await openai.beta.threads.runs.retrieve(runId, { thread_id: threadId })
                             const state = run.status
 
                             if (state === 'completed') {
@@ -715,17 +720,18 @@ class OpenAIAssistant_Agents implements INode {
                                         }
                                     }
 
-                                    const newRun = await openai.beta.threads.runs.retrieve(threadId, runId)
+                                    const newRun = await openai.beta.threads.runs.retrieve(runId, { thread_id: threadId })
                                     const newStatus = newRun?.status
 
                                     try {
                                         if (submitToolOutputs.length && newStatus === 'requires_action') {
-                                            await openai.beta.threads.runs.submitToolOutputs(threadId, runId, {
-                                                tool_outputs: submitToolOutputs
+                                            await openai.beta.threads.runs.submitToolOutputs(runId, {
+                                                tool_outputs: submitToolOutputs,
+                                                thread_id: threadId
                                             })
                                             resolve(state)
                                         } else {
-                                            await openai.beta.threads.runs.cancel(threadId, runId)
+                                            await openai.beta.threads.runs.cancel(runId, { thread_id: threadId })
                                             resolve('requires_action_retry')
                                         }
                                     } catch (e) {
@@ -1033,8 +1039,9 @@ async function handleToolSubmission(params: ToolSubmissionParams): Promise<ToolS
     let updatedText = params.text
     let updatedIsStreamingStarted = params.isStreamingStarted
 
-    const stream = openai.beta.threads.runs.submitToolOutputsStream(threadId, runThreadId, {
-        tool_outputs: submitToolOutputs
+    const stream = openai.beta.threads.runs.submitToolOutputsStream(runThreadId, {
+        tool_outputs: submitToolOutputs,
+        thread_id: threadId
     })
 
     try {
@@ -1136,7 +1143,7 @@ async function handleToolSubmission(params: ToolSubmissionParams): Promise<ToolS
         }
     } catch (error) {
         console.error('Error submitting tool outputs:', error)
-        await openai.beta.threads.runs.cancel(threadId, runThreadId)
+        await openai.beta.threads.runs.cancel(runThreadId, { thread_id: threadId })
 
         const errMsg = `Error submitting tool outputs. Thread ID: ${threadId}. Run ID: ${runThreadId}`
 

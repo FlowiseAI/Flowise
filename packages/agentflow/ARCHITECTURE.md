@@ -42,7 +42,7 @@ atoms/
 -   No API calls
 -   Stateless or minimal local state
 -   Imported by features, never the reverse
--   **Forbidden**: Importing from `features/` or `infrastructure/` (except types from `core/types` for prop definitions)
+-   **Forbidden**: Importing from `features/` or `infrastructure/` (except types from `core/types` for prop definitions and design tokens from `core/theme`)
 
 **Goal:** 100% visual consistency.
 
@@ -122,10 +122,10 @@ core/
 │   └── ...
 ├── validation/             # Flow validation logic
 │   ├── flowValidation.ts   # validateFlow, validateNode
+│   ├── connectionValidation.ts  # isValidConnectionAgentflowV2
 │   └── ...
 ├── utils/                  # Generic utilities
 │   ├── nodeFactory.ts      # initNode, getUniqueNodeId
-│   ├── connectionValidation.ts
 │   └── ...
 └── index.ts                # Barrel export (use sparingly)
 ```
@@ -210,7 +210,7 @@ infrastructure/
 
 -   `features` → `atoms`, `infrastructure`, `core` ✅
 -   `infrastructure` → `core` ✅
--   `atoms` → `core/types` only (for type definitions) ✅
+-   `atoms` → `core/types` and `core/theme` only (for type definitions and design tokens) ✅
 -   `core` → nothing (leaf node) ✅
 -   **Atoms and Core are "leaf" nodes** - they cannot import from `features/` or `infrastructure/`
 

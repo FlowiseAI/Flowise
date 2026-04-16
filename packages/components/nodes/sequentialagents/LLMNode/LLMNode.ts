@@ -1,6 +1,6 @@
 import { difference, flatten, uniq } from 'lodash'
 import { DataSource } from 'typeorm'
-import { z } from 'zod'
+import { z } from 'zod/v3'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, BaseMessagePromptTemplateLike } from '@langchain/core/prompts'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
@@ -513,7 +513,9 @@ async function createAgent(
             const structuredOutput = z.object(convertStructuredSchemaToZod(llmStructuredOutput))
 
             // @ts-ignore
-            llm = llm.withStructuredOutput(structuredOutput)
+            llm = llm.withStructuredOutput(structuredOutput, {
+                method: 'functionCalling'
+            })
         } catch (exception) {
             console.error(exception)
         }

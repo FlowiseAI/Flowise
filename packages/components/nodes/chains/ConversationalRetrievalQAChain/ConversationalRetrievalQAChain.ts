@@ -8,11 +8,10 @@ import { BaseMessage, HumanMessage, AIMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
-import { StringOutputParser } from '@langchain/core/output_parsers'
 import type { Document } from '@langchain/core/documents'
-import { BufferMemoryInput } from 'langchain/memory'
-import { ConversationalRetrievalQAChain } from 'langchain/chains'
-import { getBaseClasses, mapChatMessageToBaseMessage } from '../../../src/utils'
+import { BufferMemoryInput } from '@langchain/classic/memory'
+import { ConversationalRetrievalQAChain } from '@langchain/classic/chains'
+import { getBaseClasses, mapChatMessageToBaseMessage, createTextOnlyOutputParser } from '../../../src/utils'
 import { ConsoleCallbackHandler, additionalCallbacks } from '../../../src/handler'
 import {
     FlowiseMemory,
@@ -308,7 +307,7 @@ const createRetrieverChain = (llm: BaseLanguageModel, retriever: Runnable, rephr
     // Small speed/accuracy optimization: no need to rephrase the first question
     // since there shouldn't be any meta-references to prior chat history
     const CONDENSE_QUESTION_PROMPT = PromptTemplate.fromTemplate(rephrasePrompt)
-    const condenseQuestionChain = RunnableSequence.from([CONDENSE_QUESTION_PROMPT, llm, new StringOutputParser()]).withConfig({
+    const condenseQuestionChain = RunnableSequence.from([CONDENSE_QUESTION_PROMPT, llm, createTextOnlyOutputParser()]).withConfig({
         runName: 'CondenseQuestion'
     })
 
@@ -385,7 +384,7 @@ const createChain = (
         ['human', `{question}`]
     ])
 
-    const responseSynthesizerChain = RunnableSequence.from([prompt, llm, new StringOutputParser()]).withConfig({
+    const responseSynthesizerChain = RunnableSequence.from([prompt, llm, createTextOnlyOutputParser()]).withConfig({
         tags: ['GenerateResponse']
     })
 
