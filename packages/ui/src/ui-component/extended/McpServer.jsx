@@ -23,7 +23,7 @@ import useNotifier from '@/utils/useNotifier'
 import mcpServerApi from '@/api/mcpserver'
 import chatflowsApi from '@/api/chatflows'
 
-const McpServer = ({ dialogProps }) => {
+const McpServer = ({ dialogProps, onStatusChange }) => {
     const dispatch = useDispatch()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -123,6 +123,7 @@ const McpServer = ({ dialogProps }) => {
                         setToken(resp.data.token || '')
                         setToolName(resp.data.toolName || '')
                         setDescription(resp.data.description || '')
+                        onStatusChange?.(resp.data.enabled)
                         showSuccess('MCP Server settings saved')
                     }
                 } else {
@@ -136,12 +137,14 @@ const McpServer = ({ dialogProps }) => {
                         setToolName(resp.data.toolName || '')
                         setDescription(resp.data.description || '')
                         setHasExistingConfig(true)
+                        onStatusChange?.(resp.data.enabled)
                         showSuccess('MCP Server settings saved')
                     }
                 }
             } else {
                 await mcpServerApi.deleteMcpServerConfig(dialogProps.chatflow.id)
                 setMcpEnabled(false)
+                onStatusChange?.(false)
                 showSuccess('MCP Server disabled')
             }
             await refreshChatflowStore()
@@ -215,13 +218,15 @@ const McpServer = ({ dialogProps }) => {
 
     useEffect(() => {
         if (getMcpServerConfigApi.data) {
-            setMcpEnabled(getMcpServerConfigApi.data.enabled || false)
+            const enabled = getMcpServerConfigApi.data.enabled || false
+            setMcpEnabled(enabled)
             setToolName(getMcpServerConfigApi.data.toolName || '')
             setDescription(getMcpServerConfigApi.data.description || '')
             setToken(getMcpServerConfigApi.data.token || '')
             setHasExistingConfig(!!getMcpServerConfigApi.data.token)
+            onStatusChange?.(enabled)
         }
-    }, [getMcpServerConfigApi.data])
+    }, [getMcpServerConfigApi.data]) // eslint-disable-line react-hooks/exhaustive-deps
 
     if (getMcpServerConfigApi.loading) {
         return (
@@ -391,20 +396,23 @@ const McpServer = ({ dialogProps }) => {
                 </Box>
             )}
 
-            <StyledButton
-                style={{ marginBottom: 10, marginTop: 20 }}
-                variant='contained'
-                disabled={loading || (mcpEnabled && (!!toolNameError || !toolName.trim() || !description.trim()))}
-                onClick={onSave}
-            >
-                {loading ? 'Saving...' : 'Save'}
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton
+                    variant='contained'
+                    disabled={loading || (mcpEnabled && (!!toolNameError || !toolName.trim() || !description.trim()))}
+                    onClick={onSave}
+                    sx={{ minWidth: 100 }}
+                >
+                    {loading ? 'Saving...' : 'Save'}
+                </StyledButton>
+            </Box>
         </>
     )
 }
 
 McpServer.propTypes = {
-    dialogProps: PropTypes.object
+    dialogProps: PropTypes.object,
+    onStatusChange: PropTypes.func
 }
 
 export default McpServer
