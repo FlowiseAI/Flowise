@@ -30,7 +30,7 @@ import { debounce, groupNodesByCategory, searchNodes } from './search'
 import { StyledFab } from './StyledFab'
 import { useDrawerMaxHeight } from './useDrawerMaxHeight'
 
-const Z_INDEX_DRAWER = 1000
+const Z_INDEX_DRAWER = 10
 
 export interface AddNodesDrawerProps {
     /** Available nodes to display */
