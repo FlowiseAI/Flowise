@@ -256,6 +256,13 @@ export const tokens = {
         md: 8,
         lg: 12,
         round: '50%'
+    },
+
+    // Z-index scale for canvas overlay elements.
+    // All values sit below the Canvas Kit modal overlay (30–50).
+    zIndex: {
+        canvasButton: 10, // FABs and button containers
+        canvasPanel: 20 // Open panels/poppers anchored to buttons
     }
 } as const
 
