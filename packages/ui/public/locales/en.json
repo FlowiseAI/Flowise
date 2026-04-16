@@ -3401,6 +3401,237 @@
             "date": "DD/MM/YYYY HH:mm"
         }
     },
+    "variables": {
+        "title": "Variables",
+        "description": "Create and manage global variables",
+        "searchPlaceholder": "Search Variables",
+        "notFound": "No Variables Yet",
+        "actions": {
+            "cancel": "Cancel",
+            "add": "Add",
+            "save": "Save",
+            "delete": "Delete",
+            "howToUse": "How To Use",
+            "addVariable": "Add Variable",
+            "edit": "Edit"
+        },
+        "dialogs": {
+            "delete": {
+                "title": "Delete",
+                "description": "Delete variable {{name}}?"
+            },
+            "add": "Add Variable",
+            "edit": "Edit Variable"
+        },
+        "messages": {
+            "delete": {
+                "success": "Variable deleted",
+                "error": "Failed to delete Variable: {{msg}}"
+            },
+            "add": {
+                "success": "New Variable added",
+                "error": "Failed to add new Variable: {{msg}}"
+            },
+            "save": {
+                "success": "Variable saved",
+                "error": "Failed to add new Variable: {{msg}}"
+            }
+        },
+        "inputs": {
+            "variableName": "Variable Name",
+            "type": "Type",
+            "value": "Value"
+        },
+        "tables": {
+            "simpleTable": "simple table",
+            "name": "Name",
+            "value": "Value",
+            "type": "Type",
+            "lastUpdated": "Last Updated",
+            "created": "Created"
+        },
+        "types": {
+            "static": {
+                "title": "Static",
+                "description": "Variable value will be read from the value entered below"
+            },
+            "runtime": {
+                "title": "Runtime",
+                "description": "Variable value will be read from .env file"
+            }
+        },
+        "help": {
+            "title": "How To Use Variables",
+            "ifElse": "Variables can be used in Custom Tool, Custom Function, Custom Loader, If Else Function with the $ prefix.",
+            "sysmessage": "Variables can also be used in Text Field parameter of any node. For example, in System Message of Agent:",
+            "static": "If variable type is Static, the value will be retrieved as it is. If variable type is Runtime, the value will be retrieved from .env file.",
+            "override": "You can also override variable values in API overrideConfig using <b>vars</b>:",
+            "readmore": "Read more from <a>docs</a>"
+        },
+        "formats": {
+            "date": "MMMM Do, YYYY HH:mm:ss"
+        }
+    },
+    "vectorStore": {
+        "notFound": "No Upsert History Yet",
+        "selectAll": "select all",
+        "dialogs": {
+            "upsertRecord": "Upsert Record",
+            "upsertVectorStore": "Upsert Vector Store"
+        },
+        "addedDocuments": "{{count}} Added Documents",
+        "note": "For security reason, override config is disabled by default. You can change this by going into Chatflow Configuration -> Security tab, and enable the property you want to override.",
+        "referTo": "Refer <a>here</a> for more details",
+        "specify": "You can also specify multiple values for a config parameter by specifying the node id",
+        "upsertVectorDatabase": "Upsert Vector Database",
+        "tables": {
+            "date": "Date",
+            "added": {
+                "title": "Added",
+                "tooltip": "Number of vector embeddings added to Vector Store"
+            },
+            "updated": {
+                "title": "Updated",
+                "tooltip": "Updated existing vector embeddings. Only works when a Record Manager is connected to the Vector Store"
+            },
+            "skipped": {
+                "title": "Skipped",
+                "tooltip": "Number of same vector embeddings that exists, and were skipped re-upserting again. Only works when a Record Manager is connected to the Vector Store"
+            },
+            "deleted": {
+                "title": "Deleted",
+                "tooltip": "Deleted vector embeddings. Only works when a Record Manager with a Cleanup method is connected to the Vector Store"
+            },
+            "details": "Details"
+        },
+        "actions": {
+            "expandRow": "expand row",
+            "delete_one": "Delete {{count}} row",
+            "delete_other": "Delete {{count}} rows",
+            "close": "Close",
+            "testRetrieval": "Test Retrieval",
+            "upsert": "Upsert"
+        },
+        "messages": {
+            "remove": {
+                "success": "Succesfully deleted upsert history",
+                "error": "Failed to delete Upsert History: {{msg}}"
+            },
+            "upsertClicked": {
+                "success": "Succesfully upserted vector store. You can start chatting now!"
+            }
+        },
+        "inputs": {
+            "fromDate": "From Date",
+            "toDate": "To Date",
+            "showApi": "Show API"
+        },
+        "formats": {
+            "date": "MMMM Do YYYY, h:mm:ss a"
+        }
+    },
+    "workspace": {
+        "title": "Workspaces",
+        "searchPlaceholder": "Search Workspaces",
+        "users": "Users",
+        "change": "Change Workspace Role - {{email}} {{name}}",
+        "orgOwner": "ORGANIZATION OWNER",
+        "personalWorkspace": "PERSONAL WORKSPACE",
+        "notFound": "No Workspaces Yet",
+        "loading": "Switching workspace...",
+        "deleting": "Deleting workspace...",
+        "selectAll": "select all",
+        "inputs": {
+            "name": "Name",
+            "description": "Description",
+            "assign": {
+                "title": "New Role to Assign",
+                "placeholder": "Select Role"
+            }
+        },
+        "tables": {
+            "workspaceUsersTable": "workspace users table",
+            "user_one": "User",
+            "user_other": "Users",
+            "role": "Role",
+            "name": "Name",
+            "description": "Description",
+            "lastUpdated": "Last Updated",
+            "emailName": "Email/Name",
+            "status": "Status",
+            "lastLogin": "Last Login"
+        },
+        "dialogs": {
+            "add": "Add Workspace",
+            "edit": "Edit Workspace",
+            "delete": {
+                "title": "Delete Workspace {{name}}",
+                "description": "This is irreversible and will remove all associated data inside the workspace. Are you sure you want to delete?"
+            },
+            "remove": {
+                "title": "Remove Users",
+                "description": "Remove the following users from the workspace?\n{{users}}"
+            },
+            "workspaceUsers": {
+                "title": "{{name}}: Workspace Users",
+                "description": "Manage workspace users and permissions.",
+                "searchPlaceholder": "Search Users",
+                "notFound": "No Assigned Users Yet",
+                "formats": {
+                    "date": "DD/MM/YYYY HH:mm"
+                }
+            }
+        },
+        "actions": {
+            "expandRow": "expand row",
+            "edit": "Edit",
+            "delete": "Delete",
+            "workspaceUsers": "Workspace Users",
+            "cancel": "Cancel",
+            "add": "Add",
+            "save": "Save",
+            "addNew": "Add New",
+            "sendInvite": "Send Invite",
+            "updateInvite": "Update Invite",
+            "updateRole": "Update Role",
+            "remove": "Remove",
+            "removeUsers": "Remove Users",
+            "addUser": "Add User",
+            "changeRole": "Change Role"
+        },
+        "messages": {
+            "add": {
+                "success": "New Workspace added",
+                "error": {
+                    "failed": "Failed to add new Workspace: {{msg}}",
+                    "reserved": "Workspace name cannot be Default Workspace or Personal Workspace - this is a reserved name"
+                }
+            },
+            "save": {
+                "success": "Workspace saved",
+                "error": "Failed to save Workspace: {{msg}}"
+            },
+            "update": {
+                "success": "WorkspaceUser Details Updated",
+                "error": "Failed to update WorkspaceUser: {{msg}}"
+            },
+            "delete": {
+                "success": "Workspace deleted",
+                "error": "Failed to delete workspace: {{msg}}"
+            },
+            "remove": {
+                "success_one": "{{count}} User removed from workspace.",
+                "success_other": "{{count}} Users removed from workspace.",
+                "errors": {
+                    "failed": "Organization owner cannot be removed from workspace.",
+                    "link": "Failed to unlink users: {{msg}}"
+                }
+            }
+        },
+        "formats": {
+            "date": "MMMM Do YYYY, hh:mm A"
+        }
+    },
     "POPULAR": "POPULAR",
     "NEW": "NEW"
 }

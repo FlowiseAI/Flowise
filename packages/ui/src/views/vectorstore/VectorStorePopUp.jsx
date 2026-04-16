@@ -8,7 +8,11 @@ import { StyledFab } from '@/ui-component/button/StyledFab'
 import VectorStoreDialog from './VectorStoreDialog'
 import UpsertResultDialog from './UpsertResultDialog'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const VectorStorePopUp = ({ chatflowid }) => {
+    const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
@@ -22,7 +26,7 @@ const VectorStorePopUp = ({ chatflowid }) => {
         setOpen((prevopen) => !prevopen)
         const props = {
             open: true,
-            title: 'Upsert Vector Store',
+            title: t('vectorStore.dialogs.upsertVectorStore'),
             chatflowid
         }
         setExpandDialogProps(props)
@@ -45,8 +49,8 @@ const VectorStorePopUp = ({ chatflowid }) => {
                 ref={anchorRef}
                 size='small'
                 color='teal'
-                aria-label='upsert'
-                title='Upsert Vector Database'
+                aria-label={t('vectorStore.actions.upsert')}
+                title={t('vectorStore.upsertVectorDatabase')}
                 onClick={handleToggle}
             >
                 {open ? <IconX /> : <IconDatabaseImport />}

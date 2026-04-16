@@ -8,7 +8,11 @@ import StatsCard from '@/ui-component/cards/StatsCard'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { IconZoomScan } from '@tabler/icons-react'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
@@ -29,7 +33,7 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery 
             aria-describedby='upsert-result-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='upsert-result-dialog-title'>
-                Upsert Record
+                {t('vectorStore.dialogs.upsertRecord')}
             </DialogTitle>
             <DialogContent>
                 <>
@@ -46,7 +50,9 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery 
                         <StatsCard title='Deleted' stat={dialogProps.numDeleted ?? 0} />
                     </div>
                     {dialogProps.addedDocs && dialogProps.addedDocs.length > 0 && (
-                        <Typography sx={{ mt: 2, mb: 2, fontWeight: 500 }}>{dialogProps.numAdded} Added Documents</Typography>
+                        <Typography sx={{ mt: 2, mb: 2, fontWeight: 500 }}>
+                            {t('vectorStore.addedDocuments', { count: dialogProps.numAdded })}
+                        </Typography>
                     )}
                     {dialogProps.addedDocs &&
                         dialogProps.addedDocs.length > 0 &&
@@ -94,14 +100,14 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery 
                             startIcon={<IconZoomScan />}
                             onClick={onGoToRetrievalQuery}
                         >
-                            Test Retrieval
+                            {t('vectorStore.actions.testRetrieval')}
                         </Button>
                         <Button fullWidth onClick={onCancel}>
-                            Close
+                            {t('vectorStore.actions.close')}
                         </Button>
                     </div>
                 )}
-                {!dialogProps.goToRetrievalQuery && <Button onClick={onCancel}>Close</Button>}
+                {!dialogProps.goToRetrievalQuery && <Button onClick={onCancel}>{t('vectorStore.actions.close')}</Button>}
             </DialogActions>
         </Dialog>
     ) : null

@@ -50,6 +50,9 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { baseURL } from '@/store/constant'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
+// i18n
+import { useTranslation, Trans } from 'react-i18next'
+
 function TabPanel(props) {
     const { children, value, index, ...other } = props
     return (
@@ -79,6 +82,7 @@ function a11yProps(index) {
 }
 
 const VectorStoreDialog = ({ show, dialogProps, onCancel, onIndexResult }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const { reactFlowInstance } = useContext(flowContext)
     const dispatch = useDispatch()
@@ -308,7 +312,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
         try {
             const res = await vectorstoreApi.upsertVectorStore(dialogProps.chatflowid, { stopNodeId: vectorStoreNode.data.id })
             enqueueSnackbar({
-                message: 'Succesfully upserted vector store. You can start chatting now!',
+                message: t('vectorStore.messages.upsertClicked'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'success',
@@ -491,7 +495,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                     <Box sx={{ p: 2 }}>
                                         <CheckboxInput
                                             key={JSON.stringify(nodeCheckboxExpanded)}
-                                            label='Show API'
+                                            label={t('vectorStore.inputs.showApi')}
                                             value={nodeCheckboxExpanded[data.vectorNode.data.id]}
                                             onChange={() => onCheckBoxChanged(data.vectorNode.data.id)}
                                         />
@@ -571,18 +575,21 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                                                 fontWeight: 500
                                                                             }}
                                                                         >
-                                                                            {
-                                                                                'For security reason, override config is disabled by default. You can change this by going into Chatflow Configuration -> Security tab, and enable the property you want to override.'
-                                                                            }
-                                                                            &nbsp;Refer{' '}
-                                                                            <a
-                                                                                rel='noreferrer'
-                                                                                target='_blank'
-                                                                                href='https://docs.flowiseai.com/using-flowise/prediction#configuration-override'
-                                                                            >
-                                                                                here
-                                                                            </a>{' '}
-                                                                            for more details
+                                                                            {t('vectorStore.note')}
+                                                                            &nbsp;
+                                                                            <Trans
+                                                                                i18nKey='vectorStore.referTo'
+                                                                                components={{
+                                                                                    a: (
+                                                                                        // eslint-disable-next-line jsx-a11y/anchor-has-content
+                                                                                        <a
+                                                                                            rel='noreferrer'
+                                                                                            target='_blank'
+                                                                                            href='https://docs.flowiseai.com/using-flowise/prediction#configuration-override'
+                                                                                        />
+                                                                                    )
+                                                                                }}
+                                                                            />
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -606,8 +613,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                                     >
                                                                         <IconBulb size={30} color='#2d6a4f' />
                                                                         <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>
-                                                                            You can also specify multiple values for a config parameter by
-                                                                            specifying the node id
+                                                                            {t('vectorStore.specify')}
                                                                         </span>
                                                                     </div>
                                                                     <div style={{ padding: 10 }}>
@@ -638,10 +644,10 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                 fullWidth
                                                 variant='contained'
                                                 color='teal'
-                                                title='Upsert'
+                                                title={t('vectorStore.actions.upsert')}
                                                 onClick={() => onUpsertClicked(data.vectorNode)}
                                             >
-                                                Upsert
+                                                {t('vectorStore.actions.upsert')}
                                             </Button>
                                         )}
                                     </div>
