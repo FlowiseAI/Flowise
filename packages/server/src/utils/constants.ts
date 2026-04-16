@@ -39,6 +39,7 @@ export const WHITELIST_URLS = [
     '/api/v1/user/test',
     '/api/v1/oauth2-credential/callback',
     '/api/v1/oauth2-credential/refresh',
+    '/api/v1/mcp/',
     '/api/v1/text-to-speech/generate',
     '/api/v1/text-to-speech/abort',
     AzureSSO.LOGIN_URI,

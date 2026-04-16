@@ -45,8 +45,7 @@ export default function componentStyleOverrides(theme) {
         MuiSvgIcon: {
             styleOverrides: {
                 root: {
-                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit',
-                    background: theme?.customization?.isDarkMode ? theme.colors?.darkPrimaryLight : 'inherit'
+                    color: theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'
                 }
             }
         },

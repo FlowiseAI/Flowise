@@ -40,6 +40,8 @@ import { AddTextToSpeechToChatFlow1759419136055 } from './1759419136055-AddTextT
 import { AddChatFlowNameIndex1759424923093 } from './1759424923093-AddChatFlowNameIndex'
 import { AddApiKeyPermission1765360298674 } from './1765360298674-AddApiKeyPermission'
 import { AddReasonContentToChatMessage1764759496768 } from './1764759496768-AddReasonContentToChatMessage'
+import { AddMcpServerConfigToChatFlow1767000000000 } from './1767000000000-AddMcpServerConfigToChatFlow'
+
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
 import { AddWorkspaceShared1726654922034 } from '../../../enterprise/database/migrations/sqlite/1726654922034-AddWorkspaceShared'
@@ -105,5 +107,6 @@ export const sqliteMigrations = [
     AddTextToSpeechToChatFlow1759419136055,
     AddChatFlowNameIndex1759424923093,
     AddApiKeyPermission1765360298674,
-    AddReasonContentToChatMessage1764759496768
+    AddReasonContentToChatMessage1764759496768,
+    AddMcpServerConfigToChatFlow1767000000000
 ]
