@@ -165,7 +165,7 @@ export class App {
 
         // Preserve raw bytes before JSON parsing for webhook HMAC signature verification
         const captureRawBody = (req: Request, _res: Response, buf: Buffer) => {
-            ;(req as any).rawBody = buf as unknown as string
+            ;(req as any).rawBody = buf
         }
         this.app.use(express.json({ limit: flowise_file_size_limit, verify: captureRawBody }))
         this.app.use(express.urlencoded({ limit: flowise_file_size_limit, extended: true, verify: captureRawBody }))

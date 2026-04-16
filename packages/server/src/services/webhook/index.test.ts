@@ -206,6 +206,60 @@ describe('validateWebhookChatflow', () => {
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: 42 })).resolves.toBeUndefined()
     })
 
+    it('resolves when number param is sent as a numeric string (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: '42' })).resolves.toBeUndefined()
+    })
+
+    it('throws 400 when number param is an empty string (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: '' })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('count')
+        })
+    })
+
+    it('resolves when boolean param is a native boolean (JSON)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: true })).resolves.toBeUndefined()
+    })
+
+    it('resolves when boolean param is the string "true" (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'true' })).resolves.toBeUndefined()
+    })
+
+    it('resolves when boolean param is the string "false" (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'false' })).resolves.toBeUndefined()
+    })
+
+    it('throws 400 when boolean param is an invalid string like "yes" (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'yes' })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('active')
+        })
+    })
+
     // --- Query param validation ---
 
     it('throws 400 when a required query param is missing', async () => {

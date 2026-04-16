@@ -85,7 +85,13 @@ const validateWebhookChatflow = async (
 
         // Body type validation (only for params that have an explicit type declared)
         const typeMismatch = webhookBodyParams
-            .filter((p) => p.type != null && body?.[p.name] != null && typeof body[p.name] !== p.type)
+            .filter((p) => {
+                if (p.type == null || body?.[p.name] == null) return false
+                const val = body[p.name]
+                if (p.type === 'number') return val === '' || isNaN(Number(val))
+                if (p.type === 'boolean') return typeof val !== 'boolean' && val !== 'true' && val !== 'false'
+                return typeof val !== p.type
+            })
             .map((p) => p.name)
 
         if (typeMismatch.length > 0) {
