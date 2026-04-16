@@ -144,7 +144,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
     return (
         <>
             <ClickAwayListener onClickAway={handleClose}>
-                <div ref={containerRef} style={{ position: 'absolute', right: 20, top: 20, zIndex: 1001 }}>
+                <div ref={containerRef} style={{ position: 'relative' }}>
                     <Fab
                         size='small'
                         aria-label='validation'

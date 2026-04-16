@@ -65,6 +65,7 @@
         "@aws-sdk/client-secrets-manager": "^3.699.0",
         "@bull-board/api": "^6.11.0",
         "@bull-board/express": "^6.11.0",
+        "@modelcontextprotocol/sdk": "^1.10.1",
         "@google-cloud/logging-winston": "^6.0.0",
         "@keyv/redis": "^4.2.0",
         "@oclif/core": "4.0.7",
@@ -150,7 +151,8 @@
         "uuid": "^10.0.0",
         "winston": "^3.9.0",
         "winston-azure-blob": "^1.5.0",
-        "winston-daily-rotate-file": "^5.0.0"
+        "winston-daily-rotate-file": "^5.0.0",
+        "zod": "^3.25.76 || ^4"
     },
     "devDependencies": {
         "@types/content-disposition": "0.5.8",
