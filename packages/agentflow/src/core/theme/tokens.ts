@@ -28,6 +28,7 @@ const baseColors = {
     gray800: '#333',
 
     // Dark mode grays
+    darkBorderDefault: 'rgba(255, 255, 255, 0.145)',
     darkGray100: '#1a1a1a',
     darkGray200: '#1a1a2e',
     darkGray300: '#252525',
@@ -129,7 +130,7 @@ export const tokens = {
         },
 
         border: {
-            default: { light: baseColors.gray300, dark: 'rgba(255, 255, 255, 0.145)' },
+            default: { light: baseColors.gray300, dark: baseColors.darkBorderDefault },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
             input: { light: baseColors.gray400, dark: baseColors.darkGray750 },
             validation: baseColors.nodeCondition
