@@ -1608,18 +1608,14 @@ export const executeJavaScriptCode = async (
     } = {}
 ): Promise<any> => {
     const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
-    if (useSandbox && !process.env.E2B_APIKEY) {
-        throw new Error(
-            'Sandboxed code execution requires E2B_APIKEY to be configured. ' +
-                'Set E2B_APIKEY in your environment or contact your administrator.'
-        )
-    }
+    const shouldUseE2BSandbox = useSandbox && process.env.E2B_APIKEY
+
     let timeoutMs = timeout
     if (process.env.SANDBOX_TIMEOUT) {
         timeoutMs = parseInt(process.env.SANDBOX_TIMEOUT, 10)
     }
 
-    if (useSandbox) {
+    if (shouldUseE2BSandbox) {
         try {
             const variableDeclarations = []
 

@@ -601,9 +601,11 @@ const FollowUpPrompts = ({ dialogProps }) => {
                     </>
                 )}
             </Box>
-            <StyledButton disabled={checkDisabled()} variant='contained' onClick={onSave}>
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton disabled={checkDisabled()} variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
+                    Save
+                </StyledButton>
+            </Box>
         </>
     )
 }

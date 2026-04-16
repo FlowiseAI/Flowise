@@ -160,14 +160,16 @@ const Leads = ({ dialogProps }) => {
                     </>
                 )}
             </Box>
-            <StyledButton
-                disabled={!leadsConfig['name'] && !leadsConfig['phone'] && !leadsConfig['email'] && leadsConfig['status']}
-                style={{ marginBottom: 10, marginTop: 10 }}
-                variant='contained'
-                onClick={onSave}
-            >
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton
+                    disabled={!leadsConfig['name'] && !leadsConfig['phone'] && !leadsConfig['email'] && leadsConfig['status']}
+                    variant='contained'
+                    onClick={onSave}
+                    sx={{ minWidth: 100 }}
+                >
+                    Save
+                </StyledButton>
+            </Box>
         </>
     )
 }

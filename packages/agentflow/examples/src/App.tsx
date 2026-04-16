@@ -15,7 +15,8 @@ import {
     DarkModeExampleProps,
     FilteredComponentsExampleProps,
     MultiNodeFlowProps,
-    StatusIndicatorsExampleProps
+    StatusIndicatorsExampleProps,
+    ValidationActionsExampleProps
 } from './demos'
 import { PropsDisplay } from './PropsDisplay'
 
@@ -81,6 +82,13 @@ const examples: Array<{
         description: 'Restrict available nodes with presets',
         props: FilteredComponentsExampleProps,
         component: lazy(() => import('./demos/FilteredComponentsExample').then((m) => ({ default: m.FilteredComponentsExample })))
+    },
+    {
+        id: 'canvas-actions',
+        name: 'Canvas Actions',
+        description: 'Custom FABs alongside the validation button via canvasActions',
+        props: ValidationActionsExampleProps,
+        component: lazy(() => import('./demos/ValidationActionsExample').then((m) => ({ default: m.ValidationActionsExample })))
     }
 ]
 

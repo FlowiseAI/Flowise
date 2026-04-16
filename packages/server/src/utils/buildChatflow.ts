@@ -315,6 +315,7 @@ export const executeFlow = async ({
     files,
     signal,
     isTool,
+    chatType,
     orgId,
     workspaceId,
     subscriptionId,
@@ -492,6 +493,7 @@ export const executeFlow = async ({
             sseStreamer,
             baseURL,
             isInternal,
+            chatType,
             uploadedFilesContent,
             fileUploads,
             signal,
@@ -632,7 +634,7 @@ export const executeFlow = async ({
                 role: 'userMessage',
                 content: incomingInput.question,
                 chatflowid: agentflow.id,
-                chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                chatType: chatType || (isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL),
                 chatId,
                 memoryType,
                 sessionId,
@@ -647,7 +649,7 @@ export const executeFlow = async ({
                 role: 'apiMessage',
                 content: finalResult,
                 chatflowid: agentflow.id,
-                chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                chatType: chatType || (isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL),
                 chatId,
                 memoryType,
                 sessionId
@@ -797,7 +799,7 @@ export const executeFlow = async ({
             role: 'userMessage',
             content: question,
             chatflowid,
-            chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            chatType: chatType || (isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL),
             chatId,
             memoryType,
             sessionId,
@@ -862,7 +864,7 @@ export const executeFlow = async ({
             role: 'apiMessage',
             content: resultText,
             chatflowid,
-            chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            chatType: chatType || (isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL),
             chatId,
             memoryType,
             sessionId
@@ -871,6 +873,7 @@ export const executeFlow = async ({
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
         if (result?.fileAnnotations) apiMessage.fileAnnotations = JSON.stringify(result.fileAnnotations)
         if (result?.artifacts) apiMessage.artifacts = JSON.stringify(result.artifacts)
+        if (result?.action) apiMessage.action = typeof result.action === 'string' ? result.action : JSON.stringify(result.action)
         if (chatflow.followUpPrompts) {
             const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
             const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
@@ -985,7 +988,7 @@ const checkIfStreamValid = async (
  * @param {Request} req
  * @param {boolean} isInternal
  */
-export const utilBuildChatflow = async (req: Request, isInternal: boolean = false): Promise<any> => {
+export const utilBuildChatflow = async (req: Request, isInternal: boolean = false, chatType?: ChatType): Promise<any> => {
     const appServer = getRunningExpressApp()
 
     const chatflowid = req.params.id
@@ -1071,6 +1074,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             cachePool: appServer.cachePool,
             componentNodes: appServer.nodesPool.componentNodes,
             isTool, // used to disable streaming if incoming request its from ChatflowTool
+            chatType,
             usageCacheManager: appServer.usageCacheManager,
             orgId,
             workspaceId,
