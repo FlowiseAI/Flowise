@@ -3642,6 +3642,8 @@
         }
     },
     "scaleInitials": ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],
-    "POPULAR": "POPULAR",
-    "NEW": "NEW"
+    "badges": {
+        "popular": "POPULAR",
+        "new": "NEW"
+    }
 }

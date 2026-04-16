@@ -63,7 +63,10 @@ import { useError } from '@/store/context/ErrorContext'
 // i18n
 import { useTranslation } from 'react-i18next'
 
-const badges = ['POPULAR', 'NEW']
+const badges = [
+    { id: 'POPULAR', label: 'badges.popular' },
+    { id: 'NEW', label: 'badges.new' }
+]
 const types = ['Chatflow', 'AgentflowV2', 'Tool']
 const framework = ['Langchain', 'LlamaIndex']
 const MenuProps = {
@@ -117,6 +120,16 @@ const Marketplace = () => {
 
     const [showShareTemplateDialog, setShowShareTemplateDialog] = useState(false)
     const [shareTemplateDialogProps, setShareTemplateDialogProps] = useState({})
+
+    const getBadgeLocale = (name, t) => {
+        switch (name) {
+            case 'POPULAR':
+                return t('badges.popular')
+            case 'NEW':
+                return t('badges.new')
+        }
+        return name
+    }
 
     const share = (template) => {
         const dialogProps = {
@@ -505,12 +518,12 @@ const Marketplace = () => {
                                         >
                                             {badges.map((name) => (
                                                 <MenuItem
-                                                    key={name}
-                                                    value={name}
+                                                    key={name.id}
+                                                    value={name.id}
                                                     sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
                                                 >
-                                                    <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={t(name)} />
+                                                    <Checkbox checked={badgeFilter.indexOf(name.id) > -1} sx={{ p: 0 }} />
+                                                    <ListItemText primary={t(name.label)} />
                                                 </MenuItem>
                                             ))}
                                         </Select>
@@ -745,7 +758,7 @@ const Marketplace = () => {
                                                                             right: 20
                                                                         }
                                                                     }}
-                                                                    badgeContent={t(data.badge)}
+                                                                    badgeContent={getBadgeLocale(data.badge, t)}
                                                                     color={data.badge === 'POPULAR' ? 'primary' : 'error'}
                                                                 >
                                                                     {(data.type === 'Chatflow' ||
@@ -878,7 +891,7 @@ const Marketplace = () => {
                                                                             right: 20
                                                                         }
                                                                     }}
-                                                                    badgeContent={t(data.badge)}
+                                                                    badgeContent={getBadgeLocale(data.badge, t)}
                                                                     color={data.badge === 'POPULAR' ? 'primary' : 'error'}
                                                                 >
                                                                     {(data.type === 'Chatflow' ||
