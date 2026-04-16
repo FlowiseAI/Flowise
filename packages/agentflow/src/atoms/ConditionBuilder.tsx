@@ -106,7 +106,7 @@ export function ConditionBuilder({
                             mt: 2,
                             mb: 1,
                             border: 1,
-                            borderColor: theme.palette.grey[300],
+                            borderColor: theme.palette.divider,
                             borderRadius: 2,
                             position: 'relative'
                         }}
@@ -158,7 +158,7 @@ export function ConditionBuilder({
                     mt: 2,
                     mb: 1,
                     border: 1,
-                    borderColor: theme.palette.grey[300],
+                    borderColor: theme.palette.divider,
                     borderRadius: 2,
                     backgroundColor: theme.palette.action.hover
                 }}

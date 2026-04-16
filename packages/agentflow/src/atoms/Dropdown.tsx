@@ -1,6 +1,6 @@
 import { Box, FormControl, Popper, TextField, Typography } from '@mui/material'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
-import { alpha, styled, useTheme } from '@mui/material/styles'
+import { styled, useTheme } from '@mui/material/styles'
 
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
@@ -79,7 +79,7 @@ export function Dropdown({
                                 '& .MuiInputBase-root': {
                                     height: '100%',
                                     '& fieldset': {
-                                        borderColor: alpha(theme.palette.grey[900], 0.25)
+                                        borderColor: theme.palette.divider
                                     }
                                 }
                             }}
