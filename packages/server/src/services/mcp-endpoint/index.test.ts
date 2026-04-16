@@ -387,6 +387,39 @@ describe('handleMcpRequest', () => {
                 'Failed to build form input schema due to invalid configuration'
             )
         })
+
+        it('throws an error when options addOptions is a string', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: '' }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await expect(mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())).rejects.toThrow(
+                'Failed to build form input schema due to invalid configuration'
+            )
+        })
+
+        it('throws an error when options addOptions is undefined', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: undefined }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await expect(mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())).rejects.toThrow(
+                'Failed to build form input schema due to invalid configuration'
+            )
+        })
+
+        it('throws an error when options addOptions is null', async () => {
+            const chatflow = makeAgentflowWithFormInputs([
+                { type: 'options', label: 'Favorite Drink', name: 'favorite_drink', addOptions: null }
+            ])
+            mockGetChatflowByIdAndVerifyToken.mockResolvedValue(chatflow)
+
+            await expect(mcpEndpointService.handleMcpRequest('flow-123', 'token', makeReq() as any, makeRes())).rejects.toThrow(
+                'Failed to build form input schema due to invalid configuration'
+            )
+        })
     })
 })
 

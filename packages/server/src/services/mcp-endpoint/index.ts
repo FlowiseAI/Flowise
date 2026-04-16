@@ -149,6 +149,9 @@ function buildFormInputSchema(chatflow: ChatFlow) {
                     schemaShape[input.name] = z.boolean().describe(input.label)
                     break
                 case 'options': {
+                    if (!Array.isArray(input.addOptions)) {
+                        throw new Error(`Invalid options configuration for form input: ${input.name}`)
+                    }
                     const options = input.addOptions.map((opt: { option: string }) => opt.option) || []
                     schemaShape[input.name] = z.enum(options as [string, ...string[]]).describe(input.label)
                     break
