@@ -78,7 +78,7 @@ const StyledEditorContent = styled(EditorContent, {
             overflowX: rows ? 'auto' : 'hidden',
             lineHeight: rows ? `${tokens.typography.rowHeightRem}em` : `${tokens.typography.singleLineLineHeightEm}em`,
             fontWeight: 500,
-            color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
             border: `1px solid ${tokens.colors.border.input[mode]}`,
             borderRadius: '10px',
             backgroundColor: tokens.colors.background.input[mode],

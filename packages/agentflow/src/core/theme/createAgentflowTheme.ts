@@ -62,10 +62,7 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
             MuiOutlinedInput: {
                 styleOverrides: {
                     root: {
-                        background: tokens.colors.background.input[mode]
-                    },
-                    input: {
-                        background: tokens.colors.background.input[mode]
+                        backgroundColor: tokens.colors.background.input[mode]
                     }
                 }
             },

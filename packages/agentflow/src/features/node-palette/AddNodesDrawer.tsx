@@ -221,7 +221,7 @@ function AddNodesDrawerComponent({ nodes, onDragStart, onNodeClick }: AddNodesDr
                                                             cursor: 'pointer',
                                                             color: theme.palette.grey[500],
                                                             '&:hover': {
-                                                                color: theme.palette.grey[900]
+                                                                color: theme.palette.text.primary
                                                             }
                                                         }}
                                                         onClick={handleClearSearch}
