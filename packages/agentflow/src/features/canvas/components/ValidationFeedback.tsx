@@ -172,7 +172,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                 right: 0,
                                 mt: 1.5,
                                 width: 400,
-                                zIndex: 1200
+                                zIndex: 10
                             }}
                         >
                             <Box sx={{ p: 2 }}>
