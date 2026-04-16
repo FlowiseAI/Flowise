@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 // Material
 import {
@@ -49,7 +49,7 @@ import assistantsApi from '@/api/assistants'
 import useNotifier from '@/utils/useNotifier'
 
 // const
-import { evaluators as evaluatorsOptions } from '../evaluators/evaluatorConstant'
+import { getEvaluators } from '../evaluators/evaluatorConstant'
 
 // i18n
 import { useTranslation, Trans } from 'react-i18next'
@@ -65,6 +65,8 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
     useNotifier()
+
+    const evaluatorsOptions = useMemo(() => getEvaluators(t), [t])
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
     const getAllAgentflowsApi = useApi(chatflowsApi.getAllAgentflows)
@@ -461,7 +463,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     flexDirection='row'
                                     sx={{ mt: 2, gap: 1, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}
                                 >
-                                    {evaluatorsOptions
+                                    {evaluatorsOptions(t)
                                         .filter((opt) => opt.type === 'numeric' && opt.name !== 'chain')
                                         .map((evaluator, index) => (
                                             <Chip key={index} variant='outlined' label={evaluator.label} />

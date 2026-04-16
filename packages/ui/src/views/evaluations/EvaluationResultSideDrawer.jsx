@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import {
     CardContent,
@@ -17,7 +18,7 @@ import {
 import { IconHierarchy, IconUsersGroup, IconRobot } from '@tabler/icons-react'
 
 import { useSelector } from 'react-redux'
-import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
+import { getEvaluators, getNumericOperators } from '../evaluators/evaluatorConstant'
 import TableCell from '@mui/material/TableCell'
 import { Close } from '@mui/icons-material'
 
@@ -28,6 +29,9 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
     const { t } = useTranslation()
     const onOpen = () => {}
     const customization = useSelector((state) => state.customization)
+
+    const evaluatorsOptions = useMemo(() => getEvaluators(t), [t])
+    const numericOperators = useMemo(() => getNumericOperators(t), [t])
 
     const getEvaluatorValue = (evaluator) => {
         if (evaluator.type === 'text') {

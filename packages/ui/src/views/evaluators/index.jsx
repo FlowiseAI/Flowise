@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
@@ -32,7 +32,7 @@ import empty_evaluatorSVG from '@/assets/images/empty_evaluators.svg'
 import { IconTrash, IconPlus, IconJson, IconX, IconNumber123, IconAbc, IconAugmentedReality } from '@tabler/icons-react'
 
 // const
-import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
+import { getEvaluators, getNumericOperators } from '../evaluators/evaluatorConstant'
 
 // i18n
 import { useTranslation } from 'react-i18next'
@@ -47,6 +47,9 @@ const Evaluators = () => {
     const { confirm } = useConfirm()
     useNotifier()
     const { error } = useError()
+
+    const evaluatorsOptions = useMemo(() => getEvaluators(t), [t])
+    const numericOperators = useMemo(() => getNumericOperators(t), [t])
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))

@@ -1,9 +1,7 @@
-import i18next from 'i18next'
-
-export const evaluationPrompts = [
+export const getEvaluationPrompts = (t) => [
     {
         name: 'correctness',
-        label: i18next.t('evaluators.evaluationPrompts.correctness'),
+        label: t('evaluators.evaluationPrompts.correctness'),
         json: [{ id: 1, property: 'score', description: 'graded score', type: 'number', required: true }],
         prompt: `Respond with a numeric score based on how well the following response compare to the ground truth. Grade only based expected response:
 
@@ -18,7 +16,7 @@ Do not include any other information in your response. Do not evaluate correctne
     },
     {
         name: 'hallucination',
-        label: i18next.t('evaluators.evaluationPrompts.hallucination'),
+        label: t('evaluators.evaluationPrompts.hallucination'),
         json: [
             { id: 1, property: 'score', description: 'provide a score between 0 and 1', type: 'number', required: true },
             { id: 2, property: 'reasoning', description: 'provide a one sentence reasoning', type: 'string', required: true }

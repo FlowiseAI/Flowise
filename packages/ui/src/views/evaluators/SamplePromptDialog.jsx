@@ -18,7 +18,7 @@ import { IconTestPipe2 } from '@tabler/icons-react'
 import useNotifier from '@/utils/useNotifier'
 
 // const
-import { evaluationPrompts } from '@/views/evaluators/evaluationPrompts'
+import { getEvaluationPrompts } from '@/views/evaluators/evaluationPrompts'
 
 // i18n
 import { useTranslation } from 'react-i18next'
@@ -31,6 +31,8 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [selectedPromptName, setSelectedPromptName] = useState('')
     const [selectedConfig, setSelectedConfig] = useState([])
     const [selectedPromptText, setSelectedPromptText] = useState('')
+
+    const evaluationPrompts = useMemo(() => getEvaluationPrompts(t), [t])
 
     useEffect(() => {
         resetData()

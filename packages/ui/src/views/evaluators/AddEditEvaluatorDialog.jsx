@@ -30,7 +30,7 @@ import useNotifier from '@/utils/useNotifier'
 
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-import { evaluators, evaluatorTypes, numericOperators } from './evaluatorConstant'
+import { getEvaluators, getEvaluatorTypes, getNumericOperators } from './evaluatorConstant'
 
 // i18n
 import { useTranslation, Trans } from 'react-i18next'
@@ -38,6 +38,10 @@ import { useTranslation, Trans } from 'react-i18next'
 const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
+
+    const evaluators = useMemo(() => getEvaluators(t), [t])
+    const numericOperators = useMemo(() => getNumericOperators(t), [t])
+    const evaluatorTypes = useMemo(() => getEvaluatorTypes(t), [t])
 
     const dispatch = useDispatch()
 
