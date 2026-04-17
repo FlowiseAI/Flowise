@@ -428,6 +428,30 @@ describe('Agentflow Component', () => {
         })
     })
 
+    describe('Canvas Actions', () => {
+        it('should render canvasActions content in the canvas', async () => {
+            const { getByTestId } = render(
+                <Agentflow {...defaultProps} canvasActions={<button data-testid='custom-action'>My Button</button>} />
+            )
+
+            await waitFor(() => {
+                expect(getByTestId('custom-action')).toBeInTheDocument()
+            })
+        })
+
+        it('should not render canvasActions in read-only mode', async () => {
+            const { container, queryByTestId } = render(
+                <Agentflow {...defaultProps} readOnly={true} canvasActions={<button data-testid='custom-action'>My Button</button>} />
+            )
+
+            await waitFor(() => {
+                expect(container.querySelector('.agentflow-container')).toBeInTheDocument()
+            })
+
+            expect(queryByTestId('custom-action')).not.toBeInTheDocument()
+        })
+    })
+
     describe('Imperative Ref', () => {
         it('should expose agentflow instance via ref', async () => {
             const ref = createRef<AgentFlowInstance>()

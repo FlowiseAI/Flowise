@@ -66,7 +66,7 @@ export function StateKeyValueInput({ value, onChange, disabled = false, suggesti
                         mt: 1,
                         mb: 1,
                         border: 1,
-                        borderColor: theme.palette.grey[300],
+                        borderColor: theme.palette.divider,
                         borderRadius: 2,
                         position: 'relative'
                     }}

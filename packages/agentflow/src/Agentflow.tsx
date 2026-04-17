@@ -41,6 +41,7 @@ function AgentflowCanvas({
     showDefaultHeader = true,
     enableGenerator = true,
     showDefaultPalette = true,
+    canvasActions,
     renderHeader,
     renderNodePalette
 }: {
@@ -52,6 +53,7 @@ function AgentflowCanvas({
     showDefaultHeader?: boolean
     showDefaultPalette?: boolean
     enableGenerator?: boolean
+    canvasActions?: AgentflowProps['canvasActions']
     renderHeader?: AgentflowProps['renderHeader']
     renderNodePalette?: AgentflowProps['renderNodePalette']
 }) {
@@ -265,21 +267,33 @@ function AgentflowCanvas({
                                 position: 'absolute',
                                 left: showDefaultPalette ? 70 : 20, // 70px offset = ~10px gap between buttons
                                 top: 20,
-                                zIndex: 1001
+                                zIndex: tokens.zIndex.canvasButton
                             }}
                         >
                             <IconSparkles />
                         </StyledFab>
                     )}
 
-                    {/* Validation Feedback - positioned at top right */}
+                    {/* Canvas action buttons - positioned at top right */}
                     {!readOnly && (
-                        <ValidationFeedback
-                            nodes={nodes as FlowNode[]}
-                            edges={edges as FlowEdge[]}
-                            availableNodes={availableNodes}
-                            setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
-                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                right: 20,
+                                top: 20,
+                                zIndex: tokens.zIndex.canvasButton,
+                                display: 'flex',
+                                gap: 8
+                            }}
+                        >
+                            <ValidationFeedback
+                                nodes={nodes as FlowNode[]}
+                                edges={edges as FlowEdge[]}
+                                availableNodes={availableNodes}
+                                setNodes={setLocalNodes as React.Dispatch<React.SetStateAction<FlowNode[]>>}
+                            />
+                            {canvasActions}
+                        </div>
                     )}
 
                     <ReactFlow
@@ -368,7 +382,8 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
         renderHeader,
         renderNodePalette,
         showDefaultHeader = true,
-        showDefaultPalette = true
+        showDefaultPalette = true,
+        canvasActions
     } = props
 
     return (
@@ -394,6 +409,7 @@ export const Agentflow = forwardRef<AgentFlowInstance, AgentflowProps>(function 
                     showDefaultPalette={showDefaultPalette}
                     renderHeader={renderHeader}
                     renderNodePalette={renderNodePalette}
+                    canvasActions={canvasActions}
                 />
             </ReactFlowProvider>
         </AgentflowProvider>
@@ -416,6 +432,7 @@ const AgentflowCanvasWithRef = forwardRef<
         enableGenerator?: boolean
         renderHeader?: AgentflowProps['renderHeader']
         renderNodePalette?: AgentflowProps['renderNodePalette']
+        canvasActions?: AgentflowProps['canvasActions']
     }
 >(function AgentflowCanvasWithRef(props, ref) {
     const agentflow = useAgentflow()
