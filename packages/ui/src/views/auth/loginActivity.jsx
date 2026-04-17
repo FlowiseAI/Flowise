@@ -377,7 +377,7 @@ const LoginActivity = () => {
                                         >
                                             <TableRow>
                                                 <StyledTableCell>{t('auth.loginActivity.table.activity')}</StyledTableCell>
-                                                <StyledTableCell>{t('auth.loginActivity.table.user')}</StyledTableCell>
+                                                <StyledTableCell>{t('common.labels.user')}</StyledTableCell>
                                                 <StyledTableCell>{t('auth.loginActivity.table.date')}</StyledTableCell>
                                                 <StyledTableCell>{t('auth.loginActivity.table.method')}</StyledTableCell>
                                                 <StyledTableCell>{t('auth.loginActivity.table.message')}</StyledTableCell>

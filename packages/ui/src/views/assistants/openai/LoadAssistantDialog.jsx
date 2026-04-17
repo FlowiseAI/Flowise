@@ -105,7 +105,7 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected,
             {selectedOpenAIAssistantId && (
                 <DialogActions>
                     <StyledButton variant='contained' onClick={() => onAssistantSelected(selectedOpenAIAssistantId, credentialId)}>
-                        {t('assistants.actions.load')}
+                        {t('common.actions.load')}
                     </StyledButton>
                 </DialogActions>
             )}

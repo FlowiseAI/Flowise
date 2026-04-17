@@ -70,9 +70,9 @@ const PasteJSONDialog = ({ show, onCancel, onConfirm, customization }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{t('tools.actions.cancel')}</Button>
+                <Button onClick={onCancel}>{t('common.actions.cancel')}</Button>
                 <StyledButton variant='contained' onClick={handleConfirm}>
-                    {t('tools.actions.confirm')}
+                    {t('common.actions.confirm')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

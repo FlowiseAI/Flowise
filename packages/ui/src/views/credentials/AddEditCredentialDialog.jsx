@@ -346,7 +346,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             if (setError) setError(error)
             enqueueSnackbar({
                 message: t('credentials.messages.setOAuth2.errors.withMsg', {
-                    msg: error.response?.data?.message || error.message || t('credentials.messages.setOAuth2.errors.unknown')
+                    msg: error.response?.data?.message || error.message || t('common.errors.unknownError')
                 }),
                 options: {
                     key: new Date().getTime() + Math.random(),

@@ -91,13 +91,13 @@ function UpsertHistoryRow(props) {
                         }}
                     />
                 </TableCell>
-                <TableCell>{moment(props.upsertHistory.date).format(t('vectorStore.formats.date'))}</TableCell>
+                <TableCell>{moment(props.upsertHistory.date).format(t('common.formats.dateMonthDayYearTime12Seconds'))}</TableCell>
                 <TableCell>{props.upsertHistory.result?.numAdded ?? '0'}</TableCell>
                 <TableCell>{props.upsertHistory.result?.numUpdated ?? '0'}</TableCell>
                 <TableCell>{props.upsertHistory.result?.numSkipped ?? '0'}</TableCell>
                 <TableCell>{props.upsertHistory.result?.numDeleted ?? '0'}</TableCell>
                 <TableCell>
-                    <IconButton aria-label={t('vectorStore.actions.expandRow')} size='small' color='inherit' onClick={() => setOpen(!open)}>
+                    <IconButton aria-label={t('common.actions.expandRow')} size='small' color='inherit' onClick={() => setOpen(!open)}>
                         {open ? <IconChevronsUp /> : <IconChevronsDown />}
                     </IconButton>
                 </TableCell>
@@ -390,7 +390,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                                                 checked={selected.length === chatflowUpsertHistory.length}
                                                 onChange={onSelectAllClick}
                                                 inputProps={{
-                                                    'aria-label': t('vectorStore.selectAll')
+                                                    'aria-label': t('common.actions.selectAll')
                                                 }}
                                             />
                                         </TableCell>
@@ -444,7 +444,7 @@ const UpsertHistoryDialog = ({ show, dialogProps, onCancel }) => {
                 </>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{t('vectorStore.actions.close')}</Button>
+                <Button onClick={onCancel}>{t('common.actions.close')}</Button>
             </DialogActions>
         </Dialog>
     ) : null

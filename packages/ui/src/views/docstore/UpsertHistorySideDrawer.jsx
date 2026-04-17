@@ -44,7 +44,7 @@ const UpsertHistorySideDrawer = ({ show, dialogProps, onClickFunction, onSelectH
         <>
             <SwipeableDrawer anchor='right' open={show} onClose={() => onClickFunction()} onOpen={onOpen}>
                 <Button startIcon={<IconSquareRoundedChevronsRight />} onClick={() => onClickFunction()}>
-                    {t('docstore.actions.close')}
+                    {t('common.actions.close')}
                 </Button>
                 <Box style={{ width: 350, margin: 10 }} role='presentation' onClick={onClickFunction}>
                     <Timeline
@@ -58,7 +58,7 @@ const UpsertHistorySideDrawer = ({ show, dialogProps, onClickFunction, onSelectH
                             upsertHistory.map((history, index) => (
                                 <TimelineItem key={index}>
                                     <TimelineOppositeContent>
-                                        {moment(history.date).format(t('docstore.formats.date'))}
+                                        {moment(history.date).format(t('common.formats.dateDayMonthShortYearTime12Seconds'))}
                                     </TimelineOppositeContent>
                                     <TimelineSeparator style={{ marginTop: 5 }}>
                                         <TimelineDot />

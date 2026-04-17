@@ -94,7 +94,7 @@ function APIKeyRow(props) {
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
                               props.apiKey.apiKey.length - 5
                           )}`}
-                    <IconButton title={t('apiKey.actions.copy')} color='success' onClick={props.onCopyClick}>
+                    <IconButton title={t('common.actions.copy')} color='success' onClick={props.onCopyClick}>
                         <IconCopy />
                     </IconButton>
                     <IconButton title={t('apiKey.actions.show')} color='inherit' onClick={props.onShowAPIClick}>
@@ -114,7 +114,7 @@ function APIKeyRow(props) {
                         }}
                     >
                         <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: props.theme.palette.success.dark }}>
-                            {t('apiKey.copied')}
+                            {t('common.messages.copied')}
                         </Typography>
                     </Popover>
                 </StyledTableCell>
@@ -144,22 +144,22 @@ function APIKeyRow(props) {
                 <StyledTableCell>
                     {props.apiKey.chatFlows.length}{' '}
                     {props.apiKey.chatFlows.length > 0 && (
-                        <IconButton aria-label={t('apiKey.actions.expandRow')} size='small' color='inherit' onClick={() => setOpen(!open)}>
+                        <IconButton aria-label={t('common.actions.expandRow')} size='small' color='inherit' onClick={() => setOpen(!open)}>
                             {props.apiKey.chatFlows.length > 0 && open ? <IconChevronsUp /> : <IconChevronsDown />}
                         </IconButton>
                     )}
                 </StyledTableCell>
-                <StyledTableCell>{moment(props.apiKey.createdAt).format(t('apiKey.formats.date'))}</StyledTableCell>
+                <StyledTableCell>{moment(props.apiKey.createdAt).format(t('common.formats.dateMonthDayYear'))}</StyledTableCell>
                 <Available permission={'apikeys:update,apikeys:create'}>
                     <StyledTableCell>
-                        <IconButton title={t('apiKey.actions.edit')} color='primary' onClick={props.onEditClick}>
+                        <IconButton title={t('common.actions.edit')} color='primary' onClick={props.onEditClick}>
                             <IconEdit />
                         </IconButton>
                     </StyledTableCell>
                 </Available>
                 <Available permission={'apikeys:delete'}>
                     <StyledTableCell>
-                        <IconButton title={t('apiKey.actions.delete')} color='error' onClick={props.onDeleteClick}>
+                        <IconButton title={t('common.actions.delete')} color='error' onClick={props.onDeleteClick}>
                             <IconTrash />
                         </IconButton>
                     </StyledTableCell>
@@ -183,7 +183,7 @@ function APIKeyRow(props) {
                                             <TableRow key={index}>
                                                 <StyledTableCell>{flow.flowName}</StyledTableCell>
                                                 <StyledTableCell>
-                                                    {moment(flow.updatedDate).format(t('apiKey.formats.date'))}
+                                                    {moment(flow.updatedDate).format(t('common.formats.dateMonthDayYear'))}
                                                 </StyledTableCell>
                                                 <StyledTableCell>
                                                     &nbsp;
@@ -292,8 +292,8 @@ const APIKey = () => {
         const dialogProp = {
             title: t('apiKey.actions.addKey'),
             type: 'ADD',
-            cancelButtonName: t('apiKey.actions.cancel'),
-            confirmButtonName: t('apiKey.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
@@ -304,8 +304,8 @@ const APIKey = () => {
         const dialogProp = {
             title: t('apiKey.actions.editKey'),
             type: 'EDIT',
-            cancelButtonName: t('apiKey.actions.cancel'),
-            confirmButtonName: t('apiKey.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             customBtnId: 'btn_confirmEditingApiKey',
             key
         }
@@ -315,13 +315,13 @@ const APIKey = () => {
 
     const deleteKey = async (key) => {
         const confirmPayload = {
-            title: t('apiKey.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description:
                 key.chatFlows.length === 0
                     ? t('apiKey.dialogs.delete.description.simple', { name: key.keyName })
                     : t('apiKey.dialogs.delete.description.inUse', { name: key.keyName, count: key.chatFlows.length }),
-            confirmButtonName: t('apiKey.actions.delete'),
-            cancelButtonName: t('apiKey.actions.cancel'),
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel'),
             customBtnId: 'btn_initiateDeleteApiKey'
         }
         const isConfirmed = await confirm(confirmPayload)
@@ -428,7 +428,7 @@ const APIKey = () => {
                                     sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                     component={Paper}
                                 >
-                                    <Table sx={{ minWidth: 650 }} aria-label={t('apiKey.keyTable.title')}>
+                                    <Table sx={{ minWidth: 650 }} aria-label={t('common.labels.simpleTable')}>
                                         <TableHead
                                             sx={{
                                                 backgroundColor: customization.isDarkMode

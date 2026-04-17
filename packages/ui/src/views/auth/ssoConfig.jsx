@@ -151,7 +151,7 @@ const SSOConfigPage = () => {
             userId: currentUser.id,
             providers: [
                 {
-                    providerLabel: t('auth.sso.providers.microsoft'),
+                    providerLabel: t('common.providers.microsoft'),
                     providerName: 'azure',
                     config: {
                         tenantID: azureTenantID,
@@ -161,7 +161,7 @@ const SSOConfigPage = () => {
                     status: azureConfigEnabled ? 'enable' : 'disable'
                 },
                 {
-                    providerLabel: t('auth.sso.providers.google'),
+                    providerLabel: t('common.providers.google'),
                     providerName: 'google',
                     config: {
                         clientID: googleClientID,
@@ -170,7 +170,7 @@ const SSOConfigPage = () => {
                     status: googleConfigEnabled ? 'enable' : 'disable'
                 },
                 {
-                    providerLabel: t('auth.sso.providers.auth0'),
+                    providerLabel: t('common.providers.auth0'),
                     providerName: 'auth0',
                     config: {
                         domain: auth0Domain,
@@ -180,7 +180,7 @@ const SSOConfigPage = () => {
                     status: auth0ConfigEnabled ? 'enable' : 'disable'
                 },
                 {
-                    providerLabel: t('auth.sso.providers.github'),
+                    providerLabel: t('common.providers.github'),
                     providerName: 'github',
                     config: {
                         clientID: githubClientID,
@@ -454,7 +454,7 @@ const SSOConfigPage = () => {
                             value={tabValue}
                             textColor='primary'
                             onChange={(event, val) => setTabValue(val)}
-                            aria-label={t('auth.sso.tabs')}
+                            aria-label={t('common.labels.tabs')}
                         >
                             <Tab
                                 iconPosition='start'
@@ -469,7 +469,7 @@ const SSOConfigPage = () => {
                                 value={0}
                                 label={
                                     <>
-                                        {t('auth.sso.providers.microsoft')}
+                                        {t('common.providers.microsoft')}
                                         {azureConfigEnabled && (
                                             <div
                                                 style={{
@@ -512,7 +512,7 @@ const SSOConfigPage = () => {
                                 value={1}
                                 label={
                                     <>
-                                        {t('auth.sso.providers.google')}
+                                        {t('common.providers.google')}
                                         {googleConfigEnabled && (
                                             <div
                                                 style={{
@@ -555,7 +555,7 @@ const SSOConfigPage = () => {
                                 value={2}
                                 label={
                                     <>
-                                        {t('auth.sso.providers.auth0')}
+                                        {t('common.providers.auth0')}
                                         {auth0ConfigEnabled && (
                                             <div
                                                 style={{
@@ -598,7 +598,7 @@ const SSOConfigPage = () => {
                                 value={3}
                                 label={
                                     <>
-                                        {t('auth.sso.providers.github')}
+                                        {t('common.providers.github')}
                                         {githubConfigEnabled && (
                                             <div
                                                 style={{
@@ -1031,7 +1031,7 @@ const SSOConfigPage = () => {
                                 variant='contained'
                                 onClick={() => validateAndSubmit()}
                             >
-                                {t('auth.actions.save')}
+                                {t('common.actions.save')}
                             </StyledPermissionButton>
                         </Box>
                     </Stack>
@@ -1052,7 +1052,7 @@ const SSOConfigPage = () => {
                 }}
             >
                 <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
-                    {t('auth.sso.copied')}
+                    {t('common.messages.copied')}
                 </Typography>
             </Popover>
         </>

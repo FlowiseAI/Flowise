@@ -187,7 +187,7 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                             onClick={handleRemoveAllLinks}
                             startIcon={<IconEraser />}
                         >
-                            {t('components.dialogs.manageScrapedLinks.actions.clearAll.title')}
+                            {t('common.actions.clearAll')}
                         </Button>
                     ) : null}
                 </Box>
@@ -239,9 +239,9 @@ const ManageScrapedLinksDialog = ({ show, dialogProps, onCancel, onSave }) => {
                 </>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onCancel}>{t('components.dialogs.manageScrapedLinks.actions.cancel')}</Button>
+                <Button onClick={onCancel}>{t('common.actions.cancel')}</Button>
                 <StyledButton variant='contained' onClick={handleSaveLinks}>
-                    {t('components.dialogs.manageScrapedLinks.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </DialogActions>
         </Dialog>

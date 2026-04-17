@@ -55,8 +55,8 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
             value,
             inputParam,
             disabled,
-            confirmButtonName: t('docstore.actions.save'),
-            cancelButtonName: t('docstore.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setExpandDialogProps(dialogProps)
         setShowExpandDialog(true)
@@ -68,8 +68,8 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
             relativeLinksMethod,
             limit,
             selectedLinks,
-            confirmButtonName: t('docstore.actions.save'),
-            cancelButtonName: t('docstore.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setManageScrapedLinksDialogProps(dialogProps)
         setShowManageScrapedLinksDialog(true)
@@ -113,7 +113,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                         height: 25,
                                         width: 25
                                     }}
-                                    title={t('docstore.actions.expand')}
+                                    title={t('common.actions.expand')}
                                     color='primary'
                                     onClick={() =>
                                         onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam)
@@ -258,7 +258,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                     </div>
                                     {inputParam.refresh && (
                                         <IconButton
-                                            title={t('docstore.actions.refresh')}
+                                            title={t('common.actions.refresh')}
                                             color='primary'
                                             size='small'
                                             onClick={() => setReloadTimestamp(Date.now().toString())}
@@ -295,7 +295,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                             )
                                         }
                                     >
-                                        {t('docstore.actions.manageLinks')}
+                                        {t('common.actions.manageLinks')}
                                     </Button>
                                     <ManageScrapedLinksDialog
                                         show={showManageScrapedLinksDialog}

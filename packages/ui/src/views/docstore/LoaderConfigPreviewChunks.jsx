@@ -342,7 +342,7 @@ const LoaderConfigPreviewChunks = () => {
                 label: splitter.label,
                 name: splitter.name
             }))
-            options.unshift({ label: t('docstore.common.none'), name: 'none' })
+            options.unshift({ label: t('common.labels.none'), name: 'none' })
             setTextSplitterOptions(options)
 
             // If this is a document store edit config, set the existing input values
@@ -404,8 +404,8 @@ const LoaderConfigPreviewChunks = () => {
                                     <StyledFab
                                         size='small'
                                         color='secondary'
-                                        aria-label={t('docstore.actions.back')}
-                                        title={t('docstore.actions.back')}
+                                        aria-label={t('common.actions.back')}
+                                        title={t('common.actions.back')}
                                         onClick={() => navigate(-1)}
                                     >
                                         <IconArrowLeft />

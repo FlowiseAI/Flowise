@@ -65,7 +65,7 @@ const UpsertHistoryDetailsDialog = ({ show, dialogProps, onCancel }) => {
                 </div>
                 <div>
                     <TableContainer component={Paper}>
-                        <Table sx={{ minWidth: 650 }} aria-label={t('docstore.simpleTable')}>
+                        <Table sx={{ minWidth: 650 }} aria-label={t('common.labels.simpleTable')}>
                             <TableBody>
                                 <TableRow sx={{ '& td': { border: 0 } }}>
                                     <TableCell sx={{ pb: 0, pt: 0 }} colSpan={6}>

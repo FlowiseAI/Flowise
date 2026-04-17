@@ -114,7 +114,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            {t('assistants.cards.customAssistant.name')}
+                            {t('common.labels.name')}
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
 
@@ -132,7 +132,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => onCancel()}>{t('assistants.actions.cancel')}</Button>
+                <Button onClick={() => onCancel()}>{t('common.actions.cancel')}</Button>
                 <StyledButton disabled={!customAssistantName} variant='contained' onClick={() => createCustomAssistant()}>
                     {dialogProps.confirmButtonName}
                 </StyledButton>

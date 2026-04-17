@@ -540,10 +540,10 @@ const CustomAssistantConfigurePreview = () => {
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
-            title: t('assistants.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('assistants.dialogs.delete.description'),
-            confirmButtonName: t('assistants.actions.delete'),
-            cancelButtonName: t('assistants.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -580,8 +580,8 @@ const CustomAssistantConfigurePreview = () => {
                 name: 'instructions',
                 type: 'string'
             },
-            confirmButtonName: t('assistants.actions.save'),
-            cancelButtonName: t('assistants.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setExpandDialogProps(dialogProps)
         setShowExpandDialog(true)
@@ -873,8 +873,8 @@ const CustomAssistantConfigurePreview = () => {
                                                     <StyledFab
                                                         size='small'
                                                         color='secondary'
-                                                        aria-label={t('assistants.actions.back')}
-                                                        title={t('assistants.actions.back')}
+                                                        aria-label={t('common.actions.back')}
+                                                        title={t('common.actions.back')}
                                                         onClick={() => navigate(-1)}
                                                     >
                                                         <IconArrowLeft />
@@ -910,7 +910,7 @@ const CustomAssistantConfigurePreview = () => {
                                                     </ButtonBase>
                                                 )}
                                                 <Available permission={'assistants:create'}>
-                                                    <ButtonBase title={t('assistants.actions.save')} sx={{ borderRadius: '50%', mr: 2 }}>
+                                                    <ButtonBase title={t('common.actions.save')} sx={{ borderRadius: '50%', mr: 2 }}>
                                                         <Avatar
                                                             variant='rounded'
                                                             sx={{
@@ -997,7 +997,7 @@ const CustomAssistantConfigurePreview = () => {
                                         >
                                             <div style={{ display: 'flex', flexDirection: 'row' }}>
                                                 <Typography>
-                                                    {t('assistants.cards.customAssistant.selectModel')}
+                                                    {t('common.labels.selectModel')}
                                                     <span style={{ color: 'red' }}>&nbsp;*</span>
                                                 </Typography>
                                             </div>
@@ -1045,7 +1045,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         height: 25,
                                                         width: 25
                                                     }}
-                                                    title={t('assistants.actions.expand')}
+                                                    title={t('common.actions.expand')}
                                                     color='secondary'
                                                     onClick={() => onExpandDialogClicked(customAssistantInstruction)}
                                                 >
@@ -1060,7 +1060,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         onClick={() => generateInstruction()}
                                                         startIcon={<IconWand size={20} />}
                                                     >
-                                                        {t('assistants.actions.generate.title')}
+                                                        {t('common.actions.generate')}
                                                     </Button>
                                                 )}
                                             </Stack>
@@ -1150,7 +1150,7 @@ const CustomAssistantConfigurePreview = () => {
                                                                     onClick={() => generateDocStoreToolDesc(ds.id)}
                                                                     startIcon={<IconWand size={20} />}
                                                                 >
-                                                                    {t('assistants.actions.generate.title')}
+                                                                    {t('common.actions.generate')}
                                                                 </Button>
                                                             )}
                                                         </Stack>
@@ -1220,7 +1220,7 @@ const CustomAssistantConfigurePreview = () => {
                                             }}
                                         >
                                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                                                <Typography>{t('assistants.cards.customAssistant.inputs.tools.title')}</Typography>
+                                                <Typography>{t('common.labels.tools')}</Typography>
                                                 <TooltipWithParser title={t('assistants.cards.customAssistant.inputs.tools.tooltip')} />
                                             </Stack>
                                             {selectedTools.map((tool, index) => {

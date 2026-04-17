@@ -79,12 +79,12 @@ export const MarketplaceTable = ({
                     >
                         <TableRow>
                             <StyledTableCell sx={{ minWidth: '150px' }} component='th' scope='row' key='0'>
-                                {t('components.marketplaceTable.name')}
+                                {t('common.labels.name')}
                             </StyledTableCell>
                             <StyledTableCell sx={{ minWidth: '100px' }} component='th' scope='row' key='1'>
-                                {t('components.marketplaceTable.type')}
+                                {t('common.labels.type')}
                             </StyledTableCell>
-                            <StyledTableCell key='2'>{t('components.marketplaceTable.description')}</StyledTableCell>
+                            <StyledTableCell key='2'>{t('common.labels.description')}</StyledTableCell>
                             <StyledTableCell sx={{ minWidth: '100px' }} key='3'>
                                 {t('components.marketplaceTable.framework')}
                             </StyledTableCell>
@@ -241,7 +241,7 @@ export const MarketplaceTable = ({
                                                             <PermissionIconButton
                                                                 display={'feat:workspaces'}
                                                                 permissionId={'templates:custom-share'}
-                                                                title={t('components.marketplaceTable.share')}
+                                                                title={t('common.actions.share')}
                                                                 color='primary'
                                                                 onClick={() => onShare(row)}
                                                             >
@@ -251,7 +251,7 @@ export const MarketplaceTable = ({
                                                         {onDelete && (
                                                             <PermissionIconButton
                                                                 permissionId={'templates:custom-delete'}
-                                                                title={t('components.marketplaceTable.delete')}
+                                                                title={t('common.actions.delete')}
                                                                 color='error'
                                                                 onClick={() => onDelete(row)}
                                                             >

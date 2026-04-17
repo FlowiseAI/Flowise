@@ -228,7 +228,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                         </Stack>
                         <Stack direction='column'>
                             <TableContainer component={Paper} sx={{ maxHeight: '400px', overflow: 'auto' }}>
-                                <Table sx={{ minWidth: 650 }} aria-label={t('docstore.simpleTable')}>
+                                <Table sx={{ minWidth: 650 }} aria-label={t('common.labels.simpleTable')}>
                                     <TableBody>
                                         <TableRow sx={{ '& td': { border: 0 } }}>
                                             <TableCell sx={{ pb: 0, pt: 0 }} colSpan={6}>
@@ -301,10 +301,10 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
             </DialogContent>
             <DialogActions sx={{ pr: 3, pb: 3 }}>
                 <Button onClick={onCancel} color='primary'>
-                    {t('docstore.actions.cancel')}
+                    {t('common.actions.cancel')}
                 </Button>
                 <Button variant='contained' onClick={() => onDelete(dialogProps.type, dialogProps.file)} color='error'>
-                    {t('docstore.actions.delete')}
+                    {t('common.actions.delete')}
                 </Button>
             </DialogActions>
         </Dialog>

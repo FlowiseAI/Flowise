@@ -349,12 +349,8 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                     {activeStep === 1 && (
                         <div>
                             <FormControl fullWidth sx={{ mt: 2 }}>
-                                <InputLabel>{t('components.dialogs.nvidiaNim.labels.model')}</InputLabel>
-                                <Select
-                                    label={t('components.dialogs.nvidiaNim.labels.model')}
-                                    value={imageTag}
-                                    onChange={(e) => setImageTag(e.target.value)}
-                                >
+                                <InputLabel>{t('common.labels.model')}</InputLabel>
+                                <Select label={t('common.labels.model')} value={imageTag} onChange={(e) => setImageTag(e.target.value)}>
                                     {Object.entries(modelOptions).map(([value, { label }]) => (
                                         <MenuItem key={value} value={value}>
                                             {label}
@@ -399,8 +395,8 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                                             value={nimRelaxMemConstraints}
                                             onChange={(e) => setNimRelaxMemConstraints(e.target.value)}
                                         >
-                                            <MenuItem value='1'>{t('components.dialogs.nvidiaNim.actions.yes')}</MenuItem>
-                                            <MenuItem value='0'>{t('components.dialogs.nvidiaNim.actions.no')}</MenuItem>
+                                            <MenuItem value='1'>{t('common.actions.yes')}</MenuItem>
+                                            <MenuItem value='0'>{t('common.actions.no')}</MenuItem>
                                         </Select>
                                     </FormControl>
                                     <TextField
@@ -420,20 +416,18 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onClose} variant='outline'>
-                        {t('components.dialogs.nvidiaNim.actions.cancel')}
+                        {t('common.actions.cancel')}
                     </Button>
                     {activeStep === 0 && (
                         <Button onClick={handleNext} variant='outline' color='secondary'>
-                            {t('components.dialogs.nvidiaNim.actions.next')}
+                            {t('common.actions.next')}
                         </Button>
                     )}
                     <Button
                         onClick={activeStep === 0 ? handleDownloadInstaller : handleNext}
                         disabled={loading || (activeStep === 2 && (!nimRelaxMemConstraints || !hostPort))}
                     >
-                        {activeStep === 0
-                            ? t('components.dialogs.nvidiaNim.actions.download')
-                            : t('components.dialogs.nvidiaNim.actions.next')}
+                        {activeStep === 0 ? t('common.actions.download') : t('common.actions.next')}
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -474,7 +468,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                             setExistingContainer(null)
                         }}
                     >
-                        {t('components.dialogs.nvidiaNim.actions.cancel')}
+                        {t('common.actions.cancel')}
                     </Button>
                     <Button
                         onClick={() => {

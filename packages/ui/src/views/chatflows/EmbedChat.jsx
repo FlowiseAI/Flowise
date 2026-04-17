@@ -344,7 +344,7 @@ const EmbedChat = ({ chatflowid }) => {
         <>
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                 <div style={{ flex: 80 }}>
-                    <Tabs value={value} onChange={handleChange} aria-label={t('chatflows.tabs')}>
+                    <Tabs value={value} onChange={handleChange} aria-label={t('common.labels.tabs')}>
                         {codes.map((codeLang, index) => (
                             <Tab key={index} label={t(codeLang.label)} {...a11yProps(index)}></Tab>
                         ))}

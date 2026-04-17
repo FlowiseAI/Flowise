@@ -378,7 +378,7 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
                                                 hidden={dialogProps.type === 'VIEW'}
                                                 onClick={() => handleSelectAll(category)}
                                             >
-                                                {t('roles.actions.selectAll')}
+                                                {t('common.actions.selectAll')}
                                             </button>
                                         </div>
                                         <div className='permissions-list'>
@@ -410,7 +410,7 @@ const CreateEditRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError
             </DialogContent>
             <DialogActions>
                 <Button variant='outlined' onClick={onCancel}>
-                    {t(dialogProps.type !== 'VIEW' ? 'roles.actions.cancel' : 'roles.actions.close')}
+                    {t(dialogProps.type !== 'VIEW' ? 'common.actions.cancel' : 'common.actions.close')}
                 </Button>
                 {dialogProps.type !== 'VIEW' && (
                     <StyledButton disabled={checkDisabled()} variant='contained' onClick={createRole}>

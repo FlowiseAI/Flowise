@@ -64,8 +64,8 @@ const OpenAIAssistantLayout = () => {
         const dialogProp = {
             title: t('assistants.actions.addAssistant'),
             type: 'ADD',
-            cancelButtonName: t('assistants.actions.cancel'),
-            confirmButtonName: t('assistants.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             selectedOpenAIAssistantId,
             credential
         }
@@ -77,8 +77,8 @@ const OpenAIAssistantLayout = () => {
         const dialogProp = {
             title: t('assistants.actions.editAssistant'),
             type: 'EDIT',
-            cancelButtonName: t('assistants.actions.cancel'),
-            confirmButtonName: t('assistants.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: selectedAssistant
         }
         setDialogProps(dialogProp)
@@ -134,7 +134,7 @@ const OpenAIAssistantLayout = () => {
                                 startIcon={<IconFileUpload />}
                                 sx={{ borderRadius: 2, height: 40 }}
                             >
-                                {t('assistants.actions.load')}
+                                {t('common.actions.load')}
                             </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'assistants:create'}
@@ -143,7 +143,7 @@ const OpenAIAssistantLayout = () => {
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
-                                {t('assistants.actions.add')}
+                                {t('common.actions.add')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {isLoading ? (

@@ -111,7 +111,7 @@ const Documents = () => {
             return error.message
         }
 
-        return t('docstore.common.unknownError')
+        return t('common.errors.unknownError')
     }
 
     const goToDocumentStore = (id) => {
@@ -122,8 +122,8 @@ const Documents = () => {
         const dialogProp = {
             title: t('docstore.dialogs.addNewDocumentStore'),
             type: 'ADD',
-            cancelButtonName: t('docstore.actions.cancel'),
-            confirmButtonName: t('docstore.actions.add')
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add')
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -167,8 +167,8 @@ const Documents = () => {
         const dialogProp = {
             title: t('docstore.dialogs.renameDocumentStore'),
             type: 'EDIT',
-            cancelButtonName: t('docstore.actions.cancel'),
-            confirmButtonName: t('docstore.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: {
                 id: selectedDocumentStore.id,
                 name: selectedDocumentStore.name,
@@ -197,7 +197,7 @@ const Documents = () => {
         }
 
         setDeleteDocStoreDialogProps({
-            title: t('docstore.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description,
             vectorStoreConfig: documentStoreToDelete.vectorStoreConfig,
             recordManagerConfig: documentStoreToDelete.recordManagerConfig,
@@ -352,7 +352,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title={t('docstore.actions.cardView')}
+                                    title={t('common.actions.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -364,7 +364,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title={t('docstore.actions.listView')}
+                                    title={t('common.actions.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -378,7 +378,7 @@ const Documents = () => {
                             startIcon={<IconPlus />}
                             id='btn_createVariable'
                         >
-                            {t('docstore.actions.addNew')}
+                            {t('common.actions.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
                     {!hasDocStores ? (
@@ -484,7 +484,7 @@ const Documents = () => {
                         <ListItemIcon>
                             <IconTrash size={16} />
                         </ListItemIcon>
-                        <ListItemText>{t('docstore.actions.delete')}</ListItemText>
+                        <ListItemText>{t('common.actions.delete')}</ListItemText>
                     </MenuItem>
                 )}
             </Menu>

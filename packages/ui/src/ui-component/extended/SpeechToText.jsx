@@ -43,7 +43,7 @@ const SpeechToTextType = {
 // Weird quirk - the key must match the name property value.
 const speechToTextProviders = {
     [SpeechToTextType.OPENAI_WHISPER]: {
-        label: 'components.speechToText.providers.openAIWhisper',
+        label: 'common.providers.openAIWhisper',
         name: SpeechToTextType.OPENAI_WHISPER,
         icon: openAISVG,
         url: 'https://platform.openai.com/docs/guides/speech-to-text',
@@ -63,7 +63,7 @@ const speechToTextProviders = {
                 optional: true
             },
             {
-                label: 'components.speechToText.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -81,7 +81,7 @@ const speechToTextProviders = {
         ]
     },
     [SpeechToTextType.ASSEMBLYAI_TRANSCRIBE]: {
-        label: 'components.speechToText.providers.assemblyAi',
+        label: 'common.providers.assemblyAi',
         name: SpeechToTextType.ASSEMBLYAI_TRANSCRIBE,
         icon: assemblyAIPng,
         url: 'https://www.assemblyai.com/',
@@ -95,7 +95,7 @@ const speechToTextProviders = {
         ]
     },
     [SpeechToTextType.LOCALAI_STT]: {
-        label: 'components.speechToText.providers.localAiSTT',
+        label: 'common.providers.localAiSTT',
         name: SpeechToTextType.LOCALAI_STT,
         icon: localAiPng,
         url: 'https://localai.io/features/audio-to-text/',
@@ -113,7 +113,7 @@ const speechToTextProviders = {
                 description: 'components.speechToText.inputs.baseUrl.description'
             },
             {
-                label: 'components.speechToText.inputs.language.title',
+                label: 'common.labels.language',
                 name: 'language',
                 type: 'string',
                 description: 'components.speechToText.inputs.language.description',
@@ -121,7 +121,7 @@ const speechToTextProviders = {
                 optional: true
             },
             {
-                label: 'components.speechToText.inputs.model.title',
+                label: 'common.labels.model',
                 name: 'model',
                 type: 'string',
                 description: 'components.speechToText.inputs.model.description.localAiSTT',
@@ -129,7 +129,7 @@ const speechToTextProviders = {
                 optional: true
             },
             {
-                label: 'components.speechToText.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -147,7 +147,7 @@ const speechToTextProviders = {
         ]
     },
     [SpeechToTextType.AZURE_COGNITIVE]: {
-        label: 'components.speechToText.providers.azureCognitive',
+        label: 'common.providers.azureCognitive',
         name: SpeechToTextType.AZURE_COGNITIVE,
         icon: azureSvg,
         url: 'https://azure.microsoft.com/en-us/products/cognitive-services/speech-services',
@@ -159,7 +159,7 @@ const speechToTextProviders = {
                 credentialNames: ['azureCognitiveServices']
             },
             {
-                label: 'components.speechToText.inputs.language.title',
+                label: 'common.labels.language',
                 name: 'language',
                 type: 'string',
                 description: 'components.speechToText.inputs.language.description',
@@ -173,7 +173,7 @@ const speechToTextProviders = {
                 description: 'components.speechToText.inputs.profanityFilterMode.description',
                 options: [
                     {
-                        label: 'components.speechToText.providers.none',
+                        label: 'common.providers.none',
                         name: 'None'
                     },
                     {
@@ -199,13 +199,13 @@ const speechToTextProviders = {
         ]
     },
     [SpeechToTextType.GROQ_WHISPER]: {
-        label: 'components.speechToText.providers.groqWhisper',
+        label: 'common.providers.groqWhisper',
         name: SpeechToTextType.GROQ_WHISPER,
         icon: groqPng,
         url: 'https://console.groq.com/',
         inputs: [
             {
-                label: 'components.speechToText.inputs.model.title',
+                label: 'common.labels.model',
                 name: 'model',
                 type: 'string',
                 description: 'components.speechToText.inputs.model.description.groq',
@@ -219,7 +219,7 @@ const speechToTextProviders = {
                 credentialNames: ['groqApi']
             },
             {
-                label: 'components.speechToText.inputs.language.title',
+                label: 'common.labels.language',
                 name: 'language',
                 type: 'string',
                 description: 'components.speechToText.inputs.language.description',
@@ -362,7 +362,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                             }
                         }}
                     >
-                        <MenuItem value='none'>{t('components.speechToText.providers.none')}</MenuItem>
+                        <MenuItem value='none'>{t('common.providers.none')}</MenuItem>
                         {Object.values(speechToTextProviders).map((provider) => (
                             <MenuItem key={provider.name} value={provider.name}>
                                 {t(provider.label)}
@@ -488,7 +488,7 @@ const SpeechToText = ({ dialogProps, onConfirm }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    {t('components.speechToText.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

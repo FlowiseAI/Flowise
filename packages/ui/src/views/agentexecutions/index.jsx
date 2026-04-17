@@ -247,11 +247,11 @@ const AgentExecutions = () => {
                         <Grid container spacing={2} alignItems='center'>
                             <Grid item xs={12} md={2}>
                                 <FormControl fullWidth size='small'>
-                                    <InputLabel id='state-select-label'>{t('agentExecution.filters.state.title')}</InputLabel>
+                                    <InputLabel id='state-select-label'>{t('common.labels.state')}</InputLabel>
                                     <Select
                                         labelId='state-select-label'
                                         value={filters.state}
-                                        label={t('agentExecution.filters.state.title')}
+                                        label={t('common.labels.state')}
                                         onChange={(e) => handleFilterChange('state', e.target.value)}
                                         size='small'
                                         sx={{
@@ -266,7 +266,7 @@ const AgentExecutions = () => {
                                         <MenuItem value=''>{t('agentExecution.filters.state.items.all')}</MenuItem>
                                         <MenuItem value='INPROGRESS'>{t('agentExecution.filters.state.items.inProgress')}</MenuItem>
                                         <MenuItem value='FINISHED'>{t('agentExecution.filters.state.items.finished')}</MenuItem>
-                                        <MenuItem value='ERROR'>{t('agentExecution.filters.state.items.error')}</MenuItem>
+                                        <MenuItem value='ERROR'>{t('common.labels.error')}</MenuItem>
                                         <MenuItem value='TERMINATED'>{t('agentExecution.filters.state.items.terminated')}</MenuItem>
                                         <MenuItem value='TIMEOUT'>{t('agentExecution.filters.state.items.timeout')}</MenuItem>
                                         <MenuItem value='STOPPED'>{t('agentExecution.filters.state.items.stopped')}</MenuItem>
@@ -356,7 +356,7 @@ const AgentExecutions = () => {
                                         onClick={() => applyFilters(currentPage, pageLimit)}
                                         size='small'
                                     >
-                                        {t('agentExecution.actions.apply')}
+                                        {t('common.actions.apply')}
                                     </Button>
                                     <Button variant='outlined' onClick={resetFilters} size='small'>
                                         {t('agentExecution.actions.reset')}
@@ -439,10 +439,10 @@ const AgentExecutions = () => {
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={handleDeleteDialogClose} color='primary'>
-                                {t('agentExecution.actions.cancel')}
+                                {t('common.actions.cancel')}
                             </Button>
                             <Button onClick={handleDeleteExecutions} color='error'>
-                                {t('agentExecution.actions.delete')}
+                                {t('common.actions.delete')}
                             </Button>
                         </DialogActions>
                     </Dialog>

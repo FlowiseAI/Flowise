@@ -151,17 +151,17 @@ const Leads = ({ dialogProps }) => {
                         <Box sx={{ width: '100%' }}>
                             <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1 }}>
                                 <SwitchInput
-                                    label={t('components.leads.form.labels.name')}
+                                    label={t('common.labels.name')}
                                     onChange={(value) => handleChange('name', value)}
                                     value={leadsConfig.name}
                                 />
                                 <SwitchInput
-                                    label={t('components.leads.form.labels.email')}
+                                    label={t('common.labels.emailAddress')}
                                     onChange={(value) => handleChange('email', value)}
                                     value={leadsConfig.email}
                                 />
                                 <SwitchInput
-                                    label={t('components.leads.form.labels.phone')}
+                                    label={t('common.labels.phone')}
                                     onChange={(value) => handleChange('phone', value)}
                                     value={leadsConfig.phone}
                                 />
@@ -177,7 +177,7 @@ const Leads = ({ dialogProps }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    {t('components.leads.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

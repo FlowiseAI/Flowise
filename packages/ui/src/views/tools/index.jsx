@@ -74,8 +74,8 @@ const Tools = () => {
             const dialogProp = {
                 title: t('tools.dialogs.addNewTool'),
                 type: 'IMPORT',
-                cancelButtonName: t('tools.actions.cancel'),
-                confirmButtonName: t('tools.actions.save'),
+                cancelButtonName: t('common.actions.cancel'),
+                confirmButtonName: t('common.actions.save'),
                 data: JSON.parse(file)
             }
             setDialogProps(dialogProp)
@@ -105,8 +105,8 @@ const Tools = () => {
         const dialogProp = {
             title: t('tools.dialogs.addNewTool'),
             type: 'ADD',
-            cancelButtonName: t('tools.actions.cancel'),
-            confirmButtonName: t('tools.actions.add')
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add')
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -116,8 +116,8 @@ const Tools = () => {
         const dialogProp = {
             title: t('tools.dialogs.editTool'),
             type: 'EDIT',
-            cancelButtonName: t('tools.actions.cancel'),
-            confirmButtonName: t('tools.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: selectedTool
         }
         setDialogProps(dialogProp)
@@ -166,7 +166,7 @@ const Tools = () => {
                             onSearchChange={onSearchChange}
                             search={true}
                             searchPlaceholder={t('tools.searchPlaceholder')}
-                            title={t('tools.title')}
+                            title={t('common.labels.tools')}
                             description={t('tools.description')}
                         >
                             <ToggleButtonGroup
@@ -185,7 +185,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title={t('tools.actions.cardView')}
+                                    title={t('common.actions.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -197,7 +197,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title={t('tools.actions.listView')}
+                                    title={t('common.actions.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -210,7 +210,7 @@ const Tools = () => {
                                     startIcon={<IconFileUpload />}
                                     sx={{ borderRadius: 2, height: 40 }}
                                 >
-                                    {t('tools.actions.load')}
+                                    {t('common.actions.load')}
                                 </PermissionButton>
                                 <input
                                     style={{ display: 'none' }}

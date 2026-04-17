@@ -26,13 +26,120 @@
             }
         },
         "labels": {
-            "output": "Output"
+            "output": "Output",
+            "description": "Description",
+            "documentation": "Documentation",
+            "error": "Error",
+            "language": "Language",
+            "model": "Model",
+            "name": "Name",
+            "none": "None",
+            "prompt": "Prompt",
+            "simpleTable": "simple table",
+            "state": "State",
+            "status": "Status",
+            "tokens": "Tokens",
+            "tools": "Tools",
+            "type": "Type",
+            "workspace": "Workspace",
+            "agents": "Agents",
+            "chatflow": "Chatflow",
+            "emailAddress": "Email Address",
+            "email": "Email",
+            "phoneNumber": "Phone Number",
+            "tabs": "tabs",
+            "phone": "Phone",
+            "variables": "Variables",
+            "chatflows": "Chatflows",
+            "user": "User",
+            "selectModel": "Select Model",
+            "weight": "weight"
+        },
+        "actions": {
+            "add": "Add",
+            "addNew": "Add New",
+            "apply": "Apply",
+            "back": "Back",
+            "cancel": "Cancel",
+            "cardView": "Card View",
+            "clear": "Clear",
+            "clearAll": "Clear All",
+            "clearSearch": "Clear Search",
+            "close": "Close",
+            "confirm": "Confirm",
+            "delete": "Delete",
+            "download": "Download",
+            "edit": "Edit",
+            "editName": "Edit Name",
+            "expand": "Expand",
+            "export": "Export",
+            "generate": "Generate",
+            "listView": "List View",
+            "load": "Load",
+            "manageLinks": "Manage Links",
+            "next": "Next",
+            "no": "No",
+            "refresh": "Refresh",
+            "save": "Save",
+            "saveName": "Save Name",
+            "search": "Search",
+            "share": "Share",
+            "submit": "Submit",
+            "yes": "Yes",
+            "selectAll": "Select All",
+            "expandRow": "expand row",
+            "copy": "Copy",
+            "saveAsTemplate": "Save As Template"
+        },
+        "dialogs": {
+            "delete": "$t(common.actions.delete)"
+        },
+        "errors": {
+            "unknownError": "Unknown error",
+            "internalServerError": "Internal Server Error"
+        },
+        "providers": {
+            "langSmith": "LangSmith",
+            "langFuse": "LangFuse",
+            "lunary": "Lunary",
+            "langWatch": "LangWatch",
+            "arize": "Arize",
+            "phoenix": "Phoenix",
+            "opik": "Opik",
+            "anthropic": "Anthropic Claude",
+            "azureOpenAI": "Azure ChatOpenAI",
+            "googleGemini": "Google Gemini",
+            "groq": "Groq",
+            "mistralAI": "Mistral AI",
+            "openAI": "OpenAI",
+            "ollama": "Ollama",
+            "none": "None",
+            "openAIWhisper": "OpenAI Whisper",
+            "assemblyAi": "Assembly AI",
+            "localAiSTT": "LocalAi STT",
+            "azureCognitive": "Azure Cognitive Services",
+            "groqWhisper": "Groq Whisper",
+            "openAiTts": "OpenAI TTS",
+            "elevenlabs": "Eleven Labs TTS",
+            "microsoft": "Microsoft",
+            "google": "Google",
+            "auth0": "Auth0",
+            "github": "Github"
+        },
+        "formats": {
+            "dateMonthDayYear": "MMMM Do, YYYY",
+            "dateMonthDayYearTime24Long": "MMMM Do, YYYY HH:mm:ss",
+            "dateMonthDayYearTime12Seconds": "MMMM Do YYYY, h:mm:ss a",
+            "dateMonthDayYearTime12Short": "MMMM Do YYYY, hh:mm A",
+            "dateMonthShortDayYearTime12": "MMM D, YYYY h:mm A",
+            "dateDayMonthShortYearTime12Seconds": "DD-MMM-YYYY, hh:mm:ss A",
+            "dateDayMonthYearTime24": "DD/MM/YYYY HH:mm"
+        },
+        "messages": {
+            "copied": "Copied!"
         }
     },
     "components": {
-        "language": {
-            "title": "Language"
-        },
         "header": {
             "star": "Star",
             "actions": {
@@ -66,10 +173,6 @@
                 "placeholder": "Describe your agent here",
                 "selectModel": "Select model to generate agentflow",
                 "chooseAnOption": "choose an option",
-                "actions": {
-                    "generate": "Generate",
-                    "back": "Back"
-                },
                 "messages": {
                     "errors": {
                         "fields": {
@@ -97,18 +200,15 @@
             },
             "expand": {
                 "actions": {
-                    "edit": "Edit",
                     "source": "Source",
                     "execute": "Execute"
                 }
             },
             "exportAsTemplate": {
                 "title": "Export As Template",
-                "name": "Name",
                 "badge": "Badge",
                 "usecases": "Usecases",
                 "usecaseTooltip": "Type a usecase and press enter to add it to the list. You can add as many items as you want.",
-                "description": "Description",
                 "messages": {
                     "success": "Saved as template successfully!",
                     "errors": {
@@ -117,8 +217,7 @@
                     }
                 },
                 "actions": {
-                    "saveTemplate": "Save Template",
-                    "cancel": "Cancel"
+                    "saveTemplate": "Save Template"
                 }
             },
             "formatPrompt": {
@@ -134,15 +233,13 @@
                     "sending": "An invitation will be sent to this email address",
                     "alreadyIn": "{{name}} is already a member of this workspace and won't be invited again."
                 },
-                "workspace": "Workspace",
                 "roles": "Role to Assign",
                 "selectRole": "Select Role",
                 "messages": {
                     "success": "Users invited to workspace",
                     "errors": {
                         "alreadyIn": "The following users are already in the workspace or organization: {{users}}",
-                        "failedSave": "Failed to invite users to workspace: {{msg}}",
-                        "unknown": "Unknown error"
+                        "failedSave": "Failed to invite users to workspace: {{msg}}"
                     },
                     "warning": "One or more invalid emails were removed."
                 }
@@ -151,10 +248,7 @@
                 "title": "Manage Scraped Links - {{url}}",
                 "actions": {
                     "fetch": "Fetch Links",
-                    "save": "Save",
-                    "cancel": "Cancel",
                     "clearAll": {
-                        "title": "Clear All",
                         "tooltip": "Clear All Links"
                     }
                 },
@@ -175,9 +269,6 @@
             },
             "nvidiaNim": {
                 "title": "NIM Setup",
-                "labels": {
-                    "model": "Model"
-                },
                 "steps": {
                     "download": {
                         "title": "Download Installer",
@@ -208,12 +299,7 @@
                 },
                 "actions": {
                     "viewLicense": "View License",
-                    "useExisting": "Use Existing",
-                    "cancel": "Cancel",
-                    "download": "Download",
-                    "next": "Next",
-                    "no": "No",
-                    "yes": "Yes"
+                    "useExisting": "Use Existing"
                 },
                 "exists": {
                     "title": "Container Already Exists",
@@ -227,23 +313,13 @@
                 }
             },
             "promptGenerator": {
-                "describeTaskPlaceholder": "Describe your task here",
-                "actions": {
-                    "apply": "Apply",
-                    "back": "Back",
-                    "generate": "Generate"
-                }
+                "describeTaskPlaceholder": "Describe your task here"
             },
             "promptLangsmithHub": {
-                "model": "Model",
                 "usecase": "Usecase",
-                "language": "Language",
                 "mailboxFolder": "secondary mailbox folder",
-                "prompt": "Prompt",
-                "description": "Description",
                 "readme": "Readme",
                 "cases": {
-                    "agents": "Agents",
                     "agentStimulation": "Agent Stimulation",
                     "autonomousAgents": "Autonomous agents",
                     "classification": "Classification",
@@ -272,20 +348,12 @@
                     "wait": "Please wait....loading Prompts",
                     "notFound": "No Available Prompts",
                     "found": "Available Prompts"
-                },
-                "actions": {
-                    "search": "Search",
-                    "cancel": "Cancel",
-                    "load": "Load"
                 }
             },
             "saveChatFlow": {
                 "placeholder": "My New Chatflow"
             },
             "shareWithWorkspace": {
-                "name": "Name",
-                "workspace": "Workspace",
-                "share": "Share",
                 "messages": {
                     "success": "Items Shared Successfully",
                     "error": "Failed to share Item: {{msg}}"
@@ -301,26 +369,13 @@
             "tag": {
                 "title": "Set Chatflow Category Tags",
                 "addLabel": "Add a tag",
-                "tooltip": "Enter a tag and press enter to add it to the list. You can add as many tags as you want.",
-                "actions": {
-                    "submit": "Submit",
-                    "cancel": "Cancel"
-                }
+                "tooltip": "Enter a tag and press enter to add it to the list. You can add as many tags as you want."
             },
             "viewLeads": {
                 "placeholder": "Search Name or Email or Phone",
                 "noLeads": "No Leads",
                 "leadsTable": {
-                    "name": "Name",
-                    "email": "Email Address",
-                    "phone": "Phone",
                     "created": "Created Date"
-                },
-                "actions": {
-                    "export": "Export"
-                },
-                "formats": {
-                    "date": "MMMM Do, YYYY"
                 }
             },
             "viewMessages": {
@@ -342,9 +397,6 @@
                     "title": "Clear Session",
                     "description": "Are you sure you want to clear messages?",
                     "descriptionSession": "Are you sure you want to clear session id: {{sessionId}} from {{memoryType}}?",
-                    "actions": {
-                        "clear": "Clear"
-                    },
                     "messages": {
                         "success": {
                             "simple": "Succesfully cleared messages",
@@ -373,7 +425,6 @@
                     "emailType": "Email:&nbsp;<highlight>{{email}}</highlight>",
                     "blubTooltip": "On the left 👈, you’ll see the Memory node used in this conversation. To delete the session conversations stored on that Memory node, you must have a matching Memory node with identical parameters in the canvas.",
                     "usedTools": "Used Tools",
-                    "state": "State",
                     "apiEmbed": "API/Embed",
                     "evaluations": "Evaluations",
                     "ui": "UI"
@@ -381,15 +432,10 @@
                 "actions": {
                     "exportJSON": "Export to JSON",
                     "deleteAll": "Delete All",
-                    "clearMessage": "Clear Message",
-                    "cancel": "Cancel",
-                    "delete": "Delete"
+                    "clearMessage": "Clear Message"
                 },
                 "errors": {
                     "audioNotSupport": "Your browser does not support the &lt;audio&gt; tag."
-                },
-                "formats": {
-                    "date": "MMMM Do YYYY, h:mm:ss a"
                 }
             },
             "pricing": {
@@ -422,8 +468,7 @@
                     }
                 },
                 "actions": {
-                    "confirmChange": "Confirm Change",
-                    "cancel": "Cancel"
+                    "confirmChange": "Confirm Change"
                 }
             }
         },
@@ -434,9 +479,6 @@
                 "saved": "Allowed Origins Saved",
                 "failed": "Failed to save Allowed Origins: {{msg}}"
             },
-            "actions": {
-                "save": "Save"
-            },
             "tooltip": "Your chatbot will only work when used from the following domains.",
             "error": {
                 "title": "Error Message",
@@ -445,18 +487,6 @@
             }
         },
         "analyzeFlow": {
-            "actions": {
-                "save": "Save"
-            },
-            "provides": {
-                "langSmith": "LangSmith",
-                "langFuse": "LangFuse",
-                "lunary": "Lunary",
-                "langWatch": "LangWatch",
-                "arize": "Arize",
-                "phoenix": "Phoenix",
-                "opik": "Opik"
-            },
             "inputs": {
                 "credential": "Connect Credential",
                 "projectName": {
@@ -479,9 +509,6 @@
             "messages": {
                 "success": "Chat Feedback Settings Saved",
                 "error": "Failed to save Chat Feedback Settings: {{msg}}"
-            },
-            "actions": {
-                "save": "Save"
             }
         },
         "fileUpload": {
@@ -489,9 +516,6 @@
             "messages": {
                 "success": "File Upload Configuration Saved",
                 "error": "Failed to save File Upload Configuration: {{msg}}"
-            },
-            "actions": {
-                "save": "Save"
             },
             "enableLabel": "Enable Full File Upload",
             "allowUploadsType": "Allow Uploads of Type",
@@ -512,18 +536,6 @@
                 "success": "Follow-up Prompts configuration saved",
                 "error": "Failed to save follow-up prompts configuration: {{msg}}"
             },
-            "actions": {
-                "save": "Save"
-            },
-            "providers": {
-                "anthropic": "Anthropic Claude",
-                "azureOpenAI": "Azure ChatOpenAI",
-                "googleGemini": "Google Gemini",
-                "groq": "Groq",
-                "mistralAI": "Mistral AI",
-                "openAI": "OpenAI",
-                "ollama": "Ollama"
-            },
             "inputs": {
                 "connectCredential": "Connect Credential",
                 "modelName": {
@@ -535,7 +547,6 @@
                     "description": "Base URL of your Ollama instance"
                 },
                 "prompt": {
-                    "title": "Prompt",
                     "descriptions": {
                         "prompt": "Prompt to generate questions based on the conversation history. You can use variable {history} to refer to the conversation history.",
                         "default": "Given the following conversations: {history}. Please help me predict the three most likely questions that human would ask and keeping each question short and concise."
@@ -549,18 +560,10 @@
                 "success": "Leads configuration Saved",
                 "error": "Failed to save Leads configuration: {{msg}}"
             },
-            "actions": {
-                "save": "Save"
-            },
             "enableLeadCapture": "Enable Lead Capture",
             "form": {
                 "title": "Form Title",
-                "placeholder": "Hey 👋 thanks for your interest!\nLet us know where we can reach you",
-                "labels": {
-                    "name": "name",
-                    "email": "Email Address",
-                    "phone": "Phone"
-                }
+                "placeholder": "Hey 👋 thanks for your interest!\nLet us know where we can reach you"
             },
             "messageAfterLeadCaptured": {
                 "title": "Message after lead captured",
@@ -569,12 +572,8 @@
             "formFields": "Form fields"
         },
         "overrideConfig": {
-            "variables": "Variables",
             "title": "Override Configuration",
             "docsHelp": "Enable or disable which properties of the flow configuration can be overridden. Refer to the <a>documentation</a> for more information.",
-            "actions": {
-                "save": "Save"
-            },
             "enableLabel": "Enable Override Configuration",
             "nodes": "Nodes",
             "messages": {
@@ -585,10 +584,6 @@
             "schema": "Schema"
         },
         "postProcessing": {
-            "actions": {
-                "save": "Save",
-                "cancel": "Cancel"
-            },
             "enableLabel": "Enable Post Processing",
             "functionLabel": "JS Function",
             "postProcessionLabel": "Post Processing Function",
@@ -627,9 +622,7 @@
                 }
             },
             "variablesTable": {
-                "variable": "Variable",
-                "type": "Type",
-                "description": "Description"
+                "variable": "Variable"
             },
             "types": {
                 "string": "string",
@@ -643,9 +636,6 @@
         "rateLimit": {
             "title": "Rate Limit",
             "docsHelp": "Visit <a>Rate Limit Setup Guide</a> to set up Rate Limit correctly in your hosting environment.",
-            "actions": {
-                "save": "Save"
-            },
             "enableLabel": "Enable Rate Limit",
             "limitMax": "Message Limit per Duration",
             "limitDuration": "Duration in Second",
@@ -659,26 +649,13 @@
             }
         },
         "speechToText": {
-            "actions": {
-                "save": "Save"
-            },
             "providersLabel": "Providers",
-            "providers": {
-                "none": "None",
-                "openAIWhisper": "OpenAI Whisper",
-                "assemblyAi": "Assembly AI",
-                "localAiSTT": "LocalAi STT",
-                "azureCognitive": "Azure Cognitive Services",
-                "groqWhisper": "Groq Whisper"
-            },
             "inputs": {
                 "connectCredential": "Connect Credential",
                 "language": {
-                    "title": "Language",
                     "description": "The language of the input audio. Supplying the input language in ISO-639-1 format will improve accuracy and latency."
                 },
                 "prompt": {
-                    "title": "Prompt",
                     "description": "An optional text to guide the model's style or continue a previous audio segment. The prompt should match the audio language."
                 },
                 "temperature": {
@@ -690,7 +667,6 @@
                     "description": "The base URL of the local AI server"
                 },
                 "model": {
-                    "title": "Model",
                     "description": {
                         "localAiSTT": "The STT model to load. Defaults to whisper-1 if left blank.",
                         "groq": "The STT model to load. Defaults to whisper-large-v3 if left blank."
@@ -719,21 +695,10 @@
             "messages": {
                 "success": "Conversation Starter Prompts Saved",
                 "error": "Failed to save Conversation Starter Prompts: {{msg}}"
-            },
-            "actions": {
-                "save": "Save"
             }
         },
         "textToSpeech": {
-            "actions": {
-                "save": "Save"
-            },
             "providersLabel": "Providers",
-            "providers": {
-                "none": "None",
-                "openai": "OpenAI TTS",
-                "elevenlabs": "Eleven Labs TTS"
-            },
             "inputs": {
                 "connectCredential": "Connect Credential",
                 "voice": {
@@ -772,7 +737,6 @@
             "uploadFile": "Upload File"
         },
         "dataGrid": {
-            "delete": "Delete",
             "addItem": "Add Item"
         },
         "selectVariable": {
@@ -790,16 +754,7 @@
             },
             "output": "{{output}} from {{node}}"
         },
-        "codeBlock": {
-            "copied": "Copied!",
-            "actions": {
-                "download": "Download",
-                "copy": "Copy"
-            }
-        },
         "documentStoreTable": {
-            "name": "Name",
-            "description": "Description",
             "connectedFlows": "Connected flows",
             "totalCharacters": "Total characters",
             "totalChunks": "Total chunks",
@@ -808,43 +763,29 @@
             "options": "Document store options"
         },
         "flowListTable": {
-            "name": "name",
             "category": "Category",
             "nodes": "Nodes",
             "lastModifiedDate": "Last Modified Date",
             "actions": "Actions",
-            "more": "+ {{count}} More",
-            "formats": {
-                "date": "MMMM Do, YYYY HH:mm:ss"
-            }
+            "more": "+ {{count}} More"
         },
         "filesTable": {
-            "name": "Name",
             "path": "Path",
             "size": "Size",
             "actions": "Actions"
         },
         "executionsListTable": {
-            "status": "Status",
             "lastUpdated": "Last Updated",
             "agentflow": "Agentflow",
             "session": "Session",
             "created": "Created",
-            "selectAll": "select all executions",
-            "formats": {
-                "date": "MMM D, YYYY h:mm A"
-            }
+            "selectAll": "select all executions"
         },
         "marketplaceTable": {
-            "name": "Name",
-            "type": "Type",
-            "description": "Description",
             "framework": "Framework",
             "useCases": "Use cases",
             "badges": "Badges",
             "sharedTemplate": "Shared Template",
-            "share": "Share",
-            "delete": "Delete",
             "aDenseTable": "a dense table"
         },
         "table": {
@@ -854,10 +795,6 @@
             "disabled": "Disabled",
             "schemaUnavailable": "No schema available",
             "schema": "Schema"
-        },
-        "toolListTable": {
-            "name": "Name",
-            "description": "Description"
         },
         "copyToClipboard": {
             "title": "Copy to clipboard"
@@ -903,16 +840,12 @@
             "openAi": "Assistants OpenAI",
             "azure": "Assistants Azure"
         },
-        "chatflows": "Chatflows",
         "chatMessages": "Chat Messages",
         "chatFeedbacks": "Chat Feedbacks",
         "customTemplates": "Custom Templates",
         "documentStores": "Document Stores",
         "executions": "Executions",
-        "tools": "Tools",
-        "variables": "Variables",
         "evaluations": "Evaluations",
-        "saveAsTemplate": "Save As Template",
         "viewMessages": "View Messages",
         "viewLeads": "View Leads",
         "configuration": "Configuration",
@@ -945,21 +878,16 @@
         "workspaces": "Workspaces",
         "dialogs": {
             "delete": {
-                "title": "Delete",
                 "description": "Delete {{title}} {{name}}?"
             }
         },
         "actions": {
-            "delete": "Delete",
-            "cancel": "Cancel",
             "options": "Options",
             "rename": {
                 "title": "Rename",
                 "renameThis": "Rename {{name}}"
             },
             "duplicate": "Duplicate",
-            "export": "Export",
-            "saveAsTemplate": "Save As Template",
             "starterPrompts": "Starter Prompts",
             "chatFeedback": "Chat Feedback",
             "allowedDomains": "Allowed Domains",
@@ -990,12 +918,10 @@
         "trialDaysLeftMessage_other": "There are <highlight>{{count}} days left</highlight> in your trial."
     },
     "profile": {
-        "user": "User",
         "logout": "Logout",
         "logoutWait": "Logging out...",
         "version": "Version",
         "accountSetting": "Account Settings",
-        "documentation": "Documentation",
         "contactTo": "Please contact your administrator for assistance.",
         "subscription": {
             "title": "Subscription & Billing",
@@ -1047,17 +973,14 @@
         },
         "inputs": {
             "name": {
-                "title": "Name",
                 "placeholder": "Your Name"
             },
-            "email": "Email Address",
             "oldPassword": "Old Password",
             "newPassword": {
                 "title": "New Password",
                 "caption": "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character."
             },
-            "confirmNewPassword": "Confirm New Password",
-            "language": "Language"
+            "confirmNewPassword": "Confirm New Password"
         },
         "dialog": {
             "removeSeats": "Remove Additional Seats",
@@ -1093,23 +1016,19 @@
             "expires": "expires {{month}} / {{year}}"
         },
         "actions": {
-            "export": "Export",
             "import": "Import",
-            "cancel": "Cancel",
             "removeSeats": "Remove Seats",
             "addSeats": {
                 "title": "Add Seats",
                 "tooltip": "Add Seats is available only for PRO plan"
             },
             "save": {
-                "title": "Save",
                 "tooltips": {
                     "profile": "Profile",
                     "security": "Security"
                 }
             },
-            "delete": "Delete your account",
-            "confirm": "Confirm"
+            "delete": "Delete your account"
         },
         "organizations": {
             "organization": "Organization",
@@ -1118,7 +1037,6 @@
             "select": "Select Organization"
         },
         "workspaces": {
-            "workspace": "Workspace",
             "switching": "Switching workspace...",
             "unavailable": "Workspace Unavailable",
             "unavailableContinue": "Your current workspace is no longer available. Please select another workspace to continue.",
@@ -1147,9 +1065,6 @@
             "loading": "Deleting...",
             "confirm": "To confirm, please type <strong>permanently delete</strong> below:",
             "permanentlyDelete": "permanently delete"
-        },
-        "errors": {
-            "internalServerErrorTitle": "Internal Server Error"
         }
     },
     "agentExecution": {
@@ -1157,12 +1072,10 @@
         "description": "Monitor and manage agentflows executions",
         "filters": {
             "state": {
-                "title": "State",
                 "items": {
                     "all": "All",
                     "inProgress": "In Progress",
                     "finished": "Finished",
-                    "error": "Error",
                     "terminated": "Terminated",
                     "timeout": "Timeout",
                     "stopped": "Stopped"
@@ -1174,21 +1087,14 @@
             "sessionId": "Session ID"
         },
         "actions": {
-            "apply": "Apply",
             "reset": "Reset",
             "deleteSelected": "Delete selected executions",
-            "cancel": "Cancel",
-            "delete": "Delete",
-            "submit": "Submit",
             "copy": {
                 "title": {
-                    "name": "Copy",
                     "id": "Copy ID",
                     "link": "Copy link"
-                },
-                "done": "Copied!"
+                }
             },
-            "close": "Close",
             "unshare": "Unshare"
         },
         "dialogs": {
@@ -1210,13 +1116,9 @@
                 "execution": {
                     "title": "Execution ID: {{id}}"
                 },
-                "share": "Share",
                 "updating": "Updating...",
                 "public": "Public",
-                "formats": {
-                    "date": "MMM D, YYYY h:mm A"
-                },
-                "unavailable": "N/A",
+                "notAvailable": "N/A",
                 "actions": {},
                 "noDataAvailable": "No data available for this item"
             },
@@ -1232,19 +1134,15 @@
                 "fulfilled": "Fulfilled",
                 "notFulfilled": "Not Fulfilled"
             },
-            "tools": "Tools",
             "toolCall": "Tool Call",
             "input": "Input",
             "usedTools": "Used Tools",
             "noData": "*No data*",
-            "output": "Output",
             "used": "Used",
             "called": "Called",
             "error": {
-                "title": "Error",
                 "noDetails": "*No error details*"
             },
-            "state": "State",
             "actions": {
                 "rendered": "Rendered",
                 "raw": "Raw",
@@ -1282,11 +1180,6 @@
                 "v1": "V1",
                 "v2": "V2"
             },
-            "cardView": "Card View",
-            "listView": "List View",
-            "actions": {
-                "addNew": "Add New"
-            },
             "deprecationNotice": "<strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for improved performance and continued support.",
             "dismiss": "dismiss",
             "empty": "No Agents Yet"
@@ -1299,7 +1192,6 @@
             "parameters": "{{label}} Parameters",
             "buttonGroup": "Basic button group",
             "agent": "Agent",
-            "chatflow": "Chatflow",
             "messages": {
                 "nodeVersion": {
                     "outdated": "Node version {{oldVersion}} outdated\nUpdate to latest version {{newVersion}}",
@@ -1323,31 +1215,23 @@
             },
             "dialogs": {
                 "delete": {
-                    "title": "Delete",
                     "description": "Delete {{canvasTitle}} {{name}}?"
                 }
             },
             "actions": {
-                "delete": "Delete",
                 "duplicate": "Duplicate",
-                "cancel": "Cancel",
                 "toggleBackground": "toggle background",
                 "toggleSnapping": "toggle snapping",
-                "saveName": "Save Name",
-                "editName": "Edit Name",
                 "info": "Info"
-            },
-            "error": "Error"
+            }
         }
     },
     "apiKey": {
         "title": "API Key",
         "description": "Flowise API & SDK authentication keys",
-        "copied": "Copied!",
         "searchPlaceholder": "Search API Keys",
         "notFound": "No API Keys Yet",
         "keyTable": {
-            "title": "simple table",
             "keyName": "Key Name",
             "apiKey": "API Key",
             "permissions": "Permissions",
@@ -1376,7 +1260,6 @@
         },
         "dialogs": {
             "delete": {
-                "title": "Delete",
                 "description": {
                     "simple": "Delete key [{{name}}] ?",
                     "inUse": "Delete key [{{name}}] ?\nThere are {{count}} chatflows using this key."
@@ -1385,17 +1268,9 @@
         },
         "actions": {
             "copyKey": "Copy API Key",
-            "selectAll": "Select All",
-            "cancel": "Cancel",
-            "copy": "Copy",
             "show": "Show",
-            "expandRow": "expand row",
-            "edit": "Edit",
-            "delete": "Delete",
             "addKey": "Add New API Key",
-            "add": "Add",
             "editKey": "Edit API Key",
-            "save": "Save",
             "createKey": "Create Key"
         },
         "inputs": {
@@ -1404,9 +1279,6 @@
                 "placeholder": "My New Key"
             },
             "permissions": "Permissions"
-        },
-        "formats": {
-            "date": "MMMM Do, YYYY"
         }
     },
     "assistants": {
@@ -1420,7 +1292,6 @@
                 "searchPlaceholder": "Search Assistants",
                 "notFound": "No Custom Assistants Added Yet",
                 "label": "Custom",
-                "name": "Name",
                 "instructions": "Instructions",
                 "messages": {
                     "create": {
@@ -1449,7 +1320,6 @@
                     "description": "You can generate a prompt template by sharing basic details about your task."
                 },
                 "embedInWebsite": "Embed in website or use as API",
-                "selectModel": "Select Model",
                 "inputs": {
                     "knowledge": {
                         "title": "Knowledge (Document Stores)",
@@ -1464,7 +1334,6 @@
                         "tooltip": "Return the actual source documents that were used to answer the question"
                     },
                     "tools": {
-                        "title": "Tools",
                         "tooltip": "Tools are actions that your assistant can perform",
                         "tool": "Tool"
                     }
@@ -1561,9 +1430,6 @@
                             }
                         },
                         "inputAnchors": {
-                            "tools": {
-                                "title": "Tools"
-                            },
                             "memory": {
                                 "title": "Memory"
                             },
@@ -1596,7 +1462,6 @@
                 },
                 "searchPlaceholder": "Search Assistants",
                 "notFound": "No OpenAI Assistants Added Yet",
-                "label": "OpenAI",
                 "messages": {
                     "addAssistant": {
                         "success": "New Assistant added",
@@ -1620,8 +1485,7 @@
                     "delete": {
                         "success": "Assistant deleted",
                         "error": "Failed to delete Assistant: {{msg}}"
-                    },
-                    "error": "Internal Server Error"
+                    }
                 },
                 "agentFlow": {
                     "openAi": {
@@ -1715,23 +1579,16 @@
         },
         "dialogs": {
             "delete": {
-                "title": "Delete",
                 "description": "Delete {{name}}?"
             }
         },
         "actions": {
-            "cancel": "Cancel",
-            "save": "Save",
-            "delete": "Delete",
-            "back": "Back",
             "settings": "Settings",
             "deleteAssistant": {
                 "title": "Delete Assistant",
                 "description": "Select delete method for {{name}}"
             },
-            "expand": "Expand",
             "generate": {
-                "title": "Generate",
                 "description": "Generate instructions using model"
             },
             "addTool": "Add Tool",
@@ -1739,13 +1596,11 @@
             "addCustomAssistant": "Add New Custom Assistant",
             "addAssistant": "Add New Assistant",
             "editAssistant": "Edit Assistant",
-            "add": "Add",
             "editName": "Edit {{name}}",
             "addVectorStore": "Add Vector Store",
             "sync": "Sync",
             "onlyFlowise": "Only Flowise",
             "openAiFlowise": "OpenAI and Flowise",
-            "load": "Load",
             "loadExisting": "Load Existing Assistant",
             "apiEndpoint": "API Endpoint"
         }
@@ -1767,7 +1622,6 @@
             "title": "Forgot Password?",
             "resetCode": "Have a reset password code? <a>Change your password here</a>.",
             "username": "Username",
-            "email": "Email",
             "caption": "If you forgot the email you used for signing up, please contact your administrator.",
             "messages": {
                 "success": "Password reset instructions sent to the email.",
@@ -1791,7 +1645,6 @@
             "resend": "Resend Verification Email",
             "login": "Login",
             "copyCallback": "Copy Callback URL",
-            "save": "Save",
             "test": "Test {{providerName}} Configuration",
             "backHome": "Back to Home",
             "backLogin": "Back to Login"
@@ -1809,7 +1662,6 @@
             "table": {
                 "title": "users table",
                 "activity": "Activity",
-                "user": "User",
                 "date": "Date",
                 "method": "Method",
                 "message": "Message"
@@ -1860,7 +1712,6 @@
                 "caption": "Confirm your password. Must match the password typed above."
             },
             "email": {
-                "title": "Email",
                 "caption": "Kindly use a valid email address. Will be used as login id."
             },
             "inviteCode": {
@@ -1921,17 +1772,9 @@
         },
         "sso": {
             "title": "Configure SSO",
-            "copied": "Copied!",
-            "tabs": "tabs",
             "loading": {
                 "dashboard": "Loading dashboard...",
                 "data": "Loading data..."
-            },
-            "providers": {
-                "microsoft": "Microsoft",
-                "google": "Google",
-                "auth0": "Auth0",
-                "github": "Github"
             },
             "validation": {
                 "azure": {
@@ -1975,43 +1818,28 @@
         }
     },
     "canvas": {
-        "title": {
-            "agents": "Agents",
-            "chatflow": "Chatflow"
-        },
         "untitled": "Untitled {{title}}",
         "unsaved": "You have unsaved changes! Do you want to navigate away?",
         "outputFrom": "Output from {{id}}",
         "valueFrom": "Value from {{key}}",
         "variablesTooltip": "Type {{ to select variables",
-        "tabs": "tabs",
         "true": "True",
         "false": "False",
         "inputsLabel": "Inputs",
         "actions": {
             "denerateAgentflow": {
-                "title": "Generate Agentflow",
-                "label": "generate"
+                "title": "Generate Agentflow"
             },
             "addNode": {
                 "title": "Add Node",
                 "label": "add"
             },
-            "clearSearch": "Clear Search",
-            "back": "Back",
-            "editName": "Edit Name",
-            "saveName": "Save Name",
-            "cancel": "Cancel",
             "apiEndpoint": "API Endpoint",
             "saveByName": "Save {{name}}",
-            "save": "Save",
             "setting": "Settings",
             "duplicate": "Duplicate",
             "info": "Info",
             "additionalParameters": "Additional Parameters",
-            "add": "Add",
-            "delete": "Delete",
-            "confirm": "Confirm",
             "toggleSnapping": "toggle snapping",
             "toggleBackground": "toggle background",
             "sync": {
@@ -2026,26 +1854,18 @@
             "setupNimLocally": "Setup NIM Locally",
             "generateKnowledge": "Generate knowledge base description",
             "generateInstructions": "Generate instructions",
-            "expand": "Expand",
-            "seeExample": "See Example",
-            "refresh": "Refresh",
-            "edit": "Edit",
-            "manageLinks": "Manage Links"
+            "seeExample": "See Example"
         },
         "addNodes": {
-            "title": "Add Nodes",
-            "weight": "weight",
-            "tabs": "tabs"
+            "title": "Add Nodes"
         },
         "inputs": {
             "search": {
                 "placeholder": "Search nodes"
-            },
-            "output": "Output"
+            }
         },
         "dialogs": {
             "delete": {
-                "title": "Delete",
                 "description": "Delete {{title}} {{name}}?"
             },
             "build": {
@@ -2067,8 +1887,7 @@
             "generateInstructions": {
                 "title": "Generate Instructions",
                 "description": "You can generate a prompt template by sharing basic details about your task.F"
-            },
-            "selectModel": "Select Model"
+            }
         },
         "messages": {
             "saveChatflow": {
@@ -2093,14 +1912,6 @@
             }
         }
     },
-    "categories": {
-        "memory": "Memory",
-        "chatModels": "Chat Models",
-        "agents": "Agents",
-        "multiAgents": "Multi Agents",
-        "sequentialAgents": "Sequential Agents",
-        "agentFlows": "Agent Flows"
-    },
     "chatbot": {
         "invalid": {
             "title": "Invalid Chatbot",
@@ -2108,11 +1919,9 @@
         }
     },
     "chatflows": {
-        "title": "Chatflows",
         "description": "Build single-agent systems, chatbots and simple LLM flows",
         "searchPlaceholder": "Search Name or Category",
         "notFound": "No Chatflows Yet",
-        "copied": "Copied!",
         "codes": {
             "embed": {
                 "title": "Embed",
@@ -2135,26 +1944,17 @@
             "refer": "Refer <a>here</a> for more details"
         },
         "nodes": "Nodes",
-        "variables": "Variables",
         "options": {
             "noAuthorization": "No Authorization",
             "addKey": "- Add New Key -"
         },
-        "table": {
-            "name": "Name",
-            "type": "Type"
-        },
         "specifyMultipleValues": "You can also specify multiple values for a config parameter by specifying the node id",
         "streamInfo": "Read&nbsp;<a>here</a>&nbsp;on how to stream response back to application",
         "choose": "Choose an API key",
-        "tabs": "tabs",
         "bodyTag": "Paste this anywhere in the <c><body></c> tag of your html file.",
         "bodyTagAlso": "You can also specify a&nbsp;<a>version</a>:&nbsp;<c>https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js</c>",
         "actions": {
             "showChat": "Show Embed Chat Config",
-            "cardView": "Card View",
-            "listView": "List View",
-            "addNew": "Add New",
             "copyLink": "Copy Link",
             "openNewTab": "Open New Tab",
             "makePublic": {
@@ -2263,7 +2063,6 @@
         "processFlow": "Process Flow",
         "usedTools": "Used Tools",
         "calledTools": "Called Tools",
-        "state": "State",
         "finished": "Finished",
         "submitting": "Thank you for submitting your contact information.",
         "fillForm": "Please Fill Out The Form",
@@ -2285,34 +2084,23 @@
             "done_one": "Thought for {{count}} second",
             "done_other": "Thought for {{count}} seconds"
         },
-        "inputs": {
-            "name": "Name",
-            "email": "Email Address",
-            "phone": "Phone Number"
-        },
         "dragDrop": {
             "here": "Drop here to upload",
             "maxSize": "Max Allowed Size: {{size}} MB"
         },
         "actions": {
             "viewDetails": "View Details",
-            "close": "Close",
             "clearConversation": "Clear Conversation",
             "clearChat": "Clear Chat",
             "removeAttachment": "Remove attachment",
-            "submit": "Submit",
-            "save": "Save",
             "okay": "Okay",
             "stop": "Stop",
-            "cancel": "Cancel",
             "clearHistory": {
                 "title": "Clear Chat History",
                 "description": "Are you sure you want to clear all chat history?"
             },
-            "clear": "Clear",
             "chat": "Chat",
             "expandChat": "Expand Chat",
-            "expand": "Expand",
             "validation": "validation",
             "validateNodes": "Validate Nodes",
             "validateFlow": {
@@ -2346,7 +2134,6 @@
         "description": "API keys, tokens, and secrets for 3rd party integrations",
         "cannotShare": "Cannot edit shared credential.",
         "notFound": "No Credentials Yet",
-        "weight": "weight",
         "inputs": {
             "credentialName": "Credential Name",
             "oAuthRedirectUrl": "OAuth Redirect URL",
@@ -2354,27 +2141,17 @@
         },
         "table": {
             "title": "Shared Credential",
-            "name": "Name",
             "lastUpdated": "Last Updated",
             "created": "Created"
         },
         "actions": {
             "authenticate": "Authenticate",
-            "save": "Save",
-            "cancel": "Cancel",
-            "expand": "Expand",
-            "clearSearch": "Clear Search",
-            "add": "Add",
-            "share": "Share",
-            "edit": "Edit",
-            "delete": "Delete",
             "addCredential": "Add Credential"
         },
         "dialogs": {
             "add": "Add New Credential",
             "share": "Share Credential",
             "delete": {
-                "title": "Delete",
                 "description": "Delete credential {{name}}?"
             }
         },
@@ -2395,13 +2172,9 @@
                 "success": "OAuth2 authorization completed successfully",
                 "errors": {
                     "simple": "OAuth2 authorization failed",
-                    "withMsg": "OAuth2 authorization failed: {{msg}}",
-                    "unknown": "Unknown error"
+                    "withMsg": "OAuth2 authorization failed: {{msg}}"
                 }
             }
-        },
-        "formats": {
-            "date": "MMMM Do, YYYY HH:mm:ss"
         }
     },
     "datasets": {
@@ -2409,7 +2182,6 @@
         "dataset": "Dataset: {{name}}",
         "notFoundDataset": "No Datasets Yet",
         "notFoundRows": "No Dataset Items Yet",
-        "selectAll": "select all",
         "datasetTooltip": "Use the drag icon at (extreme right) to reorder the dataset items",
         "dialogs": {
             "addDataset": "Add Dataset",
@@ -2418,7 +2190,6 @@
             "editRow": "Edit Item in {{name}} Dataset",
             "upload": "Upload Items to {{name}} Dataset",
             "delete": {
-                "title": "Delete",
                 "description": {
                     "items": "Delete {{count}} dataset items?",
                     "datasets": "Delete dataset {{name}}?"
@@ -2426,30 +2197,19 @@
             }
         },
         "table": {
-            "title": "simple table",
             "input": "Input",
             "expectedOutput": "Expected Output",
-            "name": "Name",
-            "description": "Description",
             "rows": "Rows",
             "lastUpdated": "Last Updated"
         },
         "actions": {
-            "add": "Add",
-            "edit": "Edit",
-            "cancel": "Cancel",
             "upload": "Upload",
-            "save": "Save",
-            "delete": "Delete",
             "uploadCsv": "Upload CSV",
             "newItem": "New Item",
             "deleteItem_one": " Delete {{count}} item",
-            "deleteItem_other": " Delete {{count}} items",
-            "addNew": "Add New"
+            "deleteItem_other": " Delete {{count}} items"
         },
         "inputs": {
-            "name": "Name",
-            "description": "Description",
             "uploadCsv": {
                 "title": "Upload CSV",
                 "tooltip": "Only the first 2 columns will be considered:\n----------------------------\n| Input      | Output      |\n----------------------------\n| test input | test output |\n----------------------------",
@@ -2483,17 +2243,12 @@
                 "success": "Dataset deleted",
                 "error": "Failed to delete dataset: {{msg}}"
             }
-        },
-        "formats": {
-            "date": "MMMM Do YYYY, hh:mm A"
         }
     },
     "docstore": {
         "title": "Document Store",
         "description": "Store and upsert documents for LLM retrieval (RAG)",
         "searchPlaceholder": "Search Name",
-        "searchInput": "weight",
-        "simpleTable": "simple table",
         "empty": {
             "documentStores": "No Document Stores Created Yet",
             "documents": "No Document Added Yet",
@@ -2502,8 +2257,6 @@
         },
         "common": {
             "unknown": "Unknown",
-            "unknownError": "Unknown error",
-            "none": "None",
             "noSource": "No source"
         },
         "labels": {
@@ -2571,7 +2324,6 @@
             "selectVectorStoreProvider": "Select a Vector Store Provider",
             "selectRecordManager": "Select a Record Manager",
             "delete": {
-                "title": "Delete",
                 "note": "<strong>Note:</strong> Without a Record Manager configured, only the document chunks will be removed from the document store. The actual vector embeddings in your vector store database will remain unchanged. To enable automatic cleanup of vector store data, please configure a Record Manager. <a>Learn more</a>",
                 "description": {
                     "loader": {
@@ -2591,9 +2343,6 @@
             }
         },
         "inputs": {
-            "name": "Name",
-            "description": "Description",
-            "search": "Search",
             "query": "Enter your Query",
             "loaderName": {
                 "simple": "{{name}} name",
@@ -2601,13 +2350,6 @@
             }
         },
         "actions": {
-            "cancel": "Cancel",
-            "clearSearch": "Clear Search",
-            "delete": "Delete",
-            "save": "Save",
-            "expand": "Expand",
-            "refresh": "Refresh",
-            "manageLinks": "Manage Links",
             "update": "Update",
             "refreshDocumentStore": "Refresh Document Store",
             "addDocumentLoader": "Add Document Loader",
@@ -2622,16 +2364,11 @@
                 "viewApi": "View API"
             },
             "deleteChunk": "Delete Chunk",
-            "add": "Add",
-            "cardView": "Card View",
-            "listView": "List View",
-            "addNew": "Add New",
             "documentStoreActions": "Document store actions",
             "rename": "Rename",
             "process": "Process",
             "previewChunks": "Preview Chunks",
             "preview": "Preview",
-            "close": "Close",
             "details": "Details",
             "reset": "Reset",
             "saveConfig": "Save Config",
@@ -2640,7 +2377,6 @@
             "selectVectorStore": "Select Vector Store",
             "selectRecordManager": "Select Record Manager",
             "upsertHistory": "Upsert History",
-            "back": "Back",
             "editChunk": "Edit Chunk"
         },
         "validation": {
@@ -2694,19 +2430,13 @@
                 "success": "Vector Store Config Successfully Updated",
                 "error": "Failed to update vector store config: {{msg}}"
             }
-        },
-        "formats": {
-            "date": "DD-MMM-YYYY, hh:mm:ss A"
         }
     },
     "evaluations": {
         "title": "Evaluations",
         "input": "Input",
         "latency": "Latency (ms)",
-        "tokens": "Tokens",
         "customAssistant": "Custom Assistant",
-        "error": "Error",
-        "unknownError": "Unknown error",
         "notFound": "No Evaluations Yet",
         "totalRuns": "Total Runs: {{value}}",
         "avgLatency": "Avg Latency: {{value}} ms",
@@ -2735,7 +2465,6 @@
                 }
             },
             "delete": {
-                "title": "Delete",
                 "description_one": "Delete {{count}} evaluation? This will delete all versions of the evaluation.",
                 "description_other": "Delete {{count}} evaluation? This will delete all versions of the evaluation."
             },
@@ -2775,7 +2504,6 @@
                 "llm": "LLM: {{value}}",
                 "node": "Node",
                 "providerModel": "Provider & Model",
-                "output": "Output",
                 "total": {
                     "title": "Total",
                     "value": "Total: {{value}}"
@@ -2796,7 +2524,6 @@
         },
         "inputs": {
             "name": {
-                "title": "Name",
                 "tooltip": "Friendly name to tag this run.",
                 "placeholder": "Evaluation"
             },
@@ -2807,13 +2534,11 @@
             "rowsOneConversation": "Treat all dataset rows as one conversation?",
             "checkBox": {
                 "all": "All",
-                "chatflows": "Chatflows",
                 "agentflowV2": "Agentflow (v2)",
                 "customAssistants": "Custom Assistants"
             },
             "selectEvaluators": "Select the Evaluators",
             "useLLMgradeResults": "Use an LLM to grade the results?",
-            "selectModel": "Select Model",
             "enterModelName": {
                 "title": "Enter the Model Name",
                 "placeholder": "Model Name"
@@ -2841,11 +2566,8 @@
         "actions": {
             "skipEvaluators": "Skip Evaluators",
             "skip": "Skip",
-            "next": "Next",
             "startEvaluation": "Start Evaluation",
             "minimize": "Minimize",
-            "yes": "Yes",
-            "no": "No",
             "versionHistory": "Version history",
             "rerunEvaluation": "Re-run Evaluation",
             "showCharts": "Show Charts",
@@ -2858,35 +2580,23 @@
             "tokenMetrics": "Token Metrics",
             "showLatencyMetrics": "Show Latency Metrics",
             "latencyMetrics": "Latency Metrics",
-            "expand": "Expand",
-            "close": "Close",
             "version": "Version {{value}}",
-            "cancel": "Cancel",
             "startNewEvaluation": "Start New Evaluation",
-            "delete": "Delete",
             "disableAutoRefresh": "Disable auto-refresh",
             "enableAutoRefresh": "Enable auto-refresh (every 5s)",
-            "refresh": "Refresh",
             "newEvaluation": "New Evaluation",
             "deleteEvaluation_one": "Delete evaluation",
             "deleteEvaluation_other": "Delete evaluations",
-            "selectAll": "select all",
-            "expandRow": "expand row",
             "viewResults": "View Results"
         },
         "table": {
-            "name": "Name",
             "latestVersion": "Latest Version",
             "averageMetrics": "Average Metrics",
             "lastEvaluated": "Last Evaluated",
             "flow": "Flow(s)",
             "dataset": "Dataset",
             "version": "Version",
-            "lastRun": "Last Run",
-            "status": "Status"
-        },
-        "formats": {
-            "date": "DD-MMM-YYYY, hh:mm:ss A"
+            "lastRun": "Last Run"
         }
     },
     "evaluators": {
@@ -2898,12 +2608,10 @@
             "evaluationPrompt": "Evaluation Prompt",
             "samplePrompts": "Sample Prompts",
             "delete": {
-                "title": "Delete",
                 "description": "Delete Evaluator {{name}}?"
             }
         },
         "inputs": {
-            "name": "Name",
             "evaluatorType": {
                 "title": "Evaluator Type",
                 "placeholder": "Select Type",
@@ -3007,23 +2715,15 @@
                 "title": "Available Prompts",
                 "placeholder": "Select Prompt"
             },
-            "value": "Value",
-            "prompt": "Prompt"
+            "value": "Value"
         },
         "columns": {
             "property": "Property",
-            "type": "Type",
-            "description": "Description",
             "required": "Required"
         },
         "actions": {
-            "save": "Save",
-            "cancel": "Cancel",
-            "delete": "Delete",
             "loadSamples": "Load from Pre defined Samples",
             "addItem": "Add Item",
-            "expand": "Expand",
-            "add": "Add",
             "newEvaluator": "New Evaluator",
             "selectPrompt": "Select Prompt"
         },
@@ -3051,8 +2751,6 @@
             "hallucination": "Hallucination"
         },
         "table": {
-            "type": "Type",
-            "name": "Name",
             "details": "Details",
             "lastUpdated": "Last Updated"
         },
@@ -3064,12 +2762,7 @@
             "measure": "Measure",
             "operator": "Operator",
             "value": "Value",
-            "prompt": "Prompt",
-            "outputSchemaElements": "Output Schema Elements",
-            "none": "None"
-        },
-        "formats": {
-            "date": "MMMM Do YYYY, hh:mm A"
+            "outputSchemaElements": "Output Schema Elements"
         },
         "note": "You can use <strong>{question}</strong> <strong>{actualOutput}</strong> <strong>{expectedOutput}</strong> to inject runtime values into your prompt."
     },
@@ -3077,13 +2770,8 @@
         "title": "Files",
         "searchPlaceholder": "Search File",
         "notFound": "No Files Yet",
-        "actions": {
-            "delete": "Delete",
-            "cancel": "Cancel"
-        },
         "dialogs": {
             "delete": {
-                "title": "Delete",
                 "description": "Delete {{name}}? This process cannot be undone."
             }
         },
@@ -3098,26 +2786,16 @@
         "notFound": "No Marketplace Yet",
         "notFoundCustomTemplate": "No Saved Custom Templatess",
         "actions": {
-            "cancel": "Cancel",
-            "share": "Share",
-            "delete": "Delete",
-            "add": "Add",
-            "cardView": "Card View",
-            "listView": "List View",
-            "clearAll": "Clear All",
             "toggleSnapping": "toggle snapping",
             "toggleBackground": "toggle background",
-            "back": "Back",
             "useChatflow": "Use Chatflow",
             "useTemplate": "Use Template",
-            "save": "Save",
             "additionalParameters": "Additional Parameters"
         },
         "dialogs": {
             "shareCustomTemplate": "Share Custom Template",
             "addNewTool": "Add New Tool",
             "delete": {
-                "title": "Delete",
                 "description": "Delete Custom Template {{name}}?"
             }
         },
@@ -3129,14 +2807,11 @@
         },
         "inputs": {
             "inputs": "Inputs",
-            "output": "Output",
             "tag": "Tag",
-            "type": "Type",
             "framework": "Framework",
             "usecases": "Usecases"
         },
         "tabs": {
-            "title": "tabs",
             "communityTemplates": "Community Templates",
             "myTemplates": "My Templates"
         }
@@ -3163,7 +2838,6 @@
                 "title": "Confirm Password",
                 "caption": "Reconfirm your password. Must match the password typed above."
             },
-            "email": "Email",
             "existingUsername": {
                 "title": "Existing Username",
                 "caption": "Existing username that was set as FLOWISE_USERNAME environment variable"
@@ -3210,7 +2884,6 @@
             "view": "View Role",
             "create": "Create New Role",
             "delete": {
-                "title": "Delete",
                 "description": "Delete Role {{name}}?"
             }
         },
@@ -3239,15 +2912,9 @@
             }
         },
         "actions": {
-            "selectAll": "Select All",
-            "cancel": "Cancel",
-            "close": "Close",
             "createRole": "Create Role",
             "updateRole": "Update Role",
             "view": "View",
-            "expandRow": "expand row",
-            "edit": "Edit",
-            "delete": "Delete",
             "invite": "Invite",
             "addRole": "Add Role"
         },
@@ -3255,10 +2922,6 @@
         "table": {
             "assignedUsersTable": "assigned users table",
             "usersTable": "users table",
-            "user": "User",
-            "workspace": "Workspace",
-            "name": "Name",
-            "description": "Description",
             "permissions": "Permissions",
             "assignedUsers": "Assigned Users"
         }
@@ -3284,7 +2947,6 @@
         }
     },
     "tools": {
-        "title": "Tools",
         "description": "External functions or APIs the agent can use to take action",
         "searchPlaceholder": "Search Tools",
         "notFound": "No Tools Created Yet",
@@ -3309,19 +2971,9 @@
             }
         },
         "actions": {
-            "cancel": "Cancel",
-            "save": "Save",
-            "add": "Add",
-            "cardView": "Card View",
-            "listView": "List View",
-            "load": "Load",
             "create": "Create",
             "outlinedPrimaryButtonGroup": "outlined primary button group",
             "seeExample": "See Example",
-            "confirm": "Confirm",
-            "delete": "Delete",
-            "saveAsTemplate": "Save As Template",
-            "export": "Export",
             "pasteJson": "Paste JSON",
             "addItem": "Add Item",
             "howUseFunction": "How to use Function",
@@ -3347,8 +2999,6 @@
         "error": "Invalid JSON format. Please check your input.",
         "columns": {
             "property": "Property",
-            "type": "Type",
-            "description": "Description",
             "required": "Required"
         },
         "inputs": {
@@ -3383,26 +3033,19 @@
             "inactive": "Inactive"
         },
         "actions": {
-            "edit": "Edit",
-            "delete": "Delete",
             "sendInvite": "Send Invite",
-            "cancel": "Cancel",
             "updateInvite": "Update Invite",
-            "save": "Save",
             "inviteUser": "Invite User"
         },
         "tables": {
             "assignedRolesTable": "assigned roles table",
             "role": "Role",
-            "workspace": "Workspace",
             "emailName": "Email/Name",
             "assignedRoles": "Assigned Roles",
-            "status": "Status",
             "lastLogin": "Last Login"
         },
         "dialogs": {
             "delete": {
-                "title": "Delete",
                 "description": "Remove {{name}} from organization?"
             },
             "edit": {
@@ -3420,32 +3063,20 @@
             }
         },
         "inputs": {
-            "email": "Email",
-            "name": "name",
             "accountStatus": "Account Status"
         },
-        "error": "Cannot change status of the organization owner!",
-        "formats": {
-            "date": "DD/MM/YYYY HH:mm"
-        }
+        "error": "Cannot change status of the organization owner!"
     },
     "variables": {
-        "title": "Variables",
         "description": "Create and manage global variables",
         "searchPlaceholder": "Search Variables",
         "notFound": "No Variables Yet",
         "actions": {
-            "cancel": "Cancel",
-            "add": "Add",
-            "save": "Save",
-            "delete": "Delete",
             "howToUse": "How To Use",
-            "addVariable": "Add Variable",
-            "edit": "Edit"
+            "addVariable": "Add Variable"
         },
         "dialogs": {
             "delete": {
-                "title": "Delete",
                 "description": "Delete variable {{name}}?"
             },
             "add": "Add Variable",
@@ -3467,14 +3098,10 @@
         },
         "inputs": {
             "variableName": "Variable Name",
-            "type": "Type",
             "value": "Value"
         },
         "tables": {
-            "simpleTable": "simple table",
-            "name": "Name",
             "value": "Value",
-            "type": "Type",
             "lastUpdated": "Last Updated",
             "created": "Created"
         },
@@ -3495,14 +3122,10 @@
             "static": "If variable type is Static, the value will be retrieved as it is. If variable type is Runtime, the value will be retrieved from .env file.",
             "override": "You can also override variable values in API overrideConfig using <b>vars</b>:",
             "readmore": "Read more from <a>docs</a>"
-        },
-        "formats": {
-            "date": "MMMM Do, YYYY HH:mm:ss"
         }
     },
     "vectorStore": {
         "notFound": "No Upsert History Yet",
-        "selectAll": "select all",
         "dialogs": {
             "upsertRecord": "Upsert Record",
             "upsertVectorStore": "Upsert Vector Store"
@@ -3533,10 +3156,8 @@
             "details": "Details"
         },
         "actions": {
-            "expandRow": "expand row",
             "delete_one": "Delete {{count}} row",
             "delete_other": "Delete {{count}} rows",
-            "close": "Close",
             "testRetrieval": "Test Retrieval",
             "upsert": "Upsert"
         },
@@ -3553,9 +3174,6 @@
             "fromDate": "From Date",
             "toDate": "To Date",
             "showApi": "Show API"
-        },
-        "formats": {
-            "date": "MMMM Do YYYY, h:mm:ss a"
         }
     },
     "workspace": {
@@ -3568,10 +3186,7 @@
         "notFound": "No Workspaces Yet",
         "loading": "Switching workspace...",
         "deleting": "Deleting workspace...",
-        "selectAll": "select all",
         "inputs": {
-            "name": "Name",
-            "description": "Description",
             "assign": {
                 "title": "New Role to Assign",
                 "placeholder": "Select Role"
@@ -3579,14 +3194,10 @@
         },
         "tables": {
             "workspaceUsersTable": "workspace users table",
-            "user_one": "User",
             "user_other": "Users",
             "role": "Role",
-            "name": "Name",
-            "description": "Description",
             "lastUpdated": "Last Updated",
             "emailName": "Email/Name",
-            "status": "Status",
             "lastLogin": "Last Login"
         },
         "dialogs": {
@@ -3604,21 +3215,11 @@
                 "title": "{{name}}: Workspace Users",
                 "description": "Manage workspace users and permissions.",
                 "searchPlaceholder": "Search Users",
-                "notFound": "No Assigned Users Yet",
-                "formats": {
-                    "date": "DD/MM/YYYY HH:mm"
-                }
+                "notFound": "No Assigned Users Yet"
             }
         },
         "actions": {
-            "expandRow": "expand row",
-            "edit": "Edit",
-            "delete": "Delete",
             "workspaceUsers": "Workspace Users",
-            "cancel": "Cancel",
-            "add": "Add",
-            "save": "Save",
-            "addNew": "Add New",
             "sendInvite": "Send Invite",
             "updateInvite": "Update Invite",
             "updateRole": "Update Role",
@@ -3655,9 +3256,6 @@
                     "link": "Failed to unlink users: {{msg}}"
                 }
             }
-        },
-        "formats": {
-            "date": "MMMM Do YYYY, hh:mm A"
         }
     },
     "scaleInitials": ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"],

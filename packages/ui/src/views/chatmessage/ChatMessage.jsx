@@ -2431,7 +2431,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                 background: 'linear-gradient(45deg, #673ab7 30%, #1e88e5 90%)'
                             }}
                         >
-                            {t(loading ? 'chatmessage.submittingLoading' : 'chatmessage.actions.submit')}
+                            {t(loading ? 'chatmessage.submittingLoading' : 'common.actions.submit')}
                         </Button>
                     </Box>
                 </Box>
@@ -2678,7 +2678,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 id='leadName'
                                                                 type='text'
                                                                 fullWidth
-                                                                placeholder={t('chatmessage.inputs.name')}
+                                                                placeholder={t('common.labels.name')}
                                                                 name='leadName'
                                                                 value={leadName}
                                                                 // eslint-disable-next-line
@@ -2691,7 +2691,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 id='leadEmail'
                                                                 type='email'
                                                                 fullWidth
-                                                                placeholder={t('chatmessage.inputs.email')}
+                                                                placeholder={t('common.labels.emailAddress')}
                                                                 name='leadEmail'
                                                                 value={leadEmail}
                                                                 onChange={(e) => setLeadEmail(e.target.value)}
@@ -2702,7 +2702,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 id='leadPhone'
                                                                 type='number'
                                                                 fullWidth
-                                                                placeholder={t('chatmessage.inputs.phone')}
+                                                                placeholder={t('common.labels.phoneNumber')}
                                                                 name='leadPhone'
                                                                 value={leadPhone}
                                                                 onChange={(e) => setLeadPhone(e.target.value)}
@@ -2720,7 +2720,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                                 type='submit'
                                                                 sx={{ borderRadius: '20px' }}
                                                             >
-                                                                {t(isLeadSaving ? 'chatmessage.savingLoading' : 'chatmessage.actions.save')}
+                                                                {t(isLeadSaving ? 'chatmessage.savingLoading' : 'common.actions.save')}
                                                             </Button>
                                                         </Box>
                                                     </form>
@@ -3230,9 +3230,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleSubmitFeedback}>{t('chatmessage.actions.cancel')}</Button>
+                    <Button onClick={handleSubmitFeedback}>{t('common.actions.cancel')}</Button>
                     <Button onClick={handleSubmitFeedback} variant='contained'>
-                        {t('chatmessage.actions.submit')}
+                        {t('common.actions.submit')}
                     </Button>
                 </DialogActions>
             </Dialog>

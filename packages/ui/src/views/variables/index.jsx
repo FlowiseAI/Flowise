@@ -127,8 +127,8 @@ const Variables = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('variables.actions.cancel'),
-            confirmButtonName: t('variables.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             customBtnId: 'btn_confirmAddingVariable',
             data: {}
         }
@@ -139,8 +139,8 @@ const Variables = () => {
     const edit = (variable) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('variables.actions.cancel'),
-            confirmButtonName: t('variables.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: variable
         }
         setVariableDialogProps(dialogProp)
@@ -149,10 +149,10 @@ const Variables = () => {
 
     const deleteVariable = async (variable) => {
         const confirmPayload = {
-            title: t('variables.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('variables.dialogs.delete.description', { name: variable.name }),
-            confirmButtonName: t('variables.actions.delete'),
-            cancelButtonName: t('variables.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -227,7 +227,7 @@ const Variables = () => {
                             onSearchChange={onSearchChange}
                             search={true}
                             searchPlaceholder={t('variables.searchPlaceholder')}
-                            title={t('variables.title')}
+                            title={t('common.labels.variables')}
                             description={t('variables.description')}
                         >
                             <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
@@ -261,7 +261,7 @@ const Variables = () => {
                                     sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                     component={Paper}
                                 >
-                                    <Table sx={{ minWidth: 650 }} aria-label={t('variables.tables.simpleTable')}>
+                                    <Table sx={{ minWidth: 650 }} aria-label={t('common.labels.simpleTable')}>
                                         <TableHead
                                             sx={{
                                                 backgroundColor: customization.isDarkMode
@@ -271,9 +271,9 @@ const Variables = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <StyledTableCell>{t('variables.tables.name')}</StyledTableCell>
+                                                <StyledTableCell>{t('common.labels.name')}</StyledTableCell>
                                                 <StyledTableCell>{t('variables.tables.value')}</StyledTableCell>
-                                                <StyledTableCell>{t('variables.tables.type')}</StyledTableCell>
+                                                <StyledTableCell>{t('common.labels.type')}</StyledTableCell>
                                                 <StyledTableCell>{t('variables.tables.lastUpdated')}</StyledTableCell>
                                                 <StyledTableCell>{t('variables.tables.created')}</StyledTableCell>
                                                 <Available permissionId={'variables:update'}>
@@ -386,15 +386,19 @@ const Variables = () => {
                                                                 />
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {moment(variable.updatedDate).format(t('variables.formats.date'))}
+                                                                {moment(variable.updatedDate).format(
+                                                                    t('common.formats.dateMonthDayYearTime24Long')
+                                                                )}
                                                             </StyledTableCell>
                                                             <StyledTableCell>
-                                                                {moment(variable.createdDate).format(t('variables.formats.date'))}
+                                                                {moment(variable.createdDate).format(
+                                                                    t('common.formats.dateMonthDayYearTime24Long')
+                                                                )}
                                                             </StyledTableCell>
                                                             <Available permission={'variables:create,variables:update'}>
                                                                 <StyledTableCell>
                                                                     <IconButton
-                                                                        title={t('variables.actions.edit')}
+                                                                        title={t('common.actions.edit')}
                                                                         color='primary'
                                                                         onClick={() => edit(variable)}
                                                                     >
@@ -405,7 +409,7 @@ const Variables = () => {
                                                             <Available permission={'variables:delete'}>
                                                                 <StyledTableCell>
                                                                     <IconButton
-                                                                        title={t('variables.actions.delete')}
+                                                                        title={t('common.actions.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteVariable(variable)}
                                                                     >

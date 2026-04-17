@@ -55,9 +55,9 @@ export const ToolsTable = ({ data, isLoading, onSelect }) => {
                     >
                         <TableRow>
                             <StyledTableCell component='th' scope='row' key='0'>
-                                {t('components.toolListTable.name')}
+                                {t('common.labels.name')}
                             </StyledTableCell>
-                            <StyledTableCell key='1'>{t('components.toolListTable.description')}</StyledTableCell>
+                            <StyledTableCell key='1'>{t('common.labels.description')}</StyledTableCell>
                             <StyledTableCell component='th' scope='row' key='3'>
                                 &nbsp;
                             </StyledTableCell>

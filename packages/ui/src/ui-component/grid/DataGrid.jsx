@@ -66,7 +66,7 @@ export const DataGrid = ({ columns, rows, style, disabled = false, hideFooter = 
                     <GridActionsCellItem
                         key={'Delete'}
                         icon={<DeleteIcon />}
-                        label={t('components.dataGrid.delete')}
+                        label={t('common.actions.delete')}
                         onClick={deleteItem(params.id)}
                     />
                 ]

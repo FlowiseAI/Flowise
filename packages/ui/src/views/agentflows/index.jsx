@@ -235,7 +235,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title={t('agentFlows.v1.cardView')}
+                                title={t('common.actions.cardView')}
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -247,7 +247,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title={t('agentFlows.v1.listView')}
+                                title={t('common.actions.listView')}
                             >
                                 <IconList />
                             </ToggleButton>
@@ -259,7 +259,7 @@ const Agentflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            {t('agentFlows.v1.actions.addNew')}
+                            {t('common.actions.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
 

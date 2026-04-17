@@ -134,8 +134,8 @@ const Marketplace = () => {
     const share = (template) => {
         const dialogProps = {
             type: 'EDIT',
-            cancelButtonName: t('marketplaces.actions.cancel'),
-            confirmButtonName: t('marketplaces.actions.share'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.share'),
             data: {
                 id: template.id,
                 name: template.name,
@@ -235,10 +235,10 @@ const Marketplace = () => {
 
     const onDeleteCustomTemplate = async (template) => {
         const confirmPayload = {
-            title: t('marketplaces.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('marketplaces.dialogs.delete.description', { name: template.name }),
-            confirmButtonName: t('marketplaces.actions.delete'),
-            cancelButtonName: t('marketplaces.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -340,8 +340,8 @@ const Marketplace = () => {
         const dialogProp = {
             title: t('marketplaces.dialogs.addNewTool'),
             type: 'IMPORT',
-            cancelButtonName: t('marketplaces.actions.cancel'),
-            confirmButtonName: t('marketplaces.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             data: selectedTool
         }
         setToolDialogProps(dialogProp)
@@ -538,7 +538,7 @@ const Marketplace = () => {
                                         }}
                                     >
                                         <InputLabel size='small' id='type-badge-label'>
-                                            {t('marketplaces.inputs.type')}
+                                            {t('common.labels.type')}
                                         </InputLabel>
                                         <Select
                                             size='small'
@@ -547,7 +547,7 @@ const Marketplace = () => {
                                             multiple
                                             value={typeFilter}
                                             onChange={handleTypeFilterChange}
-                                            input={<OutlinedInput label={t('marketplaces.inputs.type')} />}
+                                            input={<OutlinedInput label={t('common.labels.type')} />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
                                             sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
@@ -623,7 +623,7 @@ const Marketplace = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title={t('marketplaces.actions.cardView')}
+                                    title={t('common.actions.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -635,7 +635,7 @@ const Marketplace = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title={t('marketplaces.actions.listView')}
+                                    title={t('common.actions.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -647,7 +647,7 @@ const Marketplace = () => {
                                     value={activeTabValue}
                                     onChange={handleTabChange}
                                     textColor='primary'
-                                    aria-label={t('marketplaces.tabs.title')}
+                                    aria-label={t('common.labels.tabs')}
                                 >
                                     <PermissionTab
                                         permissionId='templates:marketplace'
@@ -861,7 +861,7 @@ const Marketplace = () => {
                                         onClick={() => clearAllUsecases()}
                                         startIcon={<IconX />}
                                     >
-                                        {t('marketplaces.actions.clearAll')}
+                                        {t('common.actions.clearAll')}
                                     </Button>
                                 )}
                                 {!view || view === 'card' ? (

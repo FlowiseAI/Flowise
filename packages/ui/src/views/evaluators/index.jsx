@@ -87,8 +87,8 @@ const Evaluators = () => {
     const newEvaluator = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('evaluators.actions.cancel'),
-            confirmButtonName: t('evaluators.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             data: {}
         }
         setDialogProps(dialogProp)
@@ -98,8 +98,8 @@ const Evaluators = () => {
     const edit = (item) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('evaluators.actions.cancel'),
-            confirmButtonName: t('evaluators.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: item
         }
         setDialogProps(dialogProp)
@@ -108,10 +108,10 @@ const Evaluators = () => {
 
     const deleteEvaluator = async (item) => {
         const confirmPayload = {
-            title: t('evaluators.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('evaluators.dialogs.delete.description', { name: item.name }),
-            confirmButtonName: t('evaluators.actions.delete'),
-            cancelButtonName: t('evaluators.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -231,8 +231,8 @@ const Evaluators = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <TableCell>{t('evaluators.table.type')}</TableCell>
-                                                <TableCell>{t('evaluators.table.name')}</TableCell>
+                                                <TableCell>{t('common.labels.type')}</TableCell>
+                                                <TableCell>{t('common.labels.name')}</TableCell>
                                                 <TableCell>{t('evaluators.table.details')}</TableCell>
                                                 <TableCell>{t('evaluators.table.lastUpdated')}</TableCell>
                                                 <TableCell> </TableCell>
@@ -508,7 +508,7 @@ const Evaluators = () => {
                                                                                 }}
                                                                                 label={
                                                                                     <span>
-                                                                                        <b>{t('evaluators.type.prompt')}</b>:{' '}
+                                                                                        <b>{t('common.labels.prompt')}</b>:{' '}
                                                                                         {truncateString(ds?.prompt, 100)}
                                                                                     </span>
                                                                                 }
@@ -532,7 +532,7 @@ const Evaluators = () => {
                                                                                             ? ds?.outputSchema
                                                                                                   .map((item) => item.property)
                                                                                                   .join(', ')
-                                                                                            : t('evaluators.type.none')}
+                                                                                            : t('common.labels.none')}
                                                                                     </span>
                                                                                 }
                                                                             />
@@ -540,12 +540,14 @@ const Evaluators = () => {
                                                                     )}
                                                                 </TableCell>
                                                                 <TableCell onClick={() => edit(ds)}>
-                                                                    {moment(ds.updatedDate).format(t('evaluators.formats.date'))}
+                                                                    {moment(ds.updatedDate).format(
+                                                                        t('common.formats.dateMonthDayYearTime12Short')
+                                                                    )}
                                                                 </TableCell>
                                                                 <TableCell>
                                                                     <PermissionIconButton
                                                                         permissionId={'evaluators:delete'}
-                                                                        title={t('evaluators.actions.delete')}
+                                                                        title={t('common.actions.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteEvaluator(ds)}
                                                                     >

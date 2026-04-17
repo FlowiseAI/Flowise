@@ -202,7 +202,7 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, meta
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog}>{t('chatmessage.actions.close')}</Button>
+                    <Button onClick={handleCloseDialog}>{t('common.actions.close')}</Button>
                 </DialogActions>
             </Dialog>
         </TreeItem2Label>

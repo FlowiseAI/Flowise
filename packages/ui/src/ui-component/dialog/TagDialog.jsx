@@ -95,9 +95,9 @@ const TagDialog = ({ isOpen, dialogProps, onClose, onSubmit }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>{t('components.dialogs.tag.actions.cancel')}</Button>
+                <Button onClick={onClose}>{t('common.actions.cancel')}</Button>
                 <Button variant='contained' onClick={handleSubmit}>
-                    {t('components.dialogs.tag.actions.submit')}
+                    {t('common.actions.submit')}
                 </Button>
             </DialogActions>
         </Dialog>

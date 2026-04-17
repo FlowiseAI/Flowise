@@ -399,7 +399,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     {data.output && data.output.availableTools && data.output.availableTools.length > 0 && (
                         <Box>
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
-                                {t('agentExecution.details.tools')}
+                                {t('common.labels.tools')}
                             </Typography>
                             {data.output.availableTools.map((tool, index) => {
                                 // Check if this tool is in the usedTools array
@@ -963,7 +963,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         </Box>
                     )}
                     <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
-                        {t('agentExecution.details.output')}
+                        {t('common.labels.output')}
                     </Typography>
                     {data?.output?.form || data?.output?.http ? (
                         <JSONViewer data={data.output.form || data.output.http} />
@@ -1141,7 +1141,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     {data.error && (
                         <>
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom color='error'>
-                                {t('agentExecution.details.error.title')}
+                                {t('common.labels.error')}
                             </Typography>
                             <Box
                                 sx={{
@@ -1166,7 +1166,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     {data.state && Object.keys(data.state).length > 0 && (
                         <>
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
-                                {t('agentExecution.details.state')}
+                                {t('common.labels.state')}
                             </Typography>
                             <JSONViewer data={data.state} />
                         </>
@@ -1243,10 +1243,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={() => setOpenFeedbackDialog(false)} disabled={isLoading}>
-                                {t('agentExecution.actions.cancel')}
+                                {t('common.actions.cancel')}
                             </Button>
                             <Button onClick={handleSubmitFeedback} variant='contained' disabled={isLoading}>
-                                {t('agentExecution.actions.submit')}
+                                {t('common.actions.submit')}
                             </Button>
                         </DialogActions>
                     </Dialog>

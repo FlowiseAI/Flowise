@@ -204,7 +204,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     useEffect(() => {
         if (getAssistantObjApi.error) {
-            let errMsg = t('assistants.cards.openAi.messages.error')
+            let errMsg = t('common.errors.internalServerError')
             let error = getAssistantObjApi.error
             if (error?.response?.data) {
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -340,8 +340,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
         const dialogProp = {
             title: t('assistants.actions.editName', { name: vectorStoreObject.name ? vectorStoreObject.name : vectorStoreObject.id }),
             type: 'EDIT',
-            cancelButtonName: t('assistants.actions.cancel'),
-            confirmButtonName: t('assistants.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: vectorStoreObject,
             credential: assistantCredential
         }
@@ -353,8 +353,8 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
         const dialogProp = {
             title: t('assistants.actions.addVectorStore'),
             type: 'ADD',
-            cancelButtonName: t('assistants.actions.cancel'),
-            confirmButtonName: t('assistants.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             credential: assistantCredential
         }
         setAssistantVectorStoreDialogProps(dialogProp)
@@ -632,7 +632,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
         setDeleteDialogProps({
             title: t('assistants.actions.deleteAssistant.title'),
             description: t('assistants.actions.deleteAssistant.description', { name: assistantName }),
-            cancelButtonName: t('assistants.actions.cancel')
+            cancelButtonName: t('common.actions.cancel')
         })
         setDeleteDialogOpen(true)
     }
@@ -1071,7 +1071,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                         variant='contained'
                         onClick={() => onDeleteClick()}
                     >
-                        {t('assistants.actions.delete')}
+                        {t('common.actions.delete')}
                     </StyledPermissionButton>
                 )}
                 <StyledPermissionButton

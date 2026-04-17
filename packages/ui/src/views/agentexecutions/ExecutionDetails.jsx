@@ -770,7 +770,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                                     sx={{ ml: 1, pl: 1 }}
                                     icon={<IconCopy size={15} />}
                                     variant='outlined'
-                                    label={t(copied ? 'agentExecution.actions.copy.done' : 'agentExecution.actions.copy.title.id')}
+                                    label={t(copied ? 'common.messages.copied' : 'agentExecution.actions.copy.title.id')}
                                     className={'button'}
                                     onClick={copyToClipboard}
                                 />
@@ -788,11 +788,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                                     )
                                 }
                                 variant='outlined'
-                                label={t(
-                                    updateExecutionApi.loading
-                                        ? 'agentExecution.details.content.updating'
-                                        : 'agentExecution.details.content.share'
-                                )}
+                                label={t(updateExecutionApi.loading ? 'agentExecution.details.content.updating' : 'common.actions.share')}
                                 className={'button'}
                                 onClick={() => onSharePublicly()}
                                 disabled={updateExecutionApi.loading}
@@ -824,8 +820,8 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', alignContent: 'center' }}>
                             <Typography sx={{ flex: 1, mt: 1 }} color='text.primary'>
                                 {metadata?.updatedDate
-                                    ? moment(metadata.updatedDate).format(t('agentExecution.details.content.formats.date'))
-                                    : t('agentExecution.details.content.unavailable')}
+                                    ? moment(metadata.updatedDate).format(t('common.formats.dateMonthShortDayYearTime12'))
+                                    : t('agentExecution.details.content.notAvailable')}
                             </Typography>
                             <IconButton
                                 onClick={() => onRefresh(localMetadata?.id)}

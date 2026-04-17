@@ -68,7 +68,7 @@ const dashboard = {
             children: [
                 {
                     id: 'chatflows',
-                    title: 'menu.chatflows',
+                    title: 'common.labels.chatflows',
                     type: 'item',
                     url: '/chatflows',
                     icon: icons.IconHierarchy,
@@ -113,7 +113,7 @@ const dashboard = {
                 },
                 {
                     id: 'tools',
-                    title: 'menu.tools',
+                    title: 'common.labels.tools',
                     type: 'item',
                     url: '/tools',
                     icon: icons.IconTool,
@@ -131,7 +131,7 @@ const dashboard = {
                 },
                 {
                     id: 'variables',
-                    title: 'menu.variables',
+                    title: 'common.labels.variables',
                     type: 'item',
                     url: '/variables',
                     icon: icons.IconVariable,

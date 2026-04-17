@@ -188,8 +188,8 @@ const EvalEvaluationRows = () => {
         const confirmPayload = {
             title: t('evaluations.dialogs.runAgain.title'),
             description: t('evaluations.dialogs.runAgain.desceiption', { name: evaluation.name }),
-            confirmButtonName: t('evaluations.actions.yes'),
-            cancelButtonName: t('evaluations.actions.no')
+            confirmButtonName: t('common.actions.yes'),
+            cancelButtonName: t('common.actions.no')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -384,7 +384,11 @@ const EvalEvaluationRows = () => {
                             onBack={goBack}
                             search={false}
                             title={t('evaluations.dialogs.evalResult.title')}
-                            description={evaluation?.runDate ? moment(evaluation?.runDate).format(t('evaluations.formats.date')) : ''}
+                            description={
+                                evaluation?.runDate
+                                    ? moment(evaluation?.runDate).format(t('common.formats.dateDayMonthShortYearTime12Seconds'))
+                                    : ''
+                            }
                         >
                             {evaluation?.versionCount > 1 && (
                                 <Chip
@@ -656,7 +660,7 @@ const EvalEvaluationRows = () => {
                                 startIcon={<IconMaximize />}
                                 onClick={() => openTableDialog()}
                             >
-                                {t('evaluations.actions.expand')}
+                                {t('common.actions.expand')}
                             </Button>
                         </Stack>
                         <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>

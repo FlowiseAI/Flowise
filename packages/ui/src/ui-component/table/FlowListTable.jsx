@@ -123,7 +123,7 @@ export const FlowListTable = ({
                         <TableRow>
                             <StyledTableCell component='th' scope='row' style={{ width: '20%' }} key='0'>
                                 <TableSortLabel active={orderBy === 'name'} direction={order} onClick={() => handleRequestSort('name')}>
-                                    {t('components.flowListTable.name')}
+                                    {t('common.labels.name')}
                                 </TableSortLabel>
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '25%' }} key='1'>
@@ -323,7 +323,7 @@ export const FlowListTable = ({
                                             )}
                                         </StyledTableCell>
                                         <StyledTableCell key='3'>
-                                            {moment(row.updatedDate).format(t('components.flowListTable.formats.date'))}
+                                            {moment(row.updatedDate).format(t('common.formats.dateMonthDayYearTime24Long'))}
                                         </StyledTableCell>
                                         {isActionsAvailable && (
                                             <StyledTableCell key='4'>

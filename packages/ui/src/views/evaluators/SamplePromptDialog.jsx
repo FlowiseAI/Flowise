@@ -74,12 +74,12 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             { field: 'property', headerName: t('evaluators.columns.property'), flex: 1 },
             {
                 field: 'type',
-                headerName: t('evaluators.columns.type'),
+                headerName: t('common.labels.type'),
                 type: 'singleSelect',
                 valueOptions: ['string', 'number', 'boolean'],
                 width: 120
             },
-            { field: 'description', headerName: t('evaluators.columns.description'), flex: 1 },
+            { field: 'description', headerName: t('common.labels.description'), flex: 1 },
             { field: 'required', headerName: t('evaluators.columns.required'), type: 'boolean', width: 80 },
             {
                 field: 'actions',
@@ -137,7 +137,7 @@ const SamplePromptDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     {selectedPromptName && (
                         <Box sx={{ pb: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                <Typography variant='overline'>{t('evaluators.inputs.prompt')}</Typography>
+                                <Typography variant='overline'>{t('common.labels.prompt')}</Typography>
                             </div>
                             <OutlinedInput
                                 size='small'

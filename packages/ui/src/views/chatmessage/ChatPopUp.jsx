@@ -92,8 +92,8 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
         const confirmPayload = {
             title: t('chatmessage.actions.clearHistory.title'),
             description: t('chatmessage.actions.clearHistory.description'),
-            confirmButtonName: t('chatmessage.actions.clear'),
-            cancelButtonName: t('chatmessage.actions.cancel')
+            confirmButtonName: t('common.actions.clear'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -164,7 +164,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                     onClick={clearChat}
                     size='small'
                     color='error'
-                    aria-label={t('chatmessage.actions.clear')}
+                    aria-label={t('common.actions.clear')}
                     title={t('chatmessage.actions.clearHistory.title')}
                 >
                     <IconEraser />
@@ -176,7 +176,7 @@ const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
                     onClick={expandChat}
                     size='small'
                     color='primary'
-                    aria-label={t('chatmessage.actions.expand')}
+                    aria-label={t('common.actions.expand')}
                     title={t('chatmessage.actions.expandChat')}
                 >
                     <IconArrowsMaximize />

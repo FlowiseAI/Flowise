@@ -324,7 +324,7 @@ const OrgWorkspaceBreadcrumbs = () => {
                         />
                         <StyledBreadcrumb
                             isDarkMode={customization.isDarkMode}
-                            label={assignedWorkspaces.find((ws) => ws.id === activeWorkspaceId)?.name || t('profile.workspaces.workspace')}
+                            label={assignedWorkspaces.find((ws) => ws.id === activeWorkspaceId)?.name || t('common.labels.workspace')}
                             deleteIcon={<IconChevronDown size={16} />}
                             onDelete={handleWorkspaceClick}
                             onClick={handleWorkspaceClick}

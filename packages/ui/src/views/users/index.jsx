@@ -160,13 +160,13 @@ function ShowUserRow(props) {
                     {'INACTIVE' === props.row.status.toUpperCase() && <Chip color={'error'} label={props.row.status.toUpperCase()} />}
                 </StyledTableCell>
                 <StyledTableCell>
-                    {!props.row.lastLogin ? 'Never' : moment(props.row.lastLogin).format(t('users.formats.date'))}
+                    {!props.row.lastLogin ? 'Never' : moment(props.row.lastLogin).format(t('common.formats.dateDayMonthYearTime24'))}
                 </StyledTableCell>
                 <StyledTableCell>
                     {props.row.status.toUpperCase() === 'INVITED' && (
                         <PermissionIconButton
                             permissionId={'workspace:add-user,users:manage'}
-                            title={t('users.actions.edit')}
+                            title={t('common.actions.edit')}
                             color='primary'
                             onClick={() => props.onEditClick(props.row)}
                         >
@@ -180,7 +180,7 @@ function ShowUserRow(props) {
                         ) : (
                             <PermissionIconButton
                                 permissionId={'workspace:unlink-user,users:manage'}
-                                title={t('users.actions.delete')}
+                                title={t('common.actions.delete')}
                                 color='error'
                                 onClick={() => props.onDeleteClick(props.row.user)}
                             >
@@ -208,7 +208,7 @@ function ShowUserRow(props) {
                             >
                                 <TableRow>
                                     <StyledTableCell sx={{ width: '50%' }}>{t('users.tables.role')}</StyledTableCell>
-                                    <StyledTableCell sx={{ width: '50%' }}>{t('users.tables.workspace')}</StyledTableCell>
+                                    <StyledTableCell sx={{ width: '50%' }}>{t('common.labels.workspace')}</StyledTableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -279,7 +279,7 @@ const Users = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('users.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('users.actions.sendInvite'),
             data: null
         }
@@ -298,7 +298,7 @@ const Users = () => {
     const editInvite = (user) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('users.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('users.actions.updateInvite'),
             data: user
         }
@@ -309,8 +309,8 @@ const Users = () => {
     const editUser = (user) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('users.actions.cancel'),
-            confirmButtonName: t('users.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: user
         }
         setInviteDialogProps(dialogProp)
@@ -319,10 +319,10 @@ const Users = () => {
 
     const deleteUser = async (user) => {
         const confirmPayload = {
-            title: t('users.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('users.dialogs.delete.description', { name: user.name ?? user.email }),
-            confirmButtonName: t('users.actions.delete'),
-            cancelButtonName: t('users.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -457,7 +457,7 @@ const Users = () => {
                                                         <StyledTableCell>&nbsp;</StyledTableCell>
                                                         <StyledTableCell>{t('users.tables.emailName')}</StyledTableCell>
                                                         <StyledTableCell>{t('users.tables.assignedRoles')}</StyledTableCell>
-                                                        <StyledTableCell>{t('users.tables.status')}</StyledTableCell>
+                                                        <StyledTableCell>{t('common.labels.status')}</StyledTableCell>
                                                         <StyledTableCell>{t('users.tables.lastLogin')}</StyledTableCell>
                                                         <StyledTableCell> </StyledTableCell>
                                                     </TableRow>

@@ -50,7 +50,7 @@ const TextToSpeechType = {
 // Weird quirk - the key must match the name property value.
 const textToSpeechProviders = {
     [TextToSpeechType.OPENAI_TTS]: {
-        label: 'components.textToSpeech.providers.openai',
+        label: 'common.providers.openAiTts',
         name: TextToSpeechType.OPENAI_TTS,
         icon: openAISVG,
         url: 'https://platform.openai.com/docs/guides/text-to-speech',
@@ -72,7 +72,7 @@ const textToSpeechProviders = {
         ]
     },
     [TextToSpeechType.ELEVEN_LABS_TTS]: {
-        label: 'components.textToSpeech.providers.elevenlabs',
+        label: 'common.providers.elevenlabs',
         name: TextToSpeechType.ELEVEN_LABS_TTS,
         icon: elevenLabsSVG,
         url: 'https://elevenlabs.io/',
@@ -435,7 +435,7 @@ const TextToSpeech = ({ dialogProps }) => {
                             }
                         }}
                     >
-                        <MenuItem value='none'>{t('components.textToSpeech.providers.none')}</MenuItem>
+                        <MenuItem value='none'>{t('common.providers.none')}</MenuItem>
                         {Object.values(textToSpeechProviders).map((provider) => (
                             <MenuItem key={provider.name} value={provider.name}>
                                 {t(provider.label)}
@@ -655,7 +655,7 @@ const TextToSpeech = ({ dialogProps }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    {t('components.textToSpeech.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

@@ -181,7 +181,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            {t('docstore.inputs.name')}
+                            {t('common.labels.name')}
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
 
@@ -199,7 +199,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
                 <Box sx={{ p: 2 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>{t('docstore.inputs.description')}</Typography>
+                        <Typography>{t('common.labels.description')}</Typography>
 
                         <div style={{ flexGrow: 1 }}></div>
                     </div>
@@ -217,7 +217,7 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => onCancel()}>{t('docstore.actions.cancel')}</Button>
+                <Button onClick={() => onCancel()}>{t('common.actions.cancel')}</Button>
                 <StyledButton
                     disabled={!documentStoreName}
                     variant='contained'

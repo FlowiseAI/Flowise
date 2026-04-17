@@ -225,7 +225,7 @@ const AgentFlowNode = ({ data }) => {
                     )}
                     <IconButton
                         size={'small'}
-                        title={t('agentFlows.v2.actions.delete')}
+                        title={t('common.actions.delete')}
                         onClick={() => {
                             deleteNode(data.id)
                         }}
@@ -274,7 +274,7 @@ const AgentFlowNode = ({ data }) => {
                 border={false}
             >
                 {data && data.status && (
-                    <Tooltip title={data.status === 'ERROR' ? data.error || t('agentFlows.v2.error') : ''}>
+                    <Tooltip title={data.status === 'ERROR' ? data.error || t('common.labels.error') : ''}>
                         <Avatar
                             variant='rounded'
                             sx={{

@@ -143,7 +143,7 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
                 <Box sx={{ p: 1 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                         <Typography>
-                            {t('users.inputs.email')}
+                            {t('common.labels.email')}
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
 
@@ -162,7 +162,7 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
                 </Box>
                 <Box sx={{ p: 1 }}>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>{t('users.inputs.name')}</Typography>
+                        <Typography>{t('common.labels.name')}</Typography>
 
                         <div style={{ flexGrow: 1 }}></div>
                     </div>

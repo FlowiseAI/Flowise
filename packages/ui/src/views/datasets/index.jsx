@@ -105,8 +105,8 @@ const EvalDatasets = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('datasets.actions.cancel'),
-            confirmButtonName: t('datasets.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             data: {}
         }
         setDatasetDialogProps(dialogProp)
@@ -116,8 +116,8 @@ const EvalDatasets = () => {
     const edit = (dataset) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('datasets.actions.cancel'),
-            confirmButtonName: t('datasets.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: dataset
         }
         setDatasetDialogProps(dialogProp)
@@ -126,10 +126,10 @@ const EvalDatasets = () => {
 
     const deleteDataset = async (dataset) => {
         const confirmPayload = {
-            title: t('datasets.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('datasets.dialogs.delete.description.datasets', { name: dataset.name }),
-            confirmButtonName: t('datasets.actions.delete'),
-            cancelButtonName: t('datasets.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -219,7 +219,7 @@ const EvalDatasets = () => {
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
-                                {t('datasets.actions.addNew')}
+                                {t('common.actions.addNew')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && datasets.length <= 0 ? (
@@ -249,8 +249,8 @@ const EvalDatasets = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <TableCell>{t('datasets.table.name')}</TableCell>
-                                                <TableCell>{t('datasets.table.description')}</TableCell>
+                                                <TableCell>{t('common.labels.name')}</TableCell>
+                                                <TableCell>{t('common.labels.description')}</TableCell>
                                                 <TableCell>{t('datasets.table.rows')}</TableCell>
                                                 <TableCell>{t('datasets.table.lastUpdated')}</TableCell>
                                                 <Available permission={'datasets:update,datasets:create'}>
@@ -324,12 +324,14 @@ const EvalDatasets = () => {
                                                             </TableCell>
                                                             <TableCell onClick={() => goToRows(ds)}>{ds?.rowCount}</TableCell>
                                                             <TableCell onClick={() => goToRows(ds)}>
-                                                                {moment(ds.updatedDate).format(t('datasets.formats.date'))}
+                                                                {moment(ds.updatedDate).format(
+                                                                    t('common.formats.dateMonthDayYearTime12Short')
+                                                                )}
                                                             </TableCell>
                                                             <Available permission={'datasets:update,datasets:create'}>
                                                                 <TableCell>
                                                                     <IconButton
-                                                                        title={t('datasets.actions.edit')}
+                                                                        title={t('common.actions.edit')}
                                                                         color='primary'
                                                                         onClick={() => edit(ds)}
                                                                     >
@@ -340,7 +342,7 @@ const EvalDatasets = () => {
                                                             <Available permission={'datasets:delete'}>
                                                                 <TableCell>
                                                                     <IconButton
-                                                                        title={t('datasets.actions.delete')}
+                                                                        title={t('common.actions.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteDataset(ds)}
                                                                     >

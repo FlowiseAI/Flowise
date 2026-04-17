@@ -88,8 +88,8 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         const dialogProps = {
             value: prompt,
             inputParam,
-            confirmButtonName: t('evaluators.actions.save'),
-            cancelButtonName: t('evaluators.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setSamplePromptDialogProps(dialogProps)
         setShowSamplePromptDialog(true)
@@ -98,8 +98,8 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         const dialogProps = {
             value: prompt,
             inputParam,
-            confirmButtonName: t('evaluators.actions.save'),
-            cancelButtonName: t('evaluators.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setExpandDialogProps(dialogProps)
         setShowExpandDialog(true)
@@ -145,13 +145,13 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             { field: 'property', headerName: t('evaluators.columns.property'), editable: true, flex: 1 },
             {
                 field: 'type',
-                headerName: t('evaluators.columns.type'),
+                headerName: t('common.labels.type'),
                 type: 'singleSelect',
                 valueOptions: ['string', 'number', 'boolean'],
                 editable: true,
                 width: 120
             },
-            { field: 'description', headerName: t('evaluators.columns.description'), editable: true, flex: 1 },
+            { field: 'description', headerName: t('common.labels.description'), editable: true, flex: 1 },
             { field: 'required', headerName: t('evaluators.columns.required'), type: 'boolean', editable: true, width: 80 },
             {
                 field: 'actions',
@@ -161,7 +161,7 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <GridActionsCellItem
                         key={'Delete'}
                         icon={<DeleteIcon />}
-                        label={t('evaluators.actions.delete')}
+                        label={t('common.actions.delete')}
                         onClick={deleteItem(params.id)}
                     />
                 ]
@@ -362,7 +362,7 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             </DialogTitle>
             <DialogContent>
                 <Box sx={{ pb: 2 }}>
-                    <Typography variant='overline'>{t('evaluators.inputs.name')}</Typography>
+                    <Typography variant='overline'>{t('common.labels.name')}</Typography>
                     <OutlinedInput
                         size='small'
                         multiline={false}
@@ -468,7 +468,7 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         </Box>
                         <Box sx={{ pb: 2 }}>
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                <Typography variant='overline'>{t('evaluators.inputs.prompt')}</Typography>
+                                <Typography variant='overline'>{t('common.labels.prompt')}</Typography>
                                 <div style={{ flexGrow: 1 }}></div>
                                 {prompt && (
                                     <IconButton
@@ -477,7 +477,7 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             height: 25,
                                             width: 25
                                         }}
-                                        title={t('evaluators.actions.expand')}
+                                        title={t('common.actions.expand')}
                                         color='primary'
                                         onClick={() =>
                                             onExpandDialogClicked({

@@ -55,7 +55,7 @@ const agent_settings = {
         },
         {
             id: 'saveAsTemplate',
-            title: 'menu.saveAsTemplate',
+            title: 'common.actions.saveAsTemplate',
             type: 'item',
             url: '',
             icon: icons.IconTemplate,

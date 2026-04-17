@@ -437,7 +437,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         !checkMandatoryFields().isValid
                                     }
                                 >
-                                    {t('components.dialogs.agentFlows.actions.generate')}
+                                    {t('common.actions.generate')}
                                 </LoadingButton>
                             )}
                             {generatedInstruction && (
@@ -448,7 +448,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         setGeneratedInstruction('')
                                     }}
                                 >
-                                    {t('components.dialogs.agentFlows.actions.back')}
+                                    {t('common.actions.back')}
                                 </Button>
                             )}
                         </>

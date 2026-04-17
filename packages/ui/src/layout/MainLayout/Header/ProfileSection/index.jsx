@@ -63,14 +63,14 @@ const dataToExport = [
     { id: 'Assistants Custom', title: 'menu.assistants.custom' },
     { id: 'Assistants OpenAI', title: 'menu.assistants.openAi' },
     { id: 'Assistants Azure', title: 'menu.assistants.azure' },
-    { id: 'Chatflows', title: 'menu.chatflows' },
+    { id: 'Chatflows', title: 'common.labels.chatflows' },
     { id: 'Chat Messages', title: 'menu.chatMessages' },
     { id: 'Chat Feedbacks', title: 'menu.chatFeedbacks' },
     { id: 'Custom Templates', title: 'menu.customTemplates' },
     { id: 'Document Stores', title: 'menu.documentStores' },
     { id: 'Executions', title: 'menu.executions' },
-    { id: 'Tools', title: 'menu.tools' },
-    { id: 'Variables', title: 'menu.variables' }
+    { id: 'Tools', title: 'common.labels.tools' },
+    { id: 'Variables', title: 'common.labels.variables' }
 ]
 
 const ExportDialog = ({ show, onCancel, onExport }) => {
@@ -373,7 +373,7 @@ const ProfileSection = ({ handleLogout }) => {
     useEffect(() => {
         if (exportAllApi.error) {
             setExportDialogOpen(false)
-            let errMsg = t('profile.errors.internalServerErrorTitle')
+            let errMsg = t('common.errors.internalServerError')
             let error = exportAllApi.error
             if (error?.response?.data) {
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -444,7 +444,7 @@ const ProfileSection = ({ handleLogout }) => {
                                     ) : (
                                         <Box sx={{ p: 2 }}>
                                             <Typography component='span' variant='h4'>
-                                                {t('profile.user')}
+                                                {t('common.labels.user')}
                                             </Typography>
                                         </Box>
                                     )}
@@ -478,7 +478,7 @@ const ProfileSection = ({ handleLogout }) => {
                                                         <IconFileExport stroke={1.5} size='1.3rem' />
                                                     </ListItemIcon>
                                                     <ListItemText
-                                                        primary={<Typography variant='body2'>{t('profile.actions.export')}</Typography>}
+                                                        primary={<Typography variant='body2'>{t('common.actions.export')}</Typography>}
                                                     />
                                                 </PermissionListItemButton>
                                                 <PermissionListItemButton

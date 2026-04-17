@@ -745,7 +745,7 @@ const AccountSettings = () => {
                         <SettingsSection
                             action={
                                 <StyledButton onClick={saveProfileData} sx={{ borderRadius: 2, height: 40 }} variant='contained'>
-                                    {t('profile.actions.save.title')}
+                                    {t('common.actions.save')}
                                 </StyledButton>
                             }
                             title={t('profile.actions.save.tooltips.profile')}
@@ -760,7 +760,7 @@ const AccountSettings = () => {
                                 }}
                             >
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    <Typography variant='body1'>{t('profile.inputs.name.title')}</Typography>
+                                    <Typography variant='body1'>{t('common.labels.name')}</Typography>
                                     <OutlinedInput
                                         id='name'
                                         type='string'
@@ -772,12 +772,12 @@ const AccountSettings = () => {
                                     />
                                 </Box>
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    <Typography variant='body1'>{t('profile.inputs.email')}</Typography>
+                                    <Typography variant='body1'>{t('common.labels.emailAddress')}</Typography>
                                     <OutlinedInput
                                         id='email'
                                         type='string'
                                         fullWidth
-                                        placeholder={t('profile.inputs.email')}
+                                        placeholder={t('common.labels.emailAddress')}
                                         name='email'
                                         onChange={(e) => setEmail(e.target.value)}
                                         value={email}
@@ -794,7 +794,7 @@ const AccountSettings = () => {
                                         sx={{ borderRadius: 2, height: 40 }}
                                         variant='contained'
                                     >
-                                        {t('profile.actions.save.title')}
+                                        {t('common.actions.save')}
                                     </StyledButton>
                                 }
                                 title={t('profile.actions.save.tooltips.security')}
@@ -1205,7 +1205,7 @@ const AccountSettings = () => {
                 {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
                     <DialogActions>
                         <Button onClick={handleRemoveSeatsDialogClose} disabled={isUpdatingSeats}>
-                            {t('profile.actions.cancel')}
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button
                             variant='outlined'
@@ -1462,7 +1462,7 @@ const AccountSettings = () => {
                 {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
                     <DialogActions>
                         <Button onClick={handleAddSeatsDialogClose} disabled={isUpdatingSeats}>
-                            {t('profile.actions.cancel')}
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button
                             variant='contained'
@@ -1532,7 +1532,7 @@ const AccountSettings = () => {
                         }}
                         disabled={deleteAccountApi.loading}
                     >
-                        {t('profile.actions.cancel')}
+                        {t('common.actions.cancel')}
                     </Button>
                     {/* Since the text of this value may vary, we also use its translated version */}
                     <Button
@@ -1541,7 +1541,7 @@ const AccountSettings = () => {
                         onClick={() => deleteAccountApi.request({ confirmationText: deleteConfirmationText })}
                         disabled={deleteAccountApi.loading || deleteConfirmationText !== permanentlyDeleteText}
                     >
-                        {deleteAccountApi.loading ? <CircularProgress size={24} color='inherit' /> : t('profile.actions.confirm')}
+                        {deleteAccountApi.loading ? <CircularProgress size={24} color='inherit' /> : t('common.actions.confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -57,7 +57,7 @@ export const FilesTable = ({ data, isLoading, filterFunction, handleDelete }) =>
                     >
                         <TableRow>
                             <StyledTableCell component='th' scope='row' style={{ width: '25%' }} key='0'>
-                                {t('components.filesTable.name')}
+                                {t('common.labels.name')}
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '40%' }} key='1'>
                                 {t('components.filesTable.path')}

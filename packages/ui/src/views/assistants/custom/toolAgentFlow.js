@@ -259,7 +259,7 @@ export const toolAgentFlow = (t) => {
                     ],
                     inputAnchors: [
                         {
-                            label: t('assistants.cards.customAssistant.agentFlow.toolAgent.inputAnchors.tools.title'),
+                            label: t('common.labels.tools'),
                             name: 'tools',
                             type: 'Tool',
                             list: true,

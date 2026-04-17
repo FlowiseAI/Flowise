@@ -92,7 +92,7 @@ const StickyNote = ({ data }) => {
                                 <IconCopy />
                             </IconButton>
                             <IconButton
-                                title={t('canvas.actions.delete')}
+                                title={t('common.actions.delete')}
                                 onClick={() => {
                                     deleteNode(data.id)
                                 }}

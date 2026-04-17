@@ -39,7 +39,7 @@ const LanguageSwitcher = ({ persist = false, size = 'small' }) => {
 
     return (
         <>
-            <Tooltip title={t('components.language.title')}>
+            <Tooltip title={t('common.labels.language')}>
                 <IconButton size={size} onClick={handleClick}>
                     <IconLanguage size={18} />
                 </IconButton>

@@ -364,7 +364,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             console.error('Error in saveInvite:', error)
             enqueueSnackbar({
                 message: t('components.dialogs.inviteUsers.messages.errors.failedSave', {
-                    msg: error.response?.data?.message || error.message || t('components.dialogs.inviteUsers.messages.errors.unknown')
+                    msg: error.response?.data?.message || error.message || t('common.errors.unknownError')
                 }),
                 options: {
                     key: new Date().getTime() + Math.random(),
@@ -682,7 +682,7 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
                     <Box sx={{ gridColumn: 'span 1' }}>
                         <Typography>
-                            {t('components.dialogs.inviteUsers.workspace')}
+                            {t('common.labels.workspace')}
                             <span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <Autocomplete

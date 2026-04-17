@@ -195,8 +195,8 @@ const NodeInputHandler = ({
             nodes: reactFlowInstance?.getNodes() || [],
             edges: reactFlowInstance?.getEdges() || [],
             nodeId: data.id,
-            confirmButtonName: t('canvas.actions.save'),
-            cancelButtonName: t('canvas.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         if (inputParam.acceptVariable) {
             setExpandRichDialogProps(dialogProps)
@@ -212,8 +212,8 @@ const NodeInputHandler = ({
             data,
             inputParam,
             disabled,
-            confirmButtonName: t('canvas.actions.save'),
-            cancelButtonName: t('canvas.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setConditionDialogProps(dialogProps)
         setShowConditionDialog(true)
@@ -239,8 +239,8 @@ const NodeInputHandler = ({
             relativeLinksMethod,
             limit,
             selectedLinks,
-            confirmButtonName: t('canvas.actions.save'),
-            cancelButtonName: t('canvas.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setManageScrapedLinksDialogProps(dialogProps)
         setShowManageScrapedLinksDialog(true)
@@ -491,16 +491,16 @@ const NodeInputHandler = ({
             setAsyncOptionEditDialogProps({
                 title: t('canvas.actions.editTool'),
                 type: 'EDIT',
-                cancelButtonName: t('canvas.actions.cancel'),
-                confirmButtonName: t('canvas.actions.save'),
+                cancelButtonName: t('common.actions.cancel'),
+                confirmButtonName: t('common.actions.save'),
                 toolId: inputValue
             })
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
                 title: t('canvas.actions.editAssistant'),
                 type: 'EDIT',
-                cancelButtonName: t('canvas.actions.cancel'),
-                confirmButtonName: t('canvas.actions.save'),
+                cancelButtonName: t('common.actions.cancel'),
+                confirmButtonName: t('common.actions.save'),
                 assistantId: inputValue
             })
         }
@@ -512,15 +512,15 @@ const NodeInputHandler = ({
             setAsyncOptionEditDialogProps({
                 title: t('canvas.actions.addNewTool'),
                 type: 'ADD',
-                cancelButtonName: t('canvas.actions.cancel'),
-                confirmButtonName: t('canvas.actions.add')
+                cancelButtonName: t('common.actions.cancel'),
+                confirmButtonName: t('common.actions.add')
             })
         } else if (inputParamName === 'selectedAssistant') {
             setAsyncOptionEditDialogProps({
                 title: t('canvas.actions.addNewAssistant'),
                 type: 'ADD',
-                cancelButtonName: t('canvas.actions.cancel'),
-                confirmButtonName: t('canvas.actions.add')
+                cancelButtonName: t('common.actions.cancel'),
+                confirmButtonName: t('common.actions.add')
             })
         }
         setAsyncOptionEditDialog(inputParamName)
@@ -947,7 +947,7 @@ const NodeInputHandler = ({
                                         width: 25,
                                         ml: 0.5
                                     }}
-                                    title={t('canvas.actions.expand')}
+                                    title={t('common.actions.expand')}
                                     color='primary'
                                     onClick={() =>
                                         onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam)
@@ -993,7 +993,7 @@ const NodeInputHandler = ({
                                         setTabValue(val)
                                         data.inputs[`${inputParam.tabIdentifier}_${data.id}`] = inputParam.tabs[val].name
                                     }}
-                                    aria-label={t('canvas.tabs')}
+                                    aria-label={t('common.labels.tabs')}
                                     variant='fullWidth'
                                     defaultValue={getTabValue(inputParam)}
                                 >
@@ -1195,7 +1195,7 @@ const NodeInputHandler = ({
                                     />
                                     {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
                                         <IconButton
-                                            title={t('canvas.actions.edit')}
+                                            title={t('common.actions.edit')}
                                             color='primary'
                                             size='small'
                                             onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
@@ -1205,7 +1205,7 @@ const NodeInputHandler = ({
                                     )}
                                     {inputParam.refresh && (
                                         <IconButton
-                                            title={t('canvas.actions.refresh')}
+                                            title={t('common.actions.refresh')}
                                             color='primary'
                                             size='small'
                                             onClick={() => setReloadTimestamp(Date.now().toString())}
@@ -1257,7 +1257,7 @@ const NodeInputHandler = ({
                                             )
                                         }
                                     >
-                                        {t('canvas.actions.manageLinks')}
+                                        {t('common.actions.manageLinks')}
                                     </Button>
                                     <ManageScrapedLinksDialog
                                         show={showManageScrapedLinksDialog}
@@ -1339,7 +1339,7 @@ const NodeInputHandler = ({
                 maxWidth='sm'
                 fullWidth
             >
-                <DialogTitle id='model-selection-dialog-title'>{t('canvas.dialogs.selectModel')}</DialogTitle>
+                <DialogTitle id='model-selection-dialog-title'>{t('common.labels.selectModel')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 2 }}>
                         <Box sx={{ px: 2 }}>
@@ -1380,7 +1380,7 @@ const NodeInputHandler = ({
                             setSelectedTempChatModel({})
                         }}
                     >
-                        {t('canvas.actions.cancel')}
+                        {t('common.actions.cancel')}
                     </Button>
                     <Button
                         disabled={!selectedTempChatModel || Object.keys(selectedTempChatModel).length === 0}
@@ -1393,7 +1393,7 @@ const NodeInputHandler = ({
                         }}
                         variant='contained'
                     >
-                        {t('canvas.actions.confirm')}
+                        {t('common.actions.confirm')}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -99,7 +99,7 @@ const ChatFeedback = ({ dialogProps, onConfirm }) => {
             <SwitchInput label={t('components.chatFeedback.actions.enableChatFeedback')} onChange={handleChange} value={chatFeedbackStatus} />
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    {t('components.chatFeedback.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </Stack>

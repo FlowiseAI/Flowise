@@ -27,7 +27,7 @@ const cards = [
         title: 'assistants.cards.openAi.title',
         description: 'assistants.cards.openAi.description.deprecated',
         icon: <IconBrandOpenai />,
-        iconText: 'assistants.cards.openAi.label',
+        iconText: 'common.providers.openAI',
         gradient: 'linear-gradient(135deg, #c9ffd85f 0%, #a0f0b567 100%)',
         deprecating: true
     }

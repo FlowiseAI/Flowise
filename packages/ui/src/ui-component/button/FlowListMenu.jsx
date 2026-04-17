@@ -267,10 +267,10 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     const handleDelete = async () => {
         setAnchorEl(null)
         const confirmPayload = {
-            title: t('menu.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('menu.dialogs.delete.description', { title: title, name: chatflow.name }),
-            confirmButtonName: t('menu.actions.delete'),
-            cancelButtonName: t('menu.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -387,11 +387,11 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                     disableRipple
                 >
                     <FileDownloadIcon />
-                    {t('menu.actions.export')}
+                    {t('common.actions.export')}
                 </PermissionMenuItem>
                 <PermissionMenuItem permissionId={'templates:flowexport'} onClick={handleExportTemplate} disableRipple>
                     <ExportTemplateOutlinedIcon />
-                    {t('menu.actions.saveAsTemplate')}
+                    {t('common.actions.saveAsTemplate')}
                 </PermissionMenuItem>
                 <Divider sx={{ my: 0.5 }} />
                 <PermissionMenuItem
@@ -441,7 +441,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                     disableRipple
                 >
                     <FileDeleteIcon />
-                    {t('menu.actions.delete')}
+                    {t('common.actions.delete')}
                 </PermissionMenuItem>
             </StyledMenu>
             <SaveChatflowDialog
@@ -449,7 +449,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 dialogProps={{
                     title: t('menu.actions.rename.renameThis', { name: title }),
                     confirmButtonName: t('menu.actions.rename.title'),
-                    cancelButtonName: t('menu.actions.cancel')
+                    cancelButtonName: t('common.actions.cancel')
                 }}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={saveFlowRename}

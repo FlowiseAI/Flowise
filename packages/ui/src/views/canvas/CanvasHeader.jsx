@@ -67,7 +67,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const [savePermission, setSavePermission] = useState(isAgentCanvas ? 'agentflows:create' : 'chatflows:create')
 
-    const title = t(isAgentCanvas ? 'canvas.title.agents' : 'canvas.title.chatflow')
+    const title = t(isAgentCanvas ? 'common.labels.agents' : 'common.labels.chatflow')
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
@@ -257,7 +257,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
                 <Stack flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
                     <Box>
-                        <ButtonBase title={t('canvas.actions.back')} sx={{ borderRadius: '50%' }}>
+                        <ButtonBase title={t('common.actions.back')} sx={{ borderRadius: '50%' }}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -301,7 +301,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 </Typography>
                                 {chatflow?.id && (
                                     <Available permission={savePermission}>
-                                        <ButtonBase title={t('canvas.actions.editName')} sx={{ borderRadius: '50%' }}>
+                                        <ButtonBase title={t('common.actions.editName')} sx={{ borderRadius: '50%' }}>
                                             <Avatar
                                                 variant='rounded'
                                                 sx={{
@@ -345,7 +345,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                         }
                                     }}
                                 />
-                                <ButtonBase title={t('canvas.actions.saveName')} sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title={t('common.actions.saveName')} sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -366,7 +366,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                         <IconCheck stroke={1.5} size='1.3rem' />
                                     </Avatar>
                                 </ButtonBase>
-                                <ButtonBase title={t('canvas.actions.cancel')} sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title={t('common.actions.cancel')} sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -470,8 +470,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 show={flowDialogOpen}
                 dialogProps={{
                     title: t('canvas.dialogs.saveNew', { name: title }),
-                    confirmButtonName: t('canvas.actions.save'),
-                    cancelButtonName: t('canvas.actions.cancel')
+                    confirmButtonName: t('common.actions.save'),
+                    cancelButtonName: t('common.actions.cancel')
                 }}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={onConfirmSaveName}

@@ -144,10 +144,10 @@ const ShowStoredChunks = () => {
 
     const onDeleteChunk = async (chunk) => {
         const confirmPayload = {
-            title: t('docstore.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('docstore.dialogs.delete.description.chunk', { id: chunk.id }),
-            confirmButtonName: t('docstore.actions.delete'),
-            cancelButtonName: t('docstore.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 

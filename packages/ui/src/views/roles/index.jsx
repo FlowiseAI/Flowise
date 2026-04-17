@@ -296,7 +296,7 @@ function ShowRoleRow(props) {
                     {props.role.userCount > 0 && (
                         <PermissionIconButton
                             permissionId={'roles:manage'}
-                            aria-label={t('roles.actions.expandRow')}
+                            aria-label={t('common.actions.expandRow')}
                             size='small'
                             color='inherit'
                             onClick={() => handleViewAssignedUsers(props.role.id)}
@@ -308,7 +308,7 @@ function ShowRoleRow(props) {
                 <StyledTableCell>
                     <PermissionIconButton
                         permissionId={'roles:manage'}
-                        title={t('roles.actions.edit')}
+                        title={t('common.actions.edit')}
                         color='primary'
                         onClick={() => props.onEditClick(props.role)}
                     >
@@ -318,7 +318,7 @@ function ShowRoleRow(props) {
                         permissionId={'roles:manage'}
                         disabled={props.role.userCount > 0}
                         color='error'
-                        title={t(props.role.userCount > 0 ? 'roles.removeUsersFirst' : 'roles.actions.delete')}
+                        title={t(props.role.userCount > 0 ? 'roles.removeUsersFirst' : 'common.actions.delete')}
                         onClick={() => props.onDeleteClick(props.role)}
                     >
                         <IconTrash />
@@ -349,7 +349,7 @@ function ShowRoleRow(props) {
                                             direction={orderBy === 'user' ? order : 'asc'}
                                             onClick={() => handleRequestSort('user')}
                                         >
-                                            {t('roles.table.user')}
+                                            {t('common.labels.user')}
                                         </TableSortLabel>
                                     </StyledTableCell>
                                     <StyledTableCell sx={{ width: '50%' }}>
@@ -358,7 +358,7 @@ function ShowRoleRow(props) {
                                             direction={orderBy === 'workspace' ? order : 'asc'}
                                             onClick={() => handleRequestSort('workspace')}
                                         >
-                                            {t('roles.table.workspace')}
+                                            {t('common.labels.workspace')}
                                         </TableSortLabel>
                                     </StyledTableCell>
                                 </TableRow>
@@ -430,7 +430,7 @@ const Roles = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('roles.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('roles.actions.invite'),
             data: {}
         }
@@ -441,7 +441,7 @@ const Roles = () => {
     const edit = (role) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('roles.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('roles.actions.invite'),
             data: {
                 ...role
@@ -454,7 +454,7 @@ const Roles = () => {
     const view = (role) => {
         const dialogProp = {
             type: 'VIEW',
-            cancelButtonName: t('roles.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('roles.actions.invite'),
             data: {
                 ...role
@@ -466,10 +466,10 @@ const Roles = () => {
 
     const deleteRole = async (role) => {
         const confirmPayload = {
-            title: t('roles.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('roles.dialogs.delete.description', { name: role.name }),
-            confirmButtonName: t('roles.actions.delete'),
-            cancelButtonName: t('roles.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -591,8 +591,8 @@ const Roles = () => {
                                                     }}
                                                 >
                                                     <TableRow>
-                                                        <StyledTableCell>{t('roles.table.name')}</StyledTableCell>
-                                                        <StyledTableCell>{t('roles.table.description')}</StyledTableCell>
+                                                        <StyledTableCell>{t('common.labels.name')}</StyledTableCell>
+                                                        <StyledTableCell>{t('common.labels.description')}</StyledTableCell>
                                                         <StyledTableCell>{t('roles.table.permissions')}</StyledTableCell>
                                                         <StyledTableCell>{t('roles.table.assignedUsers')}</StyledTableCell>
                                                         <StyledTableCell> </StyledTableCell>

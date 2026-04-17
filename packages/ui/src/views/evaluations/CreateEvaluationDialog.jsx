@@ -503,7 +503,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <>
                             <Box>
                                 <Typography variant='overline'>
-                                    {t('evaluations.inputs.name.title')}
+                                    {t('common.labels.name')}
                                     <span style={{ color: 'red' }}>&nbsp;*</span>
                                 </Typography>
                                 <TooltipWithParser style={{ marginLeft: 10 }} title={t('evaluations.inputs.name.tooltip')} />
@@ -556,7 +556,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                             value='Chatflow'
                                             onChange={onChangeFlowType}
                                         />{' '}
-                                        {t('evaluations.inputs.checkBox.chatflows')}
+                                        {t('common.labels.chatflows')}
                                         <Checkbox
                                             defaultChecked
                                             size='small'
@@ -613,7 +613,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Box>
                             {useLLM && availableModels.length > 0 && (
                                 <Box>
-                                    <Typography variant='overline'>{t('evaluations.inputs.selectModel')}</Typography>
+                                    <Typography variant='overline'>{t('common.labels.selectModel')}</Typography>
                                     <Dropdown
                                         name='selectedModel'
                                         defaultOption=''
@@ -696,7 +696,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 )}
                 {activeStep === 1 && selectedSimpleEvaluators.length > 0 && (
                     <Button color='primary' sx={{ mr: 2, borderRadius: 25 }} variant='contained' onClick={() => goNext(activeStep)}>
-                        {t('evaluations.actions.next')}
+                        {t('common.actions.next')}
                     </Button>
                 )}
                 {activeStep !== 1 && (
@@ -706,7 +706,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         variant='contained'
                         onClick={() => goNext(activeStep)}
                     >
-                        {t(activeStep === steps.length - 1 ? 'evaluations.actions.startEvaluation' : 'evaluations.actions.next')}
+                        {t(activeStep === steps.length - 1 ? 'evaluations.actions.startEvaluation' : 'common.actions.next')}
                     </StyledButton>
                 )}
             </DialogActions>

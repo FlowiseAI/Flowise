@@ -34,7 +34,7 @@ export const ChartTokens = ({ data, flowNames }) => {
                 />
                 <YAxis
                     label={{
-                        value: t('evaluations.tokens'),
+                        value: t('common.labels.tokens'),
                         angle: -90,
                         position: 'insideLeft',
                         offset: 10,

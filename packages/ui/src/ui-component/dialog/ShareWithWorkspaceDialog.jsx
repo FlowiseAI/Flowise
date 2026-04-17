@@ -67,10 +67,10 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
 
     const columns = useMemo(
         () => [
-            { field: 'workspaceName', headerName: t('components.dialogs.shareWithWorkspace.workspace'), editable: false, flex: 1 },
+            { field: 'workspaceName', headerName: t('common.labels.workspace'), editable: false, flex: 1 },
             {
                 field: 'shared',
-                headerName: t('components.dialogs.shareWithWorkspace.share'),
+                headerName: t('common.actions.share'),
                 type: 'boolean',
                 editable: true,
                 width: 180
@@ -193,7 +193,7 @@ const ShareWithWorkspaceDialog = ({ show, dialogProps, onCancel, setError }) => 
             <DialogContent>
                 <Box sx={{ p: 2 }}>
                     <Stack sx={{ position: 'relative' }} direction='row'>
-                        <Typography variant='overline'>{t('components.dialogs.shareWithWorkspace.name')}</Typography>
+                        <Typography variant='overline'>{t('common.labels.name')}</Typography>
                     </Stack>
                     <OutlinedInput id='name' type='string' disabled={true} fullWidth placeholder={name} value={name} name='name' />
                 </Box>

@@ -79,7 +79,7 @@ const AgentflowCanvas = () => {
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
-    const canvasTitle = t(URLpath.includes('agentcanvas') ? 'agentFlows.v2.agent' : 'agentFlows.v2.chatflow')
+    const canvasTitle = t(URLpath.includes('agentcanvas') ? 'agentFlows.v2.agent' : 'common.labels.chatflow')
 
     const { confirm } = useConfirm()
 
@@ -176,10 +176,10 @@ const AgentflowCanvas = () => {
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
-            title: t('agentFlows.v2.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('agentFlows.v2.dialogs.delete.description', { canvasTitle: canvasTitle, name: chatflow.name }),
-            confirmButtonName: t('agentFlows.v2.actions.delete'),
-            cancelButtonName: t('agentFlows.v2.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 

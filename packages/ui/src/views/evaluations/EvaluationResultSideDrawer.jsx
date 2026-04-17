@@ -128,7 +128,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                         {t(
                                             dialogProps.data.errors[index] === ''
                                                 ? 'evaluations.dialogs.evalResult.actualOutput'
-                                                : 'evaluations.error'
+                                                : 'common.labels.error'
                                         )}
                                     </Typography>
                                     <Typography variant='body2'>
@@ -213,7 +213,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                 {dialogProps.data.metrics[index]?.nested_metrics ? (
                                     <Box>
                                         <Typography variant='overline' style={{ fontWeight: 'bold' }}>
-                                            {t('evaluations.tokens')}
+                                            {t('common.labels.tokens')}
                                         </Typography>
                                         <Table size='small' style={{ border: '1px solid #ccc' }}>
                                             <TableHead>
@@ -228,7 +228,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                                         {t('evaluations.input')}
                                                     </TableCell>
                                                     <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
-                                                        {t('evaluations.dialogs.evalResult.output')}
+                                                        {t('common.labels.output')}
                                                     </TableCell>
                                                     <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
                                                         {t('evaluations.dialogs.evalResult.total.title')}
@@ -283,7 +283,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                 ) : (
                                     <Box>
                                         <Typography variant='overline' style={{ fontWeight: 'bold' }}>
-                                            {t('evaluations.tokens')}
+                                            {t('common.labels.tokens')}
                                         </Typography>
                                         <Typography variant='body2'>
                                             <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
@@ -334,7 +334,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                                         {t('evaluations.input')}
                                                     </TableCell>
                                                     <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
-                                                        {t('evaluations.dialogs.evalResult.output')}
+                                                        {t('common.labels.output')}
                                                     </TableCell>
                                                     <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
                                                         {t('evaluations.dialogs.evalResult.total.title')}

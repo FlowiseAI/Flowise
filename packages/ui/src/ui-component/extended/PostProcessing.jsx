@@ -79,8 +79,8 @@ const PostProcessing = ({ dialogProps }) => {
                 hideCodeExecute: true
             },
             languageType: 'js',
-            confirmButtonName: t('components.postProcessing.actions.save'),
-            cancelButtonName: t('components.postProcessing.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setExpandDialogProps(dialogProps)
         setShowExpandDialog(true)
@@ -248,7 +248,7 @@ const PostProcessing = ({ dialogProps }) => {
                                                 borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
                                             }}
                                         >
-                                            {t('components.postProcessing.variablesTable.type')}
+                                            {t('common.labels.type')}
                                         </TableCell>
                                         <TableCell
                                             sx={{
@@ -260,7 +260,7 @@ const PostProcessing = ({ dialogProps }) => {
                                                 borderColor: customization.isDarkMode ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)'
                                             }}
                                         >
-                                            {t('components.postProcessing.variablesTable.description')}
+                                            {t('common.labels.description')}
                                         </TableCell>
                                     </TableRow>
                                 </TableHead>
@@ -357,7 +357,7 @@ const PostProcessing = ({ dialogProps }) => {
                     onClick={onSave}
                     sx={{ minWidth: 100 }}
                 >
-                    {t('components.postProcessing.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
             <ExpandTextDialog

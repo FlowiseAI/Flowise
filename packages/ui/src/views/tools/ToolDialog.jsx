@@ -150,13 +150,13 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             { field: 'property', headerName: t('tools.columns.property'), editable: true, flex: 1 },
             {
                 field: 'type',
-                headerName: t('tools.columns.type'),
+                headerName: t('common.labels.type'),
                 type: 'singleSelect',
                 valueOptions: ['string', 'number', 'boolean', 'date'],
                 editable: true,
                 width: 120
             },
-            { field: 'description', headerName: t('tools.columns.description'), editable: true, flex: 1 },
+            { field: 'description', headerName: t('common.labels.description'), editable: true, flex: 1 },
             { field: 'required', headerName: t('tools.columns.required'), type: 'boolean', editable: true, width: 80 },
             {
                 field: 'actions',
@@ -166,7 +166,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                     <GridActionsCellItem
                         key={'Delete'}
                         icon={<DeleteIcon />}
-                        label={t('tools.actions.delete')}
+                        label={t('common.actions.delete')}
                         onClick={deleteItem(params.id)}
                     />
                 ]
@@ -379,8 +379,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
         const confirmPayload = {
             title: t('tools.dialogs.deleteTool.title'),
             description: t('tools.dialogs.deleteTool.description', { name: toolName }),
-            confirmButtonName: t('tools.actions.delete'),
-            cancelButtonName: t('tools.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -451,7 +451,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                     startIcon={<IconTemplate />}
                                     color='secondary'
                                 >
-                                    {t('tools.actions.saveAsTemplate')}
+                                    {t('common.actions.saveAsTemplate')}
                                 </PermissionButton>
                                 <PermissionButton
                                     permissionId={'tools:export'}
@@ -459,7 +459,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                     onClick={() => exportTool()}
                                     startIcon={<IconFileDownload />}
                                 >
-                                    {t('tools.actions.export')}
+                                    {t('common.actions.export')}
                                 </PermissionButton>
                             </>
                         )}
@@ -594,7 +594,7 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             <DialogActions sx={{ p: 3 }}>
                 {dialogProps.type === 'EDIT' && (
                     <StyledPermissionButton permissionId={'tools:delete'} color='error' variant='contained' onClick={() => deleteTool()}>
-                        {t('tools.actions.delete')}
+                        {t('common.actions.delete')}
                     </StyledPermissionButton>
                 )}
                 {dialogProps.type === 'TEMPLATE' && (

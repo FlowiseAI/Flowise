@@ -23,7 +23,7 @@ const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
     return (
         <>
             <Box>
-                <ButtonBase title={t('marketplaces.actions.back')} sx={{ borderRadius: '50%' }}>
+                <ButtonBase title={t('common.actions.back')} sx={{ borderRadius: '50%' }}>
                     <Avatar
                         variant='rounded'
                         sx={{

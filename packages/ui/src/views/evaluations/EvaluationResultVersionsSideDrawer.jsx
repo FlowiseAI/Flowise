@@ -47,7 +47,7 @@ const EvaluationResultVersionsSideDrawer = ({ show, dialogProps, onClickFunction
     return (
         <SwipeableDrawer anchor='right' open={show} onClose={() => onClickFunction()} onOpen={onOpen}>
             <Button startIcon={<IconSquareRoundedChevronsRight />} onClick={() => onClickFunction()}>
-                {t('evaluations.actions.close')}
+                {t('common.actions.close')}
             </Button>
             <Box style={{ width: 350, margin: 10 }} role='presentation' onClick={onClickFunction}>
                 <Timeline
@@ -61,7 +61,7 @@ const EvaluationResultVersionsSideDrawer = ({ show, dialogProps, onClickFunction
                         versions.map((version, index) => (
                             <TimelineItem key={index}>
                                 <TimelineOppositeContent color='textSecondary'>
-                                    {moment(version.runDate).format(t('evaluations.formats.date'))}
+                                    {moment(version.runDate).format(t('common.formats.dateDayMonthShortYearTime12Seconds'))}
                                 </TimelineOppositeContent>
                                 <TimelineSeparator style={{ marginTop: 5 }}>
                                     <TimelineDot />

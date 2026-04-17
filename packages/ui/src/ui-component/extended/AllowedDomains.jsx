@@ -195,7 +195,7 @@ const AllowedDomains = ({ dialogProps, onConfirm, hideTitle = false }) => {
             </Stack>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    {t('components.allowedDomains.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </Stack>

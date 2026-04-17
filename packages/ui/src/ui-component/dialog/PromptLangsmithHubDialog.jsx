@@ -142,7 +142,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const [modelName, setModelName] = useState([])
 
     const usecases = [
-        { id: 201, name: t('components.dialogs.promptLangsmithHub.cases.agents') },
+        { id: 201, name: t('common.labels.agents') },
         { id: 202, name: t('components.dialogs.promptLangsmithHub.cases.agentStimulation') },
         { id: 203, name: t('components.dialogs.promptLangsmithHub.cases.autonomousAgents') },
         { id: 204, name: t('components.dialogs.promptLangsmithHub.cases.classification') },
@@ -264,7 +264,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                 <Box sx={{ display: 'flex', flexDirection: 'row', p: 2, pt: 1, alignItems: 'center' }}>
                     <FormControl sx={{ mr: 1, width: '30%' }}>
                         <InputLabel size='small' id='model-checkbox-label'>
-                            {t('components.dialogs.promptLangsmithHub.model')}
+                            {t('common.labels.model')}
                         </InputLabel>
                         <Select
                             id='model-checkbox'
@@ -273,7 +273,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                             size='small'
                             value={modelName}
                             onChange={handleModelChange}
-                            input={<OutlinedInput label={t('components.dialogs.promptLangsmithHub.model')} />}
+                            input={<OutlinedInput label={t('common.labels.model')} />}
                             renderValue={(selected) => selected.map((x) => x.name).join(', ')}
                             endAdornment={
                                 modelName.length ? (
@@ -339,7 +339,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                     </FormControl>
                     <FormControl sx={{ mr: 1, width: '30%' }}>
                         <InputLabel size='small' id='language-checkbox-label'>
-                            {t('components.dialogs.promptLangsmithHub.language')}
+                            {t('common.labels.language')}
                         </InputLabel>
                         <Select
                             labelId='language-checkbox-label'
@@ -348,7 +348,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                             size='small'
                             value={language}
                             onChange={handleLanguageChange}
-                            input={<OutlinedInput label={t('components.dialogs.promptLangsmithHub.language')} />}
+                            input={<OutlinedInput label={t('common.labels.language')} />}
                             renderValue={(selected) => selected.map((x) => x.name).join(', ')}
                             endAdornment={
                                 language.length ? (
@@ -376,7 +376,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                     </FormControl>
                     <FormControl sx={{ width: '10%' }}>
                         <Button disableElevation variant='outlined' onClick={fetchPrompts}>
-                            {t('components.dialogs.promptLangsmithHub.actions.search')}
+                            {t('common.actions.search')}
                         </Button>
                     </FormControl>
                 </Box>
@@ -456,7 +456,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                                                         expandIcon={<ExpandMoreIcon />}
                                                         id='panel2d-header'
                                                     >
-                                                        <Typography>{t('components.dialogs.promptLangsmithHub.prompt')}</Typography>
+                                                        <Typography>{t('common.labels.prompt')}</Typography>
                                                     </AccordionSummary>
                                                     <AccordionDetails>
                                                         <Typography sx={{ wordWrap: 'true' }} color='text.primary'>
@@ -492,7 +492,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                                                         expandIcon={<ExpandMoreIcon />}
                                                         id='panel1d-header'
                                                     >
-                                                        <Typography>{t('components.dialogs.promptLangsmithHub.description')}</Typography>
+                                                        <Typography>{t('common.labels.description')}</Typography>
                                                     </AccordionSummary>
                                                     <AccordionDetails>
                                                         <Typography
@@ -548,13 +548,13 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
             </DialogContent>
             {availablePrompNameList && availablePrompNameList.length > 0 && (
                 <DialogActions>
-                    <Button onClick={onCancel}>{t('components.dialogs.promptLangsmithHub.actions.cancel')}</Button>
+                    <Button onClick={onCancel}>{t('common.actions.cancel')}</Button>
                     <StyledButton
                         disabled={!selectedPrompt?.detailed}
                         onClick={() => onSubmit(selectedPrompt.detailed)}
                         variant='contained'
                     >
-                        {t('components.dialogs.promptLangsmithHub.actions.load')}
+                        {t('common.actions.load')}
                     </StyledButton>
                 </DialogActions>
             )}

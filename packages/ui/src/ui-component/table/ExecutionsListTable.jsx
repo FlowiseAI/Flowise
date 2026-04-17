@@ -177,7 +177,7 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                                     }}
                                 />
                             </StyledTableCell>
-                            <StyledTableCell>{t('components.executionsListTable.status')}</StyledTableCell>
+                            <StyledTableCell>{t('common.labels.status')}</StyledTableCell>
                             <StyledTableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
@@ -278,14 +278,14 @@ export const ExecutionsListTable = ({ data, isLoading, onExecutionRowClick, onSe
                                                 />
                                             </StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>
-                                                {moment(row.updatedDate).format(t('components.executionsListTable.formats.date'))}
+                                                {moment(row.updatedDate).format(t('common.formats.dateMonthShortDayYearTime12'))}
                                             </StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>
                                                 {row.agentflow?.name}
                                             </StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>{row.sessionId}</StyledTableCell>
                                             <StyledTableCell onClick={() => onExecutionRowClick(row)}>
-                                                {moment(row.createdDate).format(t('components.executionsListTable.formats.date'))}
+                                                {moment(row.createdDate).format(t('common.formats.dateMonthShortDayYearTime12'))}
                                             </StyledTableCell>
                                         </StyledTableRow>
                                     )

@@ -133,7 +133,7 @@ const EvalsEvaluation = () => {
     const createEvaluation = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('evaluations.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('evaluations.actions.startNewEvaluation'),
             data: {}
         }
@@ -143,12 +143,12 @@ const EvalsEvaluation = () => {
 
     const deleteEvaluationsAllVersions = async () => {
         const confirmPayload = {
-            title: t('evaluations.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('evaluations.dialogs.delete.description', {
                 count: selected.length
             }),
-            confirmButtonName: t('evaluations.actions.delete'),
-            cancelButtonName: t('evaluations.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -208,7 +208,7 @@ const EvalsEvaluation = () => {
                 // Prepare the data for the table
                 for (let i = 0; i < evalRows.length; i++) {
                     const evalRow = evalRows[i]
-                    evalRows[i].runDate = moment(evalRow.runDate).format(t('evaluations.formats.date'))
+                    evalRows[i].runDate = moment(evalRow.runDate).format(t('common.formats.dateDayMonthShortYearTime12Seconds'))
                     evalRows[i].average_metrics =
                         typeof evalRow.average_metrics === 'object' ? evalRow.average_metrics : JSON.parse(evalRow.average_metrics)
                     evalRows[i].usedFlows =
@@ -226,7 +226,7 @@ const EvalsEvaluation = () => {
             const evalRows = createNewEvaluation.data
             for (let i = 0; i < evalRows.length; i++) {
                 const evalRow = evalRows[i]
-                evalRows[i].runDate = moment(evalRow.runDate).format(t('evaluations.formats.date'))
+                evalRows[i].runDate = moment(evalRow.runDate).format(t('common.formats.dateDayMonthShortYearTime12Seconds'))
                 evalRows[i].average_metrics =
                     typeof evalRow.average_metrics === 'object' ? evalRow.average_metrics : JSON.parse(evalRow.average_metrics)
                 evalRows[i].usedFlows = typeof evalRow.chatflowName === 'object' ? evalRow.chatflowName : JSON.parse(evalRow.chatflowName)
@@ -252,7 +252,9 @@ const EvalsEvaluation = () => {
                     msg:
                         typeof createNewEvaluation.error.response?.data === 'object'
                             ? createNewEvaluation.error.response.data.message
-                            : createNewEvaluation.error.response?.data || createNewEvaluation.error.message || t('evaluations.unknownError')
+                            : createNewEvaluation.error.response?.data ||
+                              createNewEvaluation.error.message ||
+                              t('common.errors.unknownError')
                 }),
                 options: {
                     key: new Date().getTime() + Math.random(),
@@ -349,7 +351,7 @@ const EvalsEvaluation = () => {
                                     }
                                 }}
                                 onClick={onRefresh}
-                                title={t('evaluations.actions.refresh')}
+                                title={t('common.actions.refresh')}
                             >
                                 <IconRefresh />
                             </IconButton>
@@ -407,12 +409,12 @@ const EvalsEvaluation = () => {
                                                         checked={selected.length === (rows.filter((item) => item?.latestEval) || []).length}
                                                         onChange={onSelectAllClick}
                                                         inputProps={{
-                                                            'aria-label': t('evaluations.actions.selectAll')
+                                                            'aria-label': t('common.actions.selectAll')
                                                         }}
                                                     />
                                                 </TableCell>
                                                 <TableCell width={10}> </TableCell>
-                                                <TableCell>{t('evaluations.table.name')}</TableCell>
+                                                <TableCell>{t('common.labels.name')}</TableCell>
                                                 <TableCell>{t('evaluations.table.latestVersion')}</TableCell>
                                                 <TableCell>{t('evaluations.table.averageMetrics')}</TableCell>
                                                 <TableCell>{t('evaluations.table.lastEvaluated')}</TableCell>
@@ -561,10 +563,10 @@ function EvaluationRunRow(props) {
 
     const deleteChildEvaluations = async () => {
         const confirmPayload = {
-            title: t('evaluations.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('evaluations.dialogs.delete.description', { count: childSelected.length }),
-            confirmButtonName: t('evaluations.actions.delete'),
-            cancelButtonName: t('evaluations.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -656,12 +658,7 @@ function EvaluationRunRow(props) {
                 <StyledTableCell>
                     {props.item.version}{' '}
                     {props.item.version > 0 && (
-                        <IconButton
-                            aria-label={t('evaluations.actions.expandRow')}
-                            size='small'
-                            color='inherit'
-                            onClick={() => setOpen(!open)}
-                        >
+                        <IconButton aria-label={t('common.actions.expandRow')} size='small' color='inherit' onClick={() => setOpen(!open)}>
                             {props.item.version > 0 && open ? <IconChevronsUp /> : <IconChevronsDown />}
                         </IconButton>
                     )}
@@ -702,7 +699,9 @@ function EvaluationRunRow(props) {
                         )}
                     </Stack>
                 </StyledTableCell>
-                <StyledTableCell>{moment(props.item.runDate).format(t('evaluations.formats.date'))}</StyledTableCell>
+                <StyledTableCell>
+                    {moment(props.item.runDate).format(t('common.formats.dateDayMonthShortYearTime12Seconds'))}
+                </StyledTableCell>
                 <StyledTableCell>
                     <Stack flexDirection='row' sx={{ gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
                         {props.item?.usedFlows?.map((usedFlow, index) => (
@@ -778,7 +777,7 @@ function EvaluationRunRow(props) {
                                                 <TableCell>{t('evaluations.table.version')}</TableCell>
                                                 <TableCell>{t('evaluations.table.lastRun')}</TableCell>
                                                 <TableCell>{t('evaluations.table.averageMetrics')}</TableCell>
-                                                <TableCell>{t('evaluations.table.status')}</TableCell>
+                                                <TableCell>{t('common.labels.status')}</TableCell>
                                                 <TableCell> </TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -796,7 +795,9 @@ function EvaluationRunRow(props) {
                                                             </StyledTableCell>
                                                             <StyledTableCell>{childItem.version}</StyledTableCell>
                                                             <StyledTableCell>
-                                                                {moment(childItem.runDate).format(t('evaluations.formats.date'))}
+                                                                {moment(childItem.runDate).format(
+                                                                    t('common.formats.dateDayMonthShortYearTime12Seconds')
+                                                                )}
                                                             </StyledTableCell>
                                                             <StyledTableCell>
                                                                 <Stack

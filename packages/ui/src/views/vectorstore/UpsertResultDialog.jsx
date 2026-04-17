@@ -103,11 +103,11 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery 
                             {t('vectorStore.actions.testRetrieval')}
                         </Button>
                         <Button fullWidth onClick={onCancel}>
-                            {t('vectorStore.actions.close')}
+                            {t('common.actions.close')}
                         </Button>
                     </div>
                 )}
-                {!dialogProps.goToRetrievalQuery && <Button onClick={onCancel}>{t('vectorStore.actions.close')}</Button>}
+                {!dialogProps.goToRetrievalQuery && <Button onClick={onCancel}>{t('common.actions.close')}</Button>}
             </DialogActions>
         </Dialog>
     ) : null

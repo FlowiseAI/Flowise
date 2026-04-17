@@ -129,7 +129,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                 </Typography>
 
                                 {data?.id && (
-                                    <ButtonBase title={t('agentFlows.v2.actions.editName')} sx={{ borderRadius: '50%' }}>
+                                    <ButtonBase title={t('common.actions.editName')} sx={{ borderRadius: '50%' }}>
                                         <Avatar
                                             variant='rounded'
                                             sx={{
@@ -175,7 +175,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                         }
                                     }}
                                 />
-                                <ButtonBase title={t('agentFlows.v2.actions.saveName')} sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title={t('common.actions.saveName')} sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -201,7 +201,7 @@ const EditNodeDialog = ({ show, dialogProps, onCancel }) => {
                                         <IconCheck stroke={1.5} size='1rem' />
                                     </Avatar>
                                 </ButtonBase>
-                                <ButtonBase title={t('agentFlows.v2.actions.cancel')} sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title={t('common.actions.cancel')} sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{

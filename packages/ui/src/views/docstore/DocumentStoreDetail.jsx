@@ -344,7 +344,7 @@ const DocumentStoreDetails = () => {
         }
 
         const props = {
-            title: t('docstore.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description,
             vectorStoreConfig,
             recordManagerConfig,
@@ -359,8 +359,8 @@ const DocumentStoreDetails = () => {
         const confirmPayload = {
             title: t('docstore.dialogs.confirm.title'),
             description: t('docstore.dialogs.confirm.description'),
-            confirmButtonName: t('docstore.actions.refresh'),
-            cancelButtonName: t('docstore.actions.cancel')
+            confirmButtonName: t('common.actions.refresh'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -413,7 +413,7 @@ const DocumentStoreDetails = () => {
         const dialogProp = {
             title: t('docstore.dialogs.editDocumentStore'),
             type: 'EDIT',
-            cancelButtonName: t('docstore.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('docstore.actions.update'),
             data: data
         }
@@ -571,7 +571,7 @@ const DocumentStoreDetails = () => {
                                         title={t('docstore.actions.menu.refresh')}
                                     >
                                         <RefreshIcon />
-                                        {t('docstore.actions.refresh')}
+                                        {t('common.actions.refresh')}
                                     </MenuItem>
                                 </Available>
                                 <Divider sx={{ my: 0.5 }} />
@@ -583,7 +583,7 @@ const DocumentStoreDetails = () => {
                                     disableRipple
                                 >
                                     <FileDeleteIcon />
-                                    {t('docstore.actions.delete')}
+                                    {t('common.actions.delete')}
                                 </MenuItem>
                             </StyledMenu>
                         </ViewHeader>
@@ -647,7 +647,7 @@ const DocumentStoreDetails = () => {
                                 sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                 component={Paper}
                             >
-                                <Table sx={{ minWidth: 650 }} aria-label={t('docstore.simpleTable')}>
+                                <Table sx={{ minWidth: 650 }} aria-label={t('common.labels.simpleTable')}>
                                     <TableHead
                                         sx={{
                                             backgroundColor: customization.isDarkMode
@@ -857,9 +857,7 @@ function LoaderRow(props) {
                 <StyledTableCell onClick={props.onViewChunksClick} scope='row'>
                     {props.loader.loaderName}
                 </StyledTableCell>
-                <StyledTableCell onClick={props.onViewChunksClick}>
-                    {props.loader.splitterName ?? t('docstore.common.none')}
-                </StyledTableCell>
+                <StyledTableCell onClick={props.onViewChunksClick}>{props.loader.splitterName ?? t('common.labels.none')}</StyledTableCell>
                 <StyledTableCell onClick={props.onViewChunksClick}>
                     {formatSources(props.loader.files, props.loader.source)}
                 </StyledTableCell>
@@ -950,7 +948,7 @@ function LoaderRow(props) {
                                         disableRipple
                                     >
                                         <FileDeleteIcon />
-                                        {t('docstore.actions.delete')}
+                                        {t('common.actions.delete')}
                                     </MenuItem>
                                 </Available>
                             </StyledMenu>

@@ -99,9 +99,9 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
                     >
                         {shareableLink}
                     </Typography>
-                    <Tooltip title={t(copied ? 'agentExecution.actions.copy.done' : 'agentExecution.actions.copy.title.link')}>
+                    <Tooltip title={t(copied ? 'common.messages.copied' : 'agentExecution.actions.copy.title.link')}>
                         <Button variant='text' color='primary' onClick={copyToClipboard} startIcon={<IconCopy size={18} />}>
-                            {t('agentExecution.actions.copy.title.name')}
+                            {t('common.actions.copy')}
                         </Button>
                     </Tooltip>
                 </Box>
@@ -111,7 +111,7 @@ const ShareExecutionDialog = ({ show, executionId, onClose, onUnshare }) => {
                     <Button color='error' onClick={handleUnshare} sx={{ mr: 1 }}>
                         {t('agentExecution.actions.unshare')}
                     </Button>
-                    <Button onClick={onClose}>{t('agentExecution.actions.close')}</Button>
+                    <Button onClick={onClose}>{t('common.actions.close')}</Button>
                 </Box>
             </DialogContent>
         </Dialog>

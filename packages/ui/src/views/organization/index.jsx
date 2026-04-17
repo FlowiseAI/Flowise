@@ -86,7 +86,7 @@ const OrganizationSetupPage = () => {
     }
 
     const emailInput = {
-        label: t('organization.inputs.email'),
+        label: t('common.labels.email'),
         name: 'email',
         type: 'email',
         placeholder: 'user@company.com'

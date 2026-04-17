@@ -163,8 +163,8 @@ const EvalDatasetRows = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('datasets.actions.cancel'),
-            confirmButtonName: t('datasets.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             data: {
                 datasetId: datasetId,
                 datasetName: dataset.name
@@ -177,7 +177,7 @@ const EvalDatasetRows = () => {
     const uploadCSV = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('datasets.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('datasets.actions.upload'),
             data: {
                 datasetId: datasetId,
@@ -191,8 +191,8 @@ const EvalDatasetRows = () => {
     const editDs = () => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('datasets.actions.cancel'),
-            confirmButtonName: t('datasets.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: dataset
         }
         setDatasetDialogProps(dialogProp)
@@ -202,8 +202,8 @@ const EvalDatasetRows = () => {
     const edit = (item) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('datasets.actions.cancel'),
-            confirmButtonName: t('datasets.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: {
                 datasetName: dataset.name,
                 ...item
@@ -215,10 +215,10 @@ const EvalDatasetRows = () => {
 
     const deleteDatasetItems = async () => {
         const confirmPayload = {
-            title: t('datasets.dialogs.delete.title'),
+            title: t('common.dialogs.delete'),
             description: t('datasets.dialogs.delete.description.items', { count: selected.length }),
-            confirmButtonName: t('datasets.actions.delete'),
-            cancelButtonName: t('datasets.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -360,7 +360,7 @@ const EvalDatasetRows = () => {
                                     sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
                                     component={Paper}
                                 >
-                                    <Table sx={{ minWidth: 650 }} aria-label={t('datasets.table.title')}>
+                                    <Table sx={{ minWidth: 650 }} aria-label={t('common.labels.simpleTable')}>
                                         <TableHead
                                             sx={{
                                                 backgroundColor: customization.isDarkMode
@@ -376,7 +376,7 @@ const EvalDatasetRows = () => {
                                                         checked={selected.length === (dataset?.rows || []).length}
                                                         onChange={onSelectAllClick}
                                                         inputProps={{
-                                                            'aria-label': t('datasets.selectAll')
+                                                            'aria-label': t('common.actions.selectAll')
                                                         }}
                                                     />
                                                 </StyledTableCell>

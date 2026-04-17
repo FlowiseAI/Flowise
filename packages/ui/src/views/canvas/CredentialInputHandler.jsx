@@ -34,8 +34,8 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
     const editCredential = (credentialId) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('canvas.actions.cancel'),
-            confirmButtonName: t('canvas.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             credentialId
         }
         setSpecificCredentialDialogProps(dialogProp)
@@ -62,8 +62,8 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                 } else {
                     const dialogProp = {
                         type: 'ADD',
-                        cancelButtonName: t('canvas.actions.cancel'),
-                        confirmButtonName: t('canvas.actions.add'),
+                        cancelButtonName: t('common.actions.cancel'),
+                        confirmButtonName: t('common.actions.add'),
                         credentialComponent: componentCredentialsResp.data
                     }
                     setSpecificCredentialDialogProps(dialogProp)
@@ -87,8 +87,8 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
         setShowCredentialListDialog(false)
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('canvas.actions.cancel'),
-            confirmButtonName: t('canvas.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             credentialComponent
         }
         setSpecificCredentialDialogProps(dialogProp)
@@ -120,7 +120,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                             />
                             {credentialId && hasPermission('credentials:update') && (
                                 <IconButton
-                                    title={t('canvas.actions.edit')}
+                                    title={t('common.actions.edit')}
                                     color='primary'
                                     size='small'
                                     onClick={() => editCredential(credentialId)}

@@ -90,7 +90,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                                         color: theme.palette.grey[900]
                                     }
                                 }}
-                                title={t('credentials.actions.clearSearch')}
+                                title={t('common.actions.clearSearch')}
                             >
                                 <IconX
                                     stroke={1.5}
@@ -104,7 +104,7 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                         }
                         aria-describedby='search-helper-text'
                         inputProps={{
-                            'aria-label': t('credentials.weight')
+                            'aria-label': t('common.labels.weight')
                         }}
                     />
                 </Box>

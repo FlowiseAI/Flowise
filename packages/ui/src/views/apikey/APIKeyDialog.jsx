@@ -399,7 +399,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                                 }}
                             >
                                 <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
-                                    {t('apiKey.copied')}
+                                    {t('common.messages.copied')}
                                 </Typography>
                             </Popover>
                         </Stack>
@@ -440,7 +440,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
                                                     .toUpperCase()}
                                             </h3>
                                             <button type='button' onClick={() => handleSelectAll(category)}>
-                                                {t('apiKey.actions.selectAll')}
+                                                {t('common.actions.selectAll')}
                                             </button>
                                         </div>
                                         <div className='permissions-list'>
@@ -469,7 +469,7 @@ const APIKeyDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
             </DialogContent>
             <DialogActions>
                 <Button variant='outlined' onClick={onCancel}>
-                    {t('apiKey.actions.cancel')}
+                    {t('common.actions.cancel')}
                 </Button>
                 <StyledButton
                     disabled={checkDisabled()}

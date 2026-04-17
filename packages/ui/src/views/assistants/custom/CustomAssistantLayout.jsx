@@ -48,8 +48,8 @@ const CustomAssistantLayout = () => {
         const dialogProp = {
             title: t('assistants.actions.addCustomAssistant'),
             type: 'ADD',
-            cancelButtonName: t('assistants.actions.cancel'),
-            confirmButtonName: t('assistants.actions.add')
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add')
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -114,7 +114,7 @@ const CustomAssistantLayout = () => {
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
-                                {t('assistants.actions.add')}
+                                {t('common.actions.add')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {isLoading ? (

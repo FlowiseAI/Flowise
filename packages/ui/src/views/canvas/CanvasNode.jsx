@@ -62,8 +62,8 @@ const CanvasNode = ({ data }) => {
         const dialogProps = {
             data,
             inputParams: data.inputParams.filter((inputParam) => !inputParam.hidden).filter((param) => param.additionalParams),
-            confirmButtonName: t('canvas.actions.save'),
-            cancelButtonName: t('canvas.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setDialogProps(dialogProps)
         setShowDialog(true)
@@ -126,7 +126,7 @@ const CanvasNode = ({ data }) => {
                                 <IconCopy />
                             </IconButton>
                             <IconButton
-                                title={t('canvas.actions.delete')}
+                                title={t('common.actions.delete')}
                                 onClick={() => {
                                     deleteNode(data.id)
                                 }}
@@ -270,7 +270,7 @@ const CanvasNode = ({ data }) => {
                                         textAlign: 'center'
                                     }}
                                 >
-                                    {t('canvas.inputs.output')}
+                                    {t('common.labels.output')}
                                 </Typography>
                             </Box>
                         )}

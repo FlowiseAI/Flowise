@@ -601,7 +601,7 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 }}
             >
                 <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
-                    {t('chatflows.copied')}
+                    {t('common.messages.copied')}
                 </Typography>
             </Popover>
         </>

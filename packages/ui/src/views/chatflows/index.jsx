@@ -143,7 +143,7 @@ const Chatflows = () => {
                         onSearchChange={onSearchChange}
                         search={true}
                         searchPlaceholder={t('chatflows.searchPlaceholder')}
-                        title={t('chatflows.title')}
+                        title={t('common.labels.chatflows')}
                         description={t('chatflows.description')}
                     >
                         <ToggleButtonGroup
@@ -162,7 +162,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title={t('chatflows.actions.cardView')}
+                                title={t('common.actions.cardView')}
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -174,7 +174,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title={t('chatflows.actions.listView')}
+                                title={t('common.actions.listView')}
                             >
                                 <IconList />
                             </ToggleButton>
@@ -186,7 +186,7 @@ const Chatflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            {t('chatflows.actions.addNew')}
+                            {t('common.actions.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
 

@@ -282,8 +282,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         setHardDeleteDialogProps({
             title: t('components.dialogs.viewMessages.delete.title'),
             description: t('components.dialogs.viewMessages.delete.description'),
-            confirmButtonName: t('components.dialogs.viewMessages.actions.delete'),
-            cancelButtonName: t('components.dialogs.viewMessages.actions.cancel'),
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel'),
             isChatflow: dialogProps.isChatflow
         })
         setHardDeleteDialogOpen(true)
@@ -421,8 +421,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         const confirmPayload = {
             title: t('components.dialogs.viewMessages.clearChat.title'),
             description,
-            confirmButtonName: t('components.dialogs.viewMessages.clearChat.actions.clear'),
-            cancelButtonName: t('components.dialogs.viewMessages.actions.cancel')
+            confirmButtonName: t('common.actions.clear'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -1127,7 +1127,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                         </div>
                                                     }
                                                     secondary={moment(chatmsg.createdDate).format(
-                                                        t('components.dialogs.viewMessages.formats.date')
+                                                        t('common.formats.dateMonthDayYearTime12Seconds')
                                                     )}
                                                 />
                                             </ListItem>
@@ -1390,9 +1390,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                 >
                                                                                                     <Chip
                                                                                                         size='small'
-                                                                                                        label={t(
-                                                                                                            'components.dialogs.viewMessages.labels.state'
-                                                                                                        )}
+                                                                                                        label={t('common.labels.state')}
                                                                                                         component='a'
                                                                                                         sx={{ mr: 1, mt: 1 }}
                                                                                                         variant='outlined'
@@ -1403,9 +1401,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                         onClick={() =>
                                                                                                             onSourceDialogClick(
                                                                                                                 agent.state,
-                                                                                                                t(
-                                                                                                                    'components.dialogs.viewMessages.labels.state'
-                                                                                                                )
+                                                                                                                t('common.labels.state')
                                                                                                             )
                                                                                                         }
                                                                                                     />
@@ -1657,7 +1653,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                             style={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
                                                         >
                                                             {moment(message.message).format(
-                                                                t('components.dialogs.viewMessages.formats.date')
+                                                                t('common.formats.dateMonthDayYearTime12Seconds')
                                                             )}
                                                         </Box>
                                                     )

@@ -435,7 +435,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                     onClick={handleOpenDialog}
                     size='small'
                     color='primary'
-                    aria-label={t('canvas.actions.denerateAgentflow.label')}
+                    aria-label={t('common.actions.generate')}
                     title={t('canvas.actions.denerateAgentflow.title')}
                 >
                     <IconSparkles />
@@ -500,7 +500,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                             color: theme.palette.grey[900]
                                                         }
                                                     }}
-                                                    title={t('canvas.actions.clearSearch')}
+                                                    title={t('common.actions.clearSearch')}
                                                 >
                                                     <IconX
                                                         stroke={1.5}
@@ -514,7 +514,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                             }
                                             aria-describedby='search-helper-text'
                                             inputProps={{
-                                                'aria-label': t('canvas.addNodes.weight')
+                                                'aria-label': t('common.labels.weight')
                                             }}
                                         />
                                         {!isAgentCanvas && (
@@ -523,7 +523,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                 variant='fullWidth'
                                                 value={tabValue}
                                                 onChange={handleTabChange}
-                                                aria-label={t('canvas.addNodes.tabs')}
+                                                aria-label={t('common.labels.tabs')}
                                             >
                                                 {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
                                                     <Tab

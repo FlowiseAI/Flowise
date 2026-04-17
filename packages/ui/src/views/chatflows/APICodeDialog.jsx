@@ -722,7 +722,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
             <DialogContent>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <div style={{ flex: 80 }}>
-                        <Tabs value={value} onChange={handleChange} aria-label={t('chatflows.tabs')}>
+                        <Tabs value={value} onChange={handleChange} aria-label={t('common.labels.tabs')}>
                             {codes.map((codeLang, index) => (
                                 <Tab
                                     icon={
@@ -887,11 +887,11 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                             <Card sx={{ borderColor: theme.palette.primary[200] + 75, p: 2 }} variant='outlined'>
                                                 <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
                                                     <IconVariable />
-                                                    <Typography variant='h4'>{t('chatflows.variables')}</Typography>
+                                                    <Typography variant='h4'>{t('common.labels.variables')}</Typography>
                                                 </Stack>
                                                 <TableViewOnly
                                                     rows={variableOverrides}
-                                                    columns={[t('chatflows.table.name'), t('chatflows.table.type'), 'enabled']}
+                                                    columns={[t('common.labels.name'), t('common.labels.type'), 'enabled']}
                                                 />
                                             </Card>
                                         </Stack>

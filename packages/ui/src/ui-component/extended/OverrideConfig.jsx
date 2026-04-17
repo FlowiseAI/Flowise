@@ -527,7 +527,7 @@ const OverrideConfig = ({ dialogProps, hideTitle = false }) => {
                             >
                                 <Stack sx={{ mt: 1, mb: 2, ml: 1, alignItems: 'center' }} direction='row' spacing={2}>
                                     <IconVariable />
-                                    <Typography variant='h4'>{t('components.overrideConfig.variables')}</Typography>
+                                    <Typography variant='h4'>{t('common.labels.variables')}</Typography>
                                 </Stack>
                                 <OverrideConfigTable
                                     rows={variableOverrides}
@@ -541,7 +541,7 @@ const OverrideConfig = ({ dialogProps, hideTitle = false }) => {
             </Stack>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton variant='contained' onClick={onOverrideConfigSave} sx={{ minWidth: 100 }}>
-                    {t('components.overrideConfig.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </Stack>

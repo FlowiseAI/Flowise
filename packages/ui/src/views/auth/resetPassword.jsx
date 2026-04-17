@@ -40,7 +40,7 @@ const ResetPasswordPage = () => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const emailInput = {
-        label: t('auth.inputs.email.title'),
+        label: t('common.labels.email'),
         name: 'email',
         type: 'email',
         placeholder: 'user@company.com'
@@ -189,7 +189,7 @@ const ResetPasswordPage = () => {
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        {t('auth.inputs.email.title')}
+                                        {t('common.labels.email')}
                                         <span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <Typography align='left'></Typography>

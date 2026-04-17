@@ -45,7 +45,7 @@ const FollowUpPromptProviders = {
 
 const followUpPromptsOptions = {
     [FollowUpPromptProviders.ANTHROPIC]: {
-        label: 'components.followUpPrompts.providers.anthropic',
+        label: 'common.providers.anthropic',
         name: FollowUpPromptProviders.ANTHROPIC,
         icon: anthropicIcon,
         inputs: [
@@ -62,7 +62,7 @@ const followUpPromptsOptions = {
                 loadMethod: 'listModels'
             },
             {
-                label: 'components.followUpPrompts.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -81,7 +81,7 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.AZURE_OPENAI]: {
-        label: 'components.followUpPrompts.providers.azureOpenAI',
+        label: 'common.providers.azureOpenAI',
         name: FollowUpPromptProviders.AZURE_OPENAI,
         icon: azureOpenAiIcon,
         inputs: [
@@ -98,7 +98,7 @@ const followUpPromptsOptions = {
                 loadMethod: 'listModels'
             },
             {
-                label: 'components.followUpPrompts.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -117,7 +117,7 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.GOOGLE_GENAI]: {
-        label: 'components.followUpPrompts.providers.googleGemini',
+        label: 'common.providers.googleGemini',
         name: FollowUpPromptProviders.GOOGLE_GENAI,
         icon: geminiIcon,
         inputs: [
@@ -134,7 +134,7 @@ const followUpPromptsOptions = {
                 loadMethod: 'listModels'
             },
             {
-                label: 'components.followUpPrompts.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -153,7 +153,7 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.GROQ]: {
-        label: 'components.followUpPrompts.providers.groq',
+        label: 'common.providers.groq',
         name: FollowUpPromptProviders.GROQ,
         icon: groqIcon,
         inputs: [
@@ -170,7 +170,7 @@ const followUpPromptsOptions = {
                 loadMethod: 'listModels'
             },
             {
-                label: 'components.followUpPrompts.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -189,7 +189,7 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.MISTRALAI]: {
-        label: 'components.followUpPrompts.providers.mistralAI',
+        label: 'common.providers.mistralAI',
         name: FollowUpPromptProviders.MISTRALAI,
         icon: mistralAiIcon,
         inputs: [
@@ -206,7 +206,7 @@ const followUpPromptsOptions = {
                 loadMethod: 'listModels'
             },
             {
-                label: 'components.followUpPrompts.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -225,7 +225,7 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.OPENAI]: {
-        label: 'components.followUpPrompts.providers.openAI',
+        label: 'common.providers.openAI',
         name: FollowUpPromptProviders.OPENAI,
         icon: openAiIcon,
         inputs: [
@@ -242,7 +242,7 @@ const followUpPromptsOptions = {
                 loadMethod: 'listModels'
             },
             {
-                label: 'components.followUpPrompts.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -261,7 +261,7 @@ const followUpPromptsOptions = {
         ]
     },
     [FollowUpPromptProviders.OLLAMA]: {
-        label: 'components.followUpPrompts.providers.ollama',
+        label: 'common.providers.ollama',
         name: FollowUpPromptProviders.OLLAMA,
         icon: ollamaIcon,
         inputs: [
@@ -282,7 +282,7 @@ const followUpPromptsOptions = {
                 default: 'llama3.2-vision:latest'
             },
             {
-                label: 'components.followUpPrompts.inputs.prompt.title',
+                label: 'common.labels.prompt',
                 name: 'prompt',
                 type: 'string',
                 rows: 4,
@@ -605,7 +605,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
                 <StyledButton disabled={checkDisabled()} variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
-                    {t('components.followUpPrompts.actions.save')}
+                    {t('common.actions.save')}
                 </StyledButton>
             </Box>
         </>

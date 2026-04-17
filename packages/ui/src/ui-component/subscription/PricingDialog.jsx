@@ -672,7 +672,7 @@ const PricingDialog = ({ open, onClose }) => {
                 {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
                     <DialogActions>
                         <Button onClick={handlePlanDialogClose} disabled={isUpdatingPlan}>
-                            {t('components.dialogs.pricing.actions.cancel')}
+                            {t('common.actions.cancel')}
                         </Button>
                         <Button
                             variant='contained'

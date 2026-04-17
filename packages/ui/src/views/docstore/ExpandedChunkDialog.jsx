@@ -104,8 +104,8 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                             </PermissionIconButton>
                         )}
                         {isEdit && !isReadOnly && (
-                            <Button onClick={() => onEditCancel()} color='primary' title={t('docstore.actions.cancel')} sx={{ ml: 2 }}>
-                                {t('docstore.actions.cancel')}
+                            <Button onClick={() => onEditCancel()} color='primary' title={t('common.actions.cancel')} sx={{ ml: 2 }}>
+                                {t('common.actions.cancel')}
                             </Button>
                         )}
                         {isEdit && !isReadOnly && (
@@ -113,11 +113,11 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 permissionId={'documentStores:preview-process'}
                                 onClick={() => onEditSaved(true)}
                                 color='primary'
-                                title={t('docstore.actions.save')}
+                                title={t('common.actions.save')}
                                 variant='contained'
                                 sx={{ ml: 2, mr: 1 }}
                             >
-                                {t('docstore.actions.save')}
+                                {t('common.actions.save')}
                             </PermissionButton>
                         )}
                         {!isEdit && !isReadOnly && (
@@ -132,7 +132,7 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 <IconTrash />
                             </PermissionIconButton>
                         )}
-                        <IconButton onClick={onCancel} size='small' color='inherit' title={t('docstore.actions.close')} sx={{ ml: 1 }}>
+                        <IconButton onClick={onCancel} size='small' color='inherit' title={t('common.actions.close')} sx={{ ml: 1 }}>
                             <IconX />
                         </IconButton>
                     </div>

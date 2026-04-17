@@ -124,7 +124,7 @@ const WorkspaceDetails = () => {
     const addUser = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('workspace.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('workspace.actions.sendInvite'),
             data: workspace
         }
@@ -143,7 +143,7 @@ const WorkspaceDetails = () => {
     const editInvite = (user) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('workspace.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('workspace.actions.updateInvite'),
             data: {
                 ...user,
@@ -168,7 +168,7 @@ const WorkspaceDetails = () => {
         }
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('workspace.actions.cancel'),
+            cancelButtonName: t('common.actions.cancel'),
             confirmButtonName: t('workspace.actions.updateRole'),
             data: userObj
         }
@@ -183,7 +183,7 @@ const WorkspaceDetails = () => {
             title: t('workspace.dialogs.remove.title'),
             description: t('workspace.dialogs.remove.description', { users: userList }),
             confirmButtonName: t('workspace.actions.remove'),
-            cancelButtonName: t('workspace.actions.cancel')
+            cancelButtonName: t('common.actions.cancel')
         }
 
         const orgOwner = workspaceUsers.find(
@@ -391,13 +391,13 @@ const WorkspaceDetails = () => {
                                                         checked={usersSelected.length === (workspaceUsers || []).length - 1}
                                                         onChange={onUsersSelectAllClick}
                                                         inputProps={{
-                                                            'aria-label': t('workspace.selectAll')
+                                                            'aria-label': t('common.actions.selectAll')
                                                         }}
                                                     />
                                                 </StyledTableCell>
                                                 <StyledTableCell>{t('workspace.tables.emailName')}</StyledTableCell>
                                                 <StyledTableCell>{t('workspace.tables.role')}</StyledTableCell>
-                                                <StyledTableCell>{t('workspace.tables.status')}</StyledTableCell>
+                                                <StyledTableCell>{t('common.labels.status')}</StyledTableCell>
                                                 <StyledTableCell>{t('workspace.tables.lastLogin')}</StyledTableCell>
                                                 <StyledTableCell> </StyledTableCell>
                                             </TableRow>
@@ -503,13 +503,13 @@ const WorkspaceDetails = () => {
                                                                 {!item.lastLogin
                                                                     ? 'Never'
                                                                     : moment(item.lastLogin).format(
-                                                                          t('workspace.dialogs.workspaceUsers.formats.date')
+                                                                          t('common.formats.dateDayMonthYearTime24')
                                                                       )}
                                                             </StyledTableCell>
                                                             <StyledTableCell>
                                                                 {!item.isOrgOwner && item.status.toUpperCase() === 'INVITED' && (
                                                                     <IconButton
-                                                                        title={t('workspace.actions.edit')}
+                                                                        title={t('common.actions.edit')}
                                                                         color='primary'
                                                                         onClick={() => onEditClick(item)}
                                                                     >

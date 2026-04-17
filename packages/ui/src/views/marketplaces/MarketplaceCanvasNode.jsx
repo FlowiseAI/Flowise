@@ -46,8 +46,8 @@ const MarketplaceCanvasNode = ({ data }) => {
             data,
             inputParams: data.inputParams.filter((param) => param.additionalParams),
             disabled: true,
-            confirmButtonName: t('marketplaces.actions.save'),
-            cancelButtonName: t('marketplaces.actions.cancel')
+            confirmButtonName: t('common.actions.save'),
+            cancelButtonName: t('common.actions.cancel')
         }
         setDialogProps(dialogProps)
         setShowDialog(true)
@@ -158,7 +158,7 @@ const MarketplaceCanvasNode = ({ data }) => {
                                 textAlign: 'center'
                             }}
                         >
-                            {t('marketplaces.inputs.output')}
+                            {t('common.labels.output')}
                         </Typography>
                     </Box>
                     <Divider />

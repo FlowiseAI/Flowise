@@ -120,7 +120,7 @@ function ShowWorkspaceRow(props) {
                     {props.workspace.userCount}{' '}
                     {props.workspace.userCount > 0 && (
                         <IconButton
-                            aria-label={t('workspace.actions.expandRow')}
+                            aria-label={t('common.actions.expandRow')}
                             size='small'
                             color='inherit'
                             onClick={() => handleViewWorkspaceUsers(props.workspace.id)}
@@ -129,12 +129,14 @@ function ShowWorkspaceRow(props) {
                         </IconButton>
                     )}
                 </StyledTableCell>
-                <StyledTableCell>{moment(props.workspace.updatedDate).format(t('workspace.formats.date'))}</StyledTableCell>
+                <StyledTableCell>
+                    {moment(props.workspace.updatedDate).format(t('common.formats.dateMonthDayYearTime12Short'))}
+                </StyledTableCell>
                 <StyledTableCell>
                     {props.workspace.name !== 'Default Workspace' && (
                         <PermissionIconButton
                             permissionId={'workspace:update'}
-                            title={t('workspace.actions.edit')}
+                            title={t('common.actions.edit')}
                             color='primary'
                             onClick={() => props.onEditClick(props.workspace)}
                         >
@@ -149,7 +151,7 @@ function ShowWorkspaceRow(props) {
                     {props.workspace.name !== 'Default Workspace' &&
                         (props.workspace.userCount > 1 || props.workspace.isOrgDefault === true ? (
                             <IconButton
-                                title={t('workspace.actions.delete')}
+                                title={t('common.actions.delete')}
                                 disabled={true}
                                 color='error'
                                 onClick={() => props.onDeleteClick(props.workspace)}
@@ -159,7 +161,7 @@ function ShowWorkspaceRow(props) {
                         ) : (
                             <PermissionIconButton
                                 permissionId={'workspace:delete'}
-                                title={t('workspace.actions.delete')}
+                                title={t('common.actions.delete')}
                                 color='error'
                                 onClick={() => props.onDeleteClick(props.workspace)}
                             >
@@ -186,7 +188,7 @@ function ShowWorkspaceRow(props) {
                                 }}
                             >
                                 <TableRow>
-                                    <StyledTableCell sx={{ width: '60%' }}>{t('workspace.tables.user_one')}</StyledTableCell>
+                                    <StyledTableCell sx={{ width: '60%' }}>{t('common.labels.user')}</StyledTableCell>
                                     <StyledTableCell sx={{ width: '40%' }}>{t('workspace.tables.role')}</StyledTableCell>
                                 </TableRow>
                             </TableHead>
@@ -264,8 +266,8 @@ const Workspaces = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: t('workspace.actions.cancel'),
-            confirmButtonName: t('workspace.actions.add'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.add'),
             data: {}
         }
         setWorkspaceDialogProps(dialogProp)
@@ -275,8 +277,8 @@ const Workspaces = () => {
     const edit = (workspace) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: t('workspace.actions.cancel'),
-            confirmButtonName: t('workspace.actions.save'),
+            cancelButtonName: t('common.actions.cancel'),
+            confirmButtonName: t('common.actions.save'),
             data: workspace
         }
         setWorkspaceDialogProps(dialogProp)
@@ -287,8 +289,8 @@ const Workspaces = () => {
         const confirmPayload = {
             title: t('workspace.dialogs.delete.title', { name: workspace.name }),
             description: t('workspace.dialogs.delete.description'),
-            confirmButtonName: t('workspace.actions.delete'),
-            cancelButtonName: t('workspace.actions.cancel')
+            confirmButtonName: t('common.actions.delete'),
+            cancelButtonName: t('common.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -427,7 +429,7 @@ const Workspaces = () => {
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
-                                {t('workspace.actions.addNew')}
+                                {t('common.actions.addNew')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && workspaces.length <= 0 ? (
@@ -456,8 +458,8 @@ const Workspaces = () => {
                                         }}
                                     >
                                         <TableRow>
-                                            <TableCell>{t('workspace.tables.name')}</TableCell>
-                                            <TableCell>{t('workspace.tables.description')}</TableCell>
+                                            <TableCell>{t('common.labels.name')}</TableCell>
+                                            <TableCell>{t('common.labels.description')}</TableCell>
                                             <TableCell>{t('workspace.tables.user_other')}</TableCell>
                                             <TableCell>{t('workspace.tables.lastUpdated')}</TableCell>
                                             <TableCell> </TableCell>
