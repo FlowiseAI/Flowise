@@ -10,6 +10,7 @@ import { LoadingButton } from '@mui/lab'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import { Input } from '@/ui-component/input/Input'
+import LanguageSwitcher from '@/ui-component/language/LanguageSwitcher'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -24,6 +25,7 @@ import ssoApi from '@/api/sso'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
+import { applyPersistedLanguage } from '@/utils/language'
 
 // store
 import { loginSuccess, logoutSuccess } from '@/store/reducers/authSlice'
@@ -101,6 +103,7 @@ const SignInPage = () => {
 
     useEffect(() => {
         store.dispatch(logoutSuccess())
+        applyPersistedLanguage()
         setAuthRateLimitError(null)
         if (!isOpenSource) {
             getDefaultProvidersApi.request()
@@ -349,6 +352,16 @@ const SignInPage = () => {
                     </form>
                 </Stack>
             </MainCard>
+            <Box
+                sx={{
+                    position: 'fixed',
+                    right: 24,
+                    bottom: 24,
+                    zIndex: 1200
+                }}
+            >
+                <LanguageSwitcher />
+            </Box>
         </>
     )
 }

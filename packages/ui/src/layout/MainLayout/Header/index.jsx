@@ -13,6 +13,7 @@ import ProfileSection from './ProfileSection'
 import WorkspaceSwitcher from '@/layout/MainLayout/Header/WorkspaceSwitcher'
 import OrgWorkspaceBreadcrumbs from '@/layout/MainLayout/Header/OrgWorkspaceBreadcrumbs'
 import PricingDialog from '@/ui-component/subscription/PricingDialog'
+import LanguageSwitcher from '@/ui-component/language/LanguageSwitcher'
 
 // assets
 import { IconMenu2, IconX, IconSparkles } from '@tabler/icons-react'
@@ -314,6 +315,8 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 />
             )}
             <MaterialUISwitch checked={isDark} onChange={changeDarkMode} />
+            <Box sx={{ ml: 2 }}></Box>
+            <LanguageSwitcher persist />
             <Box sx={{ ml: 2 }}></Box>
             <ProfileSection handleLogout={signOutClicked} />
         </>

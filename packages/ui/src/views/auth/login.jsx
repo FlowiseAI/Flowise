@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 
 // material-ui
+import { Box } from '@mui/material'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
+import LanguageSwitcher from '@/ui-component/language/LanguageSwitcher'
 
 // API
 import authApi from '@/api/auth'
@@ -38,6 +40,16 @@ const ResolveLoginPage = () => {
     return (
         <>
             <MainCard maxWidth='md'>{loading && <BackdropLoader open={loading} />}</MainCard>
+            <Box
+                sx={{
+                    position: 'fixed',
+                    right: 24,
+                    bottom: 24,
+                    zIndex: 1200
+                }}
+            >
+                <LanguageSwitcher />
+            </Box>
         </>
     )
 }

@@ -9,6 +9,7 @@ import { Alert, Box, Button, Chip, Divider, Icon, List, ListItemText, Stack, Typ
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Input } from '@/ui-component/input/Input'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
+import LanguageSwitcher from '@/ui-component/language/LanguageSwitcher'
 
 // API
 import accountApi from '@/api/account.api'
@@ -411,6 +412,16 @@ const OrganizationSetupPage = () => {
                         </Stack>
                     </form>
                 </Stack>
+            </Box>
+            <Box
+                sx={{
+                    position: 'fixed',
+                    right: 24,
+                    bottom: 24,
+                    zIndex: 1200
+                }}
+            >
+                <LanguageSwitcher />
             </Box>
             {loading && <BackdropLoader open={loading} />}
         </>

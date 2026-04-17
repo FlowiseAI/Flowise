@@ -30,6 +30,9 @@
         }
     },
     "components": {
+        "language": {
+            "title": "Language"
+        },
         "header": {
             "star": "Star",
             "actions": {
@@ -1049,7 +1052,8 @@
                 "title": "New Password",
                 "caption": "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character."
             },
-            "confirmNewPassword": "Confirm New Password"
+            "confirmNewPassword": "Confirm New Password",
+            "language": "Language"
         },
         "dialog": {
             "removeSeats": "Remove Additional Seats",

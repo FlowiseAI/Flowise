@@ -1,5 +1,12 @@
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+
+// material-ui
+import { Box } from '@mui/material'
+
+// project imports
+import LanguageSwitcher from '@/ui-component/language/LanguageSwitcher'
+
 import { store } from '@/store'
 import { loginSuccess } from '@/store/reducers/authSlice'
 import authApi from '@/api/auth'
@@ -40,10 +47,22 @@ const SSOSuccess = () => {
     }, [location.search])
 
     return (
-        <div>
-            <h1>{t('auth.sso.loading.dashboard')}</h1>
-            <p>{t('auth.sso.loading.data')}</p>
-        </div>
+        <>
+            <div>
+                <h1>{t('auth.sso.loading.dashboard')}</h1>
+                <p>{t('auth.sso.loading.data')}</p>
+            </div>
+            <Box
+                sx={{
+                    position: 'fixed',
+                    right: 24,
+                    bottom: 24,
+                    zIndex: 1200
+                }}
+            >
+                <LanguageSwitcher />
+            </Box>
+        </>
     )
 }
 
