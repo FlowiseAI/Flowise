@@ -4,176 +4,74 @@
             "name": "awsChatBedrock",
             "models": [
                 {
-                    "label": "anthropic.claude-opus-4-6-v1",
-                    "name": "anthropic.claude-opus-4-6-v1",
-                    "description": "Claude 4.6 Opus",
-                    "input_cost": 0.000005,
-                    "output_cost": 0.000025
+                    "label": "ai21.jamba-1-5-large-v1:0",
+                    "name": "ai21.jamba-1-5-large-v1:0",
+                    "description": "AI21 Jamba 1.5 Large - Text generation",
+                    "input_cost": 0.000002,
+                    "output_cost": 0.000008
                 },
                 {
-                    "label": "anthropic.claude-sonnet-4-6",
-                    "name": "anthropic.claude-sonnet-4-6",
-                    "description": "Claude 4.6 Sonnet",
-                    "input_cost": 0.000003,
-                    "output_cost": 0.000015
+                    "label": "ai21.jamba-1-5-mini-v1:0",
+                    "name": "ai21.jamba-1-5-mini-v1:0",
+                    "description": "AI21 Jamba 1.5 Mini - Text generation",
+                    "input_cost": 0.0000002,
+                    "output_cost": 0.0000004
                 },
                 {
-                    "label": "anthropic.claude-opus-4-5-20251101-v1:0",
-                    "name": "anthropic.claude-opus-4-5-20251101-v1:0",
-                    "description": "Claude 4.5 Opus",
-                    "input_cost": 0.000005,
-                    "output_cost": 0.000025
+                    "label": "amazon.nova-micro-v1:0",
+                    "name": "amazon.nova-micro-v1:0",
+                    "description": "Amazon Nova Micro - Text-only, fastest and most cost-effective",
+                    "input_cost": 0.000000035,
+                    "output_cost": 0.00000014
                 },
                 {
-                    "label": "anthropic.claude-sonnet-4-5-20250929-v1:0",
-                    "name": "anthropic.claude-sonnet-4-5-20250929-v1:0",
-                    "description": "Claude 4.5 Sonnet",
-                    "input_cost": 0.000003,
-                    "output_cost": 0.000015
+                    "label": "amazon.nova-lite-v1:0",
+                    "name": "amazon.nova-lite-v1:0",
+                    "description": "Amazon Nova Lite - Multimodal (text, image, video)",
+                    "input_cost": 0.00000006,
+                    "output_cost": 0.00000024
                 },
                 {
-                    "label": "anthropic.claude-haiku-4-5-20251001-v1:0",
-                    "name": "anthropic.claude-haiku-4-5-20251001-v1:0",
-                    "description": "Claude 4.5 Haiku",
-                    "input_cost": 0.000001,
-                    "output_cost": 0.000005
+                    "label": "amazon.nova-pro-v1:0",
+                    "name": "amazon.nova-pro-v1:0",
+                    "description": "Amazon Nova Pro - Multimodal (text, image, video), balanced performance",
+                    "input_cost": 0.0000008,
+                    "output_cost": 0.0000032
                 },
                 {
-                    "label": "openai.gpt-oss-20b-1:0",
-                    "name": "openai.gpt-oss-20b-1:0",
-                    "description": "21B parameters model optimized for lower latency, local, and specialized use cases",
-                    "input_cost": 0.00007,
-                    "output_cost": 0.0003
-                },
-                {
-                    "label": "openai.gpt-oss-120b-1:0",
-                    "name": "openai.gpt-oss-120b-1:0",
-                    "description": "120B parameters model optimized for production, general purpose, and high-reasoning use cases",
-                    "input_cost": 0.00015,
-                    "output_cost": 0.0006
-                },
-                {
-                    "label": "anthropic.claude-opus-4-1-20250805-v1:0",
-                    "name": "anthropic.claude-opus-4-1-20250805-v1:0",
-                    "description": "Claude 4.1 Opus",
-                    "input_cost": 0.000015,
-                    "output_cost": 0.000075
-                },
-                {
-                    "label": "anthropic.claude-sonnet-4-20250514-v1:0",
-                    "name": "anthropic.claude-sonnet-4-20250514-v1:0",
-                    "description": "Claude 4 Sonnet",
-                    "input_cost": 0.000003,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-opus-4-20250514-v1:0",
-                    "name": "anthropic.claude-opus-4-20250514-v1:0",
-                    "description": "Claude 4 Opus",
-                    "input_cost": 0.000015,
-                    "output_cost": 0.000075
-                },
-                {
-                    "label": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-                    "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
-                    "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
-                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5",
-                    "input_cost": 8e-7,
-                    "output_cost": 4e-6
-                },
-                {
-                    "label": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-                    "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-3-opus",
-                    "name": "anthropic.claude-3-opus-20240229-v1:0",
-                    "input_cost": 0.000015,
-                    "output_cost": 0.000075
-                },
-                {
-                    "label": "anthropic.claude-3-sonnet",
-                    "name": "anthropic.claude-3-sonnet-20240229-v1:0",
-                    "input_cost": 0.000003,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "anthropic.claude-3-haiku",
+                    "label": "anthropic.claude-3-haiku-20240307-v1:0",
                     "name": "anthropic.claude-3-haiku-20240307-v1:0",
-                    "input_cost": 2.5e-7,
-                    "output_cost": 1.25e-6
-                },
-                {
-                    "label": "anthropic.claude-instant-v1",
-                    "name": "anthropic.claude-instant-v1",
-                    "description": "Text generation, conversation",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
-                },
-                {
-                    "label": "anthropic.claude-v2:1",
-                    "name": "anthropic.claude-v2:1",
-                    "description": "Text generation, conversation, complex reasoning and analysis",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
-                },
-                {
-                    "label": "anthropic.claude-v2",
-                    "name": "anthropic.claude-v2",
-                    "description": "Text generation, conversation, complex reasoning and analysis",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
-                },
-                {
-                    "label": "meta.llama2-13b-chat-v1",
-                    "name": "meta.llama2-13b-chat-v1",
-                    "description": "Text generation, conversation",
-                    "input_cost": 0.0003,
-                    "output_cost": 0.0006
-                },
-                {
-                    "label": "meta.llama2-70b-chat-v1",
-                    "name": "meta.llama2-70b-chat-v1",
-                    "description": "Text generation, conversation",
-                    "input_cost": 0.0003,
-                    "output_cost": 0.0006
+                    "description": "Claude 3 Haiku - Fastest and most compact, multimodal",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.00000125
                 },
                 {
                     "label": "meta.llama3-8b-instruct-v1:0",
                     "name": "meta.llama3-8b-instruct-v1:0",
-                    "description": "Text summarization, text classification, sentiment analysis",
-                    "input_cost": 0.0003,
-                    "output_cost": 0.0006
+                    "description": "Meta Llama 3 8B - Text generation, classification",
+                    "input_cost": 0.0000003,
+                    "output_cost": 0.0000006
                 },
                 {
                     "label": "meta.llama3-70b-instruct-v1:0",
                     "name": "meta.llama3-70b-instruct-v1:0",
-                    "description": "Language modeling, dialog systems, code generation, text summarization, text classification, sentiment analysis",
-                    "input_cost": 0.00195,
-                    "output_cost": 0.00256
+                    "description": "Meta Llama 3 70B - Advanced text generation, code generation",
+                    "input_cost": 0.00000265,
+                    "output_cost": 0.0000035
                 },
                 {
-                    "label": "mistral.mistral-7b-instruct-v0:2",
-                    "name": "mistral.mistral-7b-instruct-v0:2",
-                    "description": "Classification, text generation, code generation",
-                    "input_cost": 0.002,
-                    "output_cost": 0.006
+                    "label": "mistral.mistral-large-2402-v1:0",
+                    "name": "mistral.mistral-large-2402-v1:0",
+                    "description": "Mistral Large (24.02) - Complex reasoning, RAG, agents",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
+                },
+                {
+                    "label": "mistral.mistral-small-2402-v1:0",
+                    "name": "mistral.mistral-small-2402-v1:0",
+                    "description": "Mistral Small (24.02) - Cost-effective text generation",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000003
                 },
                 {
                     "label": "mistral.mixtral-8x7b-instruct-v0:1",
@@ -183,12 +81,14 @@
                     "output_cost": 0.006
                 },
                 {
-                    "label": "mistral.mistral-large-2402-v1:0",
-                    "name": "mistral.mistral-large-2402-v1:0",
-                    "description": "Complex reasoning and analysis, text generation, code generation, RAG, agents",
+                    "label": "mistral.mistral-7b-instruct-v0:2",
+                    "name": "mistral.mixtral-8x7b-instruct-v0:1",
+                    "description": "Classification, text generation, code generation",
                     "input_cost": 0.002,
                     "output_cost": 0.006
                 }
+                
+                
             ],
             "regions": [
                 {
