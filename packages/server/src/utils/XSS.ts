@@ -113,6 +113,7 @@ export function getAllowedIframeOrigins(): string {
     return origins
         .split(',')
         .map((s) => s.trim())
+        .filter(Boolean)
         .join(' ')
 }
 

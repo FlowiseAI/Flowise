@@ -187,9 +187,9 @@ export class App {
         this.app.use(cookieParser())
 
         // Allow embedding from specified domains.
+        const iframeSecurityHeaders = getIframeSecurityHeaders()
         this.app.use((req, res, next) => {
-            const headers = getIframeSecurityHeaders()
-            for (const [headerName, headerValue] of Object.entries(headers)) {
+            for (const [headerName, headerValue] of Object.entries(iframeSecurityHeaders)) {
                 res.setHeader(headerName, headerValue)
             }
             next()

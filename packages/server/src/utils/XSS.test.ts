@@ -101,17 +101,17 @@ describe('getAllowedIframeOrigins', () => {
 
         it('should handle trailing comma', () => {
             process.env.IFRAME_ORIGINS = 'https://example.com,'
-            expect(getAllowedIframeOrigins()).toBe('https://example.com ')
+            expect(getAllowedIframeOrigins()).toBe('https://example.com')
         })
 
         it('should handle leading comma', () => {
             process.env.IFRAME_ORIGINS = ',https://example.com'
-            expect(getAllowedIframeOrigins()).toBe(' https://example.com')
+            expect(getAllowedIframeOrigins()).toBe('https://example.com')
         })
 
         it('should handle multiple consecutive commas', () => {
             process.env.IFRAME_ORIGINS = 'https://domain1.com,,https://domain2.com'
-            expect(getAllowedIframeOrigins()).toBe('https://domain1.com  https://domain2.com')
+            expect(getAllowedIframeOrigins()).toBe('https://domain1.com https://domain2.com')
         })
     })
 
