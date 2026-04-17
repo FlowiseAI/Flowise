@@ -13,10 +13,28 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
 
         const workspaceId = req.user?.activeWorkspaceId
 
-        await webhookService.validateWebhookChatflow(req.params.id, workspaceId, req.body)
+        // For form-encoded requests, unwrap JSON encoded in a `payload` field (e.g. GitHub webhooks)
+        // so $webhook.body.* resolves against the actual payload fields.
+        const contentType = (req.headers['content-type'] ?? '').toLowerCase()
+        let body = req.body
+        if (contentType.startsWith('application/x-www-form-urlencoded') && typeof body?.payload === 'string') {
+            try {
+                body = JSON.parse(body.payload)
+            } catch {
+                // leave body as-is if payload isn't valid JSON
+            }
+        }
+
+        await webhookService.validateWebhookChatflow(req.params.id, workspaceId, body, req.method, req.headers, req.query)
 
         // Namespace the webhook payload so $webhook.body.*, $webhook.headers.*, $webhook.query.* can coexist
-        req.body = { webhook: { body: req.body } }
+        req.body = {
+            webhook: {
+                body,
+                headers: req.headers,
+                query: req.query
+            }
+        }
 
         const apiResponse = await predictionsServices.buildChatflow(req)
         return res.json(apiResponse)

@@ -26,6 +26,9 @@ const mockReq = (overrides: Partial<Request> = {}): Request =>
     ({
         params: { id: 'chatflow-123' },
         body: { foo: 'bar' },
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        query: { page: '1' },
         user: undefined,
         ...overrides
     } as unknown as Request)
@@ -77,7 +80,44 @@ describe('createWebhook', () => {
 
         await webhookController.createWebhook(req, res, next)
 
-        expect(mockBuildChatflow).toHaveBeenCalledWith(expect.objectContaining({ body: { webhook: { body: originalBody } } }))
+        expect(mockBuildChatflow).toHaveBeenCalledWith(
+            expect.objectContaining({
+                body: {
+                    webhook: {
+                        body: originalBody,
+                        headers: expect.any(Object),
+                        query: expect.any(Object)
+                    }
+                }
+            })
+        )
+    })
+
+    it('builds namespaced webhook payload with body, headers, and query', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue(undefined)
+        mockBuildChatflow.mockResolvedValue({})
+
+        const req = mockReq({
+            body: { action: 'push' },
+            headers: { 'x-github-event': 'push' } as any,
+            query: { page: '2' } as any
+        })
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(mockBuildChatflow).toHaveBeenCalledWith(
+            expect.objectContaining({
+                body: {
+                    webhook: {
+                        body: { action: 'push' },
+                        headers: expect.objectContaining({ 'x-github-event': 'push' }),
+                        query: { page: '2' }
+                    }
+                }
+            })
+        )
     })
 
     it('returns buildChatflow result as JSON response', async () => {
@@ -119,6 +159,13 @@ describe('createWebhook', () => {
 
         await webhookController.createWebhook(req, res, next)
 
-        expect(mockValidateWebhookChatflow).toHaveBeenCalledWith('chatflow-123', undefined, { foo: 'bar' })
+        expect(mockValidateWebhookChatflow).toHaveBeenCalledWith(
+            'chatflow-123',
+            undefined,
+            { foo: 'bar' },
+            'POST',
+            expect.any(Object),
+            expect.any(Object)
+        )
     })
 })

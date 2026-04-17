@@ -10,7 +10,16 @@ jest.mock('../chatflows', () => ({
 
 import webhookService from './index'
 
-const makeChatflow = (startInputType: string, webhookBodyParams?: unknown) => ({
+const makeChatflow = (
+    startInputType: string,
+    inputs?: {
+        webhookBodyParams?: unknown
+        webhookMethod?: string
+        webhookContentType?: string
+        webhookHeaderParams?: unknown
+        webhookQueryParams?: unknown
+    }
+) => ({
     id: 'test-id',
     flowData: JSON.stringify({
         nodes: [
@@ -20,7 +29,7 @@ const makeChatflow = (startInputType: string, webhookBodyParams?: unknown) => ({
                     name: 'startAgentflow',
                     inputs: {
                         startInputType,
-                        ...(webhookBodyParams !== undefined && { webhookBodyParams })
+                        ...inputs
                     }
                 }
             }
@@ -71,8 +80,75 @@ describe('validateWebhookChatflow', () => {
         await expect(webhookService.validateWebhookChatflow('some-id')).rejects.toBe(original)
     })
 
+    // --- Method validation ---
+
+    it('throws 405 when HTTP method does not match configured webhookMethod', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookMethod: 'POST' }))
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'GET')).rejects.toMatchObject({
+            statusCode: StatusCodes.METHOD_NOT_ALLOWED
+        })
+    })
+
+    it('resolves for any method when webhookMethod is not configured', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'DELETE')).resolves.toBeUndefined()
+    })
+
+    // --- Content-Type validation ---
+
+    it('throws 415 when Content-Type does not match configured webhookContentType', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookContentType: 'application/json' }))
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', { 'content-type': 'text/plain' })
+        ).rejects.toMatchObject({ statusCode: StatusCodes.UNSUPPORTED_MEDIA_TYPE })
+    })
+
+    it('resolves when Content-Type starts with configured value (handles charset suffix)', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookContentType: 'application/json' }))
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', { 'content-type': 'application/json; charset=utf-8' })
+        ).resolves.toBeUndefined()
+    })
+
+    it('resolves when webhookContentType is not configured', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', { 'content-type': 'text/plain' })
+        ).resolves.toBeUndefined()
+    })
+
+    // --- Header validation ---
+
+    it('throws 400 when a required header is missing', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookHeaderParams: [{ name: 'x-api-key', required: true }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {})).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('x-api-key')
+        })
+    })
+
+    it('resolves when all required headers are present', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookHeaderParams: [{ name: 'x-api-key', required: true }] })
+        )
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', { 'x-api-key': 'secret' })
+        ).resolves.toBeUndefined()
+    })
+
+    // --- Body param validation ---
+
     it('throws 400 when a required param is missing from body', async () => {
-        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', [{ name: 'action', required: true }]))
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'action', required: true }] }))
 
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, {})).rejects.toMatchObject({
             statusCode: StatusCodes.BAD_REQUEST
@@ -80,7 +156,7 @@ describe('validateWebhookChatflow', () => {
     })
 
     it('includes the missing field name in the 400 error message', async () => {
-        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', [{ name: 'action', required: true }]))
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'action', required: true }] }))
 
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, {})).rejects.toMatchObject({
             statusCode: StatusCodes.BAD_REQUEST,
@@ -89,13 +165,13 @@ describe('validateWebhookChatflow', () => {
     })
 
     it('resolves when all required params are present in body', async () => {
-        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', [{ name: 'action', required: true }]))
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'action', required: true }] }))
 
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, { action: 'push' })).resolves.toBeUndefined()
     })
 
     it('resolves when webhookBodyParams is empty string (DB default)', async () => {
-        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', ''))
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookBodyParams: '' }))
 
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, {})).resolves.toBeUndefined()
     })
@@ -104,5 +180,43 @@ describe('validateWebhookChatflow', () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
 
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, { anything: 'goes' })).resolves.toBeUndefined()
+    })
+
+    // --- Body type validation ---
+
+    it('throws 400 when a declared body param has wrong type', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: 'not-a-number' })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('count')
+        })
+    })
+
+    it('resolves when declared body param has correct type', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: 42 })).resolves.toBeUndefined()
+    })
+
+    // --- Query param validation ---
+
+    it('throws 400 when a required query param is missing', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookQueryParams: [{ name: 'page', required: true }] }))
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {})).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('page')
+        })
+    })
+
+    it('resolves when all required query params are present', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookQueryParams: [{ name: 'page', required: true }] }))
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, { page: '2' })).resolves.toBeUndefined()
     })
 })

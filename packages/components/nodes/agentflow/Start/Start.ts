@@ -133,14 +133,69 @@ class Start_Agentflow implements INode {
                 ]
             },
             {
-                label: 'Webhook URL',
-                name: 'webhookURL',
-                type: 'string',
-                description: 'Send a POST request to this URL to trigger the workflow',
+                label: 'HTTP Method',
+                name: 'webhookMethod',
+                type: 'options',
+                options: [
+                    { label: 'GET', name: 'GET' },
+                    { label: 'POST', name: 'POST' },
+                    { label: 'PUT', name: 'PUT' },
+                    { label: 'PATCH', name: 'PATCH' },
+                    { label: 'DELETE', name: 'DELETE' }
+                ],
+                default: 'POST',
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Content Type',
+                name: 'webhookContentType',
+                type: 'options',
+                description:
+                    'Expected Content-Type of incoming requests. For application/x-www-form-urlencoded, if the entire payload is a JSON string in a "payload" field (e.g. GitHub webhooks), it is automatically parsed — use $webhook.body.* as normal.',
+                options: [
+                    { label: 'application/json', name: 'application/json' },
+                    { label: 'application/x-www-form-urlencoded', name: 'application/x-www-form-urlencoded' }
+                ],
+                default: 'application/json',
                 optional: true,
                 show: {
                     startInputType: 'webhookTrigger'
                 }
+            },
+            {
+                label: 'Webhook URL',
+                name: 'webhookURL',
+                type: 'string',
+                description: 'Send a request to this URL to trigger the workflow',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Expected Query Parameters',
+                name: 'webhookQueryParams',
+                description: 'Declare expected query parameters. Leave empty to accept any.',
+                type: 'array',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                },
+                array: [
+                    {
+                        label: 'Variable Name',
+                        name: 'name',
+                        type: 'string',
+                        placeholder: 'e.g. page'
+                    },
+                    {
+                        label: 'Required',
+                        name: 'required',
+                        type: 'boolean'
+                    }
+                ]
             },
             {
                 label: 'Expected Body Parameters',
@@ -177,6 +232,29 @@ class Start_Agentflow implements INode {
                             }
                         ],
                         default: 'string'
+                    },
+                    {
+                        label: 'Required',
+                        name: 'required',
+                        type: 'boolean'
+                    }
+                ]
+            },
+            {
+                label: 'Expected Headers',
+                name: 'webhookHeaderParams',
+                description: 'Declare expected request headers. Leave empty to accept any.',
+                type: 'array',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                },
+                array: [
+                    {
+                        label: 'Header Name',
+                        name: 'name',
+                        type: 'string',
+                        placeholder: 'e.g. x-github-event'
                     },
                     {
                         label: 'Required',
@@ -275,7 +353,12 @@ class Start_Agentflow implements INode {
 
         if (startInputType === 'webhookTrigger') {
             inputData.webhook = input
-            let webhookOutput = input
+            let webhookOutput: string | Record<string, any> = input
+            try {
+                webhookOutput = typeof input === 'string' ? JSON.parse(input) : input
+            } catch (_) {
+                /* keep as-is */
+            }
             if (options.agentflowRuntime?.webhook && Object.keys(options.agentflowRuntime.webhook).length) {
                 webhookOutput = options.agentflowRuntime.webhook
             }
