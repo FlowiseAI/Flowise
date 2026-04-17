@@ -344,4 +344,25 @@ describe('validateWebhookChatflow', () => {
             webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, undefined)
         ).rejects.toMatchObject({ statusCode: 401 })
     })
+
+    // --- skipFieldValidation option (resume calls) ---
+
+    it('skips field validation when skipFieldValidation is true', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'action', required: true }] }))
+
+        // Missing required body param 'action' — would normally throw 400, but not on resume
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, undefined, { skipFieldValidation: true })
+        ).resolves.toBeUndefined()
+    })
+
+    it('still runs signature check when skipFieldValidation is true', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+
+        // No signature header — should still 401 even with skipFieldValidation
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, RAW_BODY, { skipFieldValidation: true })
+        ).rejects.toMatchObject({ statusCode: 401 })
+    })
 })

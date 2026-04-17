@@ -1701,6 +1701,23 @@ export const executeAgentFlow = async ({
         }
     }
 
+    // On webhook humanInput resume, restore the original trigger's webhook data so $webhook.body.*,
+    // $webhook.headers.*, $webhook.query.* and $flow.input resolve to the original trigger values.
+    // incomingInput.webhook is always present on webhook calls so we overwrite it directly rather
+    // than relying on the agentflowRuntime.webhook fallback (unlike the formInput pattern).
+    if (startInputType === 'webhookTrigger' && humanInput && previousExecution) {
+        const previousExecutionData = (JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]) ?? []
+
+        const previousStartAgent = previousExecutionData.find((execData) => execData.data.name === 'startAgentflow')
+
+        if (previousStartAgent) {
+            const previousStartAgentOutput = previousStartAgent.data.output
+            if (previousStartAgentOutput && typeof previousStartAgentOutput === 'object' && 'webhook' in previousStartAgentOutput) {
+                incomingInput.webhook = previousStartAgentOutput.webhook as Record<string, any>
+            }
+        }
+    }
+
     // If it is human input, find the last checkpoint and resume
     // Skip human input resumption for recursive iteration calls - they should start fresh
     if (humanInput && !(isRecursive && iterationContext)) {

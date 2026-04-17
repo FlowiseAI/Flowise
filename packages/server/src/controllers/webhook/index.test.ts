@@ -166,7 +166,52 @@ describe('createWebhook', () => {
             'POST',
             expect.any(Object),
             expect.any(Object),
-            undefined // rawBody — not set on mock request
+            undefined, // rawBody — not set on mock request
+            undefined // options — not a resume call
+        )
+    })
+
+    it('passes skipFieldValidation option when body contains humanInput (resume call)', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue(undefined)
+        mockBuildChatflow.mockResolvedValue({})
+
+        const req = mockReq({ body: { chatId: 'abc', humanInput: { type: 'proceed', startNodeId: 'humanInputAgentflow_0' } } })
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(mockValidateWebhookChatflow).toHaveBeenCalledWith(
+            'chatflow-123',
+            undefined,
+            expect.objectContaining({ humanInput: expect.any(Object) }),
+            'POST',
+            expect.any(Object),
+            expect.any(Object),
+            undefined,
+            { skipFieldValidation: true }
+        )
+    })
+
+    it('includes humanInput and chatId at top level of req.body on resume', async () => {
+        mockValidateWebhookChatflow.mockResolvedValue(undefined)
+        mockBuildChatflow.mockResolvedValue({})
+
+        const humanInput = { type: 'proceed', startNodeId: 'humanInputAgentflow_0' }
+        const req = mockReq({ body: { chatId: 'abc123', humanInput } })
+        const res = mockRes()
+        const next = mockNext()
+
+        await webhookController.createWebhook(req, res, next)
+
+        expect(mockBuildChatflow).toHaveBeenCalledWith(
+            expect.objectContaining({
+                body: expect.objectContaining({
+                    humanInput,
+                    chatId: 'abc123',
+                    webhook: expect.any(Object)
+                })
+            })
         )
     })
 })

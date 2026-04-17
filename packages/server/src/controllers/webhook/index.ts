@@ -25,6 +25,8 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             }
         }
 
+        const isResume = body?.humanInput != null
+
         await webhookService.validateWebhookChatflow(
             req.params.id,
             workspaceId,
@@ -32,7 +34,8 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             req.method,
             req.headers,
             req.query,
-            (req as any).rawBody
+            (req as any).rawBody,
+            isResume ? { skipFieldValidation: true } : undefined
         )
 
         // Namespace the webhook payload so $webhook.body.*, $webhook.headers.*, $webhook.query.* can coexist
@@ -43,6 +46,11 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
                 query: req.query
             }
         }
+
+        const { humanInput, chatId, sessionId } = body ?? {}
+        if (humanInput != null) req.body.humanInput = humanInput
+        if (chatId != null) req.body.chatId = chatId
+        if (sessionId != null) req.body.sessionId = sessionId
 
         const apiResponse = await predictionsServices.buildChatflow(req)
         return res.json(apiResponse)

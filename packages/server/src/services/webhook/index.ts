@@ -12,7 +12,8 @@ const validateWebhookChatflow = async (
     method?: string,
     headers?: Record<string, any>,
     query?: Record<string, any>,
-    rawBody?: Buffer
+    rawBody?: Buffer,
+    options?: { skipFieldValidation?: boolean }
 ): Promise<void> => {
     try {
         const chatflow = await chatflowsService.getChatflowById(chatflowId, workspaceId)
@@ -48,6 +49,8 @@ const validateWebhookChatflow = async (
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Invalid or missing webhook signature')
             }
         }
+
+        if (options?.skipFieldValidation) return
 
         // Method validation
         const webhookMethod = startNode?.data?.inputs?.webhookMethod
