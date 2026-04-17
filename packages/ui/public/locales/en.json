@@ -30,6 +30,17 @@
         }
     },
     "components": {
+        "header": {
+            "star": "Star",
+            "actions": {
+                "upgrade": "Upgrade"
+            },
+            "messages": {
+                "signout": {
+                    "success": "Logging out..."
+                }
+            }
+        },
         "dialogs": {
             "about": {
                 "title": "Flowise Version",

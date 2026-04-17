@@ -31,6 +31,9 @@ import accountApi from '@/api/account.api'
 import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation } from 'react-i18next'
+
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
@@ -81,6 +84,7 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
 }))
 
 const GitHubStarButton = ({ starCount, isDark }) => {
+    const { t } = useTranslation()
     const theme = useTheme()
 
     const formattedStarCount = starCount.toLocaleString()
@@ -117,7 +121,7 @@ const GitHubStarButton = ({ starCount, isDark }) => {
                         ></path>
                     </svg>
                     <Typography variant='caption' sx={{ fontWeight: 600, color: isDark ? 'white' : theme.palette.text.primary }}>
-                        Star
+                        {t('components.header.star')}
                     </Typography>
                 </Box>
                 <Box
@@ -171,7 +175,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
     const signOutClicked = () => {
         logoutApi.request()
         enqueueSnackbar({
-            message: 'Logging out...',
+            message: t('components.header.messages.signout.success'),
             options: {
                 key: new Date().getTime() + Math.random(),
                 variant: 'success',
@@ -294,7 +298,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     onClick={() => setIsPricingOpen(true)}
                     startIcon={<IconSparkles size={20} />}
                 >
-                    Upgrade
+                    {t('components.header.actions.upgrade')}
                 </Button>
             )}
             {isPricingOpen && isCloud && (
