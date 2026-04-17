@@ -78,20 +78,19 @@ const StyledEditorContent = styled(EditorContent, {
             overflowX: rows ? 'auto' : 'hidden',
             lineHeight: rows ? `${tokens.typography.rowHeightRem}em` : `${tokens.typography.singleLineLineHeightEm}em`,
             fontWeight: 500,
-            color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
-            border: `1px solid ${theme.palette.grey[900]}25`,
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+            border: `1px solid ${tokens.colors.border.input[mode]}`,
             borderRadius: '10px',
-            backgroundColor:
-                (theme.palette as { textBackground?: { main: string } }).textBackground?.main ?? theme.palette.background.paper,
+            backgroundColor: tokens.colors.background.input[mode],
             boxSizing: 'border-box',
             whiteSpace: rows ? 'pre-wrap' : 'nowrap',
 
             '&:hover': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.text.primary,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.text.primary,
                 cursor: disabled ? 'default' : 'text'
             },
             '&:focus': {
-                borderColor: disabled ? `${theme.palette.grey[900]}25` : theme.palette.primary.main,
+                borderColor: disabled ? tokens.colors.border.input[mode] : theme.palette.primary.main,
                 outline: 'none'
             },
 

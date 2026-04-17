@@ -30,7 +30,8 @@ export enum MODE {
 export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL',
-    EVALUATION = 'EVALUATION'
+    EVALUATION = 'EVALUATION',
+    MCP = 'MCP'
 }
 
 export enum ChatMessageRatingType {
@@ -70,6 +71,7 @@ export interface IChatFlow {
     apiConfig?: string
     category?: string
     type?: ChatflowType
+    mcpServerConfig?: string
     workspaceId: string
 }
 
@@ -404,6 +406,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     parentExecutionId?: string
     iterationContext?: ICommonObject
     isTool?: boolean
+    chatType?: ChatType
 }
 
 export interface INodeOverrides {
@@ -420,6 +423,13 @@ export interface IVariableOverride {
     name: string
     type: 'static' | 'runtime'
     enabled: boolean
+}
+
+export interface IMcpServerConfig {
+    enabled: boolean
+    token: string
+    description?: string
+    toolName?: string
 }
 
 // DocumentStore related

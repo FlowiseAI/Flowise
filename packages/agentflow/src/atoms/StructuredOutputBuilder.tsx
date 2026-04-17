@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { Box, Button, Chip, IconButton, MenuItem, Select, TextField, Typography } from '@mui/material'
-import { alpha, useTheme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 import { IconArrowsMaximize, IconPlus, IconTrash } from '@tabler/icons-react'
 
 import { ExpandTextDialog } from '@/atoms'
@@ -103,7 +103,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                         mt: 2,
                         mb: 1,
                         border: 1,
-                        borderColor: alpha(theme.palette.grey[900], 0.25),
+                        borderColor: theme.palette.divider,
                         borderRadius: 2,
                         position: 'relative'
                     }}
