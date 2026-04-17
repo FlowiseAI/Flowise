@@ -267,7 +267,7 @@ function AgentflowCanvas({
                                 position: 'absolute',
                                 left: showDefaultPalette ? 70 : 20, // 70px offset = ~10px gap between buttons
                                 top: 20,
-                                zIndex: 1001
+                                zIndex: tokens.zIndex.canvasButton
                             }}
                         >
                             <IconSparkles />
@@ -276,7 +276,16 @@ function AgentflowCanvas({
 
                     {/* Canvas action buttons - positioned at top right */}
                     {!readOnly && (
-                        <div style={{ position: 'absolute', right: 20, top: 20, zIndex: 1001, display: 'flex', gap: 8 }}>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                right: 20,
+                                top: 20,
+                                zIndex: tokens.zIndex.canvasButton,
+                                display: 'flex',
+                                gap: 8
+                            }}
+                        >
                             <ValidationFeedback
                                 nodes={nodes as FlowNode[]}
                                 edges={edges as FlowEdge[]}

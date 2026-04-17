@@ -273,6 +273,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentKnowledgeDocumentStores',
                 type: 'array',
                 description: 'Give your agent context about different document sources. Document stores must be upserted in advance.',
+                client: ['agentflowv2'],
                 array: [
                     {
                         label: 'Document Store',
@@ -303,6 +304,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentKnowledgeVSEmbeddings',
                 type: 'array',
                 description: 'Give your agent context about different document sources from existing vector stores and embeddings',
+                client: ['agentflowv2'],
                 array: [
                     {
                         label: 'Vector Store',

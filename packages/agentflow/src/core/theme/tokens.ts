@@ -28,13 +28,18 @@ const baseColors = {
     gray800: '#333',
 
     // Dark mode grays
+    darkBorderDefault: 'rgba(255, 255, 255, 0.145)',
     darkGray100: '#1a1a1a',
     darkGray200: '#1a1a2e',
     darkGray300: '#252525',
+    darkGray350: '#23262c',
     darkGray400: '#2d2d2d',
+    darkGray450: '#32353b',
     darkGray500: '#404040',
+    darkBlueHover: '#233345',
     darkGray600: '#525252',
     darkGray700: '#555',
+    darkGray750: '#888',
     darkGray800: '#aaa',
 
     // Status colors
@@ -117,14 +122,17 @@ export const tokens = {
         background: {
             canvas: { light: baseColors.gray100, dark: baseColors.darkGray100 },
             palette: { light: baseColors.gray50, dark: baseColors.darkGray300 },
-            card: { light: baseColors.white, dark: baseColors.darkGray400 },
+            card: { light: baseColors.white, dark: baseColors.darkGray350 },
             cardHover: { light: baseColors.gray75, dark: baseColors.darkGray500 },
-            header: { light: baseColors.white, dark: baseColors.darkGray400 }
+            header: { light: baseColors.white, dark: baseColors.darkGray400 },
+            input: { light: baseColors.white, dark: baseColors.darkGray450 },
+            optionHover: { light: '', dark: baseColors.darkBlueHover }
         },
 
         border: {
-            default: { light: baseColors.gray300, dark: baseColors.darkGray500 },
+            default: { light: baseColors.gray300, dark: baseColors.darkBorderDefault },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
+            input: { light: baseColors.gray400, dark: baseColors.darkGray750 },
             validation: baseColors.nodeCondition
         },
 
@@ -248,6 +256,13 @@ export const tokens = {
         md: 8,
         lg: 12,
         round: '50%'
+    },
+
+    // Z-index scale for canvas overlay elements.
+    // All values sit below the Canvas Kit modal overlay (30–50).
+    zIndex: {
+        canvasButton: 10, // FABs and button containers
+        canvasPanel: 20 // Open panels/poppers anchored to buttons
     }
 } as const
 
