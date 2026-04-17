@@ -13,11 +13,6 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import logger from '../../utils/logger'
 import { ChatType, IMcpServerConfig, IReactFlowObject } from '../../Interface'
 
-type AgentflowNodeData = {
-    name?: string
-    inputs?: Record<string, any>
-}
-
 /**
  * Build the MCP tool name from config + chatflow
  */
@@ -53,8 +48,8 @@ function getToolInputType(chatflow: ChatFlow): 'question' | 'form' {
         try {
             const flowData: IReactFlowObject = JSON.parse(chatflow.flowData)
             const nodes = flowData.nodes || []
-            const startNode = nodes.find((node) => (node.data as AgentflowNodeData)?.name === 'startAgentflow')
-            const startInputType = (startNode?.data as AgentflowNodeData | undefined)?.inputs?.startInputType as 'chatInput' | 'formInput'
+            const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+            const startInputType = startNode?.data?.inputs?.startInputType as 'chatInput' | 'formInput'
             return startInputType === 'formInput' ? 'form' : 'question'
         } catch (error) {
             logger.error(`Failed to parse flowData for chatflow ${chatflow.id}: ${getErrorMessage(error)}`)
@@ -128,8 +123,8 @@ function buildFormInputSchema(chatflow: ChatFlow) {
     try {
         const flowData: IReactFlowObject = JSON.parse(chatflow.flowData)
         const nodes = flowData.nodes || []
-        const startNode = nodes.find((node) => (node.data as AgentflowNodeData)?.name === 'startAgentflow')
-        const formInputTypes = (startNode?.data as AgentflowNodeData | undefined)?.inputs?.formInputTypes as
+        const startNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const formInputTypes = startNode?.data?.inputs?.formInputTypes as
             | {
                   type: string
                   label: string
