@@ -135,7 +135,7 @@ class CustomRetriever<V extends VectorStore> extends VectorStoreRetriever<V> {
         const finalDocs: Document[] = []
 
         for (const result of results) {
-            let res = this.resultFormat.replace(/{{context}}/g, result[0].pageContent)
+            let res = this.resultFormat.replace(/{{context}}/g, () => result[0].pageContent)
             res = replaceMetadata(res, result[0].metadata)
 
             finalDocs.push(
