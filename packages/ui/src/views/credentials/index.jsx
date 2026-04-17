@@ -160,9 +160,9 @@ const Credentials = () => {
 
     const deleteCredential = async (credential) => {
         const confirmPayload = {
-            title: t('credentials.actions.delete.title'),
-            description: t('credentials.actions.delete.description', { name: credential.name }),
-            confirmButtonName: t('credentials.actions.delete.title'),
+            title: t('credentials.dialogs.delete.title'),
+            description: t('credentials.dialogs.delete.description', { name: credential.name }),
+            confirmButtonName: t('credentials.actions.delete'),
             cancelButtonName: t('credentials.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
@@ -415,7 +415,7 @@ const Credentials = () => {
                                                                 <StyledTableCell>
                                                                     <PermissionIconButton
                                                                         permissionId={'credentials:delete'}
-                                                                        title={t('credentials.actions.delete.title')}
+                                                                        title={t('credentials.actions.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteCredential(credential)}
                                                                     >

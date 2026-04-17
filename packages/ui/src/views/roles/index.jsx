@@ -318,7 +318,7 @@ function ShowRoleRow(props) {
                         permissionId={'roles:manage'}
                         disabled={props.role.userCount > 0}
                         color='error'
-                        title={t(props.role.userCount > 0 ? 'roles.removeUsersFirst' : 'roles.actions.delete.title')}
+                        title={t(props.role.userCount > 0 ? 'roles.removeUsersFirst' : 'roles.actions.delete')}
                         onClick={() => props.onDeleteClick(props.role)}
                     >
                         <IconTrash />
@@ -466,9 +466,9 @@ const Roles = () => {
 
     const deleteRole = async (role) => {
         const confirmPayload = {
-            title: t('roles.actions.delete.title'),
-            description: t('roles.actions.delete.description', { name: role.name }),
-            confirmButtonName: t('roles.actions.delete.title'),
+            title: t('roles.dialogs.delete.title'),
+            description: t('roles.dialogs.delete.description', { name: role.name }),
+            confirmButtonName: t('roles.actions.delete'),
             cancelButtonName: t('roles.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)

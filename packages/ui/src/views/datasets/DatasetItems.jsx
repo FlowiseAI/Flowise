@@ -215,9 +215,9 @@ const EvalDatasetRows = () => {
 
     const deleteDatasetItems = async () => {
         const confirmPayload = {
-            title: t('datasets.actions.delete.title'),
-            description: t('datasets.actions.delete.description.items', { count: selected.length }),
-            confirmButtonName: t('datasets.actions.delete.title'),
+            title: t('datasets.dialogs.delete.title'),
+            description: t('datasets.dialogs.delete.description.items', { count: selected.length }),
+            confirmButtonName: t('datasets.actions.delete'),
             cancelButtonName: t('datasets.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)

@@ -235,9 +235,9 @@ const Marketplace = () => {
 
     const onDeleteCustomTemplate = async (template) => {
         const confirmPayload = {
-            title: t('marketplaces.actions.delete.title'),
-            description: t('marketplaces.actions.delete.description', { name: template.name }),
-            confirmButtonName: t('marketplaces.actions.delete.title'),
+            title: t('marketplaces.dialogs.delete.title'),
+            description: t('marketplaces.dialogs.delete.description', { name: template.name }),
+            confirmButtonName: t('marketplaces.actions.delete'),
             cancelButtonName: t('marketplaces.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)

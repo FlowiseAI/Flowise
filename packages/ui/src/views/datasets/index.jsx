@@ -126,9 +126,9 @@ const EvalDatasets = () => {
 
     const deleteDataset = async (dataset) => {
         const confirmPayload = {
-            title: t('datasets.actions.delete.title'),
-            description: t('datasets.actions.delete.description.datasets', { name: dataset.name }),
-            confirmButtonName: t('datasets.actions.delete.title'),
+            title: t('datasets.dialogs.delete.title'),
+            description: t('datasets.dialogs.delete.description.datasets', { name: dataset.name }),
+            confirmButtonName: t('datasets.actions.delete'),
             cancelButtonName: t('datasets.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
@@ -340,7 +340,7 @@ const EvalDatasets = () => {
                                                             <Available permission={'datasets:delete'}>
                                                                 <TableCell>
                                                                     <IconButton
-                                                                        title={t('datasets.actions.delete.title')}
+                                                                        title={t('datasets.actions.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteDataset(ds)}
                                                                     >

@@ -361,7 +361,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
             <DialogActions>
                 {dialogProps.type === 'EDIT' && (
                     <StyledButton color='error' variant='contained' onClick={() => deleteVectorStore()}>
-                        {t('assistants.actions.delete.title')}
+                        {t('assistants.actions.delete')}
                     </StyledButton>
                 )}
                 <StyledButton

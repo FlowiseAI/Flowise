@@ -182,9 +182,9 @@ const Canvas = () => {
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
-            title: t('canvas.actions.delete.title'),
-            description: t('canvas.actions.delete.description', { title: canvasTitle, name: chatflow.name }),
-            confirmButtonName: t('canvas.actions.delete.title'),
+            title: t('canvas.dialogs.delete.title'),
+            description: t('canvas.dialogs.delete.description', { title: canvasTitle, name: chatflow.name }),
+            confirmButtonName: t('canvas.actions.delete'),
             cancelButtonName: t('canvas.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)

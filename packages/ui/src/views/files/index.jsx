@@ -60,9 +60,9 @@ const Files = () => {
 
     const handleDeleteFile = async (file) => {
         const confirmPayload = {
-            title: t('files.actions.delete.title'),
-            description: t('files.actions.delete.description', { name: file.name }),
-            confirmButtonName: t('files.actions.delete.title'),
+            title: t('files.dialogs.delete.title'),
+            description: t('files.dialogs.delete.description', { name: file.name }),
+            confirmButtonName: t('files.actions.delete'),
             cancelButtonName: t('files.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)

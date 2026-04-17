@@ -204,7 +204,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                         <IconAlertTriangle size={70} color='orange' />
                         <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>
                             <Trans
-                                i18nKey='docstore.delete.note'
+                                i18nKey='docstore.dialogs.delete.note'
                                 components={{
                                     strong: <strong />,
                                     a: (
@@ -304,7 +304,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                     {t('docstore.actions.cancel')}
                 </Button>
                 <Button variant='contained' onClick={() => onDelete(dialogProps.type, dialogProps.file)} color='error'>
-                    {t('docstore.actions.delete.title')}
+                    {t('docstore.actions.delete')}
                 </Button>
             </DialogActions>
         </Dialog>

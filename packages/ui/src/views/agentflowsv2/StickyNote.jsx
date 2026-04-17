@@ -84,7 +84,7 @@ const StickyNote = ({ data }) => {
                     </IconButton>
                     <IconButton
                         size={'small'}
-                        title={t('agentFlows.v2.actions.delete.title')}
+                        title={t('agentFlows.v2.actions.delete')}
                         onClick={() => {
                             deleteNode(data.id)
                         }}

@@ -126,7 +126,7 @@ const CanvasNode = ({ data }) => {
                                 <IconCopy />
                             </IconButton>
                             <IconButton
-                                title={t('canvas.actions.delete.title')}
+                                title={t('canvas.actions.delete')}
                                 onClick={() => {
                                     deleteNode(data.id)
                                 }}

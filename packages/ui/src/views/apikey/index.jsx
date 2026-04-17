@@ -159,7 +159,7 @@ function APIKeyRow(props) {
                 </Available>
                 <Available permission={'apikeys:delete'}>
                     <StyledTableCell>
-                        <IconButton title={t('apiKey.actions.delete.title')} color='error' onClick={props.onDeleteClick}>
+                        <IconButton title={t('apiKey.actions.delete')} color='error' onClick={props.onDeleteClick}>
                             <IconTrash />
                         </IconButton>
                     </StyledTableCell>
@@ -315,12 +315,12 @@ const APIKey = () => {
 
     const deleteKey = async (key) => {
         const confirmPayload = {
-            title: t('apiKey.actions.delete.title'),
+            title: t('apiKey.dialogs.delete.title'),
             description:
                 key.chatFlows.length === 0
-                    ? t('apiKey.actions.delete.description.simple', { name: key.keyName })
-                    : t('apiKey.actions.delete.description.simple', { name: key.keyName, count: key.chatFlows.length }),
-            confirmButtonName: t('apiKey.actions.delete.title'),
+                    ? t('apiKey.dialogs.delete.description.simple', { name: key.keyName })
+                    : t('apiKey.dialogs.delete.description.inUse', { name: key.keyName, count: key.chatFlows.length }),
+            confirmButtonName: t('apiKey.actions.delete'),
             cancelButtonName: t('apiKey.actions.cancel'),
             customBtnId: 'btn_initiateDeleteApiKey'
         }

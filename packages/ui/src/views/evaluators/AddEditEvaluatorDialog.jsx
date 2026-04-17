@@ -161,7 +161,7 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     <GridActionsCellItem
                         key={'Delete'}
                         icon={<DeleteIcon />}
-                        label={t('evaluators.actions.delete.title')}
+                        label={t('evaluators.actions.delete')}
                         onClick={deleteItem(params.id)}
                     />
                 ]

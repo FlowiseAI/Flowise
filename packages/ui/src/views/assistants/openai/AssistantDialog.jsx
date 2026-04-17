@@ -1071,7 +1071,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                         variant='contained'
                         onClick={() => onDeleteClick()}
                     >
-                        {t('assistants.actions.delete.title')}
+                        {t('assistants.actions.delete')}
                     </StyledPermissionButton>
                 )}
                 <StyledPermissionButton

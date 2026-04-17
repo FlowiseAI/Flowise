@@ -540,9 +540,9 @@ const CustomAssistantConfigurePreview = () => {
 
     const handleDeleteFlow = async () => {
         const confirmPayload = {
-            title: t('assistants.actions.delete.title'),
-            description: t('assistants.actions.delete.title'),
-            confirmButtonName: t('assistants.actions.delete.description'),
+            title: t('assistants.dialogs.delete.title'),
+            description: t('assistants.dialogs.delete.description'),
+            confirmButtonName: t('assistants.actions.delete'),
             cancelButtonName: t('assistants.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)

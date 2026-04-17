@@ -267,9 +267,9 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     const handleDelete = async () => {
         setAnchorEl(null)
         const confirmPayload = {
-            title: t('menu.actions.delete.title'),
-            description: t('menu.actions.delete.description', { title: title, name: chatflow.name }),
-            confirmButtonName: t('menu.actions.delete.title'),
+            title: t('menu.dialogs.delete.title'),
+            description: t('menu.dialogs.delete.description', { title: title, name: chatflow.name }),
+            confirmButtonName: t('menu.actions.delete'),
             cancelButtonName: t('menu.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
@@ -441,7 +441,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                     disableRipple
                 >
                     <FileDeleteIcon />
-                    {t('menu.actions.delete.title')}
+                    {t('menu.actions.delete')}
                 </PermissionMenuItem>
             </StyledMenu>
             <SaveChatflowDialog

@@ -108,9 +108,9 @@ const Evaluators = () => {
 
     const deleteEvaluator = async (item) => {
         const confirmPayload = {
-            title: t('evaluators.actions.delete.title'),
-            description: t('evaluators.actions.delete.description', { name: item.name }),
-            confirmButtonName: t('evaluators.actions.delete.title'),
+            title: t('evaluators.dialogs.delete.title'),
+            description: t('evaluators.dialogs.delete.description', { name: item.name }),
+            confirmButtonName: t('evaluators.actions.delete'),
             cancelButtonName: t('evaluators.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
@@ -545,7 +545,7 @@ const Evaluators = () => {
                                                                 <TableCell>
                                                                     <PermissionIconButton
                                                                         permissionId={'evaluators:delete'}
-                                                                        title={t('evaluators.actions.delete.title')}
+                                                                        title={t('evaluators.actions.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteEvaluator(ds)}
                                                                     >

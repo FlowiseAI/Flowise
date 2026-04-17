@@ -143,11 +143,11 @@ const EvalsEvaluation = () => {
 
     const deleteEvaluationsAllVersions = async () => {
         const confirmPayload = {
-            title: t('evaluations.actions.delete.title'),
-            description: t('evaluations.actions.delete.description', {
+            title: t('evaluations.dialogs.delete.title'),
+            description: t('evaluations.dialogs.delete.description', {
                 count: selected.length
             }),
-            confirmButtonName: t('evaluations.actions.delete.title'),
+            confirmButtonName: t('evaluations.actions.delete'),
             cancelButtonName: t('evaluations.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)
@@ -561,9 +561,9 @@ function EvaluationRunRow(props) {
 
     const deleteChildEvaluations = async () => {
         const confirmPayload = {
-            title: t('evaluations.actions.delete.title'),
-            description: t('evaluations.actions.delete.description', { count: childSelected.length }),
-            confirmButtonName: t('evaluations.actions.delete.title'),
+            title: t('evaluations.dialogs.delete.title'),
+            description: t('evaluations.dialogs.delete.description', { count: childSelected.length }),
+            confirmButtonName: t('evaluations.actions.delete'),
             cancelButtonName: t('evaluations.actions.cancel')
         }
         const isConfirmed = await confirm(confirmPayload)

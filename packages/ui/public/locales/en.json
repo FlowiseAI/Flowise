@@ -942,11 +942,14 @@
         "speechToTextTitle": "Speech To Text - {{name}}",
         "users": "Users",
         "workspaces": "Workspaces",
-        "actions": {
+        "dialogs": {
             "delete": {
                 "title": "Delete",
                 "description": "Delete {{title}} {{name}}?"
-            },
+            }
+        },
+        "actions": {
+            "delete": "Delete",
             "cancel": "Cancel",
             "options": "Options",
             "rename": {
@@ -1317,11 +1320,14 @@
                     "failedRetrieve": "Failed to retrieve {{canvasTitle}}: {{msg}}"
                 }
             },
-            "actions": {
+            "dialogs": {
                 "delete": {
                     "title": "Delete",
                     "description": "Delete {{canvasTitle}} {{name}}?"
-                },
+                }
+            },
+            "actions": {
+                "delete": "Delete",
                 "duplicate": "Duplicate",
                 "cancel": "Cancel",
                 "toggleBackground": "toggle background",
@@ -1367,6 +1373,15 @@
                 "error": "Failed to delete API key: {{msg}}"
             }
         },
+        "dialogs": {
+            "delete": {
+                "title": "Delete",
+                "description": {
+                    "simple": "Delete key [{{name}}] ?",
+                    "inUse": "Delete key [{{name}}] ?\nThere are {{count}} chatflows using this key."
+                }
+            }
+        },
         "actions": {
             "copyKey": "Copy API Key",
             "selectAll": "Select All",
@@ -1375,13 +1390,7 @@
             "show": "Show",
             "expandRow": "expand row",
             "edit": "Edit",
-            "delete": {
-                "title": "Delete",
-                "description": {
-                    "simple": "Delete key [{{name}}] ?",
-                    "inUse": "Delete key [{{name}}] ?\nThere are {{count}} chatflows using this key."
-                }
-            },
+            "delete": "Delete",
             "addKey": "Add New API Key",
             "add": "Add",
             "editKey": "Edit API Key",
@@ -1703,13 +1712,16 @@
                 "files": "{{count}} files ({{size}})"
             }
         },
-        "actions": {
-            "cancel": "Cancel",
-            "save": "Save",
+        "dialogs": {
             "delete": {
                 "title": "Delete",
                 "description": "Delete {{name}}?"
-            },
+            }
+        },
+        "actions": {
+            "cancel": "Cancel",
+            "save": "Save",
+            "delete": "Delete",
             "back": "Back",
             "settings": "Settings",
             "deleteAssistant": {
@@ -1998,10 +2010,7 @@
             "info": "Info",
             "additionalParameters": "Additional Parameters",
             "add": "Add",
-            "delete": {
-                "title": "Delete",
-                "description": "Delete {{title}} {{name}}?"
-            },
+            "delete": "Delete",
             "confirm": "Confirm",
             "toggleSnapping": "toggle snapping",
             "toggleBackground": "toggle background",
@@ -2035,6 +2044,10 @@
             "output": "Output"
         },
         "dialogs": {
+            "delete": {
+                "title": "Delete",
+                "description": "Delete {{title}} {{name}}?"
+            },
             "build": {
                 "title": "What would you like to build?",
                 "description": "Enter your prompt to generate an agentflow. Performance may vary with different models. Only nodes and edges are generated, you will need to fill in the input fields for each node."
@@ -2354,15 +2367,16 @@
             "add": "Add",
             "share": "Share",
             "edit": "Edit",
-            "delete": {
-                "title": "Delete",
-                "description": "Delete credential {{name}}?"
-            },
+            "delete": "Delete",
             "addCredential": "Add Credential"
         },
         "dialogs": {
             "add": "Add New Credential",
-            "share": "Share Credential"
+            "share": "Share Credential",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete credential {{name}}?"
+            }
         },
         "messages": {
             "add": {
@@ -2402,7 +2416,14 @@
             "editDataset": "Edit Dataset",
             "addRow": "Add Item to {{name}} Dataset",
             "editRow": "Edit Item in {{name}} Dataset",
-            "upload": "Upload Items to {{name}} Dataset"
+            "upload": "Upload Items to {{name}} Dataset",
+            "delete": {
+                "title": "Delete",
+                "description": {
+                    "items": "Delete {{count}} dataset items?",
+                    "datasets": "Delete dataset {{name}}?"
+                }
+            }
         },
         "table": {
             "title": "simple table",
@@ -2419,13 +2440,7 @@
             "cancel": "Cancel",
             "upload": "Upload",
             "save": "Save",
-            "delete": {
-                "title": "Delete",
-                "description": {
-                    "items": "Delete {{count}} dataset items?",
-                    "datasets": "Delete dataset {{name}}?"
-                }
-            },
+            "delete": "Delete",
             "uploadCsv": "Upload CSV",
             "newItem": "New Item",
             "deleteItem_one": " Delete {{count}} item",
@@ -2555,23 +2570,10 @@
             "renameDocumentStore": "Rename Document Store",
             "selectEmbeddingsProvider": "Select Embeddings Provider",
             "selectVectorStoreProvider": "Select a Vector Store Provider",
-            "selectRecordManager": "Select a Record Manager"
-        },
-        "inputs": {
-            "name": "Name",
-            "description": "Description",
-            "search": "Search",
-            "query": "Enter your Query",
-            "loaderName": {
-                "simple": "{{name}} name",
-                "loader": "{{name}} Loader Name"
-            }
-        },
-        "actions": {
-            "cancel": "Cancel",
-            "clearSearch": "Clear Search",
+            "selectRecordManager": "Select a Record Manager",
             "delete": {
                 "title": "Delete",
+                "note": "<strong>Note:</strong> Without a Record Manager configured, only the document chunks will be removed from the document store. The actual vector embeddings in your vector store database will remain unchanged. To enable automatic cleanup of vector store data, please configure a Record Manager. <a>Learn more</a>",
                 "description": {
                     "loader": {
                         "simple": "Delete {{name}}? This will delete all the associated document chunks from the document store.",
@@ -2587,7 +2589,22 @@
                     },
                     "chunk": "Delete chunk {{id}}? This action cannot be undone."
                 }
-            },
+            }
+        },
+        "inputs": {
+            "name": "Name",
+            "description": "Description",
+            "search": "Search",
+            "query": "Enter your Query",
+            "loaderName": {
+                "simple": "{{name}} name",
+                "loader": "{{name}} Loader Name"
+            }
+        },
+        "actions": {
+            "cancel": "Cancel",
+            "clearSearch": "Clear Search",
+            "delete": "Delete",
             "save": "Save",
             "expand": "Expand",
             "refresh": "Refresh",
@@ -2626,25 +2643,6 @@
             "upsertHistory": "Upsert History",
             "back": "Back",
             "editChunk": "Edit Chunk"
-        },
-        "delete": {
-            "note": "<strong>Note:</strong> Without a Record Manager configured, only the document chunks will be removed from the document store. The actual vector embeddings in your vector store database will remain unchanged. To enable automatic cleanup of vector store data, please configure a Record Manager. <a>Learn more</a>",
-            "description": {
-                "title": "Delete",
-                "loader": {
-                    "simple": "Delete {{name}}? This will delete all the associated document chunks from the document store.",
-                    "withData": "Delete {{name}}? This will delete all the associated document chunks from the document store and remove the actual data from the vector store database."
-                },
-                "store": {
-                    "simple": "Delete Store {{name}}? This will delete all the associated loaders and document chunks from the document store.",
-                    "withData": "Delete Store {{name}}? This will delete all the associated loaders and document chunks from the document store, and remove the actual data from the vector store database."
-                },
-                "document": {
-                    "simple": "Delete store [{{name}}]? This will remove this document store from the list.",
-                    "withData": "Delete store [{{name}}]? This will remove this document store from the list and remove the actual data from the vector store database."
-                },
-                "chunk": "Delete chunk {{id}}? This action cannot be undone."
-            }
         },
         "validation": {
             "requiredFields": "Please fill in all mandatory fields.",
@@ -2736,6 +2734,11 @@
                     "gradeFlows": "Grade flows using an LLM",
                     "execution": "Post execution, grades the answers by using an LLM. Used to generate comparative scores or reasoning or other custom defined criteria."
                 }
+            },
+            "delete": {
+                "title": "Delete",
+                "description_one": "Delete {{count}} evaluation? This will delete all versions of the evaluation.",
+                "description_other": "Delete {{count}} evaluation? This will delete all versions of the evaluation."
             },
             "evalResult": {
                 "title": "Evaluation {{name}}",
@@ -2861,11 +2864,7 @@
             "version": "Version {{value}}",
             "cancel": "Cancel",
             "startNewEvaluation": "Start New Evaluation",
-            "delete": {
-                "title": "Delete",
-                "description_one": "Delete {{count}} evaluation? This will delete all versions of the evaluation.",
-                "description_other": "Delete {{count}} evaluation? This will delete all versions of the evaluation."
-            },
+            "delete": "Delete",
             "disableAutoRefresh": "Disable auto-refresh",
             "enableAutoRefresh": "Enable auto-refresh (every 5s)",
             "refresh": "Refresh",
@@ -2898,7 +2897,11 @@
             "add": "Add Evaluator",
             "edit": "Edit Evaluator",
             "evaluationPrompt": "Evaluation Prompt",
-            "samplePrompts": "Sample Prompts"
+            "samplePrompts": "Sample Prompts",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete Evaluator {{name}}?"
+            }
         },
         "inputs": {
             "name": "Name",
@@ -3017,10 +3020,7 @@
         "actions": {
             "save": "Save",
             "cancel": "Cancel",
-            "delete": {
-                "title": "Delete",
-                "description": "Delete Evaluator {{name}}?"
-            },
+            "delete": "Delete",
             "loadSamples": "Load from Pre defined Samples",
             "addItem": "Add Item",
             "expand": "Expand",
@@ -3079,11 +3079,14 @@
         "searchPlaceholder": "Search File",
         "notFound": "No Files Yet",
         "actions": {
+            "delete": "Delete",
+            "cancel": "Cancel"
+        },
+        "dialogs": {
             "delete": {
                 "title": "Delete",
                 "description": "Delete {{name}}? This process cannot be undone."
-            },
-            "cancel": "Cancel"
+            }
         },
         "messages": {
             "success": "File deleted"
@@ -3098,10 +3101,7 @@
         "actions": {
             "cancel": "Cancel",
             "share": "Share",
-            "delete": {
-                "title": "Delete",
-                "description": "Delete Custom Template {{name}}?"
-            },
+            "delete": "Delete",
             "add": "Add",
             "cardView": "Card View",
             "listView": "List View",
@@ -3116,7 +3116,11 @@
         },
         "dialogs": {
             "shareCustomTemplate": "Share Custom Template",
-            "addNewTool": "Add New Tool"
+            "addNewTool": "Add New Tool",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete Custom Template {{name}}?"
+            }
         },
         "messages": {
             "delete": {
@@ -3205,7 +3209,11 @@
         "dialogs": {
             "edit": "Edit Role",
             "view": "View Role",
-            "create": "Create New Role"
+            "create": "Create New Role",
+            "delete": {
+                "title": "Delete",
+                "description": "Delete Role {{name}}?"
+            }
         },
         "messages": {
             "create": {
@@ -3240,10 +3248,7 @@
             "view": "View",
             "expandRow": "expand row",
             "edit": "Edit",
-            "delete": {
-                "title": "Delete",
-                "description": "Delete Role {{name}}?"
-            },
+            "delete": "Delete",
             "invite": "Invite",
             "addRole": "Add Role"
         },

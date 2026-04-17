@@ -185,7 +185,7 @@ const Documents = () => {
         const documentStoreToDelete = selectedDocumentStore
         handleActionMenuClose()
 
-        let description = t('docstore.actions.delete.description.document.simple', { name: documentStoreToDelete.name })
+        let description = t('docstore.dialogs.delete.description.document.simple', { name: documentStoreToDelete.name })
 
         if (
             documentStoreToDelete.recordManagerConfig &&
@@ -193,11 +193,11 @@ const Documents = () => {
             Object.keys(documentStoreToDelete.recordManagerConfig).length > 0 &&
             Object.keys(documentStoreToDelete.vectorStoreConfig).length > 0
         ) {
-            description = t('docstore.actions.delete.description.document.withData', { name: documentStoreToDelete.name })
+            description = t('docstore.dialogs.delete.description.document.withData', { name: documentStoreToDelete.name })
         }
 
         setDeleteDocStoreDialogProps({
-            title: t('docstore.actions.delete.title'),
+            title: t('docstore.dialogs.delete.title'),
             description,
             vectorStoreConfig: documentStoreToDelete.vectorStoreConfig,
             recordManagerConfig: documentStoreToDelete.recordManagerConfig,
@@ -484,7 +484,7 @@ const Documents = () => {
                         <ListItemIcon>
                             <IconTrash size={16} />
                         </ListItemIcon>
-                        <ListItemText>{t('docstore.actions.delete.title')}</ListItemText>
+                        <ListItemText>{t('docstore.actions.delete')}</ListItemText>
                     </MenuItem>
                 )}
             </Menu>

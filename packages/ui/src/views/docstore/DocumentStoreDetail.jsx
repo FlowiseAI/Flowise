@@ -307,7 +307,7 @@ const DocumentStoreDetails = () => {
 
         const displayName = sourceName ? `${loaderName} (${sourceName})` : loaderName
 
-        let description = t('docstore.delete.description.loader.simple', { name: displayName })
+        let description = t('docstore.dialogs.delete.description.loader.simple', { name: displayName })
 
         if (
             recordManagerConfig &&
@@ -315,7 +315,7 @@ const DocumentStoreDetails = () => {
             Object.keys(recordManagerConfig).length > 0 &&
             Object.keys(vectorStoreConfig).length > 0
         ) {
-            description = t('docstore.delete.description.loader.simple', { name: withData })
+            description = t('docstore.dialogs.delete.description.loader.simple', { name: withData })
         }
 
         const props = {
@@ -332,7 +332,7 @@ const DocumentStoreDetails = () => {
     }
 
     const onStoreDelete = (vectorStoreConfig, recordManagerConfig) => {
-        let description = t('docstore.delete.description.loader.simple', { name: getSpecificDocumentStore.data?.name })
+        let description = t('docstore.dialogs.delete.description.loader.simple', { name: getSpecificDocumentStore.data?.name })
 
         if (
             recordManagerConfig &&
@@ -340,11 +340,11 @@ const DocumentStoreDetails = () => {
             Object.keys(recordManagerConfig).length > 0 &&
             Object.keys(vectorStoreConfig).length > 0
         ) {
-            description = t('docstore.delete.description.loader.withData', { name: getSpecificDocumentStore.data?.name })
+            description = t('docstore.dialogs.delete.description.loader.withData', { name: getSpecificDocumentStore.data?.name })
         }
 
         const props = {
-            title: t('docstore.delete.description.title'),
+            title: t('docstore.dialogs.delete.description.title'),
             description,
             vectorStoreConfig,
             recordManagerConfig,
@@ -583,7 +583,7 @@ const DocumentStoreDetails = () => {
                                     disableRipple
                                 >
                                     <FileDeleteIcon />
-                                    {t('docstore.actions.delete.title')}
+                                    {t('docstore.actions.delete')}
                                 </MenuItem>
                             </StyledMenu>
                         </ViewHeader>
@@ -950,7 +950,7 @@ function LoaderRow(props) {
                                         disableRipple
                                     >
                                         <FileDeleteIcon />
-                                        {t('docstore.actions.delete.title')}
+                                        {t('docstore.actions.delete')}
                                     </MenuItem>
                                 </Available>
                             </StyledMenu>
