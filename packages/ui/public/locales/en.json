@@ -864,7 +864,8 @@
         },
         "dropdown": {
             "createNewItemLabel": "- Create New -",
-            "selected": "Selected Option"
+            "selected": "Selected Option",
+            "chooseOption": "choose an option"
         },
         "input": {
             "hidePassword": "Hide password",

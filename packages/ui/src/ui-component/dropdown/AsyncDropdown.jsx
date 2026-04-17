@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, Fragment } from 'react'
+import { useState, useEffect, useContext, Fragment, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import axios from 'axios'
@@ -81,13 +81,15 @@ export const AsyncDropdown = ({
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
 
+    const chooseOption = useMemo(() => t('components.dropdown.chooseOption'), [t])
+
     const [open, setOpen] = useState(false)
     const [options, setOptions] = useState([])
     const [loading, setLoading] = useState(false)
     const findMatchingOptions = (options = [], value) => {
         if (multiple) {
             let values = []
-            if ('choose an option' !== value && value && typeof value === 'string') {
+            if (chooseOption !== value && value && typeof value === 'string') {
                 values = JSON.parse(value)
             } else {
                 values = value
@@ -99,7 +101,7 @@ export const AsyncDropdown = ({
     const getDefaultOptionValue = () => (multiple ? [] : '')
     // [WARN]: In this place can be possible error after translation
     const addNewOption = [{ label: t('components.dropdown.createNewItemLabel'), name: '-create-' }]
-    let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
+    let [internalValue, setInternalValue] = useState(value ?? chooseOption)
     const { reactFlowInstance } = useContext(flowContext)
 
     const fetchCredentialList = async () => {

@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
 import { Popper, FormControl, TextField, Box, Typography } from '@mui/material'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { useTheme, styled } from '@mui/material/styles'
 import PropTypes from 'prop-types'
+
+// i18n
+import { useTranslation } from 'react-i18next'
 
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
@@ -19,10 +22,14 @@ const StyledPopper = styled(Popper)({
 })
 
 export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = {}, disabled = false, disableClearable = false }) => {
+    const { t } = useTranslation()
+
+    const chooseOption = useMemo(() => t('components.dropdown.chooseOption'), [t])
+
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], internalValue) => {
         let values = []
-        if ('choose an option' !== internalValue && internalValue && typeof internalValue === 'string') values = JSON.parse(internalValue)
+        if (chooseOption !== internalValue && internalValue && typeof internalValue === 'string') values = JSON.parse(internalValue)
         else values = internalValue
         return options.filter((option) => values.includes(option.name))
     }

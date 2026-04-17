@@ -193,7 +193,7 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
                             return { name: x.name, label: t(x.label) }
                         })}
                         onSelect={(newValue) => setStatus(newValue)}
-                        value={status ?? 'choose an option'}
+                        value={status ?? t('components.dropdown.chooseOption')}
                         id='dropdown_status'
                     />
                     {dialogProps?.data?.isOrgOwner && (

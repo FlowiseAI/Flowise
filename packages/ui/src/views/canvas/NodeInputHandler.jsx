@@ -1157,7 +1157,7 @@ const NodeInputHandler = ({
                                     options={getDropdownOptions(inputParam)}
                                     freeSolo={inputParam.freeSolo}
                                     onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
-                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? t('components.dropdown.chooseOption')}
                                 />
                             </div>
                         )}
@@ -1168,7 +1168,7 @@ const NodeInputHandler = ({
                                     name={inputParam.name}
                                     options={getDropdownOptions(inputParam)}
                                     onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
-                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? t('components.dropdown.chooseOption')}
                                 />
                             </div>
                         )}
@@ -1183,7 +1183,7 @@ const NodeInputHandler = ({
                                         disabled={disabled}
                                         name={inputParam.name}
                                         nodeData={data}
-                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? t('components.dropdown.chooseOption')}
                                         freeSolo={inputParam.freeSolo}
                                         multiple={inputParam.type === 'asyncMultiOptions'}
                                         isCreateNewOption={EDITABLE_OPTIONS.includes(inputParam.name)}
@@ -1359,7 +1359,7 @@ const NodeInputHandler = ({
                                         }
                                     }
                                 }}
-                                value={selectedTempChatModel?.name ?? 'choose an option'}
+                                value={selectedTempChatModel?.name ?? t('components.dropdown.chooseOption')}
                             />
                         </Box>
                         {selectedTempChatModel && Object.keys(selectedTempChatModel).length > 0 && (

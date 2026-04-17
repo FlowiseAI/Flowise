@@ -1020,7 +1020,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         }
                                                     }
                                                 }}
-                                                value={selectedChatModel ? selectedChatModel?.name : 'choose an option'}
+                                                value={selectedChatModel ? selectedChatModel?.name : t('components.dropdown.chooseOption')}
                                             />
                                         </Box>
                                         <Box
@@ -1098,7 +1098,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         onDocStoreItemSelected(newValue)
                                                     }
                                                 }}
-                                                value={selectedDocumentStores.map((ds) => ds.id) ?? 'choose an option'}
+                                                value={selectedDocumentStores.map((ds) => ds.id) ?? t('components.dropdown.chooseOption')}
                                             />
                                             {selectedDocumentStores.length > 0 && (
                                                 <Stack sx={{ mt: 3, position: 'relative', alignItems: 'center' }} direction='row'>
@@ -1276,7 +1276,7 @@ const CustomAssistantConfigurePreview = () => {
                                                                         }
                                                                     }
                                                                 }}
-                                                                value={tool?.name || 'choose an option'}
+                                                                value={tool?.name || t('components.dropdown.chooseOption')}
                                                             />
                                                         </Box>
                                                         {tool && Object.keys(tool).length === 0 && (

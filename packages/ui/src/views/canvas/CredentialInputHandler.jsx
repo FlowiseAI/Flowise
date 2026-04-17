@@ -109,7 +109,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                                 disabled={disabled}
                                 name={inputParam.name}
                                 nodeData={data}
-                                value={credentialId ?? 'choose an option'}
+                                value={credentialId ?? t('components.dropdown.chooseOption')}
                                 isCreateNewOption={hasPermission('credentials:create')}
                                 credentialNames={inputParam.credentialNames}
                                 onSelect={(newValue) => {

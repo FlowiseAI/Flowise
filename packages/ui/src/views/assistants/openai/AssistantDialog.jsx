@@ -755,7 +755,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                             name={assistantModel}
                             options={assistantAvailableModels}
                             onSelect={(newValue) => setAssistantModel(newValue)}
-                            value={assistantModel ?? 'choose an option'}
+                            value={assistantModel ?? t('components.dropdown.chooseOption')}
                         />
                     </Box>
                     <Box>
@@ -903,7 +903,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                                             dialogRef?.current?.scrollTo({ top: maxScroll })
                                         }, 100)
                                     }}
-                                    value={assistantTools ?? 'choose an option'}
+                                    value={assistantTools ?? t('components.dropdown.chooseOption')}
                                 />
                             </Box>
                             <Box>

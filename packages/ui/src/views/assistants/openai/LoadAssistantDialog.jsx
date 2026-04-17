@@ -97,7 +97,7 @@ const LoadAssistantDialog = ({ show, dialogProps, onCancel, onAssistantSelected,
                             name={selectedOpenAIAssistantId}
                             options={availableAssistantsOptions}
                             onSelect={(newValue) => setSelectedOpenAIAssistantId(newValue)}
-                            value={selectedOpenAIAssistantId ?? 'choose an option'}
+                            value={selectedOpenAIAssistantId ?? t('components.dropdown.chooseOption')}
                         />
                     </Box>
                 )}

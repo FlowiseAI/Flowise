@@ -26,7 +26,7 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
     const getDefaultOptionValue = () => ''
-    let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
+    let [internalValue, setInternalValue] = useState(value ?? t('components.dropdown.chooseOption'))
     const theme = useTheme()
 
     return (

@@ -223,7 +223,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 name={inputParam.name}
                                 options={inputParam.options}
                                 onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? t('components.dropdown.chooseOption')}
                             />
                         )}
                         {inputParam.type === 'multiOptions' && (
@@ -233,7 +233,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                 name={inputParam.name}
                                 options={inputParam.options}
                                 onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? t('components.dropdown.chooseOption')}
                             />
                         )}
                         {(inputParam.type === 'asyncOptions' || inputParam.type === 'asyncMultiOptions') && (
@@ -248,7 +248,9 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                             nodeData={data}
                                             freeSolo={inputParam.freeSolo}
                                             multiple={inputParam.type === 'asyncMultiOptions'}
-                                            value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                            value={
+                                                data.inputs[inputParam.name] ?? inputParam.default ?? t('components.dropdown.chooseOption')
+                                            }
                                             onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
                                             onCreateNew={() => addAsyncOption(inputParam.name)}
                                             fullWidth={true}

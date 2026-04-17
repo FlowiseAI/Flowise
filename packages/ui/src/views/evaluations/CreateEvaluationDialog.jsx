@@ -579,7 +579,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     name={'chatflow1'}
                                     options={flows.filter((f) => flowTypes.includes(f.type))}
                                     onSelect={(newValue) => setChatflow(newValue)}
-                                    value={chatflow ?? chatflow ?? 'choose an option'}
+                                    value={chatflow ?? chatflow ?? t('components.dropdown.chooseOption')}
                                 />
                             </Box>
                         </>

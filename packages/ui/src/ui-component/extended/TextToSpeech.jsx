@@ -548,7 +548,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                     value={
                                         textToSpeech?.[selectedProvider]
                                             ? textToSpeech[selectedProvider][inputParam.name]
-                                            : inputParam.default ?? 'choose an option'
+                                            : inputParam.default ?? t('components.dropdown.chooseOption')
                                     }
                                 />
                             )}

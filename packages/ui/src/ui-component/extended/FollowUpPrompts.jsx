@@ -575,7 +575,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                                             followUpPromptsConfig[selectedProvider] &&
                                                             followUpPromptsConfig[selectedProvider][inputParam.name]
                                                                 ? followUpPromptsConfig[selectedProvider][inputParam.name]
-                                                                : inputParam.default ?? 'choose an option'
+                                                                : inputParam.default ?? t('components.dropdown.chooseOption')
                                                         }
                                                         onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                                     />
@@ -592,7 +592,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
                                                     followUpPromptsConfig[selectedProvider] &&
                                                     followUpPromptsConfig[selectedProvider][inputParam.name]
                                                         ? followUpPromptsConfig[selectedProvider][inputParam]
-                                                        : inputParam.default ?? 'choose an option'
+                                                        : inputParam.default ?? t('components.dropdown.chooseOption')
                                                 }
                                             />
                                         )}
