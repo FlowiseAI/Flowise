@@ -332,7 +332,7 @@ const DocumentStoreDetails = () => {
     }
 
     const onStoreDelete = (vectorStoreConfig, recordManagerConfig) => {
-        let description = t('docstore.dialogs.delete.description.loader.simple', { name: getSpecificDocumentStore.data?.name })
+        let description = t('docstore.dialogs.delete.description.store.simple', { name: getSpecificDocumentStore.data?.name })
 
         if (
             recordManagerConfig &&
@@ -340,11 +340,11 @@ const DocumentStoreDetails = () => {
             Object.keys(recordManagerConfig).length > 0 &&
             Object.keys(vectorStoreConfig).length > 0
         ) {
-            description = t('docstore.dialogs.delete.description.loader.withData', { name: getSpecificDocumentStore.data?.name })
+            description = t('docstore.dialogs.delete.description.store.withData', { name: getSpecificDocumentStore.data?.name })
         }
 
         const props = {
-            title: t('docstore.dialogs.delete.description.title'),
+            title: t('docstore.dialogs.delete.title'),
             description,
             vectorStoreConfig,
             recordManagerConfig,

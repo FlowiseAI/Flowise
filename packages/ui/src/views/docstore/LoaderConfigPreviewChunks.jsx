@@ -667,7 +667,7 @@ const LoaderConfigPreviewChunks = () => {
                                                                 <Card>
                                                                     <CardContent sx={{ p: 1 }}>
                                                                         <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                                            {t('docstore.preview.charactersIndex', {
+                                                                            {t('docstore.preview.chunkCharacters', {
                                                                                 index: index + 1,
                                                                                 total: row.pageContent.length
                                                                             })}

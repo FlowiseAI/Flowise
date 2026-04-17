@@ -448,17 +448,17 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         {activeStep === 0 && (
                             <>
                                 <Typography sx={{ mt: 2 }} variant='h4'>
-                                    {t('evaluations.dialogs.startNewEvaluation.select')}
+                                    {t('evaluations.dialogs.startNewEvaluation.datasets.select')}
                                 </Typography>
                                 <Typography sx={{ mt: 2 }} variant='body2'>
                                     <Trans
-                                        i18nKey='evaluations.dialogs.startNewEvaluation.useInput'
+                                        i18nKey='evaluations.dialogs.startNewEvaluation.datasets.useInput'
                                         components={{
                                             highlight: <span style={{ fontStyle: 'italic' }} />
                                         }}
                                     />
                                 </Typography>
-                                <Typography variant='body2'>{t('evaluations.dialogs.startNewEvaluation.computed')}</Typography>
+                                <Typography variant='body2'>{t('evaluations.dialogs.startNewEvaluation.datasets.computed')}</Typography>
                                 <Stack
                                     flexDirection='row'
                                     sx={{ mt: 2, gap: 1, alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap' }}
@@ -474,10 +474,10 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         {activeStep === 1 && (
                             <>
                                 <Typography sx={{ mt: 2 }} variant='h4'>
-                                    {t('evaluations.dialogs.evaluators.unit')}
+                                    {t('evaluations.dialogs.startNewEvaluation.evaluators.unit')}
                                 </Typography>
                                 <Typography sx={{ mt: 2, mb: 2 }} variant='body2'>
-                                    {t('evaluations.dialogs.evaluators.execution')}
+                                    {t('evaluations.dialogs.startNewEvaluation.evaluators.execution')}
                                 </Typography>
                                 <Chip
                                     variant='contained'
@@ -491,10 +491,10 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         {activeStep === 2 && (
                             <>
                                 <Typography sx={{ mt: 2 }} variant='h4'>
-                                    {t('evaluations.dialogs.metrics.gradeFlows')}
+                                    {t('evaluations.dialogs.startNewEvaluation.metrics.gradeFlows')}
                                 </Typography>
                                 <Typography sx={{ mt: 2 }} variant='body2'>
-                                    {t('evaluations.dialogs.metrics.execution')}
+                                    {t('evaluations.dialogs.startNewEvaluation.metrics.execution')}
                                 </Typography>
                             </>
                         )}

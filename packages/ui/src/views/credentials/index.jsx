@@ -272,7 +272,7 @@ const Credentials = () => {
                                         alt='CredentialEmptySVG'
                                     />
                                 </Box>
-                                <div>{t('credentials.title')}</div>
+                                <div>{t('credentials.notFound')}</div>
                             </Stack>
                         ) : (
                             <TableContainer

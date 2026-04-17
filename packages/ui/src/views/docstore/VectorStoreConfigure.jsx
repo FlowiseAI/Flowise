@@ -847,7 +847,7 @@ const VectorStoreConfigure = () => {
                                             >
                                                 {t(
                                                     isRecordManagerUnavailable
-                                                        ? 'docstore.recordManagerUnavailable'
+                                                        ? 'docstore.vectorStore.recordManagerUnavailable'
                                                         : 'docstore.actions.selectRecordManager'
                                                 )}
                                             </Button>

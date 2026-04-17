@@ -320,7 +320,7 @@ const Users = () => {
     const deleteUser = async (user) => {
         const confirmPayload = {
             title: t('users.dialogs.delete.title'),
-            description: t('users.dialogs.delete.title', { name: user.name ?? user.email }),
+            description: t('users.dialogs.delete.description', { name: user.name ?? user.email }),
             confirmButtonName: t('users.actions.delete'),
             cancelButtonName: t('users.actions.cancel')
         }

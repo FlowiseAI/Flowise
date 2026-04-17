@@ -223,7 +223,10 @@ const AddEditDatasetDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography>
                                 {t('datasets.inputs.uploadCsv.title')}
-                                <TooltipWithParser style={{ mb: 1, mt: 2 }} title={`<pre>${t('components.file.tooltip')}</pre>`} />
+                                <TooltipWithParser
+                                    style={{ mb: 1, mt: 2 }}
+                                    title={`<pre>${t('datasets.inputs.uploadCsv.tooltip')}</pre>`}
+                                />
                             </Typography>
                             <div style={{ flexGrow: 1 }}></div>
                         </div>

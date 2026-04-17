@@ -757,7 +757,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                     <TabPanel key={index} value={value} index={index}>
                         {(codeLang.id === 'Embed' || codeLang.id === 'Share Chatbot') && chatflowApiKeyId && (
                             <>
-                                <p>{t('chatflows.codes.embed.title')}</p>
+                                <p>{t('chatflows.codes.embed.warnApi')}</p>
                                 <p>{t('chatflows.codes.embed.select')}</p>
                             </>
                         )}

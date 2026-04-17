@@ -92,7 +92,7 @@ const AssistantVectorStoreDialog = ({ show, dialogProps, onCancel, onConfirm, on
                 vectorStores.push({
                     label: listAssistantVectorStoreApi.data[i]?.name ?? listAssistantVectorStoreApi.data[i].id,
                     name: listAssistantVectorStoreApi.data[i].id,
-                    description: t('assistant.cards.vectorStorage.files', {
+                    description: t('assistants.cards.vectorStorage.files', {
                         count: listAssistantVectorStoreApi.data[i]?.file_counts?.total,
                         size: formatBytes(listAssistantVectorStoreApi.data[i]?.usage_bytes)
                     })

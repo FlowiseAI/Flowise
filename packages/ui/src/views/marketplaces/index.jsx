@@ -262,7 +262,7 @@ const Marketplace = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: t('marketplaces.messages.delete.success', {
+                    message: t('marketplaces.messages.delete.error', {
                         msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                     }),
                     options: {

@@ -286,7 +286,7 @@ const LoginActivity = () => {
                                                     value={typeFilter}
                                                     onChange={handleTypeFilterChange}
                                                     id='type-checkbox'
-                                                    input={<OutlinedInput label={t('auth.loginActivity.badgeF')} />}
+                                                    input={<OutlinedInput label={t('auth.loginActivity.badge')} />}
                                                     renderValue={(selected) => selected.join(', ')}
                                                     MenuProps={MenuProps}
                                                     sx={SelectStyles}

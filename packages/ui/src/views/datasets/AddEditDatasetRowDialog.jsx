@@ -87,7 +87,7 @@ const AddEditDatasetRowDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             const createResp = await datasetApi.createDatasetRow(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: t('datasets.messages.addDatasetRow.success'),
+                    message: t('datasets.messages.addRow.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -102,7 +102,7 @@ const AddEditDatasetRowDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             }
         } catch (error) {
             enqueueSnackbar({
-                message: t('datasets.messages.addDatasetRow.error', {
+                message: t('datasets.messages.addRow.error', {
                     msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                 }),
                 options: {
@@ -130,7 +130,7 @@ const AddEditDatasetRowDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             const saveResp = await datasetApi.updateDatasetRow(row.id, saveObj)
             if (saveResp.data) {
                 enqueueSnackbar({
-                    message: t('datasets.messages.saveDatasetRow.success'),
+                    message: t('datasets.messages.saveRow.success'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -145,7 +145,7 @@ const AddEditDatasetRowDialog = ({ show, dialogProps, onCancel, onConfirm }) => 
             }
         } catch (error) {
             enqueueSnackbar({
-                message: t('datasets.messages.saveDatasetRow.error', {
+                message: t('datasets.messages.saveRow.error', {
                     msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                 }),
                 options: {

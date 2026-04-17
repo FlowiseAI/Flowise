@@ -1986,7 +1986,6 @@
         "tabs": "tabs",
         "true": "True",
         "false": "False",
-        "selectModel": "Select Model",
         "inputsLabel": "Inputs",
         "actions": {
             "denerateAgentflow": {
@@ -2067,7 +2066,8 @@
             "generateInstructions": {
                 "title": "Generate Instructions",
                 "description": "You can generate a prompt template by sharing basic details about your task.F"
-            }
+            },
+            "selectModel": "Select Model"
         },
         "messages": {
             "saveChatflow": {
@@ -2122,7 +2122,6 @@
             "js": "JavaScript",
             "cUrl": "cURL",
             "shareChatbot": "Share Chatbot",
-            "configuration": "Configuration",
             "popupHtml": "Popup Html",
             "fullpageHtml": "Fullpage Html",
             "popupReact": "Popup React",
@@ -2527,7 +2526,6 @@
         },
         "retrieval": {
             "description": "Retrieval Playground - Test your vector store retrieval settings",
-            "query": "Enter your Query",
             "results": {
                 "title": "Retrieved Documents",
                 "count": "Count: {{count}}. Time taken: {{time}} millis.",
@@ -3631,7 +3629,7 @@
         "messages": {
             "add": {
                 "success": "New Workspace added",
-                "error": {
+                "errors": {
                     "failed": "Failed to add new Workspace: {{msg}}",
                     "reserved": "Workspace name cannot be Default Workspace or Personal Workspace - this is a reserved name"
                 }

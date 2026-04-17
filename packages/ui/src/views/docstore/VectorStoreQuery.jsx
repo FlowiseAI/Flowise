@@ -466,7 +466,7 @@ const VectorStoreQuery = () => {
                                                         <Card>
                                                             <CardContent sx={{ p: 2 }}>
                                                                 <Typography sx={{ wordWrap: 'break-word', mb: 1 }} variant='h5'>
-                                                                    {t('docstore.preview.charactersIndex', {
+                                                                    {t('docstore.preview.chunkCharacters', {
                                                                         index: row.chunkNo,
                                                                         total: row.pageContent.length
                                                                     })}

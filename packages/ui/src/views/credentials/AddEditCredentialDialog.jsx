@@ -294,7 +294,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                             onConfirm(credentialId)
                         } else if (event.data.type === 'OAUTH2_ERROR') {
                             enqueueSnackbar({
-                                message: event.data.message || t('credentials.messages.setOAuth2.error.simple'),
+                                message: event.data.message || t('credentials.messages.setOAuth2.errors.simple'),
                                 options: {
                                     key: new Date().getTime() + Math.random(),
                                     variant: 'error',

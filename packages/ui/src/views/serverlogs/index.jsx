@@ -255,9 +255,9 @@ const Logs = () => {
                                                 endDate={endDate}
                                                 maxDate={endDate}
                                                 showTimeSelect
-                                                timeFormat={t('roles.formats.time')}
+                                                timeFormat={t('logs.formats.time')}
                                                 timeIntervals={60}
-                                                dateFormat={t('roles.formats.date')}
+                                                dateFormat={t('logs.formats.date')}
                                                 customInput={<DatePickerCustomInput />}
                                             />
                                         </Stack>
@@ -268,13 +268,13 @@ const Logs = () => {
                                                 onChange={(date) => onEndDateSelected(date)}
                                                 selectsEnd
                                                 showTimeSelect
-                                                timeFormat={t('roles.formats.time')}
+                                                timeFormat={t('logs.formats.time')}
                                                 timeIntervals={60}
                                                 startDate={startDate}
                                                 endDate={endDate}
                                                 minDate={startDate}
                                                 maxDate={new Date()}
-                                                dateFormat={t('roles.formats.date')}
+                                                dateFormat={t('logs.formats.date')}
                                                 customInput={<DatePickerCustomInput />}
                                             />
                                         </Stack>
@@ -305,7 +305,7 @@ const Logs = () => {
                                             alt='LogsEmptySVG'
                                         />
                                     </Box>
-                                    <div>{t('logs.title')}</div>
+                                    <div>{t('logs.notFound')}</div>
                                 </Stack>
                             )}
                         </>

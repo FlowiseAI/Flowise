@@ -240,12 +240,12 @@ const AccountSettings = () => {
                 store.dispatch(userProfileUpdated(payload.user))
                 const pendingMsg =
                     payload.emailChangePending &&
-                    t('profile.messages.success.check', {
+                    t('profile.messages.profile.success.check', {
                         email: payload.user.email,
                         pendingEmail: payload.pendingEmail
                     })
                 enqueueSnackbar({
-                    message: pendingMsg || t('profile.messages.success.simple'),
+                    message: pendingMsg || t('profile.messages.profile.success.simple'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',

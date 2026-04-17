@@ -83,7 +83,7 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                 <Box>
                     <br />
                     <Typography variant='overline' sx={{ fontWeight: 'bold' }}>
-                        {t('evaluations.dialogs.evalResult.input')}
+                        {t('evaluations.input')}
                     </Typography>
                     <Typography variant='body2'>{dialogProps.data.input}</Typography>
                 </Box>

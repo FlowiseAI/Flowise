@@ -1339,7 +1339,7 @@ const NodeInputHandler = ({
                 maxWidth='sm'
                 fullWidth
             >
-                <DialogTitle id='model-selection-dialog-title'>{t('canvas.selectCanvas')}</DialogTitle>
+                <DialogTitle id='model-selection-dialog-title'>{t('canvas.dialogs.selectModel')}</DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 2 }}>
                         <Box sx={{ px: 2 }}>
