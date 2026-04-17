@@ -122,16 +122,22 @@ class CustomRetriever<V extends VectorStore> extends VectorStoreRetriever<V> {
     constructor(input: RetrieverInput<V>) {
         super(input)
         this.topK = input.topK ?? this.topK
-        this.resultFormat = input.resultFormat ?? this.resultFormat
+        this.resultFormat = input.resultFormat ?? defaultReturnFormat
     }
 
     async getRelevantDocuments(query: string): Promise<Document[]> {
+        return this._getRelevantDocuments(query)
+    }
+
+    async _getRelevantDocuments(query: string): Promise<Document[]> {
         const results = await this.vectorStore.similaritySearchWithScore(query, this.topK, this.filter)
 
         const finalDocs: Document[] = []
+
         for (const result of results) {
             let res = this.resultFormat.replace(/{{context}}/g, result[0].pageContent)
             res = replaceMetadata(res, result[0].metadata)
+
             finalDocs.push(
                 new Document({
                     pageContent: res,
@@ -139,6 +145,7 @@ class CustomRetriever<V extends VectorStore> extends VectorStoreRetriever<V> {
                 })
             )
         }
+
         return finalDocs
     }
 
