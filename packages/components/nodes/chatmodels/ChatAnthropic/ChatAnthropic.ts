@@ -135,7 +135,7 @@ class ChatAnthropic_ChatModels implements INode {
                     {
                         label: 'Max',
                         name: 'max',
-                        description: 'Absolute maximum capability with no constraints on token spending. Opus 4.6 only'
+                        description: 'Absolute maximum capability with no constraints on token spending. Opus 4.6 and newer only'
                     }
                 ],
                 additionalParams: true,
