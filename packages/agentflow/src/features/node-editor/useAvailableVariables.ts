@@ -73,6 +73,7 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
         // ── Upstream node outputs ────────────────────────────────────────
         const upstreamNodes = getUpstreamNodes(nodeId, nodes, edges)
         for (const node of upstreamNodes) {
+            if (node.data.name === 'startAgentflow') continue
             const displayName =
                 (node.data.inputs?.chainName as string) ??
                 (node.data.inputs?.functionName as string) ??
