@@ -149,7 +149,17 @@ function buildFormInputSchema(chatflow: ChatFlow) {
                     schemaShape[input.name] = z.boolean().describe(input.label)
                     break
                 case 'options': {
-                    const options = input.addOptions.map((opt: { option: string }) => opt.option) || []
+                    if (!Array.isArray(input.addOptions) || input.addOptions.length === 0) {
+                        break
+                    }
+                    const options = input.addOptions
+                        .map((opt: { option?: unknown }) => opt?.option)
+                        .filter((option): option is string => typeof option === 'string' && option.length > 0)
+
+                    if (options.length === 0) {
+                        break
+                    }
+
                     schemaShape[input.name] = z.enum(options as [string, ...string[]]).describe(input.label)
                     break
                 }
