@@ -85,7 +85,7 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
                 label: displayName,
                 description: `Output from ${node.data.label ?? node.data.name}`,
                 category: 'Node Outputs',
-                value: `{{${node.id}.data.instance}}`,
+                value: `{{${node.id}}}`,
                 icon: agentflowIcon?.icon,
                 iconColor: agentflowIcon?.color
             })

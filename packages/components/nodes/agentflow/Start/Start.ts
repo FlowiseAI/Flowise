@@ -198,6 +198,7 @@ class Start_Agentflow implements INode {
         if (startInputType === 'chatInput') {
             inputData.question = input
             outputData.question = input
+            outputData.content = input
         }
 
         if (startInputType === 'formInput') {
