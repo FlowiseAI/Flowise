@@ -57,6 +57,9 @@ function a11yProps(index) {
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager', 'Utilities']
 
+// Hide individual nodes from the Add Nodes list by their `name` property
+const blacklistNodeNames = ['smartAgentAgentflow']
+
 const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
 
 // Show blacklisted nodes (exceptions) for agent canvas
@@ -260,6 +263,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
     }
 
     const groupByCategory = (nodes, newTabValue, isFilter) => {
+        // Strip globally-hidden nodes before any category grouping
+        nodes = nodes.filter((nd) => !blacklistNodeNames.includes(nd.name))
         if (isAgentCanvas) {
             const accordianCategories = {}
             const result = nodes.reduce(function (r, a) {

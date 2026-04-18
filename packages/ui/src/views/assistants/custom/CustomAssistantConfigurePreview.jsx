@@ -20,6 +20,8 @@ import {
     Grid,
     OutlinedInput,
     Stack,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography,
     Checkbox,
     FormControlLabel,
@@ -27,7 +29,11 @@ import {
     Chip,
     Accordion,
     AccordionSummary,
-    AccordionDetails
+    AccordionDetails,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useTheme } from '@mui/material/styles'
@@ -68,12 +74,14 @@ import { Available } from '@/ui-component/rbac/available'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 import { SwitchInput } from '@/ui-component/switch/Switch'
+import DescribeMode from './DescribeMode'
 
 // API
 import assistantsApi from '@/api/assistants'
 import chatflowsApi from '@/api/chatflows'
 import nodesApi from '@/api/nodes'
 import documentstoreApi from '@/api/documentstore'
+import userApi from '@/api/user'
 
 // Const
 import { baseURL, uiBaseURL } from '@/store/constant'
@@ -98,13 +106,6 @@ MemoizedFullPageChat.displayName = 'MemoizedFullPageChat'
 
 MemoizedFullPageChat.propTypes = {
     chatflow: PropTypes.object
-}
-
-// Helper to extract options from agentNodeDef inputParams by param name
-const getParamOptions = (agentNodeDef, paramName) => {
-    if (!agentNodeDef?.inputParams) return []
-    const param = agentNodeDef.inputParams.find((p) => p.name === paramName)
-    return param?.options || []
 }
 
 // Helper to build the built-in tools map from agentNodeDef — keyed by the model name in the `show` condition
@@ -141,11 +142,13 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
     const loadAgentInputRef = useRef()
     const canvas = useSelector((state) => state.canvas)
     const customization = useSelector((state) => state.customization)
+    const currentUser = useSelector((state) => state.auth.user)
 
     const getChatModelsApi = useApi(assistantsApi.getChatModels)
     const getDocStoresApi = useApi(assistantsApi.getDocStores)
     const getToolsApi = useApi(assistantsApi.getTools)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+    const getOrganizationApi = useApi(userApi.getOrganizationById)
 
     const { id: routeId } = useParams()
     const location = useLocation()
@@ -159,7 +162,12 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
     const [chatModelsComponents, setChatModelsComponents] = useState([])
     const [chatModelsOptions, setChatModelsOptions] = useState([])
     const [selectedChatModel, setSelectedChatModel] = useState({})
+    const [modelConfigDialogOpen, setModelConfigDialogOpen] = useState(false)
+    const previousChatModelRef = useRef(null)
     const [agentName, setAgentName] = useState('New Agent')
+    const [creationMode, setCreationMode] = useState(location.state?.generateTask ? 'describe' : 'manual')
+    const [defaultCheckComplete, setDefaultCheckComplete] = useState(false)
+    const [modelConfirmed, setModelConfirmed] = useState(false)
     const [customAssistantInstruction, setCustomAssistantInstruction] = useState('You are helpful assistant')
     const [documentStoreOptions, setDocumentStoreOptions] = useState([])
     const [selectedDocumentStores, setSelectedDocumentStores] = useState([])
@@ -525,11 +533,11 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                     {
                         source: 'startAgentflow_0',
                         sourceHandle: 'startAgentflow_0-output-startAgentflow',
-                        target: 'agentAgentflow_0',
-                        targetHandle: 'agentAgentflow_0',
+                        target: 'smartAgentAgentflow_0',
+                        targetHandle: 'smartAgentAgentflow_0',
                         data: { sourceColor: '#7EE787', targetColor: '#4DD0E1', isHumanInput: false },
                         type: 'agentFlow',
-                        id: 'startAgentflow_0-startAgentflow_0-output-startAgentflow-agentAgentflow_0-agentAgentflow_0'
+                        id: 'startAgentflow_0-startAgentflow_0-output-startAgentflow-smartAgentAgentflow_0-smartAgentAgentflow_0'
                     }
                 ]
             }
@@ -625,7 +633,7 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
 
-        if (setting === 'deleteAssistant') {
+        if (setting === 'deleteAgent') {
             handleDeleteFlow()
         } else if (setting === 'viewMessages') {
             setViewMessagesDialogProps({
@@ -640,7 +648,7 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                 chatflow: canvas.chatflow
             })
             setViewLeadsDialogOpen(true)
-        } else if (setting === 'chatflowConfiguration') {
+        } else if (setting === 'agentConfiguration') {
             setChatflowConfigurationDialogProps({
                 title: `Agent Configuration`,
                 chatflow: canvas.chatflow
@@ -951,19 +959,24 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
         getDocStoresApi.request()
         getToolsApi.request()
 
+        // Fetch org defaultConfig for new agents
+        if (isNewAgent && currentUser?.activeOrganizationId) {
+            getOrganizationApi.request(currentUser.activeOrganizationId)
+        }
+
         // Fetch agentflow node definitions dynamically from server
         const fetchNodeDefs = async () => {
             try {
                 const [startResp, agentResp] = await Promise.all([
                     nodesApi.getSpecificNode('startAgentflow'),
-                    nodesApi.getSpecificNode('agentAgentflow')
+                    nodesApi.getSpecificNode('smartAgentAgentflow')
                 ])
                 if (startResp.data) {
                     const startData = initNode(startResp.data, 'startAgentflow_0')
                     setStartNodeDef(startData)
                 }
                 if (agentResp.data) {
-                    const agentData = initNode(agentResp.data, 'agentAgentflow_0')
+                    const agentData = initNode(agentResp.data, 'smartAgentAgentflow_0')
                     setAgentNodeDef(agentData)
                 }
             } catch (err) {
@@ -976,8 +989,8 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
         const fetchVSEmbeddingOptions = async () => {
             try {
                 const [vsResp, embResp, vsComponentsResp, embComponentsResp] = await Promise.all([
-                    nodesApi.executeNodeLoadMethod('agentAgentflow', { loadMethod: 'listVectorStores' }),
-                    nodesApi.executeNodeLoadMethod('agentAgentflow', { loadMethod: 'listEmbeddings' }),
+                    nodesApi.executeNodeLoadMethod('smartAgentAgentflow', { loadMethod: 'listVectorStores' }),
+                    nodesApi.executeNodeLoadMethod('smartAgentAgentflow', { loadMethod: 'listEmbeddings' }),
                     nodesApi.getNodesByCategory('Vector Stores'),
                     nodesApi.getNodesByCategory('Embeddings')
                 ])
@@ -1182,8 +1195,8 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
         try {
             const flowData = JSON.parse(flowDataStr)
 
-            // ---- New agentflow format (agentAgentflow node) ----
-            const agentNode = flowData.nodes?.find((n) => n.data?.name === 'agentAgentflow')
+            // ---- New agentflow format (smartAgentAgentflow node) ----
+            const agentNode = flowData.nodes?.find((n) => n.data?.name === 'smartAgentAgentflow')
             if (agentNode) {
                 const inputs = agentNode.data?.inputs || {}
                 const modelConfig = inputs.agentModelConfig || {}
@@ -1426,6 +1439,49 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatModelsApi.data])
 
+    // TODO: Replace mocked defaultConfig with actual governance settings from database
+    useEffect(() => {
+        if (defaultCheckComplete) return
+        // Not a new agent or no org to check — nothing to wait for
+        if (!isNewAgent || !currentUser?.activeOrganizationId) {
+            setDefaultCheckComplete(true)
+            return
+        }
+        // Need both chat models and org response before we can decide
+        if (!getChatModelsApi.data || getOrganizationApi.data === null) return
+
+        try {
+            if (getOrganizationApi.data?.defaultConfig) {
+                const config = JSON.parse(getOrganizationApi.data.defaultConfig)
+                if (config.chatModel) {
+                    const saved = config.chatModel
+                    const foundComponent = getChatModelsApi.data.find((c) => c.name === saved.name)
+                    if (foundComponent) {
+                        const chatModelId = `${foundComponent.name}_0`
+                        const clonedComponent = cloneDeep(foundComponent)
+                        const restored = initNode(clonedComponent, chatModelId)
+                        if (saved.inputs) {
+                            restored.inputs = { ...restored.inputs, ...saved.inputs }
+                        }
+                        // Restore credential reference
+                        if (saved.credentialId || saved.credential) {
+                            restored.credential = saved.credentialId || saved.credential
+                            restored.inputs.FLOWISE_CREDENTIAL_ID = restored.credential
+                        }
+                        restored.inputParams = showHideInputParams(restored)
+                        setSelectedChatModel(restored)
+                        setModelConfirmed(true)
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Error parsing defaultConfig', e)
+        } finally {
+            setDefaultCheckComplete(true)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getChatModelsApi.data, getOrganizationApi.data, isNewAgent, currentUser?.activeOrganizationId])
+
     useEffect(() => {
         if (getSpecificChatflowApi.data) {
             const chatflow = getSpecificChatflowApi.data
@@ -1436,7 +1492,7 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
             if (!name || name === 'Untitled') {
                 try {
                     const fd = chatflow.flowData ? JSON.parse(chatflow.flowData) : null
-                    const agentNode = fd?.nodes?.find((n) => n.data?.name === 'agentAgentflow')
+                    const agentNode = fd?.nodes?.find((n) => n.data?.name === 'smartAgentAgentflow')
                     if (agentNode?.data?.label && agentNode.data.label !== 'Agent 0') {
                         name = agentNode.data.label
                     }
@@ -1447,7 +1503,7 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
             setAgentName(name || 'Untitled Agent')
             setLoadingAssistant(false)
 
-            // Load agent config from flowData (handles both old toolAgent and new agentAgentflow formats)
+            // Load agent config from flowData (handles both old toolAgent and new smartAgentAgentflow formats)
             if (chatflow.flowData) {
                 loadAgentFromFlowData(chatflow.flowData)
             }
@@ -1547,68 +1603,6 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                         />
                     ))}
                 </FormGroup>
-            </Box>
-        )
-    }
-
-    const renderMemorySection = () => {
-        return (
-            <Box
-                sx={{
-                    p: 2,
-                    mt: 1,
-                    mb: 1,
-                    border: 1,
-                    borderColor: theme.palette.grey[900] + 25,
-                    borderRadius: 2
-                }}
-            >
-                <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                    <Typography>Enable Memory</Typography>
-                    <TooltipWithParser title='Enable memory for the conversation thread' />
-                </Stack>
-                <SwitchInput value={enableMemory} onChange={(newValue) => setEnableMemory(newValue)} />
-                {enableMemory && (
-                    <>
-                        <Stack sx={{ mt: 2.5, position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography>Memory Type</Typography>
-                        </Stack>
-                        <Dropdown
-                            name='memoryType'
-                            options={getParamOptions(agentNodeDef, 'agentMemoryType')}
-                            onSelect={(newValue) => setMemoryType(newValue || 'allMessages')}
-                            value={memoryType}
-                        />
-                        {memoryType === 'windowSize' && (
-                            <>
-                                <Stack sx={{ mt: 2.5, position: 'relative', alignItems: 'center' }} direction='row'>
-                                    <Typography>Window Size</Typography>
-                                    <TooltipWithParser title='Uses a fixed window size to surface the last N messages' />
-                                </Stack>
-                                <OutlinedInput
-                                    sx={{ mt: 1, width: '100%' }}
-                                    type='number'
-                                    value={memoryWindowSize}
-                                    onChange={(e) => setMemoryWindowSize(Number(e.target.value))}
-                                />
-                            </>
-                        )}
-                        {memoryType === 'conversationSummaryBuffer' && (
-                            <>
-                                <Stack sx={{ mt: 2.5, position: 'relative', alignItems: 'center' }} direction='row'>
-                                    <Typography>Max Token Limit</Typography>
-                                    <TooltipWithParser title='Summarize conversations once token limit is reached. Default to 2000' />
-                                </Stack>
-                                <OutlinedInput
-                                    sx={{ mt: 1, width: '100%' }}
-                                    type='number'
-                                    value={memoryMaxTokenLimit}
-                                    onChange={(e) => setMemoryMaxTokenLimit(Number(e.target.value))}
-                                />
-                            </>
-                        )}
-                    </>
-                )}
             </Box>
         )
     }
@@ -1848,6 +1842,58 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                                                     )}
                                                 </Box>
                                                 <div style={{ flex: 1 }}></div>
+                                                {/* Model selector in toolbar — describe mode with model selected */}
+                                                {isNewAgent &&
+                                                    !isTemplatePreview &&
+                                                    creationMode === 'describe' &&
+                                                    selectedChatModel?.name && (
+                                                        <Box
+                                                            sx={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 1,
+                                                                mr: 2
+                                                            }}
+                                                        >
+                                                            <Box sx={{ minWidth: 200, mt: -1 }}>
+                                                                <Dropdown
+                                                                    key={`toolbar-${selectedChatModel?.name}`}
+                                                                    name='toolbarChatModel'
+                                                                    options={chatModelsOptions ?? []}
+                                                                    onSelect={(newValue) => {
+                                                                        if (!newValue) {
+                                                                            setSelectedChatModel({})
+                                                                        } else if (newValue !== selectedChatModel?.name) {
+                                                                            const found = chatModelsComponents.find(
+                                                                                (c) => c.name === newValue
+                                                                            )
+                                                                            if (found) {
+                                                                                previousChatModelRef.current = selectedChatModel
+                                                                                const id = `${found.name}_0`
+                                                                                const cloned = cloneDeep(found)
+                                                                                setSelectedChatModel(initNode(cloned, id))
+                                                                                setModelConfigDialogOpen(true)
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    value={selectedChatModel?.name || 'choose an option'}
+                                                                    disableClearable
+                                                                />
+                                                            </Box>
+                                                            <IconButton
+                                                                size='small'
+                                                                title='Model settings'
+                                                                onClick={() => setModelConfigDialogOpen(true)}
+                                                                sx={{
+                                                                    color: customization.isDarkMode
+                                                                        ? theme.palette.common.white
+                                                                        : theme.palette.text.primary
+                                                                }}
+                                                            >
+                                                                <IconSettings size={18} />
+                                                            </IconButton>
+                                                        </Box>
+                                                    )}
                                                 {isTemplatePreview ? (
                                                     <Available permission={'agents:create'}>
                                                         <StyledButton
@@ -1888,7 +1934,7 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                                                                 </Avatar>
                                                             </ButtonBase>
                                                         )}
-                                                        {isNewAgent && (
+                                                        {isNewAgent && creationMode !== 'describe' && (
                                                             <Available permission={'agents:create'}>
                                                                 <ButtonBase title='Load Agent' sx={{ borderRadius: '50%', mr: 2 }}>
                                                                     <Avatar
@@ -1912,28 +1958,30 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                                                                 </ButtonBase>
                                                             </Available>
                                                         )}
-                                                        <Available permission={'agents:create'}>
-                                                            <ButtonBase title={`Save`} sx={{ borderRadius: '50%', mr: 2 }}>
-                                                                <Avatar
-                                                                    variant='rounded'
-                                                                    sx={{
-                                                                        ...theme.typography.commonAvatar,
-                                                                        ...theme.typography.mediumAvatar,
-                                                                        transition: 'all .2s ease-in-out',
-                                                                        background: theme.palette.canvasHeader.saveLight,
-                                                                        color: theme.palette.canvasHeader.saveDark,
-                                                                        '&:hover': {
-                                                                            background: theme.palette.canvasHeader.saveDark,
-                                                                            color: theme.palette.canvasHeader.saveLight
-                                                                        }
-                                                                    }}
-                                                                    color='inherit'
-                                                                    onClick={onSaveAndProcess}
-                                                                >
-                                                                    <IconDeviceFloppy stroke={1.5} size='1.3rem' />
-                                                                </Avatar>
-                                                            </ButtonBase>
-                                                        </Available>
+                                                        {!(isNewAgent && creationMode === 'describe') && (
+                                                            <Available permission={'agents:create'}>
+                                                                <ButtonBase title={`Save`} sx={{ borderRadius: '50%', mr: 2 }}>
+                                                                    <Avatar
+                                                                        variant='rounded'
+                                                                        sx={{
+                                                                            ...theme.typography.commonAvatar,
+                                                                            ...theme.typography.mediumAvatar,
+                                                                            transition: 'all .2s ease-in-out',
+                                                                            background: theme.palette.canvasHeader.saveLight,
+                                                                            color: theme.palette.canvasHeader.saveDark,
+                                                                            '&:hover': {
+                                                                                background: theme.palette.canvasHeader.saveDark,
+                                                                                color: theme.palette.canvasHeader.saveLight
+                                                                            }
+                                                                        }}
+                                                                        color='inherit'
+                                                                        onClick={onSaveAndProcess}
+                                                                    >
+                                                                        <IconDeviceFloppy stroke={1.5} size='1.3rem' />
+                                                                    </Avatar>
+                                                                </ButtonBase>
+                                                            </Available>
+                                                        )}
                                                     </>
                                                 )}
                                                 {!isNewAgent && !loadingAssistant && !isTemplatePreview && (
@@ -1960,8 +2008,76 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                                             </Toolbar>
                                         </Box>
 
-                                        {/* Form content — disabled in template preview mode */}
-                                        <Box sx={isTemplatePreview ? { pointerEvents: 'none', opacity: 0.85 } : {}}>
+                                        {/* Mode toggle for new agents */}
+                                        {isNewAgent && !isTemplatePreview && (
+                                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, mt: 1 }}>
+                                                <ToggleButtonGroup
+                                                    value={creationMode}
+                                                    exclusive
+                                                    onChange={(e, newMode) => {
+                                                        if (newMode !== null) setCreationMode(newMode)
+                                                    }}
+                                                    sx={{
+                                                        borderRadius: '24px',
+                                                        backgroundColor: theme.palette.grey[100],
+                                                        ...(customization.isDarkMode && {
+                                                            backgroundColor: theme.palette.grey[800]
+                                                        }),
+                                                        '& .MuiToggleButtonGroup-grouped': {
+                                                            border: 'none',
+                                                            borderRadius: '24px !important',
+                                                            px: 3,
+                                                            py: 0.75,
+                                                            textTransform: 'none',
+                                                            fontWeight: 600,
+                                                            fontSize: '0.875rem',
+                                                            color: theme.palette.text.secondary,
+                                                            '&.Mui-selected': {
+                                                                backgroundColor: theme.palette.background.paper,
+                                                                color: theme.palette.text.primary,
+                                                                boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+                                                                '&:hover': {
+                                                                    backgroundColor: theme.palette.background.paper
+                                                                }
+                                                            },
+                                                            '&:hover': {
+                                                                backgroundColor: 'transparent'
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    <ToggleButton value='describe'>Describe</ToggleButton>
+                                                    <ToggleButton value='manual'>Manual</ToggleButton>
+                                                </ToggleButtonGroup>
+                                            </Box>
+                                        )}
+
+                                        {/* Describe mode */}
+                                        {isNewAgent && !isTemplatePreview && creationMode === 'describe' && (
+                                            <DescribeMode
+                                                selectedChatModel={selectedChatModel}
+                                                setSelectedChatModel={setSelectedChatModel}
+                                                chatModelsComponents={chatModelsComponents}
+                                                chatModelsOptions={chatModelsOptions}
+                                                handleChatModelDataChange={handleChatModelDataChange}
+                                                setAgentName={setAgentName}
+                                                setCustomAssistantInstruction={setCustomAssistantInstruction}
+                                                setCreationMode={setCreationMode}
+                                                modelConfirmed={modelConfirmed}
+                                                setModelConfirmed={setModelConfirmed}
+                                                generateTask={location.state?.generateTask}
+                                                defaultConfigResolved={defaultCheckComplete}
+                                            />
+                                        )}
+                                        {/* Form content — disabled in template preview mode, hidden in describe mode */}
+                                        <Box
+                                            sx={{
+                                                ...(isTemplatePreview ? { pointerEvents: 'none', opacity: 0.85 } : {}),
+                                                ...(isNewAgent && !isTemplatePreview && creationMode === 'describe'
+                                                    ? { display: 'none' }
+                                                    : {})
+                                            }}
+                                        >
                                             {/* Select Model */}
                                             <Box
                                                 sx={{
@@ -2560,19 +2676,12 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                                                     Add Vector Embedding Knowledge
                                                 </Button>
                                             </Box>
-
-                                            {/* Chat Model Input Parameters - moved to accordion below Select Model */}
-
-                                            {/* Memory */}
-                                            {renderMemorySection()}
-
-                                            {/* Structured Output */}
                                             {renderStructuredOutputSection()}
                                         </Box>
                                         {/* End form content wrapper */}
 
-                                        {/* Save & Load Buttons — hidden in template preview */}
-                                        {!isTemplatePreview && (
+                                        {/* Save & Load Buttons — hidden in template preview and describe mode */}
+                                        {!isTemplatePreview && !(isNewAgent && creationMode === 'describe') && (
                                             <Available permission={'agents:create'}>
                                                 <Stack direction='row' spacing={1} sx={{ mt: 1, mb: 1 }}>
                                                     {isNewAgent && (
@@ -2719,7 +2828,7 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
             />
             <ViewLeadsDialog show={viewLeadsDialogOpen} dialogProps={viewLeadsDialogProps} onCancel={() => setViewLeadsDialogOpen(false)} />
             <ChatflowConfigurationDialog
-                key='chatflowConfiguration'
+                key='agentConfiguration'
                 show={chatflowConfigurationDialogOpen}
                 dialogProps={chatflowConfigurationDialogProps}
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
@@ -2752,6 +2861,81 @@ const CustomAssistantConfigurePreview = ({ chatflowType: _chatflowType = 'ASSIST
                 dialogProps={exportAsTemplateDialogProps}
                 onCancel={() => setExportAsTemplateDialogOpen(false)}
             />
+            <Dialog
+                open={modelConfigDialogOpen}
+                onClose={() => {
+                    if (previousChatModelRef.current) {
+                        setSelectedChatModel(previousChatModelRef.current)
+                        previousChatModelRef.current = null
+                    }
+                    setModelConfigDialogOpen(false)
+                }}
+                fullWidth
+                maxWidth='sm'
+            >
+                <DialogTitle>
+                    <Stack direction='row' alignItems='center' spacing={1}>
+                        {selectedChatModel?.name && (
+                            <Box
+                                component='img'
+                                src={`${baseURL}/api/v1/node-icon/${selectedChatModel.name}`}
+                                alt={selectedChatModel.label}
+                                sx={{
+                                    width: 28,
+                                    height: 28,
+                                    objectFit: 'contain',
+                                    borderRadius: '50%',
+                                    p: 0.5,
+                                    backgroundColor: customization.isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'
+                                }}
+                            />
+                        )}
+                        <Typography variant='h4'>{selectedChatModel?.label || selectedChatModel?.name} Configuration</Typography>
+                    </Stack>
+                </DialogTitle>
+                <DialogContent>
+                    {selectedChatModel &&
+                        Object.keys(selectedChatModel).length > 0 &&
+                        showHideInputParams(selectedChatModel)
+                            .filter(
+                                (ip) =>
+                                    !ip.hidden &&
+                                    ip.display !== false &&
+                                    ['credential', 'model', 'modelName', 'customModel', 'customModelName'].includes(ip.name)
+                            )
+                            .map((ip, idx) => (
+                                <DocStoreInputHandler
+                                    key={idx}
+                                    inputParam={ip}
+                                    data={selectedChatModel}
+                                    onNodeDataChange={handleChatModelDataChange}
+                                />
+                            ))}
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => {
+                            if (previousChatModelRef.current) {
+                                setSelectedChatModel(previousChatModelRef.current)
+                                previousChatModelRef.current = null
+                            }
+                            setModelConfigDialogOpen(false)
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <StyledButton
+                        variant='contained'
+                        disabled={!selectedChatModel?.credential}
+                        onClick={() => {
+                            previousChatModelRef.current = null
+                            setModelConfigDialogOpen(false)
+                        }}
+                    >
+                        Confirm
+                    </StyledButton>
+                </DialogActions>
+            </Dialog>
             <ConfirmDialog />
         </>
     )

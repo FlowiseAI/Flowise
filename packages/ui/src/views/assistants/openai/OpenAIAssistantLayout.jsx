@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Stack, Skeleton } from '@mui/material'
+import { Box, Fade, Skeleton, Stack } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -113,70 +113,72 @@ const OpenAIAssistantLayout = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            isBackButton={true}
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Assistants'
-                            title='OpenAI Assistant'
-                            description='Create assistants using OpenAI Assistant API'
-                            onBack={() => navigate(-1)}
-                        >
-                            <PermissionButton
-                                permissionId={'assistants:create'}
-                                variant='outlined'
-                                onClick={loadExisting}
-                                startIcon={<IconFileUpload />}
-                                sx={{ borderRadius: 2, height: 40 }}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                isBackButton={true}
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                searchPlaceholder='Search Assistants'
+                                title='OpenAI Assistant'
+                                description='Create assistants using OpenAI Assistant API'
+                                onBack={() => navigate(-1)}
                             >
-                                Load
-                            </PermissionButton>
-                            <StyledPermissionButton
-                                permissionId={'assistants:create'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: 40 }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                            >
-                                Add
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {isLoading ? (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                            </Box>
-                        ) : (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                {getAllAssistantsApi.data &&
-                                    getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => (
-                                        <ItemCard
-                                            data={{
-                                                name: JSON.parse(data.details)?.name,
-                                                description: JSON.parse(data.details)?.instructions,
-                                                iconSrc: data.iconSrc
-                                            }}
-                                            key={index}
-                                            onClick={() => edit(data)}
-                                        />
-                                    ))}
-                            </Box>
-                        )}
-                        {!isLoading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={AssistantEmptySVG}
-                                        alt='AssistantEmptySVG'
-                                    />
+                                <PermissionButton
+                                    permissionId={'assistants:create'}
+                                    variant='outlined'
+                                    onClick={loadExisting}
+                                    startIcon={<IconFileUpload />}
+                                    sx={{ borderRadius: 2, height: 40 }}
+                                >
+                                    Load
+                                </PermissionButton>
+                                <StyledPermissionButton
+                                    permissionId={'assistants:create'}
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: 40 }}
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                >
+                                    Add
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {isLoading ? (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
                                 </Box>
-                                <div>No OpenAI Assistants Added Yet</div>
-                            </Stack>
-                        )}
-                    </Stack>
+                            ) : (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    {getAllAssistantsApi.data &&
+                                        getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => (
+                                            <ItemCard
+                                                data={{
+                                                    name: JSON.parse(data.details)?.name,
+                                                    description: JSON.parse(data.details)?.instructions,
+                                                    iconSrc: data.iconSrc
+                                                }}
+                                                key={index}
+                                                onClick={() => edit(data)}
+                                            />
+                                        ))}
+                                </Box>
+                            )}
+                            {!isLoading && (!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0) && (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={AssistantEmptySVG}
+                                            alt='AssistantEmptySVG'
+                                        />
+                                    </Box>
+                                    <div>No OpenAI Assistants Added Yet</div>
+                                </Stack>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <LoadAssistantDialog

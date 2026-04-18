@@ -3,7 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
 // material-ui
-import { Box, Button, IconButton, ListItemIcon, ListItemText, Menu, MenuItem, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import {
+    Box,
+    Button,
+    Fade,
+    IconButton,
+    ListItemIcon,
+    ListItemText,
+    Menu,
+    MenuItem,
+    Stack,
+    ToggleButton,
+    ToggleButtonGroup
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -324,125 +336,127 @@ const Documents = () => {
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader
-                        onSearchChange={onSearchChange}
-                        search={hasDocStores}
-                        searchPlaceholder='Search Name'
-                        title='Document Store'
-                        description='Manage and upsert documents for Retrieval-Augmented Generation (RAG)'
-                    >
-                        {hasDocStores && (
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
-                                value={view}
-                                color='primary'
-                                exclusive
-                                onChange={handleChange}
-                            >
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
-                                >
-                                    <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
-                                    <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                        )}
-                        <StyledPermissionButton
-                            permissionId={'documentStores:create'}
-                            variant='contained'
-                            sx={{ borderRadius: 2, height: '100%' }}
-                            onClick={addNew}
-                            startIcon={<IconPlus />}
-                            id='btn_createVariable'
+                <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader
+                            onSearchChange={onSearchChange}
+                            search={hasDocStores}
+                            searchPlaceholder='Search Name'
+                            title='Document Store'
+                            description='Manage and upsert documents for Retrieval-Augmented Generation (RAG)'
                         >
-                            Add New
-                        </StyledPermissionButton>
-                    </ViewHeader>
-                    {!hasDocStores ? (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img
-                                    style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                    src={doc_store_empty}
-                                    alt='doc_store_empty'
-                                />
-                            </Box>
-                            <div>No Document Stores Created Yet</div>
-                        </Stack>
-                    ) : (
-                        <React.Fragment>
-                            {!view || view === 'card' ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {docStores?.filter(filterDocStores).map((data) => (
-                                        <Box key={data.id} sx={{ position: 'relative' }}>
-                                            <DocumentStoreCard
-                                                images={images[data.id]}
-                                                data={data}
-                                                hasActions={canManageDocumentStore}
-                                                onClick={() => goToDocumentStore(data.id)}
-                                            />
-                                            {canManageDocumentStore && (
-                                                <IconButton
-                                                    size='small'
-                                                    aria-label='Document store actions'
-                                                    sx={{
-                                                        position: 'absolute',
-                                                        top: 16,
-                                                        right: 10,
-                                                        zIndex: 2,
-                                                        width: 30,
-                                                        height: 30,
-                                                        ...getDocStoreActionButtonSx(theme),
-                                                        [theme.breakpoints.down('sm')]: {
-                                                            top: 8,
-                                                            right: 8,
-                                                            width: 28,
-                                                            height: 28
-                                                        }
-                                                    }}
-                                                    onClick={(event) => handleActionMenuOpen(event, data)}
-                                                >
-                                                    <IconDotsVertical size={18} />
-                                                </IconButton>
-                                            )}
-                                        </Box>
-                                    ))}
-                                </Box>
-                            ) : (
-                                <DocumentStoreTable
-                                    isLoading={isLoading}
-                                    data={docStores?.filter(filterDocStores)}
-                                    images={images}
-                                    onRowClick={(row) => goToDocumentStore(row.id)}
-                                    showActions={canManageDocumentStore}
-                                    onActionMenuClick={handleActionMenuOpen}
-                                    actionButtonSx={getDocStoreActionButtonSx(theme)}
-                                />
+                            {hasDocStores && (
+                                <ToggleButtonGroup
+                                    sx={{ borderRadius: 2, maxHeight: 40 }}
+                                    value={view}
+                                    color='primary'
+                                    exclusive
+                                    onChange={handleChange}
+                                >
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='card'
+                                        title='Card View'
+                                    >
+                                        <IconLayoutGrid />
+                                    </ToggleButton>
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='list'
+                                        title='List View'
+                                    >
+                                        <IconList />
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
                             )}
-                            {/* Pagination and Page Size Controls */}
-                            <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                        </React.Fragment>
-                    )}
-                </Stack>
+                            <StyledPermissionButton
+                                permissionId={'documentStores:create'}
+                                variant='contained'
+                                sx={{ borderRadius: 2, height: '100%' }}
+                                onClick={addNew}
+                                startIcon={<IconPlus />}
+                                id='btn_createVariable'
+                            >
+                                Add New
+                            </StyledPermissionButton>
+                        </ViewHeader>
+                        {!hasDocStores ? (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                        src={doc_store_empty}
+                                        alt='doc_store_empty'
+                                    />
+                                </Box>
+                                <div>No Document Stores Created Yet</div>
+                            </Stack>
+                        ) : (
+                            <React.Fragment>
+                                {!view || view === 'card' ? (
+                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                        {docStores?.filter(filterDocStores).map((data) => (
+                                            <Box key={data.id} sx={{ position: 'relative' }}>
+                                                <DocumentStoreCard
+                                                    images={images[data.id]}
+                                                    data={data}
+                                                    hasActions={canManageDocumentStore}
+                                                    onClick={() => goToDocumentStore(data.id)}
+                                                />
+                                                {canManageDocumentStore && (
+                                                    <IconButton
+                                                        size='small'
+                                                        aria-label='Document store actions'
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: 16,
+                                                            right: 10,
+                                                            zIndex: 2,
+                                                            width: 30,
+                                                            height: 30,
+                                                            ...getDocStoreActionButtonSx(theme),
+                                                            [theme.breakpoints.down('sm')]: {
+                                                                top: 8,
+                                                                right: 8,
+                                                                width: 28,
+                                                                height: 28
+                                                            }
+                                                        }}
+                                                        onClick={(event) => handleActionMenuOpen(event, data)}
+                                                    >
+                                                        <IconDotsVertical size={18} />
+                                                    </IconButton>
+                                                )}
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                ) : (
+                                    <DocumentStoreTable
+                                        isLoading={isLoading}
+                                        data={docStores?.filter(filterDocStores)}
+                                        images={images}
+                                        onRowClick={(row) => goToDocumentStore(row.id)}
+                                        showActions={canManageDocumentStore}
+                                        onActionMenuClick={handleActionMenuOpen}
+                                        actionButtonSx={getDocStoreActionButtonSx(theme)}
+                                    />
+                                )}
+                                {/* Pagination and Page Size Controls */}
+                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                            </React.Fragment>
+                        )}
+                    </Stack>
+                </Fade>
             )}
             {showDialog && (
                 <AddDocStoreDialog

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
 // material-ui
@@ -8,6 +8,7 @@ import {
     Box,
     Stack,
     Badge,
+    Fade,
     ToggleButton,
     InputLabel,
     FormControl,
@@ -75,6 +76,7 @@ const MenuProps = {
 
 const Marketplace = () => {
     const navigate = useNavigate()
+    const location = useLocation()
     const dispatch = useDispatch()
     useNotifier()
 
@@ -96,7 +98,7 @@ const Marketplace = () => {
     const [view, setView] = React.useState(localStorage.getItem('mpDisplayStyle') || 'card')
     const [search, setSearch] = useState('')
     const [badgeFilter, setBadgeFilter] = useState([])
-    const [typeFilter, setTypeFilter] = useState([])
+    const [typeFilter, setTypeFilter] = useState(location.state?.typeFilter || [])
     const [frameworkFilter, setFrameworkFilter] = useState([])
 
     const getAllCustomTemplatesApi = useApi(marketplacesApi.getAllCustomTemplates)
@@ -473,271 +475,289 @@ const Marketplace = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column'>
-                        <ViewHeader
-                            filters={
-                                <>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
-                                        }}
-                                    >
-                                        <InputLabel size='small' id='filter-badge-label'>
-                                            Tag
-                                        </InputLabel>
-                                        <Select
-                                            labelId='filter-badge-label'
-                                            id='filter-badge-checkbox'
-                                            size='small'
-                                            multiple
-                                            value={badgeFilter}
-                                            onChange={handleBadgeFilterChange}
-                                            input={<OutlinedInput label='Tag' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
-                                        >
-                                            {badges.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
-                                        }}
-                                    >
-                                        <InputLabel size='small' id='type-badge-label'>
-                                            Type
-                                        </InputLabel>
-                                        <Select
-                                            size='small'
-                                            labelId='type-badge-label'
-                                            id='type-badge-checkbox'
-                                            multiple
-                                            value={typeFilter}
-                                            onChange={handleTypeFilterChange}
-                                            input={<OutlinedInput label='Type' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
-                                        >
-                                            {types.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <FormControl
-                                        sx={{
-                                            borderRadius: 2,
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            justifyContent: 'end',
-                                            minWidth: 120
-                                        }}
-                                    >
-                                        <InputLabel size='small' id='type-fw-label'>
-                                            Framework
-                                        </InputLabel>
-                                        <Select
-                                            size='small'
-                                            labelId='type-fw-label'
-                                            id='type-fw-checkbox'
-                                            multiple
-                                            value={frameworkFilter}
-                                            onChange={handleFrameworkFilterChange}
-                                            input={<OutlinedInput label='Framework' />}
-                                            renderValue={(selected) => selected.join(', ')}
-                                            MenuProps={MenuProps}
-                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
-                                        >
-                                            {framework.map((name) => (
-                                                <MenuItem
-                                                    key={name}
-                                                    value={name}
-                                                    sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
-                                                >
-                                                    <Checkbox checked={frameworkFilter.indexOf(name) > -1} sx={{ p: 0 }} />
-                                                    <ListItemText primary={name} />
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                </>
-                            }
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Name/Description/Node'
-                            title='Marketplace'
-                            description='Explore and use pre-built templates'
-                        >
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                value={view}
-                                color='primary'
-                                exclusive
-                                onChange={handleViewChange}
-                            >
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
-                                >
-                                    <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
-                                    <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                        </ViewHeader>
-                        {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
-                            <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
-                                <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
-                                    <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
-                                    <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
-                                </Tabs>
-                                <Autocomplete
-                                    id='useCases'
-                                    multiple
-                                    size='small'
-                                    options={usecases}
-                                    value={selectedUsecases}
-                                    onChange={(_, newValue) => setSelectedUsecases(newValue)}
-                                    disableCloseOnSelect
-                                    getOptionLabel={(option) => option}
-                                    isOptionEqualToValue={(option, value) => option === value}
-                                    renderOption={(props, option, { selected }) => {
-                                        const isDisabled = eligibleUsecases.length > 0 && !eligibleUsecases.includes(option)
-
-                                        return (
-                                            <li {...props} style={{ pointerEvents: isDisabled ? 'none' : 'auto' }}>
-                                                <Checkbox checked={selected} color='success' disabled={isDisabled} />
-                                                <ListItemText primary={option} />
-                                            </li>
-                                        )
-                                    }}
-                                    renderInput={(params) => <TextField {...params} label='Usecases' />}
-                                    sx={{
-                                        width: 300
-                                    }}
-                                    limitTags={2}
-                                    renderTags={(value, getTagProps) => {
-                                        const totalTags = value.length
-                                        const limitTags = 2
-
-                                        return (
-                                            <>
-                                                {value.slice(0, limitTags).map((option, index) => (
-                                                    <Chip
-                                                        {...getTagProps({ index })}
-                                                        key={index}
-                                                        label={option}
-                                                        sx={{
-                                                            height: 24,
-                                                            '& .MuiSvgIcon-root': {
-                                                                fontSize: 16,
-                                                                background: 'None'
-                                                            }
-                                                        }}
-                                                    />
-                                                ))}
-
-                                                {totalTags > limitTags && (
-                                                    <Tooltip
-                                                        title={
-                                                            <ol style={{ paddingLeft: '20px' }}>
-                                                                {value.slice(limitTags).map((item, i) => (
-                                                                    <li key={i}>{item}</li>
-                                                                ))}
-                                                            </ol>
-                                                        }
-                                                        placement='top'
-                                                    >
-                                                        +{totalTags - limitTags}
-                                                    </Tooltip>
-                                                )}
-                                            </>
-                                        )
-                                    }}
-                                    slotProps={{
-                                        paper: {
-                                            sx: {
-                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
-                                            }
-                                        }
-                                    }}
-                                />
-                            </Stack>
-                        )}
-                        <Available permission='templates:marketplace'>
-                            <TabPanel value={activeTabValue} index={0}>
-                                {!view || view === 'card' ? (
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column'>
+                            <ViewHeader
+                                filters={
                                     <>
-                                        {isLoading ? (
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
-                                            </Box>
-                                        ) : (
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                {getAllTemplatesMarketplacesApi.data
-                                                    ?.filter(filterByBadge)
-                                                    .filter(filterByType)
-                                                    .filter(filterFlows)
-                                                    .filter(filterByFramework)
-                                                    .filter(filterByUsecases)
-                                                    .map((data, index) => (
-                                                        <Box key={index}>
-                                                            {data.badge && (
-                                                                <Badge
-                                                                    sx={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        '& .MuiBadge-badge': {
-                                                                            right: 20
-                                                                        }
-                                                                    }}
-                                                                    badgeContent={data.badge}
-                                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
-                                                                >
-                                                                    {(data.type === 'Chatflow' ||
+                                        <FormControl
+                                            sx={{
+                                                borderRadius: 2,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'end',
+                                                minWidth: 120
+                                            }}
+                                        >
+                                            <InputLabel size='small' id='filter-badge-label'>
+                                                Tag
+                                            </InputLabel>
+                                            <Select
+                                                labelId='filter-badge-label'
+                                                id='filter-badge-checkbox'
+                                                size='small'
+                                                multiple
+                                                value={badgeFilter}
+                                                onChange={handleBadgeFilterChange}
+                                                input={<OutlinedInput label='Tag' />}
+                                                renderValue={(selected) => selected.join(', ')}
+                                                MenuProps={MenuProps}
+                                                sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
+                                            >
+                                                {badges.map((name) => (
+                                                    <MenuItem
+                                                        key={name}
+                                                        value={name}
+                                                        sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
+                                                    >
+                                                        <Checkbox checked={badgeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
+                                                        <ListItemText primary={name} />
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                        <FormControl
+                                            sx={{
+                                                borderRadius: 2,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'end',
+                                                minWidth: 120
+                                            }}
+                                        >
+                                            <InputLabel size='small' id='type-badge-label'>
+                                                Type
+                                            </InputLabel>
+                                            <Select
+                                                size='small'
+                                                labelId='type-badge-label'
+                                                id='type-badge-checkbox'
+                                                multiple
+                                                value={typeFilter}
+                                                onChange={handleTypeFilterChange}
+                                                input={<OutlinedInput label='Type' />}
+                                                renderValue={(selected) => selected.join(', ')}
+                                                MenuProps={MenuProps}
+                                                sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
+                                            >
+                                                {types.map((name) => (
+                                                    <MenuItem
+                                                        key={name}
+                                                        value={name}
+                                                        sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
+                                                    >
+                                                        <Checkbox checked={typeFilter.indexOf(name) > -1} sx={{ p: 0 }} />
+                                                        <ListItemText primary={name} />
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                        <FormControl
+                                            sx={{
+                                                borderRadius: 2,
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                justifyContent: 'end',
+                                                minWidth: 120
+                                            }}
+                                        >
+                                            <InputLabel size='small' id='type-fw-label'>
+                                                Framework
+                                            </InputLabel>
+                                            <Select
+                                                size='small'
+                                                labelId='type-fw-label'
+                                                id='type-fw-checkbox'
+                                                multiple
+                                                value={frameworkFilter}
+                                                onChange={handleFrameworkFilterChange}
+                                                input={<OutlinedInput label='Framework' />}
+                                                renderValue={(selected) => selected.join(', ')}
+                                                MenuProps={MenuProps}
+                                                sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
+                                            >
+                                                {framework.map((name) => (
+                                                    <MenuItem
+                                                        key={name}
+                                                        value={name}
+                                                        sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1 }}
+                                                    >
+                                                        <Checkbox checked={frameworkFilter.indexOf(name) > -1} sx={{ p: 0 }} />
+                                                        <ListItemText primary={name} />
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    </>
+                                }
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                searchPlaceholder='Search Name/Description/Node'
+                                title='Marketplace'
+                                description='Explore and use pre-built templates'
+                            >
+                                <ToggleButtonGroup
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    value={view}
+                                    color='primary'
+                                    exclusive
+                                    onChange={handleViewChange}
+                                >
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='card'
+                                        title='Card View'
+                                    >
+                                        <IconLayoutGrid />
+                                    </ToggleButton>
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='list'
+                                        title='List View'
+                                    >
+                                        <IconList />
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                            </ViewHeader>
+                            {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
+                                <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
+                                    <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
+                                        <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
+                                        <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
+                                    </Tabs>
+                                    <Autocomplete
+                                        id='useCases'
+                                        multiple
+                                        size='small'
+                                        options={usecases}
+                                        value={selectedUsecases}
+                                        onChange={(_, newValue) => setSelectedUsecases(newValue)}
+                                        disableCloseOnSelect
+                                        getOptionLabel={(option) => option}
+                                        isOptionEqualToValue={(option, value) => option === value}
+                                        renderOption={(props, option, { selected }) => {
+                                            const isDisabled = eligibleUsecases.length > 0 && !eligibleUsecases.includes(option)
+
+                                            return (
+                                                <li {...props} style={{ pointerEvents: isDisabled ? 'none' : 'auto' }}>
+                                                    <Checkbox checked={selected} color='success' disabled={isDisabled} />
+                                                    <ListItemText primary={option} />
+                                                </li>
+                                            )
+                                        }}
+                                        renderInput={(params) => <TextField {...params} label='Usecases' />}
+                                        sx={{
+                                            width: 300
+                                        }}
+                                        limitTags={2}
+                                        renderTags={(value, getTagProps) => {
+                                            const totalTags = value.length
+                                            const limitTags = 2
+
+                                            return (
+                                                <>
+                                                    {value.slice(0, limitTags).map((option, index) => (
+                                                        <Chip
+                                                            {...getTagProps({ index })}
+                                                            key={index}
+                                                            label={option}
+                                                            sx={{
+                                                                height: 24,
+                                                                '& .MuiSvgIcon-root': {
+                                                                    fontSize: 16,
+                                                                    background: 'None'
+                                                                }
+                                                            }}
+                                                        />
+                                                    ))}
+
+                                                    {totalTags > limitTags && (
+                                                        <Tooltip
+                                                            title={
+                                                                <ol style={{ paddingLeft: '20px' }}>
+                                                                    {value.slice(limitTags).map((item, i) => (
+                                                                        <li key={i}>{item}</li>
+                                                                    ))}
+                                                                </ol>
+                                                            }
+                                                            placement='top'
+                                                        >
+                                                            +{totalTags - limitTags}
+                                                        </Tooltip>
+                                                    )}
+                                                </>
+                                            )
+                                        }}
+                                        slotProps={{
+                                            paper: {
+                                                sx: {
+                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </Stack>
+                            )}
+                            <Available permission='templates:marketplace'>
+                                <TabPanel value={activeTabValue} index={0}>
+                                    {!view || view === 'card' ? (
+                                        <>
+                                            {isLoading ? (
+                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                    <Skeleton variant='rounded' height={160} />
+                                                    <Skeleton variant='rounded' height={160} />
+                                                    <Skeleton variant='rounded' height={160} />
+                                                </Box>
+                                            ) : (
+                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                    {getAllTemplatesMarketplacesApi.data
+                                                        ?.filter(filterByBadge)
+                                                        .filter(filterByType)
+                                                        .filter(filterFlows)
+                                                        .filter(filterByFramework)
+                                                        .filter(filterByUsecases)
+                                                        .map((data, index) => (
+                                                            <Box key={index}>
+                                                                {data.badge && (
+                                                                    <Badge
+                                                                        sx={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            '& .MuiBadge-badge': {
+                                                                                right: 20
+                                                                            }
+                                                                        }}
+                                                                        badgeContent={data.badge}
+                                                                        color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                                    >
+                                                                        {(data.type === 'Chatflow' ||
+                                                                            data.type === 'Agentflow' ||
+                                                                            data.type === 'AgentflowV2' ||
+                                                                            data.type === 'Agent') && (
+                                                                            <ItemCard
+                                                                                onClick={() => goToCanvas(data)}
+                                                                                data={data}
+                                                                                images={images[data.id]}
+                                                                                icons={icons[data.id]}
+                                                                            />
+                                                                        )}
+                                                                        {data.type === 'Tool' && (
+                                                                            <ItemCard data={data} onClick={() => goToTool(data)} />
+                                                                        )}
+                                                                    </Badge>
+                                                                )}
+                                                                {!data.badge &&
+                                                                    (data.type === 'Chatflow' ||
                                                                         data.type === 'Agentflow' ||
                                                                         data.type === 'AgentflowV2' ||
                                                                         data.type === 'Agent') && (
@@ -748,133 +768,133 @@ const Marketplace = () => {
                                                                             icons={icons[data.id]}
                                                                         />
                                                                     )}
-                                                                    {data.type === 'Tool' && (
-                                                                        <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                                    )}
-                                                                </Badge>
-                                                            )}
-                                                            {!data.badge &&
-                                                                (data.type === 'Chatflow' ||
-                                                                    data.type === 'Agentflow' ||
-                                                                    data.type === 'AgentflowV2' ||
-                                                                    data.type === 'Agent') && (
-                                                                    <ItemCard
-                                                                        onClick={() => goToCanvas(data)}
-                                                                        data={data}
-                                                                        images={images[data.id]}
-                                                                        icons={icons[data.id]}
-                                                                    />
+                                                                {!data.badge && data.type === 'Tool' && (
+                                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
                                                                 )}
-                                                            {!data.badge && data.type === 'Tool' && (
-                                                                <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                            )}
-                                                        </Box>
-                                                    ))}
-                                            </Box>
-                                        )}
-                                    </>
-                                ) : (
-                                    <MarketplaceTable
-                                        data={getAllTemplatesMarketplacesApi.data}
-                                        filterFunction={filterFlows}
-                                        filterByType={filterByType}
-                                        filterByBadge={filterByBadge}
-                                        filterByFramework={filterByFramework}
-                                        filterByUsecases={filterByUsecases}
-                                        goToTool={goToTool}
-                                        goToCanvas={goToCanvas}
-                                        isLoading={isLoading}
-                                        setError={setError}
-                                    />
-                                )}
+                                                            </Box>
+                                                        ))}
+                                                </Box>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <MarketplaceTable
+                                            data={getAllTemplatesMarketplacesApi.data}
+                                            filterFunction={filterFlows}
+                                            filterByType={filterByType}
+                                            filterByBadge={filterByBadge}
+                                            filterByFramework={filterByFramework}
+                                            filterByUsecases={filterByUsecases}
+                                            goToTool={goToTool}
+                                            goToCanvas={goToCanvas}
+                                            isLoading={isLoading}
+                                            setError={setError}
+                                        />
+                                    )}
 
-                                {!isLoading &&
-                                    (!getAllTemplatesMarketplacesApi.data || getAllTemplatesMarketplacesApi.data.length === 0) && (
-                                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                            <Box sx={{ p: 2, height: 'auto' }}>
-                                                <img
-                                                    style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
-                                                    src={WorkflowEmptySVG}
-                                                    alt='WorkflowEmptySVG'
+                                    {!isLoading &&
+                                        (!getAllTemplatesMarketplacesApi.data || getAllTemplatesMarketplacesApi.data.length === 0) && (
+                                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                                <Box sx={{ p: 2, height: 'auto' }}>
+                                                    <img
+                                                        style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
+                                                        src={WorkflowEmptySVG}
+                                                        alt='WorkflowEmptySVG'
+                                                    />
+                                                </Box>
+                                                <div>No Marketplace Yet</div>
+                                            </Stack>
+                                        )}
+                                </TabPanel>
+                            </Available>
+                            <Available permission='templates:custom'>
+                                <TabPanel value={activeTabValue} index={1}>
+                                    {templateUsecases.length > 0 && (
+                                        <Stack direction='row' sx={{ gap: 2, my: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                                            {templateUsecases.map((usecase, index) => (
+                                                <FormControlLabel
+                                                    key={index}
+                                                    size='small'
+                                                    control={
+                                                        <Checkbox
+                                                            disabled={
+                                                                eligibleTemplateUsecases.length === 0
+                                                                    ? true
+                                                                    : !eligibleTemplateUsecases.includes(usecase)
+                                                            }
+                                                            color='success'
+                                                            checked={selectedTemplateUsecases.includes(usecase)}
+                                                            onChange={(event) => {
+                                                                setSelectedTemplateUsecases(
+                                                                    event.target.checked
+                                                                        ? [...selectedTemplateUsecases, usecase]
+                                                                        : selectedTemplateUsecases.filter((item) => item !== usecase)
+                                                                )
+                                                            }}
+                                                        />
+                                                    }
+                                                    label={usecase}
                                                 />
-                                            </Box>
-                                            <div>No Marketplace Yet</div>
+                                            ))}
                                         </Stack>
                                     )}
-                            </TabPanel>
-                        </Available>
-                        <Available permission='templates:custom'>
-                            <TabPanel value={activeTabValue} index={1}>
-                                {templateUsecases.length > 0 && (
-                                    <Stack direction='row' sx={{ gap: 2, my: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                                        {templateUsecases.map((usecase, index) => (
-                                            <FormControlLabel
-                                                key={index}
-                                                size='small'
-                                                control={
-                                                    <Checkbox
-                                                        disabled={
-                                                            eligibleTemplateUsecases.length === 0
-                                                                ? true
-                                                                : !eligibleTemplateUsecases.includes(usecase)
-                                                        }
-                                                        color='success'
-                                                        checked={selectedTemplateUsecases.includes(usecase)}
-                                                        onChange={(event) => {
-                                                            setSelectedTemplateUsecases(
-                                                                event.target.checked
-                                                                    ? [...selectedTemplateUsecases, usecase]
-                                                                    : selectedTemplateUsecases.filter((item) => item !== usecase)
-                                                            )
-                                                        }}
-                                                    />
-                                                }
-                                                label={usecase}
-                                            />
-                                        ))}
-                                    </Stack>
-                                )}
-                                {selectedTemplateUsecases.length > 0 && (
-                                    <Button
-                                        sx={{ width: 'max-content', mb: 2, borderRadius: '20px' }}
-                                        variant='outlined'
-                                        onClick={() => clearAllUsecases()}
-                                        startIcon={<IconX />}
-                                    >
-                                        Clear All
-                                    </Button>
-                                )}
-                                {!view || view === 'card' ? (
-                                    <>
-                                        {isLoading ? (
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
-                                                <Skeleton variant='rounded' height={160} />
-                                            </Box>
-                                        ) : (
-                                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                                {getAllCustomTemplatesApi.data
-                                                    ?.filter(filterByBadge)
-                                                    .filter(filterByType)
-                                                    .filter(filterFlows)
-                                                    .filter(filterByFramework)
-                                                    .filter(filterByUsecases)
-                                                    .map((data, index) => (
-                                                        <Box key={index}>
-                                                            {data.badge && (
-                                                                <Badge
-                                                                    sx={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        '& .MuiBadge-badge': {
-                                                                            right: 20
-                                                                        }
-                                                                    }}
-                                                                    badgeContent={data.badge}
-                                                                    color={data.badge === 'POPULAR' ? 'primary' : 'error'}
-                                                                >
-                                                                    {(data.type === 'Chatflow' ||
+                                    {selectedTemplateUsecases.length > 0 && (
+                                        <Button
+                                            sx={{ width: 'max-content', mb: 2, borderRadius: '20px' }}
+                                            variant='outlined'
+                                            onClick={() => clearAllUsecases()}
+                                            startIcon={<IconX />}
+                                        >
+                                            Clear All
+                                        </Button>
+                                    )}
+                                    {!view || view === 'card' ? (
+                                        <>
+                                            {isLoading ? (
+                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                    <Skeleton variant='rounded' height={160} />
+                                                    <Skeleton variant='rounded' height={160} />
+                                                    <Skeleton variant='rounded' height={160} />
+                                                </Box>
+                                            ) : (
+                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                    {getAllCustomTemplatesApi.data
+                                                        ?.filter(filterByBadge)
+                                                        .filter(filterByType)
+                                                        .filter(filterFlows)
+                                                        .filter(filterByFramework)
+                                                        .filter(filterByUsecases)
+                                                        .map((data, index) => (
+                                                            <Box key={index}>
+                                                                {data.badge && (
+                                                                    <Badge
+                                                                        sx={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            '& .MuiBadge-badge': {
+                                                                                right: 20
+                                                                            }
+                                                                        }}
+                                                                        badgeContent={data.badge}
+                                                                        color={data.badge === 'POPULAR' ? 'primary' : 'error'}
+                                                                    >
+                                                                        {(data.type === 'Chatflow' ||
+                                                                            data.type === 'Agentflow' ||
+                                                                            data.type === 'AgentflowV2' ||
+                                                                            data.type === 'Agent') && (
+                                                                            <ItemCard
+                                                                                onClick={() => goToCanvas(data)}
+                                                                                data={data}
+                                                                                images={templateImages[data.id]}
+                                                                                icons={templateIcons[data.id]}
+                                                                            />
+                                                                        )}
+                                                                        {data.type === 'Tool' && (
+                                                                            <ItemCard data={data} onClick={() => goToTool(data)} />
+                                                                        )}
+                                                                    </Badge>
+                                                                )}
+                                                                {!data.badge &&
+                                                                    (data.type === 'Chatflow' ||
                                                                         data.type === 'Agentflow' ||
                                                                         data.type === 'AgentflowV2' ||
                                                                         data.type === 'Agent') && (
@@ -885,62 +905,46 @@ const Marketplace = () => {
                                                                             icons={templateIcons[data.id]}
                                                                         />
                                                                     )}
-                                                                    {data.type === 'Tool' && (
-                                                                        <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                                    )}
-                                                                </Badge>
-                                                            )}
-                                                            {!data.badge &&
-                                                                (data.type === 'Chatflow' ||
-                                                                    data.type === 'Agentflow' ||
-                                                                    data.type === 'AgentflowV2' ||
-                                                                    data.type === 'Agent') && (
-                                                                    <ItemCard
-                                                                        onClick={() => goToCanvas(data)}
-                                                                        data={data}
-                                                                        images={templateImages[data.id]}
-                                                                        icons={templateIcons[data.id]}
-                                                                    />
+                                                                {!data.badge && data.type === 'Tool' && (
+                                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
                                                                 )}
-                                                            {!data.badge && data.type === 'Tool' && (
-                                                                <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                            )}
-                                                        </Box>
-                                                    ))}
+                                                            </Box>
+                                                        ))}
+                                                </Box>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <MarketplaceTable
+                                            data={getAllCustomTemplatesApi.data}
+                                            filterFunction={filterFlows}
+                                            filterByType={filterByType}
+                                            filterByBadge={filterByBadge}
+                                            filterByFramework={filterByFramework}
+                                            filterByUsecases={filterByUsecases}
+                                            goToTool={goToTool}
+                                            goToCanvas={goToCanvas}
+                                            isLoading={isLoading}
+                                            setError={setError}
+                                            onDelete={hasPermission('templates:custom-delete') ? onDeleteCustomTemplate : null}
+                                            onShare={hasPermission('templates:custom-share') ? share : null}
+                                        />
+                                    )}
+                                    {!isLoading && (!getAllCustomTemplatesApi.data || getAllCustomTemplatesApi.data.length === 0) && (
+                                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                            <Box sx={{ p: 2, height: 'auto' }}>
+                                                <img
+                                                    style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
+                                                    src={WorkflowEmptySVG}
+                                                    alt='WorkflowEmptySVG'
+                                                />
                                             </Box>
-                                        )}
-                                    </>
-                                ) : (
-                                    <MarketplaceTable
-                                        data={getAllCustomTemplatesApi.data}
-                                        filterFunction={filterFlows}
-                                        filterByType={filterByType}
-                                        filterByBadge={filterByBadge}
-                                        filterByFramework={filterByFramework}
-                                        filterByUsecases={filterByUsecases}
-                                        goToTool={goToTool}
-                                        goToCanvas={goToCanvas}
-                                        isLoading={isLoading}
-                                        setError={setError}
-                                        onDelete={hasPermission('templates:custom-delete') ? onDeleteCustomTemplate : null}
-                                        onShare={hasPermission('templates:custom-share') ? share : null}
-                                    />
-                                )}
-                                {!isLoading && (!getAllCustomTemplatesApi.data || getAllCustomTemplatesApi.data.length === 0) && (
-                                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                        <Box sx={{ p: 2, height: 'auto' }}>
-                                            <img
-                                                style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
-                                                src={WorkflowEmptySVG}
-                                                alt='WorkflowEmptySVG'
-                                            />
-                                        </Box>
-                                        <div>No Saved Custom Templates</div>
-                                    </Stack>
-                                )}
-                            </TabPanel>
-                        </Available>
-                    </Stack>
+                                            <div>No Saved Custom Templates</div>
+                                        </Stack>
+                                    )}
+                                </TabPanel>
+                            </Available>
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <ToolDialog

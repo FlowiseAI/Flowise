@@ -11,7 +11,7 @@ import { markdown } from '@codemirror/lang-markdown'
 import { sublime } from '@uiw/codemirror-theme-sublime'
 
 // material-ui
-import { Box, Skeleton, Stack, Select, MenuItem, ListItemButton } from '@mui/material'
+import { Box, Fade, ListItemButton, MenuItem, Select, Skeleton, Stack } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // ui
@@ -206,107 +206,109 @@ const Logs = () => {
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
-                <Stack flexDirection='column' sx={{ gap: 2 }}>
-                    <ViewHeader title='Logs' />
-                    {isLoading ? (
-                        <Box display='flex' flexDirection='column' gap={gridSpacing}>
-                            <Skeleton width='25%' height={32} />
-                            <Box display='flex' flexDirection='column' gap={2}>
-                                <Skeleton width='20%' />
-                                <Skeleton variant='rounded' height={56} />
+                <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                    <Stack flexDirection='column' sx={{ gap: 2 }}>
+                        <ViewHeader title='Logs' />
+                        {isLoading ? (
+                            <Box display='flex' flexDirection='column' gap={gridSpacing}>
+                                <Skeleton width='25%' height={32} />
+                                <Box display='flex' flexDirection='column' gap={2}>
+                                    <Skeleton width='20%' />
+                                    <Skeleton variant='rounded' height={56} />
+                                </Box>
+                                <Box display='flex' flexDirection='column' gap={2}>
+                                    <Skeleton width='20%' />
+                                    <Skeleton variant='rounded' height={56} />
+                                </Box>
+                                <Box display='flex' flexDirection='column' gap={2}>
+                                    <Skeleton width='20%' />
+                                    <Skeleton variant='rounded' height={56} />
+                                </Box>
                             </Box>
-                            <Box display='flex' flexDirection='column' gap={2}>
-                                <Skeleton width='20%' />
-                                <Skeleton variant='rounded' height={56} />
-                            </Box>
-                            <Box display='flex' flexDirection='column' gap={2}>
-                                <Skeleton width='20%' />
-                                <Skeleton variant='rounded' height={56} />
-                            </Box>
-                        </Box>
-                    ) : (
-                        <>
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
-                                <Select
-                                    size='small'
-                                    sx={{ minWidth: '200px' }}
-                                    value={selectedTimeSearch}
-                                    onChange={handleTimeSelectionChange}
-                                >
-                                    {searchTimeRanges.map((range) => (
-                                        <MenuItem key={range} value={range}>
-                                            {range}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                                {selectedTimeSearch === 'Custom' && (
-                                    <>
-                                        <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
-                                            <b>From</b>
-                                            <DatePicker
-                                                selected={startDate}
-                                                onChange={(date) => onStartDateSelected(date)}
-                                                selectsStart
-                                                startDate={startDate}
-                                                endDate={endDate}
-                                                maxDate={endDate}
-                                                showTimeSelect
-                                                timeFormat='HH:mm'
-                                                timeIntervals={60}
-                                                dateFormat='yyyy MMMM d, h aa'
-                                                customInput={<DatePickerCustomInput />}
-                                            />
-                                        </Stack>
-                                        <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
-                                            <b>To</b>
-                                            <DatePicker
-                                                selected={endDate}
-                                                onChange={(date) => onEndDateSelected(date)}
-                                                selectsEnd
-                                                showTimeSelect
-                                                timeFormat='HH:mm'
-                                                timeIntervals={60}
-                                                startDate={startDate}
-                                                endDate={endDate}
-                                                minDate={startDate}
-                                                maxDate={new Date()}
-                                                dateFormat='yyyy MMMM d, h aa'
-                                                customInput={<DatePickerCustomInput />}
-                                            />
-                                        </Stack>
-                                    </>
-                                )}
-                            </Stack>
-                            {logData ? (
-                                <CodeMirror
-                                    value={logData}
-                                    height={'calc(100vh - 220px)'}
-                                    theme={sublime}
-                                    extensions={[markdown(), EditorView.lineWrapping, customStyle]}
-                                    readOnly={true}
-                                    basicSetup={{
-                                        searchKeymap: true,
-                                        lineNumbers: false,
-                                        foldGutter: false,
-                                        autocompletion: false,
-                                        highlightActiveLine: false
-                                    }}
-                                />
-                            ) : (
-                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                    <Box sx={{ p: 2, height: 'auto' }}>
-                                        <img
-                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                            src={LogsEmptySVG}
-                                            alt='LogsEmptySVG'
-                                        />
-                                    </Box>
-                                    <div>No Logs Yet</div>
+                        ) : (
+                            <>
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
+                                    <Select
+                                        size='small'
+                                        sx={{ minWidth: '200px' }}
+                                        value={selectedTimeSearch}
+                                        onChange={handleTimeSelectionChange}
+                                    >
+                                        {searchTimeRanges.map((range) => (
+                                            <MenuItem key={range} value={range}>
+                                                {range}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    {selectedTimeSearch === 'Custom' && (
+                                        <>
+                                            <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
+                                                <b>From</b>
+                                                <DatePicker
+                                                    selected={startDate}
+                                                    onChange={(date) => onStartDateSelected(date)}
+                                                    selectsStart
+                                                    startDate={startDate}
+                                                    endDate={endDate}
+                                                    maxDate={endDate}
+                                                    showTimeSelect
+                                                    timeFormat='HH:mm'
+                                                    timeIntervals={60}
+                                                    dateFormat='yyyy MMMM d, h aa'
+                                                    customInput={<DatePickerCustomInput />}
+                                                />
+                                            </Stack>
+                                            <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
+                                                <b>To</b>
+                                                <DatePicker
+                                                    selected={endDate}
+                                                    onChange={(date) => onEndDateSelected(date)}
+                                                    selectsEnd
+                                                    showTimeSelect
+                                                    timeFormat='HH:mm'
+                                                    timeIntervals={60}
+                                                    startDate={startDate}
+                                                    endDate={endDate}
+                                                    minDate={startDate}
+                                                    maxDate={new Date()}
+                                                    dateFormat='yyyy MMMM d, h aa'
+                                                    customInput={<DatePickerCustomInput />}
+                                                />
+                                            </Stack>
+                                        </>
+                                    )}
                                 </Stack>
-                            )}
-                        </>
-                    )}
-                </Stack>
+                                {logData ? (
+                                    <CodeMirror
+                                        value={logData}
+                                        height={'calc(100vh - 220px)'}
+                                        theme={sublime}
+                                        extensions={[markdown(), EditorView.lineWrapping, customStyle]}
+                                        readOnly={true}
+                                        basicSetup={{
+                                            searchKeymap: true,
+                                            lineNumbers: false,
+                                            foldGutter: false,
+                                            autocompletion: false,
+                                            highlightActiveLine: false
+                                        }}
+                                    />
+                                ) : (
+                                    <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                        <Box sx={{ p: 2, height: 'auto' }}>
+                                            <img
+                                                style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                                src={LogsEmptySVG}
+                                                alt='LogsEmptySVG'
+                                            />
+                                        </Box>
+                                        <div>No Logs Yet</div>
+                                    </Stack>
+                                )}
+                            </>
+                        )}
+                    </Stack>
+                </Fade>
             )}
         </MainCard>
     )

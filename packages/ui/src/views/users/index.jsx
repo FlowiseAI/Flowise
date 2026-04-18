@@ -7,6 +7,7 @@ import * as PropTypes from 'prop-types'
 import {
     Button,
     Box,
+    Fade,
     Skeleton,
     Stack,
     Table,
@@ -399,119 +400,126 @@ const Users = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Users' title='User Management'>
-                            <StyledPermissionButton
-                                permissionId={'workspace:add-user,users:manage'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                                id='btn_createUser'
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                searchPlaceholder='Search Users'
+                                title='User Management'
                             >
-                                Invite User
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {!isLoading && users.length === 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={users_emptySVG}
-                                        alt='users_emptySVG'
-                                    />
-                                </Box>
-                                <div>No Users Yet</div>
-                            </Stack>
-                        ) : (
-                            <>
-                                <Stack flexDirection='row'>
-                                    <Box sx={{ py: 2, height: 'auto', width: '100%' }}>
-                                        <TableContainer
-                                            style={{ display: 'flex', flexDirection: 'row' }}
-                                            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                            component={Paper}
-                                        >
-                                            <Table sx={{ minWidth: 650 }} aria-label='users table'>
-                                                <TableHead
-                                                    sx={{
-                                                        backgroundColor: customization.isDarkMode
-                                                            ? theme.palette.common.black
-                                                            : theme.palette.grey[100],
-                                                        height: 56
-                                                    }}
-                                                >
-                                                    <TableRow>
-                                                        <StyledTableCell>&nbsp;</StyledTableCell>
-                                                        <StyledTableCell>Email/Name</StyledTableCell>
-                                                        <StyledTableCell>Assigned Roles</StyledTableCell>
-                                                        <StyledTableCell>Status</StyledTableCell>
-                                                        <StyledTableCell>Last Login</StyledTableCell>
-                                                        <StyledTableCell> </StyledTableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {isLoading ? (
-                                                        <>
-                                                            <StyledTableRow>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                            </StyledTableRow>
-                                                            <StyledTableRow>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <Skeleton variant='text' />
-                                                                </StyledTableCell>
-                                                            </StyledTableRow>
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            {users.filter(filterUsers).map((item, index) => (
-                                                                <ShowUserRow
-                                                                    key={index}
-                                                                    row={item}
-                                                                    onDeleteClick={deleteUser}
-                                                                    onEditClick={edit}
-                                                                    deletingUserId={deletingUserId}
-                                                                />
-                                                            ))}
-                                                        </>
-                                                    )}
-                                                </TableBody>
-                                            </Table>
-                                        </TableContainer>
+                                <StyledPermissionButton
+                                    permissionId={'workspace:add-user,users:manage'}
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                    id='btn_createUser'
+                                >
+                                    Invite User
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {!isLoading && users.length === 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={users_emptySVG}
+                                            alt='users_emptySVG'
+                                        />
                                     </Box>
+                                    <div>No Users Yet</div>
                                 </Stack>
-                            </>
-                        )}
-                    </Stack>
+                            ) : (
+                                <>
+                                    <Stack flexDirection='row'>
+                                        <Box sx={{ py: 2, height: 'auto', width: '100%' }}>
+                                            <TableContainer
+                                                style={{ display: 'flex', flexDirection: 'row' }}
+                                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                                component={Paper}
+                                            >
+                                                <Table sx={{ minWidth: 650 }} aria-label='users table'>
+                                                    <TableHead
+                                                        sx={{
+                                                            backgroundColor: customization.isDarkMode
+                                                                ? theme.palette.common.black
+                                                                : theme.palette.grey[100],
+                                                            height: 56
+                                                        }}
+                                                    >
+                                                        <TableRow>
+                                                            <StyledTableCell>&nbsp;</StyledTableCell>
+                                                            <StyledTableCell>Email/Name</StyledTableCell>
+                                                            <StyledTableCell>Assigned Roles</StyledTableCell>
+                                                            <StyledTableCell>Status</StyledTableCell>
+                                                            <StyledTableCell>Last Login</StyledTableCell>
+                                                            <StyledTableCell> </StyledTableCell>
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {isLoading ? (
+                                                            <>
+                                                                <StyledTableRow>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                </StyledTableRow>
+                                                                <StyledTableRow>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <Skeleton variant='text' />
+                                                                    </StyledTableCell>
+                                                                </StyledTableRow>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                {users.filter(filterUsers).map((item, index) => (
+                                                                    <ShowUserRow
+                                                                        key={index}
+                                                                        row={item}
+                                                                        onDeleteClick={deleteUser}
+                                                                        onEditClick={edit}
+                                                                        deletingUserId={deletingUserId}
+                                                                    />
+                                                                ))}
+                                                            </>
+                                                        )}
+                                                    </TableBody>
+                                                </Table>
+                                            </TableContainer>
+                                        </Box>
+                                    </Stack>
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             {showInviteDialog && (

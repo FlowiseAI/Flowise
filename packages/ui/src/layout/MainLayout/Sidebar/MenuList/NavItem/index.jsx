@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Typography, useMediaQuery } from '@mui/material'
+import { Avatar, Chip, ListItemButton, ListItemIcon, ListItemText, Tooltip, Typography, useMediaQuery } from '@mui/material'
 
 // project imports
 import { MENU_OPEN, SET_MENU } from '@/store/actions'
@@ -96,42 +96,61 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [navType, location.pathname])
 
-    return (
+    const drawerOpened = customization.opened
+    const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
+    const collapsed = matchUpMd && !drawerOpened
+
+    const button = (
         <ListItemButton
             {...listItemProps}
             disabled={item.disabled}
             sx={{
                 borderRadius: `${customization.borderRadius}px`,
-                alignItems: 'flex-start',
+                alignItems: collapsed ? 'center' : 'flex-start',
                 backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
                 py: level > 1 ? 1 : 1.25,
-                pl: `${level * 24}px`
+                ...(collapsed ? { pl: 0, pr: 0, justifyContent: 'center' } : { pl: `${level * 24}px`, justifyContent: 'flex-start' })
             }}
             selected={customization.isOpen.findIndex((id) => id === item.id) > -1}
             onClick={() => itemHandler(item.id)}
         >
             {item.id === 'loadChatflow' && <input type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />}
-            <ListItemIcon sx={{ my: 'auto', minWidth: !item?.icon ? 18 : 36 }}>{itemIcon}</ListItemIcon>
-            <ListItemText
-                primary={
-                    <Typography
-                        variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'}
-                        color='inherit'
-                        sx={{ my: 0.5 }}
-                    >
-                        {item.title}
-                    </Typography>
-                }
-                secondary={
-                    item.caption && (
-                        <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption, mt: -0.6 }} display='block' gutterBottom>
-                            {item.caption}
+            <ListItemIcon
+                sx={{
+                    my: 'auto',
+                    minWidth: collapsed ? 0 : !item?.icon ? 18 : 36,
+                    justifyContent: 'center'
+                }}
+            >
+                {itemIcon}
+            </ListItemIcon>
+            {!collapsed && (
+                <ListItemText
+                    primary={
+                        <Typography
+                            variant={customization.isOpen.findIndex((id) => id === item.id) > -1 ? 'h5' : 'body1'}
+                            color='inherit'
+                            sx={{ my: 0.5 }}
+                        >
+                            {item.title}
                         </Typography>
-                    )
-                }
-                sx={{ my: 'auto' }}
-            />
-            {item.chip && (
+                    }
+                    secondary={
+                        item.caption && (
+                            <Typography
+                                variant='caption'
+                                sx={{ ...theme.typography.subMenuCaption, mt: -0.6 }}
+                                display='block'
+                                gutterBottom
+                            >
+                                {item.caption}
+                            </Typography>
+                        )
+                    }
+                    sx={{ my: 'auto' }}
+                />
+            )}
+            {!collapsed && item.chip && (
                 <Chip
                     color={item.chip.color}
                     variant={item.chip.variant}
@@ -140,7 +159,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                     avatar={item.chip.avatar && <Avatar>{item.chip.avatar}</Avatar>}
                 />
             )}
-            {item.isBeta && (
+            {!collapsed && item.isBeta && (
                 <Chip
                     sx={{
                         my: 'auto',
@@ -154,6 +173,14 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                 />
             )}
         </ListItemButton>
+    )
+
+    return collapsed ? (
+        <Tooltip title={item.title} placement='right'>
+            {button}
+        </Tooltip>
+    ) : (
+        button
     )
 }
 

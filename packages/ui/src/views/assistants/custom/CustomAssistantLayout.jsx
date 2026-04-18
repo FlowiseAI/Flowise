@@ -5,17 +5,18 @@ import moment from 'moment'
 // material-ui
 import {
     Box,
-    Stack,
+    Fade,
+    Paper,
     Skeleton,
-    ToggleButton,
-    ToggleButtonGroup,
+    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography
 } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
@@ -137,154 +138,156 @@ const CustomAssistantLayout = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Agents'
-                            title='Agents'
-                            description='Build single-agent system for chat'
-                        >
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
-                                value={view}
-                                color='primary'
-                                disabled={totalAgents === 0}
-                                exclusive
-                                onChange={handleChange}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                searchPlaceholder='Search Agents'
+                                title='Agents'
+                                description='Build single-agent system for chat'
                             >
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
+                                <ToggleButtonGroup
+                                    sx={{ borderRadius: 2, maxHeight: 40 }}
+                                    value={view}
+                                    color='primary'
+                                    disabled={totalAgents === 0}
+                                    exclusive
+                                    onChange={handleChange}
                                 >
-                                    <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
-                                    <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                            <StyledPermissionButton
-                                permissionId={'assistants:create'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: 40 }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                            >
-                                Add New
-                            </StyledPermissionButton>
-                        </ViewHeader>
-
-                        {isLoading && (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                            </Box>
-                        )}
-
-                        {!isLoading && totalAgents > 0 && (
-                            <>
-                                {!view || view === 'card' ? (
-                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                        {getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => (
-                                            <ItemCard
-                                                data={{
-                                                    name: JSON.parse(data.details)?.name,
-                                                    description: JSON.parse(data.details)?.instruction
-                                                }}
-                                                images={getImages(JSON.parse(data.details))}
-                                                key={index}
-                                                onClick={() => navigate('/agents/' + data.id)}
-                                            />
-                                        ))}
-                                    </Box>
-                                ) : (
-                                    <TableContainer
-                                        component={Paper}
-                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='card'
+                                        title='Card View'
                                     >
-                                        <Table sx={{ minWidth: 650 }}>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <StyledTableCell>Name</StyledTableCell>
-                                                    <StyledTableCell>Model</StyledTableCell>
-                                                    <StyledTableCell>Last Updated</StyledTableCell>
-                                                    <StyledTableCell sx={{ textAlign: 'right' }}>Actions</StyledTableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => {
-                                                    const details = JSON.parse(data.details)
-                                                    return (
-                                                        <StyledTableRow
-                                                            key={index}
-                                                            hover
-                                                            sx={{ cursor: 'pointer' }}
-                                                            onClick={() => navigate('/agents/' + data.id)}
-                                                        >
-                                                            <StyledTableCell>
-                                                                <Stack direction='row' alignItems='center' spacing={1.5}>
-                                                                    {details.chatModel?.name && (
-                                                                        <Box
-                                                                            component='img'
-                                                                            src={`${baseURL}/api/v1/node-icon/${details.chatModel.name}`}
-                                                                            sx={{ width: 28, height: 28, borderRadius: '50%' }}
-                                                                        />
-                                                                    )}
-                                                                    <Typography variant='subtitle1'>{details.name}</Typography>
-                                                                </Stack>
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                <Typography variant='body2' color='text.secondary'>
-                                                                    {details.chatModel?.label || details.chatModel?.name || '-'}
-                                                                </Typography>
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                <Typography variant='body2' color='text.secondary'>
-                                                                    {data.updatedDate
-                                                                        ? moment(data.updatedDate).format('MMM D, YYYY')
-                                                                        : '-'}
-                                                                </Typography>
-                                                            </StyledTableCell>
-                                                            <StyledTableCell sx={{ textAlign: 'right' }} />
-                                                        </StyledTableRow>
-                                                    )
-                                                })}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                )}
-                            </>
-                        )}
+                                        <IconLayoutGrid />
+                                    </ToggleButton>
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='list'
+                                        title='List View'
+                                    >
+                                        <IconList />
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                                <StyledPermissionButton
+                                    permissionId={'assistants:create'}
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: 40 }}
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                >
+                                    Add New
+                                </StyledPermissionButton>
+                            </ViewHeader>
 
-                        {!isLoading && totalAgents === 0 && (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={AssistantEmptySVG}
-                                        alt='AssistantEmptySVG'
-                                    />
+                            {isLoading && (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
                                 </Box>
-                                <div>No Agents Added Yet</div>
-                            </Stack>
-                        )}
-                    </Stack>
+                            )}
+
+                            {!isLoading && totalAgents > 0 && (
+                                <>
+                                    {!view || view === 'card' ? (
+                                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                            {getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => (
+                                                <ItemCard
+                                                    data={{
+                                                        name: JSON.parse(data.details)?.name,
+                                                        description: JSON.parse(data.details)?.instruction
+                                                    }}
+                                                    images={getImages(JSON.parse(data.details))}
+                                                    key={index}
+                                                    onClick={() => navigate('/agents/' + data.id)}
+                                                />
+                                            ))}
+                                        </Box>
+                                    ) : (
+                                        <TableContainer
+                                            component={Paper}
+                                            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                        >
+                                            <Table sx={{ minWidth: 650 }}>
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <StyledTableCell>Name</StyledTableCell>
+                                                        <StyledTableCell>Model</StyledTableCell>
+                                                        <StyledTableCell>Last Updated</StyledTableCell>
+                                                        <StyledTableCell sx={{ textAlign: 'right' }}>Actions</StyledTableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {getAllAssistantsApi.data?.filter(filterAssistants).map((data, index) => {
+                                                        const details = JSON.parse(data.details)
+                                                        return (
+                                                            <StyledTableRow
+                                                                key={index}
+                                                                hover
+                                                                sx={{ cursor: 'pointer' }}
+                                                                onClick={() => navigate('/agents/' + data.id)}
+                                                            >
+                                                                <StyledTableCell>
+                                                                    <Stack direction='row' alignItems='center' spacing={1.5}>
+                                                                        {details.chatModel?.name && (
+                                                                            <Box
+                                                                                component='img'
+                                                                                src={`${baseURL}/api/v1/node-icon/${details.chatModel.name}`}
+                                                                                sx={{ width: 28, height: 28, borderRadius: '50%' }}
+                                                                            />
+                                                                        )}
+                                                                        <Typography variant='subtitle1'>{details.name}</Typography>
+                                                                    </Stack>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    <Typography variant='body2' color='text.secondary'>
+                                                                        {details.chatModel?.label || details.chatModel?.name || '-'}
+                                                                    </Typography>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    <Typography variant='body2' color='text.secondary'>
+                                                                        {data.updatedDate
+                                                                            ? moment(data.updatedDate).format('MMM D, YYYY')
+                                                                            : '-'}
+                                                                    </Typography>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell sx={{ textAlign: 'right' }} />
+                                                            </StyledTableRow>
+                                                        )
+                                                    })}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    )}
+                                </>
+                            )}
+
+                            {!isLoading && totalAgents === 0 && (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={AssistantEmptySVG}
+                                            alt='AssistantEmptySVG'
+                                        />
+                                    </Box>
+                                    <div>No Agents Added Yet</div>
+                                </Stack>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <AddCustomAssistantDialog

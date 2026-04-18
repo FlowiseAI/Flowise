@@ -16,10 +16,13 @@ import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { AnalyticHandler } from '../../../src/handler'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { ILLMMessage, IResponseMetadata } from '../Interface.Agentflow'
-import { Tool } from '@langchain/core/tools'
+import { DynamicStructuredTool, Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
+import { z } from 'zod'
+import { PlanningTool, Todo } from './planning/PlanningTool'
+import { buildSystemPrompt } from './context/SystemPromptBuilder'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -96,7 +99,7 @@ const sanitizeToolName = (name: string): string => {
     return sanitized.slice(0, 64)
 }
 
-class Agent_Agentflow implements INode {
+class SmartAgent_Agentflow implements INode {
     label: string
     name: string
     version: number
@@ -111,13 +114,13 @@ class Agent_Agentflow implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Agent'
-        this.name = 'agentAgentflow'
-        this.version = 3.2
-        this.type = 'Agent'
+        this.label = 'Smart Agent'
+        this.name = 'smartAgentAgentflow'
+        this.version = 1.0
+        this.type = 'Smart Agent'
         this.category = 'Agent Flows'
-        this.description = 'Dynamically choose and utilize tools during runtime, enabling multi-step reasoning'
-        this.color = '#4DD0E1'
+        this.description = 'Built in harness for building smart agents'
+        this.color = '#AB47BC'
         this.baseClasses = [this.type]
         this.inputs = [
             {
@@ -999,6 +1002,39 @@ class Agent_Agentflow implements INode {
                 }
             }
 
+            // Create PlanningTool (write_todos)
+            const planner = new PlanningTool({
+                onUpdate: (todos) => {
+                    const streamer = options.sseStreamer as IServerSideEventStreamer | undefined
+                    // TODO: update UI to consume this event
+                    streamer?.streamCustomEvent(chatId, 'builtin_todos', todos)
+                }
+            })
+
+            const writeTodosTool = new DynamicStructuredTool({
+                name: 'write_todos',
+                description: planner.toolDefinition.description,
+                schema: z.object({
+                    todos: z
+                        .array(
+                            z.object({
+                                content: z.string().describe('Content of the todo item'),
+                                status: z.enum(['pending', 'in_progress', 'completed']).describe('Status of the todo')
+                            })
+                        )
+                        .describe('List of todo items to update')
+                }),
+                func: async () => '' // Never called — intercepted in handleToolCalls
+            })
+
+            toolsInstance.push(writeTodosTool as unknown as Tool)
+            availableTools.push({
+                name: 'write_todos',
+                description: planner.toolDefinition.description,
+                schema: planner.toolDefinition.parameters,
+                toolNode: { label: 'Planning', name: 'write_todos' }
+            })
+
             if (llmNodeInstance && toolsInstance.length > 0) {
                 if (llmNodeInstance.bindTools === undefined) {
                     throw new Error(`Agent needs to have a function calling capable models.`)
@@ -1023,17 +1059,30 @@ class Agent_Agentflow implements INode {
                 }
             }
 
+            const userSystemParts: string[] = []
             for (const msg of agentMessages) {
                 const role = msg.role
                 const content = msg.content
                 if (role && content) {
                     if (role === 'system') {
-                        messages.unshift({ role, content })
+                        userSystemParts.push(content)
                     } else {
                         messages.push({ role, content })
                     }
                 }
             }
+
+            // Build unified system prompt in fixed assembly order
+            const systemPrompt = buildSystemPrompt({
+                todoListPrompt: planner.getSystemPrompt(),
+                skillsEnabled: false, // TODO: wire to node input
+                filesystemEnabled: false, // TODO: wire to node input
+                subagentEnabled: false, // TODO: wire to node input
+                asyncSubagentEnabled: false, // TODO: wire to node input
+                userSystemPrompt: userSystemParts.join('\n\n') || undefined
+            })
+
+            messages.unshift({ role: 'system', content: systemPrompt })
 
             // Handle memory management if enabled
             if (enableMemory) {
@@ -1138,7 +1187,8 @@ class Agent_Agentflow implements INode {
                     isStreamable,
                     isLastNode,
                     iterationContext,
-                    isStructuredOutput
+                    isStructuredOutput,
+                    planningTool: planner
                 })
 
                 response = result.response
@@ -1214,7 +1264,8 @@ class Agent_Agentflow implements INode {
                     iterationContext,
                     isStructuredOutput,
                     accumulatedReasonContent: reasonContent,
-                    accumulatedReasoningDuration: thinkingDuration
+                    accumulatedReasoningDuration: thinkingDuration,
+                    planningTool: planner
                 })
 
                 response = result.response
@@ -2157,7 +2208,8 @@ class Agent_Agentflow implements INode {
         iterationContext,
         isStructuredOutput = false,
         accumulatedReasonContent: initialAccumulatedReasonContent,
-        accumulatedReasoningDuration: initialAccumulatedReasoningDuration
+        accumulatedReasoningDuration: initialAccumulatedReasoningDuration,
+        planningTool
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -2174,6 +2226,7 @@ class Agent_Agentflow implements INode {
         isStructuredOutput?: boolean
         accumulatedReasonContent?: string
         accumulatedReasoningDuration?: number
+        planningTool?: PlanningTool
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -2240,6 +2293,14 @@ class Agent_Agentflow implements INode {
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
             const toolCall = response.tool_calls[i]
+
+            // Intercept write_todos — handled by PlanningTool, not the LangChain tool
+            if (toolCall.name === 'write_todos' && planningTool) {
+                const toolOutput = planningTool.handleToolCall(toolCall.args as { todos: Todo[] })
+                messages.push({ role: 'tool', content: toolOutput, tool_call_id: toolCall.id, name: toolCall.name })
+                usedTools.push({ tool: 'write_todos', toolInput: toolCall.args, toolOutput })
+                continue
+            }
 
             const selectedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
             if (selectedTool) {
@@ -2468,7 +2529,8 @@ class Agent_Agentflow implements INode {
                 iterationContext,
                 isStructuredOutput,
                 accumulatedReasonContent,
-                accumulatedReasoningDuration
+                accumulatedReasoningDuration,
+                planningTool
             })
 
             // Merge results from recursive tool calls
@@ -2515,7 +2577,8 @@ class Agent_Agentflow implements INode {
         isStreamable,
         isLastNode,
         iterationContext,
-        isStructuredOutput = false
+        isStructuredOutput = false,
+        planningTool
     }: {
         humanInput: IHumanInput
         humanInputAction: Record<string, any> | undefined
@@ -2531,6 +2594,7 @@ class Agent_Agentflow implements INode {
         isLastNode: boolean
         iterationContext: ICommonObject
         isStructuredOutput?: boolean
+        planningTool?: PlanningTool
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -2647,98 +2711,111 @@ class Agent_Agentflow implements INode {
                     }
                 }
                 if (humanInput.type === 'proceed') {
-                    let toolIds: ICommonObject | undefined
-                    if (options.analyticHandlers) {
-                        toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolCall.args, options.parentTraceIds)
-                    }
-
-                    try {
-                        //@ts-ignore
-                        let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
-
-                        if (options.analyticHandlers && toolIds) {
-                            await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
+                    // Intercept write_todos — handled by PlanningTool, not the LangChain tool
+                    if (toolCall.name === 'write_todos' && planningTool) {
+                        const toolOutput = planningTool.handleToolCall(toolCall.args as { todos: Todo[] })
+                        messages.push({ role: 'tool', content: toolOutput, tool_call_id: toolCall.id, name: toolCall.name })
+                        usedTools.push({ tool: 'write_todos', toolInput: toolCall.args, toolOutput })
+                    } else {
+                        let toolIds: ICommonObject | undefined
+                        if (options.analyticHandlers) {
+                            toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolCall.args, options.parentTraceIds)
                         }
 
-                        // Extract source documents if present
-                        if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
-                            const [output, docs] = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)
-                            toolOutput = output
-                            try {
-                                parsedDocs = JSON.parse(docs)
-                                sourceDocuments.push(parsedDocs)
-                            } catch (e) {
-                                console.error('Error parsing source documents from tool:', e)
+                        try {
+                            let toolOutput = await selectedTool.call(
+                                toolCall.args,
+                                { signal: abortController?.signal },
+                                //@ts-ignore
+                                undefined,
+                                //@ts-ignore
+                                flowConfig
+                            )
+
+                            if (options.analyticHandlers && toolIds) {
+                                await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
                             }
-                        }
 
-                        // Extract artifacts if present
-                        if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
-                            const [output, artifact] = toolOutput.split(ARTIFACTS_PREFIX)
-                            toolOutput = output
-                            try {
-                                parsedArtifacts = JSON.parse(artifact)
-                                artifacts.push(parsedArtifacts)
-                            } catch (e) {
-                                console.error('Error parsing artifacts from tool:', e)
+                            // Extract source documents if present
+                            if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                                const [output, docs] = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)
+                                toolOutput = output
+                                try {
+                                    parsedDocs = JSON.parse(docs)
+                                    sourceDocuments.push(parsedDocs)
+                                } catch (e) {
+                                    console.error('Error parsing source documents from tool:', e)
+                                }
                             }
-                        }
 
-                        let toolInput
-                        if (typeof toolOutput === 'string' && toolOutput.includes(TOOL_ARGS_PREFIX)) {
-                            const [output, args] = toolOutput.split(TOOL_ARGS_PREFIX)
-                            toolOutput = output
-                            try {
-                                toolInput = JSON.parse(args)
-                            } catch (e) {
-                                console.error('Error parsing tool input from tool:', e)
+                            // Extract artifacts if present
+                            if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
+                                const [output, artifact] = toolOutput.split(ARTIFACTS_PREFIX)
+                                toolOutput = output
+                                try {
+                                    parsedArtifacts = JSON.parse(artifact)
+                                    artifacts.push(parsedArtifacts)
+                                } catch (e) {
+                                    console.error('Error parsing artifacts from tool:', e)
+                                }
                             }
-                        }
 
-                        // Add tool message to conversation
-                        messages.push({
-                            role: 'tool',
-                            content: toolOutput,
-                            tool_call_id: toolCall.id,
-                            name: toolCall.name,
-                            additional_kwargs: {
-                                artifacts: parsedArtifacts,
-                                sourceDocuments: parsedDocs
+                            let toolInput
+                            if (typeof toolOutput === 'string' && toolOutput.includes(TOOL_ARGS_PREFIX)) {
+                                const [output, args] = toolOutput.split(TOOL_ARGS_PREFIX)
+                                toolOutput = output
+                                try {
+                                    toolInput = JSON.parse(args)
+                                } catch (e) {
+                                    console.error('Error parsing tool input from tool:', e)
+                                }
                             }
-                        })
 
-                        // Track used tools
-                        usedTools.push({
-                            tool: toolCall.name,
-                            toolInput: toolInput ?? toolCall.args,
-                            toolOutput
-                        })
-                    } catch (e) {
-                        if (options.analyticHandlers && toolIds) {
-                            await options.analyticHandlers.onToolEnd(toolIds, e)
-                        }
+                            // Add tool message to conversation
+                            messages.push({
+                                role: 'tool',
+                                content: toolOutput,
+                                tool_call_id: toolCall.id,
+                                name: toolCall.name,
+                                additional_kwargs: {
+                                    artifacts: parsedArtifacts,
+                                    sourceDocuments: parsedDocs
+                                }
+                            })
 
-                        console.error('Error invoking tool:', e)
-                        const errMsg = getErrorMessage(e)
-                        let toolInput = toolCall.args
-                        if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
-                            const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
-                            try {
-                                toolInput = JSON.parse(args)
-                            } catch (e) {
-                                console.error('Error parsing tool input from tool:', e)
+                            // Track used tools
+                            usedTools.push({
+                                tool: toolCall.name,
+                                toolInput: toolInput ?? toolCall.args,
+                                toolOutput
+                            })
+                        } catch (e) {
+                            if (options.analyticHandlers && toolIds) {
+                                await options.analyticHandlers.onToolEnd(toolIds, e)
                             }
-                        }
 
-                        usedTools.push({
-                            tool: selectedTool.name,
-                            toolInput,
-                            toolOutput: '',
-                            error: getErrorMessage(e)
-                        })
-                        sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
-                        throw new Error(getErrorMessage(e))
-                    }
+                            console.error('Error invoking tool:', e)
+                            const errMsg = getErrorMessage(e)
+                            let toolInput = toolCall.args
+                            if (typeof errMsg === 'string' && errMsg.includes(TOOL_ARGS_PREFIX)) {
+                                const [_, args] = errMsg.split(TOOL_ARGS_PREFIX)
+                                try {
+                                    toolInput = JSON.parse(args)
+                                } catch (e) {
+                                    console.error('Error parsing tool input from tool:', e)
+                                }
+                            }
+
+                            usedTools.push({
+                                tool: selectedTool.name,
+                                toolInput,
+                                toolOutput: '',
+                                error: getErrorMessage(e)
+                            })
+                            sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
+                            throw new Error(getErrorMessage(e))
+                        }
+                    } // close else (non-write_todos tools)
                 }
             }
         }
@@ -2847,7 +2924,8 @@ class Agent_Agentflow implements INode {
                 iterationContext,
                 isStructuredOutput,
                 accumulatedReasonContent,
-                accumulatedReasoningDuration
+                accumulatedReasoningDuration,
+                planningTool
             })
 
             // Merge results from recursive tool calls
@@ -2912,4 +2990,4 @@ class Agent_Agentflow implements INode {
     }
 }
 
-module.exports = { nodeClass: Agent_Agentflow }
+module.exports = { nodeClass: SmartAgent_Agentflow }

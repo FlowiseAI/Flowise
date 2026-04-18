@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Box, Fade, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -134,102 +134,104 @@ const Chatflows = () => {
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader
-                        onSearchChange={onSearchChange}
-                        search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Chatflows'
-                        description='Build flows with prebuilt agents and chains'
-                    >
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={view}
-                            color='primary'
-                            disabled={total === 0}
-                            exclusive
-                            onChange={handleChange}
+                <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader
+                            onSearchChange={onSearchChange}
+                            search={true}
+                            searchPlaceholder='Search Name or Category'
+                            title='Chatflows'
+                            description='Build flows with prebuilt agents and chains'
                         >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
+                            <ToggleButtonGroup
+                                sx={{ borderRadius: 2, maxHeight: 40 }}
+                                value={view}
+                                color='primary'
+                                disabled={total === 0}
+                                exclusive
+                                onChange={handleChange}
                             >
-                                <IconLayoutGrid />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
+                                <ToggleButton
+                                    sx={{
+                                        borderColor: theme.palette.grey[900] + 25,
+                                        borderRadius: 2,
+                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    }}
+                                    variant='contained'
+                                    value='card'
+                                    title='Card View'
+                                >
+                                    <IconLayoutGrid />
+                                </ToggleButton>
+                                <ToggleButton
+                                    sx={{
+                                        borderColor: theme.palette.grey[900] + 25,
+                                        borderRadius: 2,
+                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    }}
+                                    variant='contained'
+                                    value='list'
+                                    title='List View'
+                                >
+                                    <IconList />
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                            <StyledPermissionButton
+                                permissionId={'chatflows:create'}
                                 variant='contained'
-                                value='list'
-                                title='List View'
+                                onClick={addNew}
+                                startIcon={<IconPlus />}
+                                sx={{ borderRadius: 2, height: 40 }}
                             >
-                                <IconList />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                        <StyledPermissionButton
-                            permissionId={'chatflows:create'}
-                            variant='contained'
-                            onClick={addNew}
-                            startIcon={<IconPlus />}
-                            sx={{ borderRadius: 2, height: 40 }}
-                        >
-                            Add New
-                        </StyledPermissionButton>
-                    </ViewHeader>
+                                Add New
+                            </StyledPermissionButton>
+                        </ViewHeader>
 
-                    {isLoading && (
-                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
-                            <Skeleton variant='rounded' height={160} />
-                        </Box>
-                    )}
-                    {!isLoading && total > 0 && (
-                        <>
-                            {!view || view === 'card' ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                    ))}
-                                </Box>
-                            ) : (
-                                <FlowListTable
-                                    data={getAllChatflowsApi.data?.data}
-                                    images={images}
-                                    isLoading={isLoading}
-                                    filterFunction={filterFlows}
-                                    updateFlowsApi={getAllChatflowsApi}
-                                    setError={setError}
-                                    currentPage={currentPage}
-                                    pageLimit={pageLimit}
-                                />
-                            )}
-                            {/* Pagination and Page Size Controls */}
-                            <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                        </>
-                    )}
-                    {!isLoading && (!getAllChatflowsApi.data?.data || getAllChatflowsApi.data?.data.length === 0) && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img
-                                    style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
-                                    src={WorkflowEmptySVG}
-                                    alt='WorkflowEmptySVG'
-                                />
+                        {isLoading && (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
                             </Box>
-                            <div>No Chatflows Yet</div>
-                        </Stack>
-                    )}
-                </Stack>
+                        )}
+                        {!isLoading && total > 0 && (
+                            <>
+                                {!view || view === 'card' ? (
+                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                        {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
+                                            <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                        ))}
+                                    </Box>
+                                ) : (
+                                    <FlowListTable
+                                        data={getAllChatflowsApi.data?.data}
+                                        images={images}
+                                        isLoading={isLoading}
+                                        filterFunction={filterFlows}
+                                        updateFlowsApi={getAllChatflowsApi}
+                                        setError={setError}
+                                        currentPage={currentPage}
+                                        pageLimit={pageLimit}
+                                    />
+                                )}
+                                {/* Pagination and Page Size Controls */}
+                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                            </>
+                        )}
+                        {!isLoading && (!getAllChatflowsApi.data?.data || getAllChatflowsApi.data?.data.length === 0) && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
+                                        src={WorkflowEmptySVG}
+                                        alt='WorkflowEmptySVG'
+                                    />
+                                </Box>
+                                <div>No Chatflows Yet</div>
+                            </Stack>
+                        )}
+                    </Stack>
+                </Fade>
             )}
             <ConfirmDialog />
         </MainCard>

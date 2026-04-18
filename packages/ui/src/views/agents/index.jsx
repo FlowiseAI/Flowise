@@ -1,10 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import moment from 'moment'
+import Avatar from 'boring-avatars'
 
 // material-ui
 import {
     Box,
+    Chip,
+    Fade,
+    IconButton,
+    InputAdornment,
+    OutlinedInput,
     Paper,
     Skeleton,
     Stack,
@@ -20,16 +26,13 @@ import {
     Tooltip,
     Typography
 } from '@mui/material'
-import { useTheme, styled } from '@mui/material/styles'
+import { useTheme, styled, darken } from '@mui/material/styles'
 import { tableCellClasses } from '@mui/material/TableCell'
 import { useSelector } from 'react-redux'
 
 // project imports
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
 import { baseURL, gridSpacing } from '@/store/constant'
-import AssistantEmptySVG from '@/assets/images/assistant_empty.svg'
 import ErrorBoundary from '@/ErrorBoundary'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import AgentListMenu from '@/ui-component/button/AgentListMenu'
@@ -43,11 +46,14 @@ import chatflowsApi from '@/api/chatflows'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { IconArrowUp, IconLayoutGrid, IconList, IconSearch } from '@tabler/icons-react'
+
+// ==============================|| CONSTANTS ||============================== //
+
+const SUGGESTION_CHIPS = ['Trip planner', 'Image generator', 'Code debugger', 'Research assistant', 'Decision helper']
 
 // ==============================|| HELPERS ||============================== //
 
-// Extract agent info from chatflow's flowData
 const parseAgentFromFlowData = (agent) => {
     try {
         if (!agent.flowData) return { name: agent.name, instruction: '', modelName: '' }
@@ -59,7 +65,6 @@ const parseAgentFromFlowData = (agent) => {
             const modelName = inputs.agentModel || ''
             return { name: agent.name, instruction, modelName }
         }
-        // Old format: try toolAgent node
         const toolAgentNode = flowData.nodes?.find((n) => n.data?.name === 'toolAgent')
         if (toolAgentNode) {
             const instruction = toolAgentNode.data?.inputs?.systemMessage || ''
@@ -73,11 +78,10 @@ const parseAgentFromFlowData = (agent) => {
     }
 }
 
-// ==============================|| STYLED TABLE COMPONENTS ||============================== //
+// ==============================|| STYLED COMPONENTS ||============================== //
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
-
     [`&.${tableCellClasses.head}`]: {
         color: theme.palette.grey[900]
     },
@@ -108,6 +112,7 @@ const Agents = () => {
     const [total, setTotal] = useState(0)
 
     const [search, setSearch] = useState('')
+    const [generateInput, setGenerateInput] = useState('')
     const [view, setView] = useState(localStorage.getItem('agentDisplayStyle') || 'card')
     const [order, setOrder] = useState(localStorage.getItem('agent_order') || 'desc')
     const [orderBy, setOrderBy] = useState(localStorage.getItem('agent_orderBy') || 'updatedDate')
@@ -135,6 +140,19 @@ const Agents = () => {
 
     const addNew = () => {
         navigate('/agents/new')
+    }
+
+    const handleGenerate = (taskText) => {
+        const task = taskText || generateInput
+        if (!task.trim()) return
+        navigate('/agents/new', { state: { generateTask: task.trim() } })
+    }
+
+    const handleGenerateKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault()
+            handleGenerate()
+        }
     }
 
     function filterAgents(agent) {
@@ -198,7 +216,6 @@ const Agents = () => {
         if (getAllAgentsApi.error) setError(getAllAgentsApi.error)
     }, [getAllAgentsApi.error])
 
-    // Set agents from chatflows API (returns both ASSISTANT and AGENT types)
     useEffect(() => {
         if (getAllAgentsApi.data) {
             const agentList = getAllAgentsApi.data?.data || getAllAgentsApi.data || []
@@ -213,226 +230,410 @@ const Agents = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Agents'
-                            title='Agents'
-                            description='Create agent that can interact and perform tasks autonomously'
-                        >
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
-                                value={view}
-                                color='primary'
-                                disabled={total === 0}
-                                exclusive
-                                onChange={handleChange}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            {/* ==================== Hero Section ==================== */}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    pt: 4,
+                                    pb: 2,
+                                    ...(!isLoading && total === 0 ? { minHeight: 'calc(100vh - 200px)' } : {})
+                                }}
                             >
-                                <ToggleButton
+                                <Typography
+                                    variant='h2'
                                     sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        fontSize: '1.8rem',
+                                        fontWeight: 700,
+                                        mb: 3,
+                                        color: theme.palette.text.primary
                                     }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
                                 >
-                                    <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
-                                    <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                            <StyledPermissionButton
-                                permissionId={'agents:create'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: 40 }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
-                            >
-                                Add New
-                            </StyledPermissionButton>
-                        </ViewHeader>
+                                    Create an agent
+                                </Typography>
 
-                        {isLoading && (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                            </Box>
-                        )}
-                        {!isLoading && total > 0 && (
-                            <>
-                                {!view || view === 'card' ? (
-                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                        {getSortedData(agents).map((agent, index) => (
-                                            <ItemCard
-                                                data={{
-                                                    name: agent.name,
-                                                    description: getInstruction(agent)
-                                                }}
-                                                images={getImages(agent)}
-                                                key={index}
-                                                onClick={() => navigate(`/agents/${agent.id}`)}
-                                            />
-                                        ))}
-                                    </Box>
-                                ) : (
-                                    <TableContainer
-                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                        component={Paper}
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <StyledPermissionButton
+                                        permissionId={'agents:create'}
+                                        variant='contained'
+                                        onClick={addNew}
+                                        sx={{
+                                            borderRadius: '24px',
+                                            px: 3,
+                                            height: 44,
+                                            textTransform: 'none',
+                                            fontSize: '0.95rem',
+                                            fontWeight: 600,
+                                            background: `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
+                                            color: theme.palette.common.white,
+                                            '&:hover': {
+                                                background: `linear-gradient(90deg, ${darken(
+                                                    theme.palette.primary.main,
+                                                    0.1
+                                                )} 10%, ${darken(theme.palette.secondary.main, 0.1)} 100%)`
+                                            }
+                                        }}
                                     >
-                                        <Table sx={{ minWidth: 650 }} size='small' aria-label='agents table'>
-                                            <TableHead
-                                                sx={{
+                                        Create Manually
+                                    </StyledPermissionButton>
+
+                                    <OutlinedInput
+                                        size='small'
+                                        placeholder='Generate...'
+                                        value={generateInput}
+                                        onChange={(e) => setGenerateInput(e.target.value)}
+                                        onKeyDown={handleGenerateKeyDown}
+                                        endAdornment={
+                                            <InputAdornment position='end'>
+                                                <IconButton
+                                                    size='small'
+                                                    onClick={() => handleGenerate()}
+                                                    disabled={!generateInput.trim()}
+                                                    sx={{
+                                                        backgroundColor: generateInput.trim()
+                                                            ? customization.isDarkMode
+                                                                ? theme.palette.common.white
+                                                                : theme.palette.common.black
+                                                            : 'transparent',
+                                                        color: generateInput.trim()
+                                                            ? customization.isDarkMode
+                                                                ? theme.palette.common.black
+                                                                : theme.palette.common.white
+                                                            : theme.palette.text.secondary,
+                                                        borderRadius: '50%',
+                                                        width: 28,
+                                                        height: 28,
+                                                        '&:hover': {
+                                                            backgroundColor: generateInput.trim()
+                                                                ? customization.isDarkMode
+                                                                    ? theme.palette.grey[200]
+                                                                    : theme.palette.grey[800]
+                                                                : theme.palette.action.hover
+                                                        }
+                                                    }}
+                                                >
+                                                    <IconArrowUp size={16} />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        }
+                                        sx={{
+                                            borderRadius: '24px',
+                                            height: 44,
+                                            width: 200,
+                                            overflow: 'hidden',
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: theme.palette.grey[900] + 25,
+                                                borderRadius: '24px'
+                                            }
+                                        }}
+                                    />
+                                </Box>
+
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 1, mt: 2.5 }}>
+                                    {SUGGESTION_CHIPS.map((label) => (
+                                        <Chip
+                                            key={label}
+                                            label={label}
+                                            variant='outlined'
+                                            size='small'
+                                            onClick={() => handleGenerate(label)}
+                                            sx={{
+                                                borderRadius: '16px',
+                                                cursor: 'pointer',
+                                                fontWeight: 500,
+                                                borderColor: theme.palette.grey[900] + 25,
+                                                color: theme.palette.text.primary,
+                                                '&:hover': {
                                                     backgroundColor: customization.isDarkMode
-                                                        ? theme.palette.common.black
-                                                        : theme.palette.grey[100],
-                                                    height: 56
+                                                        ? 'rgba(255,255,255,0.08)'
+                                                        : 'rgba(0,0,0,0.04)'
+                                                }
+                                            }}
+                                        />
+                                    ))}
+                                </Box>
+                            </Box>
+
+                            {/* ==================== Agents Listing Section ==================== */}
+                            {total > 0 && (
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant='h3' sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                                        Agents
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <OutlinedInput
+                                            size='small'
+                                            placeholder='Search Agents'
+                                            onChange={onSearchChange}
+                                            startAdornment={
+                                                <InputAdornment position='start'>
+                                                    <IconSearch size={16} stroke={1.5} />
+                                                </InputAdornment>
+                                            }
+                                            sx={{
+                                                width: 250,
+                                                borderRadius: 2,
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: theme.palette.grey[900] + 25
+                                                }
+                                            }}
+                                        />
+                                        <ToggleButtonGroup
+                                            sx={{ borderRadius: 2, maxHeight: 36 }}
+                                            value={view}
+                                            color='primary'
+                                            disabled={total === 0}
+                                            exclusive
+                                            onChange={handleChange}
+                                        >
+                                            <ToggleButton
+                                                sx={{
+                                                    borderColor: theme.palette.grey[900] + 25,
+                                                    borderRadius: 2,
+                                                    color: customization.isDarkMode ? 'white' : 'inherit'
                                                 }}
+                                                variant='contained'
+                                                value='card'
+                                                title='Card View'
                                             >
-                                                <TableRow>
-                                                    <StyledTableCell style={{ width: '30%' }}>
-                                                        <TableSortLabel
-                                                            active={orderBy === 'name'}
-                                                            direction={order}
-                                                            onClick={() => handleRequestSort('name')}
-                                                        >
-                                                            Name
-                                                        </TableSortLabel>
-                                                    </StyledTableCell>
-                                                    <StyledTableCell style={{ width: '10%' }}>Model</StyledTableCell>
-                                                    <StyledTableCell style={{ width: '35%' }}>Instruction</StyledTableCell>
-                                                    <StyledTableCell style={{ width: '15%' }}>
-                                                        <TableSortLabel
-                                                            active={orderBy === 'updatedDate'}
-                                                            direction={order}
-                                                            onClick={() => handleRequestSort('updatedDate')}
-                                                        >
-                                                            Last Modified
-                                                        </TableSortLabel>
-                                                    </StyledTableCell>
-                                                    <StyledTableCell style={{ width: '10%' }}>Actions</StyledTableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {getSortedData(agents).map((agent, index) => {
-                                                    const images = getImages(agent)
-                                                    return (
-                                                        <StyledTableRow
-                                                            key={index}
+                                                <IconLayoutGrid size={18} />
+                                            </ToggleButton>
+                                            <ToggleButton
+                                                sx={{
+                                                    borderColor: theme.palette.grey[900] + 25,
+                                                    borderRadius: 2,
+                                                    color: customization.isDarkMode ? 'white' : 'inherit'
+                                                }}
+                                                variant='contained'
+                                                value='list'
+                                                title='List View'
+                                            >
+                                                <IconList size={18} />
+                                            </ToggleButton>
+                                        </ToggleButtonGroup>
+                                    </Box>
+                                </Box>
+                            )}
+
+                            {isLoading && (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
+                                    <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
+                                    <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
+                                </Box>
+                            )}
+
+                            {!isLoading && total > 0 && (
+                                <>
+                                    {!view || view === 'card' ? (
+                                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                            {getSortedData(agents).map((agent, index) => (
+                                                <Box
+                                                    key={index}
+                                                    onClick={() => navigate(`/agents/${agent.id}`)}
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1.5,
+                                                        p: 2,
+                                                        borderRadius: 3,
+                                                        border: `1px solid ${theme.palette.grey[900]}15`,
+                                                        cursor: 'pointer',
+                                                        backgroundColor: theme.palette.card?.main || theme.palette.background.paper,
+                                                        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                                                        transition: 'background-color 0.2s, box-shadow 0.2s',
+                                                        '&:hover': {
+                                                            backgroundColor: theme.palette.card?.hover || theme.palette.action.hover,
+                                                            boxShadow: '0 4px 20px rgba(0,0,0,0.12)'
+                                                        }
+                                                    }}
+                                                >
+                                                    <Box
+                                                        sx={{
+                                                            width: 36,
+                                                            height: 36,
+                                                            borderRadius: 2,
+                                                            overflow: 'hidden',
+                                                            flexShrink: 0
+                                                        }}
+                                                    >
+                                                        <Avatar
+                                                            size={36}
+                                                            name={agent.id || agent.name || 'agent'}
+                                                            variant='marble'
+                                                            colors={[
+                                                                theme.palette.primary.light,
+                                                                theme.palette.primary.main,
+                                                                theme.palette.primary.dark,
+                                                                theme.palette.secondary.light,
+                                                                theme.palette.secondary.main,
+                                                                theme.palette.secondary.dark
+                                                            ]}
+                                                        />
+                                                    </Box>
+                                                    <Box sx={{ overflow: 'hidden' }}>
+                                                        <Typography
                                                             sx={{
-                                                                cursor: 'pointer',
-                                                                '&:hover': { backgroundColor: theme.palette.action.hover }
+                                                                fontSize: '0.95rem',
+                                                                fontWeight: 500,
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap',
+                                                                color: theme.palette.text.primary
                                                             }}
-                                                            onClick={() => navigate(`/agents/${agent.id}`)}
                                                         >
-                                                            <StyledTableCell>
-                                                                <Tooltip title={agent.name || ''}>
+                                                            {agent.name || 'Untitled'}
+                                                        </Typography>
+                                                        <Typography
+                                                            sx={{
+                                                                fontSize: '0.8rem',
+                                                                color: theme.palette.text.secondary
+                                                            }}
+                                                        >
+                                                            {moment(agent.updatedDate).format('MMM D, hh:mm A')}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    ) : (
+                                        <TableContainer
+                                            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                            component={Paper}
+                                        >
+                                            <Table sx={{ minWidth: 650 }} size='small' aria-label='agents table'>
+                                                <TableHead
+                                                    sx={{
+                                                        backgroundColor: customization.isDarkMode
+                                                            ? theme.palette.common.black
+                                                            : theme.palette.grey[100],
+                                                        height: 56
+                                                    }}
+                                                >
+                                                    <TableRow>
+                                                        <StyledTableCell style={{ width: '30%' }}>
+                                                            <TableSortLabel
+                                                                active={orderBy === 'name'}
+                                                                direction={order}
+                                                                onClick={() => handleRequestSort('name')}
+                                                            >
+                                                                Name
+                                                            </TableSortLabel>
+                                                        </StyledTableCell>
+                                                        <StyledTableCell style={{ width: '10%' }}>Model</StyledTableCell>
+                                                        <StyledTableCell style={{ width: '35%' }}>Instruction</StyledTableCell>
+                                                        <StyledTableCell style={{ width: '15%' }}>
+                                                            <TableSortLabel
+                                                                active={orderBy === 'updatedDate'}
+                                                                direction={order}
+                                                                onClick={() => handleRequestSort('updatedDate')}
+                                                            >
+                                                                Last Modified
+                                                            </TableSortLabel>
+                                                        </StyledTableCell>
+                                                        <StyledTableCell style={{ width: '10%' }}>Actions</StyledTableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {getSortedData(agents).map((agent, index) => {
+                                                        const images = getImages(agent)
+                                                        return (
+                                                            <StyledTableRow
+                                                                key={index}
+                                                                sx={{
+                                                                    cursor: 'pointer',
+                                                                    '&:hover': { backgroundColor: theme.palette.action.hover }
+                                                                }}
+                                                                onClick={() => navigate(`/agents/${agent.id}`)}
+                                                            >
+                                                                <StyledTableCell>
+                                                                    <Tooltip title={agent.name || ''}>
+                                                                        <Typography
+                                                                            sx={{
+                                                                                display: '-webkit-box',
+                                                                                fontSize: 14,
+                                                                                fontWeight: 500,
+                                                                                WebkitLineClamp: 2,
+                                                                                WebkitBoxOrient: 'vertical',
+                                                                                textOverflow: 'ellipsis',
+                                                                                overflow: 'hidden',
+                                                                                color: '#2196f3'
+                                                                            }}
+                                                                        >
+                                                                            {agent.name || 'Untitled'}
+                                                                        </Typography>
+                                                                    </Tooltip>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    {images.length > 0 && (
+                                                                        <Tooltip title={getModelName(agent) || ''}>
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: 30,
+                                                                                    height: 30,
+                                                                                    borderRadius: '50%',
+                                                                                    backgroundColor: customization.isDarkMode
+                                                                                        ? theme.palette.common.white
+                                                                                        : theme.palette.grey[300] + 75
+                                                                                }}
+                                                                            >
+                                                                                <img
+                                                                                    style={{
+                                                                                        width: '100%',
+                                                                                        height: '100%',
+                                                                                        padding: 5,
+                                                                                        objectFit: 'contain'
+                                                                                    }}
+                                                                                    alt=''
+                                                                                    src={images[0].imageSrc}
+                                                                                />
+                                                                            </Box>
+                                                                        </Tooltip>
+                                                                    )}
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
                                                                     <Typography
                                                                         sx={{
                                                                             display: '-webkit-box',
                                                                             fontSize: 14,
-                                                                            fontWeight: 500,
                                                                             WebkitLineClamp: 2,
                                                                             WebkitBoxOrient: 'vertical',
                                                                             textOverflow: 'ellipsis',
                                                                             overflow: 'hidden',
-                                                                            color: '#2196f3'
+                                                                            color: theme.palette.text.secondary
                                                                         }}
                                                                     >
-                                                                        {agent.name || 'Untitled'}
+                                                                        {getInstruction(agent) || ''}
                                                                     </Typography>
-                                                                </Tooltip>
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                {images.length > 0 && (
-                                                                    <Tooltip title={getModelName(agent) || ''}>
-                                                                        <Box
-                                                                            sx={{
-                                                                                width: 30,
-                                                                                height: 30,
-                                                                                borderRadius: '50%',
-                                                                                backgroundColor: customization.isDarkMode
-                                                                                    ? theme.palette.common.white
-                                                                                    : theme.palette.grey[300] + 75
-                                                                            }}
-                                                                        >
-                                                                            <img
-                                                                                style={{
-                                                                                    width: '100%',
-                                                                                    height: '100%',
-                                                                                    padding: 5,
-                                                                                    objectFit: 'contain'
-                                                                                }}
-                                                                                alt=''
-                                                                                src={images[0].imageSrc}
-                                                                            />
-                                                                        </Box>
-                                                                    </Tooltip>
-                                                                )}
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                <Typography
-                                                                    sx={{
-                                                                        display: '-webkit-box',
-                                                                        fontSize: 14,
-                                                                        WebkitLineClamp: 2,
-                                                                        WebkitBoxOrient: 'vertical',
-                                                                        textOverflow: 'ellipsis',
-                                                                        overflow: 'hidden',
-                                                                        color: theme.palette.text.secondary
-                                                                    }}
-                                                                >
-                                                                    {getInstruction(agent) || ''}
-                                                                </Typography>
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                <Typography sx={{ fontSize: 14 }}>
-                                                                    {moment(agent.updatedDate).format('MMMM D, YYYY')}
-                                                                </Typography>
-                                                            </StyledTableCell>
-                                                            <StyledTableCell onClick={(e) => e.stopPropagation()}>
-                                                                <AgentListMenu
-                                                                    agent={agent}
-                                                                    setError={setError}
-                                                                    onRefresh={refreshAgents}
-                                                                />
-                                                            </StyledTableCell>
-                                                        </StyledTableRow>
-                                                    )
-                                                })}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                )}
-                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onPageChange} />
-                            </>
-                        )}
-                        {!isLoading && total === 0 && (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={AssistantEmptySVG}
-                                        alt='AssistantEmptySVG'
-                                    />
-                                </Box>
-                                <div>No Agents Added Yet</div>
-                            </Stack>
-                        )}
-                    </Stack>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    <Typography sx={{ fontSize: 14 }}>
+                                                                        {moment(agent.updatedDate).format('MMMM D, YYYY')}
+                                                                    </Typography>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell onClick={(e) => e.stopPropagation()}>
+                                                                    <AgentListMenu
+                                                                        agent={agent}
+                                                                        setError={setError}
+                                                                        onRefresh={refreshAgents}
+                                                                    />
+                                                                </StyledTableCell>
+                                                            </StyledTableRow>
+                                                        )
+                                                    })}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    )}
+                                    <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onPageChange} />
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <ConfirmDialog />

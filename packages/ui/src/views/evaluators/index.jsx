@@ -2,7 +2,21 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
-import { Chip, Skeleton, Box, Stack, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Button } from '@mui/material'
+import {
+    Box,
+    Button,
+    Chip,
+    Fade,
+    Paper,
+    Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow
+} from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -178,385 +192,387 @@ const Evaluators = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            isBackButton={false}
-                            isEditButton={false}
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            title='Evaluators'
-                            description=''
-                        >
-                            <StyledPermissionButton
-                                permissionId={'evaluators:create'}
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                variant='contained'
-                                onClick={newEvaluator}
-                                startIcon={<IconPlus />}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                isBackButton={false}
+                                isEditButton={false}
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                title='Evaluators'
+                                description=''
                             >
-                                New Evaluator
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {!isLoading && evaluators.length <= 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={empty_evaluatorSVG}
-                                        alt='empty_evaluatorSVG'
-                                    />
-                                </Box>
-                                <div>No Evaluators Yet</div>
-                            </Stack>
-                        ) : (
-                            <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
+                                <StyledPermissionButton
+                                    permissionId={'evaluators:create'}
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    variant='contained'
+                                    onClick={newEvaluator}
+                                    startIcon={<IconPlus />}
                                 >
-                                    <Table sx={{ minWidth: 650 }}>
-                                        <TableHead
-                                            sx={{
-                                                backgroundColor: customization.isDarkMode
-                                                    ? theme.palette.common.black
-                                                    : theme.palette.grey[100],
-                                                height: 56
-                                            }}
-                                        >
-                                            <TableRow>
-                                                <TableCell>Type</TableCell>
-                                                <TableCell>Name</TableCell>
-                                                <TableCell>Details</TableCell>
-                                                <TableCell>Last Updated</TableCell>
-                                                <TableCell> </TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {isLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {evaluators.filter(filterDatasets).map((ds, index) => (
-                                                        <>
-                                                            <StyledTableRow
-                                                                hover
-                                                                key={index}
-                                                                sx={{
-                                                                    cursor: 'pointer',
-                                                                    '&:last-child td, &:last-child th': { border: 0 }
-                                                                }}
-                                                            >
-                                                                <TableCell onClick={() => edit(ds)}>
-                                                                    {ds?.type === 'numeric' && (
-                                                                        <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
-                                                                            <Chip
-                                                                                icon={<IconNumber123 />}
-                                                                                label='Numeric'
-                                                                                variant='outlined'
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                    {ds?.type === 'text' && (
-                                                                        <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
-                                                                            <Chip
-                                                                                icon={<IconAbc />}
-                                                                                label='Text Based'
-                                                                                variant='outlined'
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                    {ds?.type === 'json' && (
-                                                                        <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
-                                                                            <Chip
-                                                                                icon={<IconJson />}
-                                                                                label='JSON Based'
-                                                                                variant='outlined'
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                    {ds?.type === 'llm' && (
-                                                                        <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
-                                                                            <Chip
-                                                                                icon={<IconAugmentedReality />}
-                                                                                label='LLM Based'
-                                                                                variant='outlined'
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                </TableCell>
-                                                                <TableCell onClick={() => edit(ds)} component='th' scope='row'>
-                                                                    {ds.name}
-                                                                </TableCell>
-                                                                <TableCell style={{ width: '40%' }} onClick={() => edit(ds)}>
-                                                                    {ds?.type === 'numeric' && (
-                                                                        <Stack
-                                                                            flexDirection='row'
-                                                                            gap={1}
-                                                                            sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+                                    New Evaluator
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {!isLoading && evaluators.length <= 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={empty_evaluatorSVG}
+                                            alt='empty_evaluatorSVG'
+                                        />
+                                    </Box>
+                                    <div>No Evaluators Yet</div>
+                                </Stack>
+                            ) : (
+                                <>
+                                    <TableContainer
+                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                        component={Paper}
+                                    >
+                                        <Table sx={{ minWidth: 650 }}>
+                                            <TableHead
+                                                sx={{
+                                                    backgroundColor: customization.isDarkMode
+                                                        ? theme.palette.common.black
+                                                        : theme.palette.grey[100],
+                                                    height: 56
+                                                }}
+                                            >
+                                                <TableRow>
+                                                    <TableCell>Type</TableCell>
+                                                    <TableCell>Name</TableCell>
+                                                    <TableCell>Details</TableCell>
+                                                    <TableCell>Last Updated</TableCell>
+                                                    <TableCell> </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {isLoading ? (
+                                                    <>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                        </StyledTableRow>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                        </StyledTableRow>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {evaluators.filter(filterDatasets).map((ds, index) => (
+                                                            <>
+                                                                <StyledTableRow
+                                                                    hover
+                                                                    key={index}
+                                                                    sx={{
+                                                                        cursor: 'pointer',
+                                                                        '&:last-child td, &:last-child th': { border: 0 }
+                                                                    }}
+                                                                >
+                                                                    <TableCell onClick={() => edit(ds)}>
+                                                                        {ds?.type === 'numeric' && (
+                                                                            <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
+                                                                                <Chip
+                                                                                    icon={<IconNumber123 />}
+                                                                                    label='Numeric'
+                                                                                    variant='outlined'
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                        {ds?.type === 'text' && (
+                                                                            <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
+                                                                                <Chip
+                                                                                    icon={<IconAbc />}
+                                                                                    label='Text Based'
+                                                                                    variant='outlined'
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                        {ds?.type === 'json' && (
+                                                                            <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
+                                                                                <Chip
+                                                                                    icon={<IconJson />}
+                                                                                    label='JSON Based'
+                                                                                    variant='outlined'
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                        {ds?.type === 'llm' && (
+                                                                            <Stack flexDirection='row' sx={{ alignItems: 'center' }}>
+                                                                                <Chip
+                                                                                    icon={<IconAugmentedReality />}
+                                                                                    label='LLM Based'
+                                                                                    variant='outlined'
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                    </TableCell>
+                                                                    <TableCell onClick={() => edit(ds)} component='th' scope='row'>
+                                                                        {ds.name}
+                                                                    </TableCell>
+                                                                    <TableCell style={{ width: '40%' }} onClick={() => edit(ds)}>
+                                                                        {ds?.type === 'numeric' && (
+                                                                            <Stack
+                                                                                flexDirection='row'
+                                                                                gap={1}
+                                                                                sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+                                                                            >
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Measure</b>:{' '}
+                                                                                            {
+                                                                                                [
+                                                                                                    ...evaluatorsOptions,
+                                                                                                    ...numericOperators
+                                                                                                ].find((item) => item.name === ds?.measure)
+                                                                                                    ?.label
+                                                                                            }
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Operator</b>:{' '}
+                                                                                            {
+                                                                                                [
+                                                                                                    ...evaluatorsOptions,
+                                                                                                    ...numericOperators
+                                                                                                ].find((item) => item.name === ds?.operator)
+                                                                                                    ?.label
+                                                                                            }
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Value</b>: {ds?.value}
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                        {ds?.type === 'text' && (
+                                                                            <Stack
+                                                                                flexDirection='row'
+                                                                                gap={1}
+                                                                                sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+                                                                            >
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Operator</b>:{' '}
+                                                                                            {
+                                                                                                [
+                                                                                                    ...evaluatorsOptions,
+                                                                                                    ...numericOperators
+                                                                                                ].find((item) => item.name === ds?.operator)
+                                                                                                    ?.label
+                                                                                            }
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Value</b>: {ds?.value}
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                        {ds?.type === 'json' && (
+                                                                            <Stack
+                                                                                flexDirection='row'
+                                                                                gap={1}
+                                                                                sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+                                                                            >
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Operator</b>:{' '}
+                                                                                            {
+                                                                                                [...evaluatorsOptions].find(
+                                                                                                    (item) => item.name === ds?.operator
+                                                                                                )?.label
+                                                                                            }
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                        {ds?.type === 'llm' && (
+                                                                            <Stack
+                                                                                flexDirection='row'
+                                                                                gap={1}
+                                                                                sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+                                                                            >
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Prompt</b>: {truncateString(ds?.prompt, 100)}
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                                <Chip
+                                                                                    variant='outlined'
+                                                                                    size='small'
+                                                                                    color='default'
+                                                                                    sx={{
+                                                                                        height: 'auto',
+                                                                                        '& .MuiChip-label': {
+                                                                                            display: 'block',
+                                                                                            whiteSpace: 'normal'
+                                                                                        },
+                                                                                        p: 0.5
+                                                                                    }}
+                                                                                    label={
+                                                                                        <span>
+                                                                                            <b>Output Schema Elements</b>:{' '}
+                                                                                            {ds?.outputSchema.length > 0
+                                                                                                ? ds?.outputSchema
+                                                                                                      .map((item) => item.property)
+                                                                                                      .join(', ')
+                                                                                                : 'None'}
+                                                                                        </span>
+                                                                                    }
+                                                                                />
+                                                                            </Stack>
+                                                                        )}
+                                                                    </TableCell>
+                                                                    <TableCell onClick={() => edit(ds)}>
+                                                                        {moment(ds.updatedDate).format('MMMM Do YYYY, hh:mm A')}
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <PermissionIconButton
+                                                                            permissionId={'evaluators:delete'}
+                                                                            title='Delete'
+                                                                            color='error'
+                                                                            onClick={() => deleteEvaluator(ds)}
                                                                         >
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Measure</b>:{' '}
-                                                                                        {
-                                                                                            [
-                                                                                                ...evaluatorsOptions,
-                                                                                                ...numericOperators
-                                                                                            ].find((item) => item.name === ds?.measure)
-                                                                                                ?.label
-                                                                                        }
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Operator</b>:{' '}
-                                                                                        {
-                                                                                            [
-                                                                                                ...evaluatorsOptions,
-                                                                                                ...numericOperators
-                                                                                            ].find((item) => item.name === ds?.operator)
-                                                                                                ?.label
-                                                                                        }
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Value</b>: {ds?.value}
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                    {ds?.type === 'text' && (
-                                                                        <Stack
-                                                                            flexDirection='row'
-                                                                            gap={1}
-                                                                            sx={{ alignItems: 'center', flexWrap: 'wrap' }}
-                                                                        >
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Operator</b>:{' '}
-                                                                                        {
-                                                                                            [
-                                                                                                ...evaluatorsOptions,
-                                                                                                ...numericOperators
-                                                                                            ].find((item) => item.name === ds?.operator)
-                                                                                                ?.label
-                                                                                        }
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Value</b>: {ds?.value}
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                    {ds?.type === 'json' && (
-                                                                        <Stack
-                                                                            flexDirection='row'
-                                                                            gap={1}
-                                                                            sx={{ alignItems: 'center', flexWrap: 'wrap' }}
-                                                                        >
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Operator</b>:{' '}
-                                                                                        {
-                                                                                            [...evaluatorsOptions].find(
-                                                                                                (item) => item.name === ds?.operator
-                                                                                            )?.label
-                                                                                        }
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                    {ds?.type === 'llm' && (
-                                                                        <Stack
-                                                                            flexDirection='row'
-                                                                            gap={1}
-                                                                            sx={{ alignItems: 'center', flexWrap: 'wrap' }}
-                                                                        >
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Prompt</b>: {truncateString(ds?.prompt, 100)}
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                            <Chip
-                                                                                variant='outlined'
-                                                                                size='small'
-                                                                                color='default'
-                                                                                sx={{
-                                                                                    height: 'auto',
-                                                                                    '& .MuiChip-label': {
-                                                                                        display: 'block',
-                                                                                        whiteSpace: 'normal'
-                                                                                    },
-                                                                                    p: 0.5
-                                                                                }}
-                                                                                label={
-                                                                                    <span>
-                                                                                        <b>Output Schema Elements</b>:{' '}
-                                                                                        {ds?.outputSchema.length > 0
-                                                                                            ? ds?.outputSchema
-                                                                                                  .map((item) => item.property)
-                                                                                                  .join(', ')
-                                                                                            : 'None'}
-                                                                                    </span>
-                                                                                }
-                                                                            />
-                                                                        </Stack>
-                                                                    )}
-                                                                </TableCell>
-                                                                <TableCell onClick={() => edit(ds)}>
-                                                                    {moment(ds.updatedDate).format('MMMM Do YYYY, hh:mm A')}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <PermissionIconButton
-                                                                        permissionId={'evaluators:delete'}
-                                                                        title='Delete'
-                                                                        color='error'
-                                                                        onClick={() => deleteEvaluator(ds)}
-                                                                    >
-                                                                        <IconTrash />
-                                                                    </PermissionIconButton>
-                                                                </TableCell>
-                                                            </StyledTableRow>
-                                                        </>
-                                                    ))}
-                                                </>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                                {/* Pagination and Page Size Controls */}
-                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                            </>
-                        )}
-                    </Stack>
+                                                                            <IconTrash />
+                                                                        </PermissionIconButton>
+                                                                    </TableCell>
+                                                                </StyledTableRow>
+                                                            </>
+                                                        ))}
+                                                    </>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                    {/* Pagination and Page Size Controls */}
+                                    <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             {showEvaluatorDialog && (

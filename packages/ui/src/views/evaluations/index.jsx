@@ -13,6 +13,7 @@ import {
     Button,
     Chip,
     Collapse,
+    Fade,
     IconButton,
     Paper,
     Stack,
@@ -297,198 +298,202 @@ const EvalsEvaluation = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader isBackButton={false} isEditButton={false} search={false} title={'Evaluations'} description=''>
-                            <ToggleButton
-                                value='auto-refresh'
-                                selected={autoRefresh}
-                                onChange={toggleAutoRefresh}
-                                size='small'
-                                sx={{
-                                    borderRadius: 2,
-                                    height: '100%',
-                                    backgroundColor: 'transparent',
-                                    color: autoRefresh ? '#ff9800' : '#4caf50',
-                                    border: '1px solid transparent',
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                        color: autoRefresh ? '#f57c00' : '#388e3c',
-                                        border: '1px solid transparent'
-                                    },
-                                    '&.Mui-selected': {
+                    <Fade in={!isTableLoading} timeout={250} style={{ transitionDelay: isTableLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader isBackButton={false} isEditButton={false} search={false} title={'Evaluations'} description=''>
+                                <ToggleButton
+                                    value='auto-refresh'
+                                    selected={autoRefresh}
+                                    onChange={toggleAutoRefresh}
+                                    size='small'
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: '100%',
                                         backgroundColor: 'transparent',
-                                        color: '#ff9800',
+                                        color: autoRefresh ? '#ff9800' : '#4caf50',
                                         border: '1px solid transparent',
                                         '&:hover': {
                                             backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                            color: '#f57c00',
+                                            color: autoRefresh ? '#f57c00' : '#388e3c',
                                             border: '1px solid transparent'
+                                        },
+                                        '&.Mui-selected': {
+                                            backgroundColor: 'transparent',
+                                            color: '#ff9800',
+                                            border: '1px solid transparent',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                                color: '#f57c00',
+                                                border: '1px solid transparent'
+                                            }
                                         }
-                                    }
-                                }}
-                                title={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh (every 5s)'}
-                            >
-                                {autoRefresh ? <IconPlayerPause /> : <IconPlayerPlay />}
-                            </ToggleButton>
-                            <IconButton
-                                sx={{
-                                    borderRadius: 2,
-                                    height: '100%',
-                                    color: theme.palette.secondary.main,
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
-                                        color: theme.palette.secondary.dark
-                                    }
-                                }}
-                                onClick={onRefresh}
-                                title='Refresh'
-                            >
-                                <IconRefresh />
-                            </IconButton>
-                            <StyledPermissionButton
-                                permissionId={'evaluations:create'}
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={createEvaluation}
-                                startIcon={<IconPlus />}
-                            >
-                                New Evaluation
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {selected.length > 0 && (
-                            <StyledPermissionButton
-                                permissionId={'evaluations:delete'}
-                                sx={{ mt: 1, mb: 2, width: 'max-content' }}
-                                variant='outlined'
-                                onClick={deleteEvaluationsAllVersions}
-                                color='error'
-                                startIcon={<IconTrash />}
-                            >
-                                Delete {selected.length} {selected.length === 1 ? 'evaluation' : 'evaluations'}
-                            </StyledPermissionButton>
-                        )}
-                        {!isTableLoading && rows.length <= 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={empty_evalSVG}
-                                        alt='empty_evalSVG'
-                                    />
-                                </Box>
-                                <div>No Evaluations Yet</div>
-                            </Stack>
-                        ) : (
-                            <>
-                                <TableContainer
-                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                    component={Paper}
+                                    }}
+                                    title={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh (every 5s)'}
                                 >
-                                    <Table sx={{ minWidth: 650 }}>
-                                        <TableHead
-                                            sx={{
-                                                backgroundColor: customization.isDarkMode
-                                                    ? theme.palette.common.black
-                                                    : theme.palette.grey[100],
-                                                height: 56
-                                            }}
-                                        >
-                                            <TableRow>
-                                                <TableCell padding='checkbox'>
-                                                    <Checkbox
-                                                        color='primary'
-                                                        checked={selected.length === (rows.filter((item) => item?.latestEval) || []).length}
-                                                        onChange={onSelectAllClick}
-                                                        inputProps={{
-                                                            'aria-label': 'select all'
-                                                        }}
-                                                    />
-                                                </TableCell>
-                                                <TableCell width={10}> </TableCell>
-                                                <TableCell>Name</TableCell>
-                                                <TableCell>Latest Version</TableCell>
-                                                <TableCell>Average Metrics</TableCell>
-                                                <TableCell>Last Evaluated</TableCell>
-                                                <TableCell>Flow(s)</TableCell>
-                                                <TableCell>Dataset</TableCell>
-                                                <TableCell> </TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {isTableLoading ? (
-                                                <>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                    <StyledTableRow>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <Skeleton variant='text' />
-                                                        </StyledTableCell>
-                                                    </StyledTableRow>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {rows
-                                                        .filter((item) => item?.latestEval)
-                                                        .map((item, index) => (
-                                                            <EvaluationRunRow
-                                                                rows={rows.filter((row) => row.name === item.name)}
-                                                                item={item}
-                                                                key={index}
-                                                                theme={theme}
-                                                                selected={selected}
-                                                                customization={customization}
-                                                                onRefresh={onRefresh}
-                                                                handleSelect={handleSelect}
-                                                            />
-                                                        ))}
-                                                </>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
-                                {/* Pagination and Page Size Controls */}
-                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                            </>
-                        )}
-                    </Stack>
+                                    {autoRefresh ? <IconPlayerPause /> : <IconPlayerPlay />}
+                                </ToggleButton>
+                                <IconButton
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: '100%',
+                                        color: theme.palette.secondary.main,
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                            color: theme.palette.secondary.dark
+                                        }
+                                    }}
+                                    onClick={onRefresh}
+                                    title='Refresh'
+                                >
+                                    <IconRefresh />
+                                </IconButton>
+                                <StyledPermissionButton
+                                    permissionId={'evaluations:create'}
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={createEvaluation}
+                                    startIcon={<IconPlus />}
+                                >
+                                    New Evaluation
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {selected.length > 0 && (
+                                <StyledPermissionButton
+                                    permissionId={'evaluations:delete'}
+                                    sx={{ mt: 1, mb: 2, width: 'max-content' }}
+                                    variant='outlined'
+                                    onClick={deleteEvaluationsAllVersions}
+                                    color='error'
+                                    startIcon={<IconTrash />}
+                                >
+                                    Delete {selected.length} {selected.length === 1 ? 'evaluation' : 'evaluations'}
+                                </StyledPermissionButton>
+                            )}
+                            {!isTableLoading && rows.length <= 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={empty_evalSVG}
+                                            alt='empty_evalSVG'
+                                        />
+                                    </Box>
+                                    <div>No Evaluations Yet</div>
+                                </Stack>
+                            ) : (
+                                <>
+                                    <TableContainer
+                                        sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                        component={Paper}
+                                    >
+                                        <Table sx={{ minWidth: 650 }}>
+                                            <TableHead
+                                                sx={{
+                                                    backgroundColor: customization.isDarkMode
+                                                        ? theme.palette.common.black
+                                                        : theme.palette.grey[100],
+                                                    height: 56
+                                                }}
+                                            >
+                                                <TableRow>
+                                                    <TableCell padding='checkbox'>
+                                                        <Checkbox
+                                                            color='primary'
+                                                            checked={
+                                                                selected.length === (rows.filter((item) => item?.latestEval) || []).length
+                                                            }
+                                                            onChange={onSelectAllClick}
+                                                            inputProps={{
+                                                                'aria-label': 'select all'
+                                                            }}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell width={10}> </TableCell>
+                                                    <TableCell>Name</TableCell>
+                                                    <TableCell>Latest Version</TableCell>
+                                                    <TableCell>Average Metrics</TableCell>
+                                                    <TableCell>Last Evaluated</TableCell>
+                                                    <TableCell>Flow(s)</TableCell>
+                                                    <TableCell>Dataset</TableCell>
+                                                    <TableCell> </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {isTableLoading ? (
+                                                    <>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                        </StyledTableRow>
+                                                        <StyledTableRow>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                <Skeleton variant='text' />
+                                                            </StyledTableCell>
+                                                        </StyledTableRow>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {rows
+                                                            .filter((item) => item?.latestEval)
+                                                            .map((item, index) => (
+                                                                <EvaluationRunRow
+                                                                    rows={rows.filter((row) => row.name === item.name)}
+                                                                    item={item}
+                                                                    key={index}
+                                                                    theme={theme}
+                                                                    selected={selected}
+                                                                    customization={customization}
+                                                                    onRefresh={onRefresh}
+                                                                    handleSelect={handleSelect}
+                                                                />
+                                                            ))}
+                                                    </>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                    {/* Pagination and Page Size Controls */}
+                                    <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                                </>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             {showNewEvaluationDialog && (

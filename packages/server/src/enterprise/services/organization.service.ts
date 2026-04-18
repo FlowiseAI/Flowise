@@ -4,6 +4,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { generateId } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Telemetry } from '../../utils/telemetry'
+import { Credential } from '../../database/entities/Credential'
 import { Organization, OrganizationName } from '../database/entities/organization.entity'
 import { isInvalidName, isInvalidUUID } from '../utils/validation.util'
 import { UserErrorMessage, UserService } from './user.service'
@@ -35,7 +36,42 @@ export class OrganizationService {
 
     public async readOrganizationById(id: string | undefined, queryRunner: QueryRunner) {
         this.validateOrganizationId(id)
-        return await queryRunner.manager.findOneBy(Organization, { id })
+        const organization = await queryRunner.manager.findOneBy(Organization, { id })
+        if (!organization) return null
+
+        // TODO: Replace mocked defaultConfig with actual governance settings from database
+        const credential = await queryRunner.manager.findOneBy(Credential, { credentialName: 'openAIApi' })
+        const credentialId = credential?.id || ''
+        const defaultConfig = {
+            chatModel: {
+                name: 'chatOpenAI',
+                label: 'OpenAI',
+                inputs: {
+                    cache: '',
+                    modelName: 'gpt-5.4',
+                    temperature: 0.9,
+                    streaming: true,
+                    allowImageUploads: '',
+                    reasoning: '',
+                    reasoningEffort: '',
+                    reasoningSummary: '',
+                    maxTokens: '',
+                    topP: '',
+                    frequencyPenalty: '',
+                    presencePenalty: '',
+                    timeout: '',
+                    strictToolCalling: '',
+                    stopSequence: '',
+                    basepath: '',
+                    baseOptions: '',
+                    FLOWISE_CREDENTIAL_ID: credentialId,
+                    credential: credentialId
+                },
+                credential: credentialId
+            }
+        }
+
+        return { ...organization, defaultConfig: JSON.stringify(defaultConfig) }
     }
 
     public validateOrganizationName(name: string | undefined, isRegister: boolean = false) {

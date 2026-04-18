@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Divider, List, Typography } from '@mui/material'
+import { Divider, List, Typography, useMediaQuery } from '@mui/material'
 
 // project imports
 import NavItem from '../NavItem'
@@ -15,6 +16,9 @@ import { Available } from '@/ui-component/rbac/available'
 const NavGroup = ({ item }) => {
     const theme = useTheme()
     const { hasPermission, hasDisplay } = useAuth()
+    const drawerOpened = useSelector((state) => state.customization.opened)
+    const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
+    const collapsed = matchUpMd && !drawerOpened
 
     const listItems = (menu, level = 1) => {
         // Filter based on display and permission
@@ -72,6 +76,7 @@ const NavGroup = ({ item }) => {
         <>
             <List
                 subheader={
+                    !collapsed &&
                     item.title && (
                         <Typography variant='caption' sx={{ ...theme.typography.menuCaption }} display='block' gutterBottom>
                             {item.title}
@@ -83,7 +88,7 @@ const NavGroup = ({ item }) => {
                         </Typography>
                     )
                 }
-                sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
+                sx={{ px: collapsed ? '8px' : '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
             >
                 {renderPrimaryItems().map((menu) => listItems(menu))}
             </List>
@@ -96,11 +101,18 @@ const NavGroup = ({ item }) => {
                             <Divider sx={{ height: '1px', borderColor: theme.palette.grey[900] + 25, my: 0 }} />
                             <List
                                 subheader={
-                                    <Typography variant='caption' sx={{ ...theme.typography.subMenuCaption }} display='block' gutterBottom>
-                                        {group.title}
-                                    </Typography>
+                                    !collapsed && (
+                                        <Typography
+                                            variant='caption'
+                                            sx={{ ...theme.typography.subMenuCaption }}
+                                            display='block'
+                                            gutterBottom
+                                        >
+                                            {group.title}
+                                        </Typography>
+                                    )
                                 }
-                                sx={{ p: '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
+                                sx={{ px: collapsed ? '8px' : '16px', py: 2, display: 'flex', flexDirection: 'column', gap: 1 }}
                             >
                                 {group.children.map((menu) => listItems(menu))}
                             </List>

@@ -9,6 +9,7 @@ import { tableCellClasses } from '@mui/material/TableCell'
 import {
     Button,
     Box,
+    Fade,
     Skeleton,
     Stack,
     Table,
@@ -241,199 +242,204 @@ const Credentials = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Credentials'
-                            title='Credentials'
-                            description='API keys, tokens, and secrets for 3rd party integrations'
-                        >
-                            <StyledPermissionButton
-                                permissionId='credentials:create'
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={listCredential}
-                                startIcon={<IconPlus />}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                searchPlaceholder='Search Credentials'
+                                title='Credentials'
+                                description='API keys, tokens, and secrets for 3rd party integrations'
                             >
-                                Add Credential
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {!isLoading && credentials.length <= 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
-                                        src={CredentialEmptySVG}
-                                        alt='CredentialEmptySVG'
-                                    />
-                                </Box>
-                                <div>No Credentials Yet</div>
-                            </Stack>
-                        ) : (
-                            <TableContainer
-                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                component={Paper}
-                            >
-                                <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-                                    <TableHead
-                                        sx={{
-                                            backgroundColor: customization.isDarkMode
-                                                ? theme.palette.common.black
-                                                : theme.palette.grey[100],
-                                            height: 56
-                                        }}
-                                    >
-                                        <TableRow>
-                                            <StyledTableCell>Name</StyledTableCell>
-                                            <StyledTableCell>Last Updated</StyledTableCell>
-                                            <StyledTableCell>Created</StyledTableCell>
-                                            <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
-                                            <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
-                                            <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {isLoading ? (
-                                            <>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                </StyledTableRow>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                </StyledTableRow>
-                                            </>
-                                        ) : (
-                                            <>
-                                                {credentials.filter(filterCredentials).map((credential, index) => (
-                                                    <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                                        <StyledTableCell scope='row'>
-                                                            <Box
-                                                                sx={{
-                                                                    display: 'flex',
-                                                                    flexDirection: 'row',
-                                                                    alignItems: 'center',
-                                                                    gap: 1
-                                                                }}
-                                                            >
+                                <StyledPermissionButton
+                                    permissionId='credentials:create'
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={listCredential}
+                                    startIcon={<IconPlus />}
+                                >
+                                    Add Credential
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {!isLoading && credentials.length <= 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '16vh', width: 'auto' }}
+                                            src={CredentialEmptySVG}
+                                            alt='CredentialEmptySVG'
+                                        />
+                                    </Box>
+                                    <div>No Credentials Yet</div>
+                                </Stack>
+                            ) : (
+                                <TableContainer
+                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                    component={Paper}
+                                >
+                                    <Table sx={{ minWidth: 650 }} aria-label='simple table'>
+                                        <TableHead
+                                            sx={{
+                                                backgroundColor: customization.isDarkMode
+                                                    ? theme.palette.common.black
+                                                    : theme.palette.grey[100],
+                                                height: 56
+                                            }}
+                                        >
+                                            <TableRow>
+                                                <StyledTableCell>Name</StyledTableCell>
+                                                <StyledTableCell>Last Updated</StyledTableCell>
+                                                <StyledTableCell>Created</StyledTableCell>
+                                                <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
+                                                <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
+                                                <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {isLoading ? (
+                                                <>
+                                                    <StyledTableRow>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                    </StyledTableRow>
+                                                    <StyledTableRow>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                    </StyledTableRow>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {credentials.filter(filterCredentials).map((credential, index) => (
+                                                        <StyledTableRow
+                                                            key={index}
+                                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                        >
+                                                            <StyledTableCell scope='row'>
                                                                 <Box
                                                                     sx={{
-                                                                        width: 35,
-                                                                        height: 35,
-                                                                        borderRadius: '50%',
-                                                                        backgroundColor: customization.isDarkMode
-                                                                            ? theme.palette.common.white
-                                                                            : theme.palette.grey[300] + 75
+                                                                        display: 'flex',
+                                                                        flexDirection: 'row',
+                                                                        alignItems: 'center',
+                                                                        gap: 1
                                                                     }}
                                                                 >
-                                                                    <img
-                                                                        style={{
-                                                                            width: '100%',
-                                                                            height: '100%',
-                                                                            padding: 5,
-                                                                            objectFit: 'contain'
+                                                                    <Box
+                                                                        sx={{
+                                                                            width: 35,
+                                                                            height: 35,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: customization.isDarkMode
+                                                                                ? theme.palette.common.white
+                                                                                : theme.palette.grey[300] + 75
                                                                         }}
-                                                                        alt={credential.credentialName}
-                                                                        src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
-                                                                        onError={(e) => {
-                                                                            e.target.onerror = null
-                                                                            e.target.style.padding = '5px'
-                                                                            e.target.src = keySVG
-                                                                        }}
-                                                                    />
+                                                                    >
+                                                                        <img
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                padding: 5,
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                            alt={credential.credentialName}
+                                                                            src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
+                                                                            onError={(e) => {
+                                                                                e.target.onerror = null
+                                                                                e.target.style.padding = '5px'
+                                                                                e.target.src = keySVG
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                    {credential.name}
                                                                 </Box>
-                                                                {credential.name}
-                                                            </Box>
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            {moment(credential.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            {moment(credential.createdDate).format('MMMM Do, YYYY HH:mm:ss')}
-                                                        </StyledTableCell>
-                                                        {!credential.shared && (
-                                                            <>
-                                                                <StyledTableCell>
-                                                                    <PermissionIconButton
-                                                                        permissionId={'credentials:share'}
-                                                                        display={'feat:workspaces'}
-                                                                        title='Share'
-                                                                        color='primary'
-                                                                        onClick={() => share(credential)}
-                                                                    >
-                                                                        <IconShare />
-                                                                    </PermissionIconButton>
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <PermissionIconButton
-                                                                        permissionId={'credentials:create,credentials:update'}
-                                                                        title='Edit'
-                                                                        color='primary'
-                                                                        onClick={() => edit(credential)}
-                                                                    >
-                                                                        <IconEdit />
-                                                                    </PermissionIconButton>
-                                                                </StyledTableCell>
-                                                                <StyledTableCell>
-                                                                    <PermissionIconButton
-                                                                        permissionId={'credentials:delete'}
-                                                                        title='Delete'
-                                                                        color='error'
-                                                                        onClick={() => deleteCredential(credential)}
-                                                                    >
-                                                                        <IconTrash />
-                                                                    </PermissionIconButton>
-                                                                </StyledTableCell>
-                                                            </>
-                                                        )}
-                                                        {credential.shared && (
-                                                            <>
-                                                                <StyledTableCell colSpan={'3'}>Shared Credential</StyledTableCell>
-                                                            </>
-                                                        )}
-                                                    </StyledTableRow>
-                                                ))}
-                                            </>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        )}
-                    </Stack>
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                {moment(credential.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
+                                                            </StyledTableCell>
+                                                            <StyledTableCell>
+                                                                {moment(credential.createdDate).format('MMMM Do, YYYY HH:mm:ss')}
+                                                            </StyledTableCell>
+                                                            {!credential.shared && (
+                                                                <>
+                                                                    <StyledTableCell>
+                                                                        <PermissionIconButton
+                                                                            permissionId={'credentials:share'}
+                                                                            display={'feat:workspaces'}
+                                                                            title='Share'
+                                                                            color='primary'
+                                                                            onClick={() => share(credential)}
+                                                                        >
+                                                                            <IconShare />
+                                                                        </PermissionIconButton>
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <PermissionIconButton
+                                                                            permissionId={'credentials:create,credentials:update'}
+                                                                            title='Edit'
+                                                                            color='primary'
+                                                                            onClick={() => edit(credential)}
+                                                                        >
+                                                                            <IconEdit />
+                                                                        </PermissionIconButton>
+                                                                    </StyledTableCell>
+                                                                    <StyledTableCell>
+                                                                        <PermissionIconButton
+                                                                            permissionId={'credentials:delete'}
+                                                                            title='Delete'
+                                                                            color='error'
+                                                                            onClick={() => deleteCredential(credential)}
+                                                                        >
+                                                                            <IconTrash />
+                                                                        </PermissionIconButton>
+                                                                    </StyledTableCell>
+                                                                </>
+                                                            )}
+                                                            {credential.shared && (
+                                                                <>
+                                                                    <StyledTableCell colSpan={'3'}>Shared Credential</StyledTableCell>
+                                                                </>
+                                                            )}
+                                                        </StyledTableRow>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <CredentialListDialog

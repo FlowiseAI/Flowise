@@ -25,6 +25,7 @@ const getPlanProration = (subscriptionId, newPlanId) =>
 const updateSubscriptionPlan = (subscriptionId, newPlanId, prorationDate) =>
     client.post(`/organization/update-subscription-plan`, { subscriptionId, newPlanId, prorationDate })
 const getCurrentUsage = () => client.get(`/organization/get-current-usage`)
+const getOrganizationById = (id) => client.get(`/organization?id=${id}`)
 
 // workspace users
 const getAllUsersByWorkspaceId = (workspaceId) => client.get(`/workspaceuser?workspaceId=${workspaceId}`)
@@ -55,5 +56,6 @@ export default {
     getPlanProration,
     updateSubscriptionPlan,
     getCurrentUsage,
-    deleteOrganizationUser
+    deleteOrganizationUser,
+    getOrganizationById
 }

@@ -46,7 +46,7 @@ const agentSettings = {
             icon: icons.IconUsers
         },
         {
-            id: 'chatflowConfiguration',
+            id: 'agentConfiguration',
             title: 'Configuration',
             type: 'item',
             url: '',

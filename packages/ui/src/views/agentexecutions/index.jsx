@@ -11,6 +11,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
+    Fade,
     FormControl,
     Grid,
     IconButton,
@@ -235,228 +236,230 @@ const AgentExecutions = () => {
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader title='Agent Executions' description='Monitor and manage agents executions' />
+                <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                    <Stack flexDirection='column' sx={{ gap: 3 }}>
+                        <ViewHeader title='Agent Executions' description='Monitor and manage agents executions' />
 
-                    {/* Filter Section */}
-                    <Box sx={{ mb: 2, width: '100%' }}>
-                        <Grid container spacing={2} alignItems='center'>
-                            <Grid item xs={12} md={2}>
-                                <FormControl fullWidth size='small'>
-                                    <InputLabel id='state-select-label'>State</InputLabel>
-                                    <Select
-                                        labelId='state-select-label'
-                                        value={filters.state}
-                                        label='State'
-                                        onChange={(e) => handleFilterChange('state', e.target.value)}
+                        {/* Filter Section */}
+                        <Box sx={{ mb: 2, width: '100%' }}>
+                            <Grid container spacing={2} alignItems='center'>
+                                <Grid item xs={12} md={2}>
+                                    <FormControl fullWidth size='small'>
+                                        <InputLabel id='state-select-label'>State</InputLabel>
+                                        <Select
+                                            labelId='state-select-label'
+                                            value={filters.state}
+                                            label='State'
+                                            onChange={(e) => handleFilterChange('state', e.target.value)}
+                                            size='small'
+                                            sx={{
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: borderColor
+                                                },
+                                                '& .MuiSvgIcon-root': {
+                                                    color: customization.isDarkMode ? '#fff' : 'inherit'
+                                                }
+                                            }}
+                                        >
+                                            <MenuItem value=''>All</MenuItem>
+                                            <MenuItem value='INPROGRESS'>In Progress</MenuItem>
+                                            <MenuItem value='FINISHED'>Finished</MenuItem>
+                                            <MenuItem value='ERROR'>Error</MenuItem>
+                                            <MenuItem value='TERMINATED'>Terminated</MenuItem>
+                                            <MenuItem value='TIMEOUT'>Timeout</MenuItem>
+                                            <MenuItem value='STOPPED'>Stopped</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                                <Grid item xs={12} md={2}>
+                                    <DatePicker
+                                        selected={filters.startDate}
+                                        onChange={(date) => onDateChange('startDate', date)}
+                                        selectsStart
+                                        startDate={filters.startDate}
+                                        className='form-control'
+                                        wrapperClassName='datePicker'
+                                        maxDate={new Date()}
+                                        customInput={
+                                            <TextField
+                                                size='small'
+                                                label='Start date'
+                                                fullWidth
+                                                sx={{
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: borderColor
+                                                    }
+                                                }}
+                                            />
+                                        }
+                                    />
+                                </Grid>
+                                <Grid sx={{ ml: -1 }} item xs={12} md={2}>
+                                    <DatePicker
+                                        selected={filters.endDate}
+                                        onChange={(date) => onDateChange('endDate', date)}
+                                        selectsEnd
+                                        endDate={filters.endDate}
+                                        className='form-control'
+                                        wrapperClassName='datePicker'
+                                        minDate={filters.startDate}
+                                        maxDate={new Date()}
+                                        customInput={
+                                            <TextField
+                                                size='small'
+                                                label='End date'
+                                                fullWidth
+                                                sx={{
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: borderColor
+                                                    }
+                                                }}
+                                            />
+                                        }
+                                    />
+                                </Grid>
+                                <Grid sx={{ ml: -1 }} item xs={12} md={2}>
+                                    <TextField
+                                        fullWidth
+                                        label='Agents'
+                                        value={filters.agentflowName}
+                                        onChange={(e) => handleFilterChange('agentflowName', e.target.value)}
                                         size='small'
                                         sx={{
                                             '& .MuiOutlinedInput-notchedOutline': {
                                                 borderColor: borderColor
-                                            },
-                                            '& .MuiSvgIcon-root': {
-                                                color: customization.isDarkMode ? '#fff' : 'inherit'
                                             }
                                         }}
-                                    >
-                                        <MenuItem value=''>All</MenuItem>
-                                        <MenuItem value='INPROGRESS'>In Progress</MenuItem>
-                                        <MenuItem value='FINISHED'>Finished</MenuItem>
-                                        <MenuItem value='ERROR'>Error</MenuItem>
-                                        <MenuItem value='TERMINATED'>Terminated</MenuItem>
-                                        <MenuItem value='TIMEOUT'>Timeout</MenuItem>
-                                        <MenuItem value='STOPPED'>Stopped</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <DatePicker
-                                    selected={filters.startDate}
-                                    onChange={(date) => onDateChange('startDate', date)}
-                                    selectsStart
-                                    startDate={filters.startDate}
-                                    className='form-control'
-                                    wrapperClassName='datePicker'
-                                    maxDate={new Date()}
-                                    customInput={
-                                        <TextField
-                                            size='small'
-                                            label='Start date'
-                                            fullWidth
-                                            sx={{
-                                                '& .MuiOutlinedInput-notchedOutline': {
-                                                    borderColor: borderColor
-                                                }
-                                            }}
-                                        />
-                                    }
-                                />
-                            </Grid>
-                            <Grid sx={{ ml: -1 }} item xs={12} md={2}>
-                                <DatePicker
-                                    selected={filters.endDate}
-                                    onChange={(date) => onDateChange('endDate', date)}
-                                    selectsEnd
-                                    endDate={filters.endDate}
-                                    className='form-control'
-                                    wrapperClassName='datePicker'
-                                    minDate={filters.startDate}
-                                    maxDate={new Date()}
-                                    customInput={
-                                        <TextField
-                                            size='small'
-                                            label='End date'
-                                            fullWidth
-                                            sx={{
-                                                '& .MuiOutlinedInput-notchedOutline': {
-                                                    borderColor: borderColor
-                                                }
-                                            }}
-                                        />
-                                    }
-                                />
-                            </Grid>
-                            <Grid sx={{ ml: -1 }} item xs={12} md={2}>
-                                <TextField
-                                    fullWidth
-                                    label='Agents'
-                                    value={filters.agentflowName}
-                                    onChange={(e) => handleFilterChange('agentflowName', e.target.value)}
-                                    size='small'
-                                    sx={{
-                                        '& .MuiOutlinedInput-notchedOutline': {
-                                            borderColor: borderColor
-                                        }
-                                    }}
-                                />
-                            </Grid>
-                            <Grid sx={{ ml: -1 }} item xs={12} md={2}>
-                                <TextField
-                                    fullWidth
-                                    label='Session ID'
-                                    value={filters.sessionId}
-                                    onChange={(e) => handleFilterChange('sessionId', e.target.value)}
-                                    size='small'
-                                    sx={{
-                                        '& .MuiOutlinedInput-notchedOutline': {
-                                            borderColor: borderColor
-                                        }
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <Stack direction='row' spacing={1}>
-                                    <Button
-                                        variant='contained'
-                                        color='primary'
-                                        onClick={() => applyFilters(currentPage, pageLimit)}
+                                    />
+                                </Grid>
+                                <Grid sx={{ ml: -1 }} item xs={12} md={2}>
+                                    <TextField
+                                        fullWidth
+                                        label='Session ID'
+                                        value={filters.sessionId}
+                                        onChange={(e) => handleFilterChange('sessionId', e.target.value)}
                                         size='small'
-                                    >
-                                        Apply
-                                    </Button>
-                                    <Button variant='outlined' onClick={resetFilters} size='small'>
-                                        Reset
-                                    </Button>
-                                    <Available permissions={['executions:delete']}>
-                                        <Tooltip title='Delete selected executions'>
-                                            <span>
-                                                <IconButton
-                                                    sx={{ height: 30, width: 30 }}
-                                                    size='small'
-                                                    color='error'
-                                                    onClick={handleDeleteDialogOpen}
-                                                    edge='end'
-                                                    disabled={selectedExecutionIds.length === 0}
-                                                >
-                                                    <IconTrash />
-                                                </IconButton>
-                                            </span>
-                                        </Tooltip>
-                                    </Available>
-                                </Stack>
+                                        sx={{
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: borderColor
+                                            }
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} md={2}>
+                                    <Stack direction='row' spacing={1}>
+                                        <Button
+                                            variant='contained'
+                                            color='primary'
+                                            onClick={() => applyFilters(currentPage, pageLimit)}
+                                            size='small'
+                                        >
+                                            Apply
+                                        </Button>
+                                        <Button variant='outlined' onClick={resetFilters} size='small'>
+                                            Reset
+                                        </Button>
+                                        <Available permissions={['executions:delete']}>
+                                            <Tooltip title='Delete selected executions'>
+                                                <span>
+                                                    <IconButton
+                                                        sx={{ height: 30, width: 30 }}
+                                                        size='small'
+                                                        color='error'
+                                                        onClick={handleDeleteDialogOpen}
+                                                        edge='end'
+                                                        disabled={selectedExecutionIds.length === 0}
+                                                    >
+                                                        <IconTrash />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                        </Available>
+                                    </Stack>
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    </Box>
+                        </Box>
 
-                    {executions?.length > 0 && (
-                        <>
-                            <ExecutionsListTable
-                                data={executions}
-                                isLoading={isLoading}
-                                onSelectionChange={handleExecutionSelectionChange}
-                                onExecutionRowClick={(execution) => {
-                                    setOpenDrawer(true)
-                                    const executionDetails =
-                                        typeof execution.executionData === 'string'
-                                            ? JSON.parse(execution.executionData)
-                                            : execution.executionData
-                                    setSelectedExecutionData(executionDetails)
-                                    setSelectedMetadata(omit(execution, ['executionData']))
-                                }}
-                            />
-
-                            {/* Pagination and Page Size Controls */}
-                            {!isLoading && total > 0 && (
-                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                            )}
-
-                            <ExecutionDetails
-                                open={openDrawer}
-                                execution={selectedExecutionData}
-                                metadata={selectedMetadata}
-                                onClose={() => setOpenDrawer(false)}
-                                onProceedSuccess={() => {
-                                    setOpenDrawer(false)
-                                    getAllExecutions.request()
-                                }}
-                                onUpdateSharing={() => {
-                                    getAllExecutions.request()
-                                }}
-                                onRefresh={(executionId) => {
-                                    getAllExecutions.request()
-                                    getExecutionByIdApi.request(executionId)
-                                }}
-                            />
-                        </>
-                    )}
-
-                    {/* Delete Confirmation Dialog */}
-                    <Dialog
-                        open={openDeleteDialog}
-                        onClose={handleDeleteDialogClose}
-                        aria-labelledby='alert-dialog-title'
-                        aria-describedby='alert-dialog-description'
-                    >
-                        <DialogTitle id='alert-dialog-title'>Confirm Deletion</DialogTitle>
-                        <DialogContent>
-                            <DialogContentText id='alert-dialog-description'>
-                                Are you sure you want to delete {selectedExecutionIds.length} execution
-                                {selectedExecutionIds.length !== 1 ? 's' : ''}? This action cannot be undone.
-                            </DialogContentText>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleDeleteDialogClose} color='primary'>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleDeleteExecutions} color='error'>
-                                Delete
-                            </Button>
-                        </DialogActions>
-                    </Dialog>
-
-                    {!isLoading && (!executions || executions.length === 0) && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                            <Box sx={{ p: 2, height: 'auto' }}>
-                                <img
-                                    style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                    src={execution_empty}
-                                    alt='execution_empty'
+                        {executions?.length > 0 && (
+                            <>
+                                <ExecutionsListTable
+                                    data={executions}
+                                    isLoading={isLoading}
+                                    onSelectionChange={handleExecutionSelectionChange}
+                                    onExecutionRowClick={(execution) => {
+                                        setOpenDrawer(true)
+                                        const executionDetails =
+                                            typeof execution.executionData === 'string'
+                                                ? JSON.parse(execution.executionData)
+                                                : execution.executionData
+                                        setSelectedExecutionData(executionDetails)
+                                        setSelectedMetadata(omit(execution, ['executionData']))
+                                    }}
                                 />
-                            </Box>
-                            <div>No Executions Yet</div>
-                        </Stack>
-                    )}
-                </Stack>
+
+                                {/* Pagination and Page Size Controls */}
+                                {!isLoading && total > 0 && (
+                                    <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                                )}
+
+                                <ExecutionDetails
+                                    open={openDrawer}
+                                    execution={selectedExecutionData}
+                                    metadata={selectedMetadata}
+                                    onClose={() => setOpenDrawer(false)}
+                                    onProceedSuccess={() => {
+                                        setOpenDrawer(false)
+                                        getAllExecutions.request()
+                                    }}
+                                    onUpdateSharing={() => {
+                                        getAllExecutions.request()
+                                    }}
+                                    onRefresh={(executionId) => {
+                                        getAllExecutions.request()
+                                        getExecutionByIdApi.request(executionId)
+                                    }}
+                                />
+                            </>
+                        )}
+
+                        {/* Delete Confirmation Dialog */}
+                        <Dialog
+                            open={openDeleteDialog}
+                            onClose={handleDeleteDialogClose}
+                            aria-labelledby='alert-dialog-title'
+                            aria-describedby='alert-dialog-description'
+                        >
+                            <DialogTitle id='alert-dialog-title'>Confirm Deletion</DialogTitle>
+                            <DialogContent>
+                                <DialogContentText id='alert-dialog-description'>
+                                    Are you sure you want to delete {selectedExecutionIds.length} execution
+                                    {selectedExecutionIds.length !== 1 ? 's' : ''}? This action cannot be undone.
+                                </DialogContentText>
+                            </DialogContent>
+                            <DialogActions>
+                                <Button onClick={handleDeleteDialogClose} color='primary'>
+                                    Cancel
+                                </Button>
+                                <Button onClick={handleDeleteExecutions} color='error'>
+                                    Delete
+                                </Button>
+                            </DialogActions>
+                        </Dialog>
+
+                        {!isLoading && (!executions || executions.length === 0) && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                        src={execution_empty}
+                                        alt='execution_empty'
+                                    />
+                                </Box>
+                                <div>No Executions Yet</div>
+                            </Stack>
+                        )}
+                    </Stack>
+                </Fade>
             )}
         </MainCard>
     )

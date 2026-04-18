@@ -10,6 +10,7 @@ import {
     Button,
     Chip,
     Drawer,
+    Fade,
     IconButton,
     Paper,
     Skeleton,
@@ -401,115 +402,117 @@ const Workspaces = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            isBackButton={false}
-                            isEditButton={false}
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            title='Workspaces'
-                            searchPlaceholder='Search Workspaces'
-                        >
-                            <StyledPermissionButton
-                                permissionId={'workspace:create'}
-                                variant='contained'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={addNew}
-                                startIcon={<IconPlus />}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                isBackButton={false}
+                                isEditButton={false}
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                title='Workspaces'
+                                searchPlaceholder='Search Workspaces'
                             >
-                                Add New
-                            </StyledPermissionButton>
-                        </ViewHeader>
-                        {!isLoading && workspaces.length <= 0 ? (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={workspaces_emptySVG}
-                                        alt='workspaces_emptySVG'
-                                    />
-                                </Box>
-                                <div>No Workspaces Yet</div>
-                            </Stack>
-                        ) : (
-                            <TableContainer
-                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
-                                component={Paper}
-                            >
-                                <Table sx={{ minWidth: 650 }}>
-                                    <TableHead
-                                        sx={{
-                                            backgroundColor: customization.isDarkMode
-                                                ? theme.palette.common.black
-                                                : theme.palette.grey[100],
-                                            height: 56
-                                        }}
-                                    >
-                                        <TableRow>
-                                            <TableCell>Name</TableCell>
-                                            <TableCell>Description</TableCell>
-                                            <TableCell>Users</TableCell>
-                                            <TableCell>Last Updated</TableCell>
-                                            <TableCell> </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {isLoading ? (
-                                            <>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                </StyledTableRow>
-                                                <StyledTableRow>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                    <StyledTableCell>
-                                                        <Skeleton variant='text' />
-                                                    </StyledTableCell>
-                                                </StyledTableRow>
-                                            </>
-                                        ) : (
-                                            <>
-                                                {workspaces.filter(filterWorkspaces).map((ds, index) => (
-                                                    <ShowWorkspaceRow
-                                                        key={index}
-                                                        workspace={ds}
-                                                        rowKey={index}
-                                                        onEditClick={edit}
-                                                        onDeleteClick={deleteWorkspace}
-                                                        onViewUsersClick={showWorkspaceUsers}
-                                                    />
-                                                ))}
-                                            </>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        )}
-                    </Stack>
+                                <StyledPermissionButton
+                                    permissionId={'workspace:create'}
+                                    variant='contained'
+                                    sx={{ borderRadius: 2, height: '100%' }}
+                                    onClick={addNew}
+                                    startIcon={<IconPlus />}
+                                >
+                                    Add New
+                                </StyledPermissionButton>
+                            </ViewHeader>
+                            {!isLoading && workspaces.length <= 0 ? (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={workspaces_emptySVG}
+                                            alt='workspaces_emptySVG'
+                                        />
+                                    </Box>
+                                    <div>No Workspaces Yet</div>
+                                </Stack>
+                            ) : (
+                                <TableContainer
+                                    sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                    component={Paper}
+                                >
+                                    <Table sx={{ minWidth: 650 }}>
+                                        <TableHead
+                                            sx={{
+                                                backgroundColor: customization.isDarkMode
+                                                    ? theme.palette.common.black
+                                                    : theme.palette.grey[100],
+                                                height: 56
+                                            }}
+                                        >
+                                            <TableRow>
+                                                <TableCell>Name</TableCell>
+                                                <TableCell>Description</TableCell>
+                                                <TableCell>Users</TableCell>
+                                                <TableCell>Last Updated</TableCell>
+                                                <TableCell> </TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {isLoading ? (
+                                                <>
+                                                    <StyledTableRow>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                    </StyledTableRow>
+                                                    <StyledTableRow>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            <Skeleton variant='text' />
+                                                        </StyledTableCell>
+                                                    </StyledTableRow>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {workspaces.filter(filterWorkspaces).map((ds, index) => (
+                                                        <ShowWorkspaceRow
+                                                            key={index}
+                                                            workspace={ds}
+                                                            rowKey={index}
+                                                            onEditClick={edit}
+                                                            onDeleteClick={deleteWorkspace}
+                                                            onViewUsersClick={showWorkspaceUsers}
+                                                        />
+                                                    ))}
+                                                </>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             {showWorkspaceDialog && (

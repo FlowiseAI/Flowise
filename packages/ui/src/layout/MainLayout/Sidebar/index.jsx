@@ -15,7 +15,7 @@ import LogoSection from '../LogoSection'
 import CloudMenuList from '@/layout/MainLayout/Sidebar/CloudMenuList'
 
 // store
-import { drawerWidth, headerHeight } from '@/store/constant'
+import { drawerWidth, miniDrawerWidth, headerHeight } from '@/store/constant'
 
 // ==============================|| SIDEBAR DRAWER ||============================== //
 
@@ -60,32 +60,37 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
 
     const container = window !== undefined ? () => window.document.body : undefined
 
+    const desktopWidth = drawerOpen ? drawerWidth : miniDrawerWidth
+
     return (
         <Box
             component='nav'
             sx={{
                 flexShrink: { md: 0 },
-                width: matchUpMd ? drawerWidth : 'auto'
+                width: matchUpMd ? desktopWidth : 'auto',
+                transition: (t) => t.transitions.create('width', { duration: t.transitions.duration.shortest })
             }}
             aria-label='mailbox folders'
         >
             {isAuthenticated && (
                 <Drawer
                     container={container}
-                    variant={matchUpMd ? 'persistent' : 'temporary'}
+                    variant={matchUpMd ? 'permanent' : 'temporary'}
                     anchor='left'
-                    open={drawerOpen}
+                    open={matchUpMd ? true : drawerOpen}
                     onClose={drawerToggle}
                     sx={{
                         '& .MuiDrawer-paper': {
-                            width: drawerWidth,
+                            width: matchUpMd ? desktopWidth : drawerWidth,
+                            overflowX: 'hidden',
                             background: theme.palette.background.default,
                             color: theme.palette.text.primary,
                             [theme.breakpoints.up('md')]: {
                                 top: `${headerHeight}px`
                             },
-                            borderRight: drawerOpen ? '1px solid' : 'none',
-                            borderColor: drawerOpen ? theme.palette.grey[900] + 25 : 'transparent'
+                            borderRight: '1px solid',
+                            borderColor: theme.palette.grey[900] + 25,
+                            transition: (t) => t.transitions.create('width', { duration: t.transitions.duration.shortest })
                         }
                     }}
                     ModalProps={{ keepMounted: true }}

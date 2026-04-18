@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 
 // material-ui
-import { Box, Stack, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton } from '@mui/material'
+import { Box, ButtonGroup, Fade, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -157,117 +157,119 @@ const Tools = () => {
                 {error ? (
                     <ErrorBoundary error={error} />
                 ) : (
-                    <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Tools'
-                            title='Tools'
-                            description='External functions or APIs the agent can use to take action'
-                        >
-                            <ToggleButtonGroup
-                                sx={{ borderRadius: 2, maxHeight: 40 }}
-                                value={view}
-                                color='primary'
-                                disabled={total === 0}
-                                exclusive
-                                onChange={handleChange}
+                    <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
+                        <Stack flexDirection='column' sx={{ gap: 3 }}>
+                            <ViewHeader
+                                onSearchChange={onSearchChange}
+                                search={true}
+                                searchPlaceholder='Search Tools'
+                                title='Tools'
+                                description='External functions or APIs the agent can use to take action'
                             >
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='card'
-                                    title='Card View'
+                                <ToggleButtonGroup
+                                    sx={{ borderRadius: 2, maxHeight: 40 }}
+                                    value={view}
+                                    color='primary'
+                                    disabled={total === 0}
+                                    exclusive
+                                    onChange={handleChange}
                                 >
-                                    <IconLayoutGrid />
-                                </ToggleButton>
-                                <ToggleButton
-                                    sx={{
-                                        borderColor: theme.palette.grey[900] + 25,
-                                        borderRadius: 2,
-                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                    }}
-                                    variant='contained'
-                                    value='list'
-                                    title='List View'
-                                >
-                                    <IconList />
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <PermissionButton
-                                    permissionId={'tools:create'}
-                                    variant='outlined'
-                                    onClick={() => inputRef.current.click()}
-                                    startIcon={<IconFileUpload />}
-                                    sx={{ borderRadius: 2, height: 40 }}
-                                >
-                                    Load
-                                </PermissionButton>
-                                <input
-                                    style={{ display: 'none' }}
-                                    ref={inputRef}
-                                    type='file'
-                                    hidden
-                                    accept='.json'
-                                    onChange={(e) => handleFileUpload(e)}
-                                />
-                            </Box>
-                            <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                <StyledPermissionButton
-                                    permissionId={'tools:create'}
-                                    variant='contained'
-                                    onClick={addNew}
-                                    startIcon={<IconPlus />}
-                                    sx={{ borderRadius: 2, height: 40 }}
-                                >
-                                    Create
-                                </StyledPermissionButton>
-                            </ButtonGroup>
-                        </ViewHeader>
-                        {isLoading && (
-                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                                <Skeleton variant='rounded' height={160} />
-                            </Box>
-                        )}
-                        {!isLoading && total > 0 && (
-                            <>
-                                {!view || view === 'card' ? (
-                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                        {getAllToolsApi.data?.data?.filter(filterTools).map((data, index) => (
-                                            <ItemCard data={data} key={index} onClick={() => edit(data)} />
-                                        ))}
-                                    </Box>
-                                ) : (
-                                    <ToolsTable
-                                        data={getAllToolsApi.data?.data?.filter(filterTools) || []}
-                                        isLoading={isLoading}
-                                        onSelect={edit}
-                                    />
-                                )}
-                                {/* Pagination and Page Size Controls */}
-                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
-                            </>
-                        )}
-                        {!isLoading && total === 0 && (
-                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={ToolEmptySVG}
-                                        alt='ToolEmptySVG'
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='card'
+                                        title='Card View'
+                                    >
+                                        <IconLayoutGrid />
+                                    </ToggleButton>
+                                    <ToggleButton
+                                        sx={{
+                                            borderColor: theme.palette.grey[900] + 25,
+                                            borderRadius: 2,
+                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                        }}
+                                        variant='contained'
+                                        value='list'
+                                        title='List View'
+                                    >
+                                        <IconList />
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <PermissionButton
+                                        permissionId={'tools:create'}
+                                        variant='outlined'
+                                        onClick={() => inputRef.current.click()}
+                                        startIcon={<IconFileUpload />}
+                                        sx={{ borderRadius: 2, height: 40 }}
+                                    >
+                                        Load
+                                    </PermissionButton>
+                                    <input
+                                        style={{ display: 'none' }}
+                                        ref={inputRef}
+                                        type='file'
+                                        hidden
+                                        accept='.json'
+                                        onChange={(e) => handleFileUpload(e)}
                                     />
                                 </Box>
-                                <div>No Tools Created Yet</div>
-                            </Stack>
-                        )}
-                    </Stack>
+                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                    <StyledPermissionButton
+                                        permissionId={'tools:create'}
+                                        variant='contained'
+                                        onClick={addNew}
+                                        startIcon={<IconPlus />}
+                                        sx={{ borderRadius: 2, height: 40 }}
+                                    >
+                                        Create
+                                    </StyledPermissionButton>
+                                </ButtonGroup>
+                            </ViewHeader>
+                            {isLoading && (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                    <Skeleton variant='rounded' height={160} />
+                                </Box>
+                            )}
+                            {!isLoading && total > 0 && (
+                                <>
+                                    {!view || view === 'card' ? (
+                                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                            {getAllToolsApi.data?.data?.filter(filterTools).map((data, index) => (
+                                                <ItemCard data={data} key={index} onClick={() => edit(data)} />
+                                            ))}
+                                        </Box>
+                                    ) : (
+                                        <ToolsTable
+                                            data={getAllToolsApi.data?.data?.filter(filterTools) || []}
+                                            isLoading={isLoading}
+                                            onSelect={edit}
+                                        />
+                                    )}
+                                    {/* Pagination and Page Size Controls */}
+                                    <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                                </>
+                            )}
+                            {!isLoading && total === 0 && (
+                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                    <Box sx={{ p: 2, height: 'auto' }}>
+                                        <img
+                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                            src={ToolEmptySVG}
+                                            alt='ToolEmptySVG'
+                                        />
+                                    </Box>
+                                    <div>No Tools Created Yet</div>
+                                </Stack>
+                            )}
+                        </Stack>
+                    </Fade>
                 )}
             </MainCard>
             <ToolDialog
