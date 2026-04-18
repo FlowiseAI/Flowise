@@ -189,11 +189,11 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
             })
 
             if (isAgentCanvas && isAgentflowV2) {
-                navigate(`/v2/agentcanvas/${chatflow.id}`, { replace: true })
+                navigate(`/v2/agentcanvas/${chatflow.id}`)
             } else if (isAgentCanvas) {
-                navigate(`/agentcanvas/${chatflow.id}`, { replace: true })
+                navigate(`/v2/agentcanvas/${chatflow.id}`)
             } else {
-                navigate(`/canvas/${chatflow.id}`, { replace: true })
+                navigate(`/canvas/${chatflow.id}`)
             }
         } catch (error) {
             enqueueSnackbar({
