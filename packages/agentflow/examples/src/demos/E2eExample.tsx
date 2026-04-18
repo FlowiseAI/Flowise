@@ -136,10 +136,12 @@ function EditableHeader({
     flowName,
     onFlowNameChange,
     isDirty,
-    agentflowId
+    agentflowId,
+    saveError
 }: HeaderRenderProps & {
     onFlowNameChange: (name: string) => void
     agentflowId?: string
+    saveError?: string | null
 }) {
     const [editing, setEditing] = useState(false)
     const [draft, setDraft] = useState(flowName)
@@ -203,6 +205,9 @@ function EditableHeader({
                         {!agentflowId && <Chip label='Not found' color='error' size='small' sx={{ ml: 1, height: 18, fontSize: '10px' }} />}
                     </span>
                 )}
+                {saveError && !editing && (
+                    <Chip label={`Save failed: ${saveError}`} color='error' size='small' sx={{ height: 18, fontSize: '10px' }} />
+                )}
             </div>
         </div>
     )
@@ -221,6 +226,7 @@ export function E2eExample() {
     const [showTestRun, setShowTestRun] = useState(false)
     const [isFlowValid, setIsFlowValid] = useState(true)
     const [localIsDirty, setLocalIsDirty] = useState(false)
+    const [saveError, setSaveError] = useState<string | null>(null)
 
     // Load flow + name from DB when VITE_FLOW_ID is configured.
     // Gate render until fetch settles so Agentflow mounts with the correct initialFlow.
@@ -258,15 +264,21 @@ export function E2eExample() {
                 setPendingSaveFlow(flow)
                 return
             }
-            await fetch(`${apiBaseUrl}/api/v1/chatflows/${activeChatflowId}`, {
-                method: 'PUT',
-                headers: makeHeaders(true),
-                credentials,
-                body: JSON.stringify({
-                    name: flowName,
-                    flowData: JSON.stringify({ nodes: flow.nodes, edges: flow.edges, viewport: flow.viewport })
+            try {
+                setSaveError(null)
+                const res = await fetch(`${apiBaseUrl}/api/v1/chatflows/${activeChatflowId}`, {
+                    method: 'PUT',
+                    headers: makeHeaders(true),
+                    credentials,
+                    body: JSON.stringify({
+                        name: flowName,
+                        flowData: JSON.stringify({ nodes: flow.nodes, edges: flow.edges, viewport: flow.viewport })
+                    })
                 })
-            }).catch(console.error)
+                if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            } catch (e) {
+                setSaveError(e instanceof Error ? e.message : 'Save failed')
+            }
         },
         [activeChatflowId, flowName] // eslint-disable-line react-hooks/exhaustive-deps
     )
@@ -336,6 +348,7 @@ export function E2eExample() {
                                     flowName={flowName}
                                     onFlowNameChange={setFlowName}
                                     agentflowId={activeChatflowId}
+                                    saveError={saveError}
                                 />
                             )}
                             requestInterceptor={(config) => {
