@@ -153,7 +153,9 @@ class Tool_Agentflow implements INode {
                     // Combine schemas from all tools in the array
                     const allProperties = toolInstance.reduce((acc, tool) => {
                         if (tool?.schema) {
-                            const schema: Record<string, any> = zodToJsonSchema(tool.schema)
+                            const schema: Record<string, any> = (tool.schema as any)?._def
+                                ? zodToJsonSchema(tool.schema)
+                                : { ...(tool.schema as any) }
                             return { ...acc, ...(schema.properties || {}) }
                         }
                         return acc
@@ -161,7 +163,13 @@ class Tool_Agentflow implements INode {
                     toolInputArgs = { properties: allProperties }
                 } else {
                     // Handle single tool instance
-                    toolInputArgs = toolInstance.schema ? zodToJsonSchema(toolInstance.schema as any) : {}
+                    if (!toolInstance.schema) {
+                        toolInputArgs = {}
+                    } else if ((toolInstance.schema as any)?._def) {
+                        toolInputArgs = zodToJsonSchema(toolInstance.schema as any)
+                    } else {
+                        toolInputArgs = { ...(toolInstance.schema as any) }
+                    }
                 }
 
                 if (toolInputArgs && Object.keys(toolInputArgs).length > 0) {

@@ -1163,7 +1163,7 @@ interface JSONSchema {
 }
 
 const formatToOpenAIAssistantTool = (tool: any): OpenAI.Beta.FunctionTool => {
-    const parameters = zodToJsonSchema(tool.schema) as JSONSchema
+    const parameters = (tool.schema?._def ? zodToJsonSchema(tool.schema) : { ...tool.schema }) as JSONSchema
 
     // For strict tools, we need to:
     // 1. Set additionalProperties to false
