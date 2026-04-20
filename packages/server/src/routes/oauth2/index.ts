@@ -61,7 +61,7 @@ import axios from 'axios'
 import { Request, Response, NextFunction } from 'express'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
-import { decryptCredentialData, encryptCredentialData } from '../../utils'
+import { decryptCredentialData, encryptCredentialData, getEncryptionKey } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { generateSuccessPage, generateErrorPage } from './templates'
@@ -306,6 +306,15 @@ router.get('/callback', async (req: Request, res: Response) => {
 // Refresh OAuth2 access token
 router.post('/refresh/:credentialId', async (req: Request, res: Response, next: NextFunction) => {
     try {
+        // This endpoint is called internally by server-side components during chatflow execution.
+        // Validate that the request carries the internal encryption key so it cannot be called
+        // unauthenticated from the outside.
+        const providedKey = req.headers['x-flowise-internal-key'] as string | undefined
+        const encryptionKey = await getEncryptionKey()
+        if (!providedKey || !encryptionKey || providedKey !== encryptionKey) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' })
+        }
+
         const { credentialId } = req.params
 
         const appServer = getRunningExpressApp()
@@ -389,13 +398,12 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
             updatedDate: new Date()
         })
 
-        // Return success response
+        // Return success response — intentionally omit token values from the body
         res.json({
             success: true,
             message: 'OAuth2 token refreshed successfully',
             credentialId: credential.id,
             tokenInfo: {
-                ...tokenData,
                 has_new_refresh_token: !!tokenData.refresh_token,
                 expires_at: updatedCredentialData.expires_at
             }

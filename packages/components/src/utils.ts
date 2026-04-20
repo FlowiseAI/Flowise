@@ -1476,13 +1476,16 @@ export const refreshOAuth2Token = async (
                 // Import fetch dynamically to avoid issues
                 const fetch = (await import('node-fetch')).default
 
-                // Call the refresh API endpoint
+                // Call the refresh API endpoint.
+                // x-flowise-internal-key authenticates this server-side call;
+                // the endpoint rejects requests that omit or mismatch this header.
                 const refreshResponse = await fetch(
                     `${options.baseURL || 'http://localhost:3000'}/api/v1/oauth2-credential/refresh/${credentialId}`,
                     {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'x-flowise-internal-key': process.env.FLOWISE_SECRETKEY_OVERWRITE || ''
                         }
                     }
                 )
