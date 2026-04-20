@@ -18,9 +18,9 @@ export const toolAgentFlow = (t) => {
                             label: t('assistants.cards.customAssistant.agentFlow.bufferMemory.inputs.sessionId.title'),
                             name: 'sessionId',
                             type: 'string',
-                            description: `<Trans i18nKey='assistants.cards.customAssistant.agentFlow.bufferMemory.inputs.sessionId.description' components={{
-                                    a: <a href="https://docs.flowiseai.com/memory#ui-and-embedded-chat" target="_blank" />
-                                }} />`,
+                            description: t('assistants.cards.customAssistant.agentFlow.bufferMemory.inputs.sessionId.description', {
+                                docsUrl: 'https://docs.flowiseai.com/memory#ui-and-embedded-chat'
+                            }),
                             default: '',
                             additionalParams: true,
                             optional: true,
@@ -180,9 +180,9 @@ export const toolAgentFlow = (t) => {
                             label: t('assistants.cards.customAssistant.agentFlow.chatOpenAI.inputs.allowImageUploads.title'),
                             name: 'allowImageUploads',
                             type: 'boolean',
-                            description: `<Trans i18nKey='assistants.cards.customAssistant.agentFlow.chatOpenAI.inputs.allowImageUploads.description' components={{
-                                    a: <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank" />
-                                }} />`,
+                            description: t('assistants.cards.customAssistant.agentFlow.chatOpenAI.inputs.allowImageUploads.description', {
+                                docsUrl: 'https://docs.flowiseai.com/using-flowise/uploads#image'
+                            }),
                             default: false,
                             optional: true,
                             id: 'chatOpenAI_0-input-allowImageUploads-boolean'

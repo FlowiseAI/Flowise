@@ -1475,7 +1475,7 @@
                         "inputs": {
                             "sessionId": {
                                 "title": "Session Id",
-                                "description": "If not specified, a random id will be used. Learn <a>more</a>"
+                                "description": "If not specified, a random id will be used. Learn <a href=\"{{docsUrl}}\" target=\"_blank\" rel=\"noopener noreferrer\">more</a>"
                             },
                             "memoryKey": {
                                 "title": "Memory Key"
@@ -1533,7 +1533,7 @@
                             },
                             "allowImageUploads": {
                                 "title": "Allow Image Uploads",
-                                "description": "Allow image input. Refer to the <a>docs</a> for more details."
+                                "description": "Allow image input. Refer to the <a href=\"{{docsUrl}}\" target=\"_blank\" rel=\"noopener noreferrer\">docs</a> for more details."
                             }
                         },
                         "inputAnchors": {
