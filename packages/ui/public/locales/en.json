@@ -208,7 +208,10 @@
                 },
                 "token": {
                     "title": "Token (Bearer Token)",
-                    "alert": "Use the URL above as the MCP endpoint and pass the token as a Bearer token in the Authorization header. Configure your MCP client with: <c>Authorization: Bearer <token></c>"
+                    "alert": {
+                        "prefix": "Use the URL above as the MCP endpoint and pass the token as a Bearer token in the Authorization header. Configure your MCP client with:",
+                        "suffix": "Authorization: Bearer"
+                    }
                 }
             }
         },
@@ -2081,8 +2084,11 @@
         "specifyMultipleValues": "You can also specify multiple values for a config parameter by specifying the node id",
         "streamInfo": "Read\u00A0<a>here</a>\u00A0on how to stream response back to application",
         "choose": "Choose an API key",
-        "bodyTag": "Paste this anywhere in the <c><body></c> tag of your html file.",
-        "bodyTagAlso": "You can also specify a\u00A0<a>version</a>:\u00A0<c>https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js</c>",
+        "bodyTag": {
+            "prefix": "Paste this anywhere in the",
+            "suffix": "tag of your html file."
+        },
+        "bodyTagAlso": "You can also specify a\u00A0<a>version</a>:",
         "actions": {
             "showChat": "Show Embed Chat Config",
             "copyLink": "Copy Link",

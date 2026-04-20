@@ -355,7 +355,7 @@ const EmbedChat = ({ chatflowid }) => {
                     {(value === 0 || value === 1) && (
                         <>
                             <span>
-                                <Trans i18nKey='chatflows.bodyTag' components={{ c: <code />, code: <code /> }} />
+                                {t('chatflows.bodyTag.prefix')} <code>{'<body>'}</code> {t('chatflows.bodyTag.suffix')}
                                 <p>
                                     <Trans
                                         i18nKey='chatflows.bodyTagAlso'
@@ -372,6 +372,7 @@ const EmbedChat = ({ chatflowid }) => {
                                             )
                                         }}
                                     />
+                                    &nbsp;<code>{`https://cdn.jsdelivr.net/npm/flowise-embed@<version>/dist/web.js`}</code>
                                 </p>
                             </span>
                             <div style={{ height: 10 }}></div>

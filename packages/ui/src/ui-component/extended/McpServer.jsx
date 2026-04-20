@@ -24,7 +24,7 @@ import mcpServerApi from '@/api/mcpserver'
 import chatflowsApi from '@/api/chatflows'
 
 // i18n
-import { useTranslation, Trans } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 
 const McpServer = ({ dialogProps, onStatusChange }) => {
     const { t } = useTranslation()
@@ -389,19 +389,15 @@ const McpServer = ({ dialogProps, onStatusChange }) => {
                                     })
                                 }}
                             >
-                                <Trans
-                                    i18nKey='components.mcpServer.inputs.token.alert'
-                                    components={{
-                                        c: (
-                                            <code
-                                                style={{
-                                                    display: 'block',
-                                                    color: customization.isDarkMode ? theme.palette.grey[200] : undefined
-                                                }}
-                                            />
-                                        )
+                                {t('components.mcpServer.inputs.token.alert.prefix')}{' '}
+                                <code
+                                    style={{
+                                        display: 'block',
+                                        color: customization.isDarkMode ? theme.palette.grey[200] : undefined
                                     }}
-                                />
+                                >
+                                    {t('components.mcpServer.inputs.token.alert.suffix')} {'<token>'}
+                                </code>
                             </Alert>
                         </Box>
                     )}
