@@ -704,13 +704,6 @@
             "name": "chatAnthropic_LlamaIndex",
             "models": [
                 {
-                    "label": "claude-opus-4-7",
-                    "name": "claude-opus-4-7",
-                    "description": "Claude 4.7 Opus",
-                    "input_cost": 0.000005,
-                    "output_cost": 0.000025
-                },
-                {
                     "label": "claude-3-haiku",
                     "name": "claude-3-haiku",
                     "description": "Fastest and most compact model, designed for near-instant responsiveness",
@@ -954,6 +947,13 @@
                     "name": "gemini-1.0-pro-vision",
                     "input_cost": 1.25e-7,
                     "output_cost": 3.75e-7
+                },
+                {
+                    "label": "claude-opus-4-7",
+                    "name": "claude-opus-4-7",
+                    "description": "Claude 4.7 Opus",
+                    "input_cost": 0.000005,
+                    "output_cost": 0.000025
                 },
                 {
                     "label": "claude-opus-4-6",
