@@ -28,6 +28,8 @@
         "start:default": "cd bin && ./run start",
         "start-worker:windows": "cd bin && run worker",
         "start-worker:default": "cd bin && ./run worker",
+        "start-websocket:windows": "cd bin && run websocket",
+        "start-websocket:default": "cd bin && ./run websocket",
         "user": "run-script-os",
         "user:windows": "cd bin && run user",
         "user:default": "cd bin && ./run user",

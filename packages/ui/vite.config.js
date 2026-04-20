@@ -14,6 +14,10 @@ export default defineConfig(async ({ mode }) => {
                 '^/api(/|$).*': {
                     target: `http://${serverHost}:${serverPort}`,
                     changeOrigin: true
+                },
+                '/ws': {
+                    target: `ws://${serverHost}:${serverPort}`,
+                    ws: true
                 }
             }
         }

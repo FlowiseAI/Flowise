@@ -14,6 +14,9 @@ import NodeInputHandler from './NodeInputHandler'
 import NodeOutputHandler from './NodeOutputHandler'
 import AdditionalParamsDialog from '@/ui-component/dialog/AdditionalParamsDialog'
 import NodeInfoDialog from '@/ui-component/dialog/NodeInfoDialog'
+import NodePresenceOverlay from './NodePresenceOverlay'
+import { CanvasPresenceContext } from '@/contexts/CanvasPresenceContext'
+import { useCollaboration } from '@/hooks/useCollaboration'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -35,6 +38,10 @@ const CanvasNode = ({ data }) => {
     const [warningMessage, setWarningMessage] = useState('')
     const [open, setOpen] = useState(false)
     const [isForceCloseNodeInfo, setIsForceCloseNodeInfo] = useState(null)
+
+    const { getNodePresence, activeUsers, sendNodePresence } = useContext(CanvasPresenceContext)
+    const nodePresence = getNodePresence(data.id)
+    const { updateNode } = useCollaboration()
 
     const handleClose = () => {
         setOpen(false)
@@ -62,6 +69,12 @@ const CanvasNode = ({ data }) => {
         }
         setDialogProps(dialogProps)
         setShowDialog(true)
+        sendNodePresence(data.id, 'edit_start')
+    }
+
+    const onDialogCancelled = () => {
+        setShowDialog(false)
+        sendNodePresence(data.id, 'edit_end')
     }
 
     const getBorderColor = () => {
@@ -92,124 +105,184 @@ const CanvasNode = ({ data }) => {
 
     return (
         <>
-            <NodeCardWrapper
-                content={false}
-                sx={{
-                    padding: 0,
-                    borderColor: getBorderColor()
-                }}
-                border={false}
-            >
-                <NodeTooltip
-                    open={getNodeInfoOpenStatus()}
-                    onClose={handleClose}
-                    onOpen={handleOpen}
-                    disableFocusListener={true}
-                    title={
-                        <div
-                            style={{
-                                background: 'transparent',
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}
-                        >
-                            <IconButton
-                                title='Duplicate'
-                                onClick={() => {
-                                    duplicateNode(data.id)
-                                }}
-                                sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
-                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
-                            >
-                                <IconCopy />
-                            </IconButton>
-                            <IconButton
-                                title='Delete'
-                                onClick={() => {
-                                    deleteNode(data.id)
-                                }}
-                                sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
-                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
-                            >
-                                <IconTrash />
-                            </IconButton>
-                            <IconButton
-                                title='Info'
-                                onClick={() => {
-                                    setInfoDialogProps({ data })
-                                    setShowInfoDialog(true)
-                                }}
-                                sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.secondary.main } }}
-                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
-                            >
-                                <IconInfoCircle />
-                            </IconButton>
-                        </div>
-                    }
-                    placement='right-start'
+            <Box sx={{ position: 'relative' }}>
+                {/* Node Presence Overlay */}
+                <NodePresenceOverlay
+                    nodeId={data.id}
+                    hovering={nodePresence.hovering}
+                    editing={nodePresence.editing}
+                    activeUsers={activeUsers}
+                />
+                <NodeCardWrapper
+                    content={false}
+                    sx={{
+                        padding: 0,
+                        borderColor: getBorderColor()
+                    }}
+                    border={false}
                 >
-                    <Box>
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Box style={{ width: 50, marginRight: 10, padding: 10 }}>
-                                <div
-                                    style={{
-                                        ...theme.typography.commonAvatar,
-                                        ...theme.typography.largeAvatar,
-                                        borderRadius: '50%',
-                                        backgroundColor: 'white',
-                                        cursor: 'grab',
-                                        width: '40px',
-                                        height: '40px'
+                    <NodeTooltip
+                        open={getNodeInfoOpenStatus()}
+                        onClose={handleClose}
+                        onOpen={handleOpen}
+                        disableFocusListener={true}
+                        title={
+                            <div
+                                style={{
+                                    background: 'transparent',
+                                    display: 'flex',
+                                    flexDirection: 'column'
+                                }}
+                            >
+                                <IconButton
+                                    title='Duplicate'
+                                    onClick={() => {
+                                        duplicateNode(data.id)
                                     }}
+                                    sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
+                                    color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
                                 >
-                                    <img
-                                        style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                        src={`${baseURL}/api/v1/node-icon/${data.name}`}
-                                        alt='Notification'
-                                    />
-                                </div>
-                            </Box>
-                            <Box>
-                                <Typography
-                                    sx={{
-                                        fontSize: '1rem',
-                                        fontWeight: 500,
-                                        mr: 2
+                                    <IconCopy />
+                                </IconButton>
+                                <IconButton
+                                    title='Delete'
+                                    onClick={() => {
+                                        deleteNode(data.id)
+                                        updateNode(data, 'remove')
                                     }}
+                                    sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
+                                    color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
                                 >
-                                    {data.label}
-                                </Typography>
-                            </Box>
-                            <div style={{ flexGrow: 1 }}></div>
-                            {data.tags && data.tags.includes('LlamaIndex') && (
-                                <>
+                                    <IconTrash />
+                                </IconButton>
+                                <IconButton
+                                    title='Info'
+                                    onClick={() => {
+                                        setInfoDialogProps({ data })
+                                        setShowInfoDialog(true)
+                                    }}
+                                    sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.secondary.main } }}
+                                    color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                                >
+                                    <IconInfoCircle />
+                                </IconButton>
+                            </div>
+                        }
+                        placement='right-start'
+                    >
+                        <Box>
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                <Box style={{ width: 50, marginRight: 10, padding: 10 }}>
                                     <div
                                         style={{
+                                            ...theme.typography.commonAvatar,
+                                            ...theme.typography.largeAvatar,
                                             borderRadius: '50%',
-                                            padding: 15
+                                            backgroundColor: 'white',
+                                            cursor: 'grab',
+                                            width: '40px',
+                                            height: '40px'
                                         }}
                                     >
                                         <img
-                                            style={{ width: '25px', height: '25px', borderRadius: '50%', objectFit: 'contain' }}
-                                            src={LlamaindexPNG}
-                                            alt='LlamaIndex'
+                                            style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                            src={`${baseURL}/api/v1/node-icon/${data.name}`}
+                                            alt='Notification'
                                         />
                                     </div>
-                                </>
-                            )}
-                            {warningMessage && (
+                                </Box>
+                                <Box>
+                                    <Typography
+                                        sx={{
+                                            fontSize: '1rem',
+                                            fontWeight: 500,
+                                            mr: 2
+                                        }}
+                                    >
+                                        {data.label}
+                                    </Typography>
+                                </Box>
+                                <div style={{ flexGrow: 1 }}></div>
+                                {data.tags && data.tags.includes('LlamaIndex') && (
+                                    <>
+                                        <div
+                                            style={{
+                                                borderRadius: '50%',
+                                                padding: 15
+                                            }}
+                                        >
+                                            <img
+                                                style={{ width: '25px', height: '25px', borderRadius: '50%', objectFit: 'contain' }}
+                                                src={LlamaindexPNG}
+                                                alt='LlamaIndex'
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                                {warningMessage && (
+                                    <>
+                                        <Tooltip title={<span style={{ whiteSpace: 'pre-line' }}>{warningMessage}</span>} placement='top'>
+                                            <IconButton sx={{ height: 35, width: 35 }}>
+                                                <IconAlertTriangle size={35} color='orange' />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </>
+                                )}
+                            </div>
+                            {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (
                                 <>
-                                    <Tooltip title={<span style={{ whiteSpace: 'pre-line' }}>{warningMessage}</span>} placement='top'>
-                                        <IconButton sx={{ height: 35, width: 35 }}>
-                                            <IconAlertTriangle size={35} color='orange' />
-                                        </IconButton>
-                                    </Tooltip>
+                                    <Divider />
+                                    <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
+                                        <Typography
+                                            sx={{
+                                                fontWeight: 500,
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            Inputs
+                                        </Typography>
+                                    </Box>
+                                    <Divider />
                                 </>
                             )}
-                        </div>
-                        {(data.inputAnchors.length > 0 || data.inputParams.length > 0) && (
-                            <>
-                                <Divider />
+                            {data.inputAnchors.map((inputAnchor, index) => (
+                                <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
+                            ))}
+                            {data.inputParams
+                                .filter((inputParam) => !inputParam.hidden)
+                                .filter((inputParam) => inputParam.display !== false)
+                                .map((inputParam, index) => (
+                                    <NodeInputHandler
+                                        key={index}
+                                        inputParam={inputParam}
+                                        data={data}
+                                        onHideNodeInfoDialog={(status) => {
+                                            if (status) {
+                                                setIsForceCloseNodeInfo(true)
+                                            } else {
+                                                setIsForceCloseNodeInfo(null)
+                                            }
+                                        }}
+                                    />
+                                ))}
+                            {data.inputParams.find((param) => param.additionalParams) && (
+                                <div
+                                    style={{
+                                        textAlign: 'center',
+                                        marginTop:
+                                            data.inputParams.filter((param) => param.additionalParams).length ===
+                                            data.inputParams.length + data.inputAnchors.length
+                                                ? 20
+                                                : 0
+                                    }}
+                                >
+                                    <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
+                                        Additional Parameters
+                                    </Button>
+                                </div>
+                            )}
+                            {data.outputAnchors.length > 0 && <Divider />}
+                            {data.outputAnchors.length > 0 && (
                                 <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
                                     <Typography
                                         sx={{
@@ -217,74 +290,20 @@ const CanvasNode = ({ data }) => {
                                             textAlign: 'center'
                                         }}
                                     >
-                                        Inputs
+                                        Output
                                     </Typography>
                                 </Box>
-                                <Divider />
-                            </>
-                        )}
-                        {data.inputAnchors.map((inputAnchor, index) => (
-                            <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
-                        ))}
-                        {data.inputParams
-                            .filter((inputParam) => !inputParam.hidden)
-                            .filter((inputParam) => inputParam.display !== false)
-                            .map((inputParam, index) => (
-                                <NodeInputHandler
-                                    key={index}
-                                    inputParam={inputParam}
-                                    data={data}
-                                    onHideNodeInfoDialog={(status) => {
-                                        if (status) {
-                                            setIsForceCloseNodeInfo(true)
-                                        } else {
-                                            setIsForceCloseNodeInfo(null)
-                                        }
-                                    }}
-                                />
-                            ))}
-                        {data.inputParams.find((param) => param.additionalParams) && (
-                            <div
-                                style={{
-                                    textAlign: 'center',
-                                    marginTop:
-                                        data.inputParams.filter((param) => param.additionalParams).length ===
-                                        data.inputParams.length + data.inputAnchors.length
-                                            ? 20
-                                            : 0
-                                }}
-                            >
-                                <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
-                                    Additional Parameters
-                                </Button>
-                            </div>
-                        )}
-                        {data.outputAnchors.length > 0 && <Divider />}
-                        {data.outputAnchors.length > 0 && (
-                            <Box sx={{ background: theme.palette.asyncSelect.main, p: 1 }}>
-                                <Typography
-                                    sx={{
-                                        fontWeight: 500,
-                                        textAlign: 'center'
-                                    }}
-                                >
-                                    Output
-                                </Typography>
-                            </Box>
-                        )}
-                        {data.outputAnchors.length > 0 && <Divider />}
-                        {data.outputAnchors.length > 0 &&
-                            data.outputAnchors.map((outputAnchor) => (
-                                <NodeOutputHandler key={JSON.stringify(data)} outputAnchor={outputAnchor} data={data} />
-                            ))}
-                    </Box>
-                </NodeTooltip>
-            </NodeCardWrapper>
-            <AdditionalParamsDialog
-                show={showDialog}
-                dialogProps={dialogProps}
-                onCancel={() => setShowDialog(false)}
-            ></AdditionalParamsDialog>
+                            )}
+                            {data.outputAnchors.length > 0 && <Divider />}
+                            {data.outputAnchors.length > 0 &&
+                                data.outputAnchors.map((outputAnchor) => (
+                                    <NodeOutputHandler key={JSON.stringify(data)} outputAnchor={outputAnchor} data={data} />
+                                ))}
+                        </Box>
+                    </NodeTooltip>
+                </NodeCardWrapper>
+            </Box>
+            <AdditionalParamsDialog show={showDialog} dialogProps={dialogProps} onCancel={onDialogCancelled}></AdditionalParamsDialog>
             <NodeInfoDialog show={showInfoDialog} dialogProps={infoDialogProps} onCancel={() => setShowInfoDialog(false)}></NodeInfoDialog>
         </>
     )
