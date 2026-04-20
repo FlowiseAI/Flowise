@@ -62,8 +62,11 @@ The examples app uses environment variables for configuration. To set up:
 
 **Environment Variables:**
 
--   `VITE_INSTANCE_URL`: Flowise API server endpoint (maps to `apiBaseUrl` prop, default: `http://localhost:3000`)
--   `VITE_API_TOKEN`: Flowise API Key for programmatic access (required for authenticated endpoints)
+| Variable            | Required            | Description                                                                                                                                                                                                         |
+| ------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_INSTANCE_URL` | No                  | Flowise API server endpoint (default: `http://localhost:3000`)                                                                                                                                                      |
+| `VITE_API_TOKEN`    | Yes (authenticated) | Flowise API Key — get from Settings → API Keys                                                                                                                                                                      |
+| `VITE_FLOW_ID`      | No                  | Agentflow ID to load on startup. When set, the canvas loads the saved flow from the database and enables Test Run and Run Status polling without saving first. Copy the ID from the Flowise URL: `/agentflows/<id>` |
 
 **Note**: The `.env` file is gitignored and will not be committed to version control. Add your actual API key to `.env`, not `.env.example`.
 
@@ -81,7 +84,6 @@ Common causes:
 2. **Token not loaded**
 
     - Restart dev server after editing `.env`: `pnpm dev`
-    - Check browser console for: `[BasicExample] Environment check`
 
 3. **Invalid API Key**
 
@@ -94,14 +96,29 @@ Common causes:
 
 ## Examples
 
+The app opens to the **E2E (Live Instance)** example when `VITE_FLOW_ID` is set, and falls back to **Basic Usage** otherwise.
+
 ### Basic Usage (`BasicExample.tsx`)
 
-Demonstrates core usage:
+Minimal canvas integration — no database calls:
 
--   Basic canvas rendering with `<Agentflow>` component
--   Passing `apiBaseUrl` and `initialFlow` props
--   Using the `ref` to access imperative methods (`validate`, `fitView`, `getFlow`, `clear`)
--   Handling `onFlowChange` and `onSave` callbacks
+-   Rendering the canvas with a hardcoded `initialFlow`
+-   Tracking flow changes via `onFlowChange`
+-   Local-only save via `onSave`
+-   Imperative `fitView` / `clear` via ref
+
+### E2E — Live Instance (`E2eExample.tsx`)
+
+Full integration with a running Flowise instance. Requires `VITE_FLOW_ID` for the best experience:
+
+-   Loads the saved flow from the database on startup (`VITE_FLOW_ID`)
+-   Editable flow title synced to the database on save
+-   Save to DB — prompts to create a new chatflow when no ID is configured
+-   Delete chatflow from the database
+-   Test Run via `POST /api/v1/internal-prediction` with markdown-rendered response (disabled when flow has validation errors)
+-   Run Status panel showing per-node execution results (manual refresh)
+
+> **API Token permissions required:** The `VITE_API_TOKEN` used for the E2E example must have **Create**, **Update**, and **Delete** permissions for Agentflows. A read-only key is not sufficient — save, rename, and delete operations will return 403.
 
 ### Additional Examples
 
