@@ -7,6 +7,14 @@
 
 const decorator = (): (() => void) => () => {}
 
+// Lightweight FindOperator-like factories. Real TypeORM returns instances of
+// FindOperator with `type` and `value` fields; tests only assert on these,
+// so a plain object with the same shape is sufficient.
+const findOperator = (type: string) => (value: unknown, secondValue?: unknown) => ({
+    type,
+    value: secondValue === undefined ? value : [value, secondValue]
+})
+
 module.exports = {
     Column: decorator,
     Entity: decorator,
@@ -20,5 +28,9 @@ module.exports = {
     OneToOne: decorator,
     JoinColumn: decorator,
     Unique: decorator,
-    DataSource: jest.fn()
+    DataSource: jest.fn(),
+    In: findOperator('in'),
+    Between: findOperator('between'),
+    MoreThanOrEqual: findOperator('moreThanOrEqual'),
+    LessThanOrEqual: findOperator('lessThanOrEqual')
 }
