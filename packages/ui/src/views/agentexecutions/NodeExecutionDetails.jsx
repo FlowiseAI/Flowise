@@ -202,7 +202,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
 
     const renderFullfilledConditions = (conditions) => {
         const fullfilledConditions = conditions.filter((condition) => condition.isFulfilled)
-        return fulfilledConditions.map((condition, index) => {
+        return fullfilledConditions.map((condition, index) => {
             if (condition.type === 'string' && condition.operation === 'equal' && condition.value1 === '' && condition.value2 === '') {
                 return (
                     <Box
@@ -216,12 +216,12 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                         }}
                     >
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Typography variant='body1'>{t('agentExecution.details.fulfilledConditions.else')}</Typography>
+                            <Typography variant='body1'>{t('agentExecution.details.fullfilledConditions.else')}</Typography>
                             <Chip
                                 label={t(
                                     condition.isFulfilled
-                                        ? 'agentExecution.details.fulfilledConditions.fulfilled'
-                                        : 'agentExecution.details.fulfilledConditions.notFulfilled'
+                                        ? 'agentExecution.details.fullfilledConditions.fulfilled'
+                                        : 'agentExecution.details.fullfilledConditions.notFulfilled'
                                 )}
                                 size='small'
                                 sx={{ color: 'white', backgroundColor: theme.palette.success.dark }}
@@ -244,13 +244,13 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                 >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant='subtitle2'>
-                            {t('agentExecution.details.fulfilledConditions.condition', { index: index })}
+                            {t('agentExecution.details.fullfilledConditions.condition', { index: index })}
                         </Typography>
                         <Chip
                             label={t(
                                 condition.isFulfilled
-                                    ? 'agentExecution.details.fulfilledConditions.fulfilled'
-                                    : 'agentExecution.details.fulfilledConditions.notFulfilled'
+                                    ? 'agentExecution.details.fullfilledConditions.fulfilled'
+                                    : 'agentExecution.details.fullfilledConditions.notFulfilled'
                             )}
                             size='small'
                             variant='filled'

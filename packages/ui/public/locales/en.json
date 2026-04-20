@@ -635,6 +635,7 @@
             }
         },
         "chatFeedback": {
+            "fallBackTitle": "Allowed Domains",
             "messages": {
                 "success": "Chat Feedback Settings Saved",
                 "error": "Failed to save Chat Feedback Settings: {{msg}}"
@@ -777,6 +778,7 @@
             }
         },
         "speechToText": {
+            "fallBackTitle": "Allowed Domains",
             "providersLabel": "Providers",
             "inputs": {
                 "connectCredential": "Connect Credential",

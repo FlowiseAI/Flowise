@@ -194,7 +194,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             const message =
                 missingFields.length > 0
                     ? t('components.dialogs.agentFlows.messages.errors.fields.fillFields', { fields: missingFields.join(', ') })
-                    : t('components.dialogs.agentFlows.messages.errors.fields.fillFIeldsForModel')
+                    : t('components.dialogs.agentFlows.messages.errors.fields.fillFieldsForModel')
             displayWarning(message)
             return
         }

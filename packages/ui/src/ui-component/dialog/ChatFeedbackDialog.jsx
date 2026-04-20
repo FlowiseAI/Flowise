@@ -39,7 +39,7 @@ const ChatFeedbackDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {dialogProps.title || t('components.allowedDomains.title')}
+                {dialogProps.title || t('components.chatFeedback.fallBackTitle')}
             </DialogTitle>
             <DialogContent>
                 <ChatFeedback dialogProps={dialogProps} onConfirm={onConfirm} />

@@ -1105,15 +1105,15 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
             if (parsedValue && parsedValue.length) {
                 for (const item of parsedValue) {
                     if (!item.variable) {
-                        alert(t('errors.specifyVariable'))
+                        alert(i18next.t('errors.specifyVariable'))
                         return undefined
                     }
                     if (!item.output) {
-                        alert(t('errors.specifyOutputName'))
+                        alert(i18next.t('errors.specifyOutputName'))
                         return undefined
                     }
                     if (!item.operation) {
-                        alert(t('errors.selectOperation'))
+                        alert(i18next.t('errors.selectOperation'))
                         return undefined
                     }
                     numberOfReturns.push(item.output)
@@ -1126,8 +1126,8 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
     }
 
     if (numberOfReturns.length === 0) {
-        if (isDataGrid) alert(t('errors.addItem'))
-        else alert(t('errors.addReturn'))
+        if (isDataGrid) alert(i18next.t('errors.addItem'))
+        else alert(i18next.t('errors.addReturn'))
         return undefined
     }
 
@@ -1160,7 +1160,7 @@ export const getCustomConditionOutputs = (value, nodeId, existingEdges, isDataGr
     }
     const newOutput = {
         name: 'output',
-        label: t('common.labels.output'),
+        label: i18next.t('common.labels.output'),
         type: 'options',
         options
     }

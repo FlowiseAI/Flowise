@@ -142,22 +142,22 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
     const [modelName, setModelName] = useState([])
 
     const usecases = [
-        { id: 201, name: t('common.labels.agents') },
-        { id: 202, name: t('components.dialogs.promptLangsmithHub.cases.agentStimulation') },
-        { id: 203, name: t('components.dialogs.promptLangsmithHub.cases.autonomousAgents') },
-        { id: 204, name: t('components.dialogs.promptLangsmithHub.cases.classification') },
-        { id: 205, name: t('components.dialogs.promptLangsmithHub.cases.chatbots') },
-        { id: 206, name: t('components.dialogs.promptLangsmithHub.cases.codeUnderstanding') },
-        { id: 207, name: t('components.dialogs.promptLangsmithHub.cases.codeWriting') },
-        { id: 208, name: t('components.dialogs.promptLangsmithHub.cases.evaluation') },
-        { id: 209, name: t('components.dialogs.promptLangsmithHub.cases.extraction') },
-        { id: 210, name: t('components.dialogs.promptLangsmithHub.cases.interactingApi') },
-        { id: 211, name: t('components.dialogs.promptLangsmithHub.cases.multiModal') },
-        { id: 212, name: t('components.dialogs.promptLangsmithHub.cases.qaDocuments') },
-        { id: 213, name: t('components.dialogs.promptLangsmithHub.cases.selfChecking') },
-        { id: 214, name: t('components.dialogs.promptLangsmithHub.cases.sql') },
-        { id: 215, name: t('components.dialogs.promptLangsmithHub.cases.summarization') },
-        { id: 216, name: t('components.dialogs.promptLangsmithHub.cases.tagging') }
+        { id: 201, name: 'common.labels.agents' },
+        { id: 202, name: 'components.dialogs.promptLangsmithHub.cases.agentStimulation' },
+        { id: 203, name: 'components.dialogs.promptLangsmithHub.cases.autonomousAgents' },
+        { id: 204, name: 'components.dialogs.promptLangsmithHub.cases.classification' },
+        { id: 205, name: 'components.dialogs.promptLangsmithHub.cases.chatbots' },
+        { id: 206, name: 'components.dialogs.promptLangsmithHub.cases.codeUnderstanding' },
+        { id: 207, name: 'components.dialogs.promptLangsmithHub.cases.codeWriting' },
+        { id: 208, name: 'components.dialogs.promptLangsmithHub.cases.evaluation' },
+        { id: 209, name: 'components.dialogs.promptLangsmithHub.cases.extraction' },
+        { id: 210, name: 'components.dialogs.promptLangsmithHub.cases.interactingApi' },
+        { id: 211, name: 'components.dialogs.promptLangsmithHub.cases.multiModal' },
+        { id: 212, name: 'components.dialogs.promptLangsmithHub.cases.qaDocuments' },
+        { id: 213, name: 'components.dialogs.promptLangsmithHub.cases.selfChecking' },
+        { id: 214, name: 'components.dialogs.promptLangsmithHub.cases.sql' },
+        { id: 215, name: 'components.dialogs.promptLangsmithHub.cases.summarization' },
+        { id: 216, name: 'components.dialogs.promptLangsmithHub.cases.tagging' }
     ]
     const [usecase, setUsecase] = useState([])
 
@@ -332,7 +332,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                             {usecases.map((variant) => (
                                 <MenuItem key={variant.id} value={variant}>
                                     <Checkbox id={variant.id} checked={usecase.findIndex((item) => item.id === variant.id) >= 0} />
-                                    <ListItemText primary={variant.name} />
+                                    <ListItemText primary={t(variant.name)} />
                                 </MenuItem>
                             ))}
                         </Select>
@@ -369,7 +369,7 @@ const PromptLangsmithHubDialog = ({ promptType, show, onCancel, onSubmit }) => {
                             {languages.map((variant) => (
                                 <MenuItem key={variant.id} value={variant}>
                                     <Checkbox id={variant.id} checked={language.findIndex((item) => item.id === variant.id) >= 0} />
-                                    <ListItemText primary={variant.name} />
+                                    <ListItemText primary={t(variant.name)} />
                                 </MenuItem>
                             ))}
                         </Select>

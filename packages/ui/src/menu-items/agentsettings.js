@@ -40,7 +40,7 @@ const agent_settings = {
         },
         {
             id: 'viewLeads',
-            title: 'menu.viewMessages',
+            title: 'menu.viewLeads',
             type: 'item',
             url: '',
             icon: icons.IconUsers
