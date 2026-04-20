@@ -306,7 +306,7 @@ class ChatOpenAI_ChatModels implements INode {
         if (extraBody) {
             try {
                 const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
-                obj.modelKwargs = { ...(obj.modelKwargs ?? {}), ...parsedExtraBody }
+                obj.modelKwargs = { ...obj.modelKwargs, ...parsedExtraBody }
             } catch (exception) {
                 throw new Error("Invalid JSON in the ChatOpenAI's Additional Body Params: " + exception)
             }
