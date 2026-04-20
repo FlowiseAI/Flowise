@@ -231,7 +231,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
 
     // Reset activeSection if current one is filtered out
     const currentSection = allSectionIds.includes(activeSection) ? activeSection : allSectionIds[0] || 'rateLimit'
-    const currentSectionData = useMemo(() => GET_ALL_SECTIONS(t).find((s) => s.id === currentSection), t)
+    const currentSectionData = useMemo(() => GET_ALL_SECTIONS(t).find((s) => s.id === currentSection), [t])
 
     const renderContent = () => {
         const props = { dialogProps }
