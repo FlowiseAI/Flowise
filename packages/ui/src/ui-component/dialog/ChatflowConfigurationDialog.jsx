@@ -37,102 +37,105 @@ import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
 import McpServer from '@/ui-component/extended/McpServer'
 
-const CONFIGURATION_GROUPS = [
+// i18n
+import { useTranslation } from 'react-i18next'
+
+const GET_CONFIGURATION_GROUPS = (t) => [
     {
-        label: 'General',
+        label: t('components.dialogs.chatflow.menu.general.title'),
         sections: [
             {
-                label: 'Rate Limit',
+                label: t('components.dialogs.chatflow.menu.rateLimit.title'),
                 id: 'rateLimit',
                 icon: IconShieldLock,
-                description: 'Limit API requests per time window'
+                description: t('components.dialogs.chatflow.menu.rateLimit.description')
             },
             {
-                label: 'Allowed Domains',
+                label: t('components.dialogs.chatflow.menu.allowedDomains.title'),
                 id: 'allowedDomains',
                 icon: IconWorldWww,
-                description: 'Restrict chatbot to specific domains'
+                description: t('components.dialogs.chatflow.menu.allowedDomains.description')
             },
             {
-                label: 'Leads',
+                label: t('components.dialogs.chatflow.menu.leads.title'),
                 id: 'leads',
                 icon: IconUserPlus,
-                description: 'Capture visitor contact information'
+                description: t('components.dialogs.chatflow.menu.leads.description')
             }
         ]
     },
     {
-        label: 'Chat',
+        label: t('components.dialogs.chatflow.menu.chat.title'),
         sections: [
             {
-                label: 'Starter Prompts',
+                label: t('components.dialogs.chatflow.menu.conversationStarters.title'),
                 id: 'conversationStarters',
                 icon: IconMessageChatbot,
-                description: 'Suggested prompts for new conversations'
+                description: t('components.dialogs.chatflow.menu.conversationStarters.description')
             },
             {
-                label: 'Follow-up Prompts',
+                label: t('components.dialogs.chatflow.menu.followUpPrompts.title'),
                 id: 'followUpPrompts',
                 icon: IconArrowForwardUp,
-                description: 'Auto-generate follow-up questions'
+                description: t('components.dialogs.chatflow.menu.followUpPrompts.description')
             },
             {
-                label: 'Chat Feedback',
+                label: t('components.dialogs.chatflow.menu.chatFeedback.title'),
                 id: 'chatFeedback',
                 icon: IconThumbUp,
-                description: 'Allow users to rate responses'
+                description: t('components.dialogs.chatflow.menu.chatFeedback.description')
             }
         ]
     },
     {
-        label: 'Media & Files',
+        label: t('components.dialogs.chatflow.menu.mediaAndFiles.title'),
         sections: [
             {
-                label: 'Speech to Text',
+                label: t('components.dialogs.chatflow.menu.speechToText.title'),
                 id: 'speechToText',
                 icon: IconMicrophone,
-                description: 'Voice input transcription'
+                description: t('components.dialogs.chatflow.menu.speechToText.description')
             },
             {
-                label: 'Text to Speech',
+                label: t('components.dialogs.chatflow.menu.textToSpeech.title'),
                 id: 'textToSpeech',
                 icon: IconVolume,
-                description: 'Audio response playback'
+                description: t('components.dialogs.chatflow.menu.textToSpeech.description')
             },
             {
-                label: 'File Upload',
+                label: t('components.dialogs.chatflow.menu.fileUpload.title'),
                 id: 'fileUpload',
                 icon: IconUpload,
-                description: 'Allow file uploads in chat'
+                description: t('components.dialogs.chatflow.menu.fileUpload.description')
             }
         ]
     },
     {
-        label: 'Advanced',
+        label: t('components.dialogs.chatflow.menu.advanced.title'),
         sections: [
             {
-                label: 'Analytics',
+                label: t('components.dialogs.chatflow.menu.analyseChatflow.title'),
                 id: 'analyseChatflow',
                 icon: IconChartBar,
-                description: 'Connect analytics providers'
+                description: t('components.dialogs.chatflow.menu.analyseChatflow.description')
             },
             {
-                label: 'Post Processing',
+                label: t('components.dialogs.chatflow.menu.postProcessing.title'),
                 id: 'postProcessing',
                 icon: IconCode,
-                description: 'Custom JavaScript post-processing'
+                description: t('components.dialogs.chatflow.menu.postProcessing.description')
             },
             {
-                label: 'MCP Server',
+                label: t('components.dialogs.chatflow.menu.mcpServer.title'),
                 id: 'mcpServer',
                 icon: IconServer,
-                description: 'Model Context Protocol server'
+                description: t('components.dialogs.chatflow.menu.mcpServer.description')
             },
             {
-                label: 'Override Config',
+                label: t('components.dialogs.chatflow.menu.overrideConfig.title'),
                 id: 'overrideConfig',
                 icon: IconAdjustments,
-                description: 'Override flow configuration via API'
+                description: t('components.dialogs.chatflow.menu.overrideConfig.description')
             }
         ]
     }
@@ -195,7 +198,7 @@ function getSectionStatus(sectionId, chatflow) {
 }
 
 // Flatten all sections for quick lookup
-const ALL_SECTIONS = CONFIGURATION_GROUPS.flatMap((g) => g.sections)
+const GET_ALL_SECTIONS = (t) => GET_CONFIGURATION_GROUPS(t).flatMap((g) => g.sections)
 
 const SIDEBAR_WIDTH = 220
 
@@ -213,11 +216,13 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
 
     // Filter groups/sections based on agent canvas
     const filteredGroups = useMemo(() => {
-        return CONFIGURATION_GROUPS.map((group) => ({
-            ...group,
-            sections: group.sections.filter((section) => !isAgentCanvas || !section.hideInAgentFlow)
-        })).filter((group) => group.sections.length > 0)
-    }, [isAgentCanvas])
+        return GET_CONFIGURATION_GROUPS(t)
+            .map((group) => ({
+                ...group,
+                sections: group.sections.filter((section) => !isAgentCanvas || !section.hideInAgentFlow)
+            }))
+            .filter((group) => group.sections.length > 0)
+    }, [isAgentCanvas, t])
 
     // Get all section IDs for validation
     const allSectionIds = useMemo(() => {
@@ -226,7 +231,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
 
     // Reset activeSection if current one is filtered out
     const currentSection = allSectionIds.includes(activeSection) ? activeSection : allSectionIds[0] || 'rateLimit'
-    const currentSectionData = ALL_SECTIONS.find((s) => s.id === currentSection)
+    const currentSectionData = useMemo(() => GET_ALL_SECTIONS(t).find((s) => s.id === currentSection), t)
 
     const renderContent = () => {
         const props = { dialogProps }
@@ -425,7 +430,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                                                             color: isDark ? '#4ade80' : '#16a34a'
                                                         }}
                                                     >
-                                                        ON
+                                                        {t('components.dialogs.chatflow.statusBadgeEnabled')}
                                                     </Box>
                                                 )}
                                             </Box>

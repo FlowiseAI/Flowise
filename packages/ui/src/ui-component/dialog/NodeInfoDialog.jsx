@@ -213,7 +213,7 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
                                 }}
                                 startIcon={<IconBook2 />}
                             >
-                                {t('components.dialogs.nodeInfo.actions.documentation.title')}
+                                {t('common.labels.documentation')}
                             </Button>
                         )}
                     </div>

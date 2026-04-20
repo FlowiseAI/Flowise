@@ -283,7 +283,7 @@ const AddEditEvaluatorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             }
         } catch (error) {
             enqueueSnackbar({
-                message: t('evaluators.messages.update.error', {
+                message: t('evaluators.messages.add.error', {
                     msg: typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                 }),
                 options: {

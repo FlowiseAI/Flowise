@@ -315,7 +315,7 @@ const DocumentStoreDetails = () => {
             Object.keys(recordManagerConfig).length > 0 &&
             Object.keys(vectorStoreConfig).length > 0
         ) {
-            description = t('docstore.dialogs.delete.description.loader.simple', { name: withData })
+            description = t('docstore.dialogs.delete.description.loader.withData', { name: displayName })
         }
 
         const props = {

@@ -195,7 +195,7 @@ const FileUpload = ({ dialogProps }) => {
                         />
                     </Typography>
                 </Box>
-                <SwitchInput label='Enable Full File Upload' onChange={handleChange} value={fullFileUpload} />
+                <SwitchInput label={t('components.fileUpload.enableLabel')} onChange={handleChange} value={fullFileUpload} />
             </Box>
 
             <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>{t('components.fileUpload.allowUploadsType')}</Typography>

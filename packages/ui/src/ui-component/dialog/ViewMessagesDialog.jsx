@@ -353,7 +353,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         } else if (chatType === 'EVALUATION') {
             return t('components.dialogs.viewMessages.labels.evaluations')
         } else if (chatType === 'MCP') {
-            return 'MCP'
+            return t('components.dialogs.viewMessages.labels.mcp')
         }
         return t('components.dialogs.viewMessages.labels.apiEmbed')
     }
@@ -874,7 +874,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         }}
                     >
                         <div style={{ marginRight: 10 }}>
-                            <b style={{ marginRight: 10 }}>From Date</b>
+                            <b style={{ marginRight: 10 }}>{t('components.dialogs.viewMessages.inputs.fromDate')}</b>
                             <DatePicker
                                 selected={startDate}
                                 onChange={(date) => onStartDateSelected(date)}
@@ -885,7 +885,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ marginRight: 10 }}>
-                            <b style={{ marginRight: 10 }}>To Date</b>
+                            <b style={{ marginRight: 10 }}>{t('components.dialogs.viewMessages.inputs.toDate')}</b>
                             <DatePicker
                                 selected={endDate}
                                 onChange={(date) => onEndDateSelected(date)}
@@ -920,11 +920,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         name: 'EXTERNAL'
                                     },
                                     {
-                                        label: 'MCP',
+                                        label: t('components.dialogs.viewMessages.labels.apiEmbed'),
                                         name: 'MCP'
                                     },
                                     {
-                                        label: t('components.dialogs.viewMessages.labels.evaluations'),
+                                        label: t('components.dialogs.viewMessages.labels.mcp'),
                                         name: 'EVALUATION'
                                     }
                                 ]}
@@ -981,7 +981,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                 <KeyboardArrowDownIcon style={{ backgroundColor: customization.isDarkMode ? 'transparent' : 'inherit' }} />
                             }
                         >
-                            More Actions
+                            {t('components.dialogs.viewMessages.actions.moreActions')}
                         </Button>
                         <StyledMenu
                             id='messages-dialog-action-menu'
@@ -1443,7 +1443,13 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                         )}
                                                                                         {agent.instructions && <p>{agent.instructions}</p>}
                                                                                         {agent.messages.length === 0 &&
-                                                                                            !agent.instructions && <p>Finished</p>}
+                                                                                            !agent.instructions && (
+                                                                                                <p>
+                                                                                                    {t(
+                                                                                                        'components.dialogs.viewMessages.labels.finished'
+                                                                                                    )}
+                                                                                                </p>
+                                                                                            )}
                                                                                         {agent.sourceDocuments &&
                                                                                             agent.sourceDocuments.length > 0 && (
                                                                                                 <div

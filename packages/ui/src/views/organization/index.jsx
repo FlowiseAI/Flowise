@@ -248,11 +248,7 @@ const OrganizationSetupPage = () => {
                     <Stack sx={{ gap: 1 }}>
                         <Typography variant='h1'>{t('organization.setup.title')}</Typography>
                     </Stack>
-                    {(isOpenSource || isEnterpriseLicensed) && (
-                        <Typography variant='caption'>
-                            {t('organization.setup.caption')}
-                        </Typography>
-                    )}
+                    {(isOpenSource || isEnterpriseLicensed) && <Typography variant='caption'>{t('organization.setup.caption')}</Typography>}
                     <form onSubmit={register}>
                         <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
                             {isEnterpriseLicensed && (
@@ -350,7 +346,9 @@ const OrganizationSetupPage = () => {
                             <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
                                 {t('organization.actions.signup.title')}
                             </StyledButton>
-                            {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
+                            {configuredSsoProviders && configuredSsoProviders.length > 0 && (
+                                <Divider sx={{ width: '100%' }}>{t('organization.or')}</Divider>
+                            )}
                             {configuredSsoProviders &&
                                 configuredSsoProviders.map(
                                     (ssoProvider) =>

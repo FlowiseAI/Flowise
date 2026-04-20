@@ -151,6 +151,67 @@
                 }
             }
         },
+        "mcpServer": {
+            "loading": "Loading MCP Server configuration...",
+            "saving": "Saving...",
+            "dialogs": {
+                "rotate": {
+                    "title": "Rotate Token",
+                    "description": "This will invalidate the existing token. Any clients using the old token will need to be updated with the new one. Are you sure?"
+                }
+            },
+            "messages": {
+                "save": {
+                    "success": "MCP Server settings saved",
+                    "disabled": "MCP Server disabled",
+                    "error": "Failed to save MCP Server settings: {{msg}}"
+                },
+                "copyUrl": {
+                    "success": "URL copied to clipboard"
+                },
+                "copyToken": {
+                    "success": "Token copied to clipboard"
+                },
+                "rotate": {
+                    "success": "Token rotated successfully",
+                    "error": "Failed to rotate token: {{msg}}"
+                },
+                "load": {
+                    "error": "Failed to load MCP Server configuration: {{msg}}"
+                }
+            },
+            "validation": {
+                "toolRequired": "Tool name is required",
+                "length": "Tool name must be 64 characters or less",
+                "only": "Only letters, numbers, underscores, and hyphens allowed"
+            },
+            "actions": {
+                "rotate": "Rotate",
+                "expose": "Expose as MCP Server",
+                "copyUrl": "Copy URL to clipboard",
+                "copyToken": "Copy token",
+                "rotateToken": "Rotate token"
+            },
+            "inputs": {
+                "toolName": {
+                    "title": "Tool Name",
+                    "placeholder": "e.g. product_qa",
+                    "caption": "Used as the MCP tool identifier by LLM clients."
+                },
+                "description": {
+                    "placeholder": "e.g. Answers product catalog questions",
+                    "caption": "Helps LLMs understand when to route queries to this tool. Good descriptions improve tool selection accuracy."
+                },
+                "endpoint": {
+                    "title": "Streamable HTTP Endpoint",
+                    "caption": "For clients that support the Streamable HTTP transport"
+                },
+                "token": {
+                    "title": "Token (Bearer Token)",
+                    "alert": "Use the URL above as the MCP endpoint and pass the token as a Bearer token in the Authorization header. Configure your MCP client with: <c>Authorization: Bearer <token></c>"
+                }
+            }
+        },
         "dialogs": {
             "about": {
                 "title": "Flowise Version",
@@ -185,17 +246,72 @@
                 }
             },
             "chatflow": {
-                "tabs": {
-                    "security": "Security",
-                    "conversationStarters": "Starter Prompts",
-                    "followUpPrompts": "Follow-up Prompts",
-                    "speechToText": "Speech to Text",
-                    "textToSpeech": "Text to Speech",
-                    "chatFeedback": "Chat Feedback",
-                    "analyseChatflow": "Analyse Chatflow",
-                    "leads": "Leads",
-                    "fileUpload": "File Upload",
-                    "postProcessing": "Post Processing"
+                "statusBadgeEnabled": "ON",
+                "menu": {
+                    "general": {
+                        "title": "General"
+                    },
+                    "rateLimit": {
+                        "title": "Rate Limit",
+                        "description": "Limit API requests per time window"
+                    },
+                    "allowedDomains": {
+                        "title": "Allowed Domains",
+                        "description": "Restrict chatbot to specific domains"
+                    },
+                    "leads": {
+                        "title": "Leads",
+                        "description": "Capture visitor contact information"
+                    },
+                    "chat": {
+                        "title": "Chat"
+                    },
+                    "conversationStarters": {
+                        "title": "Starter Prompts",
+                        "description": "Suggested prompts for new conversations"
+                    },
+                    "followUpPrompts": {
+                        "title": "Follow-up Prompts",
+                        "description": "Auto-generate follow-up questions"
+                    },
+                    "chatFeedback": {
+                        "title": "Chat Feedback",
+                        "description": "Allow users to rate responses"
+                    },
+                    "mediaAndFiles": {
+                        "title": "Media & Files"
+                    },
+                    "speechToText": {
+                        "title": "Speech to Text",
+                        "description": "Voice input transcription"
+                    },
+                    "textToSpeech": {
+                        "title": "Text to Speech",
+                        "description": "Audio response playback"
+                    },
+                    "fileUpload": {
+                        "title": "File Upload",
+                        "description": "Allow file uploads in chat"
+                    },
+                    "advanced": {
+                        "title": "Advanced"
+                    },
+                    "analyseChatflow": {
+                        "title": "Analytics",
+                        "description": "Connect analytics providers"
+                    },
+                    "postProcessing": {
+                        "title": "Post Processing",
+                        "description": "Custom JavaScript post-processing"
+                    },
+                    "mcpServer": {
+                        "title": "MCP Server",
+                        "description": "Model Context Protocol server"
+                    },
+                    "overrideConfig": {
+                        "title": "Override Config",
+                        "description": "Override flow configuration via API"
+                    }
                 }
             },
             "expand": {
@@ -262,7 +378,6 @@
                 "version": "version {{version}}",
                 "actions": {
                     "documentation": {
-                        "title": "Documentation",
                         "tooltip": "Open Documentation"
                     }
                 }
@@ -427,15 +542,22 @@
                     "usedTools": "Used Tools",
                     "apiEmbed": "API/Embed",
                     "evaluations": "Evaluations",
-                    "ui": "UI"
+                    "ui": "UI",
+                    "mcp": "MCP",
+                    "finished": "Finished"
                 },
                 "actions": {
                     "exportJSON": "Export to JSON",
                     "deleteAll": "Delete All",
-                    "clearMessage": "Clear Message"
+                    "clearMessage": "Clear Message",
+                    "moreActions": "More Actions"
                 },
                 "errors": {
                     "audioNotSupport": "Your browser does not support the &lt;audio&gt; tag."
+                },
+                "inputs": {
+                    "fromDate": "From Date",
+                    "toDate": "To Date"
                 }
             },
             "pricing": {
@@ -487,6 +609,13 @@
             }
         },
         "analyzeFlow": {
+            "on": "ON",
+            "messages": {
+                "save": {
+                    "success": "Analytic Configuration Saved",
+                    "error": "Failed to save Analytic Configuration: {{msg}}"
+                }
+            },
             "inputs": {
                 "credential": "Connect Credential",
                 "projectName": {
@@ -525,8 +654,7 @@
                     "title": "PDF Processing",
                     "oneDocPerPage": "One document per page",
                     "oneDocPerFile": "One document per file"
-                },
-                "legacy": "Use Legacy Build (for PDF compatibility issues)"
+                }
             }
         },
         "followUpPrompts": {
@@ -2817,6 +2945,7 @@
         }
     },
     "organization": {
+        "or": "OR",
         "setup": {
             "title": "Setup Account",
             "caption": "Account setup does not make any external connections, your data stays securely on your locally hosted server."
@@ -2838,14 +2967,6 @@
                 "title": "Confirm Password",
                 "caption": "Reconfirm your password. Must match the password typed above."
             },
-            "existingUsername": {
-                "title": "Existing Username",
-                "caption": "Existing username that was set as FLOWISE_USERNAME environment variable"
-            },
-            "existingPassword": {
-                "title": "Existing Password",
-                "caption": "Existing password that was set as FLOWISE_PASSWORD environment variable"
-            },
             "organizationName": "Organization Name",
             "administratorName": {
                 "title": "Administrator Name",
@@ -2858,14 +2979,12 @@
             }
         },
         "errors": {
-            "authFailed": "Authentication failed. Please check your existing credentials.",
             "registration": {
                 "base": "Error in registering account: {{msg}}",
                 "enterprise": "Error in registering organization. Please contact your administrator. ({{msg}})"
             }
         },
         "actions": {
-            "newAccountDetails": "New Account Details",
             "accountAdministrator": "Account Administrator",
             "signup": {
                 "title": "Sign Up",

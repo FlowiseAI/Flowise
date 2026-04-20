@@ -85,7 +85,7 @@ const CloudMenuList = () => {
                                     <IconFileText size='1.3rem' strokeWidth='1.5' />
                                 </ListItemIcon>
                                 <Typography variant='body1' color='inherit' sx={{ my: 0.5 }}>
-                                    {t('ommon.labels.documentation')}
+                                    {t('common.labels.documentation')}
                                 </Typography>
                             </ListItemButton>
                         </a>
