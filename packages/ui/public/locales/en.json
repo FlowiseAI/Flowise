@@ -3137,7 +3137,7 @@
             },
             "jsFunction": {
                 "title": "Javascript Function",
-                "tooltip": "Function to execute when tool is being used. You can use properties specified in Input Schema as variables. For example, if the property is <code>userid</code>, you can use as <code>$userid</code>. Return value must be a string. You can also override the code from API by following this <a>guide</a>"
+                "tooltip": "Function to execute when tool is being used. You can use properties specified in Input Schema as variables. For example, if the property is <c>userid</c>, you can use as <c>$userid</c>. Return value must be a string. You can also override the code from API by following this <a>guide</a>"
             }
         }
     },

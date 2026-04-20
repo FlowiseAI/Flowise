@@ -5,12 +5,25 @@ import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import { cloneDeep } from 'lodash'
 
-import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Stack, OutlinedInput } from '@mui/material'
+import {
+    IconButton,
+    Tooltip,
+    Box,
+    Button,
+    Typography,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Stack,
+    OutlinedInput
+} from '@mui/material'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Grid } from '@/ui-component/grid/Grid'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { GridActionsCellItem } from '@mui/x-data-grid'
 import DeleteIcon from '@mui/icons-material/Delete'
+import { Info } from '@mui/icons-material'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
@@ -546,7 +559,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
                                 <Typography variant='overline'>{t('tools.inputs.jsFunction.title')}</Typography>
-                                <TooltipWithParser
+                                {/* Throws a parser error if the TooltipWithParser component is used */}
+                                <Tooltip
                                     title={
                                         <Trans
                                             i18nKey='tools.inputs.jsFunction.tooltip'
@@ -559,11 +573,24 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                                         rel='noreferrer'
                                                     />
                                                 ),
+                                                c: <code />,
                                                 code: <code />
                                             }}
                                         />
                                     }
-                                />
+                                    placement='right'
+                                >
+                                    <IconButton sx={{ height: 15, width: 15, ml: 2, mt: -0.5 }}>
+                                        <Info
+                                            sx={{
+                                                background: 'transparent',
+                                                color: customization.isDarkMode ? 'white' : 'inherit',
+                                                height: 15,
+                                                width: 15
+                                            }}
+                                        />
+                                    </IconButton>
+                                </Tooltip>
                             </Stack>
                             <Stack direction='row'>
                                 <Button

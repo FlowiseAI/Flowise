@@ -357,12 +357,13 @@ const EmbedChat = ({ chatflowid }) => {
                     {(value === 0 || value === 1) && (
                         <>
                             <span>
-                                <Trans i18nKey='chatflows.bodyTag' components={{ c: <code /> }} />
+                                <Trans i18nKey='chatflows.bodyTag' components={{ c: <code />, code: <code /> }} />
                                 <p>
                                     <Trans
                                         i18nKey='chatflows.bodyTagAlso'
                                         components={{
                                             c: <code />,
+                                            code: <code />,
                                             a: (
                                                 // eslint-disable-next-line jsx-a11y/anchor-has-content
                                                 <a
