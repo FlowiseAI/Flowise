@@ -89,95 +89,93 @@ const App = () => {
 };`
 }
 
-export const defaultThemeConfig = (t) => {
-    return {
-        button: {
+export const defaultThemeConfig = {
+    button: {
+        backgroundColor: '#3B81F6',
+        right: 20,
+        bottom: 20,
+        size: 48,
+        dragAndDrop: true,
+        iconColor: 'white',
+        customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+        autoWindowOpen: {
+            autoOpen: true,
+            openDelay: 2,
+            autoOpenOnMobile: false
+        }
+    },
+    tooltip: {
+        showTooltip: true,
+        tooltipMessage: i18next.t('chatflows.chat.tooltipMessage'),
+        tooltipBackgroundColor: 'black',
+        tooltipTextColor: 'white',
+        tooltipFontSize: 16
+    },
+    disclaimer: {
+        title: i18next.t('chatflows.chat.disclaimer.title'),
+        message: i18next.t('chatflows.chat.disclaimer.message'),
+        textColor: 'black',
+        buttonColor: '#3b82f6',
+        buttonText: i18next.t('chatflows.chat.disclaimer.buttonText'),
+        buttonTextColor: 'white',
+        blurredBackgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: 'white'
+    },
+    customCSS: ``,
+    chatWindow: {
+        showTitle: true,
+        showAgentMessages: true,
+        title: i18next.t('chatflows.chat.chatWindow.title'),
+        titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
+        welcomeMessage: i18next.t('chatflows.chat.chatWindow.welcomeMessage'),
+        errorMessage: i18next.t('chatflows.chat.chatWindow.errorMessage'),
+        backgroundColor: '#ffffff',
+        backgroundImage: i18next.t('chatflows.chat.chatWindow.backgroundImage'),
+        height: 700,
+        width: 400,
+        fontSize: 16,
+        starterPrompts: ['What is a bot?', 'Who are you?'],
+        starterPromptFontSize: 15,
+        clearChatOnReload: false,
+        sourceDocsTitle: i18next.t('chatflows.chat.chatWindow.sourceDocsTitle'),
+        renderHTML: true,
+        botMessage: {
+            backgroundColor: '#f7f8ff',
+            textColor: '#303235',
+            showAvatar: true,
+            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
+        },
+        userMessage: {
             backgroundColor: '#3B81F6',
-            right: 20,
-            bottom: 20,
-            size: 48,
-            dragAndDrop: true,
-            iconColor: 'white',
-            customIconSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
-            autoWindowOpen: {
-                autoOpen: true,
-                openDelay: 2,
-                autoOpenOnMobile: false
-            }
+            textColor: '#ffffff',
+            showAvatar: true,
+            avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
         },
-        tooltip: {
-            showTooltip: true,
-            tooltipMessage: i18next.t('chatflows.chat.tooltipMessage'),
-            tooltipBackgroundColor: 'black',
-            tooltipTextColor: 'white',
-            tooltipFontSize: 16
-        },
-        disclaimer: {
-            title: i18next.t('chatflows.chat.disclaimer.title'),
-            message: i18next.t('chatflows.chat.disclaimer.message'),
-            textColor: 'black',
-            buttonColor: '#3b82f6',
-            buttonText: i18next.t('chatflows.chat.disclaimer.buttonText'),
-            buttonTextColor: 'white',
-            blurredBackgroundColor: 'rgba(0, 0, 0, 0.4)',
-            backgroundColor: 'white'
-        },
-        customCSS: ``,
-        chatWindow: {
-            showTitle: true,
-            showAgentMessages: true,
-            title: i18next.t('chatflows.chat.chatWindow.title'),
-            titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
-            welcomeMessage: i18next.t('chatflows.chat.chatWindow.welcomeMessage'),
-            errorMessage: i18next.t('chatflows.chat.chatWindow.errorMessage'),
+        textInput: {
+            placeholder: i18next.t('chatflows.chat.textInput.placeholder'),
             backgroundColor: '#ffffff',
-            backgroundImage: i18next.t('chatflows.chat.chatWindow.backgroundImage'),
-            height: 700,
-            width: 400,
-            fontSize: 16,
-            starterPrompts: ['What is a bot?', 'Who are you?'],
-            starterPromptFontSize: 15,
-            clearChatOnReload: false,
-            sourceDocsTitle: i18next.t('chatflows.chat.chatWindow.sourceDocsTitle'),
-            renderHTML: true,
-            botMessage: {
-                backgroundColor: '#f7f8ff',
-                textColor: '#303235',
-                showAvatar: true,
-                avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/parroticon.png'
-            },
-            userMessage: {
-                backgroundColor: '#3B81F6',
-                textColor: '#ffffff',
-                showAvatar: true,
-                avatarSrc: 'https://raw.githubusercontent.com/zahidkhawaja/langchain-chat-nextjs/main/public/usericon.png'
-            },
-            textInput: {
-                placeholder: i18next.t('chatflows.chat.textInput.placeholder'),
-                backgroundColor: '#ffffff',
-                textColor: '#303235',
-                sendButtonColor: '#3B81F6',
-                maxChars: 50,
-                maxCharsWarningMessage: t('chatflows.chat.textInput.maxCharsWarningMessage'),
-                autoFocus: true,
-                sendMessageSound: true,
-                sendSoundLocation: 'send_message.mp3',
-                receiveMessageSound: true,
-                receiveSoundLocation: 'receive_message.mp3'
-            },
-            feedback: {
-                color: '#303235'
-            },
-            dateTimeToggle: {
-                date: true,
-                time: true
-            },
-            footer: {
-                textColor: '#303235',
-                text: i18next.t('chatflows.chat.footer.text'),
-                company: i18next.t('chatflows.chat.footer.company'),
-                companyLink: 'https://flowiseai.com'
-            }
+            textColor: '#303235',
+            sendButtonColor: '#3B81F6',
+            maxChars: 50,
+            maxCharsWarningMessage: i18next.t('chatflows.chat.textInput.maxCharsWarningMessage'),
+            autoFocus: true,
+            sendMessageSound: true,
+            sendSoundLocation: 'send_message.mp3',
+            receiveMessageSound: true,
+            receiveSoundLocation: 'receive_message.mp3'
+        },
+        feedback: {
+            color: '#303235'
+        },
+        dateTimeToggle: {
+            date: true,
+            time: true
+        },
+        footer: {
+            textColor: '#303235',
+            text: i18next.t('chatflows.chat.footer.text'),
+            company: i18next.t('chatflows.chat.footer.company'),
+            companyLink: 'https://flowiseai.com'
         }
     }
 }
