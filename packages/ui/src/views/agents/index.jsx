@@ -420,7 +420,7 @@ const Agents = () => {
                             )}
 
                             {isLoading && (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                     <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
                                     <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
                                     <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
@@ -430,7 +430,7 @@ const Agents = () => {
                             {!isLoading && total > 0 && (
                                 <>
                                     {!view || view === 'card' ? (
-                                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                        <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                             {getSortedData(agents).map((agent, index) => (
                                                 <Box
                                                     key={index}

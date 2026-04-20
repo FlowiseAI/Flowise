@@ -274,6 +274,41 @@ const Agentflows = () => {
                                         </StyledPermissionButton>
                                     )}
                                 </Box>
+                                {!isLoading && total === 0 && (
+                                    <ToggleButtonGroup
+                                        sx={{ borderRadius: 2, mt: 3, maxHeight: 36 }}
+                                        value={agentflowVersion}
+                                        color='primary'
+                                        exclusive
+                                        onChange={handleVersionChange}
+                                    >
+                                        <ToggleButton
+                                            sx={{
+                                                borderColor: theme.palette.grey[900] + 25,
+                                                borderRadius: 2,
+                                                color: customization.isDarkMode ? 'white' : 'inherit'
+                                            }}
+                                            variant='contained'
+                                            value='v2'
+                                            title='V2'
+                                        >
+                                            <Chip sx={{ mr: 1 }} label='NEW' size='small' color='primary' />
+                                            V2
+                                        </ToggleButton>
+                                        <ToggleButton
+                                            sx={{
+                                                borderColor: theme.palette.grey[900] + 25,
+                                                borderRadius: 2,
+                                                color: customization.isDarkMode ? 'white' : 'inherit'
+                                            }}
+                                            variant='contained'
+                                            value='v1'
+                                            title='V1'
+                                        >
+                                            V1
+                                        </ToggleButton>
+                                    </ToggleButtonGroup>
+                                )}
                             </Box>
 
                             {/* ==================== Agentflows Listing Section ==================== */}
@@ -414,7 +449,7 @@ const Agentflows = () => {
                             )}
 
                             {isLoading && (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                     <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
                                     <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
                                     <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
@@ -424,7 +459,7 @@ const Agentflows = () => {
                             {!isLoading && total > 0 && (
                                 <>
                                     {!view || view === 'card' ? (
-                                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                        <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                             {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => {
                                                 const flowImages = images[data.id] || []
                                                 const flowIcons = icons[data.id] || []
