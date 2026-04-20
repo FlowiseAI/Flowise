@@ -23,12 +23,22 @@ const sanitizeChatflow = (ChatFlow) => {
     try {
         return ChatFlow.map((chatFlow) => {
             const sanitizeFlowData = generateExportFlowData(JSON.parse(chatFlow.flowData))
-            return {
+            const sanitized = {
                 id: chatFlow.id,
                 name: chatFlow.name,
                 flowData: stringify(sanitizeFlowData),
                 type: chatFlow.type
             }
+            if (chatFlow.chatbotConfig) sanitized.chatbotConfig = chatFlow.chatbotConfig
+            if (chatFlow.category) sanitized.category = chatFlow.category
+            if (chatFlow.speechToText) sanitized.speechToText = chatFlow.speechToText
+            if (chatFlow.textToSpeech) sanitized.textToSpeech = chatFlow.textToSpeech
+            if (chatFlow.followUpPrompts) sanitized.followUpPrompts = chatFlow.followUpPrompts
+            if (chatFlow.apiConfig) sanitized.apiConfig = chatFlow.apiConfig
+            if (chatFlow.analytic) sanitized.analytic = chatFlow.analytic
+            if (chatFlow.isPublic !== undefined) sanitized.isPublic = chatFlow.isPublic
+            if (chatFlow.apikeyid) sanitized.apikeyid = chatFlow.apikeyid
+            return sanitized
         })
     } catch (error) {
         throw new Error(`exportImport.sanitizeChatflow ${getErrorMessage(error)}`)
