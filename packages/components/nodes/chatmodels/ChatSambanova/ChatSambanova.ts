@@ -75,6 +75,14 @@ class ChatSambanova_ChatModels implements INode {
                 optional: true,
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description: "Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK's `extra_body`.",
+                additionalParams: true
             }
         ]
     }
@@ -86,6 +94,7 @@ class ChatSambanova_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const extraBody = nodeData.inputs?.extraBody
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const sambanovaApiKey = getCredentialParam('sambanovaApiKey', credentialData, nodeData)
@@ -114,6 +123,15 @@ class ChatSambanova_ChatModels implements INode {
             obj.configuration = {
                 baseURL: basePath,
                 defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...(obj.modelKwargs ?? {}), ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatSambanova's Additional Body Params: " + exception)
             }
         }
 

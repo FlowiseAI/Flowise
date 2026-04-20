@@ -89,6 +89,15 @@ class ChatLocalAI_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description:
+                    'Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK\'s `extra_body`. Useful for providers like vLLM that accept non-standard parameters, e.g. {"chat_template_kwargs": {"enable_thinking": false}}',
+                additionalParams: true
             }
         ]
     }
@@ -101,6 +110,7 @@ class ChatLocalAI_ChatModels implements INode {
         const timeout = nodeData.inputs?.timeout as string
         const basePath = nodeData.inputs?.basePath as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const extraBody = nodeData.inputs?.extraBody
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const localAIApiKey = getCredentialParam('localAIApiKey', credentialData, nodeData)
@@ -124,6 +134,15 @@ class ChatLocalAI_ChatModels implements INode {
             obj.apiKey = localAIApiKey
         }
         if (basePath) obj.configuration = { baseURL: basePath }
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...(obj.modelKwargs ?? {}), ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatLocalAI's Additional Body Params: " + exception)
+            }
+        }
 
         const model = new ChatOpenAI(obj)
 

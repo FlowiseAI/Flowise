@@ -58,6 +58,14 @@ class ChatFireworks_ChatModels implements INode {
                 type: 'boolean',
                 default: true,
                 optional: true
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description: "Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK's `extra_body`.",
+                additionalParams: true
             }
         ]
     }
@@ -67,6 +75,7 @@ class ChatFireworks_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const extraBody = nodeData.inputs?.extraBody
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const fireworksApiKey = getCredentialParam('fireworksApiKey', credentialData, nodeData)
@@ -78,6 +87,15 @@ class ChatFireworks_ChatModels implements INode {
             streaming: streaming ?? true
         }
         if (cache) obj.cache = cache
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...(obj.modelKwargs ?? {}), ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatFireworks's Additional Body Params: " + exception)
+            }
+        }
 
         const model = new ChatFireworks(obj)
         return model

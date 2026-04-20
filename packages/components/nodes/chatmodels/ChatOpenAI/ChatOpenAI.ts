@@ -207,6 +207,15 @@ class ChatOpenAI_ChatModels implements INode {
                 optional: true,
                 description: 'Default headers to include with every request to the API.',
                 additionalParams: true
+            },
+            {
+                label: 'Additional Body Params (JSON)',
+                name: 'extraBody',
+                type: 'json',
+                optional: true,
+                description:
+                    'Additional fields to merge into the request body sent to the API. Equivalent to OpenAI SDK\'s `extra_body`. Useful for providers like vLLM that accept non-standard parameters, e.g. {"chat_template_kwargs": {"enable_thinking": false}}',
+                additionalParams: true
             }
         ]
     }
@@ -231,6 +240,7 @@ class ChatOpenAI_ChatModels implements INode {
         const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
         const basePath = nodeData.inputs?.basepath as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const extraBody = nodeData.inputs?.extraBody
         const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
         const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
@@ -290,6 +300,15 @@ class ChatOpenAI_ChatModels implements INode {
             obj.configuration = {
                 baseURL: basePath,
                 defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        if (extraBody) {
+            try {
+                const parsedExtraBody = typeof extraBody === 'object' ? extraBody : JSON.parse(extraBody)
+                obj.modelKwargs = { ...(obj.modelKwargs ?? {}), ...parsedExtraBody }
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatOpenAI's Additional Body Params: " + exception)
             }
         }
 
