@@ -12,8 +12,7 @@ i18n.use(Backend)
         },
         fallbackLng: 'en',
         saveMissing: true,
-        supportedLngs: ['en'],
-        debug: true
+        supportedLngs: ['en']
     })
 
 export default i18n
