@@ -207,7 +207,7 @@ export function VariableInput({
                               return [
                                   'span',
                                   mergeAttributes(this.HTMLAttributes ?? {}, options.HTMLAttributes),
-                                  `${options.suggestion?.char ?? '{{'}${node.attrs.label ?? node.attrs.id}}}`
+                                  `${options.suggestion?.char ?? '{{'}${node.attrs.id ?? node.attrs.label}}}`
                               ]
                           },
                           suggestion: suggestionConfig,
