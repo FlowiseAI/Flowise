@@ -72,6 +72,9 @@ export function userMayManageOrgUsers(user: LoggedInUser): boolean {
 /** Allows reading a user profile when it is self, or when the caller manages org users and the target belongs to the active org. */
 export async function assertMayReadTargetUser(sessionUser: LoggedInUser, targetUserId: string, queryRunner: QueryRunner): Promise<void> {
     if (sessionUser.id && targetUserId === sessionUser.id) return
+    if (sessionUser.id !== targetUserId) {
+        throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
+    }
     if (!sessionUser.activeOrganizationId) {
         throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
     }
