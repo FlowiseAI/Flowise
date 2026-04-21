@@ -32,8 +32,8 @@ describe('createAgentflowTheme', () => {
             expect(theme.palette.divider).toBe(tokens.colors.border.default.light)
         })
 
-        it('should set primary color from agent node color', () => {
-            expect(theme.palette.primary.main).toBe(tokens.colors.nodes.agent)
+        it('should set primary color from palette token', () => {
+            expect(theme.palette.primary.main).toBe(tokens.colors.palette.primary.main)
         })
 
         it('should set custom card palette color', () => {

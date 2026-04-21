@@ -1336,4 +1336,99 @@ describe('AgentflowContext', () => {
             expect(result.current.state.nodes.find((n) => n.id === 'Node 1_0')).toBeDefined()
         })
     })
+
+    describe('onFlowChange notifications', () => {
+        const mockOnFlowChange = jest.fn()
+
+        beforeEach(() => {
+            mockOnFlowChange.mockClear()
+        })
+
+        it('should call onFlowChange when deleteNode is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1'), makeNode('node-2')],
+                edges: [makeEdge('node-1', 'node-2')]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.deleteNode('node-2')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' })]),
+                    edges: []
+                })
+            )
+            // Deleted node should not be in the callback payload
+            const callArgs = mockOnFlowChange.mock.calls[0][0]
+            expect(callArgs.nodes.find((n: FlowNode) => n.id === 'node-2')).toBeUndefined()
+        })
+
+        it('should call onFlowChange when deleteEdge is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1'), makeNode('node-2')],
+                edges: [makeEdge('node-1', 'node-2'), makeEdge('node-2', 'node-1')]
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.deleteEdge('node-1-node-2')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' }), expect.objectContaining({ id: 'node-2' })]),
+                    edges: [expect.objectContaining({ id: 'node-2-node-1' })]
+                })
+            )
+        })
+
+        it('should call onFlowChange when duplicateNode is called', () => {
+            const initialFlow: FlowData = {
+                nodes: [makeNode('node-1')],
+                edges: []
+            }
+
+            const { result } = renderHook(() => useAgentflowContext(), {
+                wrapper: createWrapper(initialFlow)
+            })
+
+            act(() => {
+                result.current.registerOnFlowChange(mockOnFlowChange)
+            })
+
+            act(() => {
+                result.current.duplicateNode('node-1')
+            })
+
+            expect(mockOnFlowChange).toHaveBeenCalledTimes(1)
+            expect(mockOnFlowChange).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    nodes: expect.arrayContaining([expect.objectContaining({ id: 'node-1' })]),
+                    edges: []
+                })
+            )
+            // Should have 2 nodes (original + duplicate)
+            const callArgs = mockOnFlowChange.mock.calls[0][0]
+            expect(callArgs.nodes).toHaveLength(2)
+        })
+    })
 })

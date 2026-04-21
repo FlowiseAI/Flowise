@@ -11,11 +11,11 @@ describe('CustomMention extension config', () => {
     describe('renderText', () => {
         const renderText = extendConfig.renderText as (args: { node: { attrs: Record<string, string> } }) => string
 
-        it('renders label in double-brace syntax', () => {
-            expect(renderText({ node: { attrs: { label: 'question', id: 'q1' } } })).toBe('{{question}}')
+        it('renders id in double-brace syntax', () => {
+            expect(renderText({ node: { attrs: { label: 'question', id: 'q1' } } })).toBe('{{q1}}')
         })
 
-        it('falls back to id when label is missing', () => {
+        it('falls back to label when id is missing', () => {
             expect(renderText({ node: { attrs: { id: 'chat_history' } } })).toBe('{{chat_history}}')
         })
     })
@@ -74,11 +74,11 @@ describe('CustomMention extension config', () => {
     describe('renderMarkdown', () => {
         const renderMarkdown = extendConfig.renderMarkdown as (node: { attrs?: Record<string, string> }) => string
 
-        it('renders label in double-brace syntax', () => {
-            expect(renderMarkdown({ attrs: { label: 'question', id: 'q1' } })).toBe('{{question}}')
+        it('renders id in double-brace syntax', () => {
+            expect(renderMarkdown({ attrs: { label: 'question', id: 'q1' } })).toBe('{{q1}}')
         })
 
-        it('falls back to id when label is missing', () => {
+        it('falls back to label when id is missing', () => {
             expect(renderMarkdown({ attrs: { id: 'chat_history' } })).toBe('{{chat_history}}')
         })
 
