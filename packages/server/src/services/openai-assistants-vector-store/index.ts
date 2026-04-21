@@ -1,21 +1,43 @@
 import OpenAI from 'openai'
 import { StatusCodes } from 'http-status-codes'
 import { Credential } from '../../database/entities/Credential'
+import { WorkspaceShared } from '../../enterprise/database/entities/EnterpriseEntities'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { decryptCredentialData } from '../../utils'
 import { getFileFromUpload, removeSpecificFileFromUpload } from 'flowise-components'
 
-const getAssistantVectorStore = async (credentialId: string, vectorStoreId: string) => {
-    try {
-        const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
+const resolveCredentialForWorkspace = async (credentialId: string, workspaceId: string | undefined): Promise<Credential> => {
+    if (!workspaceId) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Workspace ID is required')
+    }
+    const appServer = getRunningExpressApp()
+    const credentialRepo = appServer.AppDataSource.getRepository(Credential)
+
+    let credential = await credentialRepo.findOneBy({
+        id: credentialId,
+        workspaceId
+    })
+    if (!credential) {
+        const share = await appServer.AppDataSource.getRepository(WorkspaceShared).findOneBy({
+            workspaceId,
+            sharedItemId: credentialId,
+            itemType: 'credential'
         })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
+        if (share) {
+            credential = await credentialRepo.findOneBy({ id: credentialId })
         }
+    }
+    if (!credential) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
+    }
+    return credential
+}
+
+const getAssistantVectorStore = async (credentialId: string, vectorStoreId: string, workspaceId: string | undefined) => {
+    try {
+        const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
@@ -34,15 +56,9 @@ const getAssistantVectorStore = async (credentialId: string, vectorStoreId: stri
     }
 }
 
-const listAssistantVectorStore = async (credentialId: string) => {
+const listAssistantVectorStore = async (credentialId: string, workspaceId: string | undefined) => {
     try {
-        const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
-        })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
-        }
+        const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
@@ -61,15 +77,13 @@ const listAssistantVectorStore = async (credentialId: string) => {
     }
 }
 
-const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.VectorStores.VectorStoreCreateParams) => {
+const createAssistantVectorStore = async (
+    credentialId: string,
+    obj: OpenAI.VectorStores.VectorStoreCreateParams,
+    workspaceId: string | undefined
+) => {
     try {
-        const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
-        })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
-        }
+        const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
@@ -91,16 +105,11 @@ const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.Vect
 const updateAssistantVectorStore = async (
     credentialId: string,
     vectorStoreId: string,
-    obj: OpenAI.VectorStores.VectorStoreUpdateParams
+    obj: OpenAI.VectorStores.VectorStoreUpdateParams,
+    workspaceId: string | undefined
 ) => {
     try {
-        const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
-        })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
-        }
+        const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
@@ -128,15 +137,9 @@ const updateAssistantVectorStore = async (
     }
 }
 
-const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: string) => {
+const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: string, workspaceId: string | undefined) => {
     try {
-        const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
-        })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
-        }
+        const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
@@ -158,16 +161,11 @@ const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: s
 const uploadFilesToAssistantVectorStore = async (
     credentialId: string,
     vectorStoreId: string,
-    files: { filePath: string; fileName: string }[]
+    files: { filePath: string; fileName: string }[],
+    workspaceId: string | undefined
 ): Promise<any> => {
     try {
-        const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
-        })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
-        }
+        const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
@@ -212,15 +210,14 @@ const uploadFilesToAssistantVectorStore = async (
     }
 }
 
-const deleteFilesFromAssistantVectorStore = async (credentialId: string, vectorStoreId: string, file_ids: string[]) => {
+const deleteFilesFromAssistantVectorStore = async (
+    credentialId: string,
+    vectorStoreId: string,
+    file_ids: string[],
+    workspaceId: string | undefined
+) => {
     try {
-        const appServer = getRunningExpressApp()
-        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
-            id: credentialId
-        })
-        if (!credential) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
-        }
+        const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
         const openAIApiKey = decryptedCredentialData['openAIApiKey']
