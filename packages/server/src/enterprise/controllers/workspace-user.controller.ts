@@ -58,7 +58,11 @@ export class WorkspaceUserController {
                 if (query.userId !== user.id && !userMayManageOrgUsers(user)) {
                     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
                 }
-                workspaceUser = await workspaceUserService.readWorkspaceUserByUserId(query.userId, queryRunner)
+                workspaceUser = await workspaceUserService.readWorkspaceUserByOrganizationIdUserId(
+                    user.activeOrganizationId,
+                    query.userId,
+                    queryRunner
+                )
             } else if (query.roleId) {
                 if (!userMayManageOrgUsers(user)) {
                     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
