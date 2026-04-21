@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
+import { v4 as uuidv4 } from 'uuid'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import predictionsServices from '../../services/predictions'
 import webhookService from '../../services/webhook'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { dispatchCallback } from '../../utils/callbackDispatcher'
 
 const createWebhook = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -27,7 +29,7 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
 
         const isResume = body?.humanInput != null
 
-        await webhookService.validateWebhookChatflow(
+        const { callbackUrl: nodeCallbackUrl, callbackSecret } = await webhookService.validateWebhookChatflow(
             req.params.id,
             workspaceId,
             body,
@@ -38,6 +40,9 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             isResume ? { skipFieldValidation: true } : undefined
         )
 
+        // Header takes priority over Start node config
+        const callbackUrl: string | undefined = (req.headers['x-callback-url'] as string | undefined) || nodeCallbackUrl
+
         // Namespace the webhook payload so $webhook.body.*, $webhook.headers.*, $webhook.query.* can coexist
         req.body = {
             webhook: {
@@ -47,10 +52,49 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             }
         }
 
-        const { humanInput, chatId, sessionId } = body ?? {}
+        const { humanInput, chatId: bodyChatId, sessionId } = body ?? {}
         if (humanInput != null) req.body.humanInput = humanInput
-        if (chatId != null) req.body.chatId = chatId
+        if (bodyChatId != null) req.body.chatId = bodyChatId
         if (sessionId != null) req.body.sessionId = sessionId
+
+        if (callbackUrl) {
+            try {
+                const parsed = new URL(callbackUrl)
+                if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error()
+            } catch {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid callbackUrl: must be a valid http or https URL`)
+            }
+
+            // Pre-assign chatId so the 202 response and the background execution share the same ID
+            const chatId: string = (bodyChatId as string | undefined) ?? uuidv4()
+            req.body.chatId = chatId
+
+            res.status(202).json({ chatId, status: 'PROCESSING' })
+
+            setImmediate(async () => {
+                try {
+                    const apiResponse = await predictionsServices.buildChatflow(req)
+
+                    // apiResponse.action is the parsed humanInputAction — only present when flow is STOPPED (FLOWISE-387)
+                    if (apiResponse.action) {
+                        await dispatchCallback(
+                            callbackUrl,
+                            {
+                                status: 'STOPPED',
+                                chatId,
+                                data: { text: apiResponse.text, executionId: apiResponse.executionId, action: apiResponse.action }
+                            },
+                            callbackSecret
+                        )
+                    } else {
+                        await dispatchCallback(callbackUrl, { status: 'SUCCESS', chatId, data: apiResponse }, callbackSecret)
+                    }
+                } catch (err: any) {
+                    await dispatchCallback(callbackUrl, { status: 'ERROR', chatId, error: err.message }, callbackSecret)
+                }
+            })
+            return
+        }
 
         const apiResponse = await predictionsServices.buildChatflow(req)
         return res.json(apiResponse)

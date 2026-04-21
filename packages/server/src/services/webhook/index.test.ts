@@ -65,7 +65,7 @@ describe('validateWebhookChatflow', () => {
     it('resolves without error for a valid webhook chatflow', async () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
 
-        await expect(webhookService.validateWebhookChatflow('some-id')).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id')).resolves.toMatchObject({})
     })
 
     it('throws 500 for unexpected errors from getChatflowById', async () => {
@@ -96,7 +96,7 @@ describe('validateWebhookChatflow', () => {
     it('resolves for any method when webhookMethod is not configured', async () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'DELETE')).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'DELETE')).resolves.toMatchObject({})
     })
 
     // --- Content-Type validation ---
@@ -114,7 +114,7 @@ describe('validateWebhookChatflow', () => {
 
         await expect(
             webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', { 'content-type': 'application/json; charset=utf-8' })
-        ).resolves.toBeUndefined()
+        ).resolves.toMatchObject({})
     })
 
     it('resolves when webhookContentType is not configured', async () => {
@@ -122,7 +122,7 @@ describe('validateWebhookChatflow', () => {
 
         await expect(
             webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', { 'content-type': 'text/plain' })
-        ).resolves.toBeUndefined()
+        ).resolves.toMatchObject({})
     })
 
     // --- Header validation ---
@@ -145,7 +145,7 @@ describe('validateWebhookChatflow', () => {
 
         await expect(
             webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', { 'x-api-key': 'secret' })
-        ).resolves.toBeUndefined()
+        ).resolves.toMatchObject({})
     })
 
     // --- Body param validation ---
@@ -170,19 +170,19 @@ describe('validateWebhookChatflow', () => {
     it('resolves when all required params are present in body', async () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'action', required: true }] }))
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { action: 'push' })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { action: 'push' })).resolves.toMatchObject({})
     })
 
     it('resolves when webhookBodyParams is empty string (DB default)', async () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookBodyParams: '' }))
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {})).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {})).resolves.toMatchObject({})
     })
 
     it('resolves when no params declared but body has arbitrary fields', async () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { anything: 'goes' })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { anything: 'goes' })).resolves.toMatchObject({})
     })
 
     // --- Body type validation ---
@@ -203,7 +203,7 @@ describe('validateWebhookChatflow', () => {
             makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
         )
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: 42 })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: 42 })).resolves.toMatchObject({})
     })
 
     it('resolves when number param is sent as a numeric string (form-encoded)', async () => {
@@ -211,7 +211,7 @@ describe('validateWebhookChatflow', () => {
             makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
         )
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: '42' })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: '42' })).resolves.toMatchObject({})
     })
 
     it('throws 400 when number param is an empty string (form-encoded)', async () => {
@@ -230,7 +230,7 @@ describe('validateWebhookChatflow', () => {
             makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
         )
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: true })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: true })).resolves.toMatchObject({})
     })
 
     it('resolves when boolean param is the string "true" (form-encoded)', async () => {
@@ -238,7 +238,7 @@ describe('validateWebhookChatflow', () => {
             makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
         )
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'true' })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'true' })).resolves.toMatchObject({})
     })
 
     it('resolves when boolean param is the string "false" (form-encoded)', async () => {
@@ -246,7 +246,7 @@ describe('validateWebhookChatflow', () => {
             makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
         )
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'false' })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'false' })).resolves.toMatchObject({})
     })
 
     it('throws 400 when boolean param is an invalid string like "yes" (form-encoded)', async () => {
@@ -274,7 +274,7 @@ describe('validateWebhookChatflow', () => {
     it('resolves when all required query params are present', async () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookQueryParams: [{ name: 'page', required: true }] }))
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, { page: '2' })).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, { page: '2' })).resolves.toMatchObject({})
     })
 
     // --- HMAC signature verification ---
@@ -290,7 +290,7 @@ describe('validateWebhookChatflow', () => {
     it('resolves without signature check when no webhookSecret is configured', async () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
 
-        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, RAW_BODY)).resolves.toBeUndefined()
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, RAW_BODY)).resolves.toMatchObject({})
     })
 
     it('resolves when secret is set and signature is valid', async () => {
@@ -300,7 +300,7 @@ describe('validateWebhookChatflow', () => {
 
         await expect(
             webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, RAW_BODY)
-        ).resolves.toBeUndefined()
+        ).resolves.toMatchObject({})
     })
 
     it('throws 401 when secret is set but X-Webhook-Signature header is missing', async () => {
@@ -353,7 +353,7 @@ describe('validateWebhookChatflow', () => {
         // Missing required body param 'action' — would normally throw 400, but not on resume
         await expect(
             webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, undefined, { skipFieldValidation: true })
-        ).resolves.toBeUndefined()
+        ).resolves.toMatchObject({})
     })
 
     it('still runs signature check when skipFieldValidation is true', async () => {

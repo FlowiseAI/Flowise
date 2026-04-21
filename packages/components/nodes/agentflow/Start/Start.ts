@@ -214,6 +214,29 @@ class Start_Agentflow implements INode {
                 }
             },
             {
+                label: 'Callback URL',
+                name: 'callbackUrl',
+                type: 'string',
+                description:
+                    'If set, Flowise returns 202 immediately and POSTs the result to this URL when the flow finishes. Useful for platforms with strict HTTP timeout windows (GitHub, Slack, Zapier).',
+                placeholder: 'https://example.com/flowise-callback',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
+                label: 'Callback Secret',
+                name: 'callbackSecret',
+                type: 'string',
+                description:
+                    'If set, outgoing callback POSTs are signed with HMAC-SHA256. The signature is sent as X-Flowise-Signature: sha256=<hex> so your callback endpoint can verify the request came from Flowise.',
+                optional: true,
+                show: {
+                    startInputType: 'webhookTrigger'
+                }
+            },
+            {
                 label: 'Expected Query Parameters',
                 name: 'webhookQueryParams',
                 description: 'Declare expected query parameters. Leave empty to accept any.',
