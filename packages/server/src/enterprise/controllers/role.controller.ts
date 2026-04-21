@@ -5,11 +5,14 @@ import { Role } from '../database/entities/role.entity'
 import { RoleErrorMessage, RoleService } from '../services/role.service'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { GeneralErrorMessage } from '../../utils/constants'
-import { getLoggedInUser } from '../utils/tenantRequestGuards'
+import { assertQueryOrganizationMatchesActiveOrg, getLoggedInUser } from '../utils/tenantRequestGuards'
 
 export class RoleController {
     public async create(req: Request, res: Response, next: NextFunction) {
         try {
+            const user = getLoggedInUser(req)
+            assertQueryOrganizationMatchesActiveOrg(user, req.body.organizationId)
+
             const roleService = new RoleService()
             const newRole = await roleService.createRole(req.body)
             return res.status(StatusCodes.CREATED).json(newRole)
@@ -58,6 +61,9 @@ export class RoleController {
 
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
+            const user = getLoggedInUser(req)
+            assertQueryOrganizationMatchesActiveOrg(user, req.body.organizationId)
+
             const roleService = new RoleService()
             const role = await roleService.updateRole(req.body)
             return res.status(StatusCodes.OK).json(role)

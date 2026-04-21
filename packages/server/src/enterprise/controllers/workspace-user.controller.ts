@@ -33,8 +33,6 @@ export class WorkspaceUserController {
             const query = req.query as Partial<WorkspaceUser & { organizationId: string | undefined }>
             const workspaceUserService = new WorkspaceUserService()
 
-            assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
-
             let workspaceUser: any
             if (query.workspaceId && query.userId) {
                 await assertWorkspaceIdAccessibleToUser(user, query.workspaceId, queryRunner)
@@ -47,6 +45,7 @@ export class WorkspaceUserController {
                 await assertWorkspaceIdAccessibleToUser(user, query.workspaceId, queryRunner)
                 workspaceUser = await workspaceUserService.readWorkspaceUserByWorkspaceId(query.workspaceId, queryRunner)
             } else if (query.organizationId && query.userId) {
+                assertQueryOrganizationMatchesActiveOrg(user, query.organizationId)
                 if (query.userId !== user.id && !userMayManageOrgUsers(user)) {
                     throw new InternalFlowiseError(StatusCodes.FORBIDDEN, GeneralErrorMessage.FORBIDDEN)
                 }
