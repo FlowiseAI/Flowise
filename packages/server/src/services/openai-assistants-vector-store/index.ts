@@ -8,9 +8,15 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { decryptCredentialData } from '../../utils'
 import { getFileFromUpload, removeSpecificFileFromUpload } from 'flowise-components'
 
+const rethrowIfFlowiseError = (error: unknown): void => {
+    if (error instanceof InternalFlowiseError) {
+        throw error
+    }
+}
+
 const resolveCredentialForWorkspace = async (credentialId: string, workspaceId: string | undefined): Promise<Credential> => {
     if (!workspaceId) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Workspace ID is required')
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Workspace ID is required')
     }
     const appServer = getRunningExpressApp()
     const credentialRepo = appServer.AppDataSource.getRepository(Credential)
@@ -29,10 +35,10 @@ const resolveCredentialForWorkspace = async (credentialId: string, workspaceId: 
             credential = await credentialRepo.findOneBy({ id: credentialId })
         }
     }
-    if (!credential) {
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Credential ${credentialId} not found in the database!`)
+    if (credential) {
+        return credential
     }
-    return credential
+    throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Credential not found')
 }
 
 const getAssistantVectorStore = async (credentialId: string, vectorStoreId: string, workspaceId: string | undefined) => {
@@ -49,6 +55,7 @@ const getAssistantVectorStore = async (credentialId: string, vectorStoreId: stri
         const dbResponse = await openai.vectorStores.retrieve(vectorStoreId)
         return dbResponse
     } catch (error) {
+        rethrowIfFlowiseError(error)
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiAssistantsVectorStoreService.getAssistantVectorStore - ${getErrorMessage(error)}`
@@ -70,6 +77,7 @@ const listAssistantVectorStore = async (credentialId: string, workspaceId: strin
         const dbResponse = await openai.vectorStores.list()
         return dbResponse.data
     } catch (error) {
+        rethrowIfFlowiseError(error)
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiAssistantsVectorStoreService.listAssistantVectorStore - ${getErrorMessage(error)}`
@@ -95,6 +103,7 @@ const createAssistantVectorStore = async (
         const dbResponse = await openai.vectorStores.create(obj)
         return dbResponse
     } catch (error) {
+        rethrowIfFlowiseError(error)
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiAssistantsVectorStoreService.createAssistantVectorStore - ${getErrorMessage(error)}`
@@ -130,6 +139,7 @@ const updateAssistantVectorStore = async (
         }
         return dbResponse
     } catch (error) {
+        rethrowIfFlowiseError(error)
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiAssistantsVectorStoreService.updateAssistantVectorStore - ${getErrorMessage(error)}`
@@ -151,6 +161,7 @@ const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: s
         const dbResponse = await openai.vectorStores.delete(vectorStoreId)
         return dbResponse
     } catch (error) {
+        rethrowIfFlowiseError(error)
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiAssistantsVectorStoreService.deleteAssistantVectorStore - ${getErrorMessage(error)}`
@@ -203,6 +214,7 @@ const uploadFilesToAssistantVectorStore = async (
                 'Error: openaiAssistantsVectorStoreService.uploadFilesToAssistantVectorStore - Upload cancelled!'
             )
     } catch (error) {
+        rethrowIfFlowiseError(error)
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiAssistantsVectorStoreService.uploadFilesToAssistantVectorStore - ${getErrorMessage(error)}`
@@ -238,6 +250,7 @@ const deleteFilesFromAssistantVectorStore = async (
 
         return { deletedFileIds, count }
     } catch (error) {
+        rethrowIfFlowiseError(error)
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: openaiAssistantsVectorStoreService.uploadFilesToAssistantVectorStore - ${getErrorMessage(error)}`

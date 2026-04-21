@@ -466,6 +466,9 @@ const deleteEvaluation = async (id: string, activeWorkspaceId: string) => {
         const results = await evaluationRepo.findBy(getWorkspaceSearchOptions(activeWorkspaceId))
         return results
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: EvalsService.deleteEvaluation - ${getErrorMessage(error)}`

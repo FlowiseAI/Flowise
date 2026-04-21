@@ -429,6 +429,17 @@ const previewFileChunks = async (req: Request, res: Response, next: NextFunction
         }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
+        if (body.storeId) {
+            const store = await getRunningExpressApp()
+                .AppDataSource.getRepository(DocumentStore)
+                .findOneBy({
+                    id: body.storeId as string,
+                    workspaceId
+                })
+            if (!store) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Document store not found')
+            }
+        }
         body.preview = true
         const apiResponse = await documentStoreService.previewChunksMiddleware(
             body,

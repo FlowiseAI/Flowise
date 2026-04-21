@@ -709,6 +709,9 @@ const previewChunksMiddleware = async (
 
         return await previewChunks(executeData)
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.previewChunksMiddleware - ${getErrorMessage(error)}`
@@ -727,15 +730,6 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
                 data.loaderConfig['limit'] = 3
             }
         }
-        if (data.storeId && workspaceId) {
-            const store = await appDataSource.getRepository(DocumentStore).findOneBy({
-                id: data.storeId,
-                workspaceId
-            })
-            if (!store) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
-            }
-        }
         if (!data.rehydrated) {
             await _normalizeFilePaths(appDataSource, data, null, orgId, workspaceId)
         }
@@ -750,6 +744,9 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
 
         return { chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.previewChunks - ${getErrorMessage(error)}`
