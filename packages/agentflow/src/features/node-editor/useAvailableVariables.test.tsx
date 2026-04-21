@@ -64,7 +64,7 @@ describe('useAvailableVariables', () => {
 
         const nodeOutputs = result.current.filter((i) => i.category === 'Node Outputs')
         expect(nodeOutputs).toHaveLength(1)
-        expect(nodeOutputs[0].value).toBe('{{llm_0.data.instance}}')
+        expect(nodeOutputs[0].value).toBe('{{llm_0}}')
         expect(nodeOutputs[0].label).toBe('llmAgentflow')
     })
 

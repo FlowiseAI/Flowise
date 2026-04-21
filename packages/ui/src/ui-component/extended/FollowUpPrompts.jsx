@@ -412,13 +412,25 @@ const FollowUpPrompts = ({ dialogProps }) => {
     }
 
     useEffect(() => {
-        if (dialogProps.chatflow && dialogProps.chatflow.followUpPrompts) {
-            let chatbotConfig = JSON.parse(dialogProps.chatflow.chatbotConfig)
-            let followUpPromptsConfig = JSON.parse(dialogProps.chatflow.followUpPrompts)
-            setChatbotConfig(chatbotConfig || {})
-            if (followUpPromptsConfig) {
-                setFollowUpPromptsConfig(followUpPromptsConfig)
-                setSelectedProvider(followUpPromptsConfig.selectedProvider)
+        if (!dialogProps.chatflow) return
+        // Load chatbotConfig unconditionally — otherwise saving follow-up prompts
+        // writes an empty object and wipes starterPrompts/leads/allowedOrigins/etc.
+        if (dialogProps.chatflow.chatbotConfig) {
+            try {
+                setChatbotConfig(JSON.parse(dialogProps.chatflow.chatbotConfig) || {})
+            } catch {
+                setChatbotConfig({})
+            }
+        }
+        if (dialogProps.chatflow.followUpPrompts) {
+            try {
+                const followUpPromptsConfig = JSON.parse(dialogProps.chatflow.followUpPrompts)
+                if (followUpPromptsConfig) {
+                    setFollowUpPromptsConfig(followUpPromptsConfig)
+                    setSelectedProvider(followUpPromptsConfig.selectedProvider)
+                }
+            } catch {
+                // ignore malformed stored config
             }
         }
 

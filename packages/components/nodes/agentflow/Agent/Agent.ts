@@ -30,6 +30,7 @@ import {
     getUniqueImageMessages,
     processMessagesWithImages,
     revertBase64ImagesToFileRefs,
+    normalizeMessagesForStorage,
     replaceInlineDataWithFileReferences,
     updateFlowState
 } from '../utils'
@@ -1471,7 +1472,8 @@ class Agent_Agentflow implements INode {
              * This is to avoid storing the actual base64 data into database
              */
             const messagesToStore = messages.filter((msg: any) => !msg._isTemporaryImageMessage)
-            const messagesWithFileReferences = revertBase64ImagesToFileRefs(messagesToStore)
+            const normalizedMessagesToStore = normalizeMessagesForStorage(messagesToStore)
+            const messagesWithFileReferences = revertBase64ImagesToFileRefs(normalizedMessagesToStore)
 
             // Only add to runtime chat history if this is the first node
             const inputMessages = []
@@ -2235,13 +2237,7 @@ class Agent_Agentflow implements INode {
         }
 
         // Add LLM response with tool calls to messages
-        messages.push({
-            id: response.id,
-            role: 'assistant',
-            content: response.content,
-            tool_calls: response.tool_calls,
-            usage_metadata: response.usage_metadata
-        })
+        messages.push(response)
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -2622,13 +2618,7 @@ class Agent_Agentflow implements INode {
         }
 
         // Add LLM response with tool calls to messages
-        messages.push({
-            id: response.id,
-            role: 'assistant',
-            content: response.content,
-            tool_calls: response.tool_calls,
-            usage_metadata: response.usage_metadata
-        })
+        messages.push(response)
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
