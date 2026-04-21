@@ -2320,7 +2320,7 @@ type ZodToJsonSchemaInput = Parameters<typeof zodToJsonSchema>[0]
  * whichever Zod major version (`^3 || ^4`) TypeScript resolves at the call site.
  */
 export const isZodSchema = (schema: unknown): schema is ZodToJsonSchemaInput =>
-    typeof schema === 'object' && schema !== null && '_def' in schema
+    typeof schema === 'object' && schema !== null && '_def' in schema && typeof (schema as { parse?: unknown }).parse === 'function'
 
 /**
  * Normalizes a tool schema into a plain JSON Schema object.
@@ -2331,10 +2331,11 @@ export const isZodSchema = (schema: unknown): schema is ZodToJsonSchemaInput =>
  * `$schema` marker so the result is safe to embed in LLM tool definitions.
  */
 export const toolSchemaToJsonSchema = (schema: unknown): ToolJsonSchema => {
+    if (schema == null) return { type: 'object', properties: {} }
     const jsonSchema: ToolJsonSchema = isZodSchema(schema)
         ? (zodToJsonSchema(schema) as ToolJsonSchema)
         : cloneDeep(schema as ToolJsonSchema)
-    if (jsonSchema && jsonSchema.$schema) {
+    if (jsonSchema.$schema) {
         delete jsonSchema.$schema
     }
     return jsonSchema
