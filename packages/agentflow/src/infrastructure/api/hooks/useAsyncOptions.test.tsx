@@ -31,13 +31,16 @@ beforeEach(() => {
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('useAsyncOptions', () => {
-    it('starts in loading state', () => {
+    it('starts in loading state', async () => {
         mockGetChatModels.mockResolvedValue([])
         const { result } = renderHook(() => useAsyncOptions({ loadMethod: 'listModels' }))
 
         expect(result.current.loading).toBe(true)
         expect(result.current.options).toEqual([])
         expect(result.current.error).toBeNull()
+
+        // Drain pending async state updates to avoid act() warnings
+        await waitFor(() => expect(result.current.loading).toBe(false))
     })
 
     it('listModels: populates options on success', async () => {

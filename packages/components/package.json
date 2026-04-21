@@ -1,6 +1,6 @@
 {
     "name": "flowise-components",
-    "version": "3.1.1",
+    "version": "3.1.2",
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
@@ -18,7 +18,7 @@
         "build": "tsc && gulp",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
-        "nuke": "rimraf dist node_modules .turbo",
+        "nuke": "pnpm clean && rimraf node_modules .turbo",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage"
@@ -136,6 +136,7 @@
         "form-data": "^4.0.4",
         "google-auth-library": "^9.4.0",
         "graphql": "^16.6.0",
+        "groq-sdk": "1.1.2",
         "html-to-text": "^9.0.5",
         "ioredis": "^5.3.2",
         "ipaddr.js": "^2.2.0",

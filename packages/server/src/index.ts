@@ -33,7 +33,7 @@ import { RateLimiterManager } from './utils/rateLimit'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { Telemetry } from './utils/telemetry'
 import { validateAPIKey } from './utils/validateKey'
-import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { getCorsOptions, getIframeSecurityHeaders, sanitizeMiddleware } from './utils/XSS'
 
 declare global {
     namespace Express {
@@ -187,15 +187,12 @@ export class App {
         this.app.use(cookieParser())
 
         // Allow embedding from specified domains.
+        const iframeSecurityHeaders = getIframeSecurityHeaders()
         this.app.use((req, res, next) => {
-            const allowedOrigins = getAllowedIframeOrigins()
-            if (allowedOrigins == '*') {
-                next()
-            } else {
-                const csp = `frame-ancestors ${allowedOrigins}`
-                res.setHeader('Content-Security-Policy', csp)
-                next()
+            for (const [headerName, headerValue] of Object.entries(iframeSecurityHeaders)) {
+                res.setHeader(headerName, headerValue)
             }
+            next()
         })
 
         // Switch off the default 'X-Powered-By: Express' header

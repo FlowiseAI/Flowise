@@ -144,7 +144,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
     return (
         <>
             <ClickAwayListener onClickAway={handleClose}>
-                <div ref={containerRef} style={{ position: 'absolute', right: 20, top: 20, zIndex: 1001 }}>
+                <div ref={containerRef} style={{ position: 'relative' }}>
                     <Fab
                         size='small'
                         aria-label='validation'
@@ -171,7 +171,7 @@ function ValidationFeedbackComponent({ nodes, edges, availableNodes, setNodes }:
                                 right: 0,
                                 mt: 1.5,
                                 width: 400,
-                                zIndex: 1200
+                                zIndex: tokens.zIndex.canvasPanel
                             }}
                         >
                             <Box sx={{ p: 2 }}>
