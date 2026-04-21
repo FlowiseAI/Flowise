@@ -56,6 +56,7 @@
  * - token_received_at: When token was received (ISO string)
  */
 
+import crypto from 'crypto'
 import express from 'express'
 import axios from 'axios'
 import { Request, Response, NextFunction } from 'express'
@@ -67,6 +68,15 @@ import { StatusCodes } from 'http-status-codes'
 import { generateSuccessPage, generateErrorPage } from './templates'
 
 const router = express.Router()
+
+// Cache the encryption key so we don't hit file I/O or AWS on every refresh request.
+let cachedEncryptionKey: string | undefined
+const getCachedEncryptionKey = async (): Promise<string> => {
+    if (!cachedEncryptionKey) {
+        cachedEncryptionKey = await getEncryptionKey()
+    }
+    return cachedEncryptionKey
+}
 
 // Initiate OAuth2 authorization flow
 router.post('/authorize/:credentialId', async (req: Request, res: Response, next: NextFunction) => {
@@ -310,8 +320,13 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
         // Validate that the request carries the internal encryption key so it cannot be called
         // unauthenticated from the outside.
         const providedKey = req.headers['x-flowise-internal-key'] as string | undefined
-        const encryptionKey = await getEncryptionKey()
-        if (!providedKey || !encryptionKey || providedKey !== encryptionKey) {
+        const encryptionKey = await getCachedEncryptionKey()
+        if (
+            !providedKey ||
+            !encryptionKey ||
+            providedKey.length !== encryptionKey.length ||
+            !crypto.timingSafeEqual(new Uint8Array(Buffer.from(providedKey)), new Uint8Array(Buffer.from(encryptionKey)))
+        ) {
             return res.status(401).json({ success: false, message: 'Unauthorized' })
         }
 

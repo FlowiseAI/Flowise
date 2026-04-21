@@ -494,6 +494,7 @@ export const executeFlow = async ({
             usageCacheManager,
             sseStreamer,
             baseURL,
+            internalRefreshKey,
             isInternal,
             chatType,
             uploadedFilesContent,

@@ -119,6 +119,7 @@ interface IExecuteNodeParams {
     cachePool: CachePool
     sseStreamer: IServerSideEventStreamer
     baseURL: string
+    internalRefreshKey?: string
     overrideConfig?: ICommonObject
     apiOverrideStatus?: boolean
     nodeOverrides?: INodeOverrides
@@ -1033,6 +1034,7 @@ const executeNode = async ({
     cachePool,
     sseStreamer,
     baseURL,
+    internalRefreshKey,
     overrideConfig = {},
     apiOverrideStatus = false,
     nodeOverrides = {},
@@ -1196,6 +1198,7 @@ const executeNode = async ({
             analytic: chatflow.analytic,
             uploads: fileUploads,
             baseURL,
+            internalRefreshKey,
             isLastNode,
             sseStreamer,
             pastChatHistory,
@@ -1274,6 +1277,7 @@ const executeNode = async ({
                             cachePool,
                             sseStreamer,
                             baseURL,
+                            internalRefreshKey,
                             isInternal,
                             uploadedFilesContent,
                             fileUploads,
@@ -1504,6 +1508,7 @@ export const executeAgentFlow = async ({
     cachePool,
     sseStreamer,
     baseURL,
+    internalRefreshKey,
     isInternal,
     uploadedFilesContent,
     fileUploads,
@@ -1974,6 +1979,7 @@ export const executeAgentFlow = async ({
                 cachePool,
                 sseStreamer,
                 baseURL,
+                internalRefreshKey,
                 overrideConfig,
                 apiOverrideStatus,
                 nodeOverrides,
