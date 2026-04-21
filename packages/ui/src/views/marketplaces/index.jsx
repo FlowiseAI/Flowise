@@ -473,6 +473,7 @@ const Marketplace = () => {
 
     const renderCompactCard = (data, onClick, imagesMap, iconsMap) => {
         const isTool = data.type === 'Tool'
+        const isAgent = data.type === 'Agent'
         const flowImages = imagesMap?.[data.id] || []
         const flowIcons = iconsMap?.[data.id] || []
         const combined = [
@@ -481,6 +482,27 @@ const Marketplace = () => {
         ]
         const visible = combined.slice(0, 4)
         const remaining = combined.length - visible.length
+
+        // For Agent templates, extract the system message + model from the smartAgentAgentflow node
+        let agentSystemMessage
+        let agentModelName
+        let agentModelProvider
+        if (isAgent && data.flowData) {
+            try {
+                const parsed = typeof data.flowData === 'string' ? JSON.parse(data.flowData) : data.flowData
+                const nodes = parsed?.nodes || []
+                const agentNode =
+                    nodes.find((n) => n.id === 'smartAgentAgentflow_0') || nodes.find((n) => n?.data?.name === 'smartAgentAgentflow')
+                const inputs = agentNode?.data?.inputs
+                if (Array.isArray(inputs?.agentMessages)) {
+                    agentSystemMessage = inputs.agentMessages.find((m) => m.role === 'system')?.content
+                }
+                agentModelName = inputs?.agentModelConfig?.modelName
+                agentModelProvider = inputs?.agentModel
+            } catch {
+                // ignore malformed flowData
+            }
+        }
 
         return (
             <Box
@@ -503,6 +525,23 @@ const Marketplace = () => {
                     }
                 }}
             >
+                {isAgent && (
+                    <Box sx={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, alignSelf: 'flex-start' }}>
+                        <BoringAvatar
+                            size={36}
+                            name={data.id || data.name || data.templateName || 'agent'}
+                            variant='beam'
+                            colors={[
+                                theme.palette.primary.light,
+                                theme.palette.primary.main,
+                                theme.palette.primary.dark,
+                                theme.palette.secondary.light,
+                                theme.palette.secondary.main,
+                                theme.palette.secondary.dark
+                            ]}
+                        />
+                    </Box>
+                )}
                 {isTool &&
                     (data.iconSrc ? (
                         <Box
@@ -571,9 +610,55 @@ const Marketplace = () => {
                             textOverflow: 'ellipsis'
                         }}
                     >
-                        {data.description || data.type}
+                        {isAgent ? agentSystemMessage || data.description || data.type : data.description || data.type}
                     </Typography>
-                    {!isTool && combined.length > 0 && (
+                    {isAgent && (agentModelName || agentModelProvider) && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1, minWidth: 0 }}>
+                            {agentModelProvider && (
+                                <Box
+                                    sx={{
+                                        width: 16,
+                                        height: 16,
+                                        borderRadius: '50%',
+                                        backgroundColor: customization.isDarkMode ? '#fff' : theme.palette.grey[100],
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        overflow: 'hidden',
+                                        flexShrink: 0
+                                    }}
+                                >
+                                    <img
+                                        alt={agentModelProvider}
+                                        src={`${baseURL}/api/v1/node-icon/${agentModelProvider}`}
+                                        style={{ width: '100%', height: '100%', padding: 2, objectFit: 'contain' }}
+                                        onError={(e) => {
+                                            e.target.onerror = null
+                                            e.target.style.display = 'none'
+                                        }}
+                                    />
+                                </Box>
+                            )}
+                            {agentModelName && (
+                                <Tooltip title={agentModelName} placement='top'>
+                                    <Typography
+                                        sx={{
+                                            fontSize: '0.75rem',
+                                            fontWeight: 500,
+                                            color: customization.isDarkMode ? theme.palette.grey[300] : theme.palette.grey[700],
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            minWidth: 0
+                                        }}
+                                    >
+                                        {agentModelName}
+                                    </Typography>
+                                </Tooltip>
+                            )}
+                        </Box>
+                    )}
+                    {!isTool && !isAgent && combined.length > 0 && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
                             {visible.map((item, i) => (
                                 <Tooltip key={i} title={item.label || ''} placement='top'>

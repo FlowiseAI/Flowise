@@ -274,7 +274,7 @@ const Agentflows = () => {
                                         View Templates
                                     </StyledPermissionButton>
                                 </Box>
-                                {!isLoading && (getAllAgentflows.data?.data?.length ?? 0) === 0 && (
+                                {!isLoading && (getAllAgentflows.data?.data?.length ?? 0) === 0 && agentflowVersion === 'v1' && (
                                     <ToggleButtonGroup
                                         sx={{ borderRadius: 2, mt: 3, maxHeight: 36 }}
                                         value={agentflowVersion}

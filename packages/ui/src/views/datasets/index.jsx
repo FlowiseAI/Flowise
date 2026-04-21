@@ -83,7 +83,6 @@ const EvalDatasets = () => {
     }
 
     const refresh = (page, limit) => {
-        setLoading(true)
         const params = {
             page: page || currentPage,
             limit: limit || pageLimit
