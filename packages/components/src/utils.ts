@@ -1485,7 +1485,7 @@ export const refreshOAuth2Token = async (
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'x-flowise-internal-key': process.env.FLOWISE_SECRETKEY_OVERWRITE || ''
+                            'x-flowise-internal-key': (options.internalRefreshKey as string) || ''
                         }
                     }
                 )

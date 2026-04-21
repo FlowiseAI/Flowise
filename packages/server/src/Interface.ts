@@ -393,6 +393,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     subscriptionId: string
     productId: string
     baseURL: string
+    internalRefreshKey?: string
     isInternal: boolean
     isEvaluation?: boolean
     evaluationRunId?: string

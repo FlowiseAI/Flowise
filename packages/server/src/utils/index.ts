@@ -498,6 +498,7 @@ type BuildFlowParams = {
     stopNodeId?: string
     uploads?: IFileUpload[]
     baseURL?: string
+    internalRefreshKey?: string
     orgId?: string
     workspaceId?: string
     subscriptionId?: string
@@ -536,6 +537,7 @@ export const buildFlow = async ({
     stopNodeId,
     uploads,
     baseURL,
+    internalRefreshKey,
     orgId,
     workspaceId,
     subscriptionId,
@@ -621,7 +623,8 @@ export const buildFlow = async ({
                     usageCacheManager,
                     dynamicVariables,
                     uploads,
-                    baseURL
+                    baseURL,
+                    internalRefreshKey
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: [${orgId}]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -652,6 +655,7 @@ export const buildFlow = async ({
                     dynamicVariables,
                     uploads,
                     baseURL,
+                    internalRefreshKey,
                     componentNodes,
                     updateStorageUsage,
                     checkStorage

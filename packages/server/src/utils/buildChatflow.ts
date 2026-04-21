@@ -57,7 +57,8 @@ import {
     getMemorySessionId,
     getEndingNodes,
     constructGraphs,
-    getAPIOverrideConfig
+    getAPIOverrideConfig,
+    getEncryptionKey
 } from '../utils'
 import { validateFileMimeTypeAndExtensionMatch } from './fileValidation'
 import { validateFlowAPIKey } from './validateKey'
@@ -311,6 +312,7 @@ export const executeFlow = async ({
     usageCacheManager,
     sseStreamer,
     baseURL,
+    internalRefreshKey,
     isInternal,
     files,
     signal,
@@ -594,6 +596,7 @@ export const executeFlow = async ({
         isUpsert: false,
         uploads,
         baseURL,
+        internalRefreshKey,
         orgId,
         workspaceId,
         subscriptionId,
@@ -623,6 +626,7 @@ export const executeFlow = async ({
             shouldStreamResponse: true, // agentflow is always streamed
             cachePool,
             baseURL,
+            internalRefreshKey,
             signal,
             orgId,
             workspaceId
@@ -1004,6 +1008,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
+    const internalRefreshKey = await getEncryptionKey()
     const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
@@ -1064,6 +1069,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             chatflow,
             chatId,
             baseURL,
+            internalRefreshKey,
             isInternal,
             files,
             isEvaluation,

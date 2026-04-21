@@ -51,6 +51,7 @@ export const buildAgentGraph = async ({
     shouldStreamResponse,
     cachePool,
     baseURL,
+    internalRefreshKey,
     signal,
     orgId,
     workspaceId
@@ -72,6 +73,7 @@ export const buildAgentGraph = async ({
     shouldStreamResponse: boolean
     cachePool: CachePool
     baseURL: string
+    internalRefreshKey?: string
     signal?: AbortController
     orgId: string
     workspaceId?: string
@@ -97,6 +99,7 @@ export const buildAgentGraph = async ({
             cachePool,
             uploads,
             baseURL,
+            internalRefreshKey,
             signal: signal ?? new AbortController()
         }
 
