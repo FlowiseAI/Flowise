@@ -239,8 +239,9 @@ const deleteDataset = async (id: string, workspaceId: string) => {
         const appServer = getRunningExpressApp()
         const result = await appServer.AppDataSource.getRepository(Dataset).delete({ id: id, workspaceId: workspaceId })
 
-        // delete all rows for this dataset
-        await appServer.AppDataSource.getRepository(DatasetRow).delete({ datasetId: id })
+        if ((result.affected ?? 0) > 0) {
+            await appServer.AppDataSource.getRepository(DatasetRow).delete({ datasetId: id })
+        }
 
         return result
     } catch (error) {

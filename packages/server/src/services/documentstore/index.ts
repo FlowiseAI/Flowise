@@ -613,7 +613,8 @@ const _normalizeFilePaths = async (
     appDataSource: DataSource,
     data: IDocumentStoreLoaderForPreview,
     entity: DocumentStore | null,
-    orgId: string
+    orgId: string,
+    workspaceId?: string
 ) => {
     const keys = Object.getOwnPropertyNames(data.loaderConfig)
     let rehydrated = false
@@ -628,8 +629,15 @@ const _normalizeFilePaths = async (
         let documentStoreEntity: DocumentStore | null = entity
         if (input.startsWith('FILE-STORAGE::')) {
             if (!documentStoreEntity) {
+                if (!workspaceId) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.PRECONDITION_FAILED,
+                        'workspaceId is required to resolve document store for FILE-STORAGE paths'
+                    )
+                }
                 documentStoreEntity = await appDataSource.getRepository(DocumentStore).findOneBy({
-                    id: data.storeId
+                    id: data.storeId,
+                    workspaceId
                 })
                 if (!documentStoreEntity) {
                     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
@@ -719,8 +727,17 @@ export const previewChunks = async ({ appDataSource, componentNodes, data, orgId
                 data.loaderConfig['limit'] = 3
             }
         }
+        if (data.storeId && workspaceId) {
+            const store = await appDataSource.getRepository(DocumentStore).findOneBy({
+                id: data.storeId,
+                workspaceId
+            })
+            if (!store) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
+            }
+        }
         if (!data.rehydrated) {
-            await _normalizeFilePaths(appDataSource, data, null, orgId)
+            await _normalizeFilePaths(appDataSource, data, null, orgId, workspaceId)
         }
         let docs = await _splitIntoChunks(appDataSource, componentNodes, data, workspaceId)
         const totalChunks = docs.length
