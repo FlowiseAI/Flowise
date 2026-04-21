@@ -1,9 +1,10 @@
-import { MoreThanOrEqual, LessThanOrEqual, Between } from 'typeorm'
+import { MoreThanOrEqual, LessThanOrEqual, Between, In } from 'typeorm'
 import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import chatflowsService from '../chatflows'
 
 const getAllUpsertHistory = async (
     sortOrder: string | undefined,
@@ -50,12 +51,39 @@ const getAllUpsertHistory = async (
     }
 }
 
-const patchDeleteUpsertHistory = async (ids: string[] = []): Promise<any> => {
+const patchDeleteUpsertHistory = async (ids: string[] = [], workspaceId: string): Promise<any> => {
     try {
+        const uniqueIds = [...new Set((ids ?? []).filter((id) => typeof id === 'string' && id.length > 0))]
+        if (uniqueIds.length === 0) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                'Error: upsertHistoryServices.patchDeleteUpsertHistory - ids are required!'
+            )
+        }
+
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(UpsertHistory).delete(ids)
-        return dbResponse
+        const repo = appServer.AppDataSource.getRepository(UpsertHistory)
+        const rows = await repo.find({
+            where: { id: In(uniqueIds) },
+            select: ['id', 'chatflowid']
+        })
+        if (rows.length !== uniqueIds.length) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                'Error: upsertHistoryServices.patchDeleteUpsertHistory - one or more upsert history records were not found!'
+            )
+        }
+
+        const chatflowIds = [...new Set(rows.map((r) => r.chatflowid))]
+        for (const chatflowId of chatflowIds) {
+            await chatflowsService.getChatflowById(chatflowId, workspaceId)
+        }
+
+        return await repo.delete(uniqueIds)
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: upsertHistoryServices.patchDeleteUpsertHistory - ${getErrorMessage(error)}`
