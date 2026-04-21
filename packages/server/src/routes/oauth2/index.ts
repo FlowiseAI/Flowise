@@ -69,15 +69,6 @@ import { generateSuccessPage, generateErrorPage } from './templates'
 
 const router = express.Router()
 
-// Cache the encryption key so we don't hit file I/O or AWS on every refresh request.
-let cachedEncryptionKey: string | undefined
-const getCachedEncryptionKey = async (): Promise<string> => {
-    if (!cachedEncryptionKey) {
-        cachedEncryptionKey = await getEncryptionKey()
-    }
-    return cachedEncryptionKey
-}
-
 // Initiate OAuth2 authorization flow
 router.post('/authorize/:credentialId', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -320,12 +311,14 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
         // Validate that the request carries the internal encryption key so it cannot be called
         // unauthenticated from the outside.
         const providedKey = req.headers['x-flowise-internal-key'] as string | undefined
-        const encryptionKey = await getCachedEncryptionKey()
+        const encryptionKey = await getEncryptionKey()
+        const providedBuffer = Buffer.from(providedKey || '')
+        const keyBuffer = Buffer.from(encryptionKey || '')
         if (
-            !providedKey ||
-            !encryptionKey ||
-            providedKey.length !== encryptionKey.length ||
-            !crypto.timingSafeEqual(new Uint8Array(Buffer.from(providedKey)), new Uint8Array(Buffer.from(encryptionKey)))
+            providedBuffer.length === 0 ||
+            keyBuffer.length === 0 ||
+            providedBuffer.length !== keyBuffer.length ||
+            !crypto.timingSafeEqual(providedBuffer, keyBuffer)
         ) {
             return res.status(401).json({ success: false, message: 'Unauthorized' })
         }
