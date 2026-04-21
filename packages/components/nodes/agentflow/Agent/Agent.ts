@@ -19,7 +19,7 @@ import { ILLMMessage, IResponseMetadata } from '../Interface.Agentflow'
 import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { flatten } from 'lodash'
-import zodToJsonSchema from 'zod-to-json-schema'
+import { toolSchemaToJsonSchema, type ToolJsonSchema } from '../../../src/utils'
 import { getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import { randomBytes } from 'crypto'
@@ -68,7 +68,7 @@ interface IKnowledgeBaseVSEmbeddings {
 interface ISimpliefiedTool {
     name: string
     description: string
-    schema: any
+    schema: ToolJsonSchema
     toolNode: {
         label: string
         name: string
@@ -274,6 +274,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentKnowledgeDocumentStores',
                 type: 'array',
                 description: 'Give your agent context about different document sources. Document stores must be upserted in advance.',
+                client: ['agentflowv2'],
                 array: [
                     {
                         label: 'Document Store',
@@ -304,6 +305,7 @@ class Agent_Agentflow implements INode {
                 name: 'agentKnowledgeVSEmbeddings',
                 type: 'array',
                 description: 'Give your agent context about different document sources from existing vector stores and embeddings',
+                client: ['agentflowv2'],
                 array: [
                     {
                         label: 'Vector Store',
@@ -742,10 +744,7 @@ class Agent_Agentflow implements INode {
                 }
                 const componentNode = options.componentNodes[agentSelectedTool]
 
-                const jsonSchema = zodToJsonSchema(tool.schema as any)
-                if (jsonSchema.$schema) {
-                    delete jsonSchema.$schema
-                }
+                const jsonSchema = toolSchemaToJsonSchema(tool.schema)
 
                 return {
                     name: tool.name,
@@ -799,10 +798,7 @@ class Agent_Agentflow implements INode {
 
                     toolsInstance.push(retrieverToolInstance as Tool)
 
-                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
-                    if (jsonSchema.$schema) {
-                        delete jsonSchema.$schema
-                    }
+                    const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
@@ -874,10 +870,7 @@ class Agent_Agentflow implements INode {
 
                     toolsInstance.push(retrieverToolInstance as Tool)
 
-                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
-                    if (jsonSchema.$schema) {
-                        delete jsonSchema.$schema
-                    }
+                    const jsonSchema = toolSchemaToJsonSchema(retrieverToolInstance.schema)
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({

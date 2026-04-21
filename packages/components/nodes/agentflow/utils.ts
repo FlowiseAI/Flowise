@@ -197,8 +197,6 @@ export const revertBase64ImagesToFileRefs = (messages: BaseMessageLike[]): BaseM
     return updatedMessages
 }
 
-// ─── Normalizing messages for DB storage/UI rendering ────────────────────────
-
 /**
  * Converts LangChain message/chunk instances into plain JSON objects for clean DB storage.
  * This avoids persisting large `{ lc, type, kwargs }` blobs and keeps execution-details UI readable.

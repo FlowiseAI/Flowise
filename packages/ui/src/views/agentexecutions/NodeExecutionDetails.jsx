@@ -48,6 +48,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
     const [loadingMessage, setLoadingMessage] = useState('')
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState({})
+    const [showAllTools, setShowAllTools] = useState(false)
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
@@ -390,7 +391,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                             <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
                                 Tools
                             </Typography>
-                            {data.output.availableTools.map((tool, index) => {
+                            {(showAllTools ? data.output.availableTools : data.output.availableTools.slice(0, 5)).map((tool, index) => {
                                 // Check if this tool is in the usedTools array
                                 const isToolUsed =
                                     data.output.usedTools &&
@@ -415,7 +416,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                         }}
                                     >
                                         <AccordionSummary
-                                            expandIcon={<IconChevronDown />}
+                                            expandIcon={<IconChevronDown color={customization.isDarkMode ? '#fff' : undefined} />}
                                             aria-controls={`tool-${index}-content`}
                                             id={`tool-${index}-header`}
                                         >
@@ -489,6 +490,15 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                     </Accordion>
                                 )
                             })}
+                            {data.output.availableTools.length > 5 && (
+                                <Button
+                                    size='small'
+                                    onClick={() => setShowAllTools((prev) => !prev)}
+                                    sx={{ mt: 0.5, textTransform: 'none' }}
+                                >
+                                    {showAllTools ? 'Show less' : `Show ${data.output.availableTools.length - 5} more`}
+                                </Button>
+                            )}
                         </Box>
                     )}
                     <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
@@ -908,6 +918,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 )}
                             </Box>
                         ))
+                    ) : data?.name === 'toolAgentflow' && data?.input ? (
+                        <JSONViewer data={data.input} />
                     ) : data?.input?.form || data?.input?.http || data?.input?.conditions ? (
                         <JSONViewer data={data.input.form || data.input.http || data.input.conditions} />
                     ) : data?.input?.code ? (
