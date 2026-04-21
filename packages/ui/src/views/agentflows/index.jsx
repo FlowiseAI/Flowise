@@ -198,7 +198,9 @@ const Agentflows = () => {
                                     justifyContent: 'center',
                                     pt: 4,
                                     pb: 2,
-                                    ...(!isLoading && total === 0 ? { minHeight: 'calc(100vh - 200px)' } : {})
+                                    ...(!isLoading && (getAllAgentflows.data?.data?.length ?? 0) === 0
+                                        ? { minHeight: 'calc(100vh - 200px)' }
+                                        : {})
                                 }}
                             >
                                 <Typography
@@ -249,32 +251,30 @@ const Agentflows = () => {
                                     >
                                         Create
                                     </StyledPermissionButton>
-                                    {!isLoading && total === 0 && (
-                                        <StyledPermissionButton
-                                            permissionId={'templates:marketplace,templates:custom'}
-                                            variant='outlined'
-                                            onClick={() => navigate('/marketplaces', { state: { typeFilter: ['AgentflowV2'] } })}
-                                            sx={{
-                                                borderRadius: '24px',
-                                                px: 3,
-                                                height: 44,
-                                                textTransform: 'none',
-                                                fontSize: '0.95rem',
-                                                fontWeight: 600,
-                                                border: `1px solid ${theme.palette.grey[900] + 40}`,
-                                                backgroundColor: 'transparent',
-                                                color: theme.palette.text.primary,
-                                                '&:hover': {
-                                                    backgroundColor: theme.palette.action.hover,
-                                                    borderColor: theme.palette.grey[900] + 60
-                                                }
-                                            }}
-                                        >
-                                            View Templates
-                                        </StyledPermissionButton>
-                                    )}
+                                    <StyledPermissionButton
+                                        permissionId={'templates:marketplace,templates:custom'}
+                                        variant='outlined'
+                                        onClick={() => navigate('/marketplaces', { state: { typeFilter: ['AgentflowV2'] } })}
+                                        sx={{
+                                            borderRadius: '24px',
+                                            px: 3,
+                                            height: 44,
+                                            textTransform: 'none',
+                                            fontSize: '0.95rem',
+                                            fontWeight: 600,
+                                            border: `1px solid ${theme.palette.grey[900] + 40}`,
+                                            backgroundColor: 'transparent',
+                                            color: theme.palette.text.primary,
+                                            '&:hover': {
+                                                backgroundColor: theme.palette.action.hover,
+                                                borderColor: theme.palette.grey[900] + 60
+                                            }
+                                        }}
+                                    >
+                                        View Templates
+                                    </StyledPermissionButton>
                                 </Box>
-                                {!isLoading && total === 0 && (
+                                {!isLoading && (getAllAgentflows.data?.data?.length ?? 0) === 0 && (
                                     <ToggleButtonGroup
                                         sx={{ borderRadius: 2, mt: 3, maxHeight: 36 }}
                                         value={agentflowVersion}
@@ -312,7 +312,7 @@ const Agentflows = () => {
                             </Box>
 
                             {/* ==================== Agentflows Listing Section ==================== */}
-                            {total > 0 && (
+                            {(getAllAgentflows.data?.data?.length ?? 0) > 0 && (
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Typography variant='h3' sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                                         Agentflows
@@ -456,7 +456,7 @@ const Agentflows = () => {
                                 </Box>
                             )}
 
-                            {!isLoading && total > 0 && (
+                            {!isLoading && (getAllAgentflows.data?.data?.length ?? 0) > 0 && (
                                 <>
                                     {!view || view === 'card' ? (
                                         <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>

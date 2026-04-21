@@ -453,7 +453,7 @@ const Canvas = () => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
+            window.history.replaceState(window.history.state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }

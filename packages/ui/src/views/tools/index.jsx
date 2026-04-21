@@ -1,14 +1,27 @@
 import { useEffect, useState, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import moment from 'moment'
+import Avatar from 'boring-avatars'
 
 // material-ui
-import { Box, ButtonGroup, Fade, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import {
+    Box,
+    ButtonGroup,
+    Fade,
+    InputAdornment,
+    OutlinedInput,
+    Skeleton,
+    Stack,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography
+} from '@mui/material'
+import { useTheme, darken } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
 import ToolDialog from './ToolDialog'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { ToolsTable } from '@/ui-component/table/ToolsListTable'
 import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
@@ -23,13 +36,14 @@ import { useError } from '@/store/context/ErrorContext'
 import { gridSpacing } from '@/store/constant'
 
 // icons
-import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
-import ToolEmptySVG from '@/assets/images/tools_empty.svg'
+import { IconFileUpload, IconLayoutGrid, IconList, IconSearch } from '@tabler/icons-react'
 
 // ==============================|| TOOLS ||============================== //
 
 const Tools = () => {
     const theme = useTheme()
+    const navigate = useNavigate()
+    const customization = useSelector((state) => state.customization)
     const getAllToolsApi = useApi(toolsApi.getAllTools)
     const { error, setError } = useError()
 
@@ -159,53 +173,88 @@ const Tools = () => {
                 ) : (
                     <Fade in={!isLoading} timeout={250} style={{ transitionDelay: isLoading ? '0ms' : '50ms' }}>
                         <Stack flexDirection='column' sx={{ gap: 3 }}>
-                            <ViewHeader
-                                onSearchChange={onSearchChange}
-                                search={true}
-                                searchPlaceholder='Search Tools'
-                                title='Tools'
-                                description='External functions or APIs the agent can use to take action'
+                            {/* ==================== Hero Section ==================== */}
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    pt: 4,
+                                    pb: 2,
+                                    ...(!isLoading && (getAllToolsApi.data?.data?.length ?? 0) === 0
+                                        ? { minHeight: 'calc(100vh - 200px)' }
+                                        : {})
+                                }}
                             >
-                                <ToggleButtonGroup
-                                    sx={{ borderRadius: 2, maxHeight: 40 }}
-                                    value={view}
-                                    color='primary'
-                                    disabled={total === 0}
-                                    exclusive
-                                    onChange={handleChange}
+                                <Typography
+                                    variant='h2'
+                                    sx={{
+                                        fontSize: '1.8rem',
+                                        fontWeight: 700,
+                                        mb: 1,
+                                        color: theme.palette.text.primary
+                                    }}
                                 >
-                                    <ToggleButton
-                                        sx={{
-                                            borderColor: theme.palette.grey[900] + 25,
-                                            borderRadius: 2,
-                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                        }}
+                                    Create a tool
+                                </Typography>
+
+                                <Typography
+                                    sx={{
+                                        mb: 3,
+                                        fontSize: '1rem',
+                                        textAlign: 'center',
+                                        fontWeight: 500,
+                                        maxWidth: 600
+                                    }}
+                                >
+                                    External functions or APIs the agent can use to take action
+                                </Typography>
+
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                                    <StyledPermissionButton
+                                        permissionId={'tools:create'}
                                         variant='contained'
-                                        value='card'
-                                        title='Card View'
-                                    >
-                                        <IconLayoutGrid />
-                                    </ToggleButton>
-                                    <ToggleButton
+                                        onClick={addNew}
                                         sx={{
-                                            borderColor: theme.palette.grey[900] + 25,
-                                            borderRadius: 2,
-                                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                            borderRadius: '24px',
+                                            px: 3,
+                                            height: 44,
+                                            textTransform: 'none',
+                                            fontSize: '0.95rem',
+                                            fontWeight: 600,
+                                            background: `linear-gradient(90deg, ${theme.palette.primary.main} 10%, ${theme.palette.secondary.main} 100%)`,
+                                            color: theme.palette.common.white,
+                                            '&:hover': {
+                                                background: `linear-gradient(90deg, ${darken(
+                                                    theme.palette.primary.main,
+                                                    0.1
+                                                )} 10%, ${darken(theme.palette.secondary.main, 0.1)} 100%)`
+                                            }
                                         }}
-                                        variant='contained'
-                                        value='list'
-                                        title='List View'
                                     >
-                                        <IconList />
-                                    </ToggleButton>
-                                </ToggleButtonGroup>
-                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        Create
+                                    </StyledPermissionButton>
                                     <PermissionButton
                                         permissionId={'tools:create'}
                                         variant='outlined'
                                         onClick={() => inputRef.current.click()}
-                                        startIcon={<IconFileUpload />}
-                                        sx={{ borderRadius: 2, height: 40 }}
+                                        startIcon={<IconFileUpload size={18} />}
+                                        sx={{
+                                            borderRadius: '24px',
+                                            px: 3,
+                                            height: 44,
+                                            textTransform: 'none',
+                                            fontSize: '0.95rem',
+                                            fontWeight: 600,
+                                            border: `1px solid ${theme.palette.grey[900] + 40}`,
+                                            backgroundColor: 'transparent',
+                                            color: theme.palette.text.primary,
+                                            '&:hover': {
+                                                backgroundColor: theme.palette.action.hover,
+                                                borderColor: theme.palette.grey[900] + 60
+                                            }
+                                        }}
                                     >
                                         Load
                                     </PermissionButton>
@@ -217,32 +266,203 @@ const Tools = () => {
                                         accept='.json'
                                         onChange={(e) => handleFileUpload(e)}
                                     />
+                                    {!isLoading && (getAllToolsApi.data?.data?.length ?? 0) === 0 && (
+                                        <StyledPermissionButton
+                                            permissionId={'templates:marketplace,templates:custom'}
+                                            variant='outlined'
+                                            onClick={() => navigate('/marketplaces', { state: { typeFilter: ['Tool'] } })}
+                                            sx={{
+                                                borderRadius: '24px',
+                                                px: 3,
+                                                height: 44,
+                                                textTransform: 'none',
+                                                fontSize: '0.95rem',
+                                                fontWeight: 600,
+                                                border: `1px solid ${theme.palette.grey[900] + 40}`,
+                                                backgroundColor: 'transparent',
+                                                color: theme.palette.text.primary,
+                                                '&:hover': {
+                                                    backgroundColor: theme.palette.action.hover,
+                                                    borderColor: theme.palette.grey[900] + 60
+                                                }
+                                            }}
+                                        >
+                                            View Templates
+                                        </StyledPermissionButton>
+                                    )}
                                 </Box>
-                                <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                    <StyledPermissionButton
-                                        permissionId={'tools:create'}
-                                        variant='contained'
-                                        onClick={addNew}
-                                        startIcon={<IconPlus />}
-                                        sx={{ borderRadius: 2, height: 40 }}
-                                    >
-                                        Create
-                                    </StyledPermissionButton>
-                                </ButtonGroup>
-                            </ViewHeader>
-                            {isLoading && (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
+                            </Box>
+
+                            {/* ==================== Tools Listing Section ==================== */}
+                            {(getAllToolsApi.data?.data?.length ?? 0) > 0 && (
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant='h3' sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                                        Tools
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <OutlinedInput
+                                            size='small'
+                                            placeholder='Search Tools'
+                                            onChange={onSearchChange}
+                                            startAdornment={
+                                                <InputAdornment position='start'>
+                                                    <IconSearch size={16} stroke={1.5} />
+                                                </InputAdornment>
+                                            }
+                                            sx={{
+                                                width: 250,
+                                                borderRadius: 2,
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: theme.palette.grey[900] + 25
+                                                }
+                                            }}
+                                        />
+                                        <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                                            <ToggleButtonGroup
+                                                sx={{ borderRadius: 2, maxHeight: 36 }}
+                                                value={view}
+                                                color='primary'
+                                                disabled={total === 0}
+                                                exclusive
+                                                onChange={handleChange}
+                                            >
+                                                <ToggleButton
+                                                    sx={{
+                                                        borderColor: theme.palette.grey[900] + 25,
+                                                        borderRadius: 2,
+                                                        color: customization.isDarkMode ? 'white' : 'inherit'
+                                                    }}
+                                                    variant='contained'
+                                                    value='card'
+                                                    title='Card View'
+                                                >
+                                                    <IconLayoutGrid size={18} />
+                                                </ToggleButton>
+                                                <ToggleButton
+                                                    sx={{
+                                                        borderColor: theme.palette.grey[900] + 25,
+                                                        borderRadius: 2,
+                                                        color: customization.isDarkMode ? 'white' : 'inherit'
+                                                    }}
+                                                    variant='contained'
+                                                    value='list'
+                                                    title='List View'
+                                                >
+                                                    <IconList size={18} />
+                                                </ToggleButton>
+                                            </ToggleButtonGroup>
+                                        </ButtonGroup>
+                                    </Box>
                                 </Box>
                             )}
-                            {!isLoading && total > 0 && (
+
+                            {isLoading && (
+                                <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
+                                    <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
+                                    <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
+                                    <Skeleton variant='rounded' height={80} sx={{ borderRadius: 3 }} />
+                                </Box>
+                            )}
+
+                            {!isLoading && (getAllToolsApi.data?.data?.length ?? 0) > 0 && (
                                 <>
                                     {!view || view === 'card' ? (
-                                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                        <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                             {getAllToolsApi.data?.data?.filter(filterTools).map((data, index) => (
-                                                <ItemCard data={data} key={index} onClick={() => edit(data)} />
+                                                <Box
+                                                    key={index}
+                                                    onClick={() => edit(data)}
+                                                    sx={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 1.5,
+                                                        p: 2,
+                                                        borderRadius: 3,
+                                                        border: `1px solid ${theme.palette.grey[900]}15`,
+                                                        cursor: 'pointer',
+                                                        backgroundColor: theme.palette.card?.main || theme.palette.background.paper,
+                                                        boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                                                        transition: 'background-color 0.2s, box-shadow 0.2s',
+                                                        '&:hover': {
+                                                            backgroundColor: theme.palette.card?.hover || theme.palette.action.hover,
+                                                            boxShadow: '0 4px 20px rgba(0,0,0,0.12)'
+                                                        }
+                                                    }}
+                                                >
+                                                    {data.iconSrc ? (
+                                                        <Box
+                                                            sx={{
+                                                                width: 36,
+                                                                height: 36,
+                                                                borderRadius: '50%',
+                                                                flexShrink: 0,
+                                                                backgroundImage: `url(${data.iconSrc})`,
+                                                                backgroundSize: 'contain',
+                                                                backgroundRepeat: 'no-repeat',
+                                                                backgroundPosition: 'center center'
+                                                            }}
+                                                        />
+                                                    ) : data.color ? (
+                                                        <Box
+                                                            sx={{
+                                                                width: 36,
+                                                                height: 36,
+                                                                borderRadius: '50%',
+                                                                flexShrink: 0,
+                                                                background: data.color
+                                                            }}
+                                                        />
+                                                    ) : (
+                                                        <Box
+                                                            sx={{
+                                                                width: 36,
+                                                                height: 36,
+                                                                borderRadius: 2,
+                                                                overflow: 'hidden',
+                                                                flexShrink: 0
+                                                            }}
+                                                        >
+                                                            <Avatar
+                                                                size={36}
+                                                                name={data.id || data.name || 'tool'}
+                                                                variant='marble'
+                                                                colors={[
+                                                                    theme.palette.primary.light,
+                                                                    theme.palette.primary.main,
+                                                                    theme.palette.primary.dark,
+                                                                    theme.palette.secondary.light,
+                                                                    theme.palette.secondary.main,
+                                                                    theme.palette.secondary.dark
+                                                                ]}
+                                                            />
+                                                        </Box>
+                                                    )}
+                                                    <Box sx={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                                                        <Typography
+                                                            sx={{
+                                                                fontSize: '0.95rem',
+                                                                fontWeight: 500,
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap',
+                                                                color: theme.palette.text.primary
+                                                            }}
+                                                        >
+                                                            {data.name || 'Untitled'}
+                                                        </Typography>
+                                                        <Typography
+                                                            sx={{
+                                                                fontSize: '0.8rem',
+                                                                color: theme.palette.text.secondary,
+                                                                overflow: 'hidden',
+                                                                textOverflow: 'ellipsis',
+                                                                whiteSpace: 'nowrap'
+                                                            }}
+                                                        >
+                                                            {data.description || moment(data.updatedDate).format('MMM D, hh:mm A')}
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
                                             ))}
                                         </Box>
                                     ) : (
@@ -252,21 +472,8 @@ const Tools = () => {
                                             onSelect={edit}
                                         />
                                     )}
-                                    {/* Pagination and Page Size Controls */}
                                     <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
                                 </>
-                            )}
-                            {!isLoading && total === 0 && (
-                                <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
-                                    <Box sx={{ p: 2, height: 'auto' }}>
-                                        <img
-                                            style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                            src={ToolEmptySVG}
-                                            alt='ToolEmptySVG'
-                                        />
-                                    </Box>
-                                    <div>No Tools Created Yet</div>
-                                </Stack>
                             )}
                         </Stack>
                     </Fade>

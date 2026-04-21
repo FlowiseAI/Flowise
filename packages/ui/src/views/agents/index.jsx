@@ -241,7 +241,7 @@ const Agents = () => {
                                     justifyContent: 'center',
                                     pt: 4,
                                     pb: 2,
-                                    ...(!isLoading && total === 0 ? { minHeight: 'calc(100vh - 200px)' } : {})
+                                    ...(!isLoading && agents.length === 0 ? { minHeight: 'calc(100vh - 200px)' } : {})
                                 }}
                             >
                                 <Typography
@@ -359,7 +359,7 @@ const Agents = () => {
                             </Box>
 
                             {/* ==================== Agents Listing Section ==================== */}
-                            {total > 0 && (
+                            {agents.length > 0 && (
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <Typography variant='h3' sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                                         Agents
@@ -427,7 +427,7 @@ const Agents = () => {
                                 </Box>
                             )}
 
-                            {!isLoading && total > 0 && (
+                            {!isLoading && agents.length > 0 && (
                                 <>
                                     {!view || view === 'card' ? (
                                         <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>

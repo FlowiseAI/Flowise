@@ -119,7 +119,7 @@ const NavItem = ({ item, level, navType, onClick, onUploadFile }) => {
                 sx={{
                     my: 'auto',
                     minWidth: collapsed ? 0 : !item?.icon ? 18 : 36,
-                    justifyContent: 'center'
+                    justifyContent: collapsed ? 'center' : 'flex-start'
                 }}
             >
                 {itemIcon}

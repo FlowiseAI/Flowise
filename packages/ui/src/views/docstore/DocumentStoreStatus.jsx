@@ -76,20 +76,32 @@ const DocumentStoreStatus = ({ status, isTableView }) => {
                     <span style={{ fontSize: '0.7rem', color: getColor(status)[2], marginLeft: 5 }}>{status}</span>
                 </div>
             )}
-            {isTableView && (
-                <div
-                    style={{
-                        display: 'flex',
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        backgroundColor: status === 'EMPTY' ? 'transparent' : getColor(status)[1],
-                        border: status === 'EMPTY' ? '3px solid' : 'none',
-                        borderColor: status === 'EMPTY' ? getColor(status)[1] : 'transparent'
-                    }}
-                    title={status}
-                ></div>
-            )}
+            {isTableView &&
+                (() => {
+                    const brightDot = {
+                        STALE: '#bdbdbd',
+                        EMPTY: '#ba68c8',
+                        SYNCING: '#ffb74d',
+                        UPSERTING: '#4fc3f7',
+                        SYNC: '#81c784',
+                        UPSERTED: '#4db6ac',
+                        NEW: '#64b5f6'
+                    }
+                    const dotColor = customization.isDarkMode ? brightDot[status] || '#bdbdbd' : getColor(status)[1]
+                    return (
+                        <div
+                            style={{
+                                display: 'flex',
+                                width: '14px',
+                                height: '14px',
+                                borderRadius: '50%',
+                                backgroundColor: dotColor,
+                                boxShadow: customization.isDarkMode ? `0 0 0 3px ${dotColor}40` : `0 0 0 3px ${dotColor}22`
+                            }}
+                            title={status}
+                        ></div>
+                    )
+                })()}
         </>
     )
 }

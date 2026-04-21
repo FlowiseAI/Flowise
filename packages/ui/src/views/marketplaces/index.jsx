@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import BoringAvatar from 'boring-avatars'
 
 // material-ui
 import {
@@ -25,14 +26,14 @@ import {
     Autocomplete,
     TextField,
     Chip,
-    Tooltip
+    Tooltip,
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import ItemCard from '@/ui-component/cards/ItemCard'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
 import ToolDialog from '@/views/tools/ToolDialog'
 import { MarketplaceTable } from '@/ui-component/table/MarketplaceTable'
@@ -81,6 +82,7 @@ const Marketplace = () => {
     useNotifier()
 
     const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
     const { error, setError } = useError()
 
     const [isLoading, setLoading] = useState(true)
@@ -469,6 +471,159 @@ const Marketplace = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllCustomTemplatesApi.error])
 
+    const renderCompactCard = (data, onClick, imagesMap, iconsMap) => {
+        const isTool = data.type === 'Tool'
+        const flowImages = imagesMap?.[data.id] || []
+        const flowIcons = iconsMap?.[data.id] || []
+        const combined = [
+            ...flowIcons.map((ic) => ({ type: 'icon', icon: ic.icon, color: ic.color, label: ic.name })),
+            ...flowImages.map((img) => ({ type: 'image', src: img.imageSrc, label: img.label }))
+        ]
+        const visible = combined.slice(0, 4)
+        const remaining = combined.length - visible.length
+
+        return (
+            <Box
+                onClick={onClick}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 1.5,
+                    p: 2,
+                    height: '100%',
+                    borderRadius: 3,
+                    border: `1px solid ${theme.palette.grey[900]}15`,
+                    cursor: 'pointer',
+                    backgroundColor: theme.palette.card?.main || theme.palette.background.paper,
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                    transition: 'background-color 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                        backgroundColor: theme.palette.card?.hover || theme.palette.action.hover,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.12)'
+                    }
+                }}
+            >
+                {isTool &&
+                    (data.iconSrc ? (
+                        <Box
+                            sx={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: '50%',
+                                flexShrink: 0,
+                                alignSelf: 'flex-start',
+                                backgroundImage: `url(${data.iconSrc})`,
+                                backgroundSize: 'contain',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: 'center center'
+                            }}
+                        />
+                    ) : data.color ? (
+                        <Box
+                            sx={{
+                                width: 36,
+                                height: 36,
+                                borderRadius: '50%',
+                                flexShrink: 0,
+                                alignSelf: 'flex-start',
+                                background: data.color
+                            }}
+                        />
+                    ) : (
+                        <Box sx={{ width: 36, height: 36, borderRadius: 2, overflow: 'hidden', flexShrink: 0, alignSelf: 'flex-start' }}>
+                            <BoringAvatar
+                                size={36}
+                                name={data.id || data.name || 'tool'}
+                                variant='marble'
+                                colors={[
+                                    theme.palette.primary.light,
+                                    theme.palette.primary.main,
+                                    theme.palette.primary.dark,
+                                    theme.palette.secondary.light,
+                                    theme.palette.secondary.main,
+                                    theme.palette.secondary.dark
+                                ]}
+                            />
+                        </Box>
+                    ))}
+                <Box sx={{ overflow: 'hidden', flex: 1, minWidth: 0 }}>
+                    <Typography
+                        sx={{
+                            fontSize: '0.95rem',
+                            fontWeight: 500,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            color: theme.palette.text.primary
+                        }}
+                    >
+                        {data.templateName || data.name || 'Untitled'}
+                    </Typography>
+                    <Typography
+                        sx={{
+                            mt: 0.75,
+                            fontSize: '0.8rem',
+                            color: customization.isDarkMode ? theme.palette.grey[400] : theme.palette.grey[700],
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }}
+                    >
+                        {data.description || data.type}
+                    </Typography>
+                    {!isTool && combined.length > 0 && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1, flexWrap: 'wrap' }}>
+                            {visible.map((item, i) => (
+                                <Tooltip key={i} title={item.label || ''} placement='top'>
+                                    {item.type === 'image' ? (
+                                        <Box
+                                            sx={{
+                                                width: 22,
+                                                height: 22,
+                                                borderRadius: '50%',
+                                                backgroundColor: customization.isDarkMode
+                                                    ? theme.palette.common.white
+                                                    : theme.palette.grey[300] + 75,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <img
+                                                style={{ width: '100%', height: '100%', padding: 3, objectFit: 'contain' }}
+                                                alt=''
+                                                src={item.src}
+                                            />
+                                        </Box>
+                                    ) : (
+                                        <Box
+                                            sx={{
+                                                width: 22,
+                                                height: 22,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <item.icon size={18} color={item.color} />
+                                        </Box>
+                                    )}
+                                </Tooltip>
+                            ))}
+                            {remaining > 0 && (
+                                <Typography sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary, ml: 0.5 }}>
+                                    +{remaining}
+                                </Typography>
+                            )}
+                        </Box>
+                    )}
+                </Box>
+            </Box>
+        )
+    }
+
     return (
         <>
             <MainCard>
@@ -713,13 +868,13 @@ const Marketplace = () => {
                                     {!view || view === 'card' ? (
                                         <>
                                             {isLoading ? (
-                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                                     <Skeleton variant='rounded' height={160} />
                                                     <Skeleton variant='rounded' height={160} />
                                                     <Skeleton variant='rounded' height={160} />
                                                 </Box>
                                             ) : (
-                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                                     {getAllTemplatesMarketplacesApi.data
                                                         ?.filter(filterByBadge)
                                                         .filter(filterByType)
@@ -727,7 +882,7 @@ const Marketplace = () => {
                                                         .filter(filterByFramework)
                                                         .filter(filterByUsecases)
                                                         .map((data, index) => (
-                                                            <Box key={index}>
+                                                            <Box key={index} sx={{ height: '100%' }}>
                                                                 {data.badge && (
                                                                     <Badge
                                                                         sx={{
@@ -743,34 +898,21 @@ const Marketplace = () => {
                                                                         {(data.type === 'Chatflow' ||
                                                                             data.type === 'Agentflow' ||
                                                                             data.type === 'AgentflowV2' ||
-                                                                            data.type === 'Agent') && (
-                                                                            <ItemCard
-                                                                                onClick={() => goToCanvas(data)}
-                                                                                data={data}
-                                                                                images={images[data.id]}
-                                                                                icons={icons[data.id]}
-                                                                            />
-                                                                        )}
-                                                                        {data.type === 'Tool' && (
-                                                                            <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                                        )}
+                                                                            data.type === 'Agent') &&
+                                                                            renderCompactCard(data, () => goToCanvas(data), images, icons)}
+                                                                        {data.type === 'Tool' &&
+                                                                            renderCompactCard(data, () => goToTool(data))}
                                                                     </Badge>
                                                                 )}
                                                                 {!data.badge &&
                                                                     (data.type === 'Chatflow' ||
                                                                         data.type === 'Agentflow' ||
                                                                         data.type === 'AgentflowV2' ||
-                                                                        data.type === 'Agent') && (
-                                                                        <ItemCard
-                                                                            onClick={() => goToCanvas(data)}
-                                                                            data={data}
-                                                                            images={images[data.id]}
-                                                                            icons={icons[data.id]}
-                                                                        />
-                                                                    )}
-                                                                {!data.badge && data.type === 'Tool' && (
-                                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                                )}
+                                                                        data.type === 'Agent') &&
+                                                                    renderCompactCard(data, () => goToCanvas(data), images, icons)}
+                                                                {!data.badge &&
+                                                                    data.type === 'Tool' &&
+                                                                    renderCompactCard(data, () => goToTool(data))}
                                                             </Box>
                                                         ))}
                                                 </Box>
@@ -850,13 +992,13 @@ const Marketplace = () => {
                                     {!view || view === 'card' ? (
                                         <>
                                             {isLoading ? (
-                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                                     <Skeleton variant='rounded' height={160} />
                                                     <Skeleton variant='rounded' height={160} />
                                                     <Skeleton variant='rounded' height={160} />
                                                 </Box>
                                             ) : (
-                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                <Box display='grid' gridTemplateColumns='repeat(3, minmax(0, 1fr))' gap={gridSpacing}>
                                                     {getAllCustomTemplatesApi.data
                                                         ?.filter(filterByBadge)
                                                         .filter(filterByType)
@@ -864,7 +1006,7 @@ const Marketplace = () => {
                                                         .filter(filterByFramework)
                                                         .filter(filterByUsecases)
                                                         .map((data, index) => (
-                                                            <Box key={index}>
+                                                            <Box key={index} sx={{ height: '100%' }}>
                                                                 {data.badge && (
                                                                     <Badge
                                                                         sx={{
@@ -880,34 +1022,31 @@ const Marketplace = () => {
                                                                         {(data.type === 'Chatflow' ||
                                                                             data.type === 'Agentflow' ||
                                                                             data.type === 'AgentflowV2' ||
-                                                                            data.type === 'Agent') && (
-                                                                            <ItemCard
-                                                                                onClick={() => goToCanvas(data)}
-                                                                                data={data}
-                                                                                images={templateImages[data.id]}
-                                                                                icons={templateIcons[data.id]}
-                                                                            />
-                                                                        )}
-                                                                        {data.type === 'Tool' && (
-                                                                            <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                                        )}
+                                                                            data.type === 'Agent') &&
+                                                                            renderCompactCard(
+                                                                                data,
+                                                                                () => goToCanvas(data),
+                                                                                templateImages,
+                                                                                templateIcons
+                                                                            )}
+                                                                        {data.type === 'Tool' &&
+                                                                            renderCompactCard(data, () => goToTool(data))}
                                                                     </Badge>
                                                                 )}
                                                                 {!data.badge &&
                                                                     (data.type === 'Chatflow' ||
                                                                         data.type === 'Agentflow' ||
                                                                         data.type === 'AgentflowV2' ||
-                                                                        data.type === 'Agent') && (
-                                                                        <ItemCard
-                                                                            onClick={() => goToCanvas(data)}
-                                                                            data={data}
-                                                                            images={templateImages[data.id]}
-                                                                            icons={templateIcons[data.id]}
-                                                                        />
+                                                                        data.type === 'Agent') &&
+                                                                    renderCompactCard(
+                                                                        data,
+                                                                        () => goToCanvas(data),
+                                                                        templateImages,
+                                                                        templateIcons
                                                                     )}
-                                                                {!data.badge && data.type === 'Tool' && (
-                                                                    <ItemCard data={data} onClick={() => goToTool(data)} />
-                                                                )}
+                                                                {!data.badge &&
+                                                                    data.type === 'Tool' &&
+                                                                    renderCompactCard(data, () => goToTool(data))}
                                                             </Box>
                                                         ))}
                                                 </Box>
