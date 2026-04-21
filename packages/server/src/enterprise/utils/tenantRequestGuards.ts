@@ -15,6 +15,22 @@ export function getLoggedInUser(req: Request): LoggedInUser {
     return user
 }
 
+/**
+ * Active workspace for tenant-scoped data access.
+ * Interactive sessions use {@link getLoggedInUser} (requires `req.user.id`).
+ * API key auth sets `activeWorkspaceId` / `activeOrganizationId` on `req.user` but not `id`.
+ */
+export function getActiveWorkspaceIdForRequest(req: Request): string {
+    const user = req.user as Partial<LoggedInUser> | undefined
+    if (user?.id) {
+        return getLoggedInUser(req).activeWorkspaceId
+    }
+    if (!user?.activeWorkspaceId || !user?.activeOrganizationId) {
+        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
+    }
+    return user.activeWorkspaceId
+}
+
 /** When a query supplies organizationId, it must match the caller's active organization. */
 export function assertQueryOrganizationMatchesActiveOrg(user: LoggedInUser, organizationId: string | undefined): void {
     if (organizationId === undefined || organizationId === '') return

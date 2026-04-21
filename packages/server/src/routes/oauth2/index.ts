@@ -61,6 +61,8 @@ import axios from 'axios'
 import { Request, Response, NextFunction } from 'express'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
+import { WorkspaceShared } from '../../enterprise/database/entities/EnterpriseEntities'
+import { getActiveWorkspaceIdForRequest } from '../../enterprise/utils/tenantRequestGuards'
 import { decryptCredentialData, encryptCredentialData } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -72,20 +74,29 @@ const router = express.Router()
 router.post('/authorize/:credentialId', async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { credentialId } = req.params
+        const workspaceId = getActiveWorkspaceIdForRequest(req)
 
         const appServer = getRunningExpressApp()
         const credentialRepository = appServer.AppDataSource.getRepository(Credential)
 
-        // Find credential by ID
-        const credential = await credentialRepository.findOneBy({
-            id: credentialId
+        let credential = await credentialRepository.findOneBy({
+            id: credentialId,
+            workspaceId
         })
 
         if (!credential) {
-            return res.status(404).json({
-                success: false,
-                message: 'Credential not found'
+            const share = await appServer.AppDataSource.getRepository(WorkspaceShared).findOneBy({
+                workspaceId,
+                sharedItemId: credentialId,
+                itemType: 'credential'
             })
+            if (share) {
+                credential = await credentialRepository.findOneBy({ id: credentialId })
+            }
+        }
+
+        if (!credential) {
+            return next(new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Credential not found'))
         }
 
         // Decrypt the credential data to get OAuth configuration
@@ -144,6 +155,9 @@ router.post('/authorize/:credentialId', async (req: Request, res: Response, next
             redirectUri: finalRedirectUri
         })
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            return next(error)
+        }
         next(
             new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
