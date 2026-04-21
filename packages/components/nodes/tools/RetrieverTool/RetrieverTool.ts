@@ -1,12 +1,23 @@
 import { z } from 'zod/v3'
-import { CallbackManager, CallbackManagerForToolRun, Callbacks, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
-import { BaseDynamicToolInput, DynamicTool, StructuredTool, ToolInputParsingException } from '@langchain/core/tools'
+import {
+    CallbackManager,
+    CallbackManagerForToolRun,
+    Callbacks,
+    parseCallbackConfigArg
+} from '@langchain/core/callbacks/manager'
+import {
+    BaseDynamicToolInput,
+    DynamicTool,
+    StructuredTool,
+    ToolInputParsingException
+} from '@langchain/core/tools'
 import { BaseRetriever } from '@langchain/core/retrievers'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, resolveFlowObjValue, parseWithTypeConversion } from '../../../src/utils'
 import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import { getErrorMessage } from '../../../src/error'
 
 const howToUse = `Add additional filters to vector store. You can also filter with flow config, including the current "state":
 - \`$flow.sessionId\`
@@ -18,23 +29,23 @@ const howToUse = `Add additional filters to vector store. You can also filter wi
 
 type ZodObjectAny = z.ZodObject<any, any, any, any>
 type IFlowConfig = { sessionId?: string; chatId?: string; input?: string; state?: ICommonObject }
-interface DynamicStructuredToolInput<T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>>
-    extends BaseDynamicToolInput {
+
+interface DynamicStructuredToolInput<
+    T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
+> extends BaseDynamicToolInput {
     func?: (input: z.infer<T>, runManager?: CallbackManagerForToolRun, flowConfig?: IFlowConfig) => Promise<string>
     schema: T
 }
 
-class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>> extends StructuredTool<
-    T extends ZodObjectAny ? T : ZodObjectAny
-> {
+class DynamicStructuredTool<
+    T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
+> extends StructuredTool<T extends ZodObjectAny ? T : ZodObjectAny> {
     static lc_name() {
         return 'DynamicStructuredTool'
     }
 
     name: string
-
     description: string
-
     func: DynamicStructuredToolInput['func']
 
     // @ts-ignore
@@ -51,17 +62,27 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
         this.schema = fields.schema
     }
 
-    async call(arg: any, configArg?: RunnableConfig | Callbacks, tags?: string[], flowConfig?: IFlowConfig): Promise<string> {
+    async call(
+        arg: any,
+        configArg?: RunnableConfig | Callbacks,
+        tags?: string[],
+        flowConfig?: IFlowConfig
+    ): Promise<string> {
         const config = parseCallbackConfigArg(configArg)
         if (config.runName === undefined) {
             config.runName = this.name
         }
+
         let parsed
         try {
             parsed = await parseWithTypeConversion(this.schema, arg)
         } catch (e) {
-            throw new ToolInputParsingException(`Received tool input did not match expected schema`, JSON.stringify(arg))
+            throw new ToolInputParsingException(
+                `Received tool input did not match expected schema`,
+                JSON.stringify(arg)
+            )
         }
+
         const callbackManager_ = await CallbackManager.configure(
             config.callbacks,
             this.callbacks,
@@ -71,6 +92,7 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
             this.metadata,
             { verbose: this.verbose }
         )
+
         const runManager = await callbackManager_?.handleToolStart(
             this.toJSON(),
             typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
@@ -80,6 +102,7 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
             undefined,
             config.runName
         )
+
         let result
         try {
             result = await this._call(parsed, runManager, flowConfig)
@@ -87,9 +110,11 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
             await runManager?.handleToolError(e)
             throw e
         }
+
         if (result && typeof result !== 'string') {
             result = JSON.stringify(result)
         }
+
         await runManager?.handleToolEnd(result)
         return result
     }
@@ -97,13 +122,13 @@ class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObj
     // @ts-ignore
     protected _call(arg: any, runManager?: CallbackManagerForToolRun, flowConfig?: IFlowConfig): Promise<string> {
         let flowConfiguration: ICommonObject = {}
+
         if (typeof arg === 'object' && Object.keys(arg).length) {
             for (const item in arg) {
                 flowConfiguration[`$${item}`] = arg[item]
             }
         }
 
-        // inject flow properties
         if (this.flowObj) {
             flowConfiguration['$flow'] = { ...this.flowObj, ...flowConfig }
         }
@@ -137,13 +162,9 @@ class Retriever_Tools implements INode {
         this.category = 'Tools'
         this.description = 'Use a retriever as allowed tool for agent'
         this.baseClasses = [this.type, 'DynamicTool', ...getBaseClasses(DynamicTool)]
+
         this.inputs = [
-            {
-                label: 'Retriever Name',
-                name: 'name',
-                type: 'string',
-                placeholder: 'search_state_of_union'
-            },
+            { label: 'Retriever Name', name: 'name', type: 'string', placeholder: 'search_state_of_union' },
             {
                 label: 'Retriever Description',
                 name: 'description',
@@ -152,17 +173,8 @@ class Retriever_Tools implements INode {
                 rows: 3,
                 placeholder: 'Searches and returns documents regarding the state-of-the-union.'
             },
-            {
-                label: 'Retriever',
-                name: 'retriever',
-                type: 'BaseRetriever'
-            },
-            {
-                label: 'Return Source Documents',
-                name: 'returnSourceDocuments',
-                type: 'boolean',
-                optional: true
-            },
+            { label: 'Retriever', name: 'retriever', type: 'BaseRetriever' },
+            { label: 'Return Source Documents', name: 'returnSourceDocuments', type: 'boolean', optional: true },
             {
                 label: 'Additional Metadata Filter',
                 name: 'retrieverToolMetadataFilter',
@@ -170,10 +182,7 @@ class Retriever_Tools implements INode {
                 description: 'Add additional metadata filter on top of the existing filter from vector store',
                 optional: true,
                 additionalParams: true,
-                hint: {
-                    label: 'What can you filter?',
-                    value: howToUse
-                },
+                hint: { label: 'What can you filter?', value: howToUse },
                 acceptVariable: true
             }
         ]
@@ -186,38 +195,87 @@ class Retriever_Tools implements INode {
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
         const retrieverToolMetadataFilter = nodeData.inputs?.retrieverToolMetadataFilter
 
-        const input = {
-            name,
-            description
-        }
-
         const flow = { chatflowId: options.chatflowid }
 
-        const func = async ({ input }: { input: string }, _?: CallbackManagerForToolRun, flowConfig?: IFlowConfig) => {
+        const func = async (
+            { input }: { input: string },
+            _?: CallbackManagerForToolRun,
+            flowConfig?: IFlowConfig
+        ) => {
+            let metadataFilter: any = undefined
+
+            // Parse metadata filter safely
             if (retrieverToolMetadataFilter) {
-                const flowObj = flowConfig
+                try {
+                    metadataFilter =
+                        typeof retrieverToolMetadataFilter === 'object'
+                            ? retrieverToolMetadataFilter
+                            : JSON.parse(retrieverToolMetadataFilter)
 
-                const metadataFilter =
-                    typeof retrieverToolMetadataFilter === 'object' ? retrieverToolMetadataFilter : JSON.parse(retrieverToolMetadataFilter)
-                const newMetadataFilter = resolveFlowObjValue(metadataFilter, flowObj)
-
-                if (newMetadataFilter && typeof newMetadataFilter === 'object' && Object.keys(newMetadataFilter).length > 0) {
-                    const vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore
-                    vectorStore.filter = newMetadataFilter
+                    metadataFilter = resolveFlowObjValue(metadataFilter, flowConfig)
+                } catch (e) {
+                    throw new Error('Invalid JSON in retrieverToolMetadataFilter')
                 }
             }
-            const docs = await retriever.invoke(input)
-            const content = docs.map((doc) => doc.pageContent).join('\n\n')
-            const sourceDocuments = JSON.stringify(docs)
-            return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
+
+            let vectorStore: any
+            let previousFilter: any
+
+            try {
+                // Apply filter safely if retriever supports it
+                if (
+                    metadataFilter &&
+                    typeof metadataFilter === 'object' &&
+                    Object.keys(metadataFilter).length > 0 &&
+                    'vectorStore' in retriever
+                ) {
+                    vectorStore = (retriever as VectorStoreRetriever<any>).vectorStore
+                    previousFilter = vectorStore.filter
+                    vectorStore.filter = metadataFilter
+                }
+
+                const docs = await retriever.invoke(input)
+                const content = docs.map((doc) => doc.pageContent).join('\n\n')
+                const sourceDocuments = JSON.stringify(docs)
+
+                return returnSourceDocuments
+                    ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments
+                    : content
+            } catch (error) {
+                const errorMessage = getErrorMessage(error)
+
+                const isDocStoreError =
+                    errorMessage &&
+                    (
+                        errorMessage.includes('document store') ||
+                        errorMessage.includes('vector store') ||
+                        errorMessage.includes('retriever')
+                    )
+
+                if (isDocStoreError) {
+                    console.warn(
+                        'Document store retrieval failed, returning fallback response:',
+                        errorMessage
+                    )
+                    return 'Knowledge base temporarily unavailable. Proceeding with general knowledge.'
+                }
+
+                throw error
+            } finally {
+                // Restore previous filter to avoid cross-request leakage
+                if (vectorStore) {
+                    vectorStore.filter = previousFilter
+                }
+            }
         }
 
         const schema = z.object({
             input: z.string().describe('input to look up in retriever')
         }) as any
 
-        const tool = new DynamicStructuredTool({ ...input, func, schema })
+        const tool = new DynamicStructuredTool({ name, description, func, schema })
         tool.setFlowObject(flow)
+
         return tool
     }
 }

@@ -23,3 +23,12 @@ const toErrorWithMessage = (maybeError: unknown): ErrorWithMessage => {
 export const getErrorMessage = (error: unknown) => {
     return toErrorWithMessage(error).message
 }
+
+export class DocumentStoreError extends Error {
+    public storeId?: string
+    constructor(message: string, storeId?: string, errorOptions?: ErrorOptions) {
+        super(`Document store error: ${message}`, errorOptions)
+        this.name = 'DocumentStoreError'
+        this.storeId = storeId
+    }
+}
