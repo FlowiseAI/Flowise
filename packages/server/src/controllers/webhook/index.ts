@@ -6,6 +6,7 @@ import predictionsServices from '../../services/predictions'
 import webhookService from '../../services/webhook'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { dispatchCallback } from '../../utils/callbackDispatcher'
+import { getErrorMessage } from '../../errors/utils'
 
 const createWebhook = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -90,7 +91,7 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
                         await dispatchCallback(callbackUrl, { status: 'SUCCESS', chatId, data: apiResponse }, callbackSecret)
                     }
                 } catch (err: any) {
-                    await dispatchCallback(callbackUrl, { status: 'ERROR', chatId, error: err.message }, callbackSecret)
+                    await dispatchCallback(callbackUrl, { status: 'ERROR', chatId, error: getErrorMessage(err) }, callbackSecret)
                 }
             })
             return
