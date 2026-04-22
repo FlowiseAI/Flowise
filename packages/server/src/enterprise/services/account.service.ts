@@ -615,7 +615,7 @@ export class AccountService {
         } finally {
             await queryRunner.release()
         }
-        sanitizeUser(data.user)
+        data.user = sanitizeUser(data.user)
         return data
     }
 
