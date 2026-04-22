@@ -2,7 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { ArrayInput } from './ArrayInput'
+import { ArrayInput, buildNodeOutputVariables } from './ArrayInput'
+import type { VariableItem } from './VariablePicker'
 
 // --- Mocks ---
 const mockOnDataChange = jest.fn()
@@ -10,13 +11,18 @@ const mockOnDataChange = jest.fn()
 jest.mock('./NodeInputHandler', () => ({
     NodeInputHandler: ({
         inputParam,
-        onDataChange
+        onDataChange,
+        variableItems
     }: {
         inputParam: InputParam
         data: NodeData
         onDataChange: (args: { inputParam: InputParam; newValue: unknown }) => void
+        variableItems?: VariableItem[]
     }) => (
-        <div data-testid={`input-handler-${inputParam.name}`}>
+        <div
+            data-testid={`input-handler-${inputParam.name}`}
+            data-variable-items={variableItems ? JSON.stringify(variableItems.map((v) => v.value)) : undefined}
+        >
             <label>{inputParam.label}</label>
             <input data-testid={`input-${inputParam.name}`} onChange={(e) => onDataChange({ inputParam, newValue: e.target.value })} />
         </div>
@@ -484,5 +490,204 @@ describe('ArrayInput', () => {
         // Delete button should be disabled when at minItems limit
         const deleteButton = screen.getByTitle('Delete')
         expect(deleteButton).toBeDisabled()
+    })
+})
+
+// ── buildNodeOutputVariables ────────────────────────────────────────────────
+
+describe('buildNodeOutputVariables', () => {
+    it('returns {{output}} when node has no structured outputs', () => {
+        const data: NodeData = { id: 'n1', name: 'agentflow', label: 'Agent', inputs: {} } as NodeData
+        const vars = buildNodeOutputVariables(data)
+        expect(vars).toEqual([
+            { label: 'output', description: 'Output from the current node', category: 'Node Outputs', value: '{{output}}' }
+        ])
+    })
+
+    it('includes agentStructuredOutput fields after {{output}}', () => {
+        const data: NodeData = {
+            id: 'n1',
+            name: 'agentflow',
+            label: 'Agent',
+            inputs: {
+                agentStructuredOutput: [
+                    { key: 'name', description: 'The name field' },
+                    { key: 'score', description: 'The score field' }
+                ]
+            }
+        } as NodeData
+        const vars = buildNodeOutputVariables(data)
+        expect(vars).toHaveLength(3)
+        expect(vars[0].value).toBe('{{output}}')
+        expect(vars[1]).toMatchObject({ label: 'output.name', value: '{{output.name}}', description: 'The name field' })
+        expect(vars[2]).toMatchObject({ label: 'output.score', value: '{{output.score}}', description: 'The score field' })
+    })
+
+    it('includes llmStructuredOutput fields when agentStructuredOutput is absent', () => {
+        const data: NodeData = {
+            id: 'n1',
+            name: 'llm',
+            label: 'LLM',
+            inputs: {
+                llmStructuredOutput: [{ key: 'summary', description: 'Summary text' }]
+            }
+        } as NodeData
+        const vars = buildNodeOutputVariables(data)
+        expect(vars).toHaveLength(2)
+        expect(vars[1]).toMatchObject({ label: 'output.summary', value: '{{output.summary}}' })
+    })
+
+    it('prefers agentStructuredOutput over llmStructuredOutput when both present', () => {
+        const data: NodeData = {
+            id: 'n1',
+            name: 'agent',
+            label: 'Agent',
+            inputs: {
+                agentStructuredOutput: [{ key: 'agent_field' }],
+                llmStructuredOutput: [{ key: 'llm_field' }]
+            }
+        } as NodeData
+        const vars = buildNodeOutputVariables(data)
+        const keys = vars.map((v) => v.label)
+        expect(keys).toContain('output.agent_field')
+        expect(keys).not.toContain('output.llm_field')
+    })
+
+    it('filters out structured output entries without a key', () => {
+        const data: NodeData = {
+            id: 'n1',
+            name: 'agent',
+            label: 'Agent',
+            inputs: { agentStructuredOutput: [{ key: '' }, { key: 'valid' }] }
+        } as NodeData
+        const vars = buildNodeOutputVariables(data)
+        expect(vars).toHaveLength(2) // {{output}} + output.valid only
+        expect(vars[1].value).toBe('{{output.valid}}')
+    })
+})
+
+// ── acceptNodeOutputAsVariable in ArrayInput ────────────────────────────────
+
+describe('ArrayInput – acceptNodeOutputAsVariable', () => {
+    const baseVariableItems: VariableItem[] = [
+        { label: 'question', description: "User's question", category: 'Chat Context', value: '{{question}}' }
+    ]
+
+    it('prepends {{output}} to variableItems when nested param has acceptNodeOutputAsVariable', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            acceptVariable: true,
+            array: [
+                { id: 'key', name: 'key', label: 'Key', type: 'string' } as InputParam,
+                {
+                    id: 'value',
+                    name: 'value',
+                    label: 'Value',
+                    type: 'string',
+                    acceptVariable: true,
+                    acceptNodeOutputAsVariable: true
+                } as InputParam
+            ]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: { agentUpdateState: [{ key: 'myKey', value: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const valueHandler = screen.getByTestId('input-handler-value')
+        const passedItems: string[] = JSON.parse(valueHandler.getAttribute('data-variable-items') ?? '[]')
+        expect(passedItems[0]).toBe('{{output}}')
+        expect(passedItems).toContain('{{question}}')
+    })
+
+    it('does NOT prepend {{output}} when nested param lacks acceptNodeOutputAsVariable', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            acceptVariable: true,
+            array: [{ id: 'value', name: 'value', label: 'Value', type: 'string', acceptVariable: true } as InputParam]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: { agentUpdateState: [{ value: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const valueHandler = screen.getByTestId('input-handler-value')
+        const passedItems: string[] = JSON.parse(valueHandler.getAttribute('data-variable-items') ?? '[]')
+        expect(passedItems).not.toContain('{{output}}')
+        expect(passedItems).toContain('{{question}}')
+    })
+
+    it('includes structured output fields in prepended variables', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            array: [
+                {
+                    id: 'value',
+                    name: 'value',
+                    label: 'Value',
+                    type: 'string',
+                    acceptVariable: true,
+                    acceptNodeOutputAsVariable: true
+                } as InputParam
+            ]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: {
+                agentUpdateState: [{ value: '' }],
+                agentStructuredOutput: [{ key: 'sentiment', description: 'Sentiment score' }]
+            }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const valueHandler = screen.getByTestId('input-handler-value')
+        const passedItems: string[] = JSON.parse(valueHandler.getAttribute('data-variable-items') ?? '[]')
+        expect(passedItems).toContain('{{output}}')
+        expect(passedItems).toContain('{{output.sentiment}}')
+    })
+
+    it('does not pass variableItems when nested param has no acceptVariable', () => {
+        const inputParam: InputParam = {
+            id: 'updateState',
+            name: 'agentUpdateState',
+            label: 'Update State',
+            type: 'array',
+            array: [{ id: 'key', name: 'key', label: 'Key', type: 'string', acceptNodeOutputAsVariable: true } as InputParam]
+        }
+
+        const data: NodeData = {
+            id: 'node-1',
+            name: 'agentNode',
+            label: 'Agent',
+            inputs: { agentUpdateState: [{ key: '' }] }
+        } as NodeData
+
+        render(<ArrayInput inputParam={inputParam} data={data} onDataChange={mockOnDataChange} variableItems={baseVariableItems} />)
+
+        const keyHandler = screen.getByTestId('input-handler-key')
+        expect(keyHandler.getAttribute('data-variable-items')).toBeNull()
     })
 })

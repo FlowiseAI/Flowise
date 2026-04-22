@@ -11,6 +11,30 @@ import { type AsyncInputProps, type ConfigInputComponentProps, NodeInputHandler 
 import { useStableKeys } from './useStableKeys'
 import type { VariableItem } from './VariablePicker'
 
+/**
+ * Builds VariableItems representing the current node's own output.
+ * Added when a nested sub-field declares `acceptNodeOutputAsVariable: true`,
+ * matching the v2 suggestionOption behaviour where `{{output}}` and
+ * `{{output.<key>}}` appear for structured-output fields.
+ */
+export function buildNodeOutputVariables(data: NodeData): VariableItem[] {
+    const vars: VariableItem[] = [
+        { label: 'output', description: 'Output from the current node', category: 'Node Outputs', value: '{{output}}' }
+    ]
+    const structured = (
+        (data.inputs?.agentStructuredOutput ?? data.inputs?.llmStructuredOutput ?? []) as Array<{ key: string; description?: string }>
+    ).filter((item) => item?.key)
+    for (const item of structured) {
+        vars.push({
+            label: `output.${item.key}`,
+            description: item.description ?? `Structured output field: ${item.key}`,
+            category: 'Node Outputs',
+            value: `{{output.${item.key}}}`
+        })
+    }
+    return vars
+}
+
 export interface ArrayInputProps {
     inputParam: InputParam
     data: NodeData
@@ -178,7 +202,13 @@ export function ArrayInput({
                                     onConfigChange={onConfigChange}
                                     arrayIndex={index}
                                     parentArrayParam={inputParam}
-                                    variableItems={param.acceptVariable ? variableItems : undefined}
+                                    variableItems={
+                                        param.acceptVariable
+                                            ? param.acceptNodeOutputAsVariable
+                                                ? [...buildNodeOutputVariables(data), ...(variableItems ?? [])]
+                                                : variableItems
+                                            : undefined
+                                    }
                                 />
                             ))}
                     </Box>
