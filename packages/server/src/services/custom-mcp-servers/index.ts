@@ -12,6 +12,8 @@ import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface
 
 const REDACTED_VALUE = '************'
 const DEFAULT_TOOLS_MAX_BYTES = 512 * 1024
+const DEFAULT_AUTHORIZE_TIMEOUT_MS = 15_000
+const MIN_AUTHORIZE_TIMEOUT_MS = 1_000
 
 const getToolsMaxBytes = (): number => {
     const raw = process.env.CUSTOM_MCP_TOOLS_MAX_BYTES
@@ -19,6 +21,22 @@ const getToolsMaxBytes = (): number => {
     const parsed = Number(raw)
     if (!Number.isFinite(parsed)) return DEFAULT_TOOLS_MAX_BYTES
     return parsed
+}
+
+const getAuthorizeTimeoutMs = (): number => {
+    const raw = process.env.CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS
+    if (raw === undefined || raw === '') return DEFAULT_AUTHORIZE_TIMEOUT_MS
+    const parsed = Number(raw)
+    if (!Number.isFinite(parsed) || parsed < MIN_AUTHORIZE_TIMEOUT_MS) return DEFAULT_AUTHORIZE_TIMEOUT_MS
+    return parsed
+}
+
+const withTimeout = <T>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+    let timer: NodeJS.Timeout
+    const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(message)), ms)
+    })
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer)) as Promise<T>
 }
 
 const toBadRequest = async (fn: () => Promise<void> | void, fallbackMessage: string): Promise<void> => {
@@ -202,9 +220,13 @@ const updateCustomMcpServer = async (id: string, requestBody: any, workspaceId: 
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Custom MCP server ${id} not found`)
         }
 
-        // Preserve the real serverUrl if the client sent back a masked value
-        if (requestBody.serverUrl && requestBody.serverUrl.includes(REDACTED_VALUE)) {
+        if (requestBody.serverUrl === maskServerUrl(record.serverUrl)) {
             requestBody.serverUrl = record.serverUrl
+        } else if (requestBody.serverUrl && requestBody.serverUrl.includes(REDACTED_VALUE)) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                'Server URL still contains the masked placeholder. Send the full URL, or omit serverUrl from the request to keep the existing value.'
+            )
         } else if (requestBody.serverUrl) {
             await assertSafeServerUrl(requestBody.serverUrl)
         }
@@ -223,14 +245,19 @@ const updateCustomMcpServer = async (id: string, requestBody: any, workspaceId: 
                             // Keep existing value if client sent the redacted placeholder
                             if (value === REDACTED_VALUE && key in (existingDecrypted.headers as Record<string, string>)) {
                                 mergedHeaders[key] = (existingDecrypted.headers as Record<string, string>)[key]
+                            } else if (typeof value === 'string' && value !== REDACTED_VALUE && value.includes(REDACTED_VALUE)) {
+                                throw new InternalFlowiseError(
+                                    StatusCodes.BAD_REQUEST,
+                                    `Header "${key}" value still contains the masked placeholder. Send the full value, or pass "${REDACTED_VALUE}" to keep the existing value.`
+                                )
                             } else {
                                 mergedHeaders[key] = value
                             }
                         }
                         requestBody.authConfig = { ...requestBody.authConfig, headers: mergedHeaders }
                     }
-                } catch {
-                    // existing authConfig couldn't be decrypted — use incoming as-is
+                } catch (err) {
+                    if (err instanceof InternalFlowiseError) throw err
                 }
             }
             if (requestBody.authType === CustomMcpServerAuthType.CUSTOM_HEADERS) {
@@ -303,7 +330,8 @@ const authorizeCustomMcpServer = async (id: string, workspaceId: string): Promis
         let toolkit: MCPToolkit | null = null
         try {
             toolkit = new MCPToolkit(serverParams, 'sse')
-            await toolkit.initialize()
+            const timeoutMs = getAuthorizeTimeoutMs()
+            await withTimeout(toolkit.initialize(), timeoutMs, `MCP server handshake exceeded ${timeoutMs}ms`)
 
             const discoveredTools = toolkit._tools || []
             const toolsJson = JSON.stringify(discoveredTools)

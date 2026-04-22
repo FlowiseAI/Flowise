@@ -399,6 +399,21 @@ describe('customMcpServersService', () => {
             )
         })
 
+        it('should reject URL that partially contains the mask placeholder', async () => {
+            // e.g. user edited the URL but left `************` somewhere in it —
+            // the backend used to silently revert; we now reject explicitly.
+            const existing = makeRecord({ serverUrl: 'https://real.example.com/secret' })
+            mockFindOneBy.mockResolvedValue(existing)
+
+            await expect(
+                customMcpServersService.updateCustomMcpServer(
+                    'mcp-1',
+                    { serverUrl: 'https://typo-host.com/************' }, // new host but mask still present
+                    'ws-1'
+                )
+            ).rejects.toThrow(/masked placeholder/)
+        })
+
         it('should encrypt authConfig on update', async () => {
             const existing = makeRecord()
             mockFindOneBy.mockResolvedValue(existing)
@@ -420,6 +435,18 @@ describe('customMcpServersService', () => {
 
             // encryptCredentialData should have received the real secret, not the redacted value
             expect(mockEncrypt).toHaveBeenCalledWith(expect.objectContaining({ headers: { 'X-Key': 'real-secret' } }))
+        })
+
+        it('should reject header value that partially contains the mask placeholder', async () => {
+            const encryptedConfig = 'encrypted:' + JSON.stringify({ headers: { 'X-Key': 'real-secret' } })
+            const existing = makeRecord({ authConfig: encryptedConfig })
+            mockFindOneBy.mockResolvedValue(existing)
+            mockSave.mockImplementation((r: any) => Promise.resolve(r))
+
+            // User edited the value but left `************` in — not exactly the
+            // placeholder, so we reject rather than persisting the literal string.
+            const body = { authType: 'CUSTOM_HEADERS', authConfig: { headers: { 'X-Key': 'prefix-************' } } }
+            await expect(customMcpServersService.updateCustomMcpServer('mcp-1', body, 'ws-1')).rejects.toThrow(/masked placeholder/)
         })
 
         it('should use incoming header value when not redacted', async () => {
@@ -716,5 +743,28 @@ describe('customMcpServersService', () => {
             const result = await customMcpServersService.authorizeCustomMcpServer('mcp-1', 'ws-1')
             expect(result.toolCount).toBe(3)
         })
+    })
+
+    describe('authorize handshake timeout', () => {
+        const ORIGINAL_ENV = process.env.CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS
+        afterEach(() => {
+            if (ORIGINAL_ENV === undefined) delete process.env.CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS
+            else process.env.CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS = ORIGINAL_ENV
+        })
+
+        it('rejects and marks ERROR when initialize() hangs past the timeout', async () => {
+            // Override (env min-clamp normally prevents sub-1s, but we bypass the
+            // min check by asserting the timeout behavior with a long hang.)
+            process.env.CUSTOM_MCP_AUTHORIZE_TIMEOUT_MS = '1000'
+            const record = makeRecord({ serverUrl: 'https://example.com' })
+            mockFindOneBy.mockResolvedValue(record)
+            // initialize() never resolves
+            mockInitialize.mockReturnValue(new Promise(() => {}))
+            mockSave.mockImplementation((r: any) => Promise.resolve(r))
+
+            await expect(customMcpServersService.authorizeCustomMcpServer('mcp-1', 'ws-1')).rejects.toThrow(/exceeded 1000ms/)
+            expect(record.status).toBe(CustomMcpServerStatus.ERROR)
+            expect(mockClose).toHaveBeenCalled() // cleanup still runs
+        }, 10_000)
     })
 })

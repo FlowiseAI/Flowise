@@ -61,6 +61,9 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { MCP_SERVER_STATUS, MCP_AUTH_TYPE } from '@/store/constant'
 import { generateRandomGradient } from '@/utils/genericHelper'
 
+// Server-side masking placeholder. Must match REDACTED_VALUE in the service.
+const MASK_TOKEN = '************'
+
 // Pick an icon matching the current UI theme. MCP tool icons annotate themselves
 // with `theme: 'light' | 'dark'` — `light` means the glyph is dark (for light
 // backgrounds), `dark` means the glyph is light (for dark backgrounds).
@@ -429,6 +432,18 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
             setServerUrlError('Server URL is required')
             return false
         }
+        // In EDIT mode the form is prefilled with the masked URL. Leaving it
+        // untouched is valid — the backend recognises the exact mask form and
+        // preserves the stored value. Only flag partial/edited masks.
+        const maskedOriginal = dialogProps.type === 'EDIT' ? dialogProps.data?.serverUrl : undefined
+        if (url === maskedOriginal) {
+            setServerUrlError('')
+            return true
+        }
+        if (url.includes(MASK_TOKEN)) {
+            setServerUrlError('URL still contains the masked placeholder. Clear the field and retype the full URL.')
+            return false
+        }
         try {
             const parsed = new URL(url)
             if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
@@ -581,31 +596,66 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
 
     const saveServer = async () => {
         if (!validateServerUrl(serverUrl)) return
+        const body = {
+            name: serverName,
+            serverUrl,
+            iconSrc: iconSrc || undefined,
+            color: color || undefined,
+            authType
+        }
+        if (authType === MCP_AUTH_TYPE.CUSTOM_HEADERS) {
+            const hdrs = {}
+            for (const { key, value } of headers) {
+                if (!key) continue
+                // Partial mask in a value is almost certainly an editing mistake
+                // (user typed over part of the placeholder). Exact MASK_TOKEN is
+                // the documented "keep existing" signal — pass it through.
+                if (value && value !== MASK_TOKEN && value.includes(MASK_TOKEN)) {
+                    showSnackbar(`Header "${key}" value still contains redacted characters. Clear and retype the full value.`, 'error')
+                    return
+                }
+                hdrs[key] = value
+            }
+            if (Object.keys(hdrs).length > 0) body.authConfig = { headers: hdrs }
+        } else {
+            body.authConfig = null // Clear authConfig if switching to no authentication
+        }
+
+        // Step 1: update
         try {
-            const body = {
-                name: serverName,
-                serverUrl,
-                iconSrc: iconSrc || undefined,
-                color: color || undefined,
-                authType
-            }
-            if (authType === MCP_AUTH_TYPE.CUSTOM_HEADERS) {
-                const hdrs = {}
-                headers.forEach(({ key, value }) => {
-                    if (key) hdrs[key] = value
-                })
-                if (Object.keys(hdrs).length > 0) body.authConfig = { headers: hdrs }
-            } else {
-                body.authConfig = null // Clear authConfig if switching to no authentication
-            }
-            const resp = await customMcpServersApi.updateCustomMcpServer(serverId, body)
-            if (resp.data) {
-                showSnackbar('MCP Server saved')
-                onConfirm(resp.data.id)
-            }
+            await customMcpServersApi.updateCustomMcpServer(serverId, body)
         } catch (error) {
             showSnackbar(`Failed to save MCP Server: ${getErrorMsg(error)}`, 'error')
             onCancel()
+            return
+        }
+
+        // Step 2: authorize with the new config
+        setAuthorizing(true)
+        try {
+            const resp = await customMcpServersApi.authorizeCustomMcpServer(serverId)
+            let toolsCount = 0
+            if (resp?.data?.tools) {
+                try {
+                    const parsed = JSON.parse(resp.data.tools) || {}
+                    const tools = Array.isArray(parsed?.tools) ? parsed.tools : []
+                    setDiscoveredTools(tools)
+                    toolsCount = tools.length
+                } catch {
+                    setDiscoveredTools([])
+                }
+            }
+            setStatus(resp?.data?.status || MCP_SERVER_STATUS.AUTHORIZED)
+            setIsEditing(false)
+            showSnackbar(`Saved and reconnected! Discovered ${toolsCount} tools`)
+        } catch (error) {
+            setStatus(MCP_SERVER_STATUS.ERROR)
+            setIsEditing(false)
+            showSnackbar(`Saved, but failed to reconnect: ${getErrorMsg(error)}`, 'error')
+        } finally {
+            setAuthorizing(false)
+            // Notify parent to refresh the list — status changed either way.
+            if (typeof onAuthorize === 'function') onAuthorize(serverId)
         }
     }
 
@@ -623,7 +673,6 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
                         const tools = Array.isArray(parsed?.tools) ? parsed.tools : []
                         setDiscoveredTools(tools)
                         showSnackbar(`Connected! Discovered ${tools.length} tools`)
-                        onAuthorize(targetId)
                     } catch {
                         setDiscoveredTools([])
                     }
@@ -634,7 +683,18 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
             showSnackbar(`Authorization failed: ${getErrorMsg(error)}`, 'error')
         } finally {
             setAuthorizing(false)
+            if (typeof onAuthorize === 'function') onAuthorize(targetId)
         }
+    }
+
+    // Masked values stay visible in the form so the user keeps context. Fields
+    // left untouched still carry the masked placeholder; the backend recognises
+    // the exact mask form and preserves the stored value. Partial edits that
+    // leave `************` somewhere in the middle are rejected on save (see
+    // validateServerUrl + saveServer + backend).
+    const startEditing = () => {
+        setServerUrlError('')
+        setIsEditing(true)
     }
 
     const cancelEditing = () => {
@@ -696,12 +756,7 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {dialogProps.type === 'EDIT' && !isEditing && (
-                            <StyledButton
-                                variant='outlined'
-                                size='small'
-                                startIcon={<IconEdit size={16} />}
-                                onClick={() => setIsEditing(true)}
-                            >
+                            <StyledButton variant='outlined' size='small' startIcon={<IconEdit size={16} />} onClick={startEditing}>
                                 Edit
                             </StyledButton>
                         )}
@@ -1019,11 +1074,15 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
                                 disabled={!(serverName && serverUrl) || !!serverUrlError || authorizing}
                                 variant='contained'
                                 onClick={() => (dialogProps.type === 'ADD' ? addNewServer() : saveServer())}
-                                startIcon={
-                                    dialogProps.type === 'ADD' && authorizing ? <CircularProgress size={14} color='inherit' /> : undefined
-                                }
+                                startIcon={authorizing ? <CircularProgress size={14} color='inherit' /> : undefined}
                             >
-                                {dialogProps.type === 'ADD' ? (authorizing ? 'Connecting…' : 'Add & Connect') : 'Save'}
+                                {dialogProps.type === 'ADD'
+                                    ? authorizing
+                                        ? 'Connecting…'
+                                        : 'Add & Connect'
+                                    : authorizing
+                                    ? 'Reconnecting…'
+                                    : 'Save & Reconnect'}
                             </StyledPermissionButton>
                         </>
                     )}
