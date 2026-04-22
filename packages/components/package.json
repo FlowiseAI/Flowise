@@ -32,6 +32,7 @@
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@anthropic-ai/sdk": "^0.73.0",
+        "@mlflow/core": "^0.2.0",
         "@apidevtools/json-schema-ref-parser": "^11.7.0",
         "@arizeai/openinference-instrumentation-langchain": "^2.0.0",
         "@aws-sdk/client-bedrock-runtime": "3.966.0",

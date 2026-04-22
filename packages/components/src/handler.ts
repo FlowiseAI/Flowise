@@ -30,6 +30,9 @@ import { EvaluationRunTracer } from '../evaluation/EvaluationRunTracer'
 import { EvaluationRunTracerLlama } from '../evaluation/EvaluationRunTracerLlama'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
 import { LangWatch, LangWatchSpan, LangWatchTrace, autoconvertTypedValues } from 'langwatch'
+import * as mlflow from '@mlflow/core'
+import { SpanType as MlflowSpanType, SpanStatusCode as MlflowSpanStatusCode } from '@mlflow/core'
+import type { LiveSpan as MlflowLiveSpan } from '@mlflow/core'
 import { DataSource } from 'typeorm'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
@@ -898,6 +901,23 @@ export class AnalyticHandler {
             const rootSpan: Span | undefined = undefined
 
             this.handlers['opik'] = { client: opik, opikProject, rootSpan }
+        } else if (provider === 'mlflow') {
+            const mlflowTrackingUri = getCredentialParam('mlflowTrackingUri', credentialData, this.nodeData)
+            const mlflowToken = getCredentialParam('mlflowToken', credentialData, this.nodeData)
+            const mlflowUsername = getCredentialParam('mlflowUsername', credentialData, this.nodeData)
+            const mlflowPassword = getCredentialParam('mlflowPassword', credentialData, this.nodeData)
+            const mlflowExperimentId = providerConfig.experimentId as string
+
+            const mlflowOptions: any = {
+                trackingUri: mlflowTrackingUri ?? 'http://localhost:5000'
+            }
+            if (mlflowExperimentId) mlflowOptions.experimentId = mlflowExperimentId
+            if (mlflowToken) mlflowOptions.trackingServerToken = mlflowToken
+            if (mlflowUsername) mlflowOptions.trackingServerUsername = mlflowUsername
+            if (mlflowPassword) mlflowOptions.trackingServerPassword = mlflowPassword
+
+            mlflow.init(mlflowOptions)
+            this.handlers['mlflow'] = {}
         }
     }
 
@@ -909,7 +929,8 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
-            opik: {}
+            opik: {},
+            mlflow: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1125,6 +1146,26 @@ export class AnalyticHandler {
             returnIds['opik'].chainSpan = chainSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const parentSpan: MlflowLiveSpan | undefined =
+                parentIds && Object.keys(parentIds).length ? this.handlers['mlflow'].chainSpan?.[parentIds['mlflow']?.chainSpan] : undefined
+
+            const chainSpan = mlflow.startSpan({
+                name,
+                spanType: MlflowSpanType.CHAIN,
+                inputs: { text: input },
+                ...(parentSpan ? { parent: parentSpan } : {})
+            })
+
+            if (!parentIds || !Object.keys(parentIds).length) {
+                chainSpan.setAttributes({ 'mlflow.trace.session': this.options.chatId })
+            }
+
+            const spanId = chainSpan.spanId
+            this.handlers['mlflow'].chainSpan = { [spanId]: chainSpan }
+            returnIds['mlflow'].chainSpan = spanId
+        }
+
         return returnIds
     }
 
@@ -1213,6 +1254,16 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const chainSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].chainSpan?.[returnIds['mlflow']?.chainSpan]
+            if (chainSpan) {
+                chainSpan.end({ outputs: { output } })
+            }
+            if (shutdown) {
+                await mlflow.flushTraces()
+            }
+        }
+
         if (shutdown) {
             // Cleanup this instance when chain ends
             AnalyticHandler.resetInstance(this.chatId)
@@ -1296,6 +1347,16 @@ export class AnalyticHandler {
             }
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const chainSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].chainSpan?.[returnIds['mlflow']?.chainSpan]
+            if (chainSpan) {
+                chainSpan.end({ outputs: { error }, status: MlflowSpanStatusCode.ERROR })
+            }
+            if (shutdown) {
+                await mlflow.flushTraces()
+            }
+        }
+
         if (shutdown) {
             // Cleanup this instance when chain ends
             AnalyticHandler.resetInstance(this.chatId)
@@ -1310,7 +1371,8 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
-            opik: {}
+            opik: {},
+            mlflow: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1430,6 +1492,21 @@ export class AnalyticHandler {
 
             this.handlers['opik'].llmSpan = { [llmSpanId]: llmSpan }
             returnIds['opik'].llmSpan = llmSpanId
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const parentSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].chainSpan?.[parentIds['mlflow']?.chainSpan]
+
+            const llmSpan = mlflow.startSpan({
+                name,
+                spanType: MlflowSpanType.LLM,
+                inputs: Array.isArray(input) ? { messages: input } : { prompts: [input] },
+                ...(parentSpan ? { parent: parentSpan } : {})
+            })
+
+            const spanId = llmSpan.spanId
+            this.handlers['mlflow'].llmSpan = { [spanId]: llmSpan }
+            returnIds['mlflow'].llmSpan = spanId
         }
 
         return returnIds
@@ -1590,6 +1667,25 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
             this._endOtelSpan('opik', returnIds, outputText, usageMetadata, modelName)
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const llmSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].llmSpan?.[returnIds['mlflow']?.llmSpan]
+            if (llmSpan) {
+                const endAttrs: Record<string, any> = {}
+                if (usageMetadata) {
+                    endAttrs['mlflow.chat.tokenUsage'] = {
+                        input_tokens: usageMetadata.input_tokens,
+                        output_tokens: usageMetadata.output_tokens,
+                        total_tokens: usageMetadata.total_tokens
+                    }
+                }
+                if (modelName) endAttrs['mlflow.model_name'] = modelName
+                llmSpan.end({
+                    outputs: { output: outputText },
+                    ...(Object.keys(endAttrs).length ? { attributes: endAttrs } : {})
+                })
+            }
+        }
     }
 
     async onLLMError(returnIds: ICommonObject, error: string | object) {
@@ -1664,6 +1760,13 @@ export class AnalyticHandler {
                 llmSpan.end()
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const llmSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].llmSpan?.[returnIds['mlflow']?.llmSpan]
+            if (llmSpan) {
+                llmSpan.end({ outputs: { error }, status: MlflowSpanStatusCode.ERROR })
+            }
+        }
     }
 
     async onToolStart(name: string, input: string | object, parentIds: ICommonObject) {
@@ -1674,6 +1777,7 @@ export class AnalyticHandler {
             langWatch: {},
             arize: {},
             phoenix: {},
+            mlflow: {},
             opik: {}
         }
 
@@ -1792,6 +1896,21 @@ export class AnalyticHandler {
             returnIds['opik'].toolSpan = toolSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const parentSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].chainSpan?.[parentIds['mlflow']?.chainSpan]
+
+            const toolSpan = mlflow.startSpan({
+                name,
+                spanType: MlflowSpanType.TOOL,
+                inputs: { input },
+                ...(parentSpan ? { parent: parentSpan } : {})
+            })
+
+            const spanId = toolSpan.spanId
+            this.handlers['mlflow'].toolSpan = { [spanId]: toolSpan }
+            returnIds['mlflow'].toolSpan = spanId
+        }
+
         return returnIds
     }
 
@@ -1867,6 +1986,13 @@ export class AnalyticHandler {
                 toolSpan.end()
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const toolSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].toolSpan?.[returnIds['mlflow']?.toolSpan]
+            if (toolSpan) {
+                toolSpan.end({ outputs: { output } })
+            }
+        }
     }
 
     async onToolError(returnIds: ICommonObject, error: string | object) {
@@ -1939,6 +2065,13 @@ export class AnalyticHandler {
                 toolSpan.setAttribute('error.mime_type', 'application/json')
                 toolSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.toString() })
                 toolSpan.end()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
+            const toolSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].toolSpan?.[returnIds['mlflow']?.toolSpan]
+            if (toolSpan) {
+                toolSpan.end({ outputs: { error }, status: MlflowSpanStatusCode.ERROR })
             }
         }
     }
