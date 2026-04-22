@@ -179,6 +179,16 @@ const Tools = () => {
         refreshCustomMcp(mcpCurrentPage, mcpPageLimit)
     }
 
+    const onCustomMcpCreated = async (newServerId) => {
+        refreshCustomMcp(mcpCurrentPage, mcpPageLimit)
+        try {
+            const resp = await customMcpServersApi.getCustomMcpServer(newServerId)
+            setMcpDialogProps({ type: 'EDIT', data: resp.data ?? { id: newServerId } })
+        } catch {
+            setMcpDialogProps({ type: 'EDIT', data: { id: newServerId } })
+        }
+    }
+
     const [search, setSearch] = useState('')
     const onSearchChange = (event) => {
         setSearch(event.target.value)
@@ -429,6 +439,7 @@ const Tools = () => {
                 }}
                 onConfirm={onCustomMcpConfirm}
                 onAuthorize={onAuthorize}
+                onCreated={onCustomMcpCreated}
             />
         </>
     )

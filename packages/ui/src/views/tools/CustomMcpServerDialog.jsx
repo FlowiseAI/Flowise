@@ -384,7 +384,7 @@ DiscoveredToolRow.propTypes = {
     theme: PropTypes.object.isRequired
 }
 
-const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAuthorize }) => {
+const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAuthorize, onCreated }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
     const theme = useTheme()
@@ -528,29 +528,54 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
 
     const addNewServer = async () => {
         if (!validateServerUrl(serverUrl)) return
+        const body = {
+            name: serverName,
+            serverUrl,
+            iconSrc: iconSrc || undefined,
+            color: color || generateRandomGradient(),
+            authType
+        }
+        if (authType === MCP_AUTH_TYPE.CUSTOM_HEADERS) {
+            const hdrs = {}
+            headers.forEach(({ key, value }) => {
+                if (key) hdrs[key] = value
+            })
+            if (Object.keys(hdrs).length > 0) body.authConfig = { headers: hdrs }
+        }
+
+        // Step 1: create
+        let createdId
         try {
-            const body = {
-                name: serverName,
-                serverUrl,
-                iconSrc: iconSrc || undefined,
-                color: color || generateRandomGradient(),
-                authType
-            }
-            if (authType === MCP_AUTH_TYPE.CUSTOM_HEADERS) {
-                const hdrs = {}
-                headers.forEach(({ key, value }) => {
-                    if (key) hdrs[key] = value
-                })
-                if (Object.keys(hdrs).length > 0) body.authConfig = { headers: hdrs }
-            }
             const resp = await customMcpServersApi.createCustomMcpServer(body)
-            if (resp.data) {
-                showSnackbar('MCP Server added')
-                onConfirm(resp.data.id)
-            }
+            createdId = resp?.data?.id
+            if (!createdId) throw new Error('Create returned no id')
         } catch (error) {
             showSnackbar(`Failed to add MCP Server: ${getErrorMsg(error)}`, 'error')
             onCancel()
+            return
+        }
+
+        // Step 2: authorize
+        setAuthorizing(true)
+        try {
+            const auth = await customMcpServersApi.authorizeCustomMcpServer(createdId)
+            let toolsCount = 0
+            if (auth?.data?.tools) {
+                try {
+                    const parsed = JSON.parse(auth.data.tools) || {}
+                    toolsCount = Array.isArray(parsed?.tools) ? parsed.tools.length : 0
+                } catch {
+                    /* ignore */
+                }
+            }
+            showSnackbar(`MCP Server added and connected! Discovered ${toolsCount} tools`)
+            if (typeof onCreated === 'function') onCreated(createdId)
+            else onConfirm(createdId) // fallback if parent didn't wire onCreated
+        } catch (error) {
+            showSnackbar(`Added, but failed to connect: ${getErrorMsg(error)}`, 'error')
+            if (typeof onCreated === 'function') onCreated(createdId)
+        } finally {
+            setAuthorizing(false)
         }
     }
 
@@ -985,17 +1010,20 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
                     {isEditing && (
                         <>
                             {dialogProps.type === 'EDIT' && (
-                                <StyledButton variant='outlined' onClick={cancelEditing}>
+                                <Button variant='outlined' onClick={cancelEditing}>
                                     Cancel
-                                </StyledButton>
+                                </Button>
                             )}
                             <StyledPermissionButton
                                 permissionId={'tools:update,tools:create'}
-                                disabled={!(serverName && serverUrl) || !!serverUrlError}
+                                disabled={!(serverName && serverUrl) || !!serverUrlError || authorizing}
                                 variant='contained'
                                 onClick={() => (dialogProps.type === 'ADD' ? addNewServer() : saveServer())}
+                                startIcon={
+                                    dialogProps.type === 'ADD' && authorizing ? <CircularProgress size={14} color='inherit' /> : undefined
+                                }
                             >
-                                {dialogProps.type === 'ADD' ? 'Add' : 'Save'}
+                                {dialogProps.type === 'ADD' ? (authorizing ? 'Connecting…' : 'Add & Connect') : 'Save'}
                             </StyledPermissionButton>
                         </>
                     )}
@@ -1013,7 +1041,8 @@ CustomMcpServerDialog.propTypes = {
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
     onConfirm: PropTypes.func,
-    onAuthorize: PropTypes.func
+    onAuthorize: PropTypes.func,
+    onCreated: PropTypes.func
 }
 
 export default CustomMcpServerDialog
