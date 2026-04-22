@@ -1292,6 +1292,17 @@ export const showHideInputs = (nodeData, inputType, overrideParams, arrayIndex) 
         if (inputParam.hide) {
             _showHideOperation(nodeData, inputParam, 'hide', arrayIndex)
         }
+
+        // Filter individual options within dropdowns based on their own show/hide conditions
+        if (inputParam.type === 'options' && inputParam.options) {
+            inputParam.options = inputParam.options.filter((opt) => {
+                if (typeof opt === 'string' || (!opt.show && !opt.hide)) return true
+                const synthetic = { show: opt.show, hide: opt.hide, display: true }
+                if (opt.show) _showHideOperation(nodeData, synthetic, 'show', arrayIndex)
+                if (opt.hide) _showHideOperation(nodeData, synthetic, 'hide', arrayIndex)
+                return synthetic.display !== false
+            })
+        }
     }
 
     return params

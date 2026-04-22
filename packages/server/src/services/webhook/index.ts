@@ -96,6 +96,14 @@ const validateWebhookChatflow = async (
                 const val = body[p.name]
                 if (p.type === 'number') return val === '' || isNaN(Number(val))
                 if (p.type === 'boolean') return typeof val !== 'boolean' && val !== 'true' && val !== 'false'
+                if (p.type === 'object') return typeof val !== 'object' || val === null || Array.isArray(val)
+                if (p.type === 'array[string]') return !Array.isArray(val) || (val as unknown[]).some((el) => typeof el !== 'string')
+                if (p.type === 'array[number]') return !Array.isArray(val) || (val as unknown[]).some((el) => typeof el !== 'number')
+                if (p.type === 'array[boolean]') return !Array.isArray(val) || (val as unknown[]).some((el) => typeof el !== 'boolean')
+                if (p.type === 'array[object]')
+                    return (
+                        !Array.isArray(val) || (val as unknown[]).some((el) => typeof el !== 'object' || el === null || Array.isArray(el))
+                    )
                 return typeof val !== p.type
             })
             .map((p) => p.name)
