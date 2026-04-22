@@ -1,13 +1,13 @@
 import { act, renderHook } from '@testing-library/react'
 
+import { useObserveApi } from '@/infrastructure/store'
+
 import { useExecutionPoll } from './useExecutionPoll'
 
 const mockGetExecutionById = jest.fn()
 
 jest.mock('@/infrastructure/store', () => ({
-    useObserveApi: () => ({
-        executions: { getExecutionById: mockGetExecutionById }
-    })
+    useObserveApi: jest.fn()
 }))
 
 const makeExecution = (state: string) => ({
@@ -22,6 +22,7 @@ const makeExecution = (state: string) => ({
 beforeEach(() => {
     jest.useFakeTimers()
     jest.clearAllMocks()
+    ;(useObserveApi as jest.Mock).mockReturnValue({ executions: { getExecutionById: mockGetExecutionById } })
 })
 
 afterEach(() => {

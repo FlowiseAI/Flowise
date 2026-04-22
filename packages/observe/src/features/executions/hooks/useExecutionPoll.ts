@@ -63,8 +63,7 @@ export function useExecutionPoll({ executionId, pollInterval = 3000 }: UseExecut
                 intervalRef.current = null
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [executionId, pollInterval])
+    }, [executionId, pollInterval, fetchExecution])
 
     return { execution, isLoading, error, refresh: fetchExecution }
 }

@@ -30,8 +30,11 @@ describe('useExecutionTree', () => {
         })
 
         it('returns [] for invalid JSON', () => {
+            const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
             const { result } = renderHook(() => useExecutionTree('{not valid json'))
             expect(result.current).toEqual([])
+            expect(consoleError).toHaveBeenCalledWith('[Observe] Failed to parse executionData JSON')
+            consoleError.mockRestore()
         })
 
         it('returns [] for non-array JSON', () => {

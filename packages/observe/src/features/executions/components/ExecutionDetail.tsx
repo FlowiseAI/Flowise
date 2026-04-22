@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Box, Chip, CircularProgress, Divider, IconButton, Stack, Tooltip, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -58,10 +58,19 @@ export function ExecutionDetail({
         document.removeEventListener('mouseup', handleMouseUp)
     }, [handleMouseMove])
 
+    useEffect(() => {
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove)
+            document.removeEventListener('mouseup', handleMouseUp)
+        }
+    }, [handleMouseMove, handleMouseUp])
+
     const copyId = () => {
-        navigator.clipboard.writeText(executionId)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(executionId)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        }
     }
 
     if (isLoading) {

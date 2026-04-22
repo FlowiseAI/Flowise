@@ -10,12 +10,12 @@ A Vite + React dev app for exploring and testing `@flowiseai/observe` components
 cp .env.example .env
 ```
 
-| Variable            | Description                                                                                                                                                                                                       |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `VITE_API_BASE_URL` | Base URL of your Flowise instance (default: `http://localhost:3000`)                                                                                                                                              |
-| `VITE_API_TOKEN`    | API key for authentication — get this from **Flowise UI → Settings → API Keys → Create New Key**. This is an API key, not a user session token.                                                                   |
-| `VITE_FLOW_ID`      | _(optional)_ UUID of an agentflow — scopes the Executions Viewer to that flow only. When unset, all executions across every agentflow are shown. Get it from the URL or settings of your agentflow in Flowise UI. |
-| `VITE_EXECUTION_ID` | UUID of a specific execution — used by the Standalone Detail demo. Get it from any execution row in the executions view.                                                                                          |
+| Variable            | Description                                                                                                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL` | Base URL of your Flowise instance (default: `http://localhost:3000`)                                                                                                                                                                                           |
+| `VITE_API_TOKEN`    | API key for authentication — get this from **Flowise UI → Settings → API Keys → Create New Key**. This is an API key, not a user session token. Ensure the key has the necessary permissions for any features you want to exercise (e.g. deleting executions). |
+| `VITE_FLOW_ID`      | _(optional)_ UUID of an agentflow — scopes the Executions Viewer to that flow only. When unset, all executions across every agentflow are shown. Get it from the URL or settings of your agentflow in Flowise UI.                                              |
+| `VITE_EXECUTION_ID` | UUID of a specific execution — used by the Standalone Detail demo. Get it from any execution row in the executions view.                                                                                                                                       |
 
 **2. Install dependencies (from this directory):**
 
