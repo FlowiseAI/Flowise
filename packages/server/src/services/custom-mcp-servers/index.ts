@@ -5,12 +5,54 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { encryptCredentialData, decryptCredentialData } from '../../utils'
-import { MCPToolkit } from 'flowise-components'
+import { MCPToolkit, checkDenyList, isValidURL, validateCustomHeaders } from 'flowise-components'
 import { getAppVersion } from '../../utils'
 import logger from '../../utils/logger'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 
 const REDACTED_VALUE = '************'
+const DEFAULT_TOOLS_MAX_BYTES = 512 * 1024
+
+const getToolsMaxBytes = (): number => {
+    const raw = process.env.CUSTOM_MCP_TOOLS_MAX_BYTES
+    if (raw === undefined || raw === '') return DEFAULT_TOOLS_MAX_BYTES
+    const parsed = Number(raw)
+    if (!Number.isFinite(parsed)) return DEFAULT_TOOLS_MAX_BYTES
+    return parsed
+}
+
+const toBadRequest = async (fn: () => Promise<void> | void, fallbackMessage: string): Promise<void> => {
+    try {
+        await fn()
+    } catch (err) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, fallbackMessage)
+    }
+}
+
+const assertSafeServerUrl = async (url: string): Promise<void> => {
+    if (!isValidURL(url)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid Server URL: "${url}" is not a valid URL`)
+    }
+    const parsed = new URL(url)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        throw new InternalFlowiseError(
+            StatusCodes.BAD_REQUEST,
+            `Invalid Server URL: only http and https are allowed, got "${parsed.protocol.replace(':', '')}"`
+        )
+    }
+    // Runs the shared HTTP deny-list check (RFC1918, loopback, link-local, IMDS, ...)
+    // with opt-out via HTTP_SECURITY_CHECK=false and allowlist via HTTP_DENY_LIST env.
+    await toBadRequest(() => checkDenyList(url), 'Server URL is not allowed by policy')
+}
+
+const assertValidHeaders = (headers: unknown): void => {
+    if (!headers || typeof headers !== 'object') return
+    try {
+        validateCustomHeaders(headers as Record<string, string>)
+    } catch (err) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, getErrorMessage(err))
+    }
+}
 
 /**
  * Returns only the origin + '/**' to avoid leaking token-bearing path segments
@@ -33,29 +75,17 @@ const sanitizeCustomMcpServer = ({ authConfig: _authConfig, ...rest }: CustomMcp
     serverUrl: maskServerUrl(rest.serverUrl)
 })
 
-const validateServerUrl = (url: string): void => {
-    let parsed: URL
-    try {
-        parsed = new URL(url)
-    } catch {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid Server URL: "${url}" is not a valid URL`)
-    }
-    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-        throw new InternalFlowiseError(
-            StatusCodes.BAD_REQUEST,
-            `Invalid Server URL: only http and https are allowed, got "${parsed.protocol.replace(':', '')}"`
-        )
-    }
-}
-
 const createCustomMcpServer = async (requestBody: any, orgId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const newRecord = new CustomMcpServer()
-        if (requestBody.serverUrl) validateServerUrl(requestBody.serverUrl)
+        if (requestBody.serverUrl) await assertSafeServerUrl(requestBody.serverUrl)
 
         // Encrypt authConfig if present
         if (requestBody.authConfig && typeof requestBody.authConfig === 'object') {
+            if (requestBody.authType === CustomMcpServerAuthType.CUSTOM_HEADERS) {
+                assertValidHeaders((requestBody.authConfig as Record<string, any>).headers)
+            }
             requestBody.authConfig = await encryptCredentialData(requestBody.authConfig)
         } else {
             requestBody.authConfig = null // explicitly set to null to avoid saving non-decrypted values or empty objects/strings in the database
@@ -86,18 +116,19 @@ const createCustomMcpServer = async (requestBody: any, orgId: string): Promise<a
     }
 }
 
-const getAllCustomMcpServers = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllCustomMcpServers = async (workspaceId: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(CustomMcpServer)
             .createQueryBuilder('custom_mcp_server')
             .orderBy('custom_mcp_server.updatedDate', 'DESC')
 
+        queryBuilder.andWhere('custom_mcp_server.workspaceId = :workspaceId', { workspaceId })
         if (page > 0 && limit > 0) {
             queryBuilder.skip((page - 1) * limit)
             queryBuilder.take(limit)
         }
-        if (workspaceId) queryBuilder.andWhere('custom_mcp_server.workspaceId = :workspaceId', { workspaceId })
+
         const [data, total] = await queryBuilder.getManyAndCount()
 
         const sanitized = data.map(sanitizeCustomMcpServer)
@@ -118,10 +149,13 @@ const getAllCustomMcpServers = async (workspaceId?: string, page: number = -1, l
 const getCustomMcpServerById = async (id: string, workspaceId: string): Promise<ICustomMcpServerResponse> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(CustomMcpServer).findOneBy({
-            id,
-            workspaceId
-        })
+        // Explicitly select `tools` — it is `select: false` on the entity so list queries stay cheap.
+        const dbResponse = await appServer.AppDataSource.getRepository(CustomMcpServer)
+            .createQueryBuilder('custom_mcp_server')
+            .addSelect('custom_mcp_server.tools')
+            .where('custom_mcp_server.id = :id', { id })
+            .andWhere('custom_mcp_server.workspaceId = :workspaceId', { workspaceId })
+            .getOne()
         if (!dbResponse) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Custom MCP server ${id} not found`)
         }
@@ -172,7 +206,7 @@ const updateCustomMcpServer = async (id: string, requestBody: any, workspaceId: 
         if (requestBody.serverUrl && requestBody.serverUrl.includes(REDACTED_VALUE)) {
             requestBody.serverUrl = record.serverUrl
         } else if (requestBody.serverUrl) {
-            validateServerUrl(requestBody.serverUrl)
+            await assertSafeServerUrl(requestBody.serverUrl)
         }
 
         // Merge authConfig: clear it when switching to no authentication; otherwise preserve
@@ -198,6 +232,9 @@ const updateCustomMcpServer = async (id: string, requestBody: any, workspaceId: 
                 } catch {
                     // existing authConfig couldn't be decrypted — use incoming as-is
                 }
+            }
+            if (requestBody.authType === CustomMcpServerAuthType.CUSTOM_HEADERS) {
+                assertValidHeaders((requestBody.authConfig as Record<string, any>).headers)
             }
             requestBody.authConfig = await encryptCredentialData(requestBody.authConfig)
         }
@@ -270,14 +307,30 @@ const authorizeCustomMcpServer = async (id: string, workspaceId: string): Promis
 
             const discoveredTools = toolkit._tools || []
             const toolsJson = JSON.stringify(discoveredTools)
+
+            const maxBytes = getToolsMaxBytes()
+            if (maxBytes > 0 && Buffer.byteLength(toolsJson, 'utf8') > maxBytes) {
+                record.status = CustomMcpServerStatus.ERROR
+                await repo.save(record)
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `MCP server returned a tools payload larger than the allowed limit (${maxBytes} bytes). Set CUSTOM_MCP_TOOLS_MAX_BYTES to override.`
+                )
+            }
+
+            const toolsArray = Array.isArray((discoveredTools as any)?.tools) ? (discoveredTools as any).tools : []
             record.tools = toolsJson
+            record.toolCount = toolsArray.length
             record.status = CustomMcpServerStatus.AUTHORIZED
             await repo.save(record)
 
-            logger.debug(`[CustomMcpServerService]: Authorized Custom MCP server ${id}, discovered ${discoveredTools.length} tools`)
+            logger.debug(`[CustomMcpServerService]: Authorized Custom MCP server ${id}, discovered ${toolsArray.length} tools`)
 
-            return sanitizeCustomMcpServer(record)
+            // Ensure tools is present in the response even if `select:false` stripped it from the saved entity.
+            return { ...sanitizeCustomMcpServer(record), tools: toolsJson }
         } catch (connectError) {
+            // InternalFlowiseError (e.g. oversized tools payload) was already persisted — rethrow as-is
+            if (connectError instanceof InternalFlowiseError) throw connectError
             record.status = CustomMcpServerStatus.ERROR
             await repo.save(record)
             throw new InternalFlowiseError(
@@ -305,10 +358,12 @@ const authorizeCustomMcpServer = async (id: string, workspaceId: string): Promis
 const getDiscoveredTools = async (id: string, workspaceId: string): Promise<Record<string, any>[]> => {
     try {
         const appServer = getRunningExpressApp()
-        const record = await appServer.AppDataSource.getRepository(CustomMcpServer).findOneBy({
-            id,
-            workspaceId
-        })
+        const record = await appServer.AppDataSource.getRepository(CustomMcpServer)
+            .createQueryBuilder('custom_mcp_server')
+            .addSelect('custom_mcp_server.tools')
+            .where('custom_mcp_server.id = :id', { id })
+            .andWhere('custom_mcp_server.workspaceId = :workspaceId', { workspaceId })
+            .getOne()
         if (!record) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Custom MCP server ${id} not found`)
         }

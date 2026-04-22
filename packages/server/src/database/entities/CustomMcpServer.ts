@@ -25,8 +25,11 @@ export class CustomMcpServer implements ICustomMcpServer {
     @Column({ nullable: true, type: 'text' })
     authConfig?: string
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: true, type: 'text', select: false })
     tools?: string
+
+    @Column({ type: 'int', default: 0 })
+    toolCount: number
 
     @Column({ default: 'PENDING' })
     status: string

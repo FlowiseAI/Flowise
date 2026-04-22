@@ -50,15 +50,7 @@ const MCPItemCard = ({ data, onClick }) => {
     const customization = useSelector((state) => state.customization)
     const isDarkMode = customization.isDarkMode
 
-    let toolCount = 0
-    try {
-        const parsed = data.tools ? JSON.parse(data.tools) : []
-        if (Array.isArray(parsed?.tools)) {
-            toolCount = parsed.tools.length
-        }
-    } catch (_) {
-        /* ignore */
-    }
+    const toolCount = typeof data.toolCount === 'number' ? data.toolCount : 0
 
     const statusColors = getStatusColors(data.status, isDarkMode, theme)
 
@@ -208,7 +200,8 @@ MCPItemCard.propTypes = {
         name: PropTypes.string.isRequired,
         serverUrl: PropTypes.string,
         status: PropTypes.string,
-        tools: PropTypes.string, // JSON stringified array
+        tools: PropTypes.string, // JSON stringified array (legacy; no longer shipped on list responses)
+        toolCount: PropTypes.number,
         iconSrc: PropTypes.string,
         color: PropTypes.string
     }).isRequired,

@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
-import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
+import { useState, useEffect, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 import {
@@ -22,9 +22,14 @@ import {
     CircularProgress,
     Accordion,
     AccordionSummary,
-    AccordionDetails
+    AccordionDetails,
+    Collapse,
+    IconButton,
+    InputAdornment,
+    Tooltip
 } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { useTheme } from '@mui/material/styles'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
@@ -33,7 +38,18 @@ import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import { StatusBadge } from '@/ui-component/table/MCPServersTable'
 
 // Icons
-import { IconX, IconPlugConnected, IconEdit, IconPlus, IconTrash } from '@tabler/icons-react'
+import {
+    IconX,
+    IconPlugConnected,
+    IconEdit,
+    IconPlus,
+    IconTrash,
+    IconSearch,
+    IconEye,
+    IconAlertTriangle,
+    IconWorld,
+    IconTool
+} from '@tabler/icons-react'
 
 // API
 import customMcpServersApi from '@/api/custommcpservers'
@@ -44,6 +60,329 @@ import useNotifier from '@/utils/useNotifier'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { MCP_SERVER_STATUS, MCP_AUTH_TYPE } from '@/store/constant'
 import { generateRandomGradient } from '@/utils/genericHelper'
+
+// Pick an icon matching the current UI theme. MCP tool icons annotate themselves
+// with `theme: 'light' | 'dark'` — `light` means the glyph is dark (for light
+// backgrounds), `dark` means the glyph is light (for dark backgrounds).
+const pickToolIcon = (icons, isDarkMode) => {
+    if (!Array.isArray(icons) || icons.length === 0) return null
+    const desired = isDarkMode ? 'dark' : 'light'
+    return icons.find((i) => i?.theme === desired) || icons[0]
+}
+
+const TYPE_CHIP_COLOR = {
+    light: {
+        string: '#2E7D32',
+        number: '#1565C0',
+        integer: '#1565C0',
+        boolean: '#6A1B9A',
+        object: '#E65100',
+        array: '#00838F'
+    },
+    dark: {
+        string: '#81C784',
+        number: '#64B5F6',
+        integer: '#64B5F6',
+        boolean: '#CE93D8',
+        object: '#FFB74D',
+        array: '#4DD0E1'
+    }
+}
+
+const HintChip = ({ icon: Icon, label, tooltip, bg, fg }) => (
+    <Tooltip title={tooltip} arrow>
+        <Chip
+            icon={<Icon size={12} />}
+            label={label}
+            size='small'
+            sx={{
+                height: 20,
+                fontSize: '0.65rem',
+                fontWeight: 600,
+                letterSpacing: 0.3,
+                bgcolor: bg,
+                color: fg,
+                '& .MuiChip-icon': { color: fg, marginLeft: '4px' }
+            }}
+        />
+    </Tooltip>
+)
+
+HintChip.propTypes = {
+    icon: PropTypes.elementType.isRequired,
+    label: PropTypes.string.isRequired,
+    tooltip: PropTypes.string,
+    bg: PropTypes.string,
+    fg: PropTypes.string
+}
+
+const DiscoveredToolRow = ({ tool, expanded, onToggle, isDarkMode, theme }) => {
+    const icon = pickToolIcon(tool?.icons, isDarkMode)
+    const title = tool?.annotations?.title
+    const props = tool?.inputSchema?.properties || {}
+    const required = Array.isArray(tool?.inputSchema?.required) ? tool.inputSchema.required : []
+    const paramNames = Object.keys(props)
+    const readOnly = tool?.annotations?.readOnlyHint === true
+    const destructive = tool?.annotations?.destructiveHint === true
+    const openWorld = tool?.annotations?.openWorldHint === true
+
+    return (
+        <Box
+            sx={{
+                borderRadius: 1.5,
+                border: '1px solid',
+                borderColor: expanded ? theme.palette.primary.main : theme.palette.divider,
+                bgcolor: isDarkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+                transition: 'border-color 120ms ease',
+                overflow: 'hidden'
+            }}
+        >
+            {/* Header — always visible, click to expand */}
+            <Box
+                onClick={onToggle}
+                sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.25,
+                    px: 1.5,
+                    py: 1,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    '&:hover': { bgcolor: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }
+                }}
+            >
+                {expanded ? <ExpandMoreIcon fontSize='small' /> : <ChevronRightIcon fontSize='small' />}
+
+                {icon?.src ? (
+                    <Box component='img' src={icon.src} alt='' sx={{ width: 20, height: 20, flexShrink: 0, borderRadius: 0.5 }} />
+                ) : (
+                    <Box
+                        sx={{
+                            width: 20,
+                            height: 20,
+                            flexShrink: 0,
+                            borderRadius: 0.5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: isDarkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'
+                        }}
+                    >
+                        <IconTool size={12} />
+                    </Box>
+                )}
+
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography
+                        sx={{
+                            fontFamily: 'monospace',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis'
+                        }}
+                    >
+                        {tool.name}
+                    </Typography>
+                    {title && title !== tool.name && (
+                        <Typography
+                            sx={{
+                                fontSize: '0.7rem',
+                                color: 'text.secondary',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                            }}
+                        >
+                            {title}
+                        </Typography>
+                    )}
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                    {readOnly && (
+                        <HintChip
+                            icon={IconEye}
+                            label='READ-ONLY'
+                            tooltip='This tool does not modify any data'
+                            bg={isDarkMode ? 'rgba(46,125,50,0.18)' : 'rgba(46,125,50,0.12)'}
+                            fg={isDarkMode ? '#81C784' : '#2E7D32'}
+                        />
+                    )}
+                    {destructive && (
+                        <HintChip
+                            icon={IconAlertTriangle}
+                            label='DESTRUCTIVE'
+                            tooltip='This tool may perform destructive actions'
+                            bg={isDarkMode ? 'rgba(211,47,47,0.2)' : 'rgba(211,47,47,0.12)'}
+                            fg={isDarkMode ? '#EF9A9A' : '#C62828'}
+                        />
+                    )}
+                    {openWorld && (
+                        <HintChip
+                            icon={IconWorld}
+                            label='EXTERNAL'
+                            tooltip='This tool interacts with external systems'
+                            bg={isDarkMode ? 'rgba(25,118,210,0.18)' : 'rgba(25,118,210,0.1)'}
+                            fg={isDarkMode ? '#90CAF9' : '#1565C0'}
+                        />
+                    )}
+                    <Tooltip title={`${paramNames.length} parameter${paramNames.length === 1 ? '' : 's'}`} arrow>
+                        <Chip
+                            label={paramNames.length}
+                            size='small'
+                            variant='outlined'
+                            sx={{ height: 20, fontSize: '0.65rem', minWidth: 28 }}
+                        />
+                    </Tooltip>
+                </Box>
+            </Box>
+
+            {/* Body — parameter details */}
+            <Collapse in={expanded} unmountOnExit>
+                <Box
+                    sx={{
+                        px: 1.75,
+                        pt: 1,
+                        pb: 1.5,
+                        borderTop: '1px solid',
+                        borderColor: theme.palette.divider
+                    }}
+                >
+                    {tool.description && (
+                        <Typography
+                            variant='body2'
+                            sx={{ color: 'text.secondary', fontSize: '0.78rem', mb: paramNames.length > 0 ? 1.25 : 0 }}
+                        >
+                            {tool.description}
+                        </Typography>
+                    )}
+
+                    {paramNames.length > 0 && (
+                        <Box>
+                            <Typography
+                                variant='caption'
+                                sx={{
+                                    display: 'block',
+                                    color: 'text.secondary',
+                                    fontSize: '0.65rem',
+                                    fontWeight: 700,
+                                    letterSpacing: 0.5,
+                                    textTransform: 'uppercase',
+                                    mb: 0.75
+                                }}
+                            >
+                                Parameters
+                            </Typography>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                {paramNames.map((pname) => {
+                                    const p = props[pname] || {}
+                                    const isRequired = required.includes(pname)
+                                    const typePalette = isDarkMode ? TYPE_CHIP_COLOR.dark : TYPE_CHIP_COLOR.light
+                                    const typeColor = typePalette[p.type] || theme.palette.text.secondary
+                                    return (
+                                        <Box
+                                            key={pname}
+                                            sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: 0.35,
+                                                p: 1,
+                                                borderRadius: 1,
+                                                bgcolor: isDarkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+                                            }}
+                                        >
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, flexWrap: 'wrap' }}>
+                                                <Typography
+                                                    sx={{
+                                                        fontFamily: 'monospace',
+                                                        fontSize: '0.75rem',
+                                                        fontWeight: 600
+                                                    }}
+                                                >
+                                                    {pname}
+                                                </Typography>
+                                                {isRequired ? (
+                                                    <Typography
+                                                        sx={{ fontSize: '0.62rem', color: theme.palette.error.main, fontWeight: 700 }}
+                                                    >
+                                                        REQUIRED
+                                                    </Typography>
+                                                ) : (
+                                                    <Typography
+                                                        sx={{
+                                                            fontSize: '0.62rem',
+                                                            fontWeight: 600,
+                                                            color: isDarkMode ? 'rgba(255,255,255,0.55)' : 'text.secondary',
+                                                            letterSpacing: 0.3
+                                                        }}
+                                                    >
+                                                        OPTIONAL
+                                                    </Typography>
+                                                )}
+                                                {p.type && (
+                                                    <Chip
+                                                        label={p.type}
+                                                        size='small'
+                                                        sx={{
+                                                            height: 17,
+                                                            fontSize: '0.6rem',
+                                                            fontFamily: 'monospace',
+                                                            bgcolor: 'transparent',
+                                                            color: typeColor,
+                                                            border: `1px solid ${typeColor}`,
+                                                            '& .MuiChip-label': { px: 0.75 }
+                                                        }}
+                                                    />
+                                                )}
+                                                {Array.isArray(p.enum) &&
+                                                    p.enum.map((v) => (
+                                                        <Chip
+                                                            key={String(v)}
+                                                            label={String(v)}
+                                                            size='small'
+                                                            variant='outlined'
+                                                            sx={{
+                                                                height: 17,
+                                                                fontSize: '0.6rem',
+                                                                fontFamily: 'monospace',
+                                                                '& .MuiChip-label': { px: 0.75 }
+                                                            }}
+                                                        />
+                                                    ))}
+                                                {p.default !== undefined && (
+                                                    <Typography
+                                                        sx={{ fontSize: '0.62rem', color: 'text.secondary', fontFamily: 'monospace' }}
+                                                    >
+                                                        default: {JSON.stringify(p.default)}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+                                            {p.description && (
+                                                <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary' }}>
+                                                    {p.description}
+                                                </Typography>
+                                            )}
+                                        </Box>
+                                    )
+                                })}
+                            </Box>
+                        </Box>
+                    )}
+                </Box>
+            </Collapse>
+        </Box>
+    )
+}
+
+DiscoveredToolRow.propTypes = {
+    tool: PropTypes.object.isRequired,
+    expanded: PropTypes.bool,
+    onToggle: PropTypes.func.isRequired,
+    isDarkMode: PropTypes.bool,
+    theme: PropTypes.object.isRequired
+}
 
 const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAuthorize }) => {
     const portalElement = document.getElementById('portal')
@@ -67,6 +406,23 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
     const [authorizing, setAuthorizing] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [serverUrlError, setServerUrlError] = useState('')
+    const [toolSearch, setToolSearch] = useState('')
+    const [expandedToolIndex, setExpandedToolIndex] = useState(null)
+
+    const isDarkMode = useSelector((state) => state.customization?.isDarkMode)
+
+    const filteredTools = useMemo(() => {
+        const q = toolSearch.trim().toLowerCase()
+        if (!q) return discoveredTools
+        return discoveredTools.filter((t) => {
+            const title = t?.annotations?.title || ''
+            return (
+                (t?.name || '').toLowerCase().includes(q) ||
+                (t?.description || '').toLowerCase().includes(q) ||
+                title.toLowerCase().includes(q)
+            )
+        })
+    }, [discoveredTools, toolSearch])
 
     const validateServerUrl = (url) => {
         if (!url) {
@@ -93,6 +449,24 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 
+    // Fetch discovered tools via the dedicated endpoint when editing an existing server —
+    // the list/detail payloads no longer include the full tools blob.
+    useEffect(() => {
+        if (!show || dialogProps.type !== 'EDIT' || !dialogProps.data?.id) return
+        let cancelled = false
+        ;(async () => {
+            try {
+                const resp = await customMcpServersApi.getCustomMcpServerTools(dialogProps.data.id)
+                if (!cancelled) setDiscoveredTools(Array.isArray(resp.data) ? resp.data : [])
+            } catch {
+                if (!cancelled) setDiscoveredTools([])
+            }
+        })()
+        return () => {
+            cancelled = true
+        }
+    }, [show, dialogProps.type, dialogProps.data?.id])
+
     useEffect(() => {
         if (dialogProps.type === 'EDIT' && dialogProps.data) {
             setServerId(dialogProps.data.id)
@@ -102,18 +476,10 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
             setColor(dialogProps.data.color || '')
             setAuthType(dialogProps.data.authType || MCP_AUTH_TYPE.NONE)
             setStatus(dialogProps.data.status || MCP_SERVER_STATUS.PENDING)
-            // Parse discovered tools
-            if (dialogProps.data.tools) {
-                try {
-                    const parsed = JSON.parse(dialogProps.data.tools)
-                    const tools = Array.isArray(parsed?.tools) ? parsed.tools : []
-                    setDiscoveredTools(tools)
-                } catch {
-                    setDiscoveredTools([])
-                }
-            } else {
-                setDiscoveredTools([])
-            }
+            // Tools are loaded asynchronously via the dedicated endpoint — see the effect below.
+            setDiscoveredTools([])
+            setToolSearch('')
+            setExpandedToolIndex(null)
             // Parse header fields from authConfig
             if (dialogProps.data.authType === MCP_AUTH_TYPE.CUSTOM_HEADERS && dialogProps.data.authConfig?.headers) {
                 const hdrs = dialogProps.data.authConfig.headers
@@ -134,6 +500,8 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
             setHeaders([{ key: '', value: '' }])
             setStatus(MCP_SERVER_STATUS.PENDING)
             setDiscoveredTools([])
+            setToolSearch('')
+            setExpandedToolIndex(null)
             setServerUrlError('')
             setIsEditing(true)
         }
@@ -512,48 +880,85 @@ const CustomMcpServerDialog = ({ show, dialogProps, onCancel, onConfirm, onAutho
                                 />
                             </Box>
                         </AccordionSummary>
-                        <AccordionDetails sx={{ p: 1 }}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                {discoveredTools.map((tool, index) => (
-                                    <Box
-                                        key={index}
-                                        sx={{
-                                            p: 1.5,
-                                            borderRadius: 1,
-                                            border: '1px solid',
-                                            borderColor: theme.palette.grey[300],
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: 0.5
-                                        }}
+                        <AccordionDetails sx={{ p: 1.25, pt: 0.5 }}>
+                            {/* Search bar — hidden until there are enough tools to justify it */}
+                            {discoveredTools.length > 5 && (
+                                <OutlinedInput
+                                    fullWidth
+                                    size='small'
+                                    value={toolSearch}
+                                    onChange={(e) => setToolSearch(e.target.value)}
+                                    placeholder='Filter tools by name, title, or description'
+                                    startAdornment={
+                                        <InputAdornment position='start' sx={{ color: 'text.secondary' }}>
+                                            <IconSearch size={16} stroke={1.75} />
+                                        </InputAdornment>
+                                    }
+                                    endAdornment={
+                                        toolSearch ? (
+                                            <InputAdornment position='end'>
+                                                <IconButton size='small' onClick={() => setToolSearch('')} sx={{ color: 'text.secondary' }}>
+                                                    <IconX size={14} stroke={1.75} />
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ) : null
+                                    }
+                                    sx={{ mb: 1, fontSize: '0.8rem' }}
+                                />
+                            )}
+
+                            {/* Expand/collapse all controls */}
+                            {filteredTools.length > 0 && (
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.75, px: 0.5 }}>
+                                    <Typography variant='caption' sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                                        {toolSearch
+                                            ? `${filteredTools.length} of ${discoveredTools.length} tools`
+                                            : `${discoveredTools.length} tools`}
+                                    </Typography>
+                                    <Button
+                                        size='small'
+                                        onClick={() => setExpandedToolIndex(expandedToolIndex === 'all' ? null : 'all')}
+                                        sx={{ fontSize: '0.7rem', minWidth: 0, textTransform: 'none' }}
                                     >
-                                        <Typography
-                                            variant='subtitle2'
-                                            sx={{ fontWeight: 600, fontFamily: 'monospace', fontSize: '0.8rem' }}
-                                        >
-                                            {tool.name}
-                                        </Typography>
-                                        {tool.description && (
-                                            <Typography variant='body2' sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                                                {tool.description}
-                                            </Typography>
-                                        )}
-                                        {tool.inputSchema?.properties && (
-                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                                                {Object.keys(tool.inputSchema.properties).map((param) => (
-                                                    <Chip
-                                                        key={param}
-                                                        label={param}
-                                                        size='small'
-                                                        variant='outlined'
-                                                        sx={{ height: 20, fontSize: '0.65rem', fontFamily: 'monospace' }}
-                                                    />
-                                                ))}
-                                            </Box>
-                                        )}
-                                    </Box>
-                                ))}
-                            </Box>
+                                        {expandedToolIndex === 'all' ? 'Collapse all' : 'Expand all'}
+                                    </Button>
+                                </Box>
+                            )}
+
+                            {filteredTools.length === 0 ? (
+                                <Typography
+                                    sx={{
+                                        color: 'text.secondary',
+                                        fontSize: '0.8rem',
+                                        textAlign: 'center',
+                                        py: 2
+                                    }}
+                                >
+                                    No tools match &ldquo;{toolSearch}&rdquo;
+                                </Typography>
+                            ) : (
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+                                    {filteredTools.map((tool, index) => {
+                                        const key = tool?.name || index
+                                        const isExpanded = expandedToolIndex === 'all' || expandedToolIndex === key
+                                        return (
+                                            <DiscoveredToolRow
+                                                key={key}
+                                                tool={tool}
+                                                expanded={isExpanded}
+                                                onToggle={() =>
+                                                    setExpandedToolIndex((curr) => {
+                                                        if (curr === 'all') return key
+                                                        return curr === key ? null : key
+                                                    })
+                                                }
+                                                isDarkMode={isDarkMode}
+                                                theme={theme}
+                                            />
+                                        )
+                                    })}
+                                </Box>
+                            )}
                         </AccordionDetails>
                     </Accordion>
                 )}

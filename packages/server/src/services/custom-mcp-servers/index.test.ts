@@ -35,12 +35,16 @@ const mockDelete = jest.fn()
 const mockFindOneBy = jest.fn()
 const mockMerge = jest.fn()
 const mockGetManyAndCount = jest.fn()
+const mockGetOne = jest.fn()
 const mockQueryBuilder = {
     orderBy: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
     take: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
-    getManyAndCount: mockGetManyAndCount
+    addSelect: jest.fn().mockReturnThis(),
+    getManyAndCount: mockGetManyAndCount,
+    getOne: mockGetOne
 }
 const mockGetRepository = jest.fn().mockReturnValue({
     save: mockSave,
@@ -73,12 +77,25 @@ jest.mock('../../utils', () => ({
 
 const mockInitialize = jest.fn()
 const mockClose = jest.fn()
+const mockCheckDenyList = jest.fn().mockResolvedValue(undefined)
+const mockValidateCustomHeaders = jest.fn()
+const mockToolkitImpl = jest.fn().mockImplementation(() => ({
+    initialize: mockInitialize,
+    _tools: { tools: [{ name: 'tool1' }] },
+    client: { close: mockClose }
+}))
 jest.mock('flowise-components', () => ({
-    MCPToolkit: jest.fn().mockImplementation(() => ({
-        initialize: mockInitialize,
-        _tools: { tools: [{ name: 'tool1' }] },
-        client: { close: mockClose }
-    }))
+    MCPToolkit: mockToolkitImpl,
+    checkDenyList: (url: string) => mockCheckDenyList(url),
+    isValidURL: (url: string) => {
+        try {
+            new URL(url)
+            return true
+        } catch {
+            return false
+        }
+    },
+    validateCustomHeaders: (headers: Record<string, string>) => mockValidateCustomHeaders(headers)
 }))
 
 jest.mock('../../utils/logger', () => ({
@@ -104,6 +121,7 @@ const makeRecord = (overrides: Record<string, any> = {}) => ({
     authType: 'NONE',
     authConfig: null,
     tools: null,
+    toolCount: 0,
     status: 'PENDING',
     enabled: true,
     createdDate: new Date('2025-01-01'),
@@ -248,14 +266,6 @@ describe('customMcpServersService', () => {
             })
         })
 
-        it('should not filter by workspaceId when not provided', async () => {
-            mockGetManyAndCount.mockResolvedValue([[], 0])
-
-            await customMcpServersService.getAllCustomMcpServers(undefined)
-
-            expect(mockQueryBuilder.andWhere).not.toHaveBeenCalled()
-        })
-
         it('should mask serverUrl with path segments', async () => {
             const records = [makeRecord({ serverUrl: 'https://api.example.com/mcp/secret-token' })]
             mockGetManyAndCount.mockResolvedValue([records, 1])
@@ -294,18 +304,18 @@ describe('customMcpServersService', () => {
 
     describe('getCustomMcpServerById', () => {
         it('should return masked response without authConfig when no authConfig exists', async () => {
-            mockFindOneBy.mockResolvedValue(makeRecord({ authConfig: null }))
+            mockGetOne.mockResolvedValue(makeRecord({ authConfig: null }))
 
             const result = await customMcpServersService.getCustomMcpServerById('mcp-1', 'ws-1')
 
-            expect(mockFindOneBy).toHaveBeenCalledWith({ id: 'mcp-1', workspaceId: 'ws-1' })
+            expect(mockQueryBuilder.addSelect).toHaveBeenCalledWith('custom_mcp_server.tools')
             expect(result.serverUrl).toContain('************')
             expect(result.authConfig).toBeUndefined()
         })
 
         it('should return masked headers when authConfig has headers', async () => {
             const encrypted = 'encrypted:' + JSON.stringify({ headers: { 'X-Api-Key': 'real-secret', Authorization: 'Bearer tok' } })
-            mockFindOneBy.mockResolvedValue(makeRecord({ authConfig: encrypted }))
+            mockGetOne.mockResolvedValue(makeRecord({ authConfig: encrypted }))
 
             const result = await customMcpServersService.getCustomMcpServerById('mcp-1', 'ws-1')
 
@@ -315,7 +325,7 @@ describe('customMcpServersService', () => {
         })
 
         it('should return empty authConfig when decryption fails', async () => {
-            mockFindOneBy.mockResolvedValue(makeRecord({ authConfig: 'bad-encrypted-data' }))
+            mockGetOne.mockResolvedValue(makeRecord({ authConfig: 'bad-encrypted-data' }))
             mockDecrypt.mockRejectedValueOnce(new Error('decrypt fail'))
 
             const result = await customMcpServersService.getCustomMcpServerById('mcp-1', 'ws-1')
@@ -324,7 +334,7 @@ describe('customMcpServersService', () => {
         })
 
         it('should return empty authConfig when decrypted value is not an object', async () => {
-            mockFindOneBy.mockResolvedValue(makeRecord({ authConfig: 'some-data' }))
+            mockGetOne.mockResolvedValue(makeRecord({ authConfig: 'some-data' }))
             mockDecrypt.mockResolvedValueOnce(null)
 
             const result = await customMcpServersService.getCustomMcpServerById('mcp-1', 'ws-1')
@@ -333,14 +343,14 @@ describe('customMcpServersService', () => {
         })
 
         it('should throw NOT_FOUND when record does not exist', async () => {
-            mockFindOneBy.mockResolvedValue(null)
+            mockGetOne.mockResolvedValue(null)
 
             await expect(customMcpServersService.getCustomMcpServerById('mcp-1', 'ws-1')).rejects.toThrow(InternalFlowiseError)
             await expect(customMcpServersService.getCustomMcpServerById('mcp-1', 'ws-1')).rejects.toThrow('not found')
         })
 
         it('should wrap unknown errors in InternalFlowiseError', async () => {
-            mockFindOneBy.mockRejectedValue(new Error('db error'))
+            mockGetOne.mockRejectedValue(new Error('db error'))
 
             await expect(customMcpServersService.getCustomMcpServerById('mcp-1', 'ws-1')).rejects.toThrow(InternalFlowiseError)
         })
@@ -544,13 +554,13 @@ describe('customMcpServersService', () => {
 
     describe('getDiscoveredTools', () => {
         it('should throw NOT_FOUND when record does not exist', async () => {
-            mockFindOneBy.mockResolvedValue(null)
+            mockGetOne.mockResolvedValue(null)
 
             await expect(customMcpServersService.getDiscoveredTools('mcp-1', 'ws-1')).rejects.toThrow('not found')
         })
 
         it('should return empty array when tools is null', async () => {
-            mockFindOneBy.mockResolvedValue(makeRecord({ tools: null }))
+            mockGetOne.mockResolvedValue(makeRecord({ tools: null }))
 
             const result = await customMcpServersService.getDiscoveredTools('mcp-1', 'ws-1')
 
@@ -559,7 +569,7 @@ describe('customMcpServersService', () => {
 
         it('should return parsed tools array', async () => {
             const tools = { tools: [{ name: 'tool1' }, { name: 'tool2' }] }
-            mockFindOneBy.mockResolvedValue(makeRecord({ tools: JSON.stringify(tools) }))
+            mockGetOne.mockResolvedValue(makeRecord({ tools: JSON.stringify(tools) }))
 
             const result = await customMcpServersService.getDiscoveredTools('mcp-1', 'ws-1')
 
@@ -567,7 +577,7 @@ describe('customMcpServersService', () => {
         })
 
         it('should return empty array when tools JSON is malformed', async () => {
-            mockFindOneBy.mockResolvedValue(makeRecord({ tools: 'not-valid-json' }))
+            mockGetOne.mockResolvedValue(makeRecord({ tools: 'not-valid-json' }))
 
             const result = await customMcpServersService.getDiscoveredTools('mcp-1', 'ws-1')
 
@@ -575,11 +585,136 @@ describe('customMcpServersService', () => {
         })
 
         it('should return empty array when parsed tools has no tools key', async () => {
-            mockFindOneBy.mockResolvedValue(makeRecord({ tools: JSON.stringify({ other: 'data' }) }))
+            mockGetOne.mockResolvedValue(makeRecord({ tools: JSON.stringify({ other: 'data' }) }))
 
             const result = await customMcpServersService.getDiscoveredTools('mcp-1', 'ws-1')
 
             expect(result).toEqual([])
+        })
+    })
+
+    // ── Hardening additions ─────────────────────────────────────────────
+
+    describe('SSRF denylist enforcement', () => {
+        beforeEach(() => {
+            mockCheckDenyList.mockReset().mockResolvedValue(undefined)
+        })
+
+        it('rejects create when checkDenyList throws (private IP / loopback / IMDS)', async () => {
+            mockCheckDenyList.mockRejectedValueOnce(new Error('denied'))
+            await expect(
+                customMcpServersService.createCustomMcpServer({ name: 'T', serverUrl: 'http://169.254.169.254/' }, 'org-1')
+            ).rejects.toThrow('Server URL is not allowed by policy')
+        })
+
+        it('rejects update when a new non-masked URL is denied', async () => {
+            mockFindOneBy.mockResolvedValue(makeRecord())
+            mockCheckDenyList.mockRejectedValueOnce(new Error('denied'))
+            await expect(
+                customMcpServersService.updateCustomMcpServer('mcp-1', { serverUrl: 'http://127.0.0.1:6379' }, 'ws-1')
+            ).rejects.toThrow('Server URL is not allowed by policy')
+        })
+
+        it('does not call checkDenyList when update sends a masked URL', async () => {
+            mockFindOneBy.mockResolvedValue(makeRecord({ serverUrl: 'https://real.example.com/secret' }))
+            mockSave.mockImplementation((r: any) => Promise.resolve(r))
+            await customMcpServersService.updateCustomMcpServer('mcp-1', { serverUrl: 'https://real.example.com/************' }, 'ws-1')
+            expect(mockCheckDenyList).not.toHaveBeenCalled()
+        })
+    })
+
+    describe('header validation enforcement', () => {
+        beforeEach(() => {
+            mockValidateCustomHeaders.mockReset()
+        })
+
+        it('runs validateCustomHeaders on create when authType is CUSTOM_HEADERS', async () => {
+            mockSave.mockResolvedValue(makeRecord())
+            await customMcpServersService.createCustomMcpServer(
+                {
+                    name: 'T',
+                    serverUrl: 'https://example.com',
+                    authType: 'CUSTOM_HEADERS',
+                    authConfig: { headers: { 'X-Api-Key': 'v' } }
+                },
+                'org-1'
+            )
+            expect(mockValidateCustomHeaders).toHaveBeenCalledWith({ 'X-Api-Key': 'v' })
+        })
+
+        it('maps validator error to BAD_REQUEST', async () => {
+            mockValidateCustomHeaders.mockImplementationOnce(() => {
+                throw new Error('Invalid header "Host": not allowed')
+            })
+            await expect(
+                customMcpServersService.createCustomMcpServer(
+                    {
+                        name: 'T',
+                        serverUrl: 'https://example.com',
+                        authType: 'CUSTOM_HEADERS',
+                        authConfig: { headers: { Host: 'evil' } }
+                    },
+                    'org-1'
+                )
+            ).rejects.toThrow('Invalid header "Host": not allowed')
+        })
+    })
+
+    describe('tools payload cap', () => {
+        const ORIGINAL_ENV = process.env.CUSTOM_MCP_TOOLS_MAX_BYTES
+        afterEach(() => {
+            if (ORIGINAL_ENV === undefined) delete process.env.CUSTOM_MCP_TOOLS_MAX_BYTES
+            else process.env.CUSTOM_MCP_TOOLS_MAX_BYTES = ORIGINAL_ENV
+        })
+
+        it('rejects authorize when serialized tools exceed the limit and marks row ERROR', async () => {
+            process.env.CUSTOM_MCP_TOOLS_MAX_BYTES = '50'
+            const record = makeRecord({ serverUrl: 'https://example.com' })
+            mockFindOneBy.mockResolvedValue(record)
+            mockInitialize.mockResolvedValue(undefined)
+            mockSave.mockImplementation((r: any) => Promise.resolve(r))
+            // Big tool list — well over 50 bytes after stringify
+            const bigTools = {
+                tools: Array.from({ length: 20 }, (_, i) => ({ name: `tool_${i}`, description: 'x'.repeat(40) }))
+            }
+            mockToolkitImpl.mockImplementationOnce(() => ({
+                initialize: mockInitialize,
+                _tools: bigTools,
+                client: { close: mockClose }
+            }))
+
+            await expect(customMcpServersService.authorizeCustomMcpServer('mcp-1', 'ws-1')).rejects.toThrow(
+                /tools payload larger than the allowed limit/
+            )
+            expect(record.status).toBe(CustomMcpServerStatus.ERROR)
+        })
+
+        it('allows any payload when the cap is disabled via env=0', async () => {
+            process.env.CUSTOM_MCP_TOOLS_MAX_BYTES = '0'
+            const record = makeRecord({ serverUrl: 'https://example.com' })
+            mockFindOneBy.mockResolvedValue(record)
+            mockInitialize.mockResolvedValue(undefined)
+            mockSave.mockImplementation((r: any) => Promise.resolve(r))
+
+            const result = await customMcpServersService.authorizeCustomMcpServer('mcp-1', 'ws-1')
+            expect(result.status).toBe(CustomMcpServerStatus.AUTHORIZED)
+        })
+    })
+
+    describe('toolCount population', () => {
+        it('sets toolCount to the number of tools discovered', async () => {
+            const record = makeRecord({ serverUrl: 'https://example.com' })
+            mockFindOneBy.mockResolvedValue(record)
+            mockInitialize.mockResolvedValue(undefined)
+            mockSave.mockImplementation((r: any) => Promise.resolve(r))
+            mockToolkitImpl.mockImplementationOnce(() => ({
+                initialize: mockInitialize,
+                _tools: { tools: [{ name: 'a' }, { name: 'b' }, { name: 'c' }] },
+                client: { close: mockClose }
+            }))
+
+            const result = await customMcpServersService.authorizeCustomMcpServer('mcp-1', 'ws-1')
+            expect(result.toolCount).toBe(3)
         })
     })
 })

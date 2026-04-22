@@ -117,13 +117,7 @@ export const MCPServersTable = ({ data, isLoading, onSelect }) => {
                     ) : (
                         <>
                             {data?.map((row) => {
-                                let toolCount = 0
-                                try {
-                                    const parsed = JSON.parse(row.tools)
-                                    toolCount = Array.isArray(parsed?.tools) ? parsed.tools.length : 0
-                                } catch (_) {
-                                    /* ignore */
-                                }
+                                const toolCount = typeof row.toolCount === 'number' ? row.toolCount : 0
                                 return (
                                     <StyledTableRow key={row.id}>
                                         <StyledTableCell>
@@ -206,7 +200,8 @@ MCPServersTable.propTypes = {
             name: PropTypes.string.isRequired,
             serverUrl: PropTypes.string.isRequired,
             status: PropTypes.string,
-            tools: PropTypes.string, // JSON stringified array
+            tools: PropTypes.string, // JSON stringified array (legacy; no longer shipped on list responses)
+            toolCount: PropTypes.number,
             iconSrc: PropTypes.string,
             color: PropTypes.string
         })

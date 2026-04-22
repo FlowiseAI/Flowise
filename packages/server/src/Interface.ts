@@ -203,6 +203,7 @@ export interface ICustomMcpServer {
     authType: string
     authConfig?: string
     tools?: string
+    toolCount: number
     status: CustomMcpServerStatus | string
     createdDate: Date
     updatedDate: Date

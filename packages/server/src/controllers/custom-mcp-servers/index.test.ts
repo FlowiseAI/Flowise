@@ -163,6 +163,26 @@ describe('customMcpServersController', () => {
             expect(res.json).toHaveBeenCalledWith({ data: [], total: 0 })
         })
 
+        it('should substitute defaults when pagination is absent (-1/-1)', async () => {
+            const req = makeReq()
+            mockGetPageAndLimitParams.mockReturnValue({ page: -1, limit: -1 })
+            mockService.getAllCustomMcpServers.mockResolvedValue({ data: [], total: 0 })
+
+            await customMcpServersController.getAllCustomMcpServers(req, makeRes(), makeNext())
+
+            expect(mockService.getAllCustomMcpServers).toHaveBeenCalledWith('ws-1', 1, 50)
+        })
+
+        it('should clamp oversized limit to the ceiling', async () => {
+            const req = makeReq()
+            mockGetPageAndLimitParams.mockReturnValue({ page: 1, limit: 100000 })
+            mockService.getAllCustomMcpServers.mockResolvedValue({ data: [], total: 0 })
+
+            await customMcpServersController.getAllCustomMcpServers(req, makeRes(), makeNext())
+
+            expect(mockService.getAllCustomMcpServers).toHaveBeenCalledWith('ws-1', 1, 500)
+        })
+
         it('should call next on service error', async () => {
             const req = makeReq()
             const next = makeNext()
@@ -172,6 +192,31 @@ describe('customMcpServersController', () => {
             await customMcpServersController.getAllCustomMcpServers(req, makeRes(), next)
 
             expect(next).toHaveBeenCalledWith(expect.any(Error))
+        })
+    })
+
+    describe('authType enum validation', () => {
+        it('rejects create with an unknown authType', async () => {
+            const req = makeReq({ body: { name: 'T', serverUrl: 'https://x.com', authType: 'HAXX' } })
+            const next = makeNext()
+            await customMcpServersController.createCustomMcpServer(req, makeRes(), next)
+            expect(next).toHaveBeenCalledWith(expect.objectContaining({ statusCode: StatusCodes.BAD_REQUEST }))
+            expect(mockService.createCustomMcpServer).not.toHaveBeenCalled()
+        })
+
+        it('rejects update with an unknown authType', async () => {
+            const req = makeReq({ params: { id: 'mcp-1' } as any, body: { authType: 'HAXX' } })
+            const next = makeNext()
+            await customMcpServersController.updateCustomMcpServer(req, makeRes(), next)
+            expect(next).toHaveBeenCalledWith(expect.objectContaining({ statusCode: StatusCodes.BAD_REQUEST }))
+            expect(mockService.updateCustomMcpServer).not.toHaveBeenCalled()
+        })
+
+        it('accepts create with a valid authType (NONE)', async () => {
+            const req = makeReq({ body: { name: 'T', serverUrl: 'https://x.com', authType: 'NONE' } })
+            mockService.createCustomMcpServer.mockResolvedValue({} as any)
+            await customMcpServersController.createCustomMcpServer(req, makeRes(), makeNext())
+            expect(mockService.createCustomMcpServer).toHaveBeenCalled()
         })
     })
 

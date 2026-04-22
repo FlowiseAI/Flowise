@@ -51,9 +51,11 @@ class CustomMcpServerTool implements INode {
                     return []
                 }
 
-                const searchOptions = options.searchOptions || {}
+                const workspaceId = (options.searchOptions as ICommonObject | undefined)?.workspaceId as string | undefined
+                if (!workspaceId) return []
+
                 const mcpServers = await appDataSource.getRepository(databaseEntities['CustomMcpServer']).find({
-                    where: { ...searchOptions, status: 'AUTHORIZED' },
+                    where: { workspaceId, status: 'AUTHORIZED' },
                     order: { updatedDate: 'DESC' }
                 })
 
@@ -125,7 +127,14 @@ class CustomMcpServerTool implements INode {
             throw new Error('Database not available')
         }
 
-        const serverRecord = await appDataSource.getRepository(databaseEntities['CustomMcpServer']).findOneBy({ id: serverId })
+        const workspaceId =
+            (options.workspaceId as string | undefined) ??
+            ((options.searchOptions as ICommonObject | undefined)?.workspaceId as string | undefined)
+        if (!workspaceId) {
+            throw new Error('Workspace context is required to load MCP server')
+        }
+
+        const serverRecord = await appDataSource.getRepository(databaseEntities['CustomMcpServer']).findOneBy({ id: serverId, workspaceId })
         if (!serverRecord) {
             throw new Error(`MCP server ${serverId} not found`)
         }

@@ -224,73 +224,90 @@ const Tools = () => {
         }
     }, [getAllCustomMcpServersApi.data])
 
+    const viewToggle = (disabled) => (
+        <ToggleButtonGroup
+            sx={{ borderRadius: 2, maxHeight: 40 }}
+            value={view}
+            color='primary'
+            disabled={disabled}
+            exclusive
+            onChange={handleChange}
+        >
+            <ToggleButton
+                sx={{
+                    borderColor: theme.palette.grey[900] + 25,
+                    borderRadius: 2,
+                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                }}
+                variant='contained'
+                value='card'
+                title='Card View'
+            >
+                <IconLayoutGrid />
+            </ToggleButton>
+            <ToggleButton
+                sx={{
+                    borderColor: theme.palette.grey[900] + 25,
+                    borderRadius: 2,
+                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                }}
+                variant='contained'
+                value='list'
+                title='List View'
+            >
+                <IconList />
+            </ToggleButton>
+        </ToggleButtonGroup>
+    )
+
+    const renderCustomToolsToolbar = () => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {viewToggle(total === 0)}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <PermissionButton
+                    permissionId={'tools:create'}
+                    variant='outlined'
+                    onClick={() => inputRef.current.click()}
+                    startIcon={<IconFileUpload />}
+                    sx={{ borderRadius: 2, height: 40 }}
+                >
+                    Load
+                </PermissionButton>
+                <input style={{ display: 'none' }} ref={inputRef} type='file' hidden accept='.json' onChange={(e) => handleFileUpload(e)} />
+            </Box>
+            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                <StyledPermissionButton
+                    permissionId={'tools:create'}
+                    variant='contained'
+                    onClick={addNew}
+                    startIcon={<IconPlus />}
+                    sx={{ borderRadius: 2, height: 40 }}
+                >
+                    Create
+                </StyledPermissionButton>
+            </ButtonGroup>
+        </Box>
+    )
+
+    const renderMcpServersToolbar = () => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {viewToggle(mcpTotal === 0)}
+            <ButtonGroup disableElevation aria-label='outlined primary button group'>
+                <StyledPermissionButton
+                    permissionId={'tools:create'}
+                    variant='contained'
+                    onClick={addNewCustomMcpServer}
+                    startIcon={<IconPlus />}
+                    sx={{ borderRadius: 2, height: 40 }}
+                >
+                    Add Custom MCP Server
+                </StyledPermissionButton>
+            </ButtonGroup>
+        </Box>
+    )
+
     const renderCustomToolsTab = () => (
         <>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
-                <ToggleButtonGroup
-                    sx={{ borderRadius: 2, maxHeight: 40 }}
-                    value={view}
-                    color='primary'
-                    disabled={total === 0}
-                    exclusive
-                    onChange={handleChange}
-                >
-                    <ToggleButton
-                        sx={{
-                            borderColor: theme.palette.grey[900] + 25,
-                            borderRadius: 2,
-                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                        }}
-                        variant='contained'
-                        value='card'
-                        title='Card View'
-                    >
-                        <IconLayoutGrid />
-                    </ToggleButton>
-                    <ToggleButton
-                        sx={{
-                            borderColor: theme.palette.grey[900] + 25,
-                            borderRadius: 2,
-                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                        }}
-                        variant='contained'
-                        value='list'
-                        title='List View'
-                    >
-                        <IconList />
-                    </ToggleButton>
-                </ToggleButtonGroup>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <PermissionButton
-                        permissionId={'tools:create'}
-                        variant='outlined'
-                        onClick={() => inputRef.current.click()}
-                        startIcon={<IconFileUpload />}
-                        sx={{ borderRadius: 2, height: 40 }}
-                    >
-                        Load
-                    </PermissionButton>
-                    <input
-                        style={{ display: 'none' }}
-                        ref={inputRef}
-                        type='file'
-                        hidden
-                        accept='.json'
-                        onChange={(e) => handleFileUpload(e)}
-                    />
-                </Box>
-                <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                    <StyledPermissionButton
-                        permissionId={'tools:create'}
-                        variant='contained'
-                        onClick={addNew}
-                        startIcon={<IconPlus />}
-                        sx={{ borderRadius: 2, height: 40 }}
-                    >
-                        Create
-                    </StyledPermissionButton>
-                </ButtonGroup>
-            </Box>
             {isLoading && (
                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                     <Skeleton variant='rounded' height={160} />
@@ -326,52 +343,6 @@ const Tools = () => {
 
     const renderMcpServersTab = () => (
         <>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mb: 2 }}>
-                <ToggleButtonGroup
-                    sx={{ borderRadius: 2, maxHeight: 40 }}
-                    value={view}
-                    color='primary'
-                    disabled={mcpTotal === 0}
-                    exclusive
-                    onChange={handleChange}
-                >
-                    <ToggleButton
-                        sx={{
-                            borderColor: theme.palette.grey[900] + 25,
-                            borderRadius: 2,
-                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                        }}
-                        variant='contained'
-                        value='card'
-                        title='Card View'
-                    >
-                        <IconLayoutGrid />
-                    </ToggleButton>
-                    <ToggleButton
-                        sx={{
-                            borderColor: theme.palette.grey[900] + 25,
-                            borderRadius: 2,
-                            color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                        }}
-                        variant='contained'
-                        value='list'
-                        title='List View'
-                    >
-                        <IconList />
-                    </ToggleButton>
-                </ToggleButtonGroup>
-                <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                    <StyledPermissionButton
-                        permissionId={'tools:create'}
-                        variant='contained'
-                        onClick={addNewCustomMcpServer}
-                        startIcon={<IconPlus />}
-                        sx={{ borderRadius: 2, height: 40 }}
-                    >
-                        Add Custom MCP Server
-                    </StyledPermissionButton>
-                </ButtonGroup>
-            </Box>
             {mcpLoading && (
                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
                     <Skeleton variant='rounded' height={160} />
@@ -422,15 +393,22 @@ const Tools = () => {
                             title='Tools'
                             description='External functions or APIs the agent can use to take action'
                         />
-                        <Tabs
-                            value={tabValue}
-                            onChange={(e, newValue) => setTabValue(newValue)}
-                            aria-label='tools tabs'
-                            sx={{ borderBottom: 1, borderColor: 'divider' }}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 2,
+                                borderBottom: 1,
+                                borderColor: 'divider'
+                            }}
                         >
-                            <Tab label='Custom Tools' />
-                            <Tab label='Custom MCP Servers' />
-                        </Tabs>
+                            <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)} aria-label='tools tabs'>
+                                <Tab label='Custom Tools' />
+                                <Tab label='Custom MCP Servers' />
+                            </Tabs>
+                            <Box sx={{ pb: 1 }}>{tabValue === 0 ? renderCustomToolsToolbar() : renderMcpServersToolbar()}</Box>
+                        </Box>
                         {tabValue === 0 && renderCustomToolsTab()}
                         {tabValue === 1 && renderMcpServersTab()}
                     </Stack>
