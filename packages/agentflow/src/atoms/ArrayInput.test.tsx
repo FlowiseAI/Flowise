@@ -11,6 +11,7 @@ const mockOnDataChange = jest.fn()
 jest.mock('./NodeInputHandler', () => ({
     NodeInputHandler: ({
         inputParam,
+        data,
         onDataChange,
         variableItems
     }: {
@@ -21,6 +22,7 @@ jest.mock('./NodeInputHandler', () => ({
     }) => (
         <div
             data-testid={`input-handler-${inputParam.name}`}
+            data-inputs={JSON.stringify(data.inputs)}
             data-variable-items={variableItems ? JSON.stringify(variableItems.map((v) => v.value)) : undefined}
         >
             <label>{inputParam.label}</label>
@@ -490,6 +492,39 @@ describe('ArrayInput', () => {
         // Delete button should be disabled when at minItems limit
         const deleteButton = screen.getByTitle('Delete')
         expect(deleteButton).toBeDisabled()
+    })
+
+    // Parent inputs are merged into itemData so async load methods inside array items
+    // (e.g. listToolInputArgs) can access parent-level fields like toolAgentflowSelectedTool.
+    it('should merge parent node inputs into itemData so async options inside array items can access parent fields', () => {
+        const dataWithParentField: NodeData = {
+            ...mockNodeData,
+            inputs: {
+                toolAgentflowSelectedTool: 'calculator',
+                toolInputArgs: [{ inputArgName: '', inputArgValue: '' }]
+            }
+        } as NodeData
+
+        const toolInputArgsParam: InputParam = {
+            id: 'toolInputArgs',
+            name: 'toolInputArgs',
+            label: 'Tool Input Arguments',
+            type: 'array',
+            array: [
+                { id: 'inputArgName', name: 'inputArgName', label: 'Input Argument Name', type: 'asyncOptions' } as InputParam,
+                { id: 'inputArgValue', name: 'inputArgValue', label: 'Input Argument Value', type: 'string' } as InputParam
+            ]
+        }
+
+        render(<ArrayInput inputParam={toolInputArgsParam} data={dataWithParentField} onDataChange={mockOnDataChange} />)
+
+        const argNameHandler = screen.getByTestId('input-handler-inputArgName')
+        const inputs = JSON.parse(argNameHandler.getAttribute('data-inputs') ?? '{}')
+
+        // The parent-level field must be visible to the array item's async input
+        expect(inputs.toolAgentflowSelectedTool).toBe('calculator')
+        // The item's own fields are also present
+        expect(inputs.inputArgName).toBe('')
     })
 })
 

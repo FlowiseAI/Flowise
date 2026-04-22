@@ -142,10 +142,13 @@ export function ArrayInput({
         <>
             {/* Render each array item */}
             {arrayItems.map((itemValues, index) => {
-                // Create item-specific data context for nested NodeInputHandler
+                // Create item-specific data context for nested NodeInputHandler.
+                // Merge parent inputs first so async load methods (e.g. listToolInputArgs)
+                // can read parent-level fields like toolAgentflowSelectedTool, while
+                // item-level fields take precedence via the spread order.
                 const itemData: NodeData = {
                     ...data,
-                    inputs: itemValues
+                    inputs: { ...data.inputs, ...itemValues }
                 }
 
                 return (
