@@ -132,6 +132,16 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
             return
         }
 
+        // For credential inputs, also set the top-level `credential` field.
+        // Server-side node execution reads nodeData.credential (not inputs.FLOWISE_CREDENTIAL_ID)
+        // to fetch credential data via getCredentialData(), so both must be kept in sync.
+        if (inputParam.type === 'credential') {
+            const credentialId = typeof newValue === 'string' ? newValue : ''
+            updateNodeData(data.id, { inputs: updatedInputValues, credential: credentialId })
+            setData({ ...data, inputs: updatedInputValues, credential: credentialId })
+            return
+        }
+
         updateNodeData(data.id, { inputs: updatedInputValues })
         setData({ ...data, inputs: updatedInputValues })
     }
@@ -342,6 +352,7 @@ function EditNodeDialogComponent({ show, dialogProps, onCancel }: EditNodeDialog
                                         disabled={dialogProps.disabled}
                                         onDataChange={onCustomDataChange}
                                         itemParameters={arrayItemParameters[inputParam.name]}
+                                        variableItems={variableItems}
                                     />
                                 )
                             }
