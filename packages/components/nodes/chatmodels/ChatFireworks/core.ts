@@ -81,7 +81,7 @@ export class ChatFireworks extends ChatOpenAICompletions<ChatFireworksCallOption
     toJSON() {
         const result = super.toJSON()
 
-        if ('kwargs' in result && typeof result.kwargs === 'object' && result.kwargs != null) {
+        if ('kwargs' in result && typeof result.kwargs === 'object' && result.kwargs !== null) {
             delete result.kwargs.openai_api_key
             delete result.kwargs.configuration
         }
