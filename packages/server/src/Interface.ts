@@ -214,6 +214,37 @@ export interface IScheduleTriggerLog {
     createdDate: Date
 }
 
+export enum CustomMcpServerStatus {
+    PENDING = 'PENDING',
+    AUTHORIZED = 'AUTHORIZED',
+    ERROR = 'ERROR'
+}
+
+export enum CustomMcpServerAuthType {
+    NONE = 'NONE',
+    CUSTOM_HEADERS = 'CUSTOM_HEADERS'
+}
+
+export interface ICustomMcpServer {
+    id: string
+    name: string
+    serverUrl: string
+    iconSrc?: string
+    color?: string
+    authType: string
+    authConfig?: string
+    tools?: string
+    toolCount: number
+    status: CustomMcpServerStatus | string
+    createdDate: Date
+    updatedDate: Date
+    workspaceId: string
+}
+
+export interface ICustomMcpServerResponse extends Omit<ICustomMcpServer, 'authConfig'> {
+    authConfig?: Record<string, any>
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }
