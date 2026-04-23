@@ -568,8 +568,7 @@ export const buildFlow = async ({
         chatflowid,
         chatId,
         sessionId,
-        chatHistory,
-        ...overrideConfig
+        chatHistory
     }
     while (nodeQueue.length) {
         const { nodeId, depth } = nodeQueue.shift() as INodeQueue
