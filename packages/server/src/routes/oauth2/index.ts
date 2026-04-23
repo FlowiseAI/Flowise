@@ -59,6 +59,8 @@
 import express from 'express'
 import axios from 'axios'
 import { Request, Response, NextFunction } from 'express'
+import { secureAxiosRequest } from 'flowise-components'
+import { validateOAuth2Url, extractOAuth2TokenFields } from '../../utils/oauth2Security'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Credential } from '../../database/entities/Credential'
 import { decryptCredentialData, encryptCredentialData } from '../../utils'
@@ -112,6 +114,15 @@ router.post('/authorize/:credentialId', async (req: Request, res: Response, next
             return res.status(400).json({
                 success: false,
                 message: 'No authorizationUrl specified in credential data'
+            })
+        }
+
+        try {
+            validateOAuth2Url(authorizationUrl)
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err instanceof Error ? err.message : 'Invalid authorization URL'
             })
         }
 
@@ -222,6 +233,19 @@ router.get('/callback', async (req: Request, res: Response) => {
             return res.status(400).send(errorHtml)
         }
 
+        try {
+            validateOAuth2Url(tokenUrl)
+        } catch (err) {
+            const errorHtml = generateErrorPage(
+                'Invalid token endpoint URL',
+                err instanceof Error ? err.message : 'Token endpoint URL is not allowed',
+                'Please check your credential configuration.'
+            )
+
+            res.setHeader('Content-Type', 'text/html')
+            return res.status(400).send(errorHtml)
+        }
+
         const defaultRedirectUri = `${req.protocol}://${req.get('host')}/api/v1/oauth2-credential/callback`
         const finalRedirectUri = redirect_uri || defaultRedirectUri
 
@@ -237,28 +261,24 @@ router.get('/callback', async (req: Request, res: Response) => {
             tokenRequestData.scope = scope
         }
 
-        const tokenResponse = await axios.post(tokenUrl, new URLSearchParams(tokenRequestData).toString(), {
+        const tokenResponse = await secureAxiosRequest({
+            method: 'POST',
+            url: tokenUrl,
+            data: new URLSearchParams(tokenRequestData).toString(),
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Accept: 'application/json'
             }
         })
 
-        const tokenData = tokenResponse.data
+        const tokenData = extractOAuth2TokenFields(tokenResponse.data)
 
-        // Update the credential data with token information
         const updatedCredentialData: any = {
             ...decryptedData,
             ...tokenData,
             token_received_at: new Date().toISOString()
         }
 
-        // Add refresh token if provided
-        if (tokenData.refresh_token) {
-            updatedCredentialData.refresh_token = tokenData.refresh_token
-        }
-
-        // Calculate token expiry time
         if (tokenData.expires_in) {
             const expiryTime = new Date(Date.now() + tokenData.expires_in * 1000)
             updatedCredentialData.expires_at = expiryTime.toISOString()
@@ -341,6 +361,15 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
             })
         }
 
+        try {
+            validateOAuth2Url(tokenUrl)
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err instanceof Error ? err.message : 'Token endpoint URL is not allowed'
+            })
+        }
+
         const refreshRequestData: any = {
             client_id: clientId,
             client_secret: clientSecret,
@@ -352,29 +381,24 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
             refreshRequestData.scope = scope
         }
 
-        const tokenResponse = await axios.post(tokenUrl, new URLSearchParams(refreshRequestData).toString(), {
+        const tokenResponse = await secureAxiosRequest({
+            method: 'POST',
+            url: tokenUrl,
+            data: new URLSearchParams(refreshRequestData).toString(),
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Accept: 'application/json'
             }
         })
 
-        // Extract token data from response
-        const tokenData = tokenResponse.data
+        const tokenData = extractOAuth2TokenFields(tokenResponse.data)
 
-        // Update the credential data with new token information
         const updatedCredentialData: any = {
             ...decryptedData,
             ...tokenData,
             token_received_at: new Date().toISOString()
         }
 
-        // Update refresh token if a new one was provided
-        if (tokenData.refresh_token) {
-            updatedCredentialData.refresh_token = tokenData.refresh_token
-        }
-
-        // Calculate token expiry time
         if (tokenData.expires_in) {
             const expiryTime = new Date(Date.now() + tokenData.expires_in * 1000)
             updatedCredentialData.expires_at = expiryTime.toISOString()
@@ -389,13 +413,12 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
             updatedDate: new Date()
         })
 
-        // Return success response
         res.json({
             success: true,
             message: 'OAuth2 token refreshed successfully',
             credentialId: credential.id,
             tokenInfo: {
-                ...tokenData,
+                token_type: tokenData.token_type,
                 has_new_refresh_token: !!tokenData.refresh_token,
                 expires_at: updatedCredentialData.expires_at
             }
