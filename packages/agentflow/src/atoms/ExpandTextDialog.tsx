@@ -131,7 +131,6 @@ export function ExpandTextDialog({
                             onChange={(e) => setLocalValue(e.target.value)}
                             placeholder={placeholder}
                             data-testid='source-input'
-                            inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.85em' } }}
                         />
                     ) : suggestionItems?.length ? (
                         <VariableInput
