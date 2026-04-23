@@ -241,6 +241,21 @@ export const tokens = {
 
     // Typography
     typography: {
+        // Font size scale
+        fontSize: {
+            xs: '0.625rem', // 10px — badge, compact caption
+            sm: '0.75rem', // 12px — secondary label, helper text
+            md: '0.875rem', // 14px — body, input, primary label
+            lg: '1rem' // 16px — section heading
+        },
+
+        // Font weight scale
+        fontWeight: {
+            regular: 400,
+            medium: 500,
+            semibold: 600
+        },
+
         /** Matches MUI OutlinedInput's default line-height (1.4375em) so the
          *  RichTextEditor aligns with standard TextField height at the same row count. */
         rowHeightRem: 1.4375,

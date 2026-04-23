@@ -41,12 +41,12 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
             }
         },
         typography: {
-            h4: { fontSize: '1rem', fontWeight: 600 },
-            h5: { fontSize: '0.875rem', fontWeight: 500 },
-            h6: { fontSize: '0.75rem', fontWeight: 500 },
-            subtitle1: { fontSize: '0.875rem', fontWeight: 500 },
-            body1: { fontSize: '0.875rem', fontWeight: 400 },
-            body2: { fontSize: '0.75rem', fontWeight: 400 }
+            h4: { fontSize: tokens.typography.fontSize.lg, fontWeight: tokens.typography.fontWeight.semibold },
+            h5: { fontSize: tokens.typography.fontSize.md, fontWeight: tokens.typography.fontWeight.medium },
+            h6: { fontSize: tokens.typography.fontSize.sm, fontWeight: tokens.typography.fontWeight.medium },
+            subtitle1: { fontSize: tokens.typography.fontSize.md, fontWeight: tokens.typography.fontWeight.medium },
+            body1: { fontSize: tokens.typography.fontSize.md, fontWeight: tokens.typography.fontWeight.regular },
+            body2: { fontSize: tokens.typography.fontSize.sm, fontWeight: tokens.typography.fontWeight.regular }
         },
         components: {
             MuiPaper: {
@@ -63,6 +63,9 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
                 styleOverrides: {
                     root: {
                         backgroundColor: tokens.colors.background.input[mode]
+                    },
+                    input: {
+                        fontWeight: tokens.typography.fontWeight.medium
                     }
                 }
             },
