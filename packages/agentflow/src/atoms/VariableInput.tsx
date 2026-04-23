@@ -90,11 +90,11 @@ const StyledEditorContent = styled(EditorContent, {
             },
 
             '& .mention': {
-                backgroundColor: mode === 'dark' ? '#1a4d1c' : '#b3f0b8',
+                backgroundColor: '#b3f0b8',
                 borderRadius: '0.4rem',
                 boxDecorationBreak: 'clone',
                 WebkitBoxDecorationBreak: 'clone',
-                color: mode === 'dark' ? '#81c784' : '#0d7115',
+                color: '#0d7115',
                 padding: '0.1rem 0.3rem'
             },
 
