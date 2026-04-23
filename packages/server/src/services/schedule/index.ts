@@ -101,7 +101,6 @@ const createOrUpdateSchedule = async (input: CreateScheduleInput): Promise<Sched
         }
 
         const record = repo.create({
-            id: uuidv4(),
             triggerType: input.triggerType,
             targetId: input.targetId,
             nodeId: input.nodeId,
