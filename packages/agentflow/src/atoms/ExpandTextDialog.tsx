@@ -126,6 +126,7 @@ export function ExpandTextDialog({
                             fullWidth
                             multiline
                             minRows={15}
+                            maxRows={15}
                             value={localValue}
                             disabled={disabled}
                             onChange={(e) => setLocalValue(e.target.value)}
