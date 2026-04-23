@@ -28,6 +28,7 @@ const baseColors = {
     gray800: '#333',
 
     // Dark mode grays
+    lightBorderDefault: '#21212125',
     darkBorderDefault: 'rgba(255, 255, 255, 0.145)',
     darkGray100: '#1a1a1a',
     darkGray200: '#1a1a2e',
@@ -125,14 +126,14 @@ export const tokens = {
             card: { light: baseColors.white, dark: baseColors.darkGray350 },
             cardHover: { light: baseColors.gray75, dark: baseColors.darkGray500 },
             header: { light: baseColors.white, dark: baseColors.darkGray400 },
-            input: { light: baseColors.white, dark: baseColors.darkGray450 },
+            input: { light: baseColors.gray50, dark: baseColors.darkGray450 },
             optionHover: { light: '', dark: baseColors.darkBlueHover }
         },
 
         border: {
             default: { light: baseColors.gray300, dark: baseColors.darkBorderDefault },
             hover: { light: baseColors.gray400, dark: baseColors.darkGray600 },
-            input: { light: baseColors.gray400, dark: baseColors.darkGray750 },
+            input: { light: baseColors.lightBorderDefault, dark: baseColors.darkGray750 },
             validation: baseColors.nodeCondition
         },
 
