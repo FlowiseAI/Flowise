@@ -121,7 +121,7 @@ export default class Worker extends BaseCommand {
             await upsertWorker.close()
 
             const scheduleWorker = queueManager.getQueue('schedule').getWorker()
-            logger.info(`Shutting down Flowise Schedule Worker...`)
+            logger.info(`Shutting down Flowise Schedule Worker ${this.scheduleWorkerId}...`)
             await scheduleWorker.close()
         } catch (error) {
             logger.error('There was an error shutting down Flowise Worker...', error)

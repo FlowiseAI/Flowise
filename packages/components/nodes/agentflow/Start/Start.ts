@@ -148,6 +148,7 @@ class Start_Agentflow implements INode {
                         description: 'Use a cron expression to define the schedule'
                     }
                 ],
+                default: 'visualPicker',
                 show: {
                     startInputType: 'scheduleInput'
                 }

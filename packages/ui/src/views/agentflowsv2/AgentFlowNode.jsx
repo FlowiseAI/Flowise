@@ -29,7 +29,7 @@ import {
     IconBrowserCheck,
     IconMessageCircle,
     IconClockHour4,
-    IconForms
+    IconListDetails
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -408,7 +408,7 @@ const AgentFlowNode = ({ data }) => {
                                     const inputType = data.inputs.startInputType
                                     const iconMap = {
                                         chatInput: { icon: <IconMessageCircle size={14} /> },
-                                        formInput: { icon: <IconForms size={14} /> },
+                                        formInput: { icon: <IconListDetails size={14} /> },
                                         scheduleInput: { icon: <IconClockHour4 size={14} /> }
                                     }
                                     const info = iconMap[inputType]
@@ -422,9 +422,9 @@ const AgentFlowNode = ({ data }) => {
                                                         : 'rgba(255, 255, 255, 0.9)',
                                                     borderRadius: '16px',
                                                     height: 22,
-                                                    pl: 0.8,
-                                                    pr: 1,
+                                                    px: 0.9,
                                                     display: 'flex',
+                                                    justifyContent: 'center',
                                                     alignItems: 'center',
                                                     gap: 0.5
                                                 }}

@@ -115,13 +115,11 @@ jest.mock('http-status-codes', () => ({
 import chatflowsService from './index'
 import scheduleService from '../../services/schedule'
 import { ScheduleBeat } from '../../queue/ScheduleBeat'
-import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fileRepository'
+import { containsBase64File } from '../../utils/fileRepository'
 import { EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
 
 const mockContainsBase64File = containsBase64File as jest.Mock
-const mockUpdateFlowDataWithFilePaths = updateFlowDataWithFilePaths as jest.Mock
-const mockOnScheduleChanged = ScheduleBeat.getInstance().onScheduleChanged as jest.Mock
 const mockCreateOrUpdateSchedule = scheduleService.createOrUpdateSchedule as jest.Mock
 const mockDeleteScheduleForTarget = scheduleService.deleteScheduleForTarget as jest.Mock
 const mockResolveScheduleCron = scheduleService.resolveScheduleCron as jest.Mock

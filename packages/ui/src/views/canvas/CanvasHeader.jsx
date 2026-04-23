@@ -4,8 +4,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button, Tooltip } from '@mui/material'
+import { useTheme, styled } from '@mui/material/styles'
+import { Avatar, Box, ButtonBase, Typography, Stack, Switch, TextField, Button, Tooltip } from '@mui/material'
 
 // icons
 import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
@@ -31,6 +31,68 @@ import useApi from '@/hooks/useApi'
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
+
+// Clock icon (unchecked) and calendar-check icon (checked), mirroring MaterialUISwitch style
+const clockIcon = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" height="20" width="20" viewBox="0 0 20 20"><path fill="${encodeURIComponent(
+    '#fff'
+)}" d="M10 2a8 8 0 108 8 8 8 0 00-8-8zm0 14.5A6.5 6.5 0 1116.5 10 6.5 6.5 0 0110 16.5zM10.75 5.5h-1.5v5l4 2.4.75-1.23-3.25-1.92z"/></svg>')`
+const clockCheckIcon = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${encodeURIComponent(
+    '#fff'
+)}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.942 13.021a9 9 0 1 0 -9.407 7.967"/><path d="M12 7v5l3 3"/><path d="M15 19l2 2l4 -4"/></svg>')`
+
+const ScheduleSwitch = styled(Switch)(({ theme }) => ({
+    width: 62,
+    height: 34,
+    padding: 7,
+    '& .MuiSwitch-switchBase': {
+        margin: 1,
+        padding: 0,
+        transform: 'translateX(6px)',
+        '&.Mui-checked': {
+            color: '#fff',
+            transform: 'translateX(22px)',
+            '& .MuiSwitch-thumb': {
+                backgroundColor: theme.palette.success.dark
+            },
+            '& .MuiSwitch-thumb:before': {
+                backgroundImage: clockCheckIcon
+            },
+            '& + .MuiSwitch-track': {
+                opacity: 1,
+                backgroundColor: theme.palette.success.light
+            }
+        }
+    },
+    '& .MuiSwitch-thumb': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#4a5662' : '#c8cdd3',
+        width: 32,
+        height: 32,
+        '&:before': {
+            content: "''",
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            left: 0,
+            top: 0,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            backgroundImage: clockIcon,
+            opacity: 0.85
+        }
+    },
+    '& .MuiSwitch-track': {
+        opacity: 1,
+        backgroundColor: theme.palette.mode === 'dark' ? '#3b4450' : '#dde1e6',
+        borderRadius: 20 / 2
+    },
+    '&.Mui-disabled .MuiSwitch-thumb, & .Mui-disabled .MuiSwitch-thumb': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#2f3640' : '#e3e6ea'
+    },
+    '&.Mui-disabled + .MuiSwitch-track, & .Mui-disabled + .MuiSwitch-track': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#262b33' : '#eceef1',
+        opacity: 1
+    }
+}))
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -445,7 +507,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         )}
                     </Box>
                 </Stack>
-                <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {chatflow?.id && isAgentflowV2 && isScheduleFlow && (
                         <Tooltip
                             title={
@@ -460,55 +522,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 sx={{
                                     display: 'inline-flex',
                                     alignItems: 'center',
+                                    verticalAlign: 'middle',
                                     mr: 2,
-                                    gap: 0.75,
-                                    opacity: !scheduleCanEnable && !scheduleEnabled ? 0.45 : 1
+                                    gap: 0.5
                                 }}
                             >
-                                <Typography
-                                    variant='caption'
-                                    sx={{
-                                        color: scheduleEnabled ? theme.palette.success.dark : theme.palette.text.secondary,
-                                        userSelect: 'none'
-                                    }}
-                                >
-                                    Schedule
-                                </Typography>
-                                <Box
-                                    component='span'
-                                    role='checkbox'
-                                    aria-checked={scheduleEnabled}
-                                    onClick={() => {
-                                        if (!scheduleCanEnable && !scheduleEnabled) return
-                                        handleToggleSchedule(!scheduleEnabled)
-                                    }}
-                                    sx={{
-                                        position: 'relative',
-                                        display: 'inline-block',
-                                        width: 56,
-                                        height: 32,
-                                        borderRadius: '5px',
-                                        backgroundColor: scheduleEnabled ? theme.palette.success.main : theme.palette.grey[400],
-                                        transition: 'background-color 0.2s ease-in-out',
-                                        cursor: !scheduleCanEnable && !scheduleEnabled ? 'not-allowed' : 'pointer',
-                                        flexShrink: 0
-                                    }}
-                                >
-                                    <Box
-                                        component='span'
-                                        sx={{
-                                            position: 'absolute',
-                                            top: '3px',
-                                            left: scheduleEnabled ? '27px' : '3px',
-                                            width: 26,
-                                            height: 26,
-                                            borderRadius: '3px',
-                                            backgroundColor: 'white',
-                                            transition: 'left 0.2s ease-in-out',
-                                            boxShadow: '0 1px 3px rgba(0,0,0,0.25)'
-                                        }}
-                                    />
-                                </Box>
+                                <ScheduleSwitch
+                                    checked={scheduleEnabled}
+                                    disabled={!scheduleCanEnable && !scheduleEnabled}
+                                    onChange={(e) => handleToggleSchedule(e.target.checked)}
+                                />
                             </Box>
                         </Tooltip>
                     )}
