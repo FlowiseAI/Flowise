@@ -3,6 +3,8 @@
  * No server, database, or Express dependencies — safe to import and test in isolation.
  */
 
+import type { ScheduleInputMode } from '../../Interface'
+
 // ─── Cron expression validation ──────────────────────────────────────────────
 
 const MIN_SCHEDULE_INTERVAL_SECONDS = Math.max(1, parseInt(process.env.MIN_SCHEDULE_INTERVAL_SECONDS || '60', 10) || 60)
@@ -472,20 +474,27 @@ export const resolveScheduleCron = (inputs: Record<string, any>): { valid: boole
 }
 
 /**
- * Checks if the default input is valid for a scheduled flow.
- * It is used to determine the initial enabled state when creating/updating a schedule, and also to validate when toggling enabled state.
- * Besides, the worker skips execution of schedules that are not valid.
+ * Mode-aware schedule input validator.
+ *  - 'text': requires a non-empty defaultInput (treats `<p></p>` — the rich-text empty marker — as empty).
+ *  - 'form': requires at least one field defined in scheduleFormInputTypes.
+ *  - 'none': always valid (flow opts out of receiving input).
+ *
  */
-export const isDefaultInputValid = (defaultInput: string | undefined): boolean => {
-    return !!defaultInput && defaultInput !== '<p></p>' // rich text empty value
+export const isScheduleInputValid = (mode: ScheduleInputMode, defaultInput?: string, scheduleFormInputTypes?: any[]): boolean => {
+    if (mode === 'none') return true
+    if (mode === 'form') return Array.isArray(scheduleFormInputTypes) && scheduleFormInputTypes.length > 0
+    return !!defaultInput && defaultInput !== '<p></p>'
 }
 
 /**
- * Determines if a schedule can be enabled based on its inputs, including the cron expression, end date, and default input.
+ * Determines if a schedule can be enabled based on its inputs: cron validity,
+ * end date (must be in the future if set), and mode-specific input validity.
  */
 export const canScheduleEnable = (inputs: Record<string, any>): boolean => {
     const cronResult = resolveScheduleCron(inputs)
     const isEndDateValid = !inputs.scheduleEndDate || new Date(inputs.scheduleEndDate) > new Date()
-    const isInputValid = isDefaultInputValid(inputs.scheduleDefaultInput)
+    const mode = inputs.scheduleInputMode
+    if (!mode) return false
+    const isInputValid = isScheduleInputValid(mode, inputs.scheduleDefaultInput, inputs.scheduleFormInputTypes)
     return cronResult.valid && isEndDateValid && isInputValid
 }

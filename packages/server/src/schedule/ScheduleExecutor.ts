@@ -7,7 +7,7 @@
  */
 
 import { DataSource } from 'typeorm'
-import { IComponentNodes, IncomingAgentflowInput } from '../Interface'
+import { ChatType, IComponentNodes, IncomingAgentflowInput } from '../Interface'
 import { IServerSideEventStreamer } from 'flowise-components'
 import { ScheduleRecord, ScheduleTriggerType } from '../database/entities/ScheduleRecord'
 import { ScheduleTriggerStatus } from '../database/entities/ScheduleTriggerLog'
@@ -101,8 +101,11 @@ export async function executeScheduleJob(
     }
 
     // ── 2. End-date / input validation ─────────────────────────────────────
-    const isDefaultInputValid = scheduleService.isDefaultInputValid(scheduleRecord.defaultInput)
-    if ((scheduleRecord.endDate && scheduledAt >= scheduleRecord.endDate) || !isDefaultInputValid) {
+    const isInputValid =
+        scheduleRecord.scheduleInputMode === 'text'
+            ? scheduleService.isScheduleInputValid(scheduleRecord.scheduleInputMode, scheduleRecord.defaultInput)
+            : true
+    if ((scheduleRecord.endDate && scheduledAt >= scheduleRecord.endDate) || !isInputValid) {
         logger.debug(`[ScheduleExecutor]: Schedule ${scheduleRecordId} has passed end date or invalid input, disabling`)
         await callbacks?.onRecordExpiredOrInvalid?.(scheduleRecord)
         await scheduleService.createTriggerLog({
@@ -175,10 +178,19 @@ async function _executeAgentflow(ctx: ScheduleExecutionContext, record: Schedule
         await checkPredictions(org.id, subscriptionId, usageCacheManager)
 
         const chatId = uuidv4()
-        const incomingInput: IncomingAgentflowInput = {
-            question: record.defaultInput || '',
-            chatId,
-            streaming: false
+        const incomingInput: IncomingAgentflowInput = { chatId, streaming: false }
+        if (record.scheduleInputMode === 'form') {
+            try {
+                incomingInput.form = record.defaultForm ? JSON.parse(record.defaultForm) : {}
+            } catch (e) {
+                logger.warn(`[ScheduleExecutor]: schedule ${record.id} defaultForm is not valid JSON, falling back to {}`)
+                incomingInput.form = {}
+            }
+        } else if (record.scheduleInputMode === 'none') {
+            // Use a single-space sentinel rather than an empty string, since some models do accept whitespace characters.
+            incomingInput.question = ' '
+        } else {
+            incomingInput.question = record.defaultInput
         }
 
         const result = await executeAgentFlow({
@@ -191,13 +203,11 @@ async function _executeAgentflow(ctx: ScheduleExecutionContext, record: Schedule
             cachePool,
             usageCacheManager,
             sseStreamer,
-            baseURL: '',
+            baseURL: process.env.APP_URL ?? '',
             isInternal: true,
-            uploadedFilesContent: '',
-            fileUploads: [],
-            isTool: true,
-            workspaceId,
+            chatType: ChatType.SCHEDULED,
             orgId,
+            workspaceId,
             subscriptionId,
             productId
         })

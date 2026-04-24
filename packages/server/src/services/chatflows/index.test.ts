@@ -97,7 +97,7 @@ jest.mock('../../services/schedule', () => ({
         deleteScheduleForTarget: jest.fn().mockResolvedValue(undefined)
     }
 }))
-jest.mock('../../queue/ScheduleBeat', () => ({
+jest.mock('../../schedule/ScheduleBeat', () => ({
     ScheduleBeat: {
         getInstance: jest.fn().mockReturnValue({
             onScheduleChanged: jest.fn().mockResolvedValue(undefined)
@@ -114,7 +114,7 @@ jest.mock('http-status-codes', () => ({
 
 import chatflowsService from './index'
 import scheduleService from '../../services/schedule'
-import { ScheduleBeat } from '../../queue/ScheduleBeat'
+import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import { containsBase64File } from '../../utils/fileRepository'
 import { EnumChatflowType } from '../../database/entities/ChatFlow'
 import { ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
@@ -139,6 +139,7 @@ const makeScheduleFlowData = (inputs: Record<string, unknown> = {}) =>
                         startInputType: 'scheduleInput',
                         scheduleCronExpression: '* * * * *',
                         scheduleTimezone: 'UTC',
+                        scheduleInputMode: 'text',
                         scheduleDefaultInput: 'hello',
                         ...inputs
                     }
@@ -308,6 +309,67 @@ describe('saveChatflow', () => {
         )
 
         expect(mockCreateOrUpdateSchedule).toHaveBeenCalledWith(expect.objectContaining({ endDate: undefined }))
+    })
+
+    // ── schedule input mode ───────────────────────────────────────────────────
+
+    it("defaults scheduleInputMode to 'text' and passes defaultInput when mode is not set", async () => {
+        mockRepo.save.mockResolvedValue(makeChatflow({ flowData: makeScheduleFlowData() }))
+
+        await chatflowsService.saveChatflow(
+            makeChatflow() as any,
+            SAVE_ARGS.orgId,
+            SAVE_ARGS.workspaceId,
+            SAVE_ARGS.subscriptionId,
+            SAVE_ARGS.usageCacheManager
+        )
+
+        expect(mockCreateOrUpdateSchedule).toHaveBeenCalledWith(
+            expect.objectContaining({ scheduleInputMode: 'text', defaultInput: 'hello', defaultForm: undefined })
+        )
+    })
+
+    it("passes defaultForm (stringified) when scheduleInputMode is 'form'", async () => {
+        mockRepo.save.mockResolvedValue(
+            makeChatflow({
+                flowData: makeScheduleFlowData({
+                    scheduleInputMode: 'form',
+                    scheduleFormDefaults: { team: 'eng', metric: 'p95' },
+                    scheduleDefaultInput: ''
+                })
+            })
+        )
+
+        await chatflowsService.saveChatflow(
+            makeChatflow() as any,
+            SAVE_ARGS.orgId,
+            SAVE_ARGS.workspaceId,
+            SAVE_ARGS.subscriptionId,
+            SAVE_ARGS.usageCacheManager
+        )
+
+        const call = mockCreateOrUpdateSchedule.mock.calls[0][0]
+        expect(call.scheduleInputMode).toBe('form')
+        expect(call.defaultInput).toBe('') // cleared in form mode
+        expect(JSON.parse(call.defaultForm)).toEqual({ team: 'eng', metric: 'p95' })
+    })
+
+    it("passes empty defaultInput and no defaultForm when scheduleInputMode is 'none'", async () => {
+        mockRepo.save.mockResolvedValue(
+            makeChatflow({ flowData: makeScheduleFlowData({ scheduleInputMode: 'none', scheduleDefaultInput: 'ignored' }) })
+        )
+
+        await chatflowsService.saveChatflow(
+            makeChatflow() as any,
+            SAVE_ARGS.orgId,
+            SAVE_ARGS.workspaceId,
+            SAVE_ARGS.subscriptionId,
+            SAVE_ARGS.usageCacheManager
+        )
+
+        expect(mockCreateOrUpdateSchedule).toHaveBeenCalledWith(
+            expect.objectContaining({ scheduleInputMode: 'none', defaultInput: '', defaultForm: undefined })
+        )
     })
 
     it('does not create a schedule when the start node type is chatInput', async () => {

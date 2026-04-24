@@ -4,11 +4,20 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 // material-ui
-import { useTheme, styled } from '@mui/material/styles'
+import { useTheme, styled, alpha } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, Switch, TextField, Button, Tooltip } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import {
+    IconSettings,
+    IconChevronLeft,
+    IconDeviceFloppy,
+    IconPencil,
+    IconCheck,
+    IconX,
+    IconCode,
+    IconAlertTriangleFilled
+} from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -40,57 +49,72 @@ const clockCheckIcon = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.o
     '#fff'
 )}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.942 13.021a9 9 0 1 0 -9.407 7.967"/><path d="M12 7v5l3 3"/><path d="M15 19l2 2l4 -4"/></svg>')`
 
-const ScheduleSwitch = styled(Switch)(({ theme }) => ({
-    width: 62,
-    height: 34,
-    padding: 7,
-    '& .MuiSwitch-switchBase': {
-        margin: 1,
-        padding: 0,
-        transform: 'translateX(6px)',
-        '&.Mui-checked': {
-            color: '#fff',
-            transform: 'translateX(22px)',
-            '& .MuiSwitch-thumb': {
-                backgroundColor: theme.palette.success.dark
-            },
-            '& .MuiSwitch-thumb:before': {
-                backgroundImage: clockCheckIcon
-            },
-            '& + .MuiSwitch-track': {
-                opacity: 1,
-                backgroundColor: theme.palette.success.light
+const ScheduleSwitch = styled(Switch, { shouldForwardProp: (prop) => prop !== 'isDark' })(({ theme, isDark }) => {
+    const offTrack = isDark ? alpha(theme.palette.success.main, 0.1) : alpha(theme.palette.success.main, 0.12)
+    const offThumb = isDark ? '#4a5662' : alpha(theme.palette.success.main, 0.25)
+    return {
+        width: 62,
+        height: 34,
+        padding: 7,
+        '& .MuiSwitch-switchBase': {
+            margin: 1,
+            padding: 0,
+            transform: 'translateX(6px)',
+            '&.Mui-checked': {
+                color: '#fff',
+                transform: 'translateX(22px)',
+                '& .MuiSwitch-thumb': {
+                    backgroundColor: theme.palette.success.dark
+                },
+                '& .MuiSwitch-thumb:before': {
+                    backgroundImage: clockCheckIcon
+                },
+                '& + .MuiSwitch-track': {
+                    opacity: 1,
+                    backgroundColor: theme.palette.success.light
+                }
             }
+        },
+        '& .MuiSwitch-thumb': {
+            backgroundColor: offThumb,
+            width: 32,
+            height: 32,
+            '&:before': {
+                content: "''",
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                left: 0,
+                top: 0,
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center',
+                backgroundImage: clockIcon,
+                opacity: 0.9
+            }
+        },
+        '& .MuiSwitch-track': {
+            opacity: 1,
+            backgroundColor: offTrack,
+            borderRadius: 20 / 2
+        },
+        '&.Mui-disabled .MuiSwitch-thumb, & .Mui-disabled .MuiSwitch-thumb': {
+            backgroundColor: offThumb
+        },
+        '&.Mui-disabled + .MuiSwitch-track, & .Mui-disabled + .MuiSwitch-track': {
+            backgroundColor: offTrack,
+            opacity: 1
         }
-    },
-    '& .MuiSwitch-thumb': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#4a5662' : '#c8cdd3',
-        width: 32,
-        height: 32,
-        '&:before': {
-            content: "''",
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            left: 0,
-            top: 0,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-            backgroundImage: clockIcon,
-            opacity: 0.85
-        }
-    },
-    '& .MuiSwitch-track': {
-        opacity: 1,
-        backgroundColor: theme.palette.mode === 'dark' ? '#3b4450' : '#dde1e6',
-        borderRadius: 20 / 2
+    }
+})
+
+const LockedScheduleSwitch = styled(ScheduleSwitch, { shouldForwardProp: (prop) => prop !== 'isDark' })(({ theme, isDark }) => ({
+    '& .MuiSwitch-track, &.Mui-disabled + .MuiSwitch-track, & .Mui-disabled + .MuiSwitch-track': {
+        backgroundColor: isDark ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.warning.main, 0.15),
+        border: `1px solid ${alpha(theme.palette.warning.main, isDark ? 0.6 : 0.5)}`,
+        opacity: 1
     },
     '&.Mui-disabled .MuiSwitch-thumb, & .Mui-disabled .MuiSwitch-thumb': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#2f3640' : '#e3e6ea'
-    },
-    '&.Mui-disabled + .MuiSwitch-track, & .Mui-disabled + .MuiSwitch-track': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#262b33' : '#eceef1',
-        opacity: 1
+        backgroundColor: isDark ? '#4a3e1f' : '#f5e6b8'
     }
 }))
 
@@ -131,10 +155,12 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     const getScheduleStatusApi = useApi(chatflowsApi.getScheduleStatus)
     const toggleScheduleEnabledApi = useApi(chatflowsApi.toggleScheduleEnabled)
     const canvas = useSelector((state) => state.canvas)
+    const isDark = useSelector((state) => state.customization.isDarkMode)
 
     const [scheduleEnabled, setScheduleEnabled] = useState(false)
     const [scheduleCanEnable, setScheduleCanEnable] = useState(false)
     const [scheduleCanEnableReason, setScheduleCanEnableReason] = useState('')
+    const [scheduleStatusLoaded, setScheduleStatusLoaded] = useState(false)
 
     const isScheduleFlow = useMemo(() => {
         if (!chatflow?.flowData || !isAgentflowV2) return false
@@ -329,6 +355,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     useEffect(() => {
         if (chatflow?.id && isScheduleFlow) {
+            setScheduleStatusLoaded(false)
             getScheduleStatusApi.request(chatflow.id)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -339,6 +366,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             setScheduleEnabled(getScheduleStatusApi.data.enabled ?? false)
             setScheduleCanEnable(getScheduleStatusApi.data.canEnable ?? false)
             setScheduleCanEnableReason(getScheduleStatusApi.data.reason || '')
+            setScheduleStatusLoaded(true)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getScheduleStatusApi.data])
@@ -508,7 +536,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     </Box>
                 </Stack>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    {chatflow?.id && isAgentflowV2 && isScheduleFlow && (
+                    {chatflow?.id && isAgentflowV2 && isScheduleFlow && scheduleStatusLoaded && (
                         <Tooltip
                             title={
                                 scheduleEnabled
@@ -527,11 +555,18 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                     gap: 0.5
                                 }}
                             >
-                                <ScheduleSwitch
-                                    checked={scheduleEnabled}
-                                    disabled={!scheduleCanEnable && !scheduleEnabled}
-                                    onChange={(e) => handleToggleSchedule(e.target.checked)}
-                                />
+                                {!scheduleCanEnable && !scheduleEnabled ? (
+                                    <>
+                                        <IconAlertTriangleFilled size={16} color={theme.palette.warning.main} style={{ marginRight: 4 }} />
+                                        <LockedScheduleSwitch checked={false} disabled isDark={isDark} />
+                                    </>
+                                ) : (
+                                    <ScheduleSwitch
+                                        checked={scheduleEnabled}
+                                        onChange={(e) => handleToggleSchedule(e.target.checked)}
+                                        isDark={isDark}
+                                    />
+                                )}
                             </Box>
                         </Tooltip>
                     )}

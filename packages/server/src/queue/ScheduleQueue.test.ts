@@ -25,7 +25,7 @@ jest.mock('bullmq', () => ({
 jest.mock('./RedisEventPublisher', () => ({
     RedisEventPublisher: jest.fn().mockImplementation(() => mockRedisPublisher)
 }))
-jest.mock('./ScheduleExecutor', () => ({ executeScheduleJob: jest.fn().mockResolvedValue(undefined) }))
+jest.mock('../schedule/ScheduleExecutor', () => ({ executeScheduleJob: jest.fn().mockResolvedValue(undefined) }))
 jest.mock('../database/entities/ScheduleRecord', () => ({
     ScheduleRecord: class ScheduleRecord {}
 }))
@@ -43,7 +43,7 @@ jest.mock('../UsageCacheManager', () => ({ UsageCacheManager: class UsageCacheMa
 // ─── Imports (after mocks) ────────────────────────────────────────────────────
 
 import { ScheduleQueue } from './ScheduleQueue'
-import { executeScheduleJob } from './ScheduleExecutor'
+import { executeScheduleJob } from '../schedule/ScheduleExecutor'
 import { RedisEventPublisher } from './RedisEventPublisher'
 
 const mockExecuteScheduleJob = executeScheduleJob as jest.Mock

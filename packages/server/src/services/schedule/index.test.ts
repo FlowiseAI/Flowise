@@ -9,6 +9,7 @@
 const mockRepo = {
     findOne: jest.fn(),
     find: jest.fn(),
+    findAndCount: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
     delete: jest.fn(),
@@ -76,6 +77,7 @@ const makeRecord = (overrides: Record<string, unknown> = {}) => ({
     timezone: 'UTC',
     enabled: true,
     workspaceId: 'ws-1',
+    scheduleInputMode: 'text' as const,
     defaultInput: 'hello',
     nodeId: undefined,
     endDate: undefined,
@@ -117,6 +119,7 @@ describe('createOrUpdateSchedule', () => {
         cronExpression: '0 9 * * 1-5',
         timezone: 'UTC',
         workspaceId: 'ws-1',
+        scheduleInputMode: 'text' as const,
         defaultInput: 'Run daily job'
     }
 
@@ -502,5 +505,114 @@ describe('updateTriggerLog', () => {
         await expect(
             scheduleService.updateTriggerLog(mockAppDataSource as any, 'log-1', { status: ScheduleTriggerStatus.FAILED })
         ).resolves.toBeUndefined()
+    })
+})
+
+// ─── getTriggerLogs ───────────────────────────────────────────────────────────
+
+describe('getTriggerLogs', () => {
+    beforeEach(() => {
+        mockGetApp.mockReturnValue(mockAppServer)
+    })
+
+    const makeLog = (overrides: Record<string, unknown> = {}) => ({
+        id: 'log-1',
+        scheduleRecordId: 'rec-1',
+        triggerType: ScheduleTriggerType.AGENTFLOW,
+        targetId: 'flow-1',
+        status: ScheduleTriggerStatus.SUCCEEDED,
+        scheduledAt: new Date(),
+        workspaceId: 'ws-1',
+        elapsedTimeMs: 1234,
+        ...overrides
+    })
+
+    it('returns paginated logs with total count', async () => {
+        const logs = [makeLog(), makeLog({ id: 'log-2', status: ScheduleTriggerStatus.FAILED })]
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([logs, 42])
+
+        const result = await scheduleService.getTriggerLogs('flow-1', 'ws-1', { page: 2, limit: 20 })
+
+        expect(result.data).toHaveLength(2)
+        expect(result.total).toBe(42)
+        expect(result.page).toBe(2)
+        expect(result.limit).toBe(20)
+    })
+
+    it('scopes by targetId + workspaceId and orders by scheduledAt DESC', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0])
+
+        await scheduleService.getTriggerLogs('flow-1', 'ws-1')
+
+        expect(mockRepo.findAndCount).toHaveBeenCalledWith(
+            expect.objectContaining({
+                where: expect.objectContaining({ targetId: 'flow-1', workspaceId: 'ws-1' }),
+                order: { scheduledAt: 'DESC' }
+            })
+        )
+    })
+
+    it('defaults page=1, limit=20 when not provided', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0])
+
+        const result = await scheduleService.getTriggerLogs('flow-1', 'ws-1')
+
+        expect(result.page).toBe(1)
+        expect(result.limit).toBe(20)
+        expect(mockRepo.findAndCount).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 20 }))
+    })
+
+    it('clamps limit to [1, 100]', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0])
+
+        await scheduleService.getTriggerLogs('flow-1', 'ws-1', { limit: 500 })
+        expect(mockRepo.findAndCount).toHaveBeenCalledWith(expect.objectContaining({ take: 100 }))
+
+        await scheduleService.getTriggerLogs('flow-1', 'ws-1', { limit: 0 })
+        expect(mockRepo.findAndCount).toHaveBeenLastCalledWith(expect.objectContaining({ take: 1 }))
+    })
+
+    it('clamps page to >= 1', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0])
+        await scheduleService.getTriggerLogs('flow-1', 'ws-1', { page: 0 })
+        expect(mockRepo.findAndCount).toHaveBeenCalledWith(expect.objectContaining({ skip: 0 }))
+    })
+
+    it('computes skip as (page-1) * limit', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0])
+        await scheduleService.getTriggerLogs('flow-1', 'ws-1', { page: 3, limit: 10 })
+        expect(mockRepo.findAndCount).toHaveBeenCalledWith(expect.objectContaining({ skip: 20, take: 10 }))
+    })
+
+    it('applies a single-value status filter', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0])
+        await scheduleService.getTriggerLogs('flow-1', 'ws-1', { status: ScheduleTriggerStatus.FAILED })
+
+        expect(mockRepo.findAndCount).toHaveBeenCalledWith(
+            expect.objectContaining({
+                where: expect.objectContaining({ status: ScheduleTriggerStatus.FAILED })
+            })
+        )
+    })
+
+    it('applies an array status filter', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockResolvedValue([[], 0])
+        const statuses = [ScheduleTriggerStatus.FAILED, ScheduleTriggerStatus.SKIPPED]
+        await scheduleService.getTriggerLogs('flow-1', 'ws-1', { status: statuses })
+
+        expect(mockRepo.findAndCount).toHaveBeenCalledWith(
+            expect.objectContaining({ where: expect.objectContaining({ status: statuses }) })
+        )
+    })
+
+    it('wraps DB errors in InternalFlowiseError', async () => {
+        ;(mockRepo.findAndCount as jest.Mock).mockRejectedValue(new Error('db down'))
+
+        await expect(scheduleService.getTriggerLogs('flow-1', 'ws-1')).rejects.toMatchObject({
+            statusCode: 500,
+            message: expect.stringContaining('getTriggerLogs')
+        })
+        // Use InternalFlowiseError to verify the thrown type
+        await expect(scheduleService.getTriggerLogs('flow-1', 'ws-1')).rejects.toBeInstanceOf(InternalFlowiseError)
     })
 })

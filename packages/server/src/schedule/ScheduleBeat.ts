@@ -12,8 +12,8 @@
 
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { ScheduleRecord } from '../database/entities/ScheduleRecord'
-import { ScheduleQueue } from './ScheduleQueue'
-import { QueueManager } from './QueueManager'
+import { ScheduleQueue } from '../queue/ScheduleQueue'
+import { QueueManager } from '../queue/QueueManager'
 import { executeScheduleJob } from './ScheduleExecutor'
 import scheduleService from '../services/schedule'
 import { MODE } from '../Interface'

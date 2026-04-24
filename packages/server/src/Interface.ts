@@ -31,7 +31,8 @@ export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL',
     EVALUATION = 'EVALUATION',
-    MCP = 'MCP'
+    MCP = 'MCP',
+    SCHEDULED = 'SCHEDULED'
 }
 
 export enum ChatMessageRatingType {
@@ -183,6 +184,8 @@ export interface IExecution {
     workspaceId: string
 }
 
+export type ScheduleInputMode = 'text' | 'form' | 'none'
+
 export interface IScheduleRecord {
     id: string
     triggerType: string
@@ -191,7 +194,9 @@ export interface IScheduleRecord {
     cronExpression: string
     timezone: string
     enabled: boolean
+    scheduleInputMode: ScheduleInputMode
     defaultInput?: string
+    defaultForm?: string
     lastRunAt?: Date
     nextRunAt?: Date
     endDate?: Date

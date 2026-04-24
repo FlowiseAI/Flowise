@@ -4,7 +4,7 @@ import {
     validateVisualPickerFields,
     buildCronFromVisualPicker,
     resolveScheduleCron,
-    isDefaultInputValid,
+    isScheduleInputValid,
     canScheduleEnable,
     VisualPickerInput
 } from './utils'
@@ -543,28 +543,44 @@ describe('resolveScheduleCron', () => {
     })
 })
 
-// ─── isDefaultInputValid ──────────────────────────────────────────────────────
+// ─── isScheduleInputValid ─────────────────────────────────────────────────────
 
-describe('isDefaultInputValid', () => {
-    it('returns false for undefined', () => {
-        expect(isDefaultInputValid(undefined)).toBe(false)
+describe('isScheduleInputValid', () => {
+    describe("mode='text'", () => {
+        it('returns true for a non-empty default input', () => {
+            expect(isScheduleInputValid('text', 'hello')).toBe(true)
+        })
+        it('returns false when default input is empty', () => {
+            expect(isScheduleInputValid('text', '')).toBe(false)
+        })
+        it('returns false when default input is rich-text empty', () => {
+            expect(isScheduleInputValid('text', '<p></p>')).toBe(false)
+        })
+        it('accepts whitespace-only strings (only tests truthiness + rich-text empty marker)', () => {
+            expect(isScheduleInputValid('text', '   ')).toBe(true)
+        })
     })
 
-    it('returns false for empty string', () => {
-        expect(isDefaultInputValid('')).toBe(false)
+    describe("mode='form'", () => {
+        it('returns true when at least one form field is defined', () => {
+            expect(isScheduleInputValid('form', undefined, [{ name: 'team', type: 'string' }])).toBe(true)
+        })
+        it('returns false when formInputTypes is empty', () => {
+            expect(isScheduleInputValid('form', undefined, [])).toBe(false)
+        })
+        it('returns false when formInputTypes is missing', () => {
+            expect(isScheduleInputValid('form', undefined, undefined)).toBe(false)
+        })
+        it('ignores defaultInput value — only formInputTypes matters', () => {
+            expect(isScheduleInputValid('form', '', [{ name: 'x', type: 'string' }])).toBe(true)
+        })
     })
 
-    it('returns false for rich-text empty value', () => {
-        expect(isDefaultInputValid('<p></p>')).toBe(false)
-    })
-
-    it('returns true for a non-empty string', () => {
-        expect(isDefaultInputValid('Hello from scheduler')).toBe(true)
-    })
-
-    it('returns true for a whitespace-only non-empty string', () => {
-        // The check only tests truthiness and the specific empty rich-text value
-        expect(isDefaultInputValid('   ')).toBe(true)
+    describe("mode='none'", () => {
+        it('always returns true regardless of other inputs', () => {
+            expect(isScheduleInputValid('none', undefined, undefined)).toBe(true)
+            expect(isScheduleInputValid('none', '', [])).toBe(true)
+        })
     })
 })
 
@@ -574,10 +590,20 @@ describe('canScheduleEnable', () => {
     const futureDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString() // 30 days from now
     const pastDate = new Date(Date.now() - 1000 * 60 * 60).toISOString() // 1 hour ago
 
+    it('returns false when scheduleInputMode is missing', () => {
+        expect(
+            canScheduleEnable({
+                scheduleCronExpression: '0 9 * * 1-5',
+                scheduleDefaultInput: 'hello'
+            })
+        ).toBe(false)
+    })
+
     it('returns false when cron expression is invalid', () => {
         expect(
             canScheduleEnable({
                 scheduleCronExpression: 'bad-cron',
+                scheduleInputMode: 'text',
                 scheduleDefaultInput: 'hello',
                 scheduleEndDate: futureDate
             })
@@ -588,6 +614,7 @@ describe('canScheduleEnable', () => {
         expect(
             canScheduleEnable({
                 scheduleCronExpression: '* * * * *',
+                scheduleInputMode: 'text',
                 scheduleDefaultInput: 'hello',
                 scheduleEndDate: pastDate
             })
@@ -598,6 +625,7 @@ describe('canScheduleEnable', () => {
         expect(
             canScheduleEnable({
                 scheduleCronExpression: '* * * * *',
+                scheduleInputMode: 'text',
                 scheduleDefaultInput: undefined
             })
         ).toBe(false)
@@ -607,6 +635,7 @@ describe('canScheduleEnable', () => {
         expect(
             canScheduleEnable({
                 scheduleCronExpression: '* * * * *',
+                scheduleInputMode: 'text',
                 scheduleDefaultInput: '<p></p>'
             })
         ).toBe(false)
@@ -616,6 +645,7 @@ describe('canScheduleEnable', () => {
         expect(
             canScheduleEnable({
                 scheduleCronExpression: '0 9 * * 1-5',
+                scheduleInputMode: 'text',
                 scheduleDefaultInput: 'Generate the daily report'
             })
         ).toBe(true)
@@ -625,6 +655,7 @@ describe('canScheduleEnable', () => {
         expect(
             canScheduleEnable({
                 scheduleCronExpression: '0 9 * * 1-5',
+                scheduleInputMode: 'text',
                 scheduleDefaultInput: 'Generate the daily report',
                 scheduleEndDate: futureDate
             })
@@ -637,8 +668,62 @@ describe('canScheduleEnable', () => {
                 scheduleType: 'visualPicker',
                 scheduleFrequency: 'daily',
                 scheduleOnTime: '09:00',
+                scheduleInputMode: 'text',
                 scheduleDefaultInput: 'Run daily job'
             })
         ).toBe(true)
+    })
+
+    describe("scheduleInputMode='form'", () => {
+        it('returns false when no form fields are defined', () => {
+            expect(
+                canScheduleEnable({
+                    scheduleCronExpression: '0 9 * * 1-5',
+                    scheduleInputMode: 'form',
+                    scheduleFormInputTypes: []
+                })
+            ).toBe(false)
+        })
+
+        it('returns true when at least one form field is defined (ignores empty defaultInput)', () => {
+            expect(
+                canScheduleEnable({
+                    scheduleCronExpression: '0 9 * * 1-5',
+                    scheduleInputMode: 'form',
+                    scheduleDefaultInput: '',
+                    scheduleFormInputTypes: [{ name: 'team', type: 'string', label: 'Team' }]
+                })
+            ).toBe(true)
+        })
+    })
+
+    describe("scheduleInputMode='none'", () => {
+        it('returns true even with no default input and no form fields', () => {
+            expect(
+                canScheduleEnable({
+                    scheduleCronExpression: '0 9 * * 1-5',
+                    scheduleInputMode: 'none'
+                })
+            ).toBe(true)
+        })
+
+        it('still rejects invalid cron', () => {
+            expect(
+                canScheduleEnable({
+                    scheduleCronExpression: 'not-a-cron',
+                    scheduleInputMode: 'none'
+                })
+            ).toBe(false)
+        })
+
+        it('still rejects past end date', () => {
+            expect(
+                canScheduleEnable({
+                    scheduleCronExpression: '0 9 * * 1-5',
+                    scheduleInputMode: 'none',
+                    scheduleEndDate: pastDate
+                })
+            ).toBe(false)
+        })
     })
 })

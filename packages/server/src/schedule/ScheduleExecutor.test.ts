@@ -25,7 +25,7 @@ jest.mock('../utils/buildAgentflow', () => ({ executeAgentFlow: jest.fn() }))
 jest.mock('../services/schedule', () => ({
     __esModule: true,
     default: {
-        isDefaultInputValid: jest.fn().mockReturnValue(true),
+        isScheduleInputValid: jest.fn().mockReturnValue(true),
         createTriggerLog: jest.fn(),
         updateTriggerLog: jest.fn(),
         updateScheduleAfterRun: jest.fn()
@@ -36,7 +36,19 @@ jest.mock('../utils/logger', () => ({
     default: { debug: jest.fn(), error: jest.fn(), info: jest.fn(), warn: jest.fn() }
 }))
 jest.mock('flowise-components', () => ({}), { virtual: true })
-jest.mock('../Interface', () => ({}), { virtual: true })
+jest.mock(
+    '../Interface',
+    () => ({
+        ChatType: {
+            INTERNAL: 'INTERNAL',
+            EXTERNAL: 'EXTERNAL',
+            EVALUATION: 'EVALUATION',
+            MCP: 'MCP',
+            SCHEDULED: 'SCHEDULED'
+        }
+    }),
+    { virtual: true }
+)
 jest.mock('../utils/telemetry', () => ({ Telemetry: class Telemetry {} }))
 jest.mock('../CachePool', () => ({ CachePool: class CachePool {} }))
 jest.mock('../UsageCacheManager', () => ({ UsageCacheManager: class UsageCacheManager {} }))
@@ -67,6 +79,7 @@ const makeRecord = (overrides: Record<string, unknown> = {}) => ({
     timezone: 'UTC',
     enabled: true,
     workspaceId: 'ws-1',
+    scheduleInputMode: 'text' as const,
     defaultInput: 'hello',
     endDate: undefined as Date | undefined,
     nextRunAt: undefined as Date | undefined,
@@ -112,7 +125,7 @@ beforeEach(() => {
         sseStreamer: {},
         identityManager: { getProductIdFromSubscription: jest.fn().mockResolvedValue('prod-1') }
     }
-    ;(scheduleService.isDefaultInputValid as jest.Mock).mockReturnValue(true)
+    ;(scheduleService.isScheduleInputValid as jest.Mock).mockReturnValue(true)
     ;(scheduleService.createTriggerLog as jest.Mock).mockResolvedValue({ id: 'log-1' })
     ;(scheduleService.updateTriggerLog as jest.Mock).mockResolvedValue(undefined)
     ;(scheduleService.updateScheduleAfterRun as jest.Mock).mockResolvedValue(undefined)
@@ -231,7 +244,7 @@ describe('executeScheduleJob — expired or invalid input', () => {
 
     it('returns undefined when default input is invalid', async () => {
         mockFindOneBy.mockResolvedValue(makeRecord())
-        ;(scheduleService.isDefaultInputValid as jest.Mock).mockReturnValue(false)
+        ;(scheduleService.isScheduleInputValid as jest.Mock).mockReturnValue(false)
 
         const result = await executeScheduleJob(mockCtx, 'rec-1')
 
@@ -241,7 +254,7 @@ describe('executeScheduleJob — expired or invalid input', () => {
     it('calls onRecordExpiredOrInvalid when default input is invalid', async () => {
         const record = makeRecord()
         mockFindOneBy.mockResolvedValue(record)
-        ;(scheduleService.isDefaultInputValid as jest.Mock).mockReturnValue(false)
+        ;(scheduleService.isScheduleInputValid as jest.Mock).mockReturnValue(false)
         const onRecordExpiredOrInvalid = jest.fn()
 
         await executeScheduleJob(mockCtx, 'rec-1', { onRecordExpiredOrInvalid })
@@ -251,7 +264,7 @@ describe('executeScheduleJob — expired or invalid input', () => {
 
     it('creates a SKIPPED log when default input is invalid', async () => {
         mockFindOneBy.mockResolvedValue(makeRecord())
-        ;(scheduleService.isDefaultInputValid as jest.Mock).mockReturnValue(false)
+        ;(scheduleService.isScheduleInputValid as jest.Mock).mockReturnValue(false)
 
         await executeScheduleJob(mockCtx, 'rec-1')
 
@@ -260,7 +273,7 @@ describe('executeScheduleJob — expired or invalid input', () => {
 
     it('does not execute the agentflow when input is invalid', async () => {
         mockFindOneBy.mockResolvedValue(makeRecord())
-        ;(scheduleService.isDefaultInputValid as jest.Mock).mockReturnValue(false)
+        ;(scheduleService.isScheduleInputValid as jest.Mock).mockReturnValue(false)
 
         await executeScheduleJob(mockCtx, 'rec-1')
 
@@ -388,10 +401,12 @@ describe('executeScheduleJob — successful execution', () => {
         expect(mockExecuteAgentFlow).toHaveBeenCalledWith(
             expect.objectContaining({
                 isInternal: true,
-                isTool: true,
+                chatType: 'SCHEDULED',
                 incomingInput: expect.objectContaining({ streaming: false })
             })
         )
+        // isTool is not set — scheduled runs are not tool invocations
+        expect(mockExecuteAgentFlow.mock.calls[0][0].isTool).toBeUndefined()
     })
 
     it('uses chatflow.workspaceId when set', async () => {
@@ -439,6 +454,94 @@ describe('executeScheduleJob — successful execution', () => {
         expect(mockExecuteAgentFlow).toHaveBeenCalledWith(
             expect.objectContaining({ incomingInput: expect.objectContaining({ question: '' }) })
         )
+    })
+})
+
+// ─── executeScheduleJob: scheduleInputMode variants ───────────────────────────
+
+describe('executeScheduleJob — scheduleInputMode', () => {
+    it('text mode (default): passes defaultInput as incomingInput.question', async () => {
+        const record = makeRecord({ scheduleInputMode: 'text', defaultInput: 'daily summary' })
+        mockFindOneBy.mockResolvedValueOnce(record).mockResolvedValueOnce(makeChatFlow())
+        mockExecuteAgentFlow.mockResolvedValue({})
+
+        await executeScheduleJob(mockCtx, 'rec-1')
+
+        const call = mockExecuteAgentFlow.mock.calls[0][0]
+        expect(call.incomingInput.question).toBe('daily summary')
+        expect(call.incomingInput.form).toBeUndefined()
+    })
+
+    it('form mode: parses defaultForm JSON into incomingInput.form and omits question', async () => {
+        const record = makeRecord({
+            scheduleInputMode: 'form',
+            defaultInput: '',
+            defaultForm: JSON.stringify({ team: 'engineering', metric: 'p95' })
+        })
+        mockFindOneBy.mockResolvedValueOnce(record).mockResolvedValueOnce(makeChatFlow())
+        mockExecuteAgentFlow.mockResolvedValue({})
+
+        await executeScheduleJob(mockCtx, 'rec-1')
+
+        const call = mockExecuteAgentFlow.mock.calls[0][0]
+        expect(call.incomingInput.form).toEqual({ team: 'engineering', metric: 'p95' })
+        expect(call.incomingInput.question).toBeUndefined()
+    })
+
+    it('form mode: falls back to {} when defaultForm is missing', async () => {
+        const record = makeRecord({ scheduleInputMode: 'form', defaultInput: '', defaultForm: undefined })
+        mockFindOneBy.mockResolvedValueOnce(record).mockResolvedValueOnce(makeChatFlow())
+        mockExecuteAgentFlow.mockResolvedValue({})
+
+        await executeScheduleJob(mockCtx, 'rec-1')
+
+        const call = mockExecuteAgentFlow.mock.calls[0][0]
+        expect(call.incomingInput.form).toEqual({})
+    })
+
+    it('form mode: falls back to {} when defaultForm is invalid JSON', async () => {
+        const record = makeRecord({ scheduleInputMode: 'form', defaultInput: '', defaultForm: '{not valid json' })
+        mockFindOneBy.mockResolvedValueOnce(record).mockResolvedValueOnce(makeChatFlow())
+        mockExecuteAgentFlow.mockResolvedValue({})
+
+        await executeScheduleJob(mockCtx, 'rec-1')
+
+        const call = mockExecuteAgentFlow.mock.calls[0][0]
+        expect(call.incomingInput.form).toEqual({})
+    })
+
+    it('none mode: passes a single-space sentinel as question (not empty string) and no form, and does not auto-disable', async () => {
+        // Important: form/none must not go through isScheduleInputValid at all.
+        ;(scheduleService.isScheduleInputValid as jest.Mock).mockReturnValue(false)
+        const onRecordExpiredOrInvalid = jest.fn()
+        const record = makeRecord({ scheduleInputMode: 'none', defaultInput: '' })
+        mockFindOneBy.mockResolvedValueOnce(record).mockResolvedValueOnce(makeChatFlow())
+        mockExecuteAgentFlow.mockResolvedValue({})
+
+        await executeScheduleJob(mockCtx, 'rec-1', { onRecordExpiredOrInvalid })
+
+        const call = mockExecuteAgentFlow.mock.calls[0][0]
+        // Single-space sentinel — empty string would be filtered out by downstream Agent nodes.
+        expect(call.incomingInput.question).toBe(' ')
+        expect(call.incomingInput.form).toBeUndefined()
+        expect(onRecordExpiredOrInvalid).not.toHaveBeenCalled()
+    })
+
+    it('form mode: bypasses isScheduleInputValid guard (save path already validated)', async () => {
+        ;(scheduleService.isScheduleInputValid as jest.Mock).mockReturnValue(false)
+        const onRecordExpiredOrInvalid = jest.fn()
+        const record = makeRecord({
+            scheduleInputMode: 'form',
+            defaultInput: '',
+            defaultForm: JSON.stringify({ a: 1 })
+        })
+        mockFindOneBy.mockResolvedValueOnce(record).mockResolvedValueOnce(makeChatFlow())
+        mockExecuteAgentFlow.mockResolvedValue({})
+
+        await executeScheduleJob(mockCtx, 'rec-1', { onRecordExpiredOrInvalid })
+
+        expect(mockExecuteAgentFlow).toHaveBeenCalled()
+        expect(onRecordExpiredOrInvalid).not.toHaveBeenCalled()
     })
 })
 

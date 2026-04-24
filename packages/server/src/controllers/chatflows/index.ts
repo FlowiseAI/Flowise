@@ -14,7 +14,7 @@ import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import { sanitizeFlowDataForPublicEndpoint } from '../../utils/sanitizeFlowData'
 import scheduleService from '../../services/schedule'
-import { ScheduleBeat } from '../../queue/ScheduleBeat'
+import { ScheduleBeat } from '../../schedule/ScheduleBeat'
 import { stripProtectedFields } from '../../utils/stripProtectedFields'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
@@ -301,6 +301,32 @@ const getScheduleStatus = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+const getScheduleTriggerLogs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params?.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatflowsController.getScheduleTriggerLogs - id not provided!'
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                'Error: chatflowsController.getScheduleTriggerLogs - workspace not found!'
+            )
+        }
+        const page = req.query.page ? parseInt(String(req.query.page), 10) : undefined
+        const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : undefined
+        const statusRaw = req.query.status
+        const status = Array.isArray(statusRaw) ? (statusRaw as any) : statusRaw ? (String(statusRaw) as any) : undefined
+        const result = await scheduleService.getTriggerLogs(req.params.id, workspaceId, { page, limit, status })
+        return res.json(result)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const toggleScheduleEnabled = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.params?.id) {
@@ -338,5 +364,6 @@ export default {
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
     getScheduleStatus,
+    getScheduleTriggerLogs,
     toggleScheduleEnabled
 }

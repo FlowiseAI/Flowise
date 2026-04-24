@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm'
-import { IScheduleRecord } from '../../Interface'
+import { IScheduleRecord, ScheduleInputMode } from '../../Interface'
 
 export enum ScheduleTriggerType {
     AGENTFLOW = 'AGENTFLOW'
@@ -36,9 +36,16 @@ export class ScheduleRecord implements IScheduleRecord {
     @Column({ type: 'boolean', default: true })
     enabled: boolean
 
-    /** Optional static text sent as question when the flow fires */
+    @Column({ type: 'varchar', length: 16 })
+    scheduleInputMode: ScheduleInputMode
+
+    /** Optional static text sent as question when the flow fires (scheduleInputMode='text') */
     @Column({ nullable: true, type: 'text' })
     defaultInput?: string
+
+    /** Optional JSON-serialized Record<string, any> passed as incomingInput.form (scheduleInputMode='form') */
+    @Column({ nullable: true, type: 'text' })
+    defaultForm?: string
 
     @Column({ nullable: true })
     lastRunAt?: Date

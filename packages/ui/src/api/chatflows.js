@@ -26,6 +26,8 @@ const getScheduleStatus = (id) => client.get(`/chatflows/${id}/schedule/status`)
 
 const toggleScheduleEnabled = (id, enabled) => client.patch(`/chatflows/${id}/schedule/enabled`, { enabled })
 
+const getScheduleTriggerLogs = (id, params) => client.get(`/chatflows/${id}/schedule/trigger-logs`, { params })
+
 export default {
     getAllChatflows,
     getAllAgentflows,
@@ -39,5 +41,6 @@ export default {
     getHasChatflowChanged,
     generateAgentflow,
     getScheduleStatus,
-    toggleScheduleEnabled
+    toggleScheduleEnabled,
+    getScheduleTriggerLogs
 }

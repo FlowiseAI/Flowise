@@ -11,13 +11,14 @@ import { DataSource } from 'typeorm'
 import {
     validateCronExpression,
     computeNextRunAt,
-    isDefaultInputValid,
+    isScheduleInputValid,
     resolveScheduleCron,
     validateVisualPickerFields,
     buildCronFromVisualPicker,
     canScheduleEnable
 } from './utils'
 import { ICommonObject } from 'flowise-components'
+import { ScheduleInputMode } from '../../Interface'
 
 export {
     validateCronExpression,
@@ -25,7 +26,7 @@ export {
     validateVisualPickerFields,
     buildCronFromVisualPicker,
     resolveScheduleCron,
-    isDefaultInputValid,
+    isScheduleInputValid,
     canScheduleEnable
 } from './utils'
 export type { VisualPickerInput } from './utils'
@@ -37,7 +38,9 @@ export interface CreateScheduleInput {
     cronExpression: string
     timezone?: string
     enabled?: boolean
+    scheduleInputMode: ScheduleInputMode
     defaultInput?: string
+    defaultForm?: string
     endDate?: Date
     workspaceId: string
 }
@@ -46,7 +49,9 @@ export interface UpdateScheduleInput {
     cronExpression?: string
     timezone?: string
     enabled?: boolean
+    scheduleInputMode?: ScheduleInputMode
     defaultInput?: string
+    defaultForm?: string
     endDate?: Date | null
 }
 
@@ -87,7 +92,9 @@ const createOrUpdateSchedule = async (input: CreateScheduleInput): Promise<Sched
                 timezone
             }
             if (input.enabled !== undefined) bodySchedule.enabled = input.enabled
+            if (input.scheduleInputMode !== undefined) bodySchedule.scheduleInputMode = input.scheduleInputMode
             if (input.defaultInput !== undefined) bodySchedule.defaultInput = input.defaultInput
+            if (input.defaultForm !== undefined) bodySchedule.defaultForm = input.defaultForm
             if (input.nodeId !== undefined) bodySchedule.nodeId = input.nodeId
             bodySchedule.endDate = input.endDate ?? null
             bodySchedule.nextRunAt = computeNextRunAt(cronExpression, timezone) ?? null
@@ -107,7 +114,9 @@ const createOrUpdateSchedule = async (input: CreateScheduleInput): Promise<Sched
             cronExpression: cronExpression,
             timezone: timezone,
             enabled: input.enabled !== undefined ? input.enabled : validation.valid, // default to enabled if valid, disabled if invalid
+            scheduleInputMode: input.scheduleInputMode,
             defaultInput: input.defaultInput,
+            defaultForm: input.defaultForm,
             endDate: input.endDate,
             nextRunAt: computeNextRunAt(cronExpression, timezone) ?? undefined,
             workspaceId: input.workspaceId
@@ -232,10 +241,19 @@ const getScheduleStatus = async (
                 }
             }
 
-            // defaultInput is required for cron-based schedules since there is no user to provide a question at runtime
-            const isDefaultInputValidResult = isDefaultInputValid(inputs.scheduleDefaultInput ?? record?.defaultInput)
-            if (!isDefaultInputValidResult) {
-                return { record, canEnable: false, reason: 'Default input is required to enable schedule' }
+            // Validate input presence according to the chosen schedule input mode.
+            // 'text' requires a non-empty default input; 'form' requires at least one form field; 'none' is always valid.
+            const mode = (inputs.scheduleInputMode as ScheduleInputMode) ?? record?.scheduleInputMode
+            if (!mode) {
+                return { record, canEnable: false, reason: 'Schedule Input Mode is required' }
+            }
+            const isInputValidResult = isScheduleInputValid(mode, inputs.scheduleDefaultInput, inputs.scheduleFormInputTypes)
+            if (!isInputValidResult) {
+                const reason =
+                    mode === 'form'
+                        ? 'At least one form field must be defined to enable schedule'
+                        : 'Default input is required to enable schedule'
+                return { record, canEnable: false, reason }
             }
 
             return { record, canEnable: true }
@@ -325,6 +343,54 @@ const updateTriggerLog = async (
     }
 }
 
+// ─── Trigger-log queries (for the Schedule History UI) ───────────────────────
+
+export interface GetTriggerLogsFilter {
+    /** Optional status filter (single value or array) */
+    status?: ScheduleTriggerStatus | ScheduleTriggerStatus[]
+    /** 1-based page */
+    page?: number
+    /** Page size; defaults to 20, clamped to [1, 100] */
+    limit?: number
+}
+
+/**
+ * Returns a paginated list of trigger-log rows for the schedule of a given target
+ * (chatflow/agentflow), scoped to the workspace. Newest first.
+ */
+const getTriggerLogs = async (
+    targetId: string,
+    workspaceId: string,
+    filter: GetTriggerLogsFilter = {}
+): Promise<{ data: ScheduleTriggerLog[]; total: number; page: number; limit: number }> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ScheduleTriggerLog)
+
+        const page = Math.max(1, Math.floor(filter.page ?? 1))
+        const limit = Math.max(1, Math.min(100, Math.floor(filter.limit ?? 20)))
+
+        const where: Record<string, unknown> = { targetId, workspaceId }
+        if (filter.status) {
+            where.status = Array.isArray(filter.status) && filter.status.length === 1 ? filter.status[0] : filter.status
+        }
+
+        const [data, total] = await repo.findAndCount({
+            where: where as any,
+            order: { scheduledAt: 'DESC' },
+            skip: (page - 1) * limit,
+            take: limit
+        })
+
+        return { data, total, page, limit }
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: scheduleService.getTriggerLogs - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 // ─── Visual Picker helpers ──────────────────────────────────────────────────
 
 export default {
@@ -341,6 +407,7 @@ export default {
     updateTriggerLog,
     getScheduleStatus,
     toggleScheduleEnabled,
-    isDefaultInputValid,
+    getTriggerLogs,
+    isScheduleInputValid,
     canScheduleEnable
 }

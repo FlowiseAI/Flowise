@@ -33,8 +33,8 @@ jest.mock('../database/entities/ScheduleRecord', () => ({
 jest.mock('../utils/getRunningExpressApp', () => ({
     getRunningExpressApp: jest.fn().mockReturnValue(mockAppServer)
 }))
-jest.mock('./ScheduleQueue', () => ({ ScheduleQueue: class ScheduleQueue {} }))
-jest.mock('./QueueManager', () => ({
+jest.mock('../queue/ScheduleQueue', () => ({ ScheduleQueue: class ScheduleQueue {} }))
+jest.mock('../queue/QueueManager', () => ({
     QueueManager: {
         getInstance: jest.fn().mockReturnValue({
             getQueue: jest.fn().mockReturnValue(mockScheduleQueue)
@@ -64,7 +64,7 @@ jest.mock('node-cron', () => ({
 import { ScheduleBeat } from './ScheduleBeat'
 import { executeScheduleJob } from './ScheduleExecutor'
 import scheduleService from '../services/schedule'
-import { QueueManager } from './QueueManager'
+import { QueueManager } from '../queue/QueueManager'
 import cron from 'node-cron'
 
 const mockExecuteScheduleJob = executeScheduleJob as jest.Mock

@@ -47,5 +47,10 @@ router.get(
     chatflowsController.getScheduleStatus
 )
 router.patch('/:id/schedule/enabled', checkAnyPermission('chatflows:update,agentflows:update'), chatflowsController.toggleScheduleEnabled)
+router.get(
+    '/:id/schedule/trigger-logs',
+    checkAnyPermission('chatflows:view,chatflows:update,agentflows:view,agentflows:update'),
+    chatflowsController.getScheduleTriggerLogs
+)
 
 export default router
