@@ -237,7 +237,7 @@ export function CreateCredentialDialog({ open, credentialNames, onClose, onCreat
                         )}
 
                         <Box sx={{ p: 2 }}>
-                            <Typography variant='overline'>
+                            <Typography>
                                 Credential Name
                                 <span style={{ color: theme.palette.error.main }}>&nbsp;*</span>
                             </Typography>

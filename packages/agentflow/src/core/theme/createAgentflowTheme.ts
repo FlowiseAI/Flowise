@@ -80,14 +80,20 @@ export function createAgentflowTheme(isDarkMode: boolean): Theme {
                     root: {
                         '&.Mui-selected': {
                             color: isDarkMode ? '#fff' : tokens.colors.palette.secondary.dark,
-                            backgroundColor: isDarkMode ? '#454c59' : tokens.colors.palette.secondary.light,
+                            backgroundColor: isDarkMode
+                                ? tokens.colors.background.listItemSelected.dark
+                                : tokens.colors.palette.secondary.light,
                             '&:hover': {
-                                backgroundColor: isDarkMode ? '#454c59' : tokens.colors.palette.secondary.light
+                                backgroundColor: isDarkMode
+                                    ? tokens.colors.background.listItemSelected.dark
+                                    : tokens.colors.palette.secondary.light
                             }
                         },
                         '&:hover': {
                             color: isDarkMode ? '#fff' : tokens.colors.palette.secondary.dark,
-                            backgroundColor: isDarkMode ? '#454c59' : tokens.colors.palette.secondary.light
+                            backgroundColor: isDarkMode
+                                ? tokens.colors.background.listItemSelected.dark
+                                : tokens.colors.palette.secondary.light
                         }
                     }
                 }
