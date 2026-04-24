@@ -67,7 +67,7 @@
             "sqlite3"
         ],
         "overrides": {
-            "axios": "1.12.0",
+            "axios": "1.15.0",
             "body-parser": "2.0.2",
             "braces": "3.0.3",
             "cross-spawn": "7.0.6",

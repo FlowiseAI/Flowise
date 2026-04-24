@@ -6,13 +6,14 @@
 
 import { type ComponentType, lazy, Suspense, useState } from 'react'
 
-import { apiBaseUrl, token } from './config'
+import { agentflowId, apiBaseUrl, token } from './config'
 import {
     AllNodeTypesExampleProps,
     BasicExampleProps,
     CustomNodeExampleProps,
     CustomUIExampleProps,
     DarkModeExampleProps,
+    E2eExampleProps,
     FilteredComponentsExampleProps,
     MultiNodeFlowProps,
     StatusIndicatorsExampleProps,
@@ -33,6 +34,13 @@ const examples: Array<{
         description: 'Simple canvas with imperative methods',
         props: BasicExampleProps,
         component: lazy(() => import('./demos/BasicExample').then((m) => ({ default: m.BasicExample })))
+    },
+    {
+        id: 'e2e',
+        name: 'E2E (Live Instance)',
+        description: 'Full integration: load/save/delete flow, test run, run status — requires VITE_FLOW_ID',
+        props: E2eExampleProps,
+        component: lazy(() => import('./demos/E2eExample').then((m) => ({ default: m.E2eExample })))
     },
     {
         id: 'multi-node',
@@ -115,7 +123,7 @@ function LoadingFallback() {
 }
 
 export default function App() {
-    const [selectedExample, setSelectedExample] = useState<ExampleId>('basic')
+    const [selectedExample, setSelectedExample] = useState<ExampleId>(agentflowId ? 'e2e' : 'basic')
     const [showProps, setShowProps] = useState(false)
     // Config loaded from environment variables
 
