@@ -73,6 +73,8 @@ export interface IChatFlow {
     type?: ChatflowType
     mcpServerConfig?: string
     workspaceId: string
+    webhookSecret?: string | null
+    webhookSecretConfigured?: boolean
 }
 
 export interface IChatMessage {

@@ -2,10 +2,11 @@ import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 
 const mockGetChatflowById = jest.fn()
+const mockGetWebhookSecret = jest.fn()
 
 jest.mock('../chatflows', () => ({
     __esModule: true,
-    default: { getChatflowById: mockGetChatflowById }
+    default: { getChatflowById: mockGetChatflowById, getWebhookSecret: mockGetWebhookSecret }
 }))
 
 import webhookService from './index'
@@ -18,9 +19,11 @@ const makeChatflow = (
         webhookContentType?: string
         webhookHeaderParams?: unknown
         webhookQueryParams?: unknown
-    }
+    },
+    entityFields?: { webhookSecretConfigured?: boolean }
 ) => ({
     id: 'test-id',
+    ...entityFields,
     flowData: JSON.stringify({
         nodes: [
             {
@@ -203,6 +206,60 @@ describe('validateWebhookChatflow', () => {
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: 42 })).resolves.toBeUndefined()
     })
 
+    it('resolves when number param is sent as a numeric string (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: '42' })).resolves.toBeUndefined()
+    })
+
+    it('throws 400 when number param is an empty string (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'count', type: 'number', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { count: '' })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('count')
+        })
+    })
+
+    it('resolves when boolean param is a native boolean (JSON)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: true })).resolves.toBeUndefined()
+    })
+
+    it('resolves when boolean param is the string "true" (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'true' })).resolves.toBeUndefined()
+    })
+
+    it('resolves when boolean param is the string "false" (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'false' })).resolves.toBeUndefined()
+    })
+
+    it('throws 400 when boolean param is an invalid string like "yes" (form-encoded)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'active', type: 'boolean', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { active: 'yes' })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('active')
+        })
+    })
+
     // --- Query param validation ---
 
     it('throws 400 when a required query param is missing', async () => {
@@ -218,5 +275,73 @@ describe('validateWebhookChatflow', () => {
         mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', { webhookQueryParams: [{ name: 'page', required: true }] }))
 
         await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, { page: '2' })).resolves.toBeUndefined()
+    })
+
+    // --- HMAC signature verification ---
+
+    const SECRET = 'test-secret-abc123'
+    const RAW_BODY = Buffer.from('{"event":"push"}')
+
+    function sign(secret: string, body: Buffer): string {
+        const { createHmac } = require('crypto')
+        return createHmac('sha256', secret).update(body).digest('hex')
+    }
+
+    it('resolves without signature check when no webhookSecret is configured', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger'))
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, RAW_BODY)).resolves.toBeUndefined()
+    })
+
+    it('resolves when secret is set and signature is valid', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const headers = { 'x-webhook-signature': sign(SECRET, RAW_BODY) }
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, RAW_BODY)
+        ).resolves.toBeUndefined()
+    })
+
+    it('throws 401 when secret is set but X-Webhook-Signature header is missing', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', {}, {}, RAW_BODY)).rejects.toMatchObject({
+            statusCode: 401
+        })
+    })
+
+    it('throws 401 when secret is set but signature is wrong', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const headers = { 'x-webhook-signature': 'deadbeef' }
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, RAW_BODY)).rejects.toMatchObject(
+            {
+                statusCode: 401
+            }
+        )
+    })
+
+    it('throws 401 when payload is tampered (signature computed against original body)', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const tamperedBody = Buffer.from('{"event":"delete"}')
+        const headers = { 'x-webhook-signature': sign(SECRET, RAW_BODY) }
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, tamperedBody)
+        ).rejects.toMatchObject({ statusCode: 401 })
+    })
+
+    it('throws 401 when secret is set but rawBody is undefined', async () => {
+        mockGetChatflowById.mockResolvedValue(makeChatflow('webhookTrigger', {}, { webhookSecretConfigured: true }))
+        mockGetWebhookSecret.mockResolvedValue(SECRET)
+        const headers = { 'x-webhook-signature': sign(SECRET, RAW_BODY) }
+
+        await expect(
+            webhookService.validateWebhookChatflow('some-id', undefined, {}, 'POST', headers, {}, undefined)
+        ).rejects.toMatchObject({ statusCode: 401 })
     })
 })

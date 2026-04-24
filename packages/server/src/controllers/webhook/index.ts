@@ -7,7 +7,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 
 const createWebhook = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        if (req.params.id == null) {
+        if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: webhookController.createWebhook - id not provided!`)
         }
 
@@ -25,7 +25,15 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             }
         }
 
-        await webhookService.validateWebhookChatflow(req.params.id, workspaceId, body, req.method, req.headers, req.query)
+        await webhookService.validateWebhookChatflow(
+            req.params.id,
+            workspaceId,
+            body,
+            req.method,
+            req.headers,
+            req.query,
+            (req as any).rawBody
+        )
 
         // Namespace the webhook payload so $webhook.body.*, $webhook.headers.*, $webhook.query.* can coexist
         req.body = {

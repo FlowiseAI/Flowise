@@ -165,7 +165,8 @@ describe('createWebhook', () => {
             { foo: 'bar' },
             'POST',
             expect.any(Object),
-            expect.any(Object)
+            expect.any(Object),
+            undefined // rawBody — not set on mock request
         )
     })
 })
