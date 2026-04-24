@@ -251,7 +251,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
                     size='small'
                     variant='outlined'
                     disabled={isAddDisabled}
-                    sx={{ borderRadius: '16px', mt: 2 }}
+                    sx={{ borderRadius: '16px', mt: 1 }}
                     startIcon={<IconPlus />}
                     onClick={handleAddEntry}
                 >

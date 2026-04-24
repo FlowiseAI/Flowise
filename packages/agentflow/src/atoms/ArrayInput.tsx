@@ -224,7 +224,7 @@ export function ArrayInput({
                 size='small'
                 variant='outlined'
                 disabled={disabled}
-                sx={{ borderRadius: '16px', mt: 2 }}
+                sx={{ borderRadius: '16px', mt: 1 }}
                 startIcon={<IconPlus />}
                 onClick={handleAddItem}
             >

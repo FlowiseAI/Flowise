@@ -226,7 +226,7 @@ export function MessagesInput({ inputParam, data, disabled = false, variableItem
                     size='small'
                     variant='outlined'
                     disabled={isAddDisabled}
-                    sx={{ borderRadius: '16px', mt: 2 }}
+                    sx={{ borderRadius: '16px', mt: 1 }}
                     startIcon={<IconPlus />}
                     onClick={handleAddMessage}
                 >
