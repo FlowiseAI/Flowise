@@ -12,8 +12,9 @@ const validateWebhookChatflow = async (
     method?: string,
     headers?: Record<string, any>,
     query?: Record<string, any>,
-    rawBody?: Buffer
-): Promise<void> => {
+    rawBody?: Buffer,
+    options?: { skipFieldValidation?: boolean }
+): Promise<{ callbackUrl?: string; callbackSecret?: string }> => {
     try {
         const chatflow = await chatflowsService.getChatflowById(chatflowId, workspaceId)
         if (!chatflow) {
@@ -27,6 +28,9 @@ const validateWebhookChatflow = async (
         if (startInputType !== 'webhookTrigger') {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} is not configured as a webhook trigger`)
         }
+
+        const callbackUrl = (startNode?.data?.inputs?.callbackUrl as string | undefined) || undefined
+        const callbackSecret = (startNode?.data?.inputs?.callbackSecret as string | undefined) || undefined
 
         // Signature verification (runs before any other validation to fail-fast on bad auth)
         if (chatflow.webhookSecretConfigured) {
@@ -48,6 +52,8 @@ const validateWebhookChatflow = async (
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Invalid or missing webhook signature')
             }
         }
+
+        if (options?.skipFieldValidation) return { callbackUrl, callbackSecret }
 
         // Method validation
         const webhookMethod = startNode?.data?.inputs?.webhookMethod
@@ -105,6 +111,8 @@ const validateWebhookChatflow = async (
         if (missingQueryParams.length > 0) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Missing required query parameters: ${missingQueryParams.join(', ')}`)
         }
+
+        return { callbackUrl, callbackSecret }
     } catch (error) {
         if (error instanceof InternalFlowiseError) throw error
         throw new InternalFlowiseError(
