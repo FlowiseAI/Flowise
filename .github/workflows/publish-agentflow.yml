@@ -18,12 +18,13 @@ on:
                 required: false
                 type: string
             tag:
-                description: 'npm dist-tag'
+                description: 'npm dist-tag (dev = internal, next = pre-release, latest = stable)'
                 required: false
                 type: choice
                 default: 'dev'
                 options:
                     - dev
+                    - next
                     - latest
 
 jobs:
