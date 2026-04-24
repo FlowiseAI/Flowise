@@ -5,6 +5,7 @@ import { RateLimiterManager } from '../../utils/rateLimit'
 import predictionsServices from '../../services/predictions'
 import webhookService from '../../services/webhook'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { checkDenyList } from 'flowise-components'
 import { dispatchCallback } from '../../utils/callbackDispatcher'
 import { getErrorMessage } from '../../errors/utils'
 
@@ -41,8 +42,7 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             isResume ? { skipFieldValidation: true } : undefined
         )
 
-        // Header takes priority over Start node config
-        const callbackUrl: string | undefined = (req.headers['x-callback-url'] as string | undefined) || nodeCallbackUrl
+        const callbackUrl: string | undefined = nodeCallbackUrl
 
         // Namespace the webhook payload so $webhook.body.*, $webhook.headers.*, $webhook.query.* can coexist
         req.body = {
@@ -62,8 +62,9 @@ const createWebhook = async (req: Request, res: Response, next: NextFunction) =>
             try {
                 const parsed = new URL(callbackUrl)
                 if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') throw new Error()
+                await checkDenyList(callbackUrl)
             } catch {
-                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid callbackUrl: must be a valid http or https URL`)
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid callbackUrl: must be a valid and safe http or https URL`)
             }
 
             // Pre-assign chatId so the 202 response and the background execution share the same ID
