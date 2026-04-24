@@ -30,9 +30,9 @@ WORKDIR /usr/src/flowise
 # Copy app source
 COPY . .
 
-# Install dependencies and build
+# Install dependencies and build (excluding sdk packages not needed for Docker)
 RUN pnpm install && \
-    pnpm build
+    pnpm build -- --filter='!@flowiseai/agentflow' --filter='!@flowiseai/observe'
 
 # Give the node user ownership of the application files
 RUN chown -R node:node .
