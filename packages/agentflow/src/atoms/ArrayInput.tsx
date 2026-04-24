@@ -17,7 +17,7 @@ import type { VariableItem } from './VariablePicker'
  * matching the v2 suggestionOption behaviour where `{{output}}` and
  * `{{output.<key>}}` appear for structured-output fields.
  */
-export function buildNodeOutputVariables(data: NodeData): VariableItem[] {
+function buildNodeOutputVariables(data: NodeData): VariableItem[] {
     const vars: VariableItem[] = [
         { label: 'output', description: 'Output from the current node', category: 'Node Outputs', value: '{{output}}' }
     ]
