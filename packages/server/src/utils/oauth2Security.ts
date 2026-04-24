@@ -73,8 +73,13 @@ export function validateOAuth2Url(url: string): void {
  *
  * @param data - The raw JSON response body from the OAuth2 token endpoint
  * @returns A new object containing only the allowed OAuth2 token fields
+ * @throws Error if the data is not a valid object (null, undefined, array, or primitive type)
  */
 export function extractOAuth2TokenFields(data: Record<string, any>): Record<string, any> {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw new Error('Invalid OAuth2 token response: expected an object')
+    }
+
     const result: Record<string, any> = {}
     for (const key of ALLOWED_OAUTH2_TOKEN_FIELDS) {
         if (data[key] !== undefined) {

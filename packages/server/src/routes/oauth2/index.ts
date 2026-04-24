@@ -56,17 +56,16 @@
  * - token_received_at: When token was received (ISO string)
  */
 
-import express from 'express'
 import axios from 'axios'
-import { Request, Response, NextFunction } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { secureAxiosRequest } from 'flowise-components'
-import { validateOAuth2Url, extractOAuth2TokenFields } from '../../utils/oauth2Security'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Credential } from '../../database/entities/Credential'
-import { decryptCredentialData, encryptCredentialData } from '../../utils'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-import { generateSuccessPage, generateErrorPage } from './templates'
+import { Credential } from '../../database/entities/Credential'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { decryptCredentialData, encryptCredentialData } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { extractOAuth2TokenFields, validateOAuth2Url } from '../../utils/oauth2Security'
+import { generateErrorPage, generateSuccessPage } from './templates'
 
 const router = express.Router()
 
@@ -271,6 +270,16 @@ router.get('/callback', async (req: Request, res: Response) => {
             }
         })
 
+        if (tokenResponse.status >= 400) {
+            const errorHtml = generateErrorPage(
+                tokenResponse.data?.error || 'token_exchange_failed',
+                tokenResponse.data?.error_description || 'Token exchange failed',
+                tokenResponse.data?.error_description ? `Description: ${tokenResponse.data.error_description}` : undefined
+            )
+            res.setHeader('Content-Type', 'text/html')
+            return res.status(tokenResponse.status).send(errorHtml)
+        }
+
         const tokenData = extractOAuth2TokenFields(tokenResponse.data)
 
         const updatedCredentialData: any = {
@@ -390,6 +399,14 @@ router.post('/refresh/:credentialId', async (req: Request, res: Response, next: 
                 Accept: 'application/json'
             }
         })
+
+        if (tokenResponse.status >= 400) {
+            return res.status(tokenResponse.status).json({
+                success: false,
+                message: `Token refresh failed: ${tokenResponse.data?.error_description || tokenResponse.statusText}`,
+                details: tokenResponse.data
+            })
+        }
 
         const tokenData = extractOAuth2TokenFields(tokenResponse.data)
 
