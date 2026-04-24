@@ -32,7 +32,7 @@ COPY . .
 
 # Install dependencies and build (excluding sdk packages not needed for Docker)
 RUN pnpm install && \
-    pnpm build -- --filter='!@flowiseai/agentflow' --filter='!@flowiseai/observe'
+    pnpm build:docker
 
 # Give the node user ownership of the application files
 RUN chown -R node:node .
