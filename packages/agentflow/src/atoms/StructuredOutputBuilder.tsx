@@ -245,7 +245,7 @@ export function StructuredOutputBuilder({ inputParam, data, disabled = false, on
             ))}
 
             {/* Add button */}
-            <Box sx={{ px: 2 }}>
+            <Box sx={{ px: 2, pb: 2 }}>
                 <Button
                     fullWidth
                     size='small'
