@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import type { InputParam, NodeData } from '@/core/types'
 
-import { ArrayInput, buildNodeOutputVariables } from './ArrayInput'
+import { ArrayInput } from './ArrayInput'
 import type { VariableItem } from './VariablePicker'
 
 // --- Mocks ---
@@ -525,79 +525,6 @@ describe('ArrayInput', () => {
         expect(inputs.toolAgentflowSelectedTool).toBe('calculator')
         // The item's own fields are also present
         expect(inputs.inputArgName).toBe('')
-    })
-})
-
-// ── buildNodeOutputVariables ────────────────────────────────────────────────
-
-describe('buildNodeOutputVariables', () => {
-    it('returns {{output}} when node has no structured outputs', () => {
-        const data: NodeData = { id: 'n1', name: 'agentflow', label: 'Agent', inputs: {} } as NodeData
-        const vars = buildNodeOutputVariables(data)
-        expect(vars).toEqual([
-            { label: 'output', description: 'Output from the current node', category: 'Node Outputs', value: '{{output}}' }
-        ])
-    })
-
-    it('includes agentStructuredOutput fields after {{output}}', () => {
-        const data: NodeData = {
-            id: 'n1',
-            name: 'agentflow',
-            label: 'Agent',
-            inputs: {
-                agentStructuredOutput: [
-                    { key: 'name', description: 'The name field' },
-                    { key: 'score', description: 'The score field' }
-                ]
-            }
-        } as NodeData
-        const vars = buildNodeOutputVariables(data)
-        expect(vars).toHaveLength(3)
-        expect(vars[0].value).toBe('{{output}}')
-        expect(vars[1]).toMatchObject({ label: 'output.name', value: '{{output.name}}', description: 'The name field' })
-        expect(vars[2]).toMatchObject({ label: 'output.score', value: '{{output.score}}', description: 'The score field' })
-    })
-
-    it('includes llmStructuredOutput fields when agentStructuredOutput is absent', () => {
-        const data: NodeData = {
-            id: 'n1',
-            name: 'llm',
-            label: 'LLM',
-            inputs: {
-                llmStructuredOutput: [{ key: 'summary', description: 'Summary text' }]
-            }
-        } as NodeData
-        const vars = buildNodeOutputVariables(data)
-        expect(vars).toHaveLength(2)
-        expect(vars[1]).toMatchObject({ label: 'output.summary', value: '{{output.summary}}' })
-    })
-
-    it('prefers agentStructuredOutput over llmStructuredOutput when both present', () => {
-        const data: NodeData = {
-            id: 'n1',
-            name: 'agent',
-            label: 'Agent',
-            inputs: {
-                agentStructuredOutput: [{ key: 'agent_field' }],
-                llmStructuredOutput: [{ key: 'llm_field' }]
-            }
-        } as NodeData
-        const vars = buildNodeOutputVariables(data)
-        const keys = vars.map((v) => v.label)
-        expect(keys).toContain('output.agent_field')
-        expect(keys).not.toContain('output.llm_field')
-    })
-
-    it('filters out structured output entries without a key', () => {
-        const data: NodeData = {
-            id: 'n1',
-            name: 'agent',
-            label: 'Agent',
-            inputs: { agentStructuredOutput: [{ key: '' }, { key: 'valid' }] }
-        } as NodeData
-        const vars = buildNodeOutputVariables(data)
-        expect(vars).toHaveLength(2) // {{output}} + output.valid only
-        expect(vars[1].value).toBe('{{output.valid}}')
     })
 })
 
