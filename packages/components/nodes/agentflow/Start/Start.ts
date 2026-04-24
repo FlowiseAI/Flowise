@@ -291,6 +291,31 @@ class Start_Agentflow implements INode {
                             {
                                 label: 'Boolean',
                                 name: 'boolean'
+                            },
+                            {
+                                label: 'Object',
+                                name: 'object',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[String]',
+                                name: 'array[string]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[Number]',
+                                name: 'array[number]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[Boolean]',
+                                name: 'array[boolean]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
+                            },
+                            {
+                                label: 'Array[Object]',
+                                name: 'array[object]',
+                                hide: { webhookContentType: 'application/x-www-form-urlencoded' }
                             }
                         ],
                         default: 'string'

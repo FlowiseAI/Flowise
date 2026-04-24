@@ -260,6 +260,146 @@ describe('validateWebhookChatflow', () => {
         })
     })
 
+    // --- object type ---
+
+    it('resolves when object param is a plain object', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'meta', type: 'object', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { meta: { key: 'val' } })).resolves.toMatchObject({})
+    })
+
+    it('throws 400 when object param is a string', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'meta', type: 'object', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { meta: 'hello' })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('meta')
+        })
+    })
+
+    it('throws 400 when object param is an array', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'meta', type: 'object', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { meta: [1, 2] })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('meta')
+        })
+    })
+
+    // --- array[string] type ---
+
+    it('resolves when array[string] param is an array of strings', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'tags', type: 'array[string]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { tags: ['a', 'b'] })).resolves.toMatchObject({})
+    })
+
+    it('throws 400 when array[string] param contains non-strings', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'tags', type: 'array[string]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { tags: [1, 2] })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('tags')
+        })
+    })
+
+    it('throws 400 when array[string] param is not an array', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'tags', type: 'array[string]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { tags: 'hello' })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('tags')
+        })
+    })
+
+    // --- array[number] type ---
+
+    it('resolves when array[number] param is an array of numbers', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'scores', type: 'array[number]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { scores: [1, 2, 3] })).resolves.toMatchObject({})
+    })
+
+    it('throws 400 when array[number] param contains non-numbers', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'scores', type: 'array[number]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { scores: ['a', 'b'] })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('scores')
+        })
+    })
+
+    // --- array[boolean] type ---
+
+    it('resolves when array[boolean] param is an array of booleans', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'flags', type: 'array[boolean]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { flags: [true, false] })).resolves.toMatchObject({})
+    })
+
+    it('throws 400 when array[boolean] param contains boolean strings (no coercion for array elements)', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'flags', type: 'array[boolean]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { flags: ['true', 'false'] })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('flags')
+        })
+    })
+
+    // --- array[object] type ---
+
+    it('resolves when array[object] param is an array of plain objects', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'items', type: 'array[object]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { items: [{ a: 1 }, { b: 2 }] })).resolves.toMatchObject(
+            {}
+        )
+    })
+
+    it('throws 400 when array[object] param contains non-objects', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'items', type: 'array[object]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { items: ['a', 'b'] })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('items')
+        })
+    })
+
+    it('throws 400 when array[object] param contains nested arrays', async () => {
+        mockGetChatflowById.mockResolvedValue(
+            makeChatflow('webhookTrigger', { webhookBodyParams: [{ name: 'items', type: 'array[object]', required: false }] })
+        )
+
+        await expect(webhookService.validateWebhookChatflow('some-id', undefined, { items: [[1, 2]] })).rejects.toMatchObject({
+            statusCode: StatusCodes.BAD_REQUEST,
+            message: expect.stringContaining('items')
+        })
+    })
+
     // --- Query param validation ---
 
     it('throws 400 when a required query param is missing', async () => {
