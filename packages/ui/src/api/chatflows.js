@@ -28,6 +28,8 @@ const toggleScheduleEnabled = (id, enabled) => client.patch(`/chatflows/${id}/sc
 
 const getScheduleTriggerLogs = (id, params) => client.get(`/chatflows/${id}/schedule/trigger-logs`, { params })
 
+const deleteScheduleTriggerLogs = (id, logIds) => client.delete(`/chatflows/${id}/schedule/trigger-logs`, { data: { logIds } })
+
 export default {
     getAllChatflows,
     getAllAgentflows,
@@ -42,5 +44,6 @@ export default {
     generateAgentflow,
     getScheduleStatus,
     toggleScheduleEnabled,
-    getScheduleTriggerLogs
+    getScheduleTriggerLogs,
+    deleteScheduleTriggerLogs
 }

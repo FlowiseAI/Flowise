@@ -7,16 +7,18 @@ import moment from 'moment'
 import {
     Alert,
     Box,
+    Button,
+    Checkbox,
     Chip,
     CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
+    DialogContentText,
     DialogTitle,
     Drawer,
     FormControlLabel,
     IconButton,
-    Pagination,
     Paper,
     Skeleton,
     Stack,
@@ -34,14 +36,20 @@ import { tableCellClasses } from '@mui/material/TableCell'
 import { alpha, styled, useTheme } from '@mui/material/styles'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import ErrorIcon from '@mui/icons-material/Error'
-import { IconCircleMinus, IconClock, IconLoader, IconRefresh, IconX, IconCalendar } from '@tabler/icons-react'
+import { IconCircleMinus, IconClock, IconLoader, IconRefresh, IconX, IconCalendar, IconTrash } from '@tabler/icons-react'
 import DragHandleIcon from '@mui/icons-material/DragHandle'
 
 // project import
 import chatflowsApi from '@/api/chatflows'
 import executionsApi from '@/api/executions'
 import useApi from '@/hooks/useApi'
+import useNotifier from '@/utils/useNotifier'
+import { useDispatch } from 'react-redux'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import { ExecutionDetails } from '@/views/agentexecutions/ExecutionDetails'
+
+const PAGE_SIZE_STORAGE_KEY = 'scheduleHistoryPageSize'
 
 // Drag-to-resize bounds (left-edge handle)
 const MIN_DRAWER_WIDTH = 480
@@ -202,10 +210,18 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
     const [logs, setLogs] = useState([])
     const [total, setTotal] = useState(0)
     const [page, setPage] = useState(1)
-    const limit = 20
+    const [limit, setLimit] = useState(() => {
+        const stored = parseInt(localStorage.getItem(PAGE_SIZE_STORAGE_KEY) || '', 10)
+        return Number.isFinite(stored) && stored > 0 ? stored : DEFAULT_ITEMS_PER_PAGE
+    })
 
     // auto-refresh
     const [autoRefresh, setAutoRefresh] = useState(true)
+
+    // selection + delete
+    const [selectedIds, setSelectedIds] = useState([])
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+    const [deleting, setDeleting] = useState(false)
 
     // execution detail drawer (nested)
     const execApi = useApi(executionsApi.getExecutionById)
@@ -216,17 +232,37 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
     // error modal (for rows without executionId)
     const [errorModal, setErrorModal] = useState({ open: false, title: '', message: '' })
 
+    // snackbar plumbing
+    useNotifier()
+    const dispatch = useDispatch()
+    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
     const fetchAll = useCallback(() => {
         if (!chatflowid || !open) return
         statusApi.request(chatflowid)
         logsApi.request(chatflowid, { page, limit })
-    }, [chatflowid, open, page, statusApi, logsApi])
+    }, [chatflowid, open, page, limit, statusApi, logsApi])
 
-    // initial + page change
+    // initial + page/limit change
     useEffect(() => {
         if (open) fetchAll()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [open, page, chatflowid])
+    }, [open, page, limit, chatflowid])
+
+    const handlePaginationChange = (nextPage, nextLimit) => {
+        if (nextLimit !== limit) {
+            localStorage.setItem(PAGE_SIZE_STORAGE_KEY, String(nextLimit))
+            setLimit(nextLimit)
+            setPage(1)
+            // selections refer to the previous page's row ids — drop them on page-size change
+            setSelectedIds([])
+        } else {
+            setPage(nextPage)
+            // optional: persist selection across pagination — for now drop to avoid stale state
+            setSelectedIds([])
+        }
+    }
 
     // poll — 10s default, 2s when any row is RUNNING
     const hasRunning = useMemo(() => logs.some((l) => l.status === 'RUNNING'), [logs])
@@ -289,6 +325,68 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
         }
     }
 
+    // ─── Selection helpers ───────────────────────────────────────────────────
+
+    const visibleIds = useMemo(() => logs.map((l) => l.id), [logs])
+    const allOnPageSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id))
+    const someOnPageSelected = visibleIds.some((id) => selectedIds.includes(id))
+
+    const toggleRowSelected = (id) => {
+        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+    }
+
+    const toggleSelectAllOnPage = () => {
+        if (allOnPageSelected) {
+            // deselect every row from the current page
+            setSelectedIds((prev) => prev.filter((id) => !visibleIds.includes(id)))
+        } else {
+            // add any not-already-selected rows from the current page
+            setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleIds])))
+        }
+    }
+
+    const handleConfirmDelete = async () => {
+        if (selectedIds.length === 0) return
+        setDeleting(true)
+        try {
+            const resp = await chatflowsApi.deleteScheduleTriggerLogs(chatflowid, selectedIds)
+            const data = resp?.data ?? {}
+            enqueueSnackbar({
+                message: `Deleted ${data.deletedLogs ?? selectedIds.length} log${
+                    (data.deletedLogs ?? selectedIds.length) === 1 ? '' : 's'
+                }${data.deletedExecutions ? ` and ${data.deletedExecutions} execution${data.deletedExecutions === 1 ? '' : 's'}` : ''}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+            setSelectedIds([])
+            setDeleteDialogOpen(false)
+            fetchAll()
+        } catch (e) {
+            enqueueSnackbar({
+                message: e?.response?.data?.message || e?.message || 'Failed to delete logs',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } finally {
+            setDeleting(false)
+        }
+    }
+
     // ─── Header derived values ───────────────────────────────────────────────
 
     const record = statusData?.record
@@ -296,8 +394,6 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
     const cronHuman = cronHumanize(record?.cronExpression, record?.timezone)
     const nextRunAt = record?.nextRunAt
     const lastLog = logs[0]
-
-    const totalPages = Math.max(1, Math.ceil(total / limit))
 
     return (
         <>
@@ -448,6 +544,20 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
                             control={<Switch size='small' checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} />}
                             label={<Typography variant='caption'>Auto-refresh</Typography>}
                         />
+                        <Box sx={{ flex: 1 }} />
+                        <Tooltip title={selectedIds.length === 0 ? 'Select rows to delete' : `Delete ${selectedIds.length} selected`}>
+                            {/* span wrapper so Tooltip works on a disabled button */}
+                            <span>
+                                <IconButton
+                                    size='small'
+                                    color='error'
+                                    onClick={() => setDeleteDialogOpen(true)}
+                                    disabled={selectedIds.length === 0 || deleting}
+                                >
+                                    <IconTrash size={16} />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
                         {logsApi.loading && <CircularProgress size={14} sx={{ ml: 1 }} />}
                     </Stack>
 
@@ -492,6 +602,15 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
                             <Table size='small' stickyHeader>
                                 <TableHead>
                                     <TableRow>
+                                        <StyledTableCell padding='checkbox'>
+                                            <Checkbox
+                                                size='small'
+                                                indeterminate={!allOnPageSelected && someOnPageSelected}
+                                                checked={allOnPageSelected}
+                                                onChange={toggleSelectAllOnPage}
+                                                inputProps={{ 'aria-label': 'Select all rows on page' }}
+                                            />
+                                        </StyledTableCell>
                                         <StyledTableCell>Status</StyledTableCell>
                                         <StyledTableCell>Scheduled At</StyledTableCell>
                                         <StyledTableCell>Duration</StyledTableCell>
@@ -501,22 +620,30 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
                                 <TableBody>
                                     {logs.map((row) => {
                                         const clickable = !!row.executionId || row.status === 'FAILED' || row.status === 'SKIPPED'
+                                        const isSelected = selectedIds.includes(row.id)
                                         return (
-                                            <StyledTableRow
-                                                key={row.id}
-                                                clickable={clickable ? 1 : 0}
-                                                onClick={clickable ? () => handleRowClick(row) : undefined}
-                                            >
-                                                <StyledTableCell>
+                                            <StyledTableRow key={row.id} clickable={clickable ? 1 : 0} hover selected={isSelected}>
+                                                <StyledTableCell padding='checkbox' onClick={(e) => e.stopPropagation()}>
+                                                    <Checkbox
+                                                        size='small'
+                                                        checked={isSelected}
+                                                        onChange={() => toggleRowSelected(row.id)}
+                                                        inputProps={{ 'aria-label': `Select row ${row.id}` }}
+                                                    />
+                                                </StyledTableCell>
+                                                <StyledTableCell onClick={clickable ? () => handleRowClick(row) : undefined}>
                                                     <StatusCell status={row.status} />
                                                 </StyledTableCell>
-                                                <StyledTableCell>
+                                                <StyledTableCell onClick={clickable ? () => handleRowClick(row) : undefined}>
                                                     <Tooltip title={fmtDate(row.scheduledAt)}>
                                                         <span>{relTime(row.scheduledAt)}</span>
                                                     </Tooltip>
                                                 </StyledTableCell>
-                                                <StyledTableCell>{fmtDuration(row.elapsedTimeMs)}</StyledTableCell>
+                                                <StyledTableCell onClick={clickable ? () => handleRowClick(row) : undefined}>
+                                                    {fmtDuration(row.elapsedTimeMs)}
+                                                </StyledTableCell>
                                                 <StyledTableCell
+                                                    onClick={clickable ? () => handleRowClick(row) : undefined}
                                                     sx={{
                                                         maxWidth: 240,
                                                         overflow: 'hidden',
@@ -542,17 +669,16 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
                     )}
                 </Box>
 
-                {/* Footer pagination */}
-                {totalPages > 1 && (
+                {/* Footer: items-per-page + page selector + total count (mirrors Agent Executions pattern) */}
+                {total > 0 && (
                     <Box
                         sx={{
                             borderTop: `1px solid ${theme.palette.divider}`,
-                            p: 1.5,
-                            display: 'flex',
-                            justifyContent: 'center'
+                            px: 2,
+                            py: 1
                         }}
                     >
-                        <Pagination count={totalPages} page={page} onChange={(_, v) => setPage(v)} size='small' color='primary' />
+                        <TablePagination currentPage={page} limit={limit} total={total} onChange={handlePaginationChange} />
                     </Box>
                 )}
             </Drawer>
@@ -568,6 +694,28 @@ const ScheduleHistoryDrawer = ({ open, chatflowid, onClose }) => {
                     isPublic={false}
                 />
             )}
+
+            {/* Bulk-delete confirmation */}
+            <Dialog open={deleteDialogOpen} onClose={() => !deleting && setDeleteDialogOpen(false)} maxWidth='sm' fullWidth>
+                <DialogTitle>
+                    Delete {selectedIds.length} log{selectedIds.length === 1 ? '' : 's'}?
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        This will also permanently delete the linked execution traces. Schedule trigger logs that never produced an
+                        execution (skipped or pre-execution failures) are deleted but have no associated execution to remove. This action
+                        cannot be undone.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleConfirmDelete} color='error' disabled={deleting} variant='contained'>
+                        {deleting ? 'Deleting…' : 'Delete'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             {/* Error modal for rows without an executionId */}
             <Dialog open={errorModal.open} onClose={() => setErrorModal({ open: false, title: '', message: '' })} maxWidth='sm' fullWidth>

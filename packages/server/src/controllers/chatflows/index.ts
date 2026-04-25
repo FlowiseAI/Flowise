@@ -327,6 +327,32 @@ const getScheduleTriggerLogs = async (req: Request, res: Response, next: NextFun
     }
 }
 
+const deleteScheduleTriggerLogs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.params?.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                'Error: chatflowsController.deleteScheduleTriggerLogs - id not provided!'
+            )
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                'Error: chatflowsController.deleteScheduleTriggerLogs - workspace not found!'
+            )
+        }
+        const logIds: unknown = req.body?.logIds
+        if (!Array.isArray(logIds) || logIds.some((x) => typeof x !== 'string')) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'logIds must be a string[]')
+        }
+        const result = await scheduleService.deleteTriggerLogs(req.params.id, workspaceId, logIds as string[])
+        return res.json(result)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const toggleScheduleEnabled = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.params?.id) {
@@ -365,5 +391,6 @@ export default {
     checkIfChatflowHasChanged,
     getScheduleStatus,
     getScheduleTriggerLogs,
+    deleteScheduleTriggerLogs,
     toggleScheduleEnabled
 }

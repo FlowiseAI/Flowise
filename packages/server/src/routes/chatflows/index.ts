@@ -52,5 +52,10 @@ router.get(
     checkAnyPermission('chatflows:view,chatflows:update,agentflows:view,agentflows:update'),
     chatflowsController.getScheduleTriggerLogs
 )
+router.delete(
+    '/:id/schedule/trigger-logs',
+    checkAnyPermission('chatflows:update,agentflows:update,executions:delete'),
+    chatflowsController.deleteScheduleTriggerLogs
+)
 
 export default router

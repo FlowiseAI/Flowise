@@ -50,6 +50,12 @@ jest.mock('../../errors/internalFlowiseError', () => ({
 }))
 jest.mock('../../errors/utils', () => ({ getErrorMessage: (e: unknown) => String(e) }))
 jest.mock('../../utils/getRunningExpressApp', () => ({ getRunningExpressApp: jest.fn().mockReturnValue(mockAppServer) }))
+jest.mock('../executions', () => ({
+    __esModule: true,
+    default: {
+        deleteExecutions: jest.fn().mockResolvedValue({ success: true, deletedCount: 0 })
+    }
+}))
 jest.mock('../../utils/logger', () => ({
     __esModule: true,
     default: { debug: jest.fn(), error: jest.fn(), info: jest.fn() }
@@ -614,5 +620,89 @@ describe('getTriggerLogs', () => {
         })
         // Use InternalFlowiseError to verify the thrown type
         await expect(scheduleService.getTriggerLogs('flow-1', 'ws-1')).rejects.toBeInstanceOf(InternalFlowiseError)
+    })
+})
+
+// ─── deleteTriggerLogs ────────────────────────────────────────────────────────
+
+import executionsService from '../executions'
+
+describe('deleteTriggerLogs', () => {
+    const mockDeleteExecutions = (executionsService as any).deleteExecutions as jest.Mock
+
+    beforeEach(() => {
+        mockGetApp.mockReturnValue(mockAppServer)
+        mockRepo.find = jest.fn()
+        mockRepo.delete = jest.fn()
+        mockDeleteExecutions.mockReset().mockResolvedValue({ success: true, deletedCount: 0 })
+    })
+
+    const makeLog = (id: string, executionId?: string) => ({
+        id,
+        targetId: 'flow-1',
+        workspaceId: 'ws-1',
+        scheduleRecordId: 'rec-1',
+        triggerType: ScheduleTriggerType.AGENTFLOW,
+        status: ScheduleTriggerStatus.SUCCEEDED,
+        executionId,
+        scheduledAt: new Date()
+    })
+
+    it('returns zero counts when logIds is empty', async () => {
+        const result = await scheduleService.deleteTriggerLogs('flow-1', 'ws-1', [])
+        expect(result).toEqual({ success: true, deletedLogs: 0, deletedExecutions: 0 })
+        expect(mockRepo.find).not.toHaveBeenCalled()
+        expect(mockRepo.delete).not.toHaveBeenCalled()
+    })
+
+    it('returns zero counts when no logs match (cross-workspace deletion attempt)', async () => {
+        ;(mockRepo.find as jest.Mock).mockResolvedValue([])
+
+        const result = await scheduleService.deleteTriggerLogs('flow-1', 'ws-1', ['log-from-other-ws'])
+
+        expect(result).toEqual({ success: true, deletedLogs: 0, deletedExecutions: 0 })
+        expect(mockRepo.delete).not.toHaveBeenCalled()
+        expect(mockDeleteExecutions).not.toHaveBeenCalled()
+    })
+
+    it('scopes the find query by id + targetId + workspaceId', async () => {
+        ;(mockRepo.find as jest.Mock).mockResolvedValue([])
+        await scheduleService.deleteTriggerLogs('flow-1', 'ws-1', ['log-1', 'log-2'])
+
+        expect(mockRepo.find).toHaveBeenCalledWith(
+            expect.objectContaining({
+                where: expect.objectContaining({ targetId: 'flow-1', workspaceId: 'ws-1' })
+            })
+        )
+    })
+
+    it('deletes logs and cascades to executions for logs that have executionId', async () => {
+        const logs = [makeLog('log-1', 'exec-1'), makeLog('log-2'), makeLog('log-3', 'exec-3')]
+        ;(mockRepo.find as jest.Mock).mockResolvedValue(logs)
+        ;(mockRepo.delete as jest.Mock).mockResolvedValue({ affected: 3 })
+        mockDeleteExecutions.mockResolvedValue({ success: true, deletedCount: 2 })
+
+        const result = await scheduleService.deleteTriggerLogs('flow-1', 'ws-1', ['log-1', 'log-2', 'log-3'])
+
+        expect(result.deletedLogs).toBe(3)
+        expect(result.deletedExecutions).toBe(2)
+        expect(mockDeleteExecutions).toHaveBeenCalledWith(['exec-1', 'exec-3'], 'ws-1')
+    })
+
+    it('skips execution cascade when no logs have an executionId', async () => {
+        ;(mockRepo.find as jest.Mock).mockResolvedValue([makeLog('log-1'), makeLog('log-2')])
+        ;(mockRepo.delete as jest.Mock).mockResolvedValue({ affected: 2 })
+
+        const result = await scheduleService.deleteTriggerLogs('flow-1', 'ws-1', ['log-1', 'log-2'])
+
+        expect(result.deletedLogs).toBe(2)
+        expect(result.deletedExecutions).toBe(0)
+        expect(mockDeleteExecutions).not.toHaveBeenCalled()
+    })
+
+    it('wraps DB errors in InternalFlowiseError', async () => {
+        ;(mockRepo.find as jest.Mock).mockRejectedValue(new Error('db down'))
+
+        await expect(scheduleService.deleteTriggerLogs('flow-1', 'ws-1', ['log-1'])).rejects.toBeInstanceOf(InternalFlowiseError)
     })
 })

@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
+import { DataSource, In } from 'typeorm'
 import { ScheduleRecord, ScheduleTriggerType } from '../../database/entities/ScheduleRecord'
 import { ScheduleTriggerLog, ScheduleTriggerStatus } from '../../database/entities/ScheduleTriggerLog'
 import { ChatFlow } from '../../database/entities/ChatFlow'
@@ -7,7 +8,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
-import { DataSource } from 'typeorm'
+import executionsService from '../executions'
 import {
     validateCronExpression,
     computeNextRunAt,
@@ -391,6 +392,54 @@ const getTriggerLogs = async (
     }
 }
 
+/**
+ * Deletes trigger-log rows by id, scoped to a workspace + target so a user from one workspace
+ * can't delete another's logs. Cascades to the linked Execution rows (and clears
+ * ChatMessage.executionId pointers via executionsService.deleteExecutions).
+ *
+ * @returns counts of deleted logs and executions
+ */
+const deleteTriggerLogs = async (
+    targetId: string,
+    workspaceId: string,
+    logIds: string[]
+): Promise<{ success: boolean; deletedLogs: number; deletedExecutions: number }> => {
+    try {
+        if (!Array.isArray(logIds) || logIds.length === 0) {
+            return { success: true, deletedLogs: 0, deletedExecutions: 0 }
+        }
+
+        const appServer = getRunningExpressApp()
+        const repo = appServer.AppDataSource.getRepository(ScheduleTriggerLog)
+
+        // Load first so we can extract executionIds before delete (and respect target/workspace scope).
+        const logs = await repo.find({ where: { id: In(logIds), targetId, workspaceId } })
+        if (logs.length === 0) {
+            return { success: true, deletedLogs: 0, deletedExecutions: 0 }
+        }
+
+        const executionIds = logs.map((l) => l.executionId).filter((id): id is string => !!id)
+        const idsToDelete = logs.map((l) => l.id)
+
+        const result = await repo.delete({ id: In(idsToDelete) })
+
+        let deletedExecutions = 0
+        if (executionIds.length > 0) {
+            const execResult = await executionsService.deleteExecutions(executionIds, workspaceId)
+            deletedExecutions = execResult.deletedCount ?? 0
+        }
+
+        logger.debug(`[ScheduleService]: Deleted ${result.affected ?? 0} trigger logs and ${deletedExecutions} executions`)
+        return { success: true, deletedLogs: result.affected ?? 0, deletedExecutions }
+    } catch (error) {
+        if (error instanceof InternalFlowiseError) throw error
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: scheduleService.deleteTriggerLogs - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 // ─── Visual Picker helpers ──────────────────────────────────────────────────
 
 export default {
@@ -408,6 +457,7 @@ export default {
     getScheduleStatus,
     toggleScheduleEnabled,
     getTriggerLogs,
+    deleteTriggerLogs,
     isScheduleInputValid,
     canScheduleEnable
 }
