@@ -1,4 +1,5 @@
 import { ChatFlow } from './ChatFlow'
+import { Skill } from './Skill'
 import { ChatMessage } from './ChatMessage'
 import { ChatMessageFeedback } from './ChatMessageFeedback'
 import { Credential } from './Credential'
@@ -29,6 +30,7 @@ import { LoginSession } from '../../enterprise/database/entities/login-session.e
 
 export const entities = {
     ChatFlow,
+    Skill,
     ChatMessage,
     ChatMessageFeedback,
     Credential,

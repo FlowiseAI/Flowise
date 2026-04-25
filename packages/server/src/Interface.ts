@@ -118,6 +118,19 @@ export interface ITool {
     workspaceId: string
 }
 
+export interface ISkill {
+    id: string
+    name: string
+    description: string
+    markdown: string
+    inputSchema?: string
+    color?: string
+    iconSrc?: string
+    updatedDate: Date
+    createdDate: Date
+    workspaceId: string
+}
+
 export interface IAssistant {
     id: string
     details: string

@@ -6,6 +6,7 @@ import {
     IconBuildingStore,
     IconKey,
     IconTool,
+    IconBolt,
     IconLock,
     IconRobot,
     IconSettings,
@@ -34,6 +35,7 @@ const icons = {
     IconList,
     IconKey,
     IconTool,
+    IconBolt,
     IconLock,
     IconRobot,
     IconSettings,
@@ -119,6 +121,15 @@ const dashboard = {
                     icon: icons.IconTool,
                     breadcrumbs: true,
                     permission: 'tools:view'
+                },
+                {
+                    id: 'skills',
+                    title: 'Skills',
+                    type: 'item',
+                    url: '/skills',
+                    icon: icons.IconBolt,
+                    breadcrumbs: true,
+                    permission: 'skills:view'
                 },
                 {
                     id: 'credentials',

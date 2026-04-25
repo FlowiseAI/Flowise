@@ -22,6 +22,9 @@ const APIKey = Loadable(lazy(() => import('@/views/apikey')))
 // tools routing
 const Tools = Loadable(lazy(() => import('@/views/tools')))
 
+// skills routing
+const Skills = Loadable(lazy(() => import('@/views/skills')))
+
 // assistants routing
 const Assistants = Loadable(lazy(() => import('@/views/assistants')))
 const OpenAIAssistantLayout = Loadable(lazy(() => import('@/views/assistants/openai/OpenAIAssistantLayout')))
@@ -125,6 +128,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth permission={'tools:view'}>
                     <Tools />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/skills',
+            element: (
+                <RequireAuth permission={'skills:view'}>
+                    <Skills />
                 </RequireAuth>
             )
         },

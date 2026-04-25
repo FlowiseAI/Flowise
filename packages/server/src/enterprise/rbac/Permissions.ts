@@ -29,6 +29,13 @@ export class Permissions {
         agentflowsCategory.addPermission(new Permission('agentflows:domains', 'Allowed Domains', true, true, true))
         this.categories.push(agentflowsCategory)
 
+        const skillsCategory = new PermissionCategory('skills')
+        skillsCategory.addPermission(new Permission('skills:view', 'View', true, true, true))
+        skillsCategory.addPermission(new Permission('skills:create', 'Create', true, true, true))
+        skillsCategory.addPermission(new Permission('skills:update', 'Update', true, true, true))
+        skillsCategory.addPermission(new Permission('skills:delete', 'Delete', true, true, true))
+        this.categories.push(skillsCategory)
+
         const toolsCategory = new PermissionCategory('tools')
         toolsCategory.addPermission(new Permission('tools:view', 'View', true, true, true))
         toolsCategory.addPermission(new Permission('tools:create', 'Create', true, true, true))

@@ -47,6 +47,7 @@ import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
+import { Skill } from '../database/entities/Skill'
 import { Assistant } from '../database/entities/Assistant'
 import { Lead } from '../database/entities/Lead'
 import { DataSource } from 'typeorm'
@@ -95,6 +96,7 @@ export const databaseEntities: IDatabaseEntity = {
     ChatFlow: ChatFlow,
     ChatMessage: ChatMessage,
     Tool: Tool,
+    Skill: Skill,
     Credential: Credential,
     Lead: Lead,
     Assistant: Assistant,
