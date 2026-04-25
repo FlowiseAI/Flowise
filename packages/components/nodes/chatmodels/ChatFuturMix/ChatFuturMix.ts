@@ -148,13 +148,13 @@ class ChatFuturMix_ChatModels implements INode {
         const futurmixApiKey = getCredentialParam('futurmixApiKey', credentialData, nodeData)
 
         const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: futurmixApiKey,
             apiKey: futurmixApiKey,
             streaming: streaming ?? true
         }
 
+        if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
