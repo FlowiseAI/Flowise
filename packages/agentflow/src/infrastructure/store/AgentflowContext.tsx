@@ -99,8 +99,8 @@ interface AgentflowStateProviderProps {
 export function AgentflowStateProvider({ children, initialFlow }: AgentflowStateProviderProps) {
     const [state, dispatch] = useReducer(agentflowReducer, {
         ...initialState,
-        nodes: normalizeNodes(initialFlow?.nodes || []),
-        edges: initialFlow?.edges || []
+        nodes: normalizeNodes(Array.isArray(initialFlow?.nodes) ? initialFlow.nodes : []),
+        edges: Array.isArray(initialFlow?.edges) ? initialFlow.edges : []
     })
 
     // Store ReactFlow local state setters in refs which are populated by AgentflowCanvas
@@ -176,8 +176,14 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
             const newNodes = state.nodes.filter((node) => node.id !== nodeId)
             const newEdges = state.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
             syncStateUpdate({ nodes: newNodes, edges: newEdges })
+
+            // Notify parent of flow change so the deletion is persisted
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: newNodes, edges: newEdges, viewport })
+            }
         },
-        [state.nodes, state.edges, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     const duplicateNode = useCallback(
@@ -227,9 +233,16 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
                 }
             }
 
-            syncStateUpdate({ nodes: [...state.nodes, newNode] })
+            const newNodes = [...state.nodes, newNode]
+            syncStateUpdate({ nodes: newNodes })
+
+            // Notify parent of flow change so the duplication is persisted
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: normalizeNodes(newNodes), edges: state.edges, viewport })
+            }
         },
-        [state.nodes, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     const updateNodeData = useCallback(
@@ -261,8 +274,14 @@ export function AgentflowStateProvider({ children, initialFlow }: AgentflowState
         (edgeId: string) => {
             const newEdges = state.edges.filter((edge) => edge.id !== edgeId)
             syncStateUpdate({ edges: newEdges })
+
+            // Notify parent of flow change so the deletion is persisted
+            if (onFlowChangeRef.current) {
+                const viewport = state.reactFlowInstance?.getViewport() || { x: 0, y: 0, zoom: 1 }
+                onFlowChangeRef.current({ nodes: state.nodes, edges: newEdges, viewport })
+            }
         },
-        [state.edges, syncStateUpdate]
+        [state.nodes, state.edges, state.reactFlowInstance, syncStateUpdate]
     )
 
     // Dialog operations

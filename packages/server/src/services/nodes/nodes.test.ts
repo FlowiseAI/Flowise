@@ -1,4 +1,4 @@
-import { filterNodeByClient } from './index'
+import { filterNodeByClient } from './filterNodeByClient'
 import type { INode } from 'flowise-components'
 
 const makeNode = (overrides: Partial<INode> = {}): INode =>
@@ -175,6 +175,78 @@ describe('filterNodeByClient', () => {
             const result = filterNodeByClient(node, 'agentflowsdk')
             expect(result.inputs![0].array).toHaveLength(1)
             expect(result.inputs![0].array![0].name).toBe('key')
+        })
+    })
+
+    describe('Start node form input filtering', () => {
+        const startNode = makeNode({
+            inputs: [
+                {
+                    label: 'Input Type',
+                    name: 'startInputType',
+                    type: 'options',
+                    options: [
+                        { label: 'Chat Input', name: 'chatInput' },
+                        { label: 'Form Input', name: 'formInput', client: ['agentflowv2'] }
+                    ],
+                    default: 'chatInput'
+                },
+                { label: 'Form Title', name: 'formTitle', type: 'string' },
+                { label: 'Form Description', name: 'formDescription', type: 'string' },
+                { label: 'Form Input Types', name: 'formInputTypes', type: 'array' },
+                { label: 'Ephemeral Memory', name: 'startEphemeralMemory', type: 'boolean' },
+                { label: 'Flow State', name: 'startState', type: 'array' }
+            ]
+        })
+
+        it('removes formInput option for agentflowsdk', () => {
+            const result = filterNodeByClient(startNode, 'agentflowsdk')
+            const optionNames = result.inputs![0].options!.map((o: any) => o.name)
+            expect(optionNames).toContain('chatInput')
+            expect(optionNames).not.toContain('formInput')
+        })
+
+        it('keeps formInput option for agentflowv2', () => {
+            const result = filterNodeByClient(startNode, 'agentflowv2')
+            const optionNames = result.inputs![0].options!.map((o: any) => o.name)
+            expect(optionNames).toContain('chatInput')
+            expect(optionNames).toContain('formInput')
+        })
+    })
+
+    describe('Agent node knowledge field filtering', () => {
+        const agentNode = makeNode({
+            inputs: [
+                { label: 'Agent Name', name: 'agentName', type: 'string' },
+                {
+                    label: 'Knowledge (Document Stores)',
+                    name: 'agentKnowledgeDocumentStores',
+                    type: 'array',
+                    client: ['agentflowv2']
+                },
+                {
+                    label: 'Knowledge (Vector Embeddings)',
+                    name: 'agentKnowledgeVSEmbeddings',
+                    type: 'array',
+                    client: ['agentflowv2']
+                }
+            ]
+        })
+
+        it('removes knowledge fields for agentflowsdk', () => {
+            const result = filterNodeByClient(agentNode, 'agentflowsdk')
+            const inputNames = result.inputs!.map((i: any) => i.name)
+            expect(inputNames).toContain('agentName')
+            expect(inputNames).not.toContain('agentKnowledgeDocumentStores')
+            expect(inputNames).not.toContain('agentKnowledgeVSEmbeddings')
+        })
+
+        it('keeps knowledge fields for agentflowv2', () => {
+            const result = filterNodeByClient(agentNode, 'agentflowv2')
+            const inputNames = result.inputs!.map((i: any) => i.name)
+            expect(inputNames).toContain('agentName')
+            expect(inputNames).toContain('agentKnowledgeDocumentStores')
+            expect(inputNames).toContain('agentKnowledgeVSEmbeddings')
         })
     })
 

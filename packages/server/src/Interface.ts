@@ -30,7 +30,8 @@ export enum MODE {
 export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL',
-    EVALUATION = 'EVALUATION'
+    EVALUATION = 'EVALUATION',
+    MCP = 'MCP'
 }
 
 export enum ChatMessageRatingType {
@@ -70,6 +71,7 @@ export interface IChatFlow {
     apiConfig?: string
     category?: string
     type?: ChatflowType
+    mcpServerConfig?: string
     workspaceId: string
 }
 
@@ -179,6 +181,37 @@ export interface IExecution {
     updatedDate: Date
     stoppedDate: Date
     workspaceId: string
+}
+
+export enum CustomMcpServerStatus {
+    PENDING = 'PENDING',
+    AUTHORIZED = 'AUTHORIZED',
+    ERROR = 'ERROR'
+}
+
+export enum CustomMcpServerAuthType {
+    NONE = 'NONE',
+    CUSTOM_HEADERS = 'CUSTOM_HEADERS'
+}
+
+export interface ICustomMcpServer {
+    id: string
+    name: string
+    serverUrl: string
+    iconSrc?: string
+    color?: string
+    authType: string
+    authConfig?: string
+    tools?: string
+    toolCount: number
+    status: CustomMcpServerStatus | string
+    createdDate: Date
+    updatedDate: Date
+    workspaceId: string
+}
+
+export interface ICustomMcpServerResponse extends Omit<ICustomMcpServer, 'authConfig'> {
+    authConfig?: Record<string, any>
 }
 
 export interface IComponentNodes {
@@ -403,6 +436,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     parentExecutionId?: string
     iterationContext?: ICommonObject
     isTool?: boolean
+    chatType?: ChatType
 }
 
 export interface INodeOverrides {
@@ -419,6 +453,13 @@ export interface IVariableOverride {
     name: string
     type: 'static' | 'runtime'
     enabled: boolean
+}
+
+export interface IMcpServerConfig {
+    enabled: boolean
+    token: string
+    description?: string
+    toolName?: string
 }
 
 // DocumentStore related

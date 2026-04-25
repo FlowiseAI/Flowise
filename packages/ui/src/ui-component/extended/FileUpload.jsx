@@ -5,7 +5,19 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import parser from 'html-react-parser'
 
 // material-ui
-import { Button, Box, Typography, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material'
+import {
+    Button,
+    Box,
+    Typography,
+    FormControl,
+    RadioGroup,
+    FormControlLabel,
+    Radio,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails
+} from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { IconX, IconBulb } from '@tabler/icons-react'
 
 // Project import
@@ -20,7 +32,7 @@ import chatflowsApi from '@/api/chatflows'
 
 const message = `The full contents of uploaded files will be converted to text and sent to the Agent.
 <br />
-Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank'>docs</a> for more details.`
+Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank' style='color: #2196f3'>docs</a> for more details.`
 
 const availableFileTypes = [
     { name: 'CSS', ext: 'text/css', extension: '.css' },
@@ -52,8 +64,6 @@ const FileUpload = ({ dialogProps }) => {
     const [allowedFileTypes, setAllowedFileTypes] = useState([])
     const [chatbotConfig, setChatbotConfig] = useState({})
     const [pdfUsage, setPdfUsage] = useState('perPage')
-    const [pdfLegacyBuild, setPdfLegacyBuild] = useState(false)
-
     const handleChange = (value) => {
         setFullFileUpload(value)
     }
@@ -71,18 +81,13 @@ const FileUpload = ({ dialogProps }) => {
         setPdfUsage(event.target.value)
     }
 
-    const handleLegacyBuildChange = (value) => {
-        setPdfLegacyBuild(value)
-    }
-
     const onSave = async () => {
         try {
             const value = {
                 status: fullFileUpload,
                 allowedUploadFileTypes: allowedFileTypes.join(','),
                 pdfFile: {
-                    usage: pdfUsage,
-                    legacyBuild: pdfLegacyBuild
+                    usage: pdfUsage
                 }
             }
             chatbotConfig.fullFileUpload = value
@@ -140,13 +145,8 @@ const FileUpload = ({ dialogProps }) => {
                         const allowedFileTypes = chatbotConfig.fullFileUpload.allowedUploadFileTypes.split(',')
                         setAllowedFileTypes(allowedFileTypes)
                     }
-                    if (chatbotConfig.fullFileUpload?.pdfFile) {
-                        if (chatbotConfig.fullFileUpload.pdfFile.usage) {
-                            setPdfUsage(chatbotConfig.fullFileUpload.pdfFile.usage)
-                        }
-                        if (chatbotConfig.fullFileUpload.pdfFile.legacyBuild !== undefined) {
-                            setPdfLegacyBuild(chatbotConfig.fullFileUpload.pdfFile.legacyBuild)
-                        }
+                    if (chatbotConfig.fullFileUpload?.pdfFile?.usage) {
+                        setPdfUsage(chatbotConfig.fullFileUpload.pdfFile.usage)
                     }
                 } catch (e) {
                     setChatbotConfig({})
@@ -170,31 +170,27 @@ const FileUpload = ({ dialogProps }) => {
                     mb: 2
                 }}
             >
-                <div
-                    style={{
+                <Box
+                    sx={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        borderRadius: 10,
-                        background: '#d8f3dc',
+                        alignItems: 'center',
+                        gap: 1.25,
+                        borderRadius: '8px',
+                        bgcolor: 'rgba(34, 197, 94, 0.08)',
+                        border: '1px solid',
+                        borderColor: 'rgba(34, 197, 94, 0.2)',
                         width: '100%',
-                        padding: 10
+                        px: 1.75,
+                        py: 1.25
                     }}
                 >
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'center'
-                        }}
-                    >
-                        <IconBulb size={30} color='#2d6a4f' />
-                        <span style={{ color: '#2d6a4f', marginLeft: 10, fontWeight: 500 }}>{parser(message)}</span>
-                    </div>
-                </div>
+                    <IconBulb size={20} color='#16a34a' style={{ flexShrink: 0 }} />
+                    <Typography sx={{ color: 'text.secondary', fontSize: '0.8125rem', lineHeight: 1.5 }}>{parser(message)}</Typography>
+                </Box>
                 <SwitchInput label='Enable Full File Upload' onChange={handleChange} value={fullFileUpload} />
             </Box>
 
-            <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>Allow Uploads of Type</Typography>
+            <Typography sx={{ fontSize: '0.875rem', fontWeight: 500, mb: 1 }}>Allow Uploads of Type</Typography>
             <div
                 style={{
                     display: 'grid',
@@ -224,54 +220,65 @@ const FileUpload = ({ dialogProps }) => {
                             disabled={!fullFileUpload}
                             onChange={handleAllowedFileTypesChange}
                         />
-                        <label htmlFor={fileType.ext} style={{ marginLeft: 10 }}>
+                        <label htmlFor={fileType.ext} style={{ marginLeft: 10, fontSize: '0.8125rem' }}>
                             {fileType.name} ({fileType.extension})
                         </label>
                     </div>
                 ))}
             </div>
 
-            {allowedFileTypes.includes('application/pdf') && fullFileUpload && (
-                <Box
+            {fullFileUpload && (
+                <Accordion
+                    disableGutters
+                    elevation={0}
                     sx={{
-                        borderRadius: 2,
-                        border: customization.isDarkMode ? '1px solid #424242' : '1px solid #e0e0e0',
-                        backgroundColor: customization.isDarkMode ? '#2d2d2d' : '#fafafa',
-                        padding: 3,
-                        marginBottom: 3,
-                        marginTop: 2
+                        mt: 2,
+                        borderRadius: '8px !important',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        bgcolor: customization.isDarkMode ? 'rgba(255,255,255,0.02)' : 'grey.50',
+                        '&:before': { display: 'none' },
+                        overflow: 'hidden'
                     }}
                 >
-                    <Typography
-                        sx={{ fontSize: 16, fontWeight: 600, marginBottom: 2, color: customization.isDarkMode ? '#ffffff' : '#424242' }}
+                    <AccordionSummary
+                        expandIcon={<ExpandMoreIcon sx={{ fontSize: '1.1rem', color: 'text.secondary' }} />}
+                        sx={{ minHeight: 40, px: 2, '& .MuiAccordionSummary-content': { my: 0.75 } }}
                     >
-                        PDF Configuration
-                    </Typography>
-
-                    <Box>
-                        <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>
-                        <FormControl disabled={!fullFileUpload}>
-                            <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
-                                <FormControlLabel value='perPage' control={<Radio />} label='One document per page' />
-                                <FormControlLabel value='perFile' control={<Radio />} label='One document per file' />
-                            </RadioGroup>
-                        </FormControl>
-                    </Box>
-
-                    <Box>
-                        <SwitchInput
-                            label='Use Legacy Build (for PDF compatibility issues)'
-                            onChange={handleLegacyBuildChange}
-                            value={pdfLegacyBuild}
-                            disabled={!fullFileUpload}
-                        />
-                    </Box>
-                </Box>
+                        <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: 'text.secondary' }}>Advanced Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails sx={{ px: 2, pt: 0, pb: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {/* PDF Processing */}
+                        {allowedFileTypes.includes('application/pdf') && (
+                            <Box>
+                                <Typography sx={{ fontSize: '0.8125rem', fontWeight: 500, color: 'text.primary', mb: 0.75 }}>
+                                    PDF Processing
+                                </Typography>
+                                <FormControl disabled={!fullFileUpload}>
+                                    <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
+                                        <FormControlLabel
+                                            value='perPage'
+                                            control={<Radio size='small' />}
+                                            label={<Typography sx={{ fontSize: '0.8125rem' }}>One document per page</Typography>}
+                                        />
+                                        <FormControlLabel
+                                            value='perFile'
+                                            control={<Radio size='small' />}
+                                            label={<Typography sx={{ fontSize: '0.8125rem' }}>One document per file</Typography>}
+                                        />
+                                    </RadioGroup>
+                                </FormControl>
+                            </Box>
+                        )}
+                    </AccordionDetails>
+                </Accordion>
             )}
 
-            <StyledButton style={{ marginBottom: 10, marginTop: 20 }} variant='contained' onClick={onSave}>
-                Save
-            </StyledButton>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', width: '100%', mt: 2 }}>
+                <StyledButton variant='contained' onClick={onSave} sx={{ minWidth: 100 }}>
+                    Save
+                </StyledButton>
+            </Box>
         </>
     )
 }
