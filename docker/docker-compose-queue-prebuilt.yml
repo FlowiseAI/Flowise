@@ -154,6 +154,11 @@ services:
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
             - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
             - TRUST_PROXY=${TRUST_PROXY}
+
+            # SKILL EXECUTION
+            - SKILL_EXECUTOR_URL=${SKILL_EXECUTOR_URL:-http://flowise-executor:3100}
+            - SKILL_DISABLE_CODE_EXECUTION=${SKILL_DISABLE_CODE_EXECUTION}
+            - SKILL_DISABLE_CLI_EXECUTION=${SKILL_DISABLE_CLI_EXECUTION}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3000}/api/v1/ping']
             interval: 10s
@@ -301,6 +306,11 @@ services:
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
             - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
             - TRUST_PROXY=${TRUST_PROXY}
+
+            # SKILL EXECUTION
+            - SKILL_EXECUTOR_URL=${SKILL_EXECUTOR_URL:-http://flowise-executor:3100}
+            - SKILL_DISABLE_CODE_EXECUTION=${SKILL_DISABLE_CODE_EXECUTION}
+            - SKILL_DISABLE_CLI_EXECUTION=${SKILL_DISABLE_CLI_EXECUTION}
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${WORKER_PORT:-5566}/healthz']
             interval: 10s
@@ -313,6 +323,23 @@ services:
             - flowise
         networks:
             - flowise-net
+
+    flowise-executor:
+        image: flowise-executor:latest
+        build:
+            context: ./executor
+        ports:
+            - '3100:3100'
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - PORT=3100
+            - EXECUTOR_TIMEOUT=${SKILL_EXECUTOR_TIMEOUT:-30000}
+            - EXECUTOR_MEMORY_MB=${SKILL_EXECUTOR_MEMORY_MB:-256}
+            - EXECUTOR_MAX_CONCURRENT=${SKILL_EXECUTOR_MAX_CONCURRENT:-10}
+        networks:
+            - flowise-net
+        restart: unless-stopped
 
 volumes:
     redis_data:

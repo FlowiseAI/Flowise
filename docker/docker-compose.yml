@@ -139,6 +139,11 @@ services:
             - HTTP_DENY_LIST=${HTTP_DENY_LIST}
             - HTTP_SECURITY_CHECK=${HTTP_SECURITY_CHECK}
             - TRUST_PROXY=${TRUST_PROXY}
+
+            # SKILL EXECUTION
+            - SKILL_EXECUTOR_URL=${SKILL_EXECUTOR_URL:-http://flowise-executor:3100}
+            - SKILL_DISABLE_CODE_EXECUTION=${SKILL_DISABLE_CODE_EXECUTION}
+            - SKILL_DISABLE_CLI_EXECUTION=${SKILL_DISABLE_CLI_EXECUTION}
         ports:
             - '${PORT}:${PORT}'
         healthcheck:
@@ -149,4 +154,27 @@ services:
             start_period: 30s
         volumes:
             - ~/.flowise:/root/.flowise
+        networks:
+            - flowise-net
         entrypoint: /bin/sh -c "sleep 3; flowise start"
+
+    flowise-executor:
+        image: flowise-executor:latest
+        build:
+            context: ./executor
+        ports:
+            - '3100:3100'
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - PORT=3100
+            - EXECUTOR_TIMEOUT=${SKILL_EXECUTOR_TIMEOUT:-30000}
+            - EXECUTOR_MEMORY_MB=${SKILL_EXECUTOR_MEMORY_MB:-256}
+            - EXECUTOR_MAX_CONCURRENT=${SKILL_EXECUTOR_MAX_CONCURRENT:-10}
+        networks:
+            - flowise-net
+        restart: unless-stopped
+
+networks:
+    flowise-net:
+        driver: bridge

@@ -33,7 +33,6 @@ export class SkillLangChainTool extends StructuredTool {
             { role: 'system', content: this.markdown },
             { role: 'user', content: JSON.stringify(arg) }
         ])
-
         return typeof response.content === 'string' ? response.content : JSON.stringify(response.content)
     }
 }

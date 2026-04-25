@@ -1,6 +1,7 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { convertSchemaToZod, getBaseClasses } from '../../../src/utils'
 import { SkillLangChainTool } from './core'
+import { SandboxedCodeRunnerTool, SandboxedCLIRunnerTool } from './sandboxTools'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
@@ -24,7 +25,7 @@ class SkillTool_Tools implements INode {
         this.icon = 'skilltool.svg'
         this.category = 'Tools'
         this.description =
-            'Execute a Skill — a markdown-defined sub-agent that runs in its own context, keeping the parent agent context lightweight'
+            'Load Skills as prompt-only tools. Optionally expose sandbox code/CLI runner tools alongside them for the parent agent to use directly.'
         this.inputs = [
             {
                 label: 'Select Skills',
@@ -41,6 +42,26 @@ class SkillTool_Tools implements INode {
                 loadConfig: true,
                 optional: true,
                 description: "Model to run this skill. Leave blank to use the orchestration agent's model."
+            },
+            {
+                label: 'Enable Code Execution',
+                name: 'enableCodeExecution',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                additionalParams: true,
+                description:
+                    'Expose a skill_code_runner tool that lets the parent agent run JavaScript/Python code in a sandbox (E2B, Docker sidecar, or NodeVM)'
+            },
+            {
+                label: 'Enable CLI Execution',
+                name: 'enableCLIExecution',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                additionalParams: true,
+                description:
+                    'Expose a skill_cli_runner tool that lets the parent agent run shell commands (requires E2B or Docker executor sidecar)'
             }
         ]
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(SkillLangChainTool)]
@@ -133,10 +154,10 @@ class SkillTool_Tools implements INode {
         }
         const llm = (await newLLMNodeInstance.init(newNodeData, '', options)) as BaseChatModel
 
-        // Fetch all selected skills and build one SkillLangChainTool per skill
+        // Fetch all selected skills and build one SkillLangChainTool per skill (prompt-only)
         const skills = await appDataSource.getRepository(databaseEntities['Skill']).findByIds(selectedSkillIds)
 
-        return skills.map((skill) => {
+        const tools: any[] = skills.map((skill) => {
             let schema: z.ZodObject<any, any, any, any>
             if (skill.inputSchema) {
                 try {
@@ -156,6 +177,23 @@ class SkillTool_Tools implements INode {
                 llm
             })
         })
+
+        // Append standalone sandbox tools to the same array
+        const enableCodeExecution = nodeData.inputs?.enableCodeExecution as boolean
+        const enableCLIExecution = nodeData.inputs?.enableCLIExecution as boolean
+        const codeDisabled = process.env.SKILL_DISABLE_CODE_EXECUTION === 'true'
+        const cliDisabled = process.env.SKILL_DISABLE_CLI_EXECUTION === 'true'
+
+        if (enableCodeExecution && !codeDisabled) {
+            const codeRunner = SandboxedCodeRunnerTool.createIfAvailable()
+            if (codeRunner) tools.push(codeRunner)
+        }
+        if (enableCLIExecution && !cliDisabled) {
+            const cliRunner = SandboxedCLIRunnerTool.createIfAvailable()
+            if (cliRunner) tools.push(cliRunner)
+        }
+
+        return tools
     }
 }
 
