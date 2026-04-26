@@ -66,6 +66,10 @@ class VoyageAIRerankRetriever_Retrievers implements INode {
                         name: 'rerank-1'
                     },
                     {
+                        label: 'rerank-lite-2',
+                        name: 'rerank-lite-2'
+                    },
+                    {
                         label: 'rerank-lite-1',
                         name: 'rerank-lite-1'
                     }
