@@ -8,9 +8,9 @@ import {
 } from '@langchain/textsplitters'
 
 const extraLanguageSeparators: Record<string, string[]> = {
-    c: ['\nclass ', '\nvoid ', '\nint ', '\nfloat ', '\ndouble ', '\nif ', '\nfor ', '\nwhile ', '\nswitch ', '\ncase ', '\n\n', '\n', ' ', ''],
+    c: ['\nstruct ', '\nunion ', '\nenum ', '\nvoid ', '\nint ', '\nfloat ', '\ndouble ', '\nif ', '\nfor ', '\nwhile ', '\nswitch ', '\ncase ', '\n\n', '\n', ' ', ''],
     csharp: [
-        '\ninterface ', '\nenum ', '\nimplements ', '\ndelegate ', '\nevent ', '\nclass ', '\nabstract ',
+        '\nnamespace ', '\ninterface ', '\nenum ', '\nstruct ', '\ndelegate ', '\nevent ', '\nclass ', '\nabstract ',
         '\npublic ', '\nprotected ', '\nprivate ', '\nstatic ', '\nreturn ',
         '\nif ', '\ncontinue ', '\nfor ', '\nforeach ', '\nwhile ', '\nswitch ', '\nbreak ', '\ncase ', '\nelse ',
         '\ntry ', '\nthrow ', '\nfinally ', '\ncatch ', '\n\n', '\n', ' ', ''
@@ -23,7 +23,7 @@ const extraLanguageSeparators: Record<string, string[]> = {
     ],
     elixir: [
         '\ndef ', '\ndefp ', '\ndefmodule ', '\ndefprotocol ', '\ndefmacro ', '\ndefmacrop ',
-        '\nif ', '\nunless ', '\nwhile ', '\ncase ', '\ncond ', '\nwith ', '\nfor ', '\ndo ', '\n\n', '\n', ' ', ''
+        '\nif ', '\nunless ', '\ncase ', '\ncond ', '\nwith ', '\nfor ', '\ndo ', '\n\n', '\n', ' ', ''
     ],
     haskell: [
         '\nmain :: ', '\nmain = ', '\nlet ', '\nin ', '\ndo ', '\nwhere ', '\n:: ', '\n= ',
@@ -32,7 +32,7 @@ const extraLanguageSeparators: Record<string, string[]> = {
     ],
     kotlin: [
         '\nclass ', '\npublic ', '\nprotected ', '\nprivate ', '\ninternal ', '\ncompanion ', '\nfun ', '\nval ', '\nvar ',
-        '\nif ', '\nfor ', '\nwhile ', '\nwhen ', '\ncase ', '\nelse ', '\n\n', '\n', ' ', ''
+        '\nif ', '\nfor ', '\nwhile ', '\nwhen ', '\nelse ', '\n\n', '\n', ' ', ''
     ],
     lua: ['\nlocal ', '\nfunction ', '\nif ', '\nfor ', '\nwhile ', '\nrepeat ', '\n\n', '\n', ' ', ''],
     powershell: [
@@ -209,7 +209,7 @@ class CodeTextSplitter_TextSplitters implements INode {
             return new RecursiveCharacterTextSplitter({ ...obj, separators })
         }
 
-        return RecursiveCharacterTextSplitter.fromLanguage(language as SupportedTextSplitterLanguage, obj)
+        return new RecursiveCharacterTextSplitter(obj)
     }
 }
 module.exports = { nodeClass: CodeTextSplitter_TextSplitters }
