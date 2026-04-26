@@ -46,23 +46,31 @@ class VoyageAIRerankRetriever_Retrievers implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'rerank-lite-1',
-                        name: 'rerank-lite-1'
+                        label: 'rerank-2.5',
+                        name: 'rerank-2.5'
                     },
                     {
-                        label: 'rerank-lite-2',
-                        name: 'rerank-lite-2'
+                        label: 'rerank-2.5-lite',
+                        name: 'rerank-2.5-lite'
+                    },
+                    {
+                        label: 'rerank-2',
+                        name: 'rerank-2'
+                    },
+                    {
+                        label: 'rerank-2-lite',
+                        name: 'rerank-2-lite'
                     },
                     {
                         label: 'rerank-1',
                         name: 'rerank-1'
                     },
                     {
-                        label: 'rerank-2',
-                        name: 'rerank-2'
+                        label: 'rerank-lite-1',
+                        name: 'rerank-lite-1'
                     }
                 ],
-                default: 'rerank-lite-1',
+                default: 'rerank-2.5',
                 optional: true
             },
             {
