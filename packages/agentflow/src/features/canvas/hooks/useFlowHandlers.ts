@@ -71,9 +71,14 @@ export function useFlowHandlers({
                 edgeLabel = raw === '0' ? 'proceed' : 'reject'
             }
 
+            const sourceParent = sourceNode?.parentNode
+            const targetParent = targetNode?.parentNode
+            const isWithinIterationNode = sourceParent && targetParent && sourceParent === targetParent
+
             const newEdge = {
                 ...params,
                 type: 'agentflowEdge',
+                ...(isWithinIterationNode && { zIndex: 9999 }),
                 data: {
                     sourceColor,
                     targetColor,
