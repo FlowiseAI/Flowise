@@ -1173,7 +1173,7 @@ export class AnalyticHandler {
             }
 
             const spanId = chainSpan.spanId
-            this.handlers['mlflow'].chainSpan = { [spanId]: chainSpan }
+            this.handlers['mlflow'].chainSpan = { ...this.handlers['mlflow'].chainSpan, [spanId]: chainSpan }
             returnIds['mlflow'].chainSpan = spanId
         }
 
@@ -1516,7 +1516,7 @@ export class AnalyticHandler {
             })
 
             const spanId = llmSpan.spanId
-            this.handlers['mlflow'].llmSpan = { [spanId]: llmSpan }
+            this.handlers['mlflow'].llmSpan = { ...this.handlers['mlflow'].llmSpan, [spanId]: llmSpan }
             returnIds['mlflow'].llmSpan = spanId
         }
 
@@ -1918,7 +1918,7 @@ export class AnalyticHandler {
             })
 
             const spanId = toolSpan.spanId
-            this.handlers['mlflow'].toolSpan = { [spanId]: toolSpan }
+            this.handlers['mlflow'].toolSpan = { ...this.handlers['mlflow'].toolSpan, [spanId]: toolSpan }
             returnIds['mlflow'].toolSpan = spanId
         }
 
