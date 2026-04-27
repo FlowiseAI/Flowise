@@ -17,11 +17,7 @@ export interface IValidationResult {
  * Pure validation logic that checks flow data for structural issues.
  * Operates on already-parsed nodes/edges — no DB or network access.
  */
-export const validateFlowData = (
-    nodes: IReactFlowNode[],
-    edges: IReactFlowEdge[],
-    componentNodes: IComponentNodes
-): IValidationResult[] => {
+export const validateFlowData = (nodes: any[], edges: any[], componentNodes: IComponentNodes): IValidationResult[] => {
     const validationResults: IValidationResult[] = []
 
     // Create a map of connected nodes
@@ -256,7 +252,7 @@ export const validateFlowData = (
             // Find the existing node that is connected to this hanging edge
             if (!sourceExists && targetExists) {
                 // Target exists but source doesn't - add issue to target node
-                const targetNode = nodes.find((node: IReactFlowNode) => node.id === edge.target)!
+                const targetNode = nodes.find((node: IReactFlowNode) => node.id === edge.target)
                 const targetNodeResult = validationResults.find((result) => result.id === edge.target)
 
                 if (targetNodeResult) {
@@ -273,7 +269,7 @@ export const validateFlowData = (
                 }
             } else if (sourceExists && !targetExists) {
                 // Source exists but target doesn't - add issue to source node
-                const sourceNode = nodes.find((node: IReactFlowNode) => node.id === edge.source)!
+                const sourceNode = nodes.find((node: IReactFlowNode) => node.id === edge.source)
                 const sourceNodeResult = validationResults.find((result) => result.id === edge.source)
 
                 if (sourceNodeResult) {
