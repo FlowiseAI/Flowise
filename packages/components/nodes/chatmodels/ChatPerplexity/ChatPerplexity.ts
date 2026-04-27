@@ -110,14 +110,14 @@ class ChatPerplexity_ChatModels implements INode {
                 optional: true,
                 additionalParams: true
             },
-            // {
-            //     label: 'Search Domain Filter',
-            //     name: 'searchDomainFilter',
-            //     type: 'json',
-            //     optional: true,
-            //     additionalParams: true,
-            //     description: 'Limit citations to URLs from specified domains (e.g., ["example.com", "anotherexample.org"])'
-            // },
+            {
+                label: 'Search Domain Filter',
+                name: 'searchDomainFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true,
+                description: 'Limit citations to URLs from specified domains (e.g., ["example.com", "anotherexample.org"])'
+            },
             // Currently disabled as output is stored as additional_kwargs
             // {
             //     label: 'Return Images',
@@ -136,22 +136,22 @@ class ChatPerplexity_ChatModels implements INode {
             //     additionalParams: true,
             //     description: 'Whether the online model should return related questions'
             // },
-            // {
-            //     label: 'Search Recency Filter',
-            //     name: 'searchRecencyFilter',
-            //     type: 'options',
-            //     options: [
-            //         { label: 'Not Set', name: '' },
-            //         { label: 'Month', name: 'month' },
-            //         { label: 'Week', name: 'week' },
-            //         { label: 'Day', name: 'day' },
-            //         { label: 'Hour', name: 'hour' }
-            //     ],
-            //     default: '',
-            //     optional: true,
-            //     additionalParams: true,
-            //     description: 'Filter search results by time interval (does not apply to images)'
-            // },
+            {
+                label: 'Search Recency Filter',
+                name: 'searchRecencyFilter',
+                type: 'options',
+                options: [
+                    { label: 'Not Set', name: '' },
+                    { label: 'Month', name: 'month' },
+                    { label: 'Week', name: 'week' },
+                    { label: 'Day', name: 'day' },
+                    { label: 'Hour', name: 'hour' }
+                ],
+                default: '',
+                optional: true,
+                additionalParams: true,
+                description: 'Filter search results by time interval (does not apply to images)'
+            },
             {
                 label: 'Proxy Url',
                 name: 'proxyUrl',
