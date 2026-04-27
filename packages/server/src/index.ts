@@ -32,7 +32,9 @@ import logger, { expressRequestLogger } from './utils/logger'
 import { RateLimiterManager } from './utils/rateLimit'
 import { SSEStreamer } from './utils/SSEStreamer'
 import { Telemetry } from './utils/telemetry'
+import { tryAuthenticateExternalBearer } from './services/external-oauth/authenticateExternalBearer'
 import { validateAPIKey } from './utils/validateKey'
+import { isLikelyJwtCompact } from './utils/bearerToken'
 import { getCorsOptions, getIframeSecurityHeaders, sanitizeMiddleware } from './utils/XSS'
 
 declare global {
@@ -233,6 +235,32 @@ export class App {
                             if (!this.identityManager.isLicenseValid()) {
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
+                        }
+
+                        const authorizationHeader =
+                            (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
+                        const bearerSecret =
+                            authorizationHeader
+                                .split(/Bearer\s+/i)
+                                .pop()
+                                ?.trim() ?? ''
+
+                        if (bearerSecret && isLikelyJwtCompact(bearerSecret)) {
+                            try {
+                                const externalUser = await tryAuthenticateExternalBearer(
+                                    bearerSecret,
+                                    this.AppDataSource,
+                                    this.identityManager
+                                )
+                                if (externalUser) {
+                                    // @ts-ignore
+                                    req.user = externalUser
+                                    return next()
+                                }
+                            } catch (err) {
+                                logger.error('[external-oauth]: Unexpected error during token authentication', err)
+                            }
+                            return res.status(401).json({ error: 'Unauthorized Access' })
                         }
 
                         const { isValid, apiKey } = await validateAPIKey(req)

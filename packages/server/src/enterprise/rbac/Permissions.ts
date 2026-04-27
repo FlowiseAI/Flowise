@@ -126,6 +126,11 @@ export class Permissions {
         workspaceCategory.addPermission(new Permission('workspace:import', 'Import Data within Workspace', false, true, true))
         this.categories.push(workspaceCategory)
 
+        // Separate from `admin` so API key permission picker includes it (admin category is omitted for API_KEY type).
+        const externalOAuthCategory = new PermissionCategory('externalOAuth')
+        externalOAuthCategory.addPermission(new Permission('externalOAuth:manage', 'Manage External OAuth integrations', true, true, true))
+        this.categories.push(externalOAuthCategory)
+
         const adminCategory = new PermissionCategory('admin')
         adminCategory.addPermission(new Permission('users:manage', 'Manage Users', false, true, true))
         adminCategory.addPermission(new Permission('roles:manage', 'Manage Roles', false, true, true))

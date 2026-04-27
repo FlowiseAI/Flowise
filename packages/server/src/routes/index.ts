@@ -58,6 +58,7 @@ import agentflowv2GeneratorRouter from './agentflowv2-generator'
 import textToSpeechRouter from './text-to-speech'
 import mcpServerRouter from './mcp-server'
 import mcpEndpointRouter from './mcp-endpoint'
+import externalOAuthIntegrationRouter from './external-oauth-integration'
 
 import authRouter from '../enterprise/routes/auth'
 import auditRouter from '../enterprise/routes/audit'
@@ -130,6 +131,7 @@ router.use('/text-to-speech', textToSpeechRouter)
 router.use('/custom-mcp-servers', customMcpServersRouter)
 router.use('/mcp-server', mcpServerRouter)
 router.use('/mcp', mcpEndpointRouter)
+router.use('/external-oauth-integrations', externalOAuthIntegrationRouter)
 
 router.use('/auth', authRouter)
 router.use('/audit', IdentityManager.checkFeatureByPlan('feat:login-activity'), auditRouter)
