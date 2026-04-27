@@ -5,6 +5,7 @@ import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, 
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatAnthropic } from './FlowiseChatAnthropic'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { supportsSamplingParams } from '../../../src/anthropicUtils'
 
 class ChatAnthropic_ChatModels implements INode {
     label: string
@@ -196,24 +197,25 @@ class ChatAnthropic_ChatModels implements INode {
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
+        const samplingSupported = supportsSamplingParams(modelName)
+        const thinkingEnabled = adaptiveThinking || extendedThinking
+
         const obj: Partial<AnthropicInput> & BaseLLMParams & { anthropicApiKey?: string } = {
-            temperature: parseFloat(temperature),
             modelName,
             anthropicApiKey,
             streaming: streaming ?? true
         }
 
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (topP) obj.topP = parseFloat(topP)
-        if (topK) obj.topK = parseFloat(topK)
-        if (cache) obj.cache = cache
-
-        if (modelName?.includes('opus-4-7')) {
-            // Deprecated. Models released after Claude Opus 4.6 do not support
-            delete obj.temperature
-            delete obj.topP
-            delete obj.topK
+        // Temperature is incompatible with thinking modes and with models that
+        // don't support sampling parameters.
+        if (samplingSupported && !thinkingEnabled) {
+            obj.temperature = parseFloat(temperature)
         }
+
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (samplingSupported && topP) obj.topP = parseFloat(topP)
+        if (samplingSupported && topK) obj.topK = parseFloat(topK)
+        if (cache) obj.cache = cache
 
         if (adaptiveThinking) {
             obj.thinking = {
@@ -224,15 +226,11 @@ class ChatAnthropic_ChatModels implements INode {
                     effort: thinkingEffort
                 }
             }
-
-            delete obj.temperature
         } else if (extendedThinking) {
             obj.thinking = {
                 type: 'enabled',
                 budget_tokens: parseInt(budgetTokens ?? '1024', 10)
             }
-
-            delete obj.temperature
         }
 
         const multiModalOption: IMultiModalOption = {

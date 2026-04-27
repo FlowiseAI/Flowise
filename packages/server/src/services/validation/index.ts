@@ -256,7 +256,7 @@ export const validateFlowData = (
             // Find the existing node that is connected to this hanging edge
             if (!sourceExists && targetExists) {
                 // Target exists but source doesn't - add issue to target node
-                const targetNode = nodes.find((node: IReactFlowNode) => node.id === edge.target)!
+                const targetNode = nodes.find((node: IReactFlowNode) => node.id === edge.target)
                 const targetNodeResult = validationResults.find((result) => result.id === edge.target)
 
                 if (targetNodeResult) {
