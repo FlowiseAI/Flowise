@@ -208,6 +208,13 @@ class ChatAnthropic_ChatModels implements INode {
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache
 
+        if (modelName?.includes('opus-4-7')) {
+            // Deprecated. Models released after Claude Opus 4.6 do not support
+            delete obj.temperature
+            delete obj.topP
+            delete obj.topK
+        }
+
         if (adaptiveThinking) {
             obj.thinking = {
                 type: 'adaptive'
