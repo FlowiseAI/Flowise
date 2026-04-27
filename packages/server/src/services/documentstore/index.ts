@@ -189,6 +189,9 @@ const getDocumentStoreById = async (storeId: string, workspaceId: string) => {
         }
         return entity
     } catch (error) {
+        if (error instanceof InternalFlowiseError) {
+            throw error
+        }
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices.getDocumentStoreById - ${getErrorMessage(error)}`
@@ -614,7 +617,7 @@ const _normalizeFilePaths = async (
     data: IDocumentStoreLoaderForPreview,
     entity: DocumentStore | null,
     orgId: string,
-    workspaceId?: string
+    workspaceId: string
 ) => {
     const keys = Object.getOwnPropertyNames(data.loaderConfig)
     let rehydrated = false
