@@ -20,7 +20,7 @@ class Strale_Tools implements INode {
         this.type = 'Strale'
         this.icon = 'strale.svg'
         this.category = 'Tools'
-        this.description = 'Access 290+ quality-tested data capabilities — company verification, sanctions screening, VAT validation, and more'
+        this.description = 'Access Strale’s data capability catalog — company verification, sanctions screening, VAT validation, web extraction, and more'
         this.inputs = [
             {
                 label: 'API Key',

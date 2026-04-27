@@ -79,12 +79,12 @@ export class StraleSearchAndExecuteTool extends StructuredTool {
         this.baseUrl = config.baseUrl || DEFAULT_BASE_URL
 
         const authNote = this.apiKey
-            ? 'Authenticated — full access to 290+ capabilities.'
+            ? 'Authenticated — full catalog access.'
             : 'No API key — only free capabilities available (email-validate, dns-lookup, json-repair, url-to-markdown, iban-validate).'
 
         this.description =
             `Search Strale's data capability marketplace and execute the best match. ` +
-            `Strale provides 290+ quality-tested data capabilities including company verification, ` +
+            `Strale provides a catalog of data capabilities for AI agents — company verification, ` +
             `sanctions screening, VAT validation, invoice extraction, and more. ` +
             `Describe what you need in the "task" field and optionally provide inputs. ${authNote}`
     }
