@@ -14,7 +14,7 @@ const rethrowIfFlowiseError = (error: unknown): void => {
     }
 }
 
-const resolveCredentialForWorkspace = async (credentialId: string, workspaceId: string | undefined): Promise<Credential> => {
+const resolveCredentialForWorkspace = async (credentialId: string, workspaceId: string): Promise<Credential> => {
     if (!workspaceId) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Workspace ID is required')
     }
@@ -41,7 +41,7 @@ const resolveCredentialForWorkspace = async (credentialId: string, workspaceId: 
     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Credential not found')
 }
 
-const getAssistantVectorStore = async (credentialId: string, vectorStoreId: string, workspaceId: string | undefined) => {
+const getAssistantVectorStore = async (credentialId: string, vectorStoreId: string, workspaceId: string) => {
     try {
         const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
@@ -63,7 +63,7 @@ const getAssistantVectorStore = async (credentialId: string, vectorStoreId: stri
     }
 }
 
-const listAssistantVectorStore = async (credentialId: string, workspaceId: string | undefined) => {
+const listAssistantVectorStore = async (credentialId: string, workspaceId: string) => {
     try {
         const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
@@ -85,11 +85,7 @@ const listAssistantVectorStore = async (credentialId: string, workspaceId: strin
     }
 }
 
-const createAssistantVectorStore = async (
-    credentialId: string,
-    obj: OpenAI.VectorStores.VectorStoreCreateParams,
-    workspaceId: string | undefined
-) => {
+const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.VectorStores.VectorStoreCreateParams, workspaceId: string) => {
     try {
         const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
@@ -115,7 +111,7 @@ const updateAssistantVectorStore = async (
     credentialId: string,
     vectorStoreId: string,
     obj: OpenAI.VectorStores.VectorStoreUpdateParams,
-    workspaceId: string | undefined
+    workspaceId: string
 ) => {
     try {
         const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
@@ -147,7 +143,7 @@ const updateAssistantVectorStore = async (
     }
 }
 
-const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: string, workspaceId: string | undefined) => {
+const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: string, workspaceId: string) => {
     try {
         const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
         // Decrpyt credentialData
@@ -173,7 +169,7 @@ const uploadFilesToAssistantVectorStore = async (
     credentialId: string,
     vectorStoreId: string,
     files: { filePath: string; fileName: string }[],
-    workspaceId: string | undefined
+    workspaceId: string
 ): Promise<any> => {
     try {
         const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)
@@ -226,7 +222,7 @@ const deleteFilesFromAssistantVectorStore = async (
     credentialId: string,
     vectorStoreId: string,
     file_ids: string[],
-    workspaceId: string | undefined
+    workspaceId: string
 ) => {
     try {
         const credential = await resolveCredentialForWorkspace(credentialId, workspaceId)

@@ -945,7 +945,7 @@ const _saveChunksToStorage = async (
 
     try {
         //step 1: restore the full paths, if any
-        await _normalizeFilePaths(appDataSource, data, entity, orgId)
+        await _normalizeFilePaths(appDataSource, data, entity, orgId, workspaceId)
 
         //step 2: split the file into chunks
         const response = await previewChunks({
