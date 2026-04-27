@@ -915,7 +915,7 @@ export class AnalyticHandler {
             const mlflowPassword = getCredentialParam('mlflowPassword', credentialData, this.nodeData)
             const mlflowExperimentId = providerConfig.experimentId as string
 
-            const mlflowOptions: any = {
+            const mlflowOptions: Parameters<typeof mlflow.init>[0] = {
                 trackingUri: mlflowTrackingUri ?? 'http://localhost:5000'
             }
             if (mlflowExperimentId) mlflowOptions.experimentId = mlflowExperimentId
