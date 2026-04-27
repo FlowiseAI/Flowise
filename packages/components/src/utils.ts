@@ -22,6 +22,7 @@ import { NodeVM } from 'vm2'
 import { Sandbox } from '@e2b/code-interpreter'
 import { secureFetch, checkDenyList, secureAxiosRequest } from './httpSecurity'
 import JSON5 from 'json5'
+import zodToJsonSchema, { type JsonSchema7Type } from 'zod-to-json-schema'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -610,7 +611,7 @@ const getEncryptionKey = async (): Promise<string> => {
  * @param {IComponentCredentials} componentCredentials
  * @returns {Promise<ICommonObject>}
  */
-const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
+export const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
     let decryptedDataStr: string
 
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
@@ -2302,4 +2303,40 @@ export const isReasoningModelOpenAI = (name: string): boolean => {
     if (name.includes('gpt-5') && name.includes('-chat')) return false
     if (name.includes('gpt-5')) return true
     return false
+}
+
+/**
+ * JSON Schema shape returned by {@link toolSchemaToJsonSchema}, extended with the
+ * optional `$schema` marker that `zod-to-json-schema` emits.
+ */
+export type ToolJsonSchema = JsonSchema7Type & { $schema?: string; [key: string]: unknown }
+
+type ZodToJsonSchemaInput = Parameters<typeof zodToJsonSchema>[0]
+
+/**
+ * Type guard detecting a Zod schema without importing Zod's types directly.
+ *
+ * Using `Parameters<typeof zodToJsonSchema>[0]` keeps the guard compatible with
+ * whichever Zod major version (`^3 || ^4`) TypeScript resolves at the call site.
+ */
+export const isZodSchema = (schema: unknown): schema is ZodToJsonSchemaInput =>
+    typeof schema === 'object' && schema !== null && '_def' in schema && typeof (schema as { parse?: unknown }).parse === 'function'
+
+/**
+ * Normalizes a tool schema into a plain JSON Schema object.
+ *
+ * LangChain tools may expose their `schema` as either a Zod schema (has `_def`)
+ * or an already-plain JSON Schema (e.g. MCP tools). This helper handles both,
+ * deep-clones plain objects to prevent accidental mutation, and strips the
+ * `$schema` marker so the result is safe to embed in LLM tool definitions.
+ */
+export const toolSchemaToJsonSchema = (schema: unknown): ToolJsonSchema => {
+    if (schema == null) return { type: 'object', properties: {} }
+    const jsonSchema: ToolJsonSchema = isZodSchema(schema)
+        ? (zodToJsonSchema(schema) as ToolJsonSchema)
+        : cloneDeep(schema as ToolJsonSchema)
+    if (jsonSchema.$schema) {
+        delete jsonSchema.$schema
+    }
+    return jsonSchema
 }

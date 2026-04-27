@@ -78,7 +78,6 @@ export function useAvailableVariables(nodeId: string): VariableItem[] {
                 (node.data.inputs?.chainName as string) ??
                 (node.data.inputs?.functionName as string) ??
                 (node.data.inputs?.variableName as string) ??
-                node.data.label ??
                 node.data.id
 
             const agentflowIcon = getAgentflowIcon(node.data.name)
