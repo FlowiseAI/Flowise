@@ -924,9 +924,11 @@ export class AnalyticHandler {
             if (mlflowPassword) mlflowOptions.trackingServerPassword = mlflowPassword
 
             const configKey = JSON.stringify(mlflowOptions)
-            if (configKey !== _mlflowActiveConfigKey) {
+            if (_mlflowActiveConfigKey === null) {
                 mlflow.init(mlflowOptions)
                 _mlflowActiveConfigKey = configKey
+            } else if (_mlflowActiveConfigKey !== configKey) {
+                console.warn('[MLflow] Reuse initialized mlflow connection, new configuration is ignored')
             }
             this.handlers['mlflow'] = {}
         }
