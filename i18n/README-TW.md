@@ -19,7 +19,7 @@
 
 ## ⚡ 快速開始
 
-下載並安裝 [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+下載並安裝 [NodeJS](https://nodejs.org/en/download) >= 20.0.0
 
 1. 安裝 Flowise
     ```bash
