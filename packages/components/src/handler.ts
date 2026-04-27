@@ -1171,7 +1171,11 @@ export class AnalyticHandler {
             })
 
             if (!parentIds || !Object.keys(parentIds).length) {
-                chainSpan.setAttributes({ 'mlflow.trace.session': this.options.chatId })
+                const { InMemoryTraceManager } = require('@mlflow/core/dist/core/trace_manager')
+                const traceObj = InMemoryTraceManager.getInstance().getTrace(chainSpan.traceId)
+                if (traceObj) {
+                    traceObj.info.traceMetadata['mlflow.trace.session'] = this.options.chatId
+                }
             }
 
             const spanId = chainSpan.spanId
