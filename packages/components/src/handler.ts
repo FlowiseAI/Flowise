@@ -38,6 +38,13 @@ import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { Serialized } from '@langchain/core/load/serializable'
 
+// Fingerprint of the last mlflow.init() call. mlflow.init() replaces the global OTel NodeSDK,
+// so we skip re-init when the config is unchanged to avoid disrupting in-flight traces from other
+// handlers. Note: concurrent handlers with *different* MLflow configs (different trackingUri or
+// experimentId) can still interfere — per-instance isolation would require SDK-level support
+// that @mlflow/core does not currently provide.
+let _mlflowActiveConfigKey: string | null = null
+
 export interface AgentRun extends Run {
     actions: AgentAction[]
 }
@@ -916,7 +923,11 @@ export class AnalyticHandler {
             if (mlflowUsername) mlflowOptions.trackingServerUsername = mlflowUsername
             if (mlflowPassword) mlflowOptions.trackingServerPassword = mlflowPassword
 
-            mlflow.init(mlflowOptions)
+            const configKey = JSON.stringify(mlflowOptions)
+            if (configKey !== _mlflowActiveConfigKey) {
+                mlflow.init(mlflowOptions)
+                _mlflowActiveConfigKey = configKey
+            }
             this.handlers['mlflow'] = {}
         }
     }
