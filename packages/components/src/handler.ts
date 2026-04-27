@@ -1510,10 +1510,29 @@ export class AnalyticHandler {
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'mlflow')) {
             const parentSpan: MlflowLiveSpan | undefined = this.handlers['mlflow'].chainSpan?.[parentIds['mlflow']?.chainSpan]
 
+            let llmInputs: ICommonObject
+            if (Array.isArray(input)) {
+                let lastAssistantIdx = -1
+                for (let i = input.length - 1; i >= 0; i--) {
+                    const role = (input[i] as any)?.role
+                    if (role === 'assistant' || role === 'ai') {
+                        lastAssistantIdx = i
+                        break
+                    }
+                }
+                const currentTurnMessages = input.filter((msg, idx) => {
+                    const role = (msg as any)?.role
+                    return role === 'system' || idx > lastAssistantIdx
+                })
+                llmInputs = { messages: currentTurnMessages }
+            } else {
+                llmInputs = { prompts: [input] }
+            }
+
             const llmSpan = mlflow.startSpan({
                 name,
                 spanType: MlflowSpanType.LLM,
-                inputs: Array.isArray(input) ? { messages: input } : { prompts: [input] },
+                inputs: llmInputs,
                 ...(parentSpan ? { parent: parentSpan } : {})
             })
 
