@@ -113,6 +113,8 @@ export const utilGetChatMessage = async ({
         relations: {
             execution: true
         },
+        skip: page > 0 && pageSize > 0 ? pageSize * (page - 1) : undefined,
+        take: page > 0 && pageSize > 0 ? pageSize : undefined,
         order: {
             createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'
         }
